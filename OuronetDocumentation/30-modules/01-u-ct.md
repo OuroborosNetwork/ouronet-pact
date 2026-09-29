@@ -1,16 +1,14 @@
-# U|CT
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# U|CT — constants, and the price oracle
 
 ## What it is for
 
-_To be written._
+Protocol-wide constants — token name and ticker lengths, decimal bounds, fee precision, the `"|"` sentinel every unset reference reads as — and the reader that fetches **STOA's dollar price from an external oracle**.
+
+That second job is why a constants module matters more than it sounds: every native-currency price in Ouronet is a dollar figure divided by this number. It is the single point where the protocol's prices meet the outside world.
 
 ## Where it sits
 
-_To be written._
+The **first** utility, and therefore the first thing deployed. Everything above it depends on its constants; it depends on nothing.
 
 ## What it owns, and what it exposes
 
@@ -53,4 +51,6 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**The fee-lock duration differs between environments** — a small value in tests, a large one on mainnet. Test output about lock expiry says nothing about production behaviour.
+
+**The `"|"` sentinel is defined here** and is the most-repeated trap in the system: an unset reference reads as `"|"`, not as an empty string or list. Code testing for emptiness gets the wrong answer, and code passing it onward uses it as a table key — which fails uncatchably. See `20-assets/07-pool-positions.md` for a case measured on mainnet.

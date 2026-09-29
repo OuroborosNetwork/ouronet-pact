@@ -1,16 +1,16 @@
-# U|DALOS
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# U|DALOS — the account alphabet and format
 
 ## What it is for
 
-_To be written._
+The **256-glyph alphabet** and the validators that check an Ouronet account is well-formed.
+
+The alphabet is assembled from ten named sub-constants — digits, currency signs, Latin, Latin Extended, Greek and Cyrillic in both cases — totalling exactly **256**. That number is the design: 256 symbols over 160 body positions is exactly one byte per character, so an account carries **1,280 bits**.
+
+It also generates the identifiers for every token, pool and anchor in the system: a ticker, a hyphen, and twelve characters of the previous block hash.
 
 ## Where it sits
 
-_To be written._
+A utility, deployed before the account core that uses it. It is where the account *format* lives; the account *table* lives one layer up.
 
 ## What it owns, and what it exposes
 
@@ -64,4 +64,10 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**The separator cannot appear in a body.** The `.` lives in a different constant that is deliberately not part of the alphabet, so splitting an account into its parts never needs to guess.
+
+**162 characters is 287 bytes.** Most of the alphabet is outside ASCII. Code that treats those as the same number is wrong by 125.
+
+**Identifiers derive from the previous block hash, which is per block, not per transaction.** Two issuances of the same ticker in one block produce byte-identical identifiers and the second aborts. Accepted as by-design after investigation: it is atomic and self-healing, and fixing it properly would need a utility deployed *before* the core reading a core table, which the deploy order forbids.
+
+**And the derivation of an account from a key is not here, or anywhere on chain.** This module validates shape only. See `80-cryptography/04-what-is-not-on-chain.md`.

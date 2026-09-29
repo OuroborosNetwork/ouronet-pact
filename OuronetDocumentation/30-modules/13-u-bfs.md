@@ -1,16 +1,14 @@
-# U|BFS
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# U|BFS — breadth-first search
 
 ## What it is for
 
-_To be written._
+A general breadth-first search over a graph, with an early-exit variant that stops once the target is reached.
+
+The swap layer uses it to find trade routes across the pool graph, where tokens are nodes and pools are edges.
 
 ## Where it sits
 
-_To be written._
+A leaf utility. Deliberately generic — it knows nothing about pools, which is why the swap layer's depth cap is applied outside it rather than within.
 
 ## What it owns, and what it exposes
 
@@ -57,4 +55,6 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**The depth cap is not in the search.** It is a post-discovery filter, and the deviation is documented at the site: baking a bound into a shared utility would change a lower layer with other callers. The consequence is worth knowing — the submitted-route swap variant validates against a 7-node cap explicitly, while the self-searching variant is bounded by the **size of the graph** rather than by a hop count. Different guarantees.
+
+**A node set narrower than the edge set corrupts long routes.** An earlier version built nodes from a filtered list while edges came from the full one, so the search could expand into a token with no node entry. Both now derive from the same source by construction.

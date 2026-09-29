@@ -1,16 +1,12 @@
-# U|DEC
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# U|DEC — decimal mathematics
 
 ## What it is for
 
-_To be written._
+Decimal helpers — rounding, splitting an amount by per-mille shares, and the precision handling every price and fee depends on.
 
 ## Where it sits
 
-_To be written._
+A leaf utility, used by every module that computes money.
 
 ## What it owns, and what it exposes
 
@@ -59,4 +55,4 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**Rounding direction is a design decision, not a detail.** Where an amount is split, the last share absorbs the remainder by construction, so the parts always sum to the whole. Where a swap settles, the output is floored and the input is ceilinged — always in the pool's favour. Reversing either leaks value in a direction nobody notices immediately.

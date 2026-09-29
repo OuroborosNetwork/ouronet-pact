@@ -1,16 +1,14 @@
-# U|SWP
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# U|SWP — the three swap curves
 
 ## What it is for
 
-_To be written._
+All three swap-pool curve families, and the function that decides which a pool runs.
+
+**Stable** pools use the Curve StableSwap invariant, solved by Newton iteration. **Weighted** pools use the Balancer-style weighted product, closed-form. **Plain** pools are the same with every exponent one. Which you get is derived from the pool's own weights and amplifier, not chosen by name.
 
 ## Where it sits
 
-_To be written._
+A utility below the entire swap family. The mathematics is here; the state, routing and client surface are above.
 
 ## What it owns, and what it exposes
 
@@ -66,4 +64,8 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**The solvers run a fixed iteration count** because Pact has no dynamic loop and no early exit on convergence. Measured: six iterations were off by 0.0078 at 1000× reserve skew; bit-identical to a 255-iteration reference by ten; set to twelve for margin at a cost of 64 gas.
+
+**The amplifier ceiling is where the arithmetic stops being trustworthy**, not a round number — round-trip convergence degrades sharply above it precisely because the iteration count is fixed.
+
+**Weighted pools carry a permanent, bounded precision loss.** The native power operator drops to double precision for fractional exponents, which weighted pools genuinely need. The fix was assessed and declined as disproportionate. The audit's phrasing is the one a liquidity provider should read: *a real, permanent, bounded arbitrage against weighted-pool LPs.*

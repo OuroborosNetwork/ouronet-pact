@@ -1,16 +1,12 @@
-# U|INT
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# U|INT — integer mathematics
 
 ## What it is for
 
-_To be written._
+Integer helpers — bounds, comparisons, and the exponentiation used by the swap curves.
 
 ## Where it sits
 
-_To be written._
+A leaf utility. Its exponentiation is used by the stable-pool solver.
 
 ## What it owns, and what it exposes
 
@@ -61,4 +57,4 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**Repeated multiplication exists here because the native power operator is not exact.** Pact's `^` drops to double precision for decimal exponents. For whole-number exponents this module works around it; for the genuinely fractional exponents weighted pools need, it cannot — an accepted, documented limitation described in `25-defi/02-swap-pools.md`.

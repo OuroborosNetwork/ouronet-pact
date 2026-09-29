@@ -1,16 +1,12 @@
-# U|RS
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# U|RS — reserved account prefixes
 
 ## What it is for
 
-_To be written._
+Validation for the host chain's **reserved account prefixes** — `k:`, `c:`, `u:` and the rest, which encode what kind of principal an account name refers to.
 
 ## Where it sits
 
-_To be written._
+A leaf utility. Concerns host-chain account names only.
 
 ## What it owns, and what it exposes
 
@@ -49,4 +45,4 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**This is about host-chain accounts, not Ouronet accounts.** The two namespaces are unrelated: an Ouronet account is a 162-glyph identifier with its own alphabet, validated elsewhere. Confusing the two is easy because both are called "accounts".

@@ -1,16 +1,14 @@
-# U|DPTF
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# U|DPTF — the volumetric tax
 
 ## What it is for
 
-_To be written._
+The **progressive transfer tax** — a fee that grows with the size of the transfer, and not linearly.
+
+The amount is decomposed into its decimal digits, and each digit position contributes a rate derived from a repunit logarithm at that position. Moving 10 costs proportionally less than moving 10,000,000.
 
 ## Where it sits
 
-_To be written._
+A utility below the true-fungible core, which applies the tax on transfer.
 
 ## What it owns, and what it exposes
 
@@ -61,4 +59,4 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**The arithmetic is the schedule.** There are no brackets to configure and no table to keep in step — which means there is also no way to adjust the curve without changing the function. That is a deliberate trade: a fee model nobody can misconfigure, and nobody can tune.

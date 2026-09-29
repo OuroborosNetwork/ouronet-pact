@@ -1,16 +1,12 @@
-# U|LST
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# U|LST — list and string processing
 
 ## What it is for
 
-_To be written._
+List and string utilities — searching, deduplication, slicing, formatting. The plumbing that Pact does not provide.
 
 ## Where it sits
 
-_To be written._
+A leaf utility, used almost everywhere above it.
 
 ## What it owns, and what it exposes
 
@@ -54,4 +50,6 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**Uniqueness checking here is load-bearing further up.** The swap layer's protection against a pool containing the same token twice is not in the swap layer at all — it is this module's uniqueness check, reached several calls down. An audit finding traced exactly that path and closed as verified-safe by design rather than by a local guard.
+
+**`(enumerate 0 -1)` returns `[0 -1]`, not `[]`.** Several guards derived from it treated an empty input as a one-element one, and failed with an index error instead of a clean refusal.

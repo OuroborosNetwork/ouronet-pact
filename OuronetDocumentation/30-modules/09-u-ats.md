@@ -1,16 +1,12 @@
-# U|ATS
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# U|ATS — autostake bounds and position records
 
 ## What it is for
 
-_To be written._
+The autostake family's value types — a staking position and its maturity — and the validators bounding a pool owner's fee settings.
 
 ## Where it sits
 
-_To be written._
+A utility below the autostake core. The pool state is there; the shapes and bounds are here.
 
 ## What it owns, and what it exposes
 
@@ -67,4 +63,4 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**The peak fee and the decay rate are validated together, not separately.** The peak must be an exact multiple of the decay, so the fee curve reaches zero at a whole number of days rather than crossing it mid-day. Validating them independently would allow a curve whose cheapest commitment is not a round duration.

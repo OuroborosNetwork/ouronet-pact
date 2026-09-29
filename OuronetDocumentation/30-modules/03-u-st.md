@@ -1,16 +1,12 @@
-# U|ST
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# U|ST — gas-station helpers
 
 ## What it is for
 
-_To be written._
+Helpers for the gas station — the mechanism by which Ouronet pays the host chain's fee on a user's behalf.
 
 ## Where it sits
 
-_To be written._
+A utility consumed by the account core, which implements the host chain's own gas-payer interface. The station's decision logic lives there; the reusable parts live here.
 
 ## What it owns, and what it exposes
 
@@ -59,4 +55,4 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**Sponsorship is conditional on what the transaction contains**, not on who sends it. The station reads the transaction's code and accepts three specific shapes. A transaction that is valid but shaped differently is simply not sponsored — see `10-architecture/06-ignis-and-the-gas-station.md`.

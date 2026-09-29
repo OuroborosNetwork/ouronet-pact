@@ -1,16 +1,14 @@
-# U|VST
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# U|VST — the special-variant prefixes
 
 ## What it is for
 
-_To be written._
+The prefix family for derived tokens — `V|` vested, `Z|` sleeping, `H|` hibernating, `F|` frozen, `R|` reserved, `E|` equity — and the arithmetic behind vesting schedules and release dates.
+
+It builds a derived token's name and ticker from its parent's, truncating so the result still fits the length limits.
 
 ## Where it sits
 
-_To be written._
+A utility below the vesting core, which performs the transitions.
 
 ## What it owns, and what it exposes
 
@@ -65,4 +63,6 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**Sleeping and hibernating are one family, two prefixes.** Code testing only for `Z|` sent every hibernating token down the wrong branch and failed looking up an `H|` identifier in the wrong table. Always test against both.
+
+**A prefix does not always mean what it looks like.** Multi-token pool families use `F|` and `T|` as plain string separators, so `F|TOKEN-A|TOKEN-B|TOKEN-C` is not a frozen token. Count the separators before reading the prefix.
