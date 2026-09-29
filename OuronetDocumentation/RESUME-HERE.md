@@ -1,6 +1,6 @@
 # Resume here
 
-Live state of the Chapter A documentation job. **Read this first, then `BUILD-PLAN.md` §6.**
+State of the Chapter A documentation job. **COMPLETE.**
 Written 2026-09-27. Update it when you stop working; a stale resume note is worse than none.
 
 ## Where it stands
