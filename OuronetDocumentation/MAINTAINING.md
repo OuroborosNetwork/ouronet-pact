@@ -21,6 +21,42 @@ The answer has to be "one page, one heading, and a tool said which" — not "gre
 
 ---
 
+## 0. The evidence, because this argument has a control group
+
+There is already a hand-written, code-accurate Ouronet documentation. It is
+`websites/ouronetwork-website/OuronetWhitepaper/` — the *Living Whitepaper*, 9,241 words across
+thirteen entity chapters, last touched **2026-06-14**. Its own README says:
+
+> "**Code-accurate.** Function names, parameters, schema fields and Talos wiring are taken directly
+> from the sovereign Pact modules (`1_SOVEREIGN/`), not from memory or marketing."
+
+That was true when written. Measured against the deployed registry on **2026-09-29**:
+
+| | |
+|---|---|
+| client signatures the whitepaper states | **58** |
+| still matching the live contracts | **3** |
+| parameter lists that differ | **52** |
+| entrypoints that no longer exist | **3** |
+
+**95% wrong in three and a half months.** Not through neglect — through one refactor. The
+patron/executor canon sweep re-signed 694 entrypoints across 58 files, and a document that had
+been accurate on the day it was written had no way to notice.
+
+Two conclusions, and they are the whole design:
+
+**1. The decay is entirely in the ENUMERATION.** Every wrong item is a parameter list, a name, a
+count. The prose around them — what an entity is for, why it is split across modules, what a
+client can achieve — is as true today as it was in June. The half that rots is exactly the half a
+generator can produce, and the half that survives is exactly the half it cannot.
+
+**2. "Kept in sync" is not a mechanism.** The whitepaper says it is a living document that each
+Ouronet update should update. That is a promise, and promises do not survive a 694-signature
+refactor. The only thing that would have caught this is a command that regenerates and a check
+that fails.
+
+This folder is built on that finding rather than on the fear of it.
+
 ## 1. Why the obvious approach fails
 
 The instinct is to generate everything. It does not work here, and the reason is worth stating

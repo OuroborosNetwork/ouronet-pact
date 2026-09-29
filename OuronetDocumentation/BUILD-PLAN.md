@@ -137,6 +137,13 @@ the part a DeFi reader arrives for.
 | `03-acquisition-pools.md` | AQP. Anchors, scores, farms/vaults/treasuries, delegated staking. |
 | `04-the-launchpad.md` | DemiPad: the sovereign rules and the citizen sales that use them. |
 
+> **PRIOR ART — read it before writing these.** `websites/ouronetwork-website/OuronetWhitepaper/`
+> is a 9,241-word hand-written predecessor, thirteen chapters, June 2026. Its **prose is still
+> good** and its organising idea is worth weighing: it documents *entities* — logical subsystems,
+> each backed by one or more modules — rather than one file per module. Thirteen chapters instead
+> of seventy-nine. Its **figures are 95% stale** (see `MAINTAINING.md` §0), so take the structure
+> and the explanations, and regenerate every signature.
+
 ### `30-modules/` — the reference
 
 **One file per module, in deploy order.** 79 files. This is the bulk and the part that makes
