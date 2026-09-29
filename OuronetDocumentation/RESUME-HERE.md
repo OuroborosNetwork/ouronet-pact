@@ -5,7 +5,7 @@ Written 2026-09-27. Update it when you stop working; a stale resume note is wors
 
 ## Where it stands
 
-**36 of 132 files written**, plus one module exemplar. Updated 2026-09-29. Tree clean.
+**40 of 132 files written**, plus one module exemplar. Updated 2026-09-29. Tree clean.
 
 | section | files | written |
 |---|---|---|
@@ -28,12 +28,15 @@ per-module block from it with a live-vs-repo comparison. See
 that need their own research passes: `20-assets` (8), `25-defi` (5), `40-journeys` (5),
 `50-economics` (4), `70-comparison` (3), `80-cryptography` (4).
 
-**`20-assets/` AND `25-defi/` are COMPLETE.** Recommended next: **`50-economics/`** (4 files) —
-its research is largely DONE and verified in this session (IGNIS cost model, price-sheet totals,
-module sizing, heavy reads). Measured figures to reuse: IG|WEIGHTS 14 / IG|LEGS 22 / IG|DETER 54 /
-IG|COMPONENTS **397** keys; price sheet 440 priced (183 exact + 137 floor + 2 STOA-only + 118 free);
-worst module 22% of a block (INFO-ONE at 436,250 gas) with an owner ruling of 2026-09-18 that NO
-SPLITTING IS REQUIRED.
+**SIX sections are COMPLETE**: 00-orientation, 10-architecture, 20-assets, 25-defi, 50-economics,
+60-methodology. What remains is 5 prose sections + the 79-file module section.
+
+**Recommended next: `40-journeys/`** (5 files) — as a holder, issuer, pool owner, builder,
+integrator. It is the last section that needs NO new deep research: it re-frames what 20-assets and
+25-defi already established, from the user's side. `docs/CHAPTER-INTEGRATION/` (5 files, already
+written) is the raw material for `05-as-an-integrator.md`.
+
+Then `70-comparison/` (3) needs external research, and `80-cryptography/` (4) needs ANOTHER REPO.
 
 **NOTE: there is NO whitepaper chapter for AQP or the launchpad** — both are marked planned. Those
 two chapters were written from source only. Do not go looking for prior prose that does not exist.
