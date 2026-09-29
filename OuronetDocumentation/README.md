@@ -13,6 +13,32 @@ concerns itself with navigation, styling or routing.
 
 ---
 
+## State, and how to keep it true
+
+**Complete: 148 files, ~128,500 words, ten sections.**
+
+Roughly half of it is generated. Every module page's enumeration — on-chain hash, tables,
+schemas, capabilities, functions grouped by prefix, client entrypoints — is rendered from a
+chain snapshot between `<!-- @generated:… -->` markers. Prose sits outside them and is never
+touched by regeneration.
+
+That split is not a preference. The predecessor whitepaper was code-accurate when written and
+had **55 of its 58 signatures wrong after one refactor**, because nothing regenerated it and
+nothing checked. The half that rots is exactly the half a generator produces.
+
+After any deploy:
+
+```bash
+python3 REPL/tools/_livemodules.py --probe    # refresh the chain snapshot
+python3 REPL/tools/_docspages.py   --write    # re-render every module page
+python3 REPL/tools/_registrylive.py --record  # re-date the registry confirmation
+```
+
+`_docspages.py --check` and `_docslinks.py --check` are **fatal gate checks**, so a stale page
+or a dangling reference fails the build rather than shipping.
+
+---
+
 ## Why this folder exists, and why it is not `OuronetInformational/`
 
 `OuronetInformational/` is the project's working memory: 200 files, 413,000 words of handoffs,
