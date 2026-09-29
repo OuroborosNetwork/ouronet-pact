@@ -1,10 +1,10 @@
-# O-UI-SEVEN — page reads — accounts
+# O-UI-SEVEN — account reads
 
 ## What it is for
 
-Reads serving account display data in the interface.
+Reads serving account pages — accounts, a single account, and registered names.
 
-A **read module**. It owns no tables — it is a projection over sovereign state, which is what makes it freely redeployable. Full treatment: `10-architecture/08-the-read-layer.md`.
+A **read module** — no tables, a projection over sovereign state. That is what makes it freely redeployable: nothing is lost because nothing is stored. Full treatment: `10-architecture/08-the-read-layer.md`.
 
 ## Where it sits
 
@@ -51,8 +51,4 @@ One read module per display entity, deployed after everything it reads. Numbered
 
 ## Traps
 
-**No tables, by rule.** Owning nothing is what allows redeployment without migration.
-
-**Formatters are copied per module rather than shared**, deliberately: a shared helper would be a deploy dependency for every read module and destroy the single property the split buys.
-
-**A scanning read cannot sit inside a `try`**, because Pact evaluates `try` in read-only mode where unbounded operations are disallowed. That decides whether a read can join a page that degrades gracefully.
+**Its activation test is `public != "|"`**, wrapped in a `try` defaulting to the sentinel. A non-sentinel result means activated. That works because the public-key field is never validated on write, so its *presence* is the only signal available — see `80-cryptography/04-what-is-not-on-chain.md`.

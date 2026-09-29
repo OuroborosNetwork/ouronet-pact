@@ -1,10 +1,10 @@
-# O-UI-EIGHT — page reads — tokens
+# O-UI-EIGHT — true-fungible reads
 
 ## What it is for
 
-Reads serving token display data in the interface.
+Reads serving the true-fungible token pages — entries, lists, and native LP.
 
-A **read module**. It owns no tables — it is a projection over sovereign state, which is what makes it freely redeployable. Full treatment: `10-architecture/08-the-read-layer.md`.
+A **read module** — no tables, a projection over sovereign state. That is what makes it freely redeployable: nothing is lost because nothing is stored. Full treatment: `10-architecture/08-the-read-layer.md`.
 
 ## Where it sits
 
@@ -69,8 +69,6 @@ One read module per display entity, deployed after everything it reads. Numbered
 
 ## Traps
 
-**No tables, by rule.** Owning nothing is what allows redeployment without migration.
+**A sentinel reached a table read here and took the whole module's caller down.** A token that is a reward token nowhere returns `["|"]`, which was passed straight through as a pool key. A failed table read is **not catchable by `try`**, so it did not degrade one field — it killed every caller, including the read the token toolbar is built from. Measured on mainnet.
 
-**Formatters are copied per module rather than shared**, deliberately: a shared helper would be a deploy dependency for every read module and destroy the single property the split buys.
-
-**A scanning read cannot sit inside a `try`**, because Pact evaluates `try` in read-only mode where unbounded operations are disallowed. That decides whether a read can join a page that degrades gracefully.
+And the interface's response was worse than the failure: **it answered a failed read by enabling every button.**

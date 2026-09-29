@@ -1,10 +1,10 @@
-# O-UI-NINE — page reads
+# O-UI-NINE — orto-fungible reads
 
 ## What it is for
 
-Reads serving a page's display data in the interface.
+Reads serving the orto-fungible token pages — entries, lists, and sleeping LP.
 
-A **read module**. It owns no tables — it is a projection over sovereign state, which is what makes it freely redeployable. Full treatment: `10-architecture/08-the-read-layer.md`.
+A **read module** — no tables, a projection over sovereign state. That is what makes it freely redeployable: nothing is lost because nothing is stored. Full treatment: `10-architecture/08-the-read-layer.md`.
 
 ## Where it sits
 
@@ -70,8 +70,6 @@ One read module per display entity, deployed after everything it reads. Numbered
 
 ## Traps
 
-**No tables, by rule.** Owning nothing is what allows redeployment without migration.
+**Its header read scans**, so it cannot participate in a `try`-composed group.
 
-**Formatters are copied per module rather than shared**, deliberately: a shared helper would be a deploy dependency for every read module and destroy the single property the split buys.
-
-**A scanning read cannot sit inside a `try`**, because Pact evaluates `try` in read-only mode where unbounded operations are disallowed. That decides whether a read can join a page that degrades gracefully.
+**Sleeping and hibernating parcels are one family with two prefixes.** A reader testing only for one sends the other down the wrong branch and fails looking up an identifier in the wrong table.

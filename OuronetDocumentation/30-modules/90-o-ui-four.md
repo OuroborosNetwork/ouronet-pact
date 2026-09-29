@@ -1,10 +1,10 @@
-# O-UI-FOUR — page reads
+# O-UI-FOUR — distribution-vault reads
 
 ## What it is for
 
-Reads serving a page's display data in the interface.
+Reads serving the distribution vault.
 
-A **read module**. It owns no tables — it is a projection over sovereign state, which is what makes it freely redeployable. Full treatment: `10-architecture/08-the-read-layer.md`.
+A **read module** — no tables, a projection over sovereign state. That is what makes it freely redeployable: nothing is lost because nothing is stored. Full treatment: `10-architecture/08-the-read-layer.md`.
 
 ## Where it sits
 
@@ -56,8 +56,4 @@ One read module per display entity, deployed after everything it reads. Numbered
 
 ## Traps
 
-**No tables, by rule.** Owning nothing is what allows redeployment without migration.
-
-**Formatters are copied per module rather than shared**, deliberately: a shared helper would be a deploy dependency for every read module and destroy the single property the split buys.
-
-**A scanning read cannot sit inside a `try`**, because Pact evaluates `try` in read-only mode where unbounded operations are disallowed. That decides whether a read can join a page that degrades gracefully.
+**Three functions.** The smallest read module in the layer, and a good illustration of the sizing rule: modules are one per display entity, so a small surface gets a small module rather than being folded into a larger one. Folding would make the larger module's redeploy the smaller one's problem.

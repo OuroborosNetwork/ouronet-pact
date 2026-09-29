@@ -1,10 +1,10 @@
-# O-UI-TWELVE — page reads
+# O-UI-TWELVE — pool reads
 
 ## What it is for
 
-Reads serving a page's display data in the interface.
+Reads serving the pool pages — global figures, the pool list, and a single pool.
 
-A **read module**. It owns no tables — it is a projection over sovereign state, which is what makes it freely redeployable. Full treatment: `10-architecture/08-the-read-layer.md`.
+A **read module** — no tables, a projection over sovereign state. That is what makes it freely redeployable: nothing is lost because nothing is stored. Full treatment: `10-architecture/08-the-read-layer.md`.
 
 ## Where it sits
 
@@ -66,8 +66,6 @@ One read module per display entity, deployed after everything it reads. Numbered
 
 ## Traps
 
-**No tables, by rule.** Owning nothing is what allows redeployment without migration.
+**Twenty functions, the largest read module in the layer.** Pools carry the most display surface: three curve families, five liquidity shapes, and per-pool settings a user needs before committing.
 
-**Formatters are copied per module rather than shared**, deliberately: a shared helper would be a deploy dependency for every read module and destroy the single property the split buys.
-
-**A scanning read cannot sit inside a `try`**, because Pact evaluates `try` in read-only mode where unbounded operations are disallowed. That decides whether a read can join a page that degrades gracefully.
+**Formatters are copied rather than shared**, and one such copy reached mainnet in two modules with an ASCII `c` in place of a cent sign, rendering prices as `0.253c`. Found only by diffing the port's output against the function it replaced, field by field — now the standard.

@@ -1,10 +1,10 @@
-# O-UI-ONE — page reads — header
+# O-UI-ONE — the dashboard header
 
 ## What it is for
 
-Reads serving the dashboard header in the interface.
+Reads serving the header strip — the few numbers every page shows at the top.
 
-A **read module**. It owns no tables — it is a projection over sovereign state, which is what makes it freely redeployable. Full treatment: `10-architecture/08-the-read-layer.md`.
+A **read module** — no tables, a projection over sovereign state. That is what makes it freely redeployable: nothing is lost because nothing is stored. Full treatment: `10-architecture/08-the-read-layer.md`.
 
 ## Where it sits
 
@@ -62,8 +62,4 @@ One read module per display entity, deployed after everything it reads. Numbered
 
 ## Traps
 
-**No tables, by rule.** Owning nothing is what allows redeployment without migration.
-
-**Formatters are copied per module rather than shared**, deliberately: a shared helper would be a deploy dependency for every read module and destroy the single property the split buys.
-
-**A scanning read cannot sit inside a `try`**, because Pact evaluates `try` in read-only mode where unbounded operations are disallowed. That decides whether a read can join a page that degrades gracefully.
+**A field was deleted here rather than made heavy.** The header once carried a total account count, which required scanning every account. It worked, and it was removed anyway: *this is not a bug being fixed; it is a dependency being made deliberate.* Losing it bought no cross-module scan, no node-configuration dependency, no admin grant to test — and, the real prize, **every zone can now degrade independently**, where that one field could take the whole page down because a scan cannot live inside a `try`.

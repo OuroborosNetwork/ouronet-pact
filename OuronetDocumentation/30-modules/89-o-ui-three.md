@@ -1,10 +1,10 @@
-# O-UI-THREE — page reads
+# O-UI-THREE — account standing and recovery
 
 ## What it is for
 
-Reads serving a page's display data in the interface.
+Reads serving elite standing and the recovery options an account has.
 
-A **read module**. It owns no tables — it is a projection over sovereign state, which is what makes it freely redeployable. Full treatment: `10-architecture/08-the-read-layer.md`.
+A **read module** — no tables, a projection over sovereign state. That is what makes it freely redeployable: nothing is lost because nothing is stored. Full treatment: `10-architecture/08-the-read-layer.md`.
 
 ## Where it sits
 
@@ -66,8 +66,6 @@ One read module per display entity, deployed after everything it reads. Numbered
 
 ## Traps
 
-**No tables, by rule.** Owning nothing is what allows redeployment without migration.
+**Its rich-list read is the heaviest in the application**, and its own source states the ceiling: it walks every account then insertion-sorts, so it is **O(n²) under a 10,000,000 gas ceiling — comfortable at ~195 accounts, and it will not always be.** The stated remedy is pagination in the caller, not a bigger ceiling. A known limit with a named remedy is a specification, not debt.
 
-**Formatters are copied per module rather than shared**, deliberately: a shared helper would be a deploy dependency for every read module and destroy the single property the split buys.
-
-**A scanning read cannot sit inside a `try`**, because Pact evaluates `try` in read-only mode where unbounded operations are disallowed. That decides whether a read can join a page that degrades gracefully.
+It also cannot sit inside a `try`, because it scans across a module boundary.
