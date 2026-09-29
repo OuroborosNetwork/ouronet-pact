@@ -127,7 +127,7 @@ LAYERS = [("Utilities", "1_Utilities"), ("Core — Stage 1", "STAGE_01/2_Core"),
           ("Reads — Stage 2", "STAGE_02/Z_Reads"), ("Citizen", "2_CITIZEN")]
 
 
-def write_index(order, live, rows):
+def index_body(order, live, rows):
     """96 pages in deploy order with no way in is a filing cabinet, not a reference.
 
     Grouped by LAYER rather than listed flat, because deploy order and conceptual
@@ -165,7 +165,7 @@ def write_index(order, live, rows):
         for i, n in rest:
             out.append(f"| {i} | [`{n}`]({os.path.basename(page_path(i, n))}) |")
         out.append("")
-    open(os.path.join(PAGES, "00-INDEX.md"), "w", encoding="utf-8").write("\n".join(out))
+    return "\n".join(out)
 
 
 def page_path(idx, name):
@@ -204,8 +204,18 @@ def build(write=False, only=None):
         if write:
             os.makedirs(PAGES, exist_ok=True)
             open(p, "w", encoding="utf-8").write(new)
-    if write and not only:
-        write_index(order, live, list(enumerate(order, 1)))
+    # THE INDEX IS CHECKED, NOT JUST WRITTEN. A --write-only artefact goes stale the
+    # first time a module is added and nothing reports it -- which is the exact gap
+    # this tool was built to close one level down, and it would have been reintroduced
+    # here by writing the index outside the comparison.
+    idx = os.path.join(PAGES, "00-INDEX.md")
+    body = index_body(order, live, list(enumerate(order, 1)))
+    if not only:
+        cur = open(idx, encoding="utf-8").read() if os.path.exists(idx) else None
+        if cur != body:
+            changed.append(os.path.relpath(idx, ROOT))
+            if write:
+                open(idx, "w", encoding="utf-8").write(body)
     return order, changed, made
 
 
