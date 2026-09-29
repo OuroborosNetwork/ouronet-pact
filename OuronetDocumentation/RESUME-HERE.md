@@ -5,7 +5,7 @@ Written 2026-09-27. Update it when you stop working; a stale resume note is wors
 
 ## Where it stands
 
-**48 of 132 files written**, plus one module exemplar. Updated 2026-09-29. Tree clean.
+**52 of 132 files written**, plus one module exemplar. Updated 2026-09-29. Tree clean.
 
 | section | files | written |
 |---|---|---|
@@ -37,10 +37,10 @@ that need their own research passes: `20-assets` (8), `25-defi` (5), `40-journey
 1. **`70-comparison/` (3 files)** — versus ERC-20, versus an AMM, what the complexity buys. Needs
    EXTERNAL research (ERC-20/777/1155, Uniswap v2/v3, Curve, Balancer) to compare honestly. The
    Ouronet side is fully established by 20-assets and 25-defi; only the other side is missing.
-2. **`80-cryptography/` (4 files)** — BLOCKED ON ANOTHER REPO. Established while writing
-   `10-architecture/05`: the 162-char glyph generator is NOT in this tree, nothing here derives an
-   account from a public key, and there is no on-chain binding between an account's stored public
-   key and its identifier. Budget a cross-repo research pass; do not start assuming it is local.
+2. **`80-cryptography/` — DONE.** The material was found: a SIXTH REPO,
+   `_libs/DALOS_Crypto` (Go reference + TypeScript port, published as
+   `@ouronet/dalos-crypto`). Contracts contain ZERO cryptography; they mirror the
+   256-glyph alphabet only.
 3. **`30-modules/` (79 files)** — STILL BLOCKED on the entity-vs-module decision. The generator is
    built and proven (`_livemodules.py` + `_docsblocks.py`, exemplar at
    `30-modules/00-EXEMPLAR-OUROBOROS.md`).
