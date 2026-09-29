@@ -1,16 +1,12 @@
-# INFO-TWO
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# INFO-TWO — Stage-2 previews
 
 ## What it is for
 
-_To be written._
+Operation previews for the Stage-2 modules — 149 of them.
 
 ## Where it sits
 
-_To be written._
+A read-layer module deployed after everything it describes.
 
 ## What it owns, and what it exposes
 
@@ -57,4 +53,6 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**Its interface declaration is commented out** while its docstring still claims it, so it implements nothing despite appearing to.
+
+**Nothing on chain calls a preview**, which is what allows module-only functions that avoid an interface version bump and its cascade.

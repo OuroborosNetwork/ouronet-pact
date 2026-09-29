@@ -5,7 +5,7 @@ Written 2026-09-27. Update it when you stop working; a stale resume note is wors
 
 ## Where it stands
 
-**148 of 148 files exist; 52 carry finished prose**, plus one module exemplar. Updated 2026-09-29. Tree clean.
+**ALL 148 files written — every section complete**, plus one module exemplar. Updated 2026-09-29. Tree clean.
 
 | section | files | written |
 |---|---|---|

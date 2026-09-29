@@ -1,16 +1,14 @@
-# DSP
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# DSP — the dispenser automaton
 
 ## What it is for
 
-_To be written._
+An automaton that dispenses on a schedule, reading the primal-asset registrar.
+
+A **citizen module**, calling only sovereign orchestration.
 
 ## Where it sits
 
-_To be written._
+Deployed last among the citizen modules.
 
 ## What it owns, and what it exposes
 
@@ -95,4 +93,4 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**It threads the gas station's own account as payer** for its admin-path operations — the one account exempt from virtual gas. That exemption used to cover any smart account, which anyone can create; narrowing it to a single named constant was verified safe by measurement, and every genuine call site passing a smart-account constant was in this module.

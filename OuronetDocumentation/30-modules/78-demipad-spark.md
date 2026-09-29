@@ -1,16 +1,14 @@
-# DEMIPAD-SPARK
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# DEMIPAD-SPARK — the Spark sale
 
 ## What it is for
 
-_To be written._
+Sells a **redeemable** token at a flat dollar price.
+
+A **pure-citizen sale** on the sovereign launchpad venue. It owns what a unit costs and what is available; the venue owns custody, the money-in leg and the royalty. Billed Σ-wise — once per sovereign operation it composes. Full treatment: `25-defi/04-the-launchpad.md`.
 
 ## Where it sits
 
-_To be written._
+A citizen module above the launchpad venue.
 
 ## What it owns, and what it exposes
 
@@ -109,4 +107,4 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**Redemption does not burn — it recycles.** Six sovereign operations: transfer, freeze, wipe, unfreeze, re-mint into the venue, and re-freeze to the redeemer. Six operations means six separate charges, which is Σ-billing made concrete.

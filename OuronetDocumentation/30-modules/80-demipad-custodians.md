@@ -1,16 +1,14 @@
-# DEMIPAD-CUSTODIANS
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# DEMIPAD-CUSTODIANS — the Custodians sale
 
 ## What it is for
 
-_To be written._
+Sells **node-operator fragments** using negative nonces, weighted 1, 10 and 100.
+
+A **pure-citizen sale** on the sovereign launchpad venue. It owns what a unit costs and what is available; the venue owns custody, the money-in leg and the royalty. Billed Σ-wise — once per sovereign operation it composes. Full treatment: `25-defi/04-the-launchpad.md`.
 
 ## Where it sits
 
-_To be written._
+A citizen module above the launchpad venue.
 
 ## What it owns, and what it exposes
 
@@ -115,4 +113,6 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**Those weights are the on-ramp to delegated staking.** The same unit measures an agency's capacity, and the delegation module names this sale as its first client. The launchpad sale and the staking subsystem are wired through a shared unit rather than a shared module.
+
+**It is a deliberate mirror of the Snakes sale** — near-identical structure, cross-referencing it in comments as "the twin".

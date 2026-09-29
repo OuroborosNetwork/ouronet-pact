@@ -1,16 +1,22 @@
-# INFO-ONE
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# INFO-ONE — Stage-1 previews
 
 ## What it is for
 
-_To be written._
+Operation previews for the Stage-1 modules — 181 of them, each answering *what will this do, and
+what will it cost?* before anything is signed.
+
+A preview does not calculate anything. It wraps a cost function that lives **in the module that
+charges it**, and the billing path calls the same function — so the quote and the charge cannot
+drift.
 
 ## Where it sits
 
-_To be written._
+A read module deployed after everything it describes. Owns no tables.
+
+**It is the single most expensive module in the system to deploy** — about 22% of a block, running
+at nearly double the tree's median gas per line. A system that can quote its own prices pays for
+that ability in deploy cost, which is why most contracts cannot tell you what an operation costs
+before you send it.
 
 ## What it owns, and what it exposes
 
@@ -71,4 +77,19 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**Nothing on chain calls a preview.** Every one is invoked off-chain, and that is what permits the
+next trap's remedy.
+
+**Three of its functions are module-only** — defined here and deliberately absent from its
+interface. That is legal (a module may exceed its interface) and it is the read layer's escape from
+the cascade rule: adding a function to a *published* interface would mean a new version, and every
+interface naming it plus every consumer bumping with it. For a read nothing on chain calls, that is
+the wrong trade.
+
+**A preview's parameter list usually differs from the operation's** — 410 of 423 across the system.
+Bind by name; positional binding type-checks and prices a different question.
+
+**And a copied formatter once reached mainnet with an ASCII `c` in place of a cent sign**, so prices
+rendered as `0.253c`. It was found only by diffing the new module's output against the old one
+field by field — which is now the standard: assert a port equals the function it replaces, on a
+real input and on an absent one.

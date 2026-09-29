@@ -1,16 +1,12 @@
-# DPL-UR
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# DPL-UR — an emptied read module
 
 ## What it is for
 
-_To be written._
+Nothing. It was the system's single read module — 71 public reads in one contract, about 11% of a block to deploy — and it was **emptied** when the read layer was split.
 
 ## Where it sits
 
-_To be written._
+A tombstone. Its successors are the per-page read modules.
 
 ## What it owns, and what it exposes
 
@@ -53,4 +49,6 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**It was emptied rather than left in place**, and the reasoning is the useful part: *a migrated read left in place is a second source of truth answering the same question, and the two drift the moment either is touched.*
+
+**An earlier attempt kept functions by dependency closure** and produced a closed cluster of dead code that kept itself alive by citation — each survivor referenced only by another survivor, none reachable from any entry point. Reachability from *something* is not reachability.

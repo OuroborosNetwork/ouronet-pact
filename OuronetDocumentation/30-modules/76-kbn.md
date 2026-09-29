@@ -1,16 +1,14 @@
-# KBN
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# KBN — a citizen minter
 
 ## What it is for
 
-_To be written._
+Mints a collection in batches.
+
+A **citizen module** — an extension anyone could have written. It calls only finished sovereign operations, adds no capabilities to the core, and is billed **Σ-wise**: once per operation, because a citizen cannot fold a bill. See `40-journeys/04-as-a-builder.md`.
 
 ## Where it sits
 
-_To be written._
+A citizen module above the collectables family.
 
 ## What it owns, and what it exposes
 
@@ -77,4 +75,4 @@ _To be written._
 
 ## Traps
 
-_To be written._
+See the sibling minter's traps — the same batch-billing property applies, and the same bounded exception to the self-call rule.

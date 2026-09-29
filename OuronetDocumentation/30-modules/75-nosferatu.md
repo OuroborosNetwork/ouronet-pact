@@ -1,16 +1,14 @@
-# NOSFERATU
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# NOSFERATU — a citizen minter
 
 ## What it is for
 
-_To be written._
+Mints a collection in batches.
+
+A **citizen module** — an extension anyone could have written. It calls only finished sovereign operations, adds no capabilities to the core, and is billed **Σ-wise**: once per operation, because a citizen cannot fold a bill. See `40-journeys/04-as-a-builder.md`.
 
 ## Where it sits
 
-_To be written._
+A citizen module above the collectables family.
 
 ## What it owns, and what it exposes
 
@@ -70,4 +68,8 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**Its client functions call Talos and return a string, not a bill** — so the usual prohibition on a client function calling another does not apply. There is no bill at that level to mishandle. The conformance checker classifies these separately and **bounds the exception to two files**, which is the point: the rule still holds everywhere a bill exists.
+
+**Batch minting is safe only because the price has no fixed per-call component.** Splitting one logical mint across several calls costs the same as doing it at once. That property is pinned by a test, along with the one non-linear discount branch proved out of reach.
+
+**The deployed steps differ from the repository's**, which has reworked them since.

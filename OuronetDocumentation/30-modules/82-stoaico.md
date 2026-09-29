@@ -1,16 +1,12 @@
-# STOAICO
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# STOAICO — the distribution vault
 
 ## What it is for
 
-_To be written._
+Not a sale. A **reward-distribution vault** — a small, independent reimplementation of the reward-per-share model from the acquisition family, with a round barrier: a new distribution opens only when everyone has collected the last one.
 
 ## Where it sits
 
-_To be written._
+A citizen module above the launchpad venue.
 
 ## What it owns, and what it exposes
 
@@ -121,4 +117,6 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**It reproduced the acquisition family's dust-sweep defect**, found by red-teaming: a vault-level counter used as a per-account answer offered the whole remainder to any caller. Measured: *an account owed 0.000000000000 was offered 690.525983513596.* No theft occurred only because an unrelated guard happened to stop it — and the fix note says why that is not a defence: *a number that is wrong everywhere except where one unrelated guard happens to stop it is a defect, not a defence.*
+
+**Two figures inside one function disagree** about the reward budget — one docstring says 300k, a comment says 250k. Unresolved.

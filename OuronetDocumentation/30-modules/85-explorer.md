@@ -1,16 +1,14 @@
-# EXPLORER
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# EXPLORER — block-explorer reads
 
 ## What it is for
 
-_To be written._
+Reads serving a block explorer.
+
+A **read module**. It owns no tables — it is a projection over sovereign state, which is what makes it freely redeployable. Full treatment: `10-architecture/08-the-read-layer.md`.
 
 ## Where it sits
 
-_To be written._
+A citizen read module.
 
 ## What it owns, and what it exposes
 
@@ -68,4 +66,8 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**No tables, by rule.** Owning nothing is what allows redeployment without migration.
+
+**Formatters are copied per module rather than shared**, deliberately: a shared helper would be a deploy dependency for every read module and destroy the single property the split buys.
+
+**A scanning read cannot sit inside a `try`**, because Pact evaluates `try` in read-only mode where unbounded operations are disallowed. That decides whether a read can join a page that degrades gracefully.

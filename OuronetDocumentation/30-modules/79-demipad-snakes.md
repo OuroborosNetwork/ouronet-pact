@@ -1,16 +1,14 @@
-# DEMIPAD-SNAKES
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# DEMIPAD-SNAKES — the Snakes sale
 
 ## What it is for
 
-_To be written._
+Sells **equity shares**, priced from the live equity module rather than a hard-coded ladder, so package tiers track the company.
+
+A **pure-citizen sale** on the sovereign launchpad venue. It owns what a unit costs and what is available; the venue owns custody, the money-in leg and the royalty. Billed Σ-wise — once per sovereign operation it composes. Full treatment: `25-defi/04-the-launchpad.md`.
 
 ## Where it sits
 
-_To be written._
+A citizen module above the launchpad venue and the equity module.
 
 ## What it owns, and what it exposes
 
@@ -106,4 +104,6 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**Its preview once omitted a leg** — the royalty a collectable transfer pays out of the payer. Measured: **89.002 quoted against 89.004 charged** on a two-share purchase. Found because preview and charge are separately computed from a shared definition.
+
+**A missing validity check once made an unsellable nonce report "insufficient assets"** — indistinguishable from a genuine over-buy, and the implied remedy (wait for restock) could never work.

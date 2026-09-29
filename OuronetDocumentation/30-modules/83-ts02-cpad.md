@@ -1,16 +1,12 @@
-# TS02-CPAD
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# TS02-CPAD — the citizen launchpad orchestration
 
 ## What it is for
 
-_To be written._
+All seven citizen sale wrappers in one module, so they can be granted gas-station access together.
 
 ## Where it sits
 
-_To be written._
+Deployed **last** — after the sales it wraps.
 
 ## What it owns, and what it exposes
 
@@ -92,4 +88,6 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**Callable and sponsored are different things.** Its own header states it: the citizen functions stay callable directly from their own modules, but **only these wrappers are the gas-funded path**. A direct call works and is not paid for.
+
+**Only the four buy wrappers top up the gas station** afterwards; the redeem and collect wrappers do not.

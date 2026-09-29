@@ -1,16 +1,14 @@
-# DEMIPAD-STOICPAY
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# DEMIPAD-STOICPAY — the StoicPay sale
 
 ## What it is for
 
-_To be written._
+Sells a token on **a clock rather than on demand**: $0.01 at launch rising linearly to $1.00 over three years, with supply released across 25 periods.
+
+A **pure-citizen sale** on the sovereign launchpad venue. It owns what a unit costs and what is available; the venue owns custody, the money-in leg and the royalty. Billed Σ-wise — once per sovereign operation it composes. Full treatment: `25-defi/04-the-launchpad.md`.
 
 ## Where it sits
 
-_To be written._
+A citizen module above the launchpad venue.
 
 ## What it owns, and what it exposes
 
@@ -104,4 +102,6 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**It quotes ten minutes ahead**, so a signed transaction cannot be invalidated by the clock moving between signing and inclusion.
+
+**Its venture split multiplies rather than divides**: for each unit sold, additional units distribute to the company and four ventures. The variable names suggest percentages that the multipliers do not match — arithmetic verified, intent not.

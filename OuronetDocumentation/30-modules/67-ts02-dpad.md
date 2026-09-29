@@ -1,16 +1,14 @@
-# TS02-DPAD
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# TS02-DPAD — the sovereign launchpad orchestration
 
 ## What it is for
 
-_To be written._
+The sovereign half of the launchpad: deposits, withdrawals and inventory movement.
+
+Talos is the only supported client path and the only gas-funded one. See `10-architecture/01-the-layer-cake.md`.
 
 ## Where it sits
 
-_To be written._
+Above the launchpad venue. The **citizen** sale wrappers live in a separate module deployed after the sales themselves.
 
 ## What it owns, and what it exposes
 
@@ -96,4 +94,4 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**This holds only the sovereign operations.** The per-sale wrappers moved to the citizen Talos, and one letter separates the two module names. This project's own instruction file once described the wrong one as sovereign.
