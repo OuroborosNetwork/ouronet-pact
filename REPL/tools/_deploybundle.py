@@ -146,11 +146,66 @@ ROUNDS = {
         # `P|A_Define` and subtracts a live snapshot. `create-capability-guard` on ANOTHER
         # module's capability works from a plain transaction (measured), which is what makes a
         # targeted `P|A_AddIMP` call possible without going through `P|A_Define` at all.
+        # RE-MEASURED AGAINST MAINNET 2026-10-02, and it went from 4 entries to 35.
+        #
+        # The old four came from a snapshot predating the AQP deploy, under the note below that
+        # reads "Owner confirmed 2026-09-18: none of the AQP family is live -- this round
+        # deploys it for the first time". That is no longer true: the family IS live, and the
+        # registrations its own deploy should have carried are not.
+        #
+        # Found the hard way. Every Stage-2 AQP call fails with "None of the guards passed" --
+        # which is U|G::UEV_Any, i.e. P|UEV_IMC -- because (ouronet-ns.AQP-ANK.P|UR_IMP) holds
+        # exactly ONE entry, its own SECURE seed. TS02-C3.P|A_Define never ran. A stale delta is
+        # worse than no delta: it looks derived, so nobody re-derives it.
+        #
+        # HOW THIS LIST WAS PRODUCED, so it can be reproduced rather than trusted:
+        #   1. probe (MODULE.P|UR_IMP) on mainnet /local for the 59 modules that expose it
+        #      (58 answer; DPMF is archive-mode and its reader is gone) -> 321 registrations
+        #   2. python3 REPL/tools/_impdiff.py --live SNAP  -> source expects 286, 35 MISSING
+        #   3. SIMULATE EVERY EMITTED LINE against mainnet. All 35 applied cleanly -- which is
+        #      the step worth doing, because the diff compares CURRENT SOURCES to a chain
+        #      running OLDER module code, so a line can be right for the target state and
+        #      refused today if its registrar capability is not live yet. None were.
+        #
+        # The tool also reports 6 EXTRA and 6 DUPLICATED entries on chain. Neither is actionable
+        # from here -- P|A_AddIMP only adds -- but the duplicates are a standing cost, because
+        # P|UEV_IMC maps UC_Try over the WHOLE list on every IMC-gated call.
         "imp_delta": [
-            ("IGNIS", "MTX-AQP",    "P|MTX-AQP|CALLER"),
-            ("IGNIS", "TS02-C2",    "P|TALOS-SUMMONER"),
-            ("IGNIS", "TS02-C3",    "P|TALOS-SUMMONER"),
-            ("IGNIS", "TS02-DPAD",  "P|TALOS-SUMMONER"),
+            ("AQP-ANK",            "TS02-C3",   "P|TALOS-SUMMONER"),
+            ("AQP-DSA",            "TS02-C3",   "P|TALOS-SUMMONER"),
+            ("AQP-FVT",            "AQP-DSA",   "P|DSA|CALLER"),
+            ("AQP-FVT",            "MTX-AQP",   "P|MTX-AQP|CALLER"),
+            ("AQP-FVT",            "TS02-C3",   "P|TALOS-SUMMONER"),
+            ("AQP-POOL",           "TS02-C3",   "P|TALOS-SUMMONER"),
+            ("AQP-SCORE",          "TS02-C3",   "P|TALOS-SUMMONER"),
+            ("AQP-VCT",            "TS02-C3",   "P|TALOS-SUMMONER"),
+            ("ATS",                "TS01-A",    "P|TS"),
+            ("ATSU",               "TS01-A",    "P|TS"),
+            ("ATSU",               "TS02-C3",   "P|TALOS-SUMMONER"),
+            ("DEMIPAD-CUSTODIANS", "TS02-CPAD", "P|TALOS-SUMMONER"),
+            ("DEMIPAD-SNAKES",     "TS02-CPAD", "P|TALOS-SUMMONER"),
+            ("DEMIPAD-SPARK",      "TS02-CPAD", "P|TALOS-SUMMONER"),
+            ("DEMIPAD-STOICPAY",   "TS02-CPAD", "P|TALOS-SUMMONER"),
+            ("DPDC",               "TS02-DPAD", "P|TALOS-SUMMONER"),
+            ("IGNIS",              "ATS",       "P|ATS|CALLER"),
+            ("IGNIS",              "DPDC",      "P|DPDC|CALLER"),
+            ("IGNIS",              "DPDC-I",    "P|DPDC-I|CALLER"),
+            ("IGNIS",              "DPOF",      "P|DPOF|CALLER"),
+            ("IGNIS",              "DPTF",      "P|DPTF|CALLER"),
+            ("IGNIS",              "LIQUID",    "P|LQD|CALLER"),
+            ("IGNIS",              "MTX-SWP",   "P|MTX-SWP|CALLER"),
+            ("IGNIS",              "SWP",       "P|SWP|CALLER"),
+            ("IGNIS",              "SWPI",      "P|SWPI|CALLER"),
+            ("IGNIS",              "SWPLC",     "P|SWPLC|CALLER"),
+            ("IGNIS",              "TS02-C1",   "P|TALOS-SUMMONER"),
+            ("IGNIS",              "VST",       "P|VST|CALLER"),
+            ("MTX-AQP",            "TS02-C3",   "P|TALOS-SUMMONER"),
+            ("RPS",                "AQP-DSA",   "P|DSA|CALLER"),
+            ("RPS",                "MTX-AQP",   "P|MTX-AQP|CALLER"),
+            ("STOAICO",            "TS02-CPAD", "P|TALOS-SUMMONER"),
+            ("SWPI",               "MTX-SWP",   "P|MTX-SWP|CALLER"),
+            ("TS01-A",             "TS02-C3",   "P|TALOS-SUMMONER"),
+            ("TS01-A",             "TS02-CPAD", "P|TALOS-SUMMONER"),
         ],
         # Modules that are NEW on chain this round. Owner confirmed 2026-09-18: none of the AQP
         # family is live -- this round deploys it for the first time. New modules get their
@@ -212,11 +267,66 @@ ROUNDS = {
         # These four breaks reproduce the original layout exactly, with AQP-INFO moved out of
         # transaction 20 and into 21 behind TS02-C3, which is the whole of the fix.
         "break_before": ["04_TS02-C3.pact", "01_Spark.pact", "04_AQP-BOOT.pact", "03_DSP+.pact"],
+        # RE-MEASURED AGAINST MAINNET 2026-10-02, and it went from 4 entries to 35.
+        #
+        # The old four came from a snapshot predating the AQP deploy, under the note below that
+        # reads "Owner confirmed 2026-09-18: none of the AQP family is live -- this round
+        # deploys it for the first time". That is no longer true: the family IS live, and the
+        # registrations its own deploy should have carried are not.
+        #
+        # Found the hard way. Every Stage-2 AQP call fails with "None of the guards passed" --
+        # which is U|G::UEV_Any, i.e. P|UEV_IMC -- because (ouronet-ns.AQP-ANK.P|UR_IMP) holds
+        # exactly ONE entry, its own SECURE seed. TS02-C3.P|A_Define never ran. A stale delta is
+        # worse than no delta: it looks derived, so nobody re-derives it.
+        #
+        # HOW THIS LIST WAS PRODUCED, so it can be reproduced rather than trusted:
+        #   1. probe (MODULE.P|UR_IMP) on mainnet /local for the 59 modules that expose it
+        #      (58 answer; DPMF is archive-mode and its reader is gone) -> 321 registrations
+        #   2. python3 REPL/tools/_impdiff.py --live SNAP  -> source expects 286, 35 MISSING
+        #   3. SIMULATE EVERY EMITTED LINE against mainnet. All 35 applied cleanly -- which is
+        #      the step worth doing, because the diff compares CURRENT SOURCES to a chain
+        #      running OLDER module code, so a line can be right for the target state and
+        #      refused today if its registrar capability is not live yet. None were.
+        #
+        # The tool also reports 6 EXTRA and 6 DUPLICATED entries on chain. Neither is actionable
+        # from here -- P|A_AddIMP only adds -- but the duplicates are a standing cost, because
+        # P|UEV_IMC maps UC_Try over the WHOLE list on every IMC-gated call.
         "imp_delta": [
-            ("IGNIS", "MTX-AQP",    "P|MTX-AQP|CALLER"),
-            ("IGNIS", "TS02-C2",    "P|TALOS-SUMMONER"),
-            ("IGNIS", "TS02-C3",    "P|TALOS-SUMMONER"),
-            ("IGNIS", "TS02-DPAD",  "P|TALOS-SUMMONER"),
+            ("AQP-ANK",            "TS02-C3",   "P|TALOS-SUMMONER"),
+            ("AQP-DSA",            "TS02-C3",   "P|TALOS-SUMMONER"),
+            ("AQP-FVT",            "AQP-DSA",   "P|DSA|CALLER"),
+            ("AQP-FVT",            "MTX-AQP",   "P|MTX-AQP|CALLER"),
+            ("AQP-FVT",            "TS02-C3",   "P|TALOS-SUMMONER"),
+            ("AQP-POOL",           "TS02-C3",   "P|TALOS-SUMMONER"),
+            ("AQP-SCORE",          "TS02-C3",   "P|TALOS-SUMMONER"),
+            ("AQP-VCT",            "TS02-C3",   "P|TALOS-SUMMONER"),
+            ("ATS",                "TS01-A",    "P|TS"),
+            ("ATSU",               "TS01-A",    "P|TS"),
+            ("ATSU",               "TS02-C3",   "P|TALOS-SUMMONER"),
+            ("DEMIPAD-CUSTODIANS", "TS02-CPAD", "P|TALOS-SUMMONER"),
+            ("DEMIPAD-SNAKES",     "TS02-CPAD", "P|TALOS-SUMMONER"),
+            ("DEMIPAD-SPARK",      "TS02-CPAD", "P|TALOS-SUMMONER"),
+            ("DEMIPAD-STOICPAY",   "TS02-CPAD", "P|TALOS-SUMMONER"),
+            ("DPDC",               "TS02-DPAD", "P|TALOS-SUMMONER"),
+            ("IGNIS",              "ATS",       "P|ATS|CALLER"),
+            ("IGNIS",              "DPDC",      "P|DPDC|CALLER"),
+            ("IGNIS",              "DPDC-I",    "P|DPDC-I|CALLER"),
+            ("IGNIS",              "DPOF",      "P|DPOF|CALLER"),
+            ("IGNIS",              "DPTF",      "P|DPTF|CALLER"),
+            ("IGNIS",              "LIQUID",    "P|LQD|CALLER"),
+            ("IGNIS",              "MTX-SWP",   "P|MTX-SWP|CALLER"),
+            ("IGNIS",              "SWP",       "P|SWP|CALLER"),
+            ("IGNIS",              "SWPI",      "P|SWPI|CALLER"),
+            ("IGNIS",              "SWPLC",     "P|SWPLC|CALLER"),
+            ("IGNIS",              "TS02-C1",   "P|TALOS-SUMMONER"),
+            ("IGNIS",              "VST",       "P|VST|CALLER"),
+            ("MTX-AQP",            "TS02-C3",   "P|TALOS-SUMMONER"),
+            ("RPS",                "AQP-DSA",   "P|DSA|CALLER"),
+            ("RPS",                "MTX-AQP",   "P|MTX-AQP|CALLER"),
+            ("STOAICO",            "TS02-CPAD", "P|TALOS-SUMMONER"),
+            ("SWPI",               "MTX-SWP",   "P|MTX-SWP|CALLER"),
+            ("TS01-A",             "TS02-C3",   "P|TALOS-SUMMONER"),
+            ("TS01-A",             "TS02-CPAD", "P|TALOS-SUMMONER"),
         ],
         # EVERY .pact in the tree must be planned or excluded HERE WITH A REASON. A module that is
         # merely absent is indistinguishable from one that was forgotten -- which is exactly how
@@ -583,6 +693,12 @@ def check_report():
     # per-file and carry reasons.
     KEEP = {"README.md", "00_MANUAL_rotate-s2-governor.pact",
             "00_MANUAL_probe-live-interfaces.pact",
+            # THE STOA ORACLE PEG, 2026-10-02. `stoa|price` was never written to
+            # DALOS|PricesTable, and UC_StoaPrice divides by it -- an uncatchable read failure
+            # that takes every STOA-charging operation with it. It cannot be generated: the
+            # VALUE is an owner decision (a price), not something derivable from the tree, which
+            # is exactly the class this MANUAL convention exists for.
+            "00_MANUAL_stoa-price-oracle.pact",
             # STAGE-Z ROUND, 2026-09-24. DPL-UR and EXPLORER deploy via `deploy-stagezz.repl`, a chain this
             # planner deliberately does not cover, so the generator cannot emit its transaction
             # -- but URC_0001_HeaderV3 shipped with twelve hardcoded token/pool ids and took the

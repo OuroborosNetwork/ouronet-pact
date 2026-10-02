@@ -62,10 +62,16 @@
 ;; AQP-BOOT declares no tables, so there is no create-table to re-run either.
 ;;
 ;; ------------------------------------------------------------------------------------------
-;; ORDER -- RUN 24 FIRST
+;; ORDER -- THE SETUP STEPS COME FIRST
 ;; ------------------------------------------------------------------------------------------
-;; This file changes nothing about inter-module permissions. Without `24_deploy.pact` every AQP
-;; step still fails on `P|UEV_IMC` ("None of the guards passed") before reaching these guards.
+;; This file changes nothing about inter-module permissions or prices. Run the setup folder
+;; first or every AQP step still fails before it ever reaches these guards:
+;;
+;;   Deploy/2_Init/02_init.pact                     35 IMC registrations (derived delta).
+;;                                                  Without it: "None of the guards passed".
+;;   Deploy/2_Init/00_MANUAL_stoa-price-oracle.pact the stoa|price key.
+;;                                                  Without it: "No value found in table
+;;                                                  ... for key: stoa|price".
 ;;
 ;; ------------------------------------------------------------------------------------------
 ;; VERIFICATION

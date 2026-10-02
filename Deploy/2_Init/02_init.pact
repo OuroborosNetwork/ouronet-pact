@@ -22,16 +22,78 @@
 ;; SIGNERS: each call needs the TARGET module's admin key --
 ;;   `P|A_AddIMP` opens with `(with-capability (GOV|<TARGET>_ADMIN) ...)`.
 ;;
-;; 4 registration(s).
+;; 35 registration(s).
 ;; ---------------------------------------------------------------------------
 
 (namespace "ouronet-ns")
 
-;; MTX-AQP -> IGNIS
-(ouronet-ns.IGNIS.P|A_AddIMP (create-capability-guard (ouronet-ns.MTX-AQP.P|MTX-AQP|CALLER)))
-;; TS02-C2 -> IGNIS
-(ouronet-ns.IGNIS.P|A_AddIMP (create-capability-guard (ouronet-ns.TS02-C2.P|TALOS-SUMMONER)))
-;; TS02-C3 -> IGNIS
-(ouronet-ns.IGNIS.P|A_AddIMP (create-capability-guard (ouronet-ns.TS02-C3.P|TALOS-SUMMONER)))
-;; TS02-DPAD -> IGNIS
-(ouronet-ns.IGNIS.P|A_AddIMP (create-capability-guard (ouronet-ns.TS02-DPAD.P|TALOS-SUMMONER)))
+;; TS02-C3 -> AQP-ANK
+(ouronet-ns.AQP-ANK.P|A_AddIMP (create-capability-guard (ouronet-ns.TS02-C3.P|TALOS-SUMMONER)))
+;; TS02-C3 -> AQP-DSA
+(ouronet-ns.AQP-DSA.P|A_AddIMP (create-capability-guard (ouronet-ns.TS02-C3.P|TALOS-SUMMONER)))
+;; AQP-DSA -> AQP-FVT
+(ouronet-ns.AQP-FVT.P|A_AddIMP (create-capability-guard (ouronet-ns.AQP-DSA.P|DSA|CALLER)))
+;; MTX-AQP -> AQP-FVT
+(ouronet-ns.AQP-FVT.P|A_AddIMP (create-capability-guard (ouronet-ns.MTX-AQP.P|MTX-AQP|CALLER)))
+;; TS02-C3 -> AQP-FVT
+(ouronet-ns.AQP-FVT.P|A_AddIMP (create-capability-guard (ouronet-ns.TS02-C3.P|TALOS-SUMMONER)))
+;; TS02-C3 -> AQP-POOL
+(ouronet-ns.AQP-POOL.P|A_AddIMP (create-capability-guard (ouronet-ns.TS02-C3.P|TALOS-SUMMONER)))
+;; TS02-C3 -> AQP-SCORE
+(ouronet-ns.AQP-SCORE.P|A_AddIMP (create-capability-guard (ouronet-ns.TS02-C3.P|TALOS-SUMMONER)))
+;; TS02-C3 -> AQP-VCT
+(ouronet-ns.AQP-VCT.P|A_AddIMP (create-capability-guard (ouronet-ns.TS02-C3.P|TALOS-SUMMONER)))
+;; TS01-A -> ATS
+(ouronet-ns.ATS.P|A_AddIMP (create-capability-guard (ouronet-ns.TS01-A.P|TS)))
+;; TS01-A -> ATSU
+(ouronet-ns.ATSU.P|A_AddIMP (create-capability-guard (ouronet-ns.TS01-A.P|TS)))
+;; TS02-C3 -> ATSU
+(ouronet-ns.ATSU.P|A_AddIMP (create-capability-guard (ouronet-ns.TS02-C3.P|TALOS-SUMMONER)))
+;; TS02-CPAD -> DEMIPAD-CUSTODIANS
+(ouronet-ns.DEMIPAD-CUSTODIANS.P|A_AddIMP (create-capability-guard (ouronet-ns.TS02-CPAD.P|TALOS-SUMMONER)))
+;; TS02-CPAD -> DEMIPAD-SNAKES
+(ouronet-ns.DEMIPAD-SNAKES.P|A_AddIMP (create-capability-guard (ouronet-ns.TS02-CPAD.P|TALOS-SUMMONER)))
+;; TS02-CPAD -> DEMIPAD-SPARK
+(ouronet-ns.DEMIPAD-SPARK.P|A_AddIMP (create-capability-guard (ouronet-ns.TS02-CPAD.P|TALOS-SUMMONER)))
+;; TS02-CPAD -> DEMIPAD-STOICPAY
+(ouronet-ns.DEMIPAD-STOICPAY.P|A_AddIMP (create-capability-guard (ouronet-ns.TS02-CPAD.P|TALOS-SUMMONER)))
+;; TS02-DPAD -> DPDC
+(ouronet-ns.DPDC.P|A_AddIMP (create-capability-guard (ouronet-ns.TS02-DPAD.P|TALOS-SUMMONER)))
+;; ATS -> IGNIS
+(ouronet-ns.IGNIS.P|A_AddIMP (create-capability-guard (ouronet-ns.ATS.P|ATS|CALLER)))
+;; DPDC -> IGNIS
+(ouronet-ns.IGNIS.P|A_AddIMP (create-capability-guard (ouronet-ns.DPDC.P|DPDC|CALLER)))
+;; DPDC-I -> IGNIS
+(ouronet-ns.IGNIS.P|A_AddIMP (create-capability-guard (ouronet-ns.DPDC-I.P|DPDC-I|CALLER)))
+;; DPOF -> IGNIS
+(ouronet-ns.IGNIS.P|A_AddIMP (create-capability-guard (ouronet-ns.DPOF.P|DPOF|CALLER)))
+;; DPTF -> IGNIS
+(ouronet-ns.IGNIS.P|A_AddIMP (create-capability-guard (ouronet-ns.DPTF.P|DPTF|CALLER)))
+;; LIQUID -> IGNIS
+(ouronet-ns.IGNIS.P|A_AddIMP (create-capability-guard (ouronet-ns.LIQUID.P|LQD|CALLER)))
+;; MTX-SWP -> IGNIS
+(ouronet-ns.IGNIS.P|A_AddIMP (create-capability-guard (ouronet-ns.MTX-SWP.P|MTX-SWP|CALLER)))
+;; SWP -> IGNIS
+(ouronet-ns.IGNIS.P|A_AddIMP (create-capability-guard (ouronet-ns.SWP.P|SWP|CALLER)))
+;; SWPI -> IGNIS
+(ouronet-ns.IGNIS.P|A_AddIMP (create-capability-guard (ouronet-ns.SWPI.P|SWPI|CALLER)))
+;; SWPLC -> IGNIS
+(ouronet-ns.IGNIS.P|A_AddIMP (create-capability-guard (ouronet-ns.SWPLC.P|SWPLC|CALLER)))
+;; TS02-C1 -> IGNIS
+(ouronet-ns.IGNIS.P|A_AddIMP (create-capability-guard (ouronet-ns.TS02-C1.P|TALOS-SUMMONER)))
+;; VST -> IGNIS
+(ouronet-ns.IGNIS.P|A_AddIMP (create-capability-guard (ouronet-ns.VST.P|VST|CALLER)))
+;; TS02-C3 -> MTX-AQP
+(ouronet-ns.MTX-AQP.P|A_AddIMP (create-capability-guard (ouronet-ns.TS02-C3.P|TALOS-SUMMONER)))
+;; AQP-DSA -> RPS
+(ouronet-ns.RPS.P|A_AddIMP (create-capability-guard (ouronet-ns.AQP-DSA.P|DSA|CALLER)))
+;; MTX-AQP -> RPS
+(ouronet-ns.RPS.P|A_AddIMP (create-capability-guard (ouronet-ns.MTX-AQP.P|MTX-AQP|CALLER)))
+;; TS02-CPAD -> STOAICO
+(ouronet-ns.STOAICO.P|A_AddIMP (create-capability-guard (ouronet-ns.TS02-CPAD.P|TALOS-SUMMONER)))
+;; MTX-SWP -> SWPI
+(ouronet-ns.SWPI.P|A_AddIMP (create-capability-guard (ouronet-ns.MTX-SWP.P|MTX-SWP|CALLER)))
+;; TS02-C3 -> TS01-A
+(ouronet-ns.TS01-A.P|A_AddIMP (create-capability-guard (ouronet-ns.TS02-C3.P|TALOS-SUMMONER)))
+;; TS02-CPAD -> TS01-A
+(ouronet-ns.TS01-A.P|A_AddIMP (create-capability-guard (ouronet-ns.TS02-CPAD.P|TALOS-SUMMONER)))

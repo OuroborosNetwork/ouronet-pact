@@ -61,9 +61,6 @@ MANIFEST = {
 HANDWRITTEN = {
     "15_deploy.pact": "create-table repair for the eight tables round V1 shipped commented out, "
                       "plus SWPI::A_RebuildGraph to backfill the swap graph. No module body.",
-    "24_deploy.pact": "AQP inter-module permissions (TS02-C1/C2/C3 P|A_Define -- only C3 was "
-                      "actually missing) plus the never-written DALOS stoa|price oracle key. "
-                      "Four admin calls, no module body.",
 }
 
 FROZEN = {
