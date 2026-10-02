@@ -274,7 +274,21 @@ USAGE = {k: float(v) for k, v in re.findall(
 # Owner rule: an issuance op's STOA fee is its DETERRENCE EXPRESSED IN DOLLARS, converted at
 # the hard peg. UC_StoaPrice(k) == (IG|DETER[k] / 100) / stoa|price, i.e. deter/10 at $0.10.
 # So issue-tf 1000 -> $10 -> 100 STOA; issue-nft 2500 -> $25 -> 250 STOA.
-STOA_PEG = USAGE.get('stoa|price', 0.1)
+# THE PEG COMES FROM THE ORACLE, 2026-10-02. This read USAGE['stoa|price'] -- the value [4.0]
+# seeded into the usage-prices table -- which is no longer what UC_StoaPrice divides by, and is
+# no longer seeded at all. Parsed from U|CT::UR_STOA-PID|Price, the single source the modules
+# actually read, so the sheet cannot quote a peg the chain does not charge at.
+_uct = open('1_SOVEREIGN/STAGE_01/1_Utilities/01_U_CT.pact').read()
+# Anchored on a NEWLINE after `()` so this matches the MODULE body and not the one-line
+# INTERFACE declaration `(defun UR_STOA-PID|Price:decimal ())`, which it did on the first try --
+# the guard below caught it by counting 2 literals instead of 1 rather than picking one.
+_m = re.search(r'\(defun UR_STOA-PID\|Price:decimal \(\)\n(.*?)\n    \)', _uct, re.S)
+_lit = re.findall(r'^\s*([0-9]+\.[0-9]+)\s*$', _m.group(1), re.M) if _m else []
+if len(_lit) != 1:
+    raise SystemExit("_ignis_price_sheet: cannot read the STOA peg from U|CT::UR_STOA-PID|Price "
+                     f"(found {len(_lit)} literal(s)). If the DIA oracle was wired, this tool "
+                     "must read the live value instead of a source literal.")
+STOA_PEG = float(_lit[0])
 STOA_DETER = {}          # usage-price key -> the IG|DETER key its STOA fee is derived from
 for _k, _dk in re.findall(
         r'A_UpdateUsagePrice\s+"([^"]+)"\s+\([^)]*UC_StoaPrice\s+"([^"]+)"\)',

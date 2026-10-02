@@ -39,8 +39,20 @@
 ;;     DPL-UR::URC_0034_PythiaPrices      -> P-UI-ONE::URC_03|Prices
 ;;
 ;; SEPARATELY, AND NOT CAUSED BY THIS: URC_03|Prices fails on mainnet today because
-;; DALOS|PricesTable has no `stoa|price` row -- PYTHIA::UR_DeployPrice reads it. That predates
-;; the migration (DPL-UR::URC_0034 failed identically), and it is an init gap, not a code one.
+;; DALOS|PricesTable has no `stoa|price` row -- the LIVE PYTHIA's UR_DeployPrice reads it. That
+;; predates the migration (DPL-UR::URC_0034 failed identically).
+;;
+;; CORRECTED 2026-10-02: this called it "an init gap, not a code one", and it is the reverse.
+;; The PYTHIA IN THIS TREE reads `(at "deploy-price" (UR_Config))` -- its own config row, no
+;; usage-price key anywhere. Only the DEPLOYED PYTHIA still reaches for `stoa|price`. So the
+;; repair is to ship the current PYTHIA, not to write a row into a table that, after the
+;; 2026-10-02 owner ruling, nothing in the tree reads at all:
+;;
+;;     (ouronet-ns.PYTHIA.UR_DeployPrice)    -> failure ... for key: stoa|price   [live]
+;;     (at "deploy-price" (UR_Config))                                            [tree]
+;;
+;; Writing the row would have made the console work and left two modules reading a key the
+;; sources had already abandoned -- which is exactly the trap IGNIS::UC_StoaPrice was in.
 ;;
 ;; SIGNING -- namespace keyset only. First deploys check no governance; a later UPGRADE will
 ;; check GOV|P_UI_ONE_ADMIN.

@@ -3465,8 +3465,12 @@
     )
     (map print
         [
+            ;;THE ORACLE, not the usage table. This used to read
+            ;;(UR_UsagePrice "stoa|price") -- which was seeded two files away by [4.0] and does
+            ;;not exist on mainnet, so this assertion passed in the REPL while the same read
+            ;;aborted in production.
             (expect "<<AQP-D1a>> the STOA oracle is at its hard peg of $0.10"
-                0.1 (ref-DALOS::UR_UsagePrice "stoa|price"))
+                0.1 (U|CT.UR_STOA-PID|Price))
             ;;the two documented figures, exactly as written in the @docs
             (expect "<<AQP-D1a>> anchor-issue is 50 STOA ($5 at the peg), as documented"
                 50.0 (ref-ANK::URCi_IssueAnchorStoa false))
@@ -3533,6 +3537,8 @@
     ;;regain tunability without a deploy-order violation. Until the DIA oracle is wired the peg
     ;;moves only with a U|CT redeploy -- and when it is wired it moves with the market, for all
     ;;~40 readers at once, which is the point.
+    ;;Still WRITTEN, deliberately: the assertions below prove the write changes nothing. Drop
+    ;;the write and they would pass vacuously on a chain that never had the key.
     (ref-TS01-A::DALOS|A_UpdateUsagePrice KST.ANHD "stoa|price" 0.25)
     (map print
         [
