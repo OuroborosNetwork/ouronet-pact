@@ -212,11 +212,26 @@
                 (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
                 (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
                 ;;
-                (native-royalty:decimal (* 0.9R))
+                ;;CORRECTED 2026-10-02: was <(* 0.9R)>. Pact's lexer splits at the
+                ;;digit->letter boundary, so <0.9R> and <0.9 R> are the SAME
+                ;;expression and both give 90.0 (verified in a scratch REPL). The
+                ;;value was never wrong; it READ as one decimal literal named
+                ;;"0.9R", which is the kind of line the next person "corrects" into
+                ;;a real defect. Spaced, not changed.
+                (native-royalty:decimal (* 0.9 R))
+                ;;0.9 x 3 elements x common-element ignis = 54.0, i.e. 90% of what
+                ;;the three individual Elements would bill -- what the description
+                ;;below claims.
                 (ignis-royalty:decimal (fold (*) 1.0 [0.9 3.0 IR-C]))
                 (md:object{DpdcUdcV2.NonceMetaData} (ref-DPDC-UDC::UDC_NoMetaData))
-                (ipfs-link-one:string "SmallPhoto-IPFS-Link")
-                (ipfs-link-two:string "BiggrPhoto-IPFS-Link")
+                ;;SET ARTWORK. Arweave, not IPFS -- the old names said <ipfs-link-*>
+                ;;while the individual Elements genuinely ARE on IPFS (UC_IpfsLink),
+                ;;so a reader comparing the two would have taken the gateway to be
+                ;;the same. It is not. Only the Set nonce's own artwork lives here.
+                (set-image-small:string
+                    "https://arweave.net/O8Qy9Lv4BqtYcZSfjsv6IbTU-arQN8fb0S10F9q2Tn0")
+                (set-image-big:string
+                    "https://arweave.net/C0PgEGQdK_PGtvnit2jZuVttup2GJtVmZ6MScvYL8Ac")
             )
             ;;Set Class 1
             ;;The EXECUTOR is the collection owner, READ here rather than threaded: this
@@ -239,8 +254,22 @@
                     "Red, Green and Blue eyed Bunnies in a Set. 9.0% (90% of Native Bunny Royalty) Royalty and 90% Ignis-Royalty relative to individual Elements"
                     md
                     (ref-DPDC-UDC::UDC_URI|Type true false false false false false false)
-                    (ref-DPDC-UDC::UDC_URI|Data ipfs-link-one B B B B B B)
-                    (ref-DPDC-UDC::UDC_URI|Data ipfs-link-one B B B B B B)
+                    ;;DEFECT FIXED 2026-10-02: both of these read <ipfs-link-one>,
+                    ;;so <ipfs-link-two> was a DEAD BINDING and uri-secondary -- the
+                    ;;full-resolution slot -- carried the SMALL image. C_Spawn sets
+                    ;;the convention for every individual Element one screen below:
+                    ;;primary = (UC_IpfsLink .. true), the 512x512; secondary =
+                    ;;(.. false), the FULL. The Set was the one nonce in the whole
+                    ;;collection that broke it.
+                    ;;
+                    ;;Nothing could catch it. Both links were PLACEHOLDERS, so the
+                    ;;duplication produced two identical strings that were equally
+                    ;;wrong, and [5.4]_PopulateBunnies TX-03 invoked this function
+                    ;;without asserting one thing about what it stored -- a test
+                    ;;proving a write HAPPENED, not what was WRITTEN. Assertions
+                    ;;added there in the same change.
+                    (ref-DPDC-UDC::UDC_URI|Data set-image-small B B B B B B)
+                    (ref-DPDC-UDC::UDC_URI|Data set-image-big B B B B B B)
                     (ref-DPDC-UDC::UDC_ZeroURI|Data)
                 )
             )

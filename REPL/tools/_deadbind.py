@@ -111,14 +111,61 @@ def _bindex(binds, name):
     return -1
 
 
+# ENUMERATED SIBLING TAILS. Added 2026-10-02 -- see _twin's second rule for why.
+# Pairs only, and both members must be in the same pair: <foo-one>/<foo-two> fires, <foo-one>
+# beside <foo-primary> does not. Keeping it to a closed vocabulary is what keeps the detector at
+# zero noise, which is the whole basis for it being gate-fatal.
+_SIBLING_TAILS = [
+    ("one", "two"), ("two", "three"), ("one", "three"),
+    ("first", "second"), ("second", "third"),
+    ("small", "big"), ("small", "large"), ("min", "max"), ("lo", "hi"),
+    ("primary", "secondary"), ("secondary", "tertiary"),
+    ("src", "dst"), ("from", "to"), ("in", "out"), ("old", "new"),
+    ("left", "right"), ("a", "b"),
+]
+
+
 def _twin(a, b):
     """Are these two binding names near-twins? Deliberately NARROW. The point is a detector with
-    no noise, so it only fires on the shapes a copy-paste actually produces: one name is the
-    other plus a version-ish suffix (V2, 2, -2, -b, -new, -alt)."""
+    no noise, so it fires on exactly the two shapes a copy-paste actually produces.
+
+    RULE 1 -- version suffix: one name is the other plus a version-ish tail (V2, 2, -2, -b,
+    -new, -alt). This is the 15_SWP shape the tool was built for.
+
+    RULE 2 -- ENUMERATED SIBLINGS: same stem, and the two tails are a known PAIR
+    (-one/-two, -small/-big, -primary/-secondary, ...). Added 2026-10-02 because rule 1 MISSED A
+    REAL DEFECT of precisely the kind this mode exists to catch.
+
+    KBN::A_BunnyRGBSet bound
+
+        (ipfs-link-one:string "SmallPhoto-IPFS-Link")    ;; read TWICE
+        (ipfs-link-two:string "BiggrPhoto-IPFS-Link")    ;; read NEVER
+
+    and passed <ipfs-link-one> to BOTH uri-primary and uri-secondary, so the Set's
+    full-resolution slot carried the small image. Identical in shape to the SWP case: the dead
+    binding was the CORRECT name, dropped by a copy-paste that kept the wrong one.
+
+    Rule 1 could not see it, because `ipfs-link-two` is not `ipfs-link-one` plus a suffix --
+    neither name is a prefix of the other. Two names enumerating a PAIR are a different
+    morphology from a name and its version, and a copy-paste over a pair is at least as common.
+
+    Measured before widening: the new rule adds exactly ONE hit across 1_SOVEREIGN + 2_CITIZEN,
+    and it is this defect. Zero new noise.
+    """
+    # rule 1 -- version-ish suffix
     lo, hi = sorted((a, b), key=len)
-    if lo == hi or not hi.startswith(lo):
-        return False
-    return re.fullmatch(r"[-_]?([Vv]?\d+|b|alt|new|old|bis)", hi[len(lo):]) is not None
+    if lo != hi and hi.startswith(lo):
+        if re.fullmatch(r"[-_]?([Vv]?\d+|b|alt|new|old|bis)", hi[len(lo):]):
+            return True
+    # rule 2 -- enumerated sibling tails on a shared stem
+    for sep in ("-", "_"):
+        if sep in a and sep in b:
+            stem_a, tail_a = a.rsplit(sep, 1)
+            stem_b, tail_b = b.rsplit(sep, 1)
+            if stem_a == stem_b and tail_a != tail_b:
+                if (tail_a, tail_b) in _SIBLING_TAILS or (tail_b, tail_a) in _SIBLING_TAILS:
+                    return True
+    return False
 
 
 def twins():
@@ -180,7 +227,18 @@ def main():
         cases = [("ignis-fee-exemption-role", "ignis-fee-exemption-roleV2", True),
                  ("x", "x2", True), ("x", "x-b", True), ("amount", "amount-new", True),
                  ("sender", "receiver", False), ("lp-id", "lp-id-frozen", False),
-                 ("fee", "fee-target", False), ("a", "a", False)]
+                 ("fee", "fee-target", False), ("a", "a", False),
+                 # rule 2, enumerated siblings. The first is the KBN defect of 2026-10-02 that
+                 # rule 1 could not see; the negatives pin the vocabulary as CLOSED, because
+                 # "same stem, different tail" without that bound would fire on half the tree.
+                 ("ipfs-link-one", "ipfs-link-two", True),
+                 ("set-image-small", "set-image-big", True),
+                 ("uri-primary", "uri-secondary", True),
+                 ("bound-min", "bound-max", True),
+                 ("ipfs-link-one", "ipfs-link-primary", False),   # tails not a PAIR
+                 ("pool-id", "score-id", False),                  # same tail, different stem
+                 ("lp-token", "lp-balance", False),               # tails not in the vocabulary
+                 ("a-one", "b-two", False)]                       # pair tails, stems differ
         bad = [f"   _twin({x!r},{y!r}) = {_twin(x, y)}, expected {w}"
                for x, y, w in cases if _twin(x, y) != w]
         if bad:

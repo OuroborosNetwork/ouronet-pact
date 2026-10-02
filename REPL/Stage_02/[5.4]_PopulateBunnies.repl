@@ -1900,8 +1900,65 @@
 )
 (print "")
 (print "")
-;;==== TX-03 [5.4] - KBN A_BunnyRGBSet (Bunny Class 1 primordial set) · 03 · gas echo ==== ========
-(print "--- [TX-03 [5.4] - KBN A_BunnyRGBSet (Bunny Class 1 primordial set) · 03 · gas echo] ---")
+;;==== TX-03 [5.4] - KBN A_BunnyRGBSet (Bunny Class 1 primordial set) · 03 · set artwork ==== =====
+(print "--- [TX-03 [5.4] - KBN A_BunnyRGBSet (Bunny Class 1 primordial set) · 03 · set artwork] ---")
+;;THE SET'S OWN ARTWORK, READ BACK. Added 2026-10-02 with the real Arweave links, and the reason
+;;is a defect this block would have caught: A_BunnyRGBSet passed the SAME binding to both
+;;<uri-primary> and <uri-secondary>, so <ipfs-link-two> was dead and the full-resolution slot
+;;carried the small image. Because both links were placeholders the duplication produced two
+;;identical strings that were equally wrong, and this transaction invoked the function and
+;;asserted NOTHING -- proving a write happened, never what was written.
+;;
+;;<<KBN-RGB-URI>> therefore asserts the two slots are the two DIFFERENT links, in the order
+;;C_Spawn uses for every individual Element (primary = small, secondary = FULL), and that the
+;;tertiary slot stays BAR. The distinctness clause is the one that matters: equality alone would
+;;pass again the day someone re-introduces a single shared binding.
+(let
+    (
+        (nd:object{DpdcUdcV2.DPDC|NonceData}
+            (DPDC-S.UR_SetNonceData "KBN-98c486052a51" false 1))
+        (small:string "https://arweave.net/O8Qy9Lv4BqtYcZSfjsv6IbTU-arQN8fb0S10F9q2Tn0")
+        (big:string "https://arweave.net/C0PgEGQdK_PGtvnit2jZuVttup2GJtVmZ6MScvYL8Ac")
+    )
+    (map print
+        [
+            (expect
+                (format "<<KBN-RGB-URI>> primary (512x512) = {}" [small])
+                small
+                (at "image" (DPDC.UR_N|Primary nd)))
+            (expect
+                (format "<<KBN-RGB-URI>> secondary (FULL) = {}" [big])
+                big
+                (at "image" (DPDC.UR_N|Secondary nd)))
+            ;;The clause the old code would have failed. Two slots, two links.
+            (expect
+                "<<KBN-RGB-URI>> primary and secondary are DISTINCT resolutions"
+                false
+                (= (at "image" (DPDC.UR_N|Primary nd))
+                   (at "image" (DPDC.UR_N|Secondary nd))))
+            (expect
+                "<<KBN-RGB-URI>> tertiary slot is unset (BAR)"
+                "|"
+                (at "image" (DPDC.UR_N|Tertiary nd)))
+            ;;Royalties, pinned against the description string this set ships with: 90.0 native
+            ;;(= 0.9 x R, and <(* 0.9R)> lexes identically -- see the note in 02_KBunnies.pact)
+            ;;and 54.0 ignis (= 0.9 x 3 elements x common).
+            (expect
+                "<<KBN-RGB-ROY>> native royalty is 90% of the Bunny royalty"
+                90.0
+                (at "royalty" nd))
+            (expect
+                "<<KBN-RGB-ROY>> ignis royalty is 90% of three common Elements"
+                54.0
+                (at "ignis" nd))
+        ]
+    )
+    ""
+)
+(print "")
+(print "")
+;;==== TX-03 [5.4] - KBN A_BunnyRGBSet (Bunny Class 1 primordial set) · 04 · gas echo ==== ========
+(print "--- [TX-03 [5.4] - KBN A_BunnyRGBSet (Bunny Class 1 primordial set) · 04 · gas echo] ---")
 (print (format "<<<<<<<KBN A_BunnyRGBSet (Class 1) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
