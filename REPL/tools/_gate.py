@@ -409,6 +409,25 @@ def main():
         sys.exit("GATE FAILED: a dead let-binding shadows an over-read near-twin "
                  "-- see _deadbind.py --twins.")
 
+    # RETIRED TABLE KEYS, added 2026-10-02 with the first one.
+    #
+    # `stoa|price` was a row in the USAGE-PRICES table that IGNIS::UC_StoaPrice divided by, while
+    # the canonical STOA/USD reader -- U|CT::UR_STOA-PID|Price -- is read in ~40 places including
+    # OI|UDC_FullStoaCosts a hundred lines above it in the SAME module. One reader against forty.
+    # Moving the peg moved the CHARGE and not the PREVIEW, and the key was never written on
+    # mainnet, so every STOA-charging op died on an uncatchable read while the REPL -- which
+    # seeded the row at boot -- stayed green.
+    #
+    # The obvious regression test writes the key and asserts nothing changes, which proves the
+    # right property by the wrong means: it keeps the retired key alive in the suite, and that is
+    # a standing reason for it to come back. A source-level ban needs no fixture, covers paths no
+    # test reaches, and fails before any suite runs.
+    _r = subprocess.run([sys.executable, "tools/_nokey.py"], capture_output=True, text=True)
+    print(_r.stdout.rstrip() or _r.stderr.rstrip())
+    if _r.returncode != 0:
+        sys.exit("GATE FAILED: a retired table key is back in deployable source "
+                 "-- see _nokey.py.")
+
     # CROSS-MODULE DOT CALLS, added 2026-10-02 after one cost a live transaction.
     #
     # A dot call -- `(KBN.A_BunnyRGBSet ...)` -- resolves at the CALLER's deploy time and PINS the

@@ -3491,17 +3491,27 @@
 
 ;;|| NEXT >
 ;;
-(begin-tx "AQP-D1b — move the peg: the AMOUNT moves, the VALUE holds")
+(begin-tx "AQP-D1b — the STOA peg has ONE source, and it is the oracle")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
-(print "--- [AQP-D1b · 01 · repricing STOA at $0.25] ---")
-;;THE ASSERTION THE CLAIM ACTUALLY MAKES. The peg is moved from $0.10 to $0.25 -- a real admin
-;;operation (`TS01-A::DALOS|A_UpdateUsagePrice "stoa|price"`), the same one [4.0] uses at boot, not
-;;a forced table write. At the new peg the STOA AMOUNTS must fall to 2/5 of what they were, while
-;;`amount x peg` -- the DOLLARS the user actually pays -- must not move at all.
+(print "--- [AQP-D1b · 01 · one source for the peg] ---")
+;;REPURPOSED 2026-10-02 (owner ruling). This block used to MOVE the peg through the usage-prices
+;;table and assert the STOA amounts followed. Every assertion in it was true and the behaviour it
+;;protected was incoherent: UC_StoaPrice was the ONLY reader of that key in the tree, while the
+;;canonical STOA/USD source -- U|CT::UR_STOA-PID|Price -- is read in ~40 places including, in
+;;IGNIS itself, the COST PREVIEW. Measured on the old code, moving 0.10 -> 0.25:
 ;;
-;;This is what fails on the pre-rehaul code the @docs describe: a hardcoded 0.01/0.02 usage price
-;;does not move when the peg does, so the dollar value would swing by 2.5x here.
+;;    UC_StoaPrice "issue-nft"   250.0 -> 100.0     the CHARGE moved
+;;    U|CT::UR_STOA-PID|Price      0.1 ->   0.1     the PREVIEW did not
+;;
+;;So the admin operation this block exercised made the preview lie about the charge. A test that
+;;pins an incoherent behaviour makes removing it look like a regression, which is why this one
+;;outlived the defect.
+;;
+;;It now asserts the property that replaced it: the charge derives from the ORACLE, and the charge
+;;path and the preview path read the same source. The retired key is not written here at all --
+;;_gate.py greps every .pact source for the literal and is fatal on a hit, which is a stronger
+;;guarantee than a runtime write and does not keep the key alive to make it.
 ;;==== AQP-D1b — the usage table does NOT move the charge: one source · 01 · env-sigs (caps) ==== ======
 (print "--- [AQP-D1b — the usage table does NOT move the charge: one source · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
@@ -3537,17 +3547,21 @@
     ;;regain tunability without a deploy-order violation. Until the DIA oracle is wired the peg
     ;;moves only with a U|CT redeploy -- and when it is wired it moves with the market, for all
     ;;~40 readers at once, which is the point.
-    ;;Still WRITTEN, deliberately: the assertions below prove the write changes nothing. Drop
-    ;;the write and they would pass vacuously on a chain that never had the key.
-    (ref-TS01-A::DALOS|A_UpdateUsagePrice KST.ANHD "stoa|price" 0.25)
+    ;;NO LONGER WRITES THE RETIRED KEY, 2026-10-02 (owner: "there should be no stoa|price
+    ;;anywhere"). The previous version wrote it and asserted the write changed nothing -- the
+    ;;right property by the wrong means, because a test that keeps a retired key alive is a
+    ;;reason for it to come back. The absence is STRUCTURAL instead: _gate.py greps every .pact
+    ;;source for the literal and is fatal on a hit, so re-pointing UC_StoaPrice at the table
+    ;;fails the gate before any suite runs.
+    ;;
+    ;;What stays is the positive property -- the charge derives from the ORACLE, and the charge
+    ;;path and the preview path read the same source.
     (map print
         [
-            ;;THE INVARIANT, INVERTED. Writing that table key must now change NOTHING, because
-            ;;nothing reads it. An assertion that the amounts HOLD is the only one that can fail
-            ;;if someone re-points UC_StoaPrice at the table.
-            (expect "<<AQP-D1b>> SINGLE SOURCE: the usage table no longer moves the anchor amount"
+            ;;The documented amounts, derived from the oracle alone.
+            (expect "<<AQP-D1b>> SINGLE SOURCE: the anchor amount is the oracle's"
                 50.0 (ref-ANK::URCi_IssueAnchorStoa false))
-            (expect "<<AQP-D1b>> SINGLE SOURCE: nor the score amount"
+            (expect "<<AQP-D1b>> SINGLE SOURCE: and the score amount"
                 100.0 (ref-SCR::URCi_IssueScoreStoa))
             ;;the acnoi doubling is a multiplier on the converted amount and is unaffected
             (expect "<<AQP-D1b>> ...and acnoi still doubles"
@@ -3563,12 +3577,11 @@
                 (/ (/ (IGNIS.UC_IgnisDeter "issue-nft") 100.0) (U|CT.UR_STOA-PID|Price)))
         ]
     )
-    ;;restore the peg in the SAME transaction it was moved in, so no later assertion in this suite
-    ;;can observe the altered oracle even if this block is reordered.
-    (ref-TS01-A::DALOS|A_UpdateUsagePrice KST.ANHD "stoa|price" 0.1)
+    ;;THE RESTORE IS GONE WITH THE MOVE. Nothing was altered, so nothing needs putting back --
+    ;;which is itself the point of the change: the oracle is not writable from a transaction.
     (map print
         [
-            (expect "<<AQP-D1b>> the peg is restored to $0.10 and the amounts come back"
+            (expect "<<AQP-D1b>> the amounts are unchanged -- there was nothing to restore"
                 [50.0 100.0]
                 [(ref-ANK::URCi_IssueAnchorStoa false) (ref-SCR::URCi_IssueScoreStoa)])
         ]

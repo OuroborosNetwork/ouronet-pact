@@ -92,6 +92,10 @@ Two things that would have made this wrong:
 
 **A test asserting 50 STOA and 100 STOA would have passed on the broken code too.** The claim is that
 the figures TRACK the peg, so the test moves it: `A_UpdateUsagePrice "stoa|price"` 0.10 → 0.25, and
+*(SUPERSEDED 2026-10-02: that key is RETIRED. `UC_StoaPrice` reads `U|CT::UR_STOA-PID|Price`, the
+oracle the other ~40 call sites already used, and `REPL/tools/_nokey.py` is gate-fatal on the key
+reappearing in any `.pact`. The test no longer moves anything -- it asserts the charge and the
+preview read one source. Left in place because this is a dated capture, not a live instruction.)*
 asserts the AMOUNTS fall to 2/5 while `amount × peg` — the dollars — does not move at all. Restored
 in the same transaction.
 

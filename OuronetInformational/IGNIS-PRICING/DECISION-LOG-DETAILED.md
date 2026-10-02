@@ -388,6 +388,13 @@ TALOS client name `ENTITY|FN` so code and price sheet are one list:
 (primitive weights) · helpers `UC_IgnisPrice` / `UC_IgnisPriceScaled` / `UC_IgnisComponents` /
 `UC_StoaPrice`. New DALOS UsagePrice key `stoa|price` = 0.1 is the oracle placeholder.
 
+> **SUPERSEDED 2026-10-02 (owner ruling).** The usage-prices table is for prices of USAGE;
+> the price of STOA is not one. `UC_StoaPrice` now reads `U|CT::UR_STOA-PID|Price`, the DIA
+> oracle stub that ~40 other call sites already used, and the key is RETIRED --
+> `REPL/tools/_nokey.py` is gate-fatal on its reappearance in any `.pact`. The value is
+> unchanged at 0.1; only its source moved. Kept here because this entry records what was
+> decided at the time, and a decision log that is edited in place stops being one.
+
 **P2 — account-creation STOA switch:** `account-creation-stoa` flag on
 `DALOS|GasManagementTable` (default OFF), `A_ToggleAccountCreationStoa` + its OWN defcap, Talos
 wrapper `DALOS|A_AccountCreationStoaToggle`. Standard $5 -> 50 STOA, Smart $10 -> 100 STOA,

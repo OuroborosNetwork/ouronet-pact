@@ -1456,9 +1456,9 @@
             \ STOA price gives the STOA amount. STOA is hard-pegged at $0.10 today, so $40 of \
             \ deter = 400 STOA; when a real price lands the AMOUNT moves but the VALUE holds. \
             \ \
-            \ CORRECTED 2026-10-02 (owner). This read the USAGE-PRICES table at key \
-            \ <stoa|price>, and that table is for prices of USAGE -- not for the price of \
-            \ STOA itself. The canonical STOA/USD reader is U|CT::UR_STOA-PID|Price, the \
+            \ CORRECTED 2026-10-02 (owner). This read a USAGE-PRICES table key for the STOA \
+            \ peg, and that table is for prices of USAGE -- not for the price of STOA \
+            \ itself. The canonical STOA/USD reader is U|CT::UR_STOA-PID|Price, the \
             \ DIA oracle stub, used in ~40 places across the tree INCLUDING TWICE IN THIS \
             \ MODULE a hundred lines above (OI|UDC_FullStoaCosts). This function was the \
             \ only reader of that table key anywhere, and the lone outlier in its own file. \
