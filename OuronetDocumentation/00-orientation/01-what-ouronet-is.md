@@ -12,7 +12,7 @@ That is its designation, and each of the three words is load-bearing:
 - **Layer** — it is not a separate chain and does not pretend to be. Every operation executes on
   StoaChain, in Pact, inside the transaction that requested it.
 
-All of it is smart-contract code: **123,005 lines of Pact across 105 source files**, visible on chain
+All of it is smart-contract code: **123,058 lines of Pact across 105 source files**, visible on chain
 as deployed.
 
 > **On "virtual blockchain".** You will find that phrase in older material, including this
@@ -101,8 +101,8 @@ accounting, not a defence.
 | `.pact` source files | 105 |
 | modules declared | 99 forms, 98 distinct names |
 | interfaces declared | 98 |
-| lines of Pact | 123,005 |
-| `defun` forms | 8,848 |
+| lines of Pact | 123,058 |
+| `defun` forms | 8,849 |
 | capabilities (`defcap`) | 988 |
 | schemas / tables | 206 / 231 |
 | multi-step `defpact`s | 6 |
@@ -113,9 +113,9 @@ Measured 2026-09-27 against the tree at `1_SOVEREIGN/` and `2_CITIZEN/`. Every c
 `../90-reference/03-how-these-figures-were-obtained.md`.
 
 **Three of those rows are easy to quote wrongly, so they are spelled out.** 105 is a count of
-*files*, and a file may hold an interface and a module together — it is not 105 modules. 8,848
+*files*, and a file may hold an interface and a module together — it is not 105 modules. 8,849
 counts `defun` **forms**, which includes a function declared in an interface and again in the
-module implementing it; it is not 8,848 distinct functions. And the deploy round is smaller than
+module implementing it; it is not 8,849 distinct functions. And the deploy round is smaller than
 the tree on purpose: citizen minters, the bridge scaffold and the explorer chain are deployed
 separately or not yet, each exclusion recorded with a reason in `Deploy/MANIFEST.md`.
 

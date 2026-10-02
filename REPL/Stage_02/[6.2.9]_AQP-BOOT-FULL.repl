@@ -29,7 +29,34 @@
         (patron:string KST.LUMY)
         (kbn-id:string "KBN-98c486052a51")
     )
-    (print (format "<(AQP-BOOT|C_Step1_CreateBunnySet patron=LUMY)> => \"{}\"" [(AQP-BOOT.C_Step1_CreateBunnySet patron kbn-id)]))
+    ;;THIS CALL USED TO SUCCEED, AND THAT WAS THE DEFECT. [5.4]_PopulateBunnies TX-03 already
+    ;;ran KBN::A_BunnyRGBSet on this very collection -- every loader of this file loads [5.4]
+    ;;first (AQP-FULL 39<62, deb-staleness-unstale-all-cc 20<32, dsa-grand-tour 33<91,
+    ;;dsa-hetero-split-tests 28<101) -- so Step 1 here was defining the Bunny RGB Set a SECOND
+    ;;time, every gate run, and nothing asserted otherwise.
+    ;;
+    ;;It did not collide because it cannot: C_DefinePrimordialSet computes
+    ;;(set-class = (+ (UR_SetClassesUsed id son) 1)) and inserts at that fresh key. The suite
+    ;;therefore ended each run with TWO identically-named set classes over the same 120 nonces,
+    ;;which is precisely the duplication an operator hit on mainnet in 2026-10.
+    ;;
+    ;;Now pinned as a REFUSAL. The assertion is on the MESSAGE, not merely on failure: an
+    ;;expect-failure with no message matches any abort, including the IMC and ownership ones
+    ;;that guard the same call, and would stay green if UEV_BootStepState were deleted.
+    (map print
+        [
+            (expect-failure
+                "<<BOOT-S1-DUP>> Step1 is refused on a collection whose set is already defined"
+                "AQP-BOOT Step1 refused: set-classes-used on the collection is 1, expected 0"
+                (AQP-BOOT.C_Step1_CreateBunnySet patron kbn-id))
+            ;;And the state it protects: still ONE set class, not two.
+            (expect
+                "<<BOOT-S1-DUP>> the collection still carries exactly one set class"
+                1
+                (DPDC.UR_SetClassesUsed kbn-id false))
+        ]
+    )
+    ""
 )
 (env-sigs [])
 (commit-tx)
@@ -114,6 +141,45 @@
         ]
     )
     (print (format "<(AQP-BOOT|C_Step3_CreateBoosterAnchorClasses)> => \"{}\"" [(AQP-BOOT.C_Step3_CreateBoosterAnchorClasses patron kbn-id)]))
+)
+;;==== TX-BOOT-03 - AQP-BOOT Steps 2 and 3 are refused on a second run ==== =======================
+(print "--- [TX-BOOT-03 - AQP-BOOT Steps 2 and 3 are refused on a second run] ---")
+;;THE OTHER TWO GUARDS, exercised against the state Steps 2 and 3 just produced rather than
+;;against a fixture. Step 2 leaves 4 anchors and Step 3 adds 11, so the collection now carries
+;;15 -- which is neither Step 2's expected 0 nor Step 3's expected 4, and both must refuse.
+;;
+;;Step 3's guard is EXACT (= 4) rather than (>= 4) for this reason: at 15 a >= would still admit
+;;a second run and silently issue eleven duplicate anchors against the 49-slot asset cap.
+;;
+;;Assertions are on the MESSAGE. These calls are also gated by GOV|AQP_BOOT_ADMIN and by each
+;;anchor's ownership check, so a bare expect-failure would pass with UEV_BootStepState deleted.
+(let
+    (
+        (patron:string KST.LUMY)
+        (kbn-id:string "KBN-98c486052a51")
+    )
+    (map print
+        [
+            (expect
+                "<<BOOT-S23-DUP>> the collection carries Step2's 4 anchors plus Step3's 11"
+                15
+                (AQP-ANK.UR_AA|AnchorsActive kbn-id))
+            (expect-failure
+                "<<BOOT-S23-DUP>> Step2 is refused once the collection carries anchors"
+                "AQP-BOOT Step2 refused: anchors-active on the collection is 15, expected 0"
+                (AQP-BOOT.C_Step2_CreateSnakePowerAnchorClasses patron kbn-id))
+            (expect-failure
+                "<<BOOT-S23-DUP>> Step3 is refused once its own anchors are present"
+                "AQP-BOOT Step3 refused: anchors-active on the collection is 15, expected 4"
+                (AQP-BOOT.C_Step3_CreateBoosterAnchorClasses patron kbn-id))
+            ;;and nothing was issued by the two refusals
+            (expect
+                "<<BOOT-S23-DUP>> the refusals wrote nothing -- still 15 anchors"
+                15
+                (AQP-ANK.UR_AA|AnchorsActive kbn-id))
+        ]
+    )
+    ""
 )
 (env-sigs [])
 (commit-tx)

@@ -1,156 +1,91 @@
-;; ---------------------------------------------------------------------------
-;; OURONET DEPLOY -- file 23 of 24
-;; This is STEP 23 of 25 in the full sequence (see Deploy/MANIFEST.md).
-;; Steps 1-22 must have run first, including the init steps between deploys.
-;; 1 source file(s), 0 gas measured in the REPL gas model, 88,392 bytes
+;; ===========================================================================================
+;; OURONET DEPLOY -- ROUND V2, file 25
+;; AQP-BOOT (module upgrade) -- the bootstrap steps are not re-runnable, and now say so
+;; ===========================================================================================
+;; THREE GUARDS ADDED, one new internal helper, nothing else. No schema, no table, no
+;; signature, no interface.
 ;;
-;; Source files in this transaction, IN ORDER (do not reorder):
-;;   2_CITIZEN/5_VaultsMinter/04_AQP-BOOT.pact
+;; ------------------------------------------------------------------------------------------
+;; THE DEFECT -- RE-RUNNING A STEP DUPLICATES INSTEAD OF FAILING
+;; ------------------------------------------------------------------------------------------
+;; Every id these steps create comes from `U|DALOS::UDC_Makeid`, which seeds on
+;; <prev-block-hash> -- block-level, not per-transaction. Its own @doc records the same-block
+;; case as accepted-by-design: two issuances with the same ticker in the SAME block produce
+;; byte-identical ids and the second hard-aborts on a raw insert.
 ;;
-;; TOTAL: 1 interface(s), 1 module(s), 0 table(s)
-;; What it DEPLOYS, in load order:
-;;   -- 2_CITIZEN/5_VaultsMinter/04_AQP-BOOT.pact
-;;      interface  AcquisitionPoolBootV1
-;;      module     AQP-BOOT
+;; That reads as protection and is not. In a LATER block the hash differs, so a second run gets
+;; FRESH ids, inserts cleanly, and leaves a COMPLETE DUPLICATE set of entities with no error
+;; anywhere.
 ;;
-;; Paste this whole file as ONE transaction. It needs the Ouronet admin signature
-;; and the `ouronet-ns` namespace, which the first line sets.
-;; ---------------------------------------------------------------------------
+;; Observed on mainnet 2026-10. `C_DefinePrimordialSet` computes
+;; `(set-class = (+ (UR_SetClassesUsed id son) 1))` and inserts at that fresh key, so re-running
+;; Step 1 does not fail -- it adds a SECOND "Bunny RGB Set" at class 2, identically named, with
+;; the same allowed-nonce recipe, and the same 120 nonces then compose into either.
+;;
+;; THE TEST SUITE HAD BEEN DOING EXACTLY THIS ON EVERY GATE RUN. `[5.4]_PopulateBunnies` TX-03
+;; calls `KBN::A_BunnyRGBSet` directly, and `[6.2.9]_AQP-BOOT-FULL` then calls Step 1 on the
+;; same collection -- in all four loaders, [5.4] first (AQP-FULL 39<62,
+;; deb-staleness-unstale-all-cc 20<32, dsa-grand-tour 33<91, dsa-hetero-split-tests 28<101).
+;; Two set classes, every run, asserted nowhere. The guard is what surfaced it.
+;;
+;; ------------------------------------------------------------------------------------------
+;; WHAT THE GUARDS CHECK -- CHAIN STATE, NOT A STEP LEDGER
+;; ------------------------------------------------------------------------------------------
+;;   Step 1   DPDC::UR_SetClassesUsed kbn-id false   must be 0
+;;   Step 2   AQP-ANK::UR_AA|AnchorsActive kbn-id    must be 0   (Step 2 issues the first four)
+;;   Step 3   AQP-ANK::UR_AA|AnchorsActive kbn-id    must be 4   (Step 2's four, and not its own)
+;;
+;; A ledger would record that this module ran something; the state records that the THING
+;; EXISTS. Only the second is true retroactively -- it refuses Step 1 on the live chain today,
+;; where the set was created before this guard was written and no ledger row could exist. It
+;; also cannot drift from reality, which a ledger can.
+;;
+;; Step 3's check is EXACT (= 4), not (>= 4): after Step 3 the count is 15, and a >= would still
+;; admit a second run and silently issue eleven duplicate anchors against the 49-slot asset cap.
+;;
+;; `UR_AA|AnchorsActive` is a `with-default-read`, so a never-anchored collection answers 0
+;; rather than aborting on a missing row.
+;;
+;; ONLY STEPS 1-3 ARE GUARDED, and the limit is honest rather than tidy: those three have a
+;; natural chain-state signal keyed on the collection id. Steps 4-8, 10, 13 and 14 create scores,
+;; pools, FVT entities and agencies whose ids are random and which carry no per-owner count, so
+;; there is nothing to check without adding a ledger table. THEY REMAIN NOT RE-RUN-SAFE -- run
+;; each exactly once, and keep the id lists each one returns.
+;;
+;; ------------------------------------------------------------------------------------------
+;; WHY MODULE-ONLY, AND WHY THE INTERFACE IS UNTOUCHED
+;; ------------------------------------------------------------------------------------------
+;; `AcquisitionPoolBootV1` is already live, and a deployed interface cannot be changed. The new
+;; `UEV_BootStepState` is therefore declared in the MODULE ONLY -- it is an internal guard, not
+;; public API, so putting it in the interface would have forced a V1->V2 bump and a cascade for
+;; a helper nobody calls from outside. The module still satisfies the live interface exactly.
+;; AQP-BOOT declares no tables, so there is no create-table to re-run either.
+;;
+;; ------------------------------------------------------------------------------------------
+;; ORDER -- RUN 24 FIRST
+;; ------------------------------------------------------------------------------------------
+;; This file changes nothing about inter-module permissions. Without `24_deploy.pact` every AQP
+;; step still fails on `P|UEV_IMC` ("None of the guards passed") before reaching these guards.
+;;
+;; ------------------------------------------------------------------------------------------
+;; VERIFICATION
+;; ------------------------------------------------------------------------------------------
+;; `[6.2.9]_AQP-BOOT-FULL` now pins all three, asserting on the MESSAGE rather than on bare
+;; failure -- these calls are also gated by GOV|AQP_BOOT_ADMIN and by each anchor's ownership
+;; check, so an expect-failure with no message would stay green with the guards deleted:
+;;
+;;   <<BOOT-S1-DUP>>   Step 1 refused; the collection still carries exactly ONE set class
+;;   <<BOOT-S23-DUP>>  15 anchors after Steps 2+3; Step 2 refused at 15, Step 3 refused at 15;
+;;                     the refusals wrote nothing -- still 15
+;;
+;; NEGATIVE-TESTED: neutering the enforce to `(or true ...)` turns six assertions red.
+;; Gate green at 26,176+ assertions.
+;;
+;;@GENERATED-BODY-BELOW -- do not edit past this line; see REPL/tools/_purev2.py
 
 (namespace "ouronet-ns")
 
-;; ===== 2_CITIZEN/5_VaultsMinter/04_AQP-BOOT.pact ===================
-;; AQP-BOOT — live-chain AQP provisioning helpers.
-;; Purpose: one-shot bootstrap writers for score/anchor/pool/fvt infra.
-;;
-;; HANDOFF PATTERN (mainnet + REPL)
-;;   • Each C_StepN_* is intended as its own transaction (or REPL begin-tx block).
-;;   • Functions that CREATE entities echo ids in a formatted return string — copy these
-;;     into the NEXT step's arguments when steps run on separate txs.
-;;   • Functions that WIRE existing entities take explicit id lists (Step 7) so mainnet
-;;     ids from prior txs are passed in; REPL uses the same shape with REPL chain ids.
-;;   • UDC_Makeid("<Name>") is NOT deterministic from the name alone.
-;;     CORRECTED 2026-09-18 -- this line used to read "ids are deterministic from names", and
-;;     that is wrong in the dangerous direction. `UDC_Makeid ticker` returns
-;;     `<ticker>-<first 12 chars of prev-block-hash>`, so the SAME ticker in a DIFFERENT BLOCK
-;;     yields a DIFFERENT id.
-;;     THE REPL CANNOT SHOW THIS: the whole suite runs under one `prev-block-hash`, so all 194
-;;     fixture ids share a single suffix and recomputing an id in a later tx always matches.
-;;     On mainnet, where every transaction is in its own block, it never will.
-;;     CONSEQUENCE FOR DEPLOYMENT: an id for an entity created in an EARLIER transaction must be
-;;     CARRIED FORWARD from that transaction's output string. Recomputing it with UDC_Makeid is
-;;     a silent mis-wiring that no test in this repository can catch. Recomputing is only safe
-;;     for an entity created in the SAME transaction (which is why Step 7's pool ids are fine
-;;     but its score ids, from Steps 4-6, are arguments).
-;;   • Collection asset ids (DHCD-…, DHB-…, OURO-…, LP native ids) are ALWAYS inputs —
-;;     never embedded in code; REPL examples live in ;; blocks only.
-;;   • Full step chain table: 2_CITIZEN/Stage_02/README_AQP_BOOT.md
-;;   • OURO LP user flow: 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/README.md § OURO LP onboarding
-;;
-;; STEP ORDER: 0 → 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10 → 11 → 12
-;;   Step 0 — after sovereign AQP modules (ANK, SCR, AQP-POOL, FVT) are deployed: IMC + vault governor.
-;;
-;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface AcquisitionPoolBootV1
-
-
-
-
-    ;;<=========================================================================>
-    ;;{1}  GOVERNANCE
-    ;;{G1}  constants
-    ;;{G2}  schemas
-    ;;{G3}  tables  ⟨cannot exist in an interface⟩
-    ;;{G4}  capabilities
-    ;;{G5}  functions
-    (defun GOV|Demiurgoi ())
-
-    ;;<=========================================================================>
-    ;;{2}  POLICY
-    ;;{P1}  constants
-    ;;{P2}  schemas
-    ;;{P3}  tables  ⟨cannot exist in an interface⟩
-    ;;{P4}  capabilities
-    ;;{P5}  functions
-
-    ;;<=========================================================================>
-    ;;{3}  CST
-    ;;{3.1}  constants
-    ;;{3.2}  schemas
-    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
-
-    ;;<=========================================================================>
-    ;;{4}  CAPABILITIES
-    ;;{C1}  Trivial [bronze]
-    ;;{C2}  Simple
-    ;;{C3}  Composed
-    ;;{C4}  Ownership [gold]
-
-    ;;<=========================================================================>
-    ;;{5}  FUNCTIONS
-    ;;{5.1}  Construct [CT/UDC]
-    ;;{5.2}  Compute [UC]
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    ;;{5.4}  Validate [UEV/CAP]
-    ;;{5.5}  Write [W]
-    ;;{5.6}  Aux/X
-    ;;{5.7}  User [A/C]
-    ;;
-    (defun C_Step0_WireImcAndGovernor:string
-        (patron:string)
-    )
-    ;;UEV_BootStepState is deliberately NOT declared here. It is an internal guard, not public
-    ;;API, and AcquisitionPoolBootV1 is ALREADY DEPLOYED -- a deployed interface cannot be
-    ;;changed, so declaring it would force a V1->V2 bump and a cascade for a helper nobody calls
-    ;;from outside. The module carries it; the interface does not need to.
-    (defun C_Step1_CreateBunnySet:string
-        (patron:string kbn-id:string)
-    )
-    (defun C_Step2_CreateSnakePowerAnchorClasses:string
-        (patron:string kbn-id:string)
-    )
-    (defun C_Step3_CreateBoosterAnchorClasses:string
-        (patron:string kbn-id:string)
-    )
-    (defun C_Step4_CreateCoreScores:string
-        (patron:string owner-konto:string)
-    )
-    (defun C_Step5_CreateSubsidiaryScores:string
-        (patron:string owner-konto:string)
-    )
-    (defun C_Step6_CreateOuroLpTriplet:string
-        (patron:string owner-konto:string lp-denominator:string boost-class-ids:[string])
-    )
-    (defun C_Step7_CreatePoolsAndScores:string
-        (patron:string dh-asset-ids:[string] ouro-lp-asset-id:string dh-score-ids:[string] ouro-triplet-score-ids:[string])
-    )
-    (defun C_Step8_IssueFvtEntities:string
-        (patron:string owner-konto:string lp-denominator:string)
-    )
-    (defun C_Step9_AddFvtScoreEntities:string
-        (patron:string sub-treasury-id:string coding-treasury-id:string snakes-treasury-id:string shares-treasury-id:string bloodshed-treasury-id:string subsidiary-score-ids:[string] coding-score-id:string snakes-score-id:string shares-score-id:string bloodshed-score-id:string)
-    )
-    (defun C_Step10_IssueMultipletFamily:string
-        (patron:string ouro-id:string auryn-id:string elite-auryn-id:string ats-0-1-id:string ats-1-2-id:string)
-    )
-    (defun C_Step11_WireFarmTriplet:string
-        (patron:string farm-id:string bronze-score-id:string silver-score-id:string golden-score-id:string ouro-id:string multiplet-family-id:string)
-    )
-    (defun C_Step12_AddFvtRewardLinks:string
-        (patron:string sub-treasury-id:string coding-treasury-id:string snakes-treasury-id:string shares-treasury-id:string bloodshed-treasury-id:string reward-auryn-id:string reward-ouroboros-id:string reward-wstoa-id:string)
-    )
-    (defun C_Step13_CreateCustodiansVault:string
-        (patron:string owner-konto:string custodians-dpsf-id:string ouro-id:string multiplet-family-id:string)
-    )
-    (defun CC_Step14_OpenCustodiansAgency:string
-        (patron:string agency-name:string custodians-dpsf-id:string stake-nonces:[integer] fee-per-mille:integer)
-    )
-    (defun C_IssueGenericEarningVault:string
-        (patron:string owner-konto:string vault-name:string stake-dptf-id:string reward-dptf-id:string)
-    )
-
-)
-
+;; ---- source: 2_CITIZEN/Stage_Z/../5_VaultsMinter/04_AQP-BOOT.pact (module only -- its interface is already live)
 (module AQP-BOOT GOV
 
 

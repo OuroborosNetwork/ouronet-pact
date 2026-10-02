@@ -18,7 +18,7 @@ Counts are of definitions in the tree, interface declarations included.
 | `URC_` | 755 | reads and derives; no `enforce` |
 | `INFO_` | 625 | operation preview returning a client-facing cost and description |
 | `URCi_` | 615 | **cost reader** — the single source both billing and the preview call |
-| `UEV_` | 594 | reads and `enforce`s; failure aborts the transaction |
+| `UEV_` | 595 | reads and `enforce`s; failure aborts the transaction |
 | `A_` | 555 | admin-key mutation |
 | `UC_` | 440 | pure compute on arguments only — no table reads, no `enforce` |
 | `XI_` | 388 | internal write, this module only, under a capability |

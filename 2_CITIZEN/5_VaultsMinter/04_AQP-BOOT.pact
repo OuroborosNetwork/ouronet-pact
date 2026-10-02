@@ -77,6 +77,10 @@
     (defun C_Step0_WireImcAndGovernor:string
         (patron:string)
     )
+    ;;UEV_BootStepState is deliberately NOT declared here. It is an internal guard, not public
+    ;;API, and AcquisitionPoolBootV1 is ALREADY DEPLOYED -- a deployed interface cannot be
+    ;;changed, so declaring it would force a V1->V2 bump and a cascade for a helper nobody calls
+    ;;from outside. The module carries it; the interface does not need to.
     (defun C_Step1_CreateBunnySet:string
         (patron:string kbn-id:string)
     )
@@ -312,6 +316,40 @@
     ;;Step 10 - C_IssueMultipletFamily (OURO / Auryn / Elite-Auryn ATS ladder)
     ;;Step 11 - C_IssueTriplet + C_AddScoreEntity (type 3) + C_AddRewardLink (OURO + multiplet-family) on OuroLpFarm
     ;;Step 12 - C_AddRewardLink on vault/treasury FVT entities (plain rewards)
+
+    ;;<=========================================================================>
+    ;;{5.4}  Validate [UEV]
+    ;;
+    (defun UEV_BootStepState (step-name:string what:string actual:integer expected:integer)
+        @doc "Refuses a bootstrap step whose CHAIN STATE says it has already completed. \
+            \ \
+            \ WHY THIS EXISTS, 2026-10-02. These steps are one-shot populators and none of \
+            \ them was re-run-safe. Every id they create comes from U|DALOS::UDC_Makeid, \
+            \ which seeds on <prev-block-hash> -- block-level, not per-tx. A second run in \
+            \ the SAME block collides on a raw insert and aborts, which looks like protection \
+            \ and is not: a second run in a LATER block gets fresh ids, inserts cleanly, and \
+            \ leaves a COMPLETE DUPLICATE set of entities with no error anywhere. \
+            \ \
+            \ Observed on mainnet. C_DefinePrimordialSet computes (set-class = used + 1) and \
+            \ inserts at that fresh key, so re-running Step 1 does not fail -- it adds a \
+            \ second <Bunny RGB Set> at class 2, identically named, with the same recipe, and \
+            \ the same 120 nonces then compose into either. \
+            \ \
+            \ A CHAIN-STATE CHECK, NOT A STEP LEDGER, and the difference is the point. A \
+            \ ledger records that this module ran something; the state records that the THING \
+            \ EXISTS. Only the second is true retroactively -- it refuses Step 1 on a chain \
+            \ where the set was created before this guard was written, which no ledger row \
+            \ could do. It also cannot drift from reality, which a ledger can."
+        (enforce (= actual expected)
+            (format
+                "AQP-BOOT {} refused: {} is {}, expected {}. Either this step already ran -- \
+                \ it is NOT re-runnable, a second run creates DUPLICATE entities rather than \
+                \ failing -- or its predecessor step has not."
+                [step-name what actual expected]
+            )
+        )
+    )
+
     (defun C_Step0_WireImcAndGovernor:string
         (patron:string)
         @doc "Step 0 — AQP-POOL TFT + DPOF IMC + AQP|SC_NAME governor rotate. \
@@ -368,6 +406,11 @@
         ;;   kbn-id echoed — pass unchanged to Steps 2 and 3
         ;; REPL: (AQP-BOOT.C_Step1_CreateBunnySet KST.ANHD "KBN-98c486052a51")
         (with-capability (GOV|AQP_BOOT_ADMIN)
+            ;;AUTHORISATION FIRST (2026-09-14 ruling): the admin gate is acquired by the
+            ;;with-capability above, so a non-admin is refused before this business check is
+            ;;reached and the check can never be what shadows the gate.
+            (UEV_BootStepState "Step1" "set-classes-used on the collection"
+                (DPDC.UR_SetClassesUsed kbn-id false) 0)
             (KBN.A_BunnyRGBSet patron kbn-id)
             (format "AQP-BOOT Step 1 done. kbn-id={}. NEXT=Step2,Step3:kbn-id={}." [kbn-id kbn-id])
         )
@@ -387,6 +430,11 @@
         ;;           golden) and already quoted. No reordering, no re-quoting.
         ;; REPL: (AQP-BOOT.C_Step2_CreateSnakePowerAnchorClasses KST.ANHD "KBN-98c486052a51")
         (with-capability (GOV|AQP_BOOT_ADMIN)
+            ;;Step 2 issues the collection's FIRST four anchors, so the asset's bookkeeping row
+            ;;must still be empty. UR_AA|AnchorsActive is a with-default-read, so a collection
+            ;;that has never been anchored answers 0 rather than aborting on a missing row.
+            (UEV_BootStepState "Step2" "anchors-active on the collection"
+                (AQP-ANK.UR_AA|AnchorsActive kbn-id) 0)
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -447,6 +495,11 @@
         ;;   anchor-ids[11], boost-class-ids[3] — UnityBooster, StoaBooster, VestaBooster
         ;; REPL: (AQP-BOOT.C_Step3_CreateBoosterAnchorClasses KST.ANHD "KBN-98c486052a51")
         (with-capability (GOV|AQP_BOOT_ADMIN)
+            ;;EXACTLY FOUR, not "at least four". Step 2 leaves 4 and Step 3 adds 11, so 4 is the
+            ;;only count that means "Step 2 done, Step 3 not" -- it pins the predecessor and the
+            ;;re-run in one check. A >= would admit a second run of Step 3 at 15.
+            (UEV_BootStepState "Step3" "anchors-active on the collection"
+                (AQP-ANK.UR_AA|AnchorsActive kbn-id) 4)
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)

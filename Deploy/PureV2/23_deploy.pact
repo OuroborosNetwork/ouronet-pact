@@ -58,7 +58,7 @@
 ;; small link turns 2 of the 6 red, including the distinctness clause -- which is the one that
 ;; matters, since equality alone would pass again the day the bindings are re-shared.
 ;;
-;; The emitted file was LOADED over an already-deployed KBN (`REPL/_scratch_load23.repl`) --
+;; The emitted file was LOADED over an already-deployed KBN (`REPL/_scratch_loadpurev2.repl`) --
 ;; the only check that catches an interface refusal or a left-in create-table, both of which
 ;; cost round V1 a transaction. `_purev2.py --check` separately proves this body is the module
 ;; source byte for byte.

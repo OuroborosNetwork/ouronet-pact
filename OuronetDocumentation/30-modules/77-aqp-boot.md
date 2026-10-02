@@ -34,7 +34,9 @@ A citizen module above the acquisition family.
 | `C_` client | 15 | reached via Talos, never called directly | `C_IssueGenericEarningVault`, `C_Step0_WireImcAndGovernor`, `C_Step10_IssueMultipletFamily`, `C_Step11_WireFarmTriplet`, `C_Step12_AddFvtRewardLinks`, `C_Step13_CreateCustodiansVault` …+9 |
 | *(unclassified)* | 1 | carries no StoicSyntax prefix | `GOV|Demiurgoi` |
 
-> Repository and chain agree on every declared shape.
+> **The repository differs from what is deployed.** Everything above describes the CHAIN, which is what a caller actually reaches. The difference is stated rather than resolved:
+>
+> - **functions** in the repository only: `UEV_BootStepState`
 
 **Capabilities** -- 2
 
