@@ -15,7 +15,7 @@ arrange.
   interface and no module.
 - **fn / cap** — counts of `defun` and `defcap` **forms** in the module body. A function declared in
   an interface and defined in the module is counted once here (the interface half is excluded),
-  which is why these sum lower than the tree-wide 8,849 on the front page. Different question,
+  which is why these sum lower than the tree-wide 8,871 on the front page. Different question,
   different number, both stated.
 - **sch/tbl** — `defschema` and `deftable` forms in the file.
 - **`@doc`** — the module author's own first clause, truncated. It is orientation, not a
@@ -134,7 +134,7 @@ is*; that section answers *what it does and why*.
 
 ### Reads
 
-14 file(s) · 13 module(s) · 13 interface(s) · 9,711 lines
+15 file(s) · 14 module(s) · 14 interface(s) · 10,128 lines
 
 | module | file | lines | fn | cap | sch/tbl | its own one-line `@doc` |
 |---|---|---:|---:|---:|---:|---|
@@ -151,6 +151,7 @@ is*; that section answers *what it does and why*.
 | `O-UI-NINE` | `Stage_Z/AppReads/OuronetUI/09_O-UI-NINE.pact` | 481 | 14 | 2 | 0/0 | What an unpriceable row degrades to. |
 | `O-UI-TEN` | `Stage_Z/AppReads/OuronetUI/10_O-UI-TEN.pact` | 388 | 12 | 2 | 0/0 | Does this non-fungible nonce exist? `existance` flips the sense, so one function answers both `burn` (must exist) and `respawn` (must not). |
 | `O-UI-TWELVE` | `Stage_Z/AppReads/OuronetUI/12_O-UI-TWELVE.pact` | 491 | 20 | 2 | 0/0 | What a failing panel yields from URC_Pool. |
+| `O-UI-THIRTEEN` | `Stage_Z/AppReads/OuronetUI/13_O-UI-THIRTEEN.pact` | 417 | 12 | 2 | 0/0 | The anchored asset's kind, as one word, from the [bool] discriminator AQP-ANK stores. |
 | `P-UI-ONE` | `Stage_Z/AppReads/Pythia/01_P-UI-ONE.pact` | 129 | 4 | 2 | 0/0 | The API-key row for each Apollo account (₱. |
 
 ### Citizen
@@ -194,12 +195,12 @@ is*; that section answers *what it does and why*.
 
 | | |
 |---|---|
-| files | 105 |
-| module forms | 99 |
-| interface forms | 98 |
-| lines | 123,084 |
-| `defun` forms | 5,573 |
-| `defcap` forms | 987 |
+| files | 106 |
+| module forms | 100 |
+| interface forms | 99 |
+| lines | 123,501 |
+| `defun` forms | 5,585 |
+| `defcap` forms | 989 |
 | schemas / tables | 206 / 231 |
 <!-- @end:module-map -->
 
@@ -216,9 +217,9 @@ because two generated numbers disagreeing in the same folder reads as one of the
 
 | figure | front page | this page | why |
 |---|---|---|---|
-| `defun` forms | 8,849 | **5,572** | the front page counts the whole file; this page counts the module BODY only. The 3,276 difference is interface declarations — the same function named in an interface and defined in the module. |
+| `defun` forms | 8,871 | **5,572** | the front page counts the whole file; this page counts the module BODY only. The 3,276 difference is interface declarations — the same function named in an interface and defined in the module. |
 | `defcap` forms | 988 | **987** | exactly one `defcap` is declared in an *interface* rather than a module: `1_SOVEREIGN/STAGE_02/2_Core/03_AQP/01_ANK.pact`. Verified by scanning every file's pre-`(module …)` head. |
-| lines | 123,084 | 123,084 | agree, deliberately. The generator counts newlines only — `wc -l` semantics. A "logical lines" count gives 123,157, because 73 files in the tree lack a trailing newline. |
+| lines | 123,501 | 123,501 | agree, deliberately. The generator counts newlines only — `wc -l` semantics. A "logical lines" count gives 123,574, because 73 files in the tree lack a trailing newline. |
 
 The line-count case is the instructive one. Counting a final unterminated line *as a line* is
 arguably more correct, and it was the wrong choice: it put a 73-line discrepancy between two

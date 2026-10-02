@@ -56,7 +56,7 @@ explanation*, because stating precisely what an assertion proved exposed that it
 
 | | |
 |---|---:|
-| **distinct assertions written** | **6,111** |
+| **distinct assertions written** | **6,132** |
 | **assertions executed per full gate run** | **26,225** |
 | &nbsp;&nbsp;positive (`expect`) | 21,025 |
 | &nbsp;&nbsp;negative (`expect-failure`) | 5,200 |

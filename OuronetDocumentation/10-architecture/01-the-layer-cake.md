@@ -12,7 +12,7 @@ and — more importantly — shows that they are **mechanically checked rather t
 
 ## 1. Why a layer cake at all
 
-Ouronet is 123,084 lines of Pact across 105 files. At that size the question is not "is each
+Ouronet is 123,501 lines of Pact across 105 files. At that size the question is not "is each
 function correct" but "can anyone tell?" — and the answer depends almost entirely on whether a
 reader can know what a function is *allowed* to do without reading it.
 
@@ -180,7 +180,7 @@ python3 REPL/tools/_conformance.py
 # OBSERVATIONS: 106   (the doc is narrower than the code's correct practice)
 ```
 
-Twenty-six structural rules, zero violations across 123,084 lines. The rules include: `UC_`
+Twenty-six structural rules, zero violations across 123,501 lines. The rules include: `UC_`
 functions read no tables, `UR_` functions neither `enforce` nor write, `XI_` functions never
 validate, `XE_` functions start with the inter-module gate, no module-reference parameters, no dead
 modref bindings, every table is created, every `X*` declares its protection.

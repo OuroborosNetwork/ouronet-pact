@@ -15,7 +15,7 @@ Counts are of definitions in the tree, interface declarations included.
 |---|---:|---|
 | `UR_` | 1,469 | reads one row or field by key |
 | `C_` | 1,374 | client entry — builds the bill; reachable only through Talos |
-| `URC_` | 755 | reads and derives; no `enforce` |
+| `URC_` | 768 | reads and derives; no `enforce` |
 | `INFO_` | 625 | operation preview returning a client-facing cost and description |
 | `URCi_` | 615 | **cost reader** — the single source both billing and the preview call |
 | `UEV_` | 595 | reads and `enforce`s; failure aborts the transaction |
@@ -25,8 +25,8 @@ Counts are of definitions in the tree, interface declarations included.
 | `UDC_` | 330 | data construction — a named constructor for an object |
 | `XE_` | 328 | entry point for other modules only |
 | `CT_` | 279 | a constant, exposed as a function |
-| `GOV|` | 158 | governance — keysets and protocol constants |
-| `URH_` | 128 | **scan** — walks a table. Off the execution path; cost grows with data |
+| `GOV|` | 159 | governance — keysets and protocol constants |
+| `URH_` | 136 | **scan** — walks a table. Off the execution path; cost grows with data |
 | `P|` | 121 | policy — inter-module authorisation |
 | `CC_` | 86 | client entry that reaches a **scan** |
 | `XB_` | 70 | callable both internally and externally |

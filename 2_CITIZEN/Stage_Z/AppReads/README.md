@@ -44,7 +44,7 @@ neighbours.
 | 10 | `O-UI-TEN` | Collectables | **built** — fixes an unreachable Wipe button |
 | 11 | `O-UI-ELEVEN` | AtsPairs | **blocked — no UI** |
 | 12 | `O-UI-TWELVE` | SwpPairs | **built** — pools + swap previews, two testing postures in one module |
-| 13 | `O-UI-THIRTEEN` | EarningPools | not started |
+| 13 | `O-UI-THIRTEEN` | EarningPools | **slice 1 built** — anchors, client + manager. Scores/pools/aggregators pending |
 | 14 | `O-UI-FOURTEEN` | Launchpad | not started |
 | 15 | `O-UI-FIFTEEN` | StoaLiquidStaking | not started |
 | 16 | `O-UI-SIXTEEN` | NFTMarketPlace | Stage 3 — does not exist |

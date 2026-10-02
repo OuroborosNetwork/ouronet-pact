@@ -1778,3 +1778,159 @@
 )
 (env-sigs [])
 (rollback-tx)
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "TX-BOOT-13 - O-UI-THIRTEEN reads the anchors Steps 2 and 3 just issued")
+(env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
+;;==== TX-BOOT-13 · 01 · load the read module ==== ================================================
+(print "--- [TX-BOOT-13 · 01 · load the read module] ---")
+;;THE FIXTURE LIVES HERE AND NOT IN APPREADS-OuronetUI, which is where every other O-UI-* module
+;;is tested, for one reason: that chain has NO ANCHORS. Loaded there, every read below returns an
+;;empty list and passes -- satisfying RULES.md rule 7 ("every function must be callable in the
+;;fixture") to the letter while proving nothing. Here the preceding transactions have just issued
+;;15 anchors across 6 boost classes, so the reads are exercised against the state they exist for.
+(env-sigs
+  [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+(namespace "ouronet-ns")
+(load "../../2_CITIZEN/Stage_Z/AppReads/OuronetUI/13_O-UI-THIRTEEN.pact")
+(env-sigs [])
+;;==== TX-BOOT-13 · 02 · the catalogue, against known state ==== ==================================
+(print "--- [TX-BOOT-13 · 02 · the catalogue, against known state] ---")
+(let
+    (
+        (kbn-id:string "KBN-98c486052a51")
+        (cat:[object] (O-UI-THIRTEEN.URH_13|AnchorCatalogue))
+        (classes:[object] (O-UI-THIRTEEN.URH_13|BoostClasses KST.ANHD))
+    )
+    (map print
+        [
+            ;;Step 2 issues 4 anchors and Step 3 issues 11. The catalogue is the chain's own
+            ;;enumerator, so this asserts the read agrees with what the writes claimed.
+            ;;NOT a hardcoded 15. This chain runs [6.2.1]_AQP-ANK before [6.2.9], which issues
+            ;;and revokes anchors of its own, so the fixture holds 30 -- and a literal would
+            ;;have to be re-chased every time a sibling suite changes. Asserted against the
+            ;;chain's OWN enumerator, which is the thing the catalogue claims to reproduce.
+            (expect "<<OUI13-A1>> the catalogue reproduces AQP-ANK's enumerator exactly"
+                (length (AQP-ANK.URH_ANK|AllAnchorIds)) (length cat))
+            (expect "<<OUI13-A1>> and the class view reproduces the class enumerator"
+                (length (AQP-ANK.URH_BC|AllBoostClassIds)) (length classes))
+            (expect "<<OUI13-A1>> Step 2 and Step 3's 15 are a SUBSET of what is there"
+                true (<= 15 (length cat)))
+            ;;THE SLOT SUM IS THE CROSS-CHECK, and writing it caught a semantic I had wrong.
+            ;;`slots-used` is the class's STORED count and it tracks LIVE slots only -- revoking
+            ;;an anchor frees its slot. The derived member list is every anchor whose
+            ;;boost-class-id still points at the class, revoked ones INCLUDED, because the UI
+            ;;lists a revoked anchor rather than hiding it (syncing one takes a user's promille
+            ;;to zero, which they need to see coming).
+            ;;
+            ;;So the two totals are NOT equal, and asserting that they were is what exposed it:
+            ;;16 live slots against 30 members in this fixture. The real invariant is that the
+            ;;ACTIVE members reproduce the slot count.
+            (expect "<<OUI13-A1>> every anchor belongs to exactly one class"
+                (length cat)
+                (fold (+) 0 (map (lambda (c:object) (length (at "members" c))) classes)))
+            (expect "<<OUI13-A1>> and the ACTIVE members reproduce the stored slot counts"
+                (fold (+) 0 (map (lambda (c:object) (at "slots-used" c)) classes))
+                (fold (+) 0 (map (lambda (c:object)
+                                     (length (filter (lambda (m:object) (at "active" m))
+                                                     (at "members" c))))
+                                 classes)))
+        ]
+    )
+    ""
+)
+;;==== TX-BOOT-13 · 03 · one row, every field ==== ================================================
+(print "--- [TX-BOOT-13 · 03 · one row, every field] ---")
+(let
+    (
+        (row:object (O-UI-THIRTEEN.URC_13|AnchorRow "OuroborosRain-98c486052a51"))
+    )
+    (map print
+        [
+            (expect "<<OUI13-A2>> the anchored asset is the Bunny collection"
+                "KBN-98c486052a51" (at "asset-id" row))
+            ;;The asset NAME is the point of the row. An id tells a user nothing.
+            (expect "<<OUI13-A2>> resolved through DPDC, not left as an id"
+                (DPDC.UR_Name "KBN-98c486052a51" false) (at "asset-name" row))
+            (expect "<<OUI13-A2>> fungibility [false false] decodes to dpnf"
+                "dpnf" (at "asset-kind" row))
+            (expect "<<OUI13-A2>> Step 2 issued it at 50 promille"
+                50.0 (at "promille" row))
+            (expect "<<OUI13-A2>> into the Bronze class"
+                "BronzeSnakePower-98c486052a51" (at "boost-class-id" row))
+            ;;The TRAIT branch of the four-way terms render. A set anchor would say "set class N",
+            ;;and the discriminator between them is nonce-class = -1, which is the only way to tell.
+            (expect "<<OUI13-A2>> terms render the TRAIT branch, not the set branch"
+                "trait Background = Ouroboros Rain" (at "terms" row))
+        ]
+    )
+    ""
+)
+;;==== TX-BOOT-13 · 04 · the kind decoder, all three tuples ==== ==================================
+(print "--- [TX-BOOT-13 · 04 · the kind decoder, all three tuples] ---")
+;;Asserted DIRECTLY rather than through a row, because only one of the three kinds exists in this
+;;fixture -- the Bunny collection is non-fungible. A decoder tested only on the kind that happens
+;;to be present is a decoder with two untested branches.
+(map print
+    [
+        (expect "<<OUI13-A3>> [true true] is a true fungible"
+            "dptf" (O-UI-THIRTEEN.URC_13|AnchorKind [true true]))
+        (expect "<<OUI13-A3>> [false true] is semi-fungible (son)"
+            "dpsf" (O-UI-THIRTEEN.URC_13|AnchorKind [false true]))
+        (expect "<<OUI13-A3>> [false false] is non-fungible"
+            "dpnf" (O-UI-THIRTEEN.URC_13|AnchorKind [false false]))
+    ]
+)
+;;==== TX-BOOT-13 · 05 · the account views ==== ===================================================
+(print "--- [TX-BOOT-13 · 05 · the account views] ---")
+(let
+    (
+        (mine:[object] (O-UI-THIRTEEN.URH_13|MyAnchors KST.EMMA))
+        (detail:object (O-UI-THIRTEEN.URC_13|AnchorDetail "OuroborosRain-98c486052a51" KST.EMMA))
+        ;;THE OWNER IS READ, NEVER ASSUMED, and asserting it against KST.ANHD is how this was
+        ;;found: it failed. URH_OwnedCollectables selects on `owner-konto`, and a sovereign asset
+        ;;is owned by a SMART ACCOUNT whose key the admin merely holds -- A_BunnyRGBSet says so
+        ;;in its own comment and reads (UR_OwnerKonto kbn-id false) for exactly this reason.
+        ;;The UI inherits the rule: the manager's asset picker must be queried for the OWNER
+        ;;konto, not for the connected wallet, or it shows an empty list to the actual owner.
+        (kbn-owner:string (DPDC.UR_OwnerKonto "KBN-98c486052a51" false))
+        (owned:[object] (O-UI-THIRTEEN.URH_13|MyAnchorableAssets kbn-owner))
+    )
+    (map print
+        [
+            ;;EMMA has staked nothing, so her promille is zero everywhere and the A view is
+            ;;EMPTY -- which is a real answer and the one the empty-state screen is built for.
+            ;;The filter is what is under test: without it this would return all 15.
+            (expect "<<OUI13-A4>> an account with no stake holds no anchors"
+                0 (length mine))
+            (expect "<<OUI13-A4>> ...and the detail view still answers, at zero"
+                0.0 (at "my-promille" detail))
+            (expect "<<OUI13-A4>> the detail names the REPAIR unit -- the asset, not the anchor"
+                "KBN-98c486052a51" (at "repair-asset-id" detail))
+            (expect "<<OUI13-A4>> and carries the staleness flag the repair button reads"
+                true (contains "needs-sync" detail))
+            ;;The manager picker. ANHD owns the Bunny collection, so it must appear with its
+            ;;anchor count against the 49-slot cap.
+            ;;The owner is a smart account, not the admin konto -- pinned so the distinction
+            ;;cannot quietly stop being true.
+            (expect "<<OUI13-A5>> the collection owner is NOT the admin's own konto"
+                false (= KST.ANHD kbn-owner))
+            (expect "<<OUI13-A5>> the owner's anchorable assets include the Bunny collection"
+                true (< 0 (length (filter (lambda (o:object)
+                                              (= "KBN-98c486052a51" (at "asset-id" o)))
+                                          owned))))
+            (expect "<<OUI13-A5>> and it reports all 15 anchors against the 49-slot cap"
+                15 (at "anchors-used"
+                       (at 0 (filter (lambda (o:object)
+                                         (= "KBN-98c486052a51" (at "asset-id" o)))
+                                     owned))))
+        ]
+    )
+    ""
+)
+;;==== TX-BOOT-13 · 06 · gas echo ==== ===========================================================
+(print "--- [TX-BOOT-13 · 06 · gas echo] ---")
+(print (format "<<<<<<<O-UI-THIRTEEN anchor reads cost {} GAS>>>>>>>" [(env-gas)]))
+(commit-tx)
