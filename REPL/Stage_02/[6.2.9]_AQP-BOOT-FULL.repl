@@ -1890,11 +1890,19 @@
         (mine:[object] (O-UI-THIRTEEN.URH_13|MyAnchors KST.EMMA))
         (detail:object (O-UI-THIRTEEN.URC_13|AnchorDetail "OuroborosRain-98c486052a51" KST.EMMA))
         ;;THE OWNER IS READ, NEVER ASSUMED, and asserting it against KST.ANHD is how this was
-        ;;found: it failed. URH_OwnedCollectables selects on `owner-konto`, and a sovereign asset
-        ;;is owned by a SMART ACCOUNT whose key the admin merely holds -- A_BunnyRGBSet says so
-        ;;in its own comment and reads (UR_OwnerKonto kbn-id false) for exactly this reason.
-        ;;The UI inherits the rule: the manager's asset picker must be queried for the OWNER
-        ;;konto, not for the connected wallet, or it shows an empty list to the actual owner.
+        ;;found: it failed. URH_OwnedCollectables selects on `owner-konto`, and the account that
+        ;;RUNS the boot steps is not necessarily the one that OWNS the collection -- here the
+        ;;steps run as ANHD/patron while KBN is owned by KST.LUMY (measured, not inferred).
+        ;;
+        ;;CORRECTED 2026-10-03 (owner). The first version of this comment said the collection is
+        ;;owned by a SMART ACCOUNT. It is not, in either environment: KST.LUMY is an ordinary
+        ;;test account, and on mainnet SBN-SUVEHxb9UQ6_ is owned by the operator's own konto --
+        ;;(DPDC.UR_OwnerKonto "SBN-SUVEHxb9UQ6_" false) returns the signing account. The phrase
+        ;;was lifted from A_BunnyRGBSet's note about SOVEREIGN assets and applied where it does
+        ;;not hold. What the failure actually proves is only the weaker, true thing: CALLER AND
+        ;;OWNER CAN DIFFER, so the picker must be queried for the owner konto. On mainnet they
+        ;;happen to coincide, which is exactly why asserting it in a fixture is worth more than
+        ;;checking it once in production.
         (kbn-owner:string (DPDC.UR_OwnerKonto "KBN-98c486052a51" false))
         (owned:[object] (O-UI-THIRTEEN.URH_13|MyAnchorableAssets kbn-owner))
     )
@@ -1913,9 +1921,9 @@
                 true (contains "needs-sync" detail))
             ;;The manager picker. ANHD owns the Bunny collection, so it must appear with its
             ;;anchor count against the 49-slot cap.
-            ;;The owner is a smart account, not the admin konto -- pinned so the distinction
-            ;;cannot quietly stop being true.
-            (expect "<<OUI13-A5>> the collection owner is NOT the admin's own konto"
+            ;;Caller and owner differ here -- pinned so the picker can never be quietly
+            ;;re-pointed at the calling account and still pass.
+            (expect "<<OUI13-A5>> the collection owner is NOT the account running these steps"
                 false (= KST.ANHD kbn-owner))
             (expect "<<OUI13-A5>> the owner's anchorable assets include the Bunny collection"
                 true (< 0 (length (filter (lambda (o:object)
