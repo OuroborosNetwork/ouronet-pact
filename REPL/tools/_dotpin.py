@@ -23,10 +23,25 @@ for a first deploy and says nothing about who must be REFRESHED after a single-m
 naming it must bump too. This is a DIFFERENT cascade with no rule attached: upgrade B's BODY and
 every module that dot-calls B keeps the old body, silently, with no version to disagree about.
 
-WHAT IS AND IS NOT AT RISK. Only CODE is pinned; TABLES are not. A pinned `UR_Konto` still reads
-the live table, so a pure reader whose logic has not changed is harmless. The damage is where the
-callee's BEHAVIOUR changed -- a constant in the body, a new guard, a corrected formula -- which is
-exactly the KBN case: two hardcoded URL strings.
+TWO SEVERITIES, AND THE SECOND IS WORSE THAN STALENESS. Measured 2026-10-03, both directions:
+
+    callee fn is PURE COMPUTE      upgrade B -> A.g returns the OLD value. Silent. Stale.
+    callee fn READS B'S TABLES     upgrade B -> A.g ABORTS:
+                                     "Execution aborted, hash not blessed for module B: <hash>"
+
+The second is not a stale answer, it is a DEAD CALLER. Pact rejects table access from code
+carrying a superseded module hash unless that hash is explicitly `bless`ed. THE TREE CONTAINS
+ZERO `bless` CALLS -- grepped -- so every dot edge whose callee touches its own tables is a latent
+hard break on that callee's next upgrade, and the planner's dependency order says nothing about it
+because a first deploy has no superseded hash to reject.
+
+KBN survived only because it owns NO TABLES: `A_BunnyRGBSet` computes and calls outward, so the
+pinned copy ran happily and wrote the previous artwork. Had KBN owned a table, Step 1 would have
+aborted instead -- louder, and far easier to diagnose.
+
+Only CODE is pinned; TABLE CONTENTS are not. A pinned reader that still resolves returns CURRENT
+data -- verified: a row written after the pin reads back through it correctly. The exposure is the
+callee's own logic, and its own table ACCESS RIGHTS.
 
 USAGE
   python3 REPL/tools/_dotpin.py                   every dot edge, grouped by callee
@@ -102,6 +117,21 @@ def scan():
     return out
 
 
+def _reads_own_tables(mod):
+    """Does `mod` touch its own tables anywhere? That is the severity switch: a pinned caller of
+    a table-touching module ABORTS on upgrade, where a pinned caller of a pure one merely goes
+    stale. Deliberately coarse -- module-level, not per-function -- because a caller pins the
+    whole module, and because under-reporting here produces a silent hard break."""
+    for p in _files():
+        raw = open(p, encoding="utf8", errors="ignore").read()
+        if re.search(r'^\(module\s+' + re.escape(mod) + r'\b', raw, re.M):
+            body = re.sub(r';;[^\n]*', '', raw)
+            if re.search(r'\((?:read|with-read|with-default-read|select|keys|insert|update|write|'
+                         r'fold-db|txids|txlog)\s', body):
+                return True
+    return False
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--upgrade", metavar="MODULE",
@@ -116,8 +146,16 @@ def main():
         if not hit:
             print(f"{a.upgrade}: no module dot-calls it -- upgrading it refreshes every caller.")
             return 0
-        print(f"UPGRADING {a.upgrade} PINS STALE CODE INTO {len(hit)} MODULE(S).")
-        print("Redeploy these AFTER it, or they keep calling the version they were built on:\n")
+        tabled = _reads_own_tables(a.upgrade)
+        verb = ("HARD-BREAKS" if tabled else "PINS STALE CODE INTO")
+        print(f"UPGRADING {a.upgrade} {verb} {len(hit)} MODULE(S).")
+        if tabled:
+            print(f"   {a.upgrade} reads its OWN tables, so a pinned caller does not go stale -- it")
+            print(f"   ABORTS with 'hash not blessed'. The tree blesses nothing. These must be")
+            print(f"   redeployed IN THE SAME ROUND, not eventually:\n")
+        else:
+            print(f"   {a.upgrade} touches no table of its own, so pinned callers keep WORKING with")
+            print(f"   the OLD logic -- silently. Redeploy these or they answer from the old body:\n")
         for f in hit:
             n = sum(1 for g, c, _, _ in edges if g == f and c == a.upgrade)
             print(f"   {f}   ({n} call site(s))")

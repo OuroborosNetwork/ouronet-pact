@@ -60,32 +60,63 @@ So the whole slice composes normally, inside `try` if wanted, with no node flag.
 | class active / score-link lock | `UR_BC\|Active` · `UR_BC\|ScoreLinkCount` |
 | staleness | `AQP::URC_BenDptfAnchorsNeedSync` · `URC_BenDpsfAnchorsNeedSync` · `URC_BenDpnfAnchorsNeedSync` |
 
-## THE ONE GAP — `class-owner`, and the two member-slot fields
+## THE ONE GAP — `class-owner`, and where the dot call belongs
 
-`ANK|BoostClass` carries `class-owner`, and the only reader that exposes it is `UR_BC|Data`,
-which returns `object{...}` and is therefore **module-only** — the interface object-return rule
-keeps it out of `AcquisitionAnchorsV1`. Same for the seven `anchor-*` slot fields;
-`UR_BC|Anchors` returns only the **count** (`1` for BronzeSnakePower today).
+`ANK|BoostClass` carries `class-owner`, and the only reader exposing it is `UR_BC|Data`, which
+returns an object and is therefore **module-only** — the interface object-return rule keeps it out
+of `AcquisitionAnchorsV1`. Same for the seven `anchor-*` slots; `UR_BC|Anchors` returns only the
+**count**.
 
 It matters because `acnoi=false` — attaching an anchor to an **existing** class — is enforced
-against `class-owner`. Without it the manager cannot say which classes you may attach to; it can
-only offer all of them and let the chain refuse.
+against `class-owner`. Without it the manager cannot say which classes you may attach to.
 
-Three ways out, and the cheapest is right:
+### The resolution, after measuring what a dot call actually does
 
-1. **Dot-call `AQP-ANK.UR_BC|Data` from O-UI-THIRTEEN.** Works today (probed). Precedent exists:
-   `O-UI-FOUR` already dot-calls `STOAICO` in six places. The cost is the pin — a dot call
-   freezes AQP-ANK's code into the read module — but `UR_BC|Data` is a plain table read whose
-   logic is stable, and only CODE pins, never TABLES. Register the edge in `_dotpin.py` so
-   "redeploy O-UI-THIRTEEN after any AQP-ANK change" is mechanical rather than remembered. Read
-   modules own no tables and are redeployed freely, which is exactly the case where a pin is
-   cheap.
-2. Bump `AcquisitionAnchorsV1` → `V2` to add `UR_BC|Owner` and `UR_BC|Slots`. Correct, and it
-   drags a cascade across the AQP family plus an AQP-ANK redeploy for two accessors.
-3. Live without the owner. The manager lists every class and lets failures teach.
+Owner, 2026-10-03: *"there is no problem calling read functions with dot — it's only when they are
+called from within a module that they call the version that existed when the module was deployed.
+Calling it by dot for a read always uses the latest module."*
 
-**Taking (1).** The member slots need no decision at all: filter `URH_ANK|AllAnchorIds` by
-`UR_ANK|BoostClassId`, which is one pass over a list we already fetch.
+Correct, and the measurement adds the part that decides the design. Both cases, in a scratch REPL:
+
+```
+TOP-LEVEL dot call, after the callee upgrades    ->  20   (the NEW logic)
+IN-MODULE dot call, after the callee upgrades    ->  ABORTS:
+      "Execution aborted, hash not blessed for module B: _elYB7H8y…"
+```
+
+So an in-module dot call into a callee that reads **its own tables** does not go stale — it
+**dies**. Pact refuses table access from code carrying a superseded module hash unless that hash
+is `bless`ed, and **the tree contains zero `bless` calls.**
+
+(KBN survived its own pin only because it owns no tables: `A_BunnyRGBSet` computes and calls
+outward, so the pinned copy ran and wrote the previous artwork. Had KBN owned a table, Step 1
+would have aborted instead — louder, and much easier to diagnose.)
+
+**Therefore: O-UI-THIRTEEN must NOT dot-call `AQP-ANK.UR_BC|Data`.** AQP-ANK reads its own tables,
+so every AQP-ANK upgrade would hard-break the read module until it was redeployed in the same
+round. The earlier recommendation to register the edge in `_dotpin.py` and accept it was wrong.
+
+**The call goes in the UI instead, at `/local` top level, where it always resolves to the latest
+module.** Verified against the live chain in ONE call:
+
+```pact
+(map (lambda (c:string)
+       { "id": c
+       , "owner":  (at "class-owner"  (ouronet-ns.AQP-ANK.UR_BC|Data c))
+       , "slots":  (at "anchors"      (ouronet-ns.AQP-ANK.UR_BC|Data c))
+       , "active": (at "class-active" (ouronet-ns.AQP-ANK.UR_BC|Data c)) })
+     (ouronet-ns.AQP-ANK.URH_BC|AllBoostClassIds))
+```
+
+```
+BronzeSnakePower-k7qp4IxC984L  slots=1  active=True  owner=Ѻ.éXødVțrřĄθ7ΛдUŒj…
+GoldenSnakePower-k7qp4IxC984L  slots=2   SilverSnakePower-k7qp4IxC984L  slots=1
+StoaBooster-yd67psaR1LFA       slots=2   UnityBooster-yd67psaR1LFA      slots=4
+VestaBooster-yd67psaR1LFA      slots=5                      (1+2+1+2+4+5 = 15 anchors)
+```
+
+Zero coupling, always latest, and the UI already composes read strings this way elsewhere. The
+member slots need no decision either: filter `URH_ANK|AllAnchorIds` by `UR_ANK|BoostClassId`.
 
 ## Proposed surface — `O-UI-THIRTEEN`, anchors slice only
 
@@ -93,7 +124,8 @@ Three ways out, and the cheapest is right:
 URC_13|AnchorCatalogue   ()                 B · every anchor, alphabetical, with its class + terms
 URC_13|MyAnchors         (account)          A · the same rows + my promille + staleness, non-zero only
 URC_13|AnchorDetail      (anchor-id account) one anchor: terms, my promille vs its max, class, asset
-URC_13|BoostClasses      (account)          C · every class + slots used + score-link lock + my aggregate
+URC_13|BoostClasses      (account)          C · slots used, score-link lock, my aggregate
+                                            (NOT owner -- the UI reads that top-level, see above)
 URH_13|MyAnchorableAssets(account)          manager · TF + SF + NF I own, each with name/ticker/kind
 URC_13|MyBoostClasses    (account)          manager · the classes I own, i.e. may attach to
 ```
