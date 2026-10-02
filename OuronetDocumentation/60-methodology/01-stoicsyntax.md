@@ -10,7 +10,7 @@ That is the whole idea. What follows is the system, and the next chapter
 
 ## 1. Why a codebase needs this
 
-123,058 lines of Pact. At that size the question stops being *"is this function correct"* and
+123,070 lines of Pact. At that size the question stops being *"is this function correct"* and
 becomes *"can anyone tell?"* — and the answer depends almost entirely on whether a reader can know
 what a function is **allowed** to do without reading it.
 
@@ -194,7 +194,7 @@ Three things follow mechanically from the naming, and they are the reason it ear
 
 1. **A reviewer can read a call site.** `(UC_Split a b)` cannot touch a table. `(URH_Holdings acct)`
    scans. You know before you look.
-2. **A machine can check it.** `_conformance.py` runs 26 structural rules across 123,058 lines and
+2. **A machine can check it.** `_conformance.py` runs 26 structural rules across 123,070 lines and
    reports **0 violations** — `UC_` never reads, `UR_` never enforces, `XI_` never validates, `XE_`
    always starts with its inter-module gate. None of those checks is possible without the naming.
 3. **The exceptions are bounded.** Where the code legitimately does something the rule does not

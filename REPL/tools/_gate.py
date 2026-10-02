@@ -409,6 +409,32 @@ def main():
         sys.exit("GATE FAILED: a dead let-binding shadows an over-read near-twin "
                  "-- see _deadbind.py --twins.")
 
+    # CROSS-MODULE DOT CALLS, added 2026-10-02 after one cost a live transaction.
+    #
+    # A dot call -- `(KBN.A_BunnyRGBSet ...)` -- resolves at the CALLER's deploy time and PINS the
+    # callee's code into the caller. A modref -- `(ref-KBN::...)` -- resolves at runtime. Measured
+    # side by side in a scratch REPL: upgrade B, and `B.f` returns the new body while `A.g` (which
+    # dot-calls it) returns the old one.
+    #
+    # Mainnet: KBN was upgraded at block 621,458 to write Arweave artwork into the Bunny RGB Set;
+    # AQP-BOOT's Step 1 ran at 621,472 -- FOURTEEN BLOCKS LATER -- and wrote the old placeholder
+    # strings, because AQP-BOOT still carried the KBN it was compiled against. Repaired by hand.
+    #
+    # The planner orders a round by DEPENDENCY, which is right for a first deploy and silent about
+    # who must be REFRESHED after a single-module upgrade. CLAUDE.md's cascade rule covers
+    # INTERFACES; this is a different cascade with no version to disagree about -- the caller and
+    # callee agree on every signature and differ only in which BODY runs.
+    #
+    # The threshold is zero NEW edges, not zero edges: 344 sites exist and most are stable reads
+    # where only code, never tables, is pinned. Registering them makes each one a decision with a
+    # reason rather than a default, and makes a new one visible on the day it is written.
+    _r = subprocess.run([sys.executable, "tools/_dotpin.py", "--check"],
+                        capture_output=True, text=True)
+    print(_r.stdout.rstrip() or _r.stderr.rstrip())
+    if _r.returncode != 0:
+        sys.exit("GATE FAILED: an unregistered cross-module DOT call pins the callee's code "
+                 "-- see _dotpin.py --check.")
+
     # AUDIT BOOK TABLES -- the book's headline tables must sum to their own totals, and Part III's
     # must match the attack register in the tree. Added 2026-09-17 after Part I's verification pass
     # found an audit tracker that said "FIXED: 19" while enumerating 18, with a compensating

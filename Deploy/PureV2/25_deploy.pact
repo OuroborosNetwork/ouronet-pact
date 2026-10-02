@@ -374,6 +374,18 @@
             ;;reached and the check can never be what shadows the gate.
             (UEV_BootStepState "Step1" "set-classes-used on the collection"
                 (DPDC.UR_SetClassesUsed kbn-id false) 0)
+            ;;A DOT CALL, AND IT PINS KBN'S CODE INTO THIS MODULE at AQP-BOOT's deploy time.
+            ;;KBN implements no interface, so there is nothing to modref -- which is why this is
+            ;;the only non-modref call in the file. The consequence is not theoretical:
+            ;;
+            ;;  block 621,458  KBN upgraded to write the Arweave artwork
+            ;;  block 621,472  THIS step ran and wrote the OLD placeholder strings
+            ;;
+            ;;because AQP-BOOT had not been redeployed and was still carrying the KBN it was
+            ;;compiled against. The set had to be repaired by hand with C_UpdateSetNonceURI.
+            ;;
+            ;;SO: ANY KBN CHANGE REQUIRES REDEPLOYING AQP-BOOT. `_dotpin.py --upgrade KBN` says
+            ;;so mechanically, and `--check` is gate-fatal on a new unregistered dot edge.
             (KBN.A_BunnyRGBSet patron kbn-id)
             (format "AQP-BOOT Step 1 done. kbn-id={}. NEXT=Step2,Step3:kbn-id={}." [kbn-id kbn-id])
         )

@@ -155,7 +155,7 @@ is*; that section answers *what it does and why*.
 
 ### Citizen
 
-18 file(s) · 19 module(s) · 8 interface(s) · 10,897 lines
+18 file(s) · 19 module(s) · 8 interface(s) · 10,909 lines
 
 | module | file | lines | fn | cap | sch/tbl | its own one-line `@doc` |
 |---|---|---:|---:|---:|---:|---|
@@ -167,7 +167,7 @@ is*; that section answers *what it does and why*.
 | `BLOODSHED-SETS` | `2_BloodshedMinter/05_BSD-SETS.pact` | 1,214 | 18 | 3 | 0/0 | The Ouronet account that owns NFT collection <dhb> -- the EXECUTOR of every set definition below. |
 | `NOSFERATU` | `3_NosferatuMinter/01_NOSFERATU.pact` | 488 | 56 | 3 | 1/0 | Maps a <rarity, position, count> rung to the ABSOLUTE collectable nonces it addresses, using fixed per-rarity bases: Legendary 0, Epic 100, Rare 300,… |
 | `KBN` | `4_BunniesMinter/02_KBunnies.pact` | 326 | 23 | 3 | 1/0 | — |
-| `AQP-BOOT` | `5_VaultsMinter/04_AQP-BOOT.pact` | 1,291 | 18 | 2 | 0/0 | Refuses a bootstrap step whose CHAIN STATE says it has already completed. |
+| `AQP-BOOT` | `5_VaultsMinter/04_AQP-BOOT.pact` | 1,303 | 18 | 2 | 0/0 | Refuses a bootstrap step whose CHAIN STATE says it has already completed. |
 | `CADUCEUS`, `CADUCEUS` | `6_OuronetBridge/03_CADUCEUS.pact` | 397 | 22 | 7 | 2/2 | Barebones Stage 2 Citizen module scaffold for Caduceus bridge. |
 | `DEMIPAD-SPARK` | `7_Launchpad/1_Spark/01_Spark.pact` | 791 | 37 | 10 | 1/3 | Registers <policy-guard> as a trusted inter-module caller of this module. |
 | `DEMIPAD-SNAKES` | `7_Launchpad/2_Snakes/02_Snakes.pact` | 571 | 27 | 8 | 1/3 | Module defining the Sale Mechanics for Demiourgos Share Holder Collection |
@@ -197,7 +197,7 @@ is*; that section answers *what it does and why*.
 | files | 105 |
 | module forms | 99 |
 | interface forms | 98 |
-| lines | 123,058 |
+| lines | 123,070 |
 | `defun` forms | 5,573 |
 | `defcap` forms | 987 |
 | schemas / tables | 206 / 231 |
@@ -218,7 +218,7 @@ because two generated numbers disagreeing in the same folder reads as one of the
 |---|---|---|---|
 | `defun` forms | 8,849 | **5,572** | the front page counts the whole file; this page counts the module BODY only. The 3,276 difference is interface declarations — the same function named in an interface and defined in the module. |
 | `defcap` forms | 988 | **987** | exactly one `defcap` is declared in an *interface* rather than a module: `1_SOVEREIGN/STAGE_02/2_Core/03_AQP/01_ANK.pact`. Verified by scanning every file's pre-`(module …)` head. |
-| lines | 123,058 | 123,058 | agree, deliberately. The generator counts newlines only — `wc -l` semantics. A "logical lines" count gives 123,131, because 73 files in the tree lack a trailing newline. |
+| lines | 123,070 | 123,070 | agree, deliberately. The generator counts newlines only — `wc -l` semantics. A "logical lines" count gives 123,143, because 73 files in the tree lack a trailing newline. |
 
 The line-count case is the instructive one. Counting a final unterminated line *as a line* is
 arguably more correct, and it was the wrong choice: it put a 73-line discrepancy between two

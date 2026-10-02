@@ -164,7 +164,7 @@ Each file follows one template, so a reader who has read two can navigate any of
 ## Sources                  (file path, line counts, and where figures came from)
 ```
 
-**Do not read 123,058 lines by hand.** `OuronetInformational/MODULE-INDEX.md` is GENERATED from
+**Do not read 123,070 lines by hand.** `OuronetInformational/MODULE-INDEX.md` is GENERATED from
 the tree and already carries, per module: its path, its tables, its function list and a one-line
 purpose. Start there, then open the source for the functions that need the "how" and the "why"
 — which the index does not have and cannot generate.

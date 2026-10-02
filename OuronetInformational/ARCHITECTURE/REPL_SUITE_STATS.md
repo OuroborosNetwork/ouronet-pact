@@ -41,9 +41,9 @@ Two different questions, two different numbers — quoting the wrong one oversta
 | | |
 |---|---:|
 | **distinct assertions written** | **6,108** |
-| assertions **executed** per full gate run | **26,176** |
-| &nbsp;&nbsp;positive (`expect`) | 21,000 |
-| &nbsp;&nbsp;negative (`expect-failure`) | 5,176 |
+| assertions **executed** per full gate run | **26,224** |
+| &nbsp;&nbsp;positive (`expect`) | 21,024 |
+| &nbsp;&nbsp;negative (`expect-failure`) | 5,200 |
 | gate entrypoints | 93 |
 | per-function rows | 5,572 |
 

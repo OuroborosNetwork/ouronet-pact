@@ -27,7 +27,7 @@ scope; quoting one with the other's label is the mistake to avoid.
 find 1_SOVEREIGN 2_CITIZEN -name "*.pact" | wc -l                            # 105
 
 # lines
-find 1_SOVEREIGN 2_CITIZEN -name "*.pact" -exec cat {} + | wc -l             # 123,058
+find 1_SOVEREIGN 2_CITIZEN -name "*.pact" -exec cat {} + | wc -l             # 123,070
 
 # definitions, by kind
 for k in defun defcap defschema deftable defpact; do
