@@ -132,7 +132,7 @@ Stated, because a mental model that hides something important is worse than a co
 ## Sources
 
 Per-layer figures counted 2026-09-27 with `find <dir> -name '*.pact'` and `-exec cat {} + | wc -l`;
-they sum to the 105 files and 123,070 lines on the front page. Layer membership is the directory
+they sum to the 105 files and 123,084 lines on the front page. Layer membership is the directory
 structure of `1_SOVEREIGN/` and `2_CITIZEN/`; module roles from
 `OuronetInformational/MODULE-INDEX.md` (generated) and `MODULE_ARCHITECTURE.md`. **Two counts here were wrong in the first draft and the correction is worth
 keeping**, because it is the failure mode this documentation is built against. The read layer was

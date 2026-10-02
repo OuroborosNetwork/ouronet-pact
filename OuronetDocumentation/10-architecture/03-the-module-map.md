@@ -58,13 +58,13 @@ is*; that section answers *what it does and why*.
 
 ### Core — Stage 1
 
-22 file(s) · 22 module(s) · 29 interface(s) · 42,371 lines
+22 file(s) · 22 module(s) · 29 interface(s) · 42,385 lines
 
 | module | file | lines | fn | cap | sch/tbl | its own one-line `@doc` |
 |---|---|---:|---:|---:|---:|---|
 | `DPMF` | `STAGE_01/2_Core/00_DPMF.pact` | 902 | 53 | 3 | 5/5 | DPMF — the legacy MetaFungible token core, implementing DemiourgosPactMetaFungibleV8. |
 | `DALOS` | `STAGE_01/2_Core/01_DALOS.pact` | 2,124 | 159 | 22 | 10/7 | DALOS — the sovereign identity, executor and ledger core of Ouronet. |
-| `IGNIS` | `STAGE_01/2_Core/02_IGNIS.pact` | 2,077 | 78 | 12 | 7/2 | IGNIS — the virtual-chain gas collector, implementing IgnisCollectorV3 and OuronetInfoV2. |
+| `IGNIS` | `STAGE_01/2_Core/02_IGNIS.pact` | 2,091 | 78 | 12 | 7/2 | IGNIS — the virtual-chain gas collector, implementing IgnisCollectorV3 and OuronetInfoV2. |
 | `BRD` | `STAGE_01/2_Core/04_BRD.pact` | 649 | 34 | 7 | 3/3 | BRD — the branding core for all Ouronet entities (DPTF, DPOF, ATS pairs, SWP pairs and future ones), implementing BrandingV2. |
 | `DPTF` | `STAGE_01/2_Core/05_DPTF.pact` | 3,352 | 200 | 40 | 2/5 | DPTF — the True-Fungible token core, implementing DemiourgosPactTrueFungibleV2 and the primary branding interface. |
 | `DPOF` | `STAGE_01/2_Core/06_DPOF.pact` | 3,479 | 197 | 39 | 7/6 | DPOF — the OrtoFungible token core, the modern successor to DPMF for metadata-rich, NFT-like fungibles; |
@@ -197,7 +197,7 @@ is*; that section answers *what it does and why*.
 | files | 105 |
 | module forms | 99 |
 | interface forms | 98 |
-| lines | 123,070 |
+| lines | 123,084 |
 | `defun` forms | 5,573 |
 | `defcap` forms | 987 |
 | schemas / tables | 206 / 231 |
@@ -218,7 +218,7 @@ because two generated numbers disagreeing in the same folder reads as one of the
 |---|---|---|---|
 | `defun` forms | 8,849 | **5,572** | the front page counts the whole file; this page counts the module BODY only. The 3,276 difference is interface declarations — the same function named in an interface and defined in the module. |
 | `defcap` forms | 988 | **987** | exactly one `defcap` is declared in an *interface* rather than a module: `1_SOVEREIGN/STAGE_02/2_Core/03_AQP/01_ANK.pact`. Verified by scanning every file's pre-`(module …)` head. |
-| lines | 123,070 | 123,070 | agree, deliberately. The generator counts newlines only — `wc -l` semantics. A "logical lines" count gives 123,143, because 73 files in the tree lack a trailing newline. |
+| lines | 123,084 | 123,084 | agree, deliberately. The generator counts newlines only — `wc -l` semantics. A "logical lines" count gives 123,157, because 73 files in the tree lack a trailing newline. |
 
 The line-count case is the instructive one. Counting a final unterminated line *as a line* is
 arguably more correct, and it was the wrong choice: it put a 73-line discrepancy between two

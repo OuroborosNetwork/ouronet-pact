@@ -693,12 +693,6 @@ def check_report():
     # per-file and carry reasons.
     KEEP = {"README.md", "00_MANUAL_rotate-s2-governor.pact",
             "00_MANUAL_probe-live-interfaces.pact",
-            # THE STOA ORACLE PEG, 2026-10-02. `stoa|price` was never written to
-            # DALOS|PricesTable, and UC_StoaPrice divides by it -- an uncatchable read failure
-            # that takes every STOA-charging operation with it. It cannot be generated: the
-            # VALUE is an owner decision (a price), not something derivable from the tree, which
-            # is exactly the class this MANUAL convention exists for.
-            "00_MANUAL_stoa-price-oracle.pact",
             # STAGE-Z ROUND, 2026-09-24. DPL-UR and EXPLORER deploy via `deploy-stagezz.repl`, a chain this
             # planner deliberately does not cover, so the generator cannot emit its transaction
             # -- but URC_0001_HeaderV3 shipped with twelve hardcoded token/pool ids and took the

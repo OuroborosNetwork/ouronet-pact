@@ -52,7 +52,8 @@ MANIFEST = {
     "22_deploy.pact": [("../../1_SOVEREIGN/STAGE_01/2_Core/08_ATS.pact",
                         "module-only")],
     "23_deploy.pact": [("../4_BunniesMinter/02_KBunnies.pact", "module-only")],
-    "25_deploy.pact": [("../5_VaultsMinter/04_AQP-BOOT.pact", "module-only")],
+    "24_deploy.pact": [("../5_VaultsMinter/04_AQP-BOOT.pact", "module-only")],
+    "25_deploy.pact": [("../../1_SOVEREIGN/STAGE_01/2_Core/02_IGNIS.pact", "module-only")],
 }
 
 # Hand-written files with no module source: init transactions, table repairs. They are not

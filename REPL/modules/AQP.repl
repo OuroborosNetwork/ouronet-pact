@@ -3498,33 +3498,63 @@
 ;;
 ;;This is what fails on the pre-rehaul code the @docs describe: a hardcoded 0.01/0.02 usage price
 ;;does not move when the peg does, so the dollar value would swing by 2.5x here.
-;;==== AQP-D1b — move the peg: the AMOUNT moves, the VALUE holds · 01 · env-sigs (caps) ==== ======
-(print "--- [AQP-D1b — move the peg: the AMOUNT moves, the VALUE holds · 01 · env-sigs (caps)] ---")
+;;==== AQP-D1b — the usage table does NOT move the charge: one source · 01 · env-sigs (caps) ==== ======
+(print "--- [AQP-D1b — the usage table does NOT move the charge: one source · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-;;==== AQP-D1b — move the peg: the AMOUNT moves, the VALUE holds · 02 · let / invocation ==== =====
-(print "--- [AQP-D1b — move the peg: the AMOUNT moves, the VALUE holds · 02 · let / invocation] ---")
+;;==== AQP-D1b — the usage table does NOT move the charge: one source · 02 · let / invocation ==== =====
+(print "--- [AQP-D1b — the usage table does NOT move the charge: one source · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
         (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
         (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
     )
+    ;;REWRITTEN 2026-10-02 (owner ruling), and the previous version of this block pinned a BUG.
+    ;;
+    ;;It moved the peg with `DALOS|A_UpdateUsagePrice "stoa|price"` and asserted the STOA amounts
+    ;;followed. They did -- for ONE reader. `UC_StoaPrice` was the only consumer of that table
+    ;;key in the entire tree, while the canonical STOA/USD source, `U|CT::UR_STOA-PID|Price`, is
+    ;;read in ~40 places: every launchpad, every AppReads price column, and -- in IGNIS ITSELF,
+    ;;a hundred lines above UC_StoaPrice -- `OI|UDC_FullStoaCosts`, the COST PREVIEW.
+    ;;
+    ;;Measured on the pre-fix code, moving the peg 0.10 -> 0.25:
+    ;;    UC_StoaPrice "issue-nft"  250.0 -> 100.0      (the CHARGE moved)
+    ;;    U|CT::UR_STOA-PID|Price     0.1 ->   0.1      (the PREVIEW did not)
+    ;;So the admin operation this block exercised made the preview lie about the charge. The old
+    ;;assertions were all true and the behaviour they protected was incoherent -- which is the
+    ;;shape of test that keeps a defect alive by making its removal look like a regression.
+    ;;
+    ;;The usage-prices table is for prices of USAGE. The price of STOA itself is not a usage
+    ;;price. `UC_StoaPrice` now reads the oracle like everything else, so there is ONE source.
+    ;;
+    ;;WHAT IS GIVEN UP, stated rather than glossed: the peg is no longer tunable by admin write.
+    ;;`UR_STOA-PID|Price` is a hardcoded stub ("wire the real oracle call above once one is
+    ;;available"), and U|CT is a UTILITY deployed before Core, so it cannot read a DALOS table to
+    ;;regain tunability without a deploy-order violation. Until the DIA oracle is wired the peg
+    ;;moves only with a U|CT redeploy -- and when it is wired it moves with the market, for all
+    ;;~40 readers at once, which is the point.
     (ref-TS01-A::DALOS|A_UpdateUsagePrice KST.ANHD "stoa|price" 0.25)
     (map print
         [
-            ;;the AMOUNT moved, and moved the right way -- inversely, by exactly the peg ratio
-            (expect "<<AQP-D1b>> at $0.25 the anchor AMOUNT falls from 50 to 20 STOA"
-                20.0 (ref-ANK::URCi_IssueAnchorStoa false))
-            (expect "<<AQP-D1b>> ...and the score amount from 100 to 40 STOA"
-                40.0 (ref-SCR::URCi_IssueScoreStoa))
-            ;;THE INVARIANT: the dollars are unchanged. This is the sentence under test.
-            (expect "<<AQP-D1b>> INVARIANT: the anchor still costs exactly $5"
-                5.0 (* (ref-ANK::URCi_IssueAnchorStoa false) 0.25))
-            (expect "<<AQP-D1b>> INVARIANT: the score still costs exactly $10"
-                10.0 (* (ref-SCR::URCi_IssueScoreStoa) 0.25))
-            ;;the acnoi doubling is a multiplier on the converted amount, so it survives the move
-            (expect "<<AQP-D1b>> ...and acnoi still doubles, at the new peg"
-                40.0 (ref-ANK::URCi_IssueAnchorStoa true))
+            ;;THE INVARIANT, INVERTED. Writing that table key must now change NOTHING, because
+            ;;nothing reads it. An assertion that the amounts HOLD is the only one that can fail
+            ;;if someone re-points UC_StoaPrice at the table.
+            (expect "<<AQP-D1b>> SINGLE SOURCE: the usage table no longer moves the anchor amount"
+                50.0 (ref-ANK::URCi_IssueAnchorStoa false))
+            (expect "<<AQP-D1b>> SINGLE SOURCE: nor the score amount"
+                100.0 (ref-SCR::URCi_IssueScoreStoa))
+            ;;the acnoi doubling is a multiplier on the converted amount and is unaffected
+            (expect "<<AQP-D1b>> ...and acnoi still doubles"
+                100.0 (ref-ANK::URCi_IssueAnchorStoa true))
+            ;;THE SOURCE ITSELF: the charge is the oracle's dollar value, not the table's.
+            (expect "<<AQP-D1b>> the anchor charge derives from the ORACLE price"
+                5.0 (* (ref-ANK::URCi_IssueAnchorStoa false) (U|CT.UR_STOA-PID|Price)))
+            (expect "<<AQP-D1b>> the score charge derives from the ORACLE price"
+                10.0 (* (ref-SCR::URCi_IssueScoreStoa) (U|CT.UR_STOA-PID|Price)))
+            ;;and the preview path and the charge path now agree, which was the whole defect
+            (expect "<<AQP-D1b>> CHARGE and PREVIEW read the same source"
+                (IGNIS.UC_StoaPrice "issue-nft")
+                (/ (/ (IGNIS.UC_IgnisDeter "issue-nft") 100.0) (U|CT.UR_STOA-PID|Price)))
         ]
     )
     ;;restore the peg in the SAME transaction it was moved in, so no later assertion in this suite

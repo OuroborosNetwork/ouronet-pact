@@ -49,13 +49,22 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
-(begin-tx "TX-01b - PureV2 25: AQP-BOOT module upgrade over a deployed AQP-BOOT")
+(begin-tx "TX-01b - PureV2 24: AQP-BOOT module upgrade over a deployed AQP-BOOT")
 ;;==== TX-01b · 01 · load the emitted deploy file ====
 (print "--- [TX-01b · 01 · load the emitted deploy file] ---")
 ;;Same check as 23 and for the same two reasons: an interface shipped a second time, or a
 ;;create-table left in an upgrade. AQP-BOOT DOES implement an interface (AcquisitionPoolBootV1),
 ;;so module-only is load-bearing here rather than merely tidy -- shipping the file verbatim
 ;;would re-send AcquisitionPoolBootV1 and be refused.
+(load "../Deploy/PureV2/24_deploy.pact")
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "TX-01c - PureV2 25: IGNIS module upgrade over a deployed IGNIS")
+;;==== TX-01c · 01 · load the emitted deploy file ====
+(print "--- [TX-01c · 01 · load the emitted deploy file] ---")
+;;IGNIS implements IgnisCollectorV3, already live -- so module-only is load-bearing here too.
 (load "../Deploy/PureV2/25_deploy.pact")
 (commit-tx)
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -82,13 +91,23 @@
         ;;AQP-BOOT, unlike KBN, DOES implement an interface -- so this asserts the live one is
         ;;still satisfied after a module-only upgrade, which is the thing module-only risks.
         (expect
-            "<<DEPLOY25>> AQP-BOOT still implements AcquisitionPoolBootV1 after the upgrade"
+            "<<DEPLOY24>> AQP-BOOT still implements AcquisitionPoolBootV1 after the upgrade"
             ["ouronet-ns.AcquisitionPoolBootV1"]
             (at "interfaces" (describe-module "ouronet-ns.AQP-BOOT")))
         (expect
-            "<<DEPLOY25>> the new guard helper is present on the upgraded module"
+            "<<DEPLOY24>> the new guard helper is present on the upgraded module"
             true
             (contains "UEV_BootStepState" (format "{}" [(describe-module "ouronet-ns.AQP-BOOT")])))
+        ;;IGNIS: the upgrade took AND the price now comes from the oracle, not the usage table.
+        (expect
+            "<<DEPLOY25>> IGNIS still implements IgnisCollectorV3 after the upgrade"
+            true
+            (contains "ouronet-ns.IgnisCollectorV3"
+                (at "interfaces" (describe-module "ouronet-ns.IGNIS"))))
+        (expect
+            "<<DEPLOY25>> UC_StoaPrice derives from the ORACLE, not DALOS|PricesTable"
+            (/ (/ (IGNIS.UC_IgnisDeter "issue-nft") 100.0) (U|CT.UR_STOA-PID|Price))
+            (IGNIS.UC_StoaPrice "issue-nft"))
     ]
 )
 (commit-tx)

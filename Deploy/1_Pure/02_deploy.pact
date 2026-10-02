@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 2 of 24
 ;; This is STEP 2 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-1 must have run first, including the init steps between deploys.
-;; 3 source file(s), 198,069 gas measured in the REPL gas model, 234,218 bytes
+;; 3 source file(s), 198,069 gas measured in the REPL gas model, 235,328 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/01_DALOS.pact
@@ -3717,12 +3717,26 @@
         @doc "STOA leg for ISSUE functions: the SAME DOLLAR VALUE as the deter, converted at \
             \ the live STOA price. 1 IGNIS = 1 cent, so deter/100 = dollars; dividing by the \
             \ STOA price gives the STOA amount. STOA is hard-pegged at $0.10 today, so $40 of \
-            \ deter = 400 STOA; when a real price lands the AMOUNT moves but the VALUE holds."
+            \ deter = 400 STOA; when a real price lands the AMOUNT moves but the VALUE holds. \
+            \ \
+            \ CORRECTED 2026-10-02 (owner). This read the USAGE-PRICES table at key \
+            \ <stoa|price>, and that table is for prices of USAGE -- not for the price of \
+            \ STOA itself. The canonical STOA/USD reader is U|CT::UR_STOA-PID|Price, the \
+            \ DIA oracle stub, used in ~40 places across the tree INCLUDING TWICE IN THIS \
+            \ MODULE a hundred lines above (OI|UDC_FullStoaCosts). This function was the \
+            \ only reader of that table key anywhere, and the lone outlier in its own file. \
+            \ \
+            \ Both answer 0.1 today, so nothing moves. The cost was twofold and elsewhere: \
+            \ the key was NEVER WRITTEN on mainnet, so every STOA-charging op died on an \
+            \ uncatchable read, while [4.0] seeds it in the REPL so the divergence could \
+            \ not surface in test. And writing the row would have papered over it until the \
+            \ day a real oracle landed -- wiring it changes UR_STOA-PID|Price and leaves \
+            \ the table untouched, so the two would then silently disagree."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
             )
-            (/ (/ (UC_IgnisDeter deter-key) 100.0) (ref-DALOS::UR_UsagePrice "stoa|price"))
+            (/ (/ (UC_IgnisDeter deter-key) 100.0) (ref-U|CT|DIA::UR_STOA-PID|Price))
         )
     )
     (defun UC_FeeUnlockPrice:[decimal] ()
