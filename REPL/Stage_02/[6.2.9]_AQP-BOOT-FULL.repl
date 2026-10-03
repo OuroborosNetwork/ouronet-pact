@@ -1919,6 +1919,28 @@
                 "KBN-98c486052a51" (at "repair-asset-id" detail))
             (expect "<<OUI13-A4>> and carries the staleness flag the repair button reads"
                 true (contains "needs-sync" detail))
+            ;;THE FULL DETAIL -- every ANK|Schema field plus the context a row cannot carry.
+            ;;`mode` is the assertion that matters: only one of the four terms fields is live on
+            ;;any anchor and the rest hold sentinels, so naming the live one on the server is
+            ;;what stops each client picking a different field to believe.
+            (expect "<<OUI13-A6>> a trait anchor reports mode=trait, not set-class"
+                "trait" (at "mode" (O-UI-THIRTEEN.URC_13|AnchorFull
+                                       "OuroborosRain-98c486052a51" KST.EMMA)))
+            ;;...and the SENTINELS are shipped alongside, so a reader can CONFIRM the mode
+            ;;rather than trust it. -1 is what makes this a trait anchor and not a set anchor.
+            (expect "<<OUI13-A6>> and ships nonce-class -1, the sentinel that proves it"
+                -1 (at "nonce-class" (O-UI-THIRTEEN.URC_13|AnchorFull
+                                         "OuroborosRain-98c486052a51" KST.EMMA)))
+            ;;SIBLINGS exclude the anchor itself. The repair is per ASSET, so this list is
+            ;;literally "what else this one button will refresh".
+            (expect "<<OUI13-A6>> siblings are the OTHER anchors on the asset, not this one"
+                false (contains "OuroborosRain-98c486052a51"
+                          (at "siblings" (O-UI-THIRTEEN.URC_13|AnchorFull
+                                             "OuroborosRain-98c486052a51" KST.EMMA))))
+            (expect "<<OUI13-A6>> and there are anchors-on-asset minus one of them"
+                (- (AQP-ANK.UR_AA|AnchorsActive "KBN-98c486052a51") 1)
+                (length (at "siblings" (O-UI-THIRTEEN.URC_13|AnchorFull
+                                           "OuroborosRain-98c486052a51" KST.EMMA))))
             ;;The manager picker. ANHD owns the Bunny collection, so it must appear with its
             ;;anchor count against the 49-slot cap.
             ;;Caller and owner differ here -- pinned so the picker can never be quietly

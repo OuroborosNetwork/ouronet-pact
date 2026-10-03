@@ -73,6 +73,8 @@
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
 (namespace "ouronet-ns")
 (load "../Deploy/PureV2/25_deploy.pact")
+;;then the upgrade, module-only, over the interface just shipped
+(load "../Deploy/PureV2/26_deploy.pact")
 (env-sigs [])
 (commit-tx)
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -124,6 +126,19 @@
             "<<DEPLOY25>> and it answers: the kind decoder on a true fungible"
             "dptf"
             (O-UI-THIRTEEN.URC_13|AnchorKind [true true]))
+        ;;26 upgrades the SAME module over the interface 25 shipped. A module may expose MORE
+        ;;than its interface declares and may not expose LESS -- URC_13|AnchorFull is the
+        ;;"more", kept out of OUiThirteenV1 because that interface is now live and immutable.
+        (expect
+            "<<DEPLOY26>> the upgraded module still satisfies the LIVE OUiThirteenV1"
+            true
+            (contains "ouronet-ns.OUiThirteenV1"
+                (at "interfaces" (describe-module "ouronet-ns.O-UI-THIRTEEN"))))
+        (expect
+            "<<DEPLOY26>> and carries the undeclared detail reader"
+            true
+            (contains "URC_13|AnchorFull"
+                (format "{}" [(describe-module "ouronet-ns.O-UI-THIRTEEN")])))
         (expect
             "<<DEPLOY24>> UC_StoaPrice derives from the ORACLE, not DALOS|PricesTable"
             (/ (/ (IGNIS.UC_IgnisDeter "issue-nft") 100.0) (U|CT.UR_STOA-PID|Price))

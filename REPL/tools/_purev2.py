@@ -61,7 +61,10 @@ MANIFEST = {
     # FIRST DEPLOY, so the whole file -- interface AND module. Every other entry in this round
     # is "module-only" because its interface is already live; OUiThirteenV1 is not, and a module
     # cannot implement an interface that has never been deployed.
-    "25_deploy.pact": ["AppReads/OuronetUI/13_O-UI-THIRTEEN.pact"],
+    # 26 is the SAME module again, module-only this time: 25 shipped OUiThirteenV1 and a
+    # deployed interface cannot be re-sent. A read module owns no tables, so a later slice is
+    # a plain redeploy -- which is the property that makes iterating on it cheap.
+    "26_deploy.pact": [("AppReads/OuronetUI/13_O-UI-THIRTEEN.pact", "module-only")],
 }
 
 # Hand-written files with no module source: init transactions, table repairs. They are not
@@ -73,6 +76,13 @@ HANDWRITTEN = {
 }
 
 FROZEN = {
+    # EXECUTED ON MAINNET 2026-10-03 -- module hash czxa3OAGASamWMsViJlVsX7SvuA1odY6L5-cKL7gsKw.
+    # It was in MANIFEST until the moment it landed, and the very next `--write` regenerated its
+    # body from a source that had since gained URC_13|AnchorFull -- rewriting the record of what
+    # was actually sent, which is the one thing a deploy file must never do. Superseded by
+    # 26_deploy.pact, which is the correct response to a frozen file's source changing.
+    "25_deploy.pact": "executed on mainnet 2026-10-03 (O-UI-THIRTEEN first deploy, with "
+                      "OUiThirteenV1); the record of what was sent. Superseded by 26_deploy.pact",
     "05_deploy.pact": "executed on mainnet 2026-09-25 (O-UI-TWELVE first deploy); the record of what was sent",
     "06_deploy.pact": "executed on mainnet 2026-09-25 (O-UI-ONE + O-UI-TWO formatter fix); the record of what was sent",
     "07_deploy.pact": "executed on mainnet 2026-09-25 (O-UI-EIGHT first deploy); the record of what was sent",

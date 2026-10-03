@@ -1,97 +1,70 @@
-;; ===========================================================================================
-;; O-UI-THIRTEEN -- the EarningPools page. SLICE 1: ANCHORS, client and manager.
-;; ===========================================================================================
-;; OuronetUI entity 13. Template: 01_O-UI-ONE.pact. Rules: ../RULES.md.
-;; Intelligence and the design decisions: ./README-THIRTEEN-ANCHORS.md.
+;; =========================================================================================
+;; OURONET DEPLOY -- ROUND V2, file 26
+;; O-UI-THIRTEEN (module upgrade) -- the full anchor detail read
+;; =========================================================================================
+;; MODULE-ONLY, and that is forced rather than chosen. `OUiThirteenV1` went live with
+;; PureV2/25 and a deployed interface cannot be re-sent or changed. The new reader is therefore
+;; declared in the MODULE and not in the interface: a module may expose MORE than its interface
+;; declares, and may not expose less.
 ;;
-;; REPLACES NOTHING. Slot 13 had no DPL-UR reads behind it -- this is the first read module for
-;; the acquisition system, written against 15 anchors and 6 boost classes live on chain.
-;;
-;; ------------------------------------------------------------------------------------------
-;; NO CROSS-MODULE `keys` ANYWHERE IN THIS MODULE, and that is the whole reason it composes
-;; ------------------------------------------------------------------------------------------
-;; O-UI-EIGHT, -NINE and -TEN each quarantine a `(keys OTHER.Table)` in a `URH_` that nothing
-;; calls, and pay for it three times: the node needs `--allowReadsInLocal`; the scan cannot sit
-;; inside a `try`, because `try` runs its body in read-only mode where `keys` is disallowed
-;; (RULES.md rule 5); and `_conformance.py` tolerates a cross-module scan only while the
-;; containing function has ZERO Pact callers.
-;;
-;; None of that applies here. AQP-ANK, DPTF and DPDC each expose their OWN enumerators --
-;; `URH_ANK|AllAnchorIds`, `URH_BC|AllBoostClassIds`, `URH_OwnedTrueFungibles`,
-;; `URH_OwnedCollectables` -- which are those modules' to admin-gate and are therefore freely
-;; composable through a modref. Every scan below is somebody else's, reached by `::`.
-;;
-;; The functions are still named `URH_` wherever they REACH one. The prefix is a cost class, not
-;; a syntax check: a caller reading `URC_` would expect a point read and budget accordingly.
+;; A read module owns no tables, so this is a plain redeploy with nothing to migrate -- which is
+;; the property that makes iterating on the read surface cheap, and the reason the AppReads split
+;; exists at all.
 ;;
 ;; ------------------------------------------------------------------------------------------
-;; WHAT THIS MODULE DELIBERATELY DOES NOT ANSWER: a boost class's OWNER
+;; WHAT IS NEW: URC_13|AnchorFull (anchor-id account)
 ;; ------------------------------------------------------------------------------------------
-;; `ANK|BoostClass` carries `class-owner`, and the only reader exposing it is `UR_BC|Data`,
-;; which returns an object and is therefore module-only -- the interface object-return rule
-;; keeps it out of `AcquisitionAnchorsV1`, so no modref can reach it.
+;; Everything about one anchor, for the detail view behind a row click. It needed NO new
+;; sovereign reader -- all twelve `ANK|Schema` fields are already reachable through
+;; `AcquisitionAnchorsV1`, so this is composition, not capability. What it adds over
+;; `URC_13|AnchorDetail` is the context a row cannot carry:
 ;;
-;; A dot call WOULD reach it, and must not be used here. Measured 2026-10-03:
+;;   mode              "amount" | "nonce" | "trait" | "set-class", NAMED on the server
+;;   the four terms    tf-amount, sf-nonce, trait-key/value, nonce-class -- ALL of them, raw
+;;   fungibility       the [bool] tuple itself
+;;   asset-owner       via URC_AnchorableAssetOwner
+;;   anchors-on-asset  against the structural cap of 49 (UEV_AssetAnchorCap: 7 groups x 7)
+;;   groups-on-asset   the other half of that structure
+;;   siblings          the OTHER anchors on the same asset
+;;   class-*           active, slots, score-link count (non-zero LOCKS revocation)
+;;   my-*              promille, class aggregate, needs-sync
 ;;
-;;     TOP-LEVEL dot call, after the callee upgrades  ->  the NEW logic
-;;     IN-MODULE dot call, after the callee upgrades  ->  "Execution aborted, hash not blessed
-;;                                                         for module B"
+;; WHY `mode` IS NAMED ON THE SERVER. Only ONE of the four terms fields is live on any anchor;
+;; the rest hold sentinels (0.0, 0, BAR, -1). A client deciding for itself which to believe is a
+;; client that will eventually believe the wrong one. The sentinels ship ALONGSIDE the mode so a
+;; reader can CONFIRM it rather than trust it -- `nonce-class: -1` is what makes a trait anchor
+;; a trait anchor.
 ;;
-;; An in-module dot call pins the callee's hash, and Pact refuses TABLE ACCESS from a superseded
-;; hash unless it is blessed. The tree blesses nothing. AQP-ANK reads its own tables, so dot-
-;; calling it from here would HARD-BREAK this module on every AQP-ANK upgrade -- not go stale,
-;; break. `_dotpin.py --upgrade AQP-ANK` reports exactly that.
-;;
-;; So the owner is read by the UI at `/local` top level, where a dot call always resolves to the
-;; latest module, in the same request as the call to `URH_13|BoostClasses`:
-;;
-;;     (map (lambda (c:string) (at "class-owner" (ouronet-ns.AQP-ANK.UR_BC|Data c)))
-;;          (ouronet-ns.AQP-ANK.URH_BC|AllBoostClassIds))
-;;
-;; Zero coupling, always current. The alternative -- bumping AcquisitionAnchorsV1 to V2 for two
-;; accessors -- drags a cascade across the whole AQP family.
-;;
-;; ------------------------------------------------------------------------------------------
-;; THE FUNGIBILITY TUPLE, decoded once here so no caller has to
-;; ------------------------------------------------------------------------------------------
-;;     [true  true ]  DPTF   true fungible      C_IssueTrueFungibleAnchor
-;;     [false true ]  DPSF   semi fungible      C_IssueSemiFungibleAnchor      (son = true)
-;;     [false false]  DPNF   non fungible       C_IssueNonFungible[Set]Anchor  (son = false)
-;; So slot 0 is "is a true fungible" and slot 1 is the collectable `son` discriminator. The
-;; name, the ticker, the staleness reader and the repair entrypoint all dispatch on it.
+;; WHY `siblings` IS WORTH A FIELD. The repair is per ASSET, not per anchor
+;; (`C_SyncTrueFungibleAnchors ... dptf-id`), so this list is literally "what else this one
+;; button will refresh".
 ;;
 ;; ------------------------------------------------------------------------------------------
-;; GAS -- a dirty read is free to the user, not free to the node
+;; A DERIVATION REPLACED BY THE REAL READER
 ;; ------------------------------------------------------------------------------------------
-;; `DPDC::URH_OwnedCollectables` FAILS at a 150,000 limit ("Evaluation did not reduce to a
-;; value") and succeeds at 1,500,000. Measured, not assumed. Callers must issue these at a
-;; generous `/local` gas limit; `URH_13|MyAnchorableAssets` reaches TWO such scans plus a name
-;; read per asset.
-;; ===========================================================================================
+;; `URC_13|AnchorTerms` decided trait-vs-set with `(= nonce-class -1)`. AQP-ANK has a
+;; purpose-built discriminator, `URC_TraitOrClass`, which checks all THREE conditions -- both
+;; trait fields non-BAR *and* nonce-class = -1. The two agree on every anchor the four issuance
+;; entrypoints produce and would diverge on a row written any other way, so the module now asks
+;; the owner of the question instead of re-deriving its answer.
+;;
+;; ------------------------------------------------------------------------------------------
+;; VERIFICATION
+;; ------------------------------------------------------------------------------------------
+;; Four assertions in `[6.2.9]_AQP-BOOT-FULL` <<OUI13-A6>>: a trait anchor reports mode=trait;
+;; it ships nonce-class -1 beside it; `siblings` excludes the anchor itself; and the sibling
+;; count is `anchors-on-asset` minus one -- which is the assertion that fails if the filter is
+;; wrong rather than the list.
+;;
+;; `_scratch_loadpurev2.repl` loads 25 then 26 over a deployed tree and asserts the upgraded
+;; module STILL satisfies the live OUiThirteenV1 while carrying the undeclared reader.
+;; Gate green.
+;;
+;;@GENERATED-BODY-BELOW -- do not edit past this line; see REPL/tools/_purev2.py
 
 (namespace "ouronet-ns")
 
-(interface OUiThirteenV1
-    @doc "EarningPools reads, slice 1: anchors. The catalogue, an account's own anchor values, \
-        \ one anchor in detail, the boost classes, and the manager's anchorable assets."
-
-    ;;{5.3}  Read [UR/URC/URH]
-    (defun URC_13|AnchorKind:string (asset-fungibility:[bool]))
-    (defun URC_13|AssetName:object (asset-id:string asset-fungibility:[bool]))
-    (defun URC_13|AnchorTerms:string (anchor-id:string))
-    (defun URC_13|AnchorRow:object (anchor-id:string))
-    (defun URC_13|NeedsSync:bool (account:string asset-id:string asset-kind:string))
-    (defun URC_13|AnchorDetail:object (anchor-id:string account:string))
-    ;;URC_13|AnchorFull is MODULE-ONLY and must stay that way. OUiThirteenV1 went live with
-    ;;PureV2/25 (hash czxa3OAG...), and a deployed interface cannot be changed -- adding a
-    ;;member here would force a V2 bump for a function only the UI calls, by name, at /local.
-    ;;The module may expose more than its interface declares; it may not expose less.
-    (defun URH_13|AnchorCatalogue:[object] ())
-    (defun URH_13|MyAnchors:[object] (account:string))
-    (defun URH_13|BoostClasses:[object] (account:string))
-    (defun URH_13|MyAnchorableAssets:[object] (account:string))
-)
-
+;; ---- source: 2_CITIZEN/Stage_Z/AppReads/OuronetUI/13_O-UI-THIRTEEN.pact (module only -- its interface is already live)
 (module O-UI-THIRTEEN GOV
 
     ;;{0}  IMPLEMENTERS
@@ -486,3 +459,4 @@
         )
     )
 )
+
