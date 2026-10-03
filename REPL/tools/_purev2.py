@@ -58,6 +58,10 @@ MANIFEST = {
     # interface cannot be re-sent.
     "24_deploy.pact": [("../../1_SOVEREIGN/STAGE_01/2_Core/02_IGNIS.pact", "module-only"),
                        ("../5_VaultsMinter/04_AQP-BOOT.pact", "module-only")],
+    # FIRST DEPLOY, so the whole file -- interface AND module. Every other entry in this round
+    # is "module-only" because its interface is already live; OUiThirteenV1 is not, and a module
+    # cannot implement an interface that has never been deployed.
+    "25_deploy.pact": ["AppReads/OuronetUI/13_O-UI-THIRTEEN.pact"],
 }
 
 # Hand-written files with no module source: init transactions, table repairs. They are not

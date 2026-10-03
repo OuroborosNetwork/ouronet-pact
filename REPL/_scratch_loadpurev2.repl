@@ -62,6 +62,22 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "TX-01d - PureV2 25: O-UI-THIRTEEN FIRST deploy")
+;;==== TX-01d · 01 · load the emitted deploy file ====
+(print "--- [TX-01d · 01 · load the emitted deploy file] ---")
+;;A FIRST deploy, so the opposite risk to 23/24: this file MUST carry its interface, where those
+;;must NOT carry theirs. Loading it is what tells the two apart -- a missing interface fails as
+;;"cannot resolve OUiThirteenV1" and a re-sent one as "Interface cannot be upgraded", and no
+;;diff of the generated body distinguishes them.
+(env-sigs
+  [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+(namespace "ouronet-ns")
+(load "../Deploy/PureV2/25_deploy.pact")
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (begin-tx "TX-02 - the upgrades took, and the entrypoints are still reachable")
 ;;==== TX-02 · 01 · post-upgrade shape ====
 (print "--- [TX-02 · 01 · post-upgrade shape] ---")
@@ -96,6 +112,18 @@
             true
             (contains "ouronet-ns.IgnisCollectorV3"
                 (at "interfaces" (describe-module "ouronet-ns.IGNIS"))))
+        ;;The new module is deployed and implements the interface it shipped alongside.
+        (expect
+            "<<DEPLOY25>> O-UI-THIRTEEN implements the OUiThirteenV1 it shipped with"
+            true
+            (contains "ouronet-ns.OUiThirteenV1"
+                (at "interfaces" (describe-module "ouronet-ns.O-UI-THIRTEEN"))))
+        ;;And it answers -- a module that loads but cannot read is a module that passes a deploy
+        ;;check and fails the first page load.
+        (expect
+            "<<DEPLOY25>> and it answers: the kind decoder on a true fungible"
+            "dptf"
+            (O-UI-THIRTEEN.URC_13|AnchorKind [true true]))
         (expect
             "<<DEPLOY24>> UC_StoaPrice derives from the ORACLE, not DALOS|PricesTable"
             (/ (/ (IGNIS.UC_IgnisDeter "issue-nft") 100.0) (U|CT.UR_STOA-PID|Price))
