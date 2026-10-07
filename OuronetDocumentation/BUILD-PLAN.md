@@ -164,7 +164,7 @@ Each file follows one template, so a reader who has read two can navigate any of
 ## Sources                  (file path, line counts, and where figures came from)
 ```
 
-**Do not read 123,572 lines by hand.** `OuronetInformational/MODULE-INDEX.md` is GENERATED from
+**Do not read 124,750 lines by hand.** `OuronetInformational/MODULE-INDEX.md` is GENERATED from
 the tree and already carries, per module: its path, its tables, its function list and a one-line
 purpose. Start there, then open the source for the functions that need the "how" and the "why"
 — which the index does not have and cannot generate.
@@ -232,7 +232,7 @@ whose figures cannot be gate-checked from here; say so on the page.
 
 | file | contains |
 |---|---|
-| `01-entrypoint-catalogue.md` | All 423 client entrypoints. Generated, not typed. |
+| `01-entrypoint-catalogue.md` | All 427 client entrypoints. Generated, not typed. |
 | `02-glossary.md` | Every term, defined once. |
 | `03-how-these-figures-were-obtained.md` | The command behind every number in this folder. |
 | `04-the-owner-directive.md` | The commissioning directive **verbatim**. Every claim about intent traces here. |

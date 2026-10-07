@@ -86,7 +86,7 @@ the cascade rule: adding a function to a *published* interface would mean a new 
 interface naming it plus every consumer bumping with it. For a read nothing on chain calls, that is
 the wrong trade.
 
-**A preview's parameter list usually differs from the operation's** — 410 of 423 across the system.
+**A preview's parameter list usually differs from the operation's** — 414 of 427 across the system.
 Bind by name; positional binding type-checks and prices a different question.
 
 **And a copied formatter once reached mainnet with an ASCII `c` in place of a cent sign**, so prices

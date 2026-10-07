@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 16 of 24
 ;; This is STEP 16 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-15 must have run first, including the init steps between deploys.
-;; 1 source file(s), 151,366 gas measured in the REPL gas model, 178,655 bytes
+;; 1 source file(s), 151,366 gas measured in the REPL gas model, 181,239 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/03_AQP.pact
@@ -164,6 +164,9 @@
     )
     (defun URC_StakeCollectablePoolClassOk:bool (pool-id:string son:bool))
     (defun URC_StakeCollectableMatchesPool:bool (pool-id:string collectable-id:string))
+    ;; Dead-definition guard for the score-definition write path (2026-10-06). Declared here
+    ;; so Talos can call it by modref before delegating to AQP-SCORE.
+    (defun UEV_ScoreDefinitionTargetMatchesPool (score-id:string asset-id:string))
     (defun URC_CollectableUnstakeNoncesSufficient:bool
         (pool-id:string collectable-id:string son:bool owner-id:string beneficiary-id:string nonces:[integer] nonce-amounts:[integer])
     )
@@ -1579,7 +1582,7 @@
         @doc "True when no other employed pool score has boost-link pointing at score-id (triplet hub protection)."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                 ;;
                 (active-ids:[string] (URC_PoolActiveScoreIds pool-id))
             )
@@ -2162,6 +2165,43 @@
         ))
     ;;{5.4}  Validate [UEV/CAP]
     ;; [UEV] enforce
+    (defun UEV_ScoreDefinitionTargetMatchesPool (score-id:string asset-id:string)
+        @doc "Refuses a weight definition written against a collection the score's EMPLOYING POOL \
+            \ does not stake. No-op while the score is employed by no pool. \
+            \ \
+            \ WHY (2026-10-06). A score carries no asset-id -- identity resolves Score -> \
+            \ aqpool-link -> Pool -> asset-id -- and the definition write validates the collection \
+            \ for EXISTENCE only. Pair that with `undefined nonce => 0` rather than a failure and a \
+            \ mistyped collection id writes a full set of structurally valid rows that are NEVER \
+            \ read: green transaction, dead weights, no signal anywhere. \
+            \ \
+            \ TWO POINT READS, NO SCAN, DELIBERATELY. The complete check -- enumerate every asset \
+            \ this score has definitions for and reject any that is not the pool's -- needs a \
+            \ URH_ table scan, which would make every caller in its tree HEAVY (CC_/AA_ doubling) \
+            \ and drag a rename through Talos for a guard that runs on a cold path. This asks the \
+            \ cheap half of the question and gets the case that actually bites: writing weights \
+            \ for the wrong collection on a score that is already employed, i.e. one that may \
+            \ already have stakers. \
+            \ \
+            \ WHAT IT DOES NOT CATCH, stated so nobody reads more into it: definitions written \
+            \ BEFORE the score is employed (aqpool-link is BAR, so there is nothing to compare \
+            \ against -- the UI flags these as unverified), and an NF trait-key no staked nonce \
+            \ carries, which no id comparison can detect."
+        (let
+            (
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                ;;
+                (aqpool:string (ref-SCR::UR_SCR|ScoreAqpoolLink score-id))
+            )
+            (enforce
+                (or (= aqpool BAR) (= asset-id (UR_AQP|PoolAssetId aqpool)))
+                (format
+                    "Score {} is employed by pool {}, which stakes {} -- a definition for {} would score nothing"
+                    [score-id aqpool (if (= aqpool BAR) BAR (UR_AQP|PoolAssetId aqpool)) asset-id]
+                )
+            )
+        )
+    )
     (defun UEV_IssuePoolClassAndAsset (aqp-class:integer asset-id:string)
         @doc "aqp-class 0..4 and asset-id existence / shape for that class (native id only at issue)."
         (let
@@ -2250,7 +2290,7 @@
             \ score exists with BAR aqpool-link; score-class matches pool; class-0 lp-denominator fits pool LP pair."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                 (ref-SWP:module{SwapperV4} SWP)
                 ;;
                 (aqp-class:integer (UR_AQP|PoolAqpClass pool-id))
@@ -2306,7 +2346,7 @@
             \ and no employed peer has boost-link = score-id (revoke dependents before hub)."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
             )
             (enforce (!= slot-index -1) "score-id is not assigned to pool")
             (enforce
@@ -3330,7 +3370,7 @@
             (with-capability (AQP|C>ADD-SCORE executor pool-id score-id slot-index)
                 (let
                     (
-                        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                         (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                         ;;
                         (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
@@ -3355,7 +3395,7 @@
             (with-capability (AQP|C>REVOKE-SCORE executor pool-id score-id slot-index)
                 (let
                     (
-                        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                         (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                         ;;
                         (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))

@@ -356,7 +356,6 @@
             \ e.g. AQP-FVT normalizing an IGNIS royalty leg to OURO before disposal). Same conversion as \
             \ IGNIS|C>COMPRESS but WITHOUT the standard-account restriction; the caller-module IMC gate (P|UEV_IMC in \
             \ XB_Compress) is the trust boundary."
-        @event
         (compose-capability (IGNIS|XB>CONVERT client))
     )
     (defcap IGNIS|XB>CONVERT (client:string)

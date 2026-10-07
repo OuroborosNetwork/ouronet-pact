@@ -450,7 +450,7 @@
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
                     ;;
                     (bronze-boost-class-id:string (ref-U|DALOS::UDC_Makeid "BronzeSnakePower"))
                     (silver-boost-class-id:string (ref-U|DALOS::UDC_Makeid "SilverSnakePower"))
@@ -515,7 +515,7 @@
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
                     ;;
                     (unity-boost-class-id:string (ref-U|DALOS::UDC_Makeid "UnityBooster"))
                     (stoa-boost-class-id:string (ref-U|DALOS::UDC_Makeid "StoaBooster"))
@@ -574,7 +574,7 @@
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
                     (score-coding:string (ref-U|DALOS::UDC_Makeid "TheCodingDivision"))
                     (score-bloodshed:string (ref-U|DALOS::UDC_Makeid "Bloodshed"))
                     (score-company-share:string (ref-U|DALOS::UDC_Makeid "DemiourgosShareholder"))
@@ -606,7 +606,7 @@
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
                     (score-sub-coding:string (ref-U|DALOS::UDC_Makeid "SubsidiaryCodingDivision"))
                     (score-sub-wondercoach:string (ref-U|DALOS::UDC_Makeid "SubsidiaryWonderCoach"))
                     (score-sub-bloodshed:string (ref-U|DALOS::UDC_Makeid "SubsidiaryBloodshed"))
@@ -709,7 +709,7 @@
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
                     ;;
                     (silver-id:string (ref-U|DALOS::UDC_Makeid BOOT|SCORE_SILVER))
                     (bronze-id:string (ref-U|DALOS::UDC_Makeid BOOT|SCORE_BRONZE))
@@ -763,8 +763,8 @@
         ;; | DHCodingDivision  | 3 DPSF    | DHCD-… dpsf-id           | TheCodingDivision, SubsidiaryCodingDivision             |
         ;; | DHBloodshed       | 4 DPNF    | DHB-… dpnf-id            | Bloodshed, SubsidiaryBloodshed                          |
         ;; | DHCompany         | 3 DPSF    | E|DH-… dpsf-id           | DemiourgosShareholder, DemiourgosSnakes                 |
-        ;; | DHWonderCoach     | 3 DPSF    | DHWC-… dpsf-id           | SubsidiaryWonderCoach                                   |
-        ;; | DHNosferatu       | 4 DPNF    | DHN-… dpnf-id            | SubsidiaryNosferatu                                     |
+        ;; | DHWonderCoach     | 3 DPSF    | DHWC-… dpsf-id           | SubsidiaryWonderCoach + the UI-issued CORE WonderCoach  |
+        ;; | DHNosferatu       | 4 DPNF    | DHN-… dpnf-id            | SubsidiaryNosferatu + the UI-issued CORE Nosferatu      |
         ;; | DHBunnies         | 4 DPNF    | KBN-… dpnf-id            | SubsidiaryBunnies                                       |
         ;; | DHOuroLp          | 0 LP      | native LP id             | SilverSnakePower, BronzeSnakePower, GoldenSnakePower    |
         ;;
@@ -774,7 +774,7 @@
         ;;   2 "E|DH-98c486052a51"
         ;;   3 "DHWC-98c486052a51"
         ;;   4 "DHN-98c486052a51"
-        ;;   5 "KBN-98c486052a51"
+        ;;   5 "SBN-98c486052a51"   (the Bunnies collection is SBN-, not KBN-)
         ;; ouro-lp-asset-id — e.g. "W|SSTOA-OURO-WSTOA|LP-98c486052a51"
         ;;
         ;; dh-pool-ids[0..5]:
@@ -795,24 +795,29 @@
         ;;      and the suite passes -- because the REPL runs every step under one prev-block-hash.
         ;;      Take these ids from the return strings of Steps 2, 4 and 5.
         ;;
-        ;; dh-score-ids[0..8] — from Steps 4–5 (REPL shape below; on mainnet paste from output):
+        ;; dh-score-ids[0..10] — 0-8 from Steps 4-5; 9-10 are the UI-issued CORE scores:
         ;;   [TheCodingDivision SubsidiaryCodingDivision Bloodshed SubsidiaryBloodshed
-        ;;    DemiourgosShareholder DemiourgosSnakes SubsidiaryWonderCoach SubsidiaryNosferatu SubsidiaryBunnies]
+        ;;    DemiourgosShareholder DemiourgosSnakes SubsidiaryWonderCoach SubsidiaryNosferatu
+        ;;    SubsidiaryBunnies  <core-wondercoach>  <core-nosferatu>]
         ;; ouro-triplet-score-ids[0..2] — from Step 6:
         ;;   [SilverSnakePower BronzeSnakePower GoldenSnakePower]
+        ;;
+        ;; !! THE CALL TAKES FIVE ARGUMENTS. This example used to show SEVEN -- it still passed
+        ;; !! `dh-pool-ids` and `ouro-lp-pool-id`, which were removed when this step started MINTING
+        ;; !! those pools and deriving their ids itself. Pasting the old shape gives an arity error,
+        ;; !! and the example is the thing an operator actually copies. Corrected 2026-10-06.
         ;;
         ;; REPL call (copy/paste; swap ids for mainnet):
         ;; (AQP-BOOT.C_Step7_CreatePoolsAndScores
         ;;   KST.ANHD
-        ;;   ["DHCD-98c486052a51" "DHB-98c486052a51" "E|DH-98c486052a51" "DHWC-98c486052a51" "DHN-98c486052a51" "KBN-98c486052a51"]
+        ;;   ["DHCD-98c486052a51" "DHB-98c486052a51" "E|DH-98c486052a51" "DHWC-98c486052a51" "DHN-98c486052a51" "SBN-98c486052a51"]
         ;;   "W|SSTOA-OURO-WSTOA|LP-98c486052a51"
-        ;;   [(U|DALOS.UDC_Makeid "DHCodingDivision") (U|DALOS.UDC_Makeid "DHBloodshed") (U|DALOS.UDC_Makeid "DHCompany")
-        ;;    (U|DALOS.UDC_Makeid "DHWonderCoach") (U|DALOS.UDC_Makeid "DHNosferatu") (U|DALOS.UDC_Makeid "DHBunnies")]
-        ;;   (U|DALOS.UDC_Makeid "DHOuroLp")
         ;;   [(U|DALOS.UDC_Makeid "TheCodingDivision") (U|DALOS.UDC_Makeid "SubsidiaryCodingDivision")
         ;;    (U|DALOS.UDC_Makeid "Bloodshed") (U|DALOS.UDC_Makeid "SubsidiaryBloodshed")
         ;;    (U|DALOS.UDC_Makeid "DemiourgosShareholder") (U|DALOS.UDC_Makeid "DemiourgosSnakes")
-        ;;    (U|DALOS.UDC_Makeid "SubsidiaryWonderCoach") (U|DALOS.UDC_Makeid "SubsidiaryNosferatu") (U|DALOS.UDC_Makeid "SubsidiaryBunnies")]
+        ;;    (U|DALOS.UDC_Makeid "SubsidiaryWonderCoach") (U|DALOS.UDC_Makeid "SubsidiaryNosferatu")
+        ;;    (U|DALOS.UDC_Makeid "SubsidiaryBunnies")
+        ;;    (U|DALOS.UDC_Makeid "WonderCoach") (U|DALOS.UDC_Makeid "Nosferatu")]
         ;;   [(U|DALOS.UDC_Makeid "SilverSnakePower") (U|DALOS.UDC_Makeid "BronzeSnakePower") (U|DALOS.UDC_Makeid "GoldenSnakePower")]
         ;; )
         (with-capability (GOV|AQP_BOOT_ADMIN)
@@ -826,11 +831,11 @@
             ;;the parameters, so they run before anything is derived.
             ;;Pinned by REPL/modules/DPDC.repl <<DPDC-G10>>.
                 (enforce (= (length dh-asset-ids) 6) "Step 7 expects dh-asset-ids=[coding bloodshed company wondercoach nosferatu bunnies].")
-                (enforce (= (length dh-score-ids) 9) "Step 7 expects dh-score-ids=[coding sub-coding bloodshed sub-bloodshed company-share company-snakes sub-wondercoach sub-nosferatu sub-bunnies].")
+                (enforce (= (length dh-score-ids) 11) "Step 7 expects dh-score-ids=[coding sub-coding bloodshed sub-bloodshed company-share company-snakes sub-wondercoach sub-nosferatu sub-bunnies core-wondercoach core-nosferatu].")
                 (enforce (= (length ouro-triplet-score-ids) 3) "Step 7 expects ouro-triplet-score-ids=[silver bronze golden].")
             (let
                 (
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
                     ;;
                     (asset-coding:string (at 0 dh-asset-ids))
@@ -858,20 +863,42 @@
                     ;;length guards, and removes an entire class of operator error on mainnet.
                     ;;What remains as arguments is precisely what this step CANNOT know: the six
                     ;;live collection assets, and the twelve scores created in earlier blocks.
+                    ;;THE POOL OWNERS ARE RESOLVED FROM THE ASSET, NOT READ FROM THE POOL ROW.
+                    ;;
+                    ;;FIXED 2026-10-06. These seven were `(AQP-POOL.URC_AqpOwnerKonto pool-X)` --
+                    ;;a read of `AQP|T|Pool` for a pool THIS TRANSACTION HAS NOT CREATED YET. A
+                    ;;Pact `let` is EAGER, so all seven ran before the `C_Issue` calls in the body
+                    ;;below, and the step aborted on the first one:
+                    ;;
+                    ;;    No value found in table ouronet-ns.AQP-POOL_AQP|T|Pool for key: DHCodingDi...
+                    ;;
+                    ;;Step 7 could therefore never have succeeded, on any chain, since the day it
+                    ;;was written.
+                    ;;
+                    ;;THE VALUE IS IDENTICAL, which is why this is a fix and not a workaround:
+                    ;;`URC_AqpOwnerKonto` is DEFINED as
+                    ;;`(URC_AqpOwnerKontoFromClassAndAsset (UR_AQP|PoolAqpClass p) (UR_AQP|PoolAssetId p))`
+                    ;;-- it resolves the governor from the pool's class and asset, having first
+                    ;;read those two fields off the row. We already hold both as literals here, so
+                    ;;the row lookup is the only thing being removed. The sibling resolver is
+                    ;;documented for exactly this case: "issue-time or PRE-POOL-ROW".
+                    ;;
+                    ;;These are now the same bindings the `C_Issue` executor uses one block below,
+                    ;;which is also the honest statement of the fact: the pool's governor IS the
+                    ;;asset's governor.
                     (pool-coding:string (ref-U|DALOS::UDC_Makeid "DHCodingDivision"))
-                    (pool-coding-owner:string (AQP-POOL.URC_AqpOwnerKonto pool-coding))
+                    (pool-coding-owner:string asset-coding-owner)
                     (pool-bloodshed:string (ref-U|DALOS::UDC_Makeid "DHBloodshed"))
-                    (pool-bloodshed-owner:string (AQP-POOL.URC_AqpOwnerKonto pool-bloodshed))
+                    (pool-bloodshed-owner:string asset-bloodshed-owner)
                     (pool-company:string (ref-U|DALOS::UDC_Makeid "DHCompany"))
-                    (pool-company-owner:string (AQP-POOL.URC_AqpOwnerKonto pool-company))
+                    (pool-company-owner:string asset-company-owner)
                     (pool-wondercoach:string (ref-U|DALOS::UDC_Makeid "DHWonderCoach"))
-                    (pool-wondercoach-owner:string (AQP-POOL.URC_AqpOwnerKonto pool-wondercoach))
+                    (pool-wondercoach-owner:string asset-wondercoach-owner)
                     (pool-nosferatu:string (ref-U|DALOS::UDC_Makeid "DHNosferatu"))
-                    (pool-nosferatu-owner:string (AQP-POOL.URC_AqpOwnerKonto pool-nosferatu))
+                    (pool-nosferatu-owner:string asset-nosferatu-owner)
                     (pool-bunnies:string (ref-U|DALOS::UDC_Makeid "DHBunnies"))
-                    (pool-bunnies-owner:string (AQP-POOL.URC_AqpOwnerKonto pool-bunnies))
+                    (pool-bunnies-owner:string asset-bunnies-owner)
                     (pool-ouro-lp:string (ref-U|DALOS::UDC_Makeid "DHOuroLp"))
-                    (pool-ouro-lp-owner:string (AQP-POOL.URC_AqpOwnerKonto pool-ouro-lp))
                     ;;
                     (score-coding:string (at 0 dh-score-ids))
                     (score-sub-coding:string (at 1 dh-score-ids))
@@ -881,6 +908,16 @@
                     (score-company-snakes:string (at 5 dh-score-ids))
                     (score-sub-wondercoach:string (at 6 dh-score-ids))
                     (score-sub-nosferatu:string (at 7 dh-score-ids))
+                    ;;THE TWO CORE SCORES, added 2026-10-06. They are NOT created by any boot step --
+                    ;;the owner issues them from the UI, because they are deliberately NOT DEB-enhanced
+                    ;;and carry hand-built weight tables (WonderCoach: per-nonce, rarity x set
+                    ;;completeness; Nosferatu: one rarity worth twice the last). Steps 4-5 make the nine
+                    ;;Subsidiary/primary scores; these two ride in beside them so the pool that stakes
+                    ;;their collection scores BOTH -- the subsidiary weighting and the core one.
+                    ;;Passed in rather than derived: UDC_Makeid would be wrong, exactly as it is for the
+                    ;;other nine, because they were issued in their own blocks.
+                    (score-core-wondercoach:string (at 9 dh-score-ids))
+                    (score-core-nosferatu:string (at 10 dh-score-ids))
                     (score-sub-bunnies:string (at 8 dh-score-ids))
                     (score-silver:string (at 0 ouro-triplet-score-ids))
                     (score-bronze:string (at 1 ouro-triplet-score-ids))
@@ -905,19 +942,21 @@
                 ;; [4] DHWonderCoach — aqp-class 3 (DPSF)
                 (ref-TS02-C3::AQP-POOL|C_Issue patron asset-wondercoach-owner "DHWonderCoach" asset-wondercoach 3)
                 (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-wondercoach-owner pool-wondercoach score-sub-wondercoach)
+                (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-wondercoach-owner pool-wondercoach score-core-wondercoach)
                 ;; [5] DHNosferatu — aqp-class 4 (DPNF)
                 (ref-TS02-C3::AQP-POOL|C_Issue patron asset-nosferatu-owner "DHNosferatu" asset-nosferatu 4)
                 (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-nosferatu-owner pool-nosferatu score-sub-nosferatu)
+                (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-nosferatu-owner pool-nosferatu score-core-nosferatu)
                 ;; [6] DHBunnies — aqp-class 4 (DPNF)
                 (ref-TS02-C3::AQP-POOL|C_Issue patron asset-bunnies-owner "DHBunnies" asset-bunnies 4)
                 (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-bunnies-owner pool-bunnies score-sub-bunnies)
                 ;; [7] DHOuroLp — aqp-class 0 (LP); triplet from Step 6 — see Step 6 ;; for OURO LP flow
                 (ref-TS02-C3::AQP-POOL|C_Issue patron ouro-lp-asset-owner "DHOuroLp" ouro-lp-asset-id 0)
-                (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-ouro-lp-owner pool-ouro-lp score-silver)
-                (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-ouro-lp-owner pool-ouro-lp score-bronze)
-                (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-ouro-lp-owner pool-ouro-lp score-golden)
+                (ref-TS02-C3::AQP-POOL|C_AddScore patron ouro-lp-asset-owner pool-ouro-lp score-silver)
+                (ref-TS02-C3::AQP-POOL|C_AddScore patron ouro-lp-asset-owner pool-ouro-lp score-bronze)
+                (ref-TS02-C3::AQP-POOL|C_AddScore patron ouro-lp-asset-owner pool-ouro-lp score-golden)
                 ;;
-                (format "AQP-BOOT Step 7 done. pool-ids=[coding={} bloodshed={} company={} wondercoach={} nosferatu={} bunnies={} ouro-lp={}]. ouro-lp-asset-id={}. score-slots-wired=12. NEXT=Step8:C_Step8_IssueFvtEntities."
+                (format "AQP-BOOT Step 7 done. pool-ids=[coding={} bloodshed={} company={} wondercoach={} nosferatu={} bunnies={} ouro-lp={}]. ouro-lp-asset-id={}. score-slots-wired=14. NEXT=Step8:C_Step8_IssueFvtEntities."
                     [
                         pool-coding pool-bloodshed pool-company pool-wondercoach pool-nosferatu pool-bunnies pool-ouro-lp
                         ouro-lp-asset-id
@@ -953,7 +992,7 @@
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
                     (farm-id:string (ref-U|DALOS::UDC_Makeid BOOT|FVT_OURO_LP_FARM))
                     (sub-treasury-id:string (ref-U|DALOS::UDC_Makeid BOOT|FVT_SUBSIDIARY_TREASURY))
                     (coding-treasury-id:string (ref-U|DALOS::UDC_Makeid BOOT|FVT_CODING_TREASURY))
@@ -994,7 +1033,7 @@
         (with-capability (GOV|AQP_BOOT_ADMIN)
             (let
                 (
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
                 )
                 (enforce (= (length subsidiary-score-ids) 5) "Step 9 expects subsidiary-score-ids×5.")
                 (map
@@ -1025,7 +1064,7 @@
         (with-capability (GOV|AQP_BOOT_ADMIN)
             (let
                 (
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
                     (family-id:string (concat ["F" "|" ouro-id "|" auryn-id "|" elite-auryn-id]))
                 )
                 (ref-TS02-C3::AQP-FVT|C_IssueMultipletFamily
@@ -1047,7 +1086,7 @@
         (with-capability (GOV|AQP_BOOT_ADMIN)
             (let
                 (
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
                     (wire-farm:bool
                         (and
                             (!= farm-id "")
@@ -1087,7 +1126,7 @@
         (with-capability (GOV|AQP_BOOT_ADMIN)
             (let
                 (
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
                     (ref-U|CT:module{OuronetConstantsV2} U|CT)
                     (bar:string (ref-U|CT::CT_BAR))
                 )
@@ -1150,7 +1189,7 @@
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
                     (fvt-id:string (ref-U|DALOS::UDC_Makeid BOOT|FVT_CUSTODIANS_VAULT))
                     (pool-id:string (ref-U|DALOS::UDC_Makeid BOOT|POOL_CUSTODIANS))
                     (bronze-model-id:string (ref-U|DALOS::UDC_Makeid BOOT|MODEL_CUSTODIANS_BRONZE))
@@ -1245,8 +1284,8 @@
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                     (fvt-id:string (ref-U|DALOS::UDC_Makeid BOOT|FVT_CUSTODIANS_VAULT))
                     (pool-id:string (ref-U|DALOS::UDC_Makeid BOOT|POOL_CUSTODIANS))
                     (pool-owner:string (AQP-POOL.URC_AqpOwnerKonto pool-id))

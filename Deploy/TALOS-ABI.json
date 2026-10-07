@@ -8464,6 +8464,74 @@
     "type": "decimal"
    }
   ],
+  "TS02-C3.AQP-POOL|CC_VacateNonFungible": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "executor",
+    "type": "string"
+   },
+   {
+    "name": "pool-id",
+    "type": "string"
+   },
+   {
+    "name": "dpnf-id",
+    "type": "string"
+   }
+  ],
+  "TS02-C3.AQP-POOL|CC_VacateOrtoFungible": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "executor",
+    "type": "string"
+   },
+   {
+    "name": "pool-id",
+    "type": "string"
+   },
+   {
+    "name": "dpof-id",
+    "type": "string"
+   }
+  ],
+  "TS02-C3.AQP-POOL|CC_VacateSemiFungible": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "executor",
+    "type": "string"
+   },
+   {
+    "name": "pool-id",
+    "type": "string"
+   },
+   {
+    "name": "dpsf-id",
+    "type": "string"
+   }
+  ],
+  "TS02-C3.AQP-POOL|CC_VacateTrueFungible": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "executor",
+    "type": "string"
+   },
+   {
+    "name": "pool-id",
+    "type": "string"
+   }
+  ],
   "TS02-C3.AQP-POOL|CCp_BatchDrainCollectable": [
    {
     "name": "patron",
@@ -10838,6 +10906,58 @@
    {
     "name": "amount",
     "type": "decimal"
+   }
+  ],
+  "AQP-INFO.INFO_AQP-POOL|VacateNonFungible": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "pool-id",
+    "type": "string"
+   },
+   {
+    "name": "dpnf-id",
+    "type": "string"
+   }
+  ],
+  "AQP-INFO.INFO_AQP-POOL|VacateOrtoFungible": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "pool-id",
+    "type": "string"
+   },
+   {
+    "name": "dpof-id",
+    "type": "string"
+   }
+  ],
+  "AQP-INFO.INFO_AQP-POOL|VacateSemiFungible": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "pool-id",
+    "type": "string"
+   },
+   {
+    "name": "dpsf-id",
+    "type": "string"
+   }
+  ],
+  "AQP-INFO.INFO_AQP-POOL|VacateTrueFungible": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "pool-id",
+    "type": "string"
    }
   ],
   "AQP-INFO.INFO_AQP-SCR|CombineTripletScoreModel": [
@@ -18360,6 +18480,10 @@
   "TS02-C3.AQP-POOL|CC_UnstakeOrtoFungible": "AQP-INFO.INFO_AQP-POOL|UnstakeOrtoFungible",
   "TS02-C3.AQP-POOL|CC_UnstakeSemiFungibleCollectable": "AQP-INFO.INFO_AQP-POOL|UnstakeSemiFungibleCollectable",
   "TS02-C3.AQP-POOL|CC_UnstakeTrueFungible": "AQP-INFO.INFO_AQP-POOL|UnstakeTrueFungible",
+  "TS02-C3.AQP-POOL|CC_VacateNonFungible": "AQP-INFO.INFO_AQP-POOL|VacateNonFungible",
+  "TS02-C3.AQP-POOL|CC_VacateOrtoFungible": "AQP-INFO.INFO_AQP-POOL|VacateOrtoFungible",
+  "TS02-C3.AQP-POOL|CC_VacateSemiFungible": "AQP-INFO.INFO_AQP-POOL|VacateSemiFungible",
+  "TS02-C3.AQP-POOL|CC_VacateTrueFungible": "AQP-INFO.INFO_AQP-POOL|VacateTrueFungible",
   "TS02-C3.AQP-POOL|CCp_BatchDrainCollectable": "AQP-INFO.INFO_AQP-POOL|BatchDrainCollectable",
   "TS02-C3.AQP-POOL|CCp_BatchDrainOrtoFungible": "AQP-INFO.INFO_AQP-POOL|BatchDrainOrtoFungible",
   "TS02-C3.AQP-POOL|CCp_BatchDrainTrueFungible": "AQP-INFO.INFO_AQP-POOL|BatchDrainTrueFungible",
@@ -18404,5 +18528,5 @@
   "TS02-DPAD.DEMIPAD|C_RetrieveTrueFungible": "INFO-TWO.INFO_DEMIPAD|RetrieveTrueFungible",
   "TS02-DPAD.DEMIPAD|C_Withdraw": "INFO-TWO.INFO_DEMIPAD|Withdraw"
  },
- "surfaceHash": "cb42aea85cac8bac"
+ "surfaceHash": "ff39b4d11aa3b2ac"
 }

@@ -249,9 +249,27 @@ not Kadena: `StoicSyntax.md` §10.2 already records **Kadena 150k / Stoa ~2M gas
 (exec ~275.5K + size ~411.1K). So a third of a megabyte deploys with two thirds of the gas budget
 to spare, and the ordering constraint below is driven by **dependency order**, not by bytes.
 
-**What the real byte ceiling is remains UNKNOWN.** The same measurement reported room for only
-~1,274 more lines — a ceiling near 8,500 lines — and that cannot be the gas limit either
-(scaling 686.7K by 8,496/7,222 gives ~808K, not 2.00M). Something else binds first.
+**RESOLVED 2026-10-06: it IS the gas limit, and it binds because the size charge grows as the
+SEVENTH POWER of transaction size.** The wallet's deploy editor states the rule and supplies two
+calibration points: `3 ~256 KB transactions cost about 285,675 gas in size charges, against
+~202,525,154 for one 768 KB transaction`. Fitting those gives an exponent of **6.97** and a
+per-transaction ceiling of **~395 KB (~7,769 lines)** at the 2.00M limit — matching the editor's
+own figure. So:
+
+```
+gas_size(S) ≈ 95_225 × (S_KB / 256)^7
+```
+
+That is why the scaling above "cannot be the gas limit" under a linear assumption: the assumption
+was wrong, not the measurement. It also means **bigger deploy files are the wrong instinct**.
+Halving a transaction divides its size charge by 128, so consolidating round V3 from 8 files to 3
+of ~692 KB — attempted on 2026-10-06 by extrapolating one data point LINEARLY — would have cost
+~100,000,000 gas *each*, fifty times the limit, and every transaction would have been rejected.
+
+The practical consequences: the 320,000-byte cap was a lucky guess that is very nearly optimal;
+**BALANCE matters more than count** (one 320 KB file costs as much as four 230 KB files), so
+packers should minimise Σ size⁷ rather than file count; and a round's cost curve is steep —
+V3 measured 8 tx ≈ 1.17M gas total, 7 tx ≈ 3.67M, 6 tx impossible.
 `REPL/tools/_deploybundle.py` therefore caps emitted transactions at a **conservative 320,000
 bytes**, justified by evidence (`04_RPS.pact` is 304,738 bytes and deploys) rather than by a
 specification, and now checks the **emitted** file size rather than the planned module bytes.

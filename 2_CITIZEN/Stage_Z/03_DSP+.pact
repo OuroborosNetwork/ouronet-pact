@@ -768,7 +768,7 @@
                     (ref-ATS:module{AutostakeV3} ATS)
                     (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
                     (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
                     (ouro:string (ref-DALOS::UR_OuroborosID))
                     (op:integer (ref-DPTF::UR_Decimals ouro))
                     (daily:decimal (URC_DailyOURO))
@@ -914,7 +914,7 @@
         (with-capability (DSP|STAGE-TWO-INJECT fvt-id reward-dptf-id amount)
             (let
                 (
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
                 )
                 (ref-TS02-C3::AQP-FVT|CC_Inject
                     GASLESS-PATRON S2-BUCKET|SC_NAME fvt-id reward-dptf-id amount)
@@ -939,7 +939,7 @@
         (with-capability (DSP|STAGE-TWO-INJECT-FINALIZE fvt-id reward-dptf-id amount)
             (let
                 (
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
                 )
                 (ref-TS02-C3::AQP-FVT|CC_InjectFinalize
                     GASLESS-PATRON S2-BUCKET|SC_NAME fvt-id reward-dptf-id amount)

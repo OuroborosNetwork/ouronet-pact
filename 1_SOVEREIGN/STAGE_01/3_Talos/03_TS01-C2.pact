@@ -584,8 +584,8 @@
                     (ref-ATS::C_AddSecondary patron executor ats reward-token rt-nfr)
                 )
                 (if rt-nfr
-                    (format "Succesfully Added {} as a secondndary Reward Token for the ATS-Pair {} with Native-Fee-Recovery" [ats reward-token])
-                    (format "Succesfully Added {} as a secondndary Reward Token for the ATS-Pair {} without Native-Fee-Recovery" [ats reward-token])
+                    (format "Succesfully Added {} as a secondary Reward Token for the ATS-Pair {} with Native-Fee-Recovery" [reward-token ats])
+                    (format "Succesfully Added {} as a secondary Reward Token for the ATS-Pair {} without Native-Fee-Recovery" [reward-token ats])
                 )
                 
             )
@@ -812,7 +812,7 @@
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-ATSU::CC_RemoveSecondary patron executor ats reward-token)
                 )
-                (format "Succesfully removed RT {} from ATS-Pair" [reward-token ats])
+                (format "Succesfully removed RT {} from ATS-Pair {}" [reward-token ats])
             )
         )
     )
@@ -1143,7 +1143,7 @@
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-ATSU::C_DirectRecovery patron executor ats ra)
                 )
-                (format "Succesfully recovered directly {} RBT Token on ATS-Pair" [ra ats])
+                (format "Succesfully recovered directly {} RBT Token on ATS-Pair {}" [ra ats])
             )
         )
     )

@@ -51,7 +51,9 @@ Below the scoring module, which reads a single aggregated value from it.
 | `P|` policy | 9 | inter-module authorisation | `P|A_Add`, `P|A_AddIMP`, `P|A_Define`, `P|A_RemoveIMP`, `P|A_SetIMP`, `P|Info` …+3 |
 | *(unclassified)* | 60 | carries no StoicSyntax prefix | `CAP_TF|Owner`, `CT_Bar`, `CT_Namespace`, `GOV|AQP|PBL`, `GOV|AQP|SC_NAME`, `GOV|AqpKey` …+54 |
 
-> Repository and chain agree on every declared shape.
+> **The repository differs from what is deployed.** Everything above describes the CHAIN, which is what a caller actually reaches. The difference is stated rather than resolved:
+>
+> - **functions** in the repository only: `UEV_ExecutorNotCustodial`, `URCv_AnchorableDptfAuthority`
 
 **Capabilities** -- 21
 

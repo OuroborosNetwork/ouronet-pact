@@ -103,7 +103,7 @@ ROUNDS = {
         # "not in the on-chain snapshot ... never deployed live", and the policy for never-live
         # code is V1. Owner call 2026-09-19: they are V1. (This is the very misreading that file
         # warns about in its own header -- taking a version from the wrong section.)
-        "interfaces": ["IgnisCollectorV3", "AcquisitionPoolsV1", "AcquisitionScoresV1",
+        "interfaces": ["IgnisCollectorV3", "AcquisitionPoolsV1", "AcquisitionScoresV2",
                        "AcquisitionAnchorsV1", "AcquisitionVacateV1", "AqpMtxV1", "DsaV1",
                        "AcquisitionSchemasV1", "AcquisitionFarmsVaultsTreasuriesV1",
                        "AcquisitionRewardPerShareV1", "AcquisitionPoolBootV1"],
@@ -605,6 +605,16 @@ HEADER_RESERVE = 6_000
 
 # ---------------------------------------------------------------------------------------------
 # UPGRADE vs GENESIS, and why this tool refuses to guess which tables exist.
+#
+# THE 320,000-BYTE CAP IS NOW EXPLAINED, 2026-10-06. It was set "conservative ... justified by
+# evidence rather than by a specification", with the real ceiling recorded as UNKNOWN. It is GAS,
+# and the size charge grows as the SEVENTH POWER of transaction size:
+#     gas_size(S) ~= 95_225 * (S_KB / 256) ** 7
+# measured from the wallet deploy editor (3 x ~256 KB = ~285,675 gas; one 768 KB = ~202,525,154;
+# implied exponent 6.97). Per-transaction ceiling ~395 KB at the 2.00M limit. The guess was nearly
+# optimal. Two consequences for any future packer here: never raise this cap by extrapolating gas
+# LINEARLY from one measurement, and prefer BALANCED bins -- one 320 KB file costs as much as four
+# 230 KB ones. See REPL/tools/_purev3.py for the derivation and CLAUDE.md for the ruling.
 #
 # `(create-table X)` FAILS if X already exists. Most of Ouronet is already deployed, so a redeploy
 # that carries every module's create-table calls -- which is what the first version of this tool
@@ -1529,11 +1539,23 @@ def write_manifest(manifest, steps, budget, maxbytes, mode="upgrade"):
         L.append("")
         L.append("`01_DPL-UR.pact` is expected: Stage Z deploys from `deploy-stagezz.repl`, a "
                  "separate chain that runs last.\n")
-        L.append("`09_AQP-INFO.pact` is **not** expected and is the same module flagged earlier as "
-                 "absent from `deploy-stage02.repl`. It is 1,405 lines of cost-preview code "
-                 "referenced by 18 test files, it names a bumped interface, and nothing deploys "
-                 "it. Either the chain is missing it or it is test-only -- and if it is live on "
-                 "mainnet today, it is about to be left on a stale interface.\n")
+        L.append("**RESOLVED 2026-10-07, and the resolution is that this list means something "
+                 "narrower than it says.** It used to end: *\"`09_AQP-INFO.pact` is **not** "
+                 "expected ... nothing deploys it ... if it is live on mainnet today, it is about "
+                 "to be left on a stale interface.\"* All three of these are LIVE and CURRENT. "
+                 "`09_AQP-INFO.pact` and `14_O-UI-FOURTEEN.pact` shipped in `Deploy/PureV3/08` "
+                 "(confirmed on chain: `URH_AQP|AllPoolIds` returns 7, and those pools exist only "
+                 "if Step 7 ran, which that transaction carries); `13_O-UI-THIRTEEN.pact` shipped "
+                 "in `Deploy/PureV2/33`; and all three are in `Deploy/PureV4` for the EquityV3 "
+                 "round. `01_DPL-UR.pact` is expected -- Stage Z deploys from "
+                 "`deploy-stagezz.repl`, a separate chain that runs last.\n")
+        L.append("So read this heading as **\"not in the FROM-SCRATCH chain\"**, not as \"not "
+                 "deployed\". This tool globs the `deploy-stage0*.repl` loaders, which build a "
+                 "virgin chain; the hand-deploy rounds (`Deploy/PureV2`, `PureV3`, `PureV4`) are a "
+                 "different mechanism it cannot see, and `AppReads` modules load from "
+                 "`modules/APPREADS-OuronetUI.repl` rather than any stage loader. A warning that "
+                 "cannot distinguish \"absent\" from \"shipped by another route\" will cry wolf "
+                 "every round, and this one did for three.\n")
     L.append("## What was verified, and what was not\n")
     L.append("- **A generated batch loads.** `Deploy/06_deploy.pact` (13 utility modules) was "
              "loaded in the REPL on top of Stage 00 and succeeded, costing **183,034 gas** against "
@@ -1563,12 +1585,14 @@ def write_manifest(manifest, steps, budget, maxbytes, mode="upgrade"):
              "minting, not as part of the core chain. |")
     L.append("| `2_CITIZEN/6_OuronetBridge/03_CADUCEUS.pact` | bridge scaffold; loaded only by its "
              "own module test. Not ready. |")
-    L.append("| **`STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact`** | **NEEDS A DECISION.** 1,405 lines "
-             "of code, referenced by **18** `.repl` files including its own suite "
-             "`Stage_02/[6.5]_AQP-INFO.repl`, and it is an `INFO_` cost-preview module whose "
-             "previews are counted among the audited client-facing surface -- but it is **not "
-             "loaded by `deploy-stage02.repl`**. Either the deploy chain is missing it, or it is "
-             "intentionally test-only. Resolve before deploying. |\n")
+    L.append("| `STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact` | **DECIDED 2026-10-07: live, and "
+             "deployed by hand.** This row read *\"NEEDS A DECISION ... Either the deploy chain "
+             "is missing it, or it is intentionally test-only\"* -- it is neither. It is 1,405 "
+             "lines of `INFO_` cost-preview code, referenced by 18 `.repl` files, **on mainnet "
+             "since `Deploy/PureV3/08`**, and in `Deploy/PureV4/06` for the EquityV3 round. It is "
+             "absent from `deploy-stage02.repl` and that is a gap in the FROM-SCRATCH chain, which "
+             "matters only for a virgin deploy (a devnet bring-up would miss it). Add it there "
+             "before the next from-scratch run; nothing is pending for mainnet. |\n")
     L.append("## Tables: already in the batches\n")
     L.append("Every `.pact` file in this tree is laid out `interface(s)` -> `module` -> its own "
              "`create-table` calls, which is the same shape you would paste by hand. A batch "

@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 20 of 24
 ;; This is STEP 20 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-19 must have run first, including the init steps between deploys.
-;; 2 source file(s), 149,410 gas measured in the REPL gas model, 153,545 bytes
+;; 2 source file(s), 149,410 gas measured in the REPL gas model, 157,313 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact
@@ -1176,11 +1176,18 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-DPDC-S::C_DefinePrimordialSet patron executor id true set-name score-multiplier set-definition ind)
+                    )
                 )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-S::C_DefinePrimordialSet patron executor id true set-name score-multiplier set-definition ind)
-                )
-                (format "Primordial Set <{}> for SFT Collection {} defined succesfully" [set-name id])
+                (ref-IGNIS::XE_CollectIgnis patron ico)
+                ;;REPORTS THE GENERATED set-class. It used to report only `set-name` -- the
+                ;;caller's own input -- while set-class is an AUTO-INCREMENT integer assigned
+                ;;inside XI_*Set. Unlike a name-derived id it cannot be reconstructed after the
+                ;;fact, yet C_ToggleSet / C_RenameSet / C_UpdateSetNonce* all key on it. The core
+                ;;was discarding it into an empty cumulator output; both halves are fixed.
+                ;;StoicSyntax 2.16.2.
+                (format "Primordial Set <{}> (set-class {}) for SFT Collection {} defined succesfully" [set-name (at 0 (at "output" ico)) id])
             )
         )
     )
@@ -1196,11 +1203,18 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-DPDC-S::C_DefineCompositeSet patron executor id true set-name score-multiplier set-definition ind)
+                    )
                 )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-S::C_DefineCompositeSet patron executor id true set-name score-multiplier set-definition ind)
-                )
-                (format "Composite Set <{}> for SFT Collection {} defined succesfully" [set-name id])
+                (ref-IGNIS::XE_CollectIgnis patron ico)
+                ;;REPORTS THE GENERATED set-class. It used to report only `set-name` -- the
+                ;;caller's own input -- while set-class is an AUTO-INCREMENT integer assigned
+                ;;inside XI_*Set. Unlike a name-derived id it cannot be reconstructed after the
+                ;;fact, yet C_ToggleSet / C_RenameSet / C_UpdateSetNonce* all key on it. The core
+                ;;was discarding it into an empty cumulator output; both halves are fixed.
+                ;;StoicSyntax 2.16.2.
+                (format "Composite Set <{}> (set-class {}) for SFT Collection {} defined succesfully" [set-name (at 0 (at "output" ico)) id])
             )
         )
     )
@@ -1217,11 +1231,18 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-DPDC-S::C_DefineHybridSet patron executor id true set-name score-multiplier primordial-sd composite-sd ind)
+                    )
                 )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-S::C_DefineHybridSet patron executor id true set-name score-multiplier primordial-sd composite-sd ind)
-                )
-                (format "Hybrid Set <{}> for SFT Collection {} defined succesfully" [set-name id])
+                (ref-IGNIS::XE_CollectIgnis patron ico)
+                ;;REPORTS THE GENERATED set-class. It used to report only `set-name` -- the
+                ;;caller's own input -- while set-class is an AUTO-INCREMENT integer assigned
+                ;;inside XI_*Set. Unlike a name-derived id it cannot be reconstructed after the
+                ;;fact, yet C_ToggleSet / C_RenameSet / C_UpdateSetNonce* all key on it. The core
+                ;;was discarding it into an empty cumulator output; both halves are fixed.
+                ;;StoicSyntax 2.16.2.
+                (format "Hybrid Set <{}> (set-class {}) for SFT Collection {} defined succesfully" [set-name (at 0 (at "output" ico)) id])
             )
         )
     )
@@ -1669,7 +1690,7 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-EQUITY:module{EquityV2} EQUITY)
+                    (ref-EQUITY:module{EquityV3} EQUITY)
                     ;;
                     (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-EQUITY::C_IssueShareholderCollection 
@@ -1698,7 +1719,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
-                    (ref-EQUITY:module{EquityV2} EQUITY)
+                    (ref-EQUITY:module{EquityV3} EQUITY)
                     ;;
                     (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-EQUITY::C_MorphPackageShares
@@ -2759,11 +2780,18 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-DPDC-S::C_DefinePrimordialSet patron executor id false set-name score-multiplier set-definition ind)
+                    )
                 )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-S::C_DefinePrimordialSet patron executor id false set-name score-multiplier set-definition ind)
-                )
-                (format "Primordial Set <{}> for NFT Collection {} defined succesfully" [set-name id])
+                (ref-IGNIS::XE_CollectIgnis patron ico)
+                ;;REPORTS THE GENERATED set-class. It used to report only `set-name` -- the
+                ;;caller's own input -- while set-class is an AUTO-INCREMENT integer assigned
+                ;;inside XI_*Set. Unlike a name-derived id it cannot be reconstructed after the
+                ;;fact, yet C_ToggleSet / C_RenameSet / C_UpdateSetNonce* all key on it. The core
+                ;;was discarding it into an empty cumulator output; both halves are fixed.
+                ;;StoicSyntax 2.16.2.
+                (format "Primordial Set <{}> (set-class {}) for NFT Collection {} defined succesfully" [set-name (at 0 (at "output" ico)) id])
             )
         )
     )
@@ -2779,11 +2807,18 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-DPDC-S::C_DefineCompositeSet patron executor id false set-name score-multiplier set-definition ind)
+                    )
                 )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-S::C_DefineCompositeSet patron executor id false set-name score-multiplier set-definition ind)
-                )
-                (format "Composite Set <{}> for NFT Collection {} defined succesfully" [set-name id])
+                (ref-IGNIS::XE_CollectIgnis patron ico)
+                ;;REPORTS THE GENERATED set-class. It used to report only `set-name` -- the
+                ;;caller's own input -- while set-class is an AUTO-INCREMENT integer assigned
+                ;;inside XI_*Set. Unlike a name-derived id it cannot be reconstructed after the
+                ;;fact, yet C_ToggleSet / C_RenameSet / C_UpdateSetNonce* all key on it. The core
+                ;;was discarding it into an empty cumulator output; both halves are fixed.
+                ;;StoicSyntax 2.16.2.
+                (format "Composite Set <{}> (set-class {}) for NFT Collection {} defined succesfully" [set-name (at 0 (at "output" ico)) id])
             )
         )
     )
@@ -2800,11 +2835,18 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-DPDC-S::C_DefineHybridSet patron executor id false set-name score-multiplier primordial-sd composite-sd ind)
+                    )
                 )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-S::C_DefineHybridSet patron executor id false set-name score-multiplier primordial-sd composite-sd ind)
-                )
-                (format "Hybrid Set <{}> for NFT Collection {} defined succesfully" [set-name id])
+                (ref-IGNIS::XE_CollectIgnis patron ico)
+                ;;REPORTS THE GENERATED set-class. It used to report only `set-name` -- the
+                ;;caller's own input -- while set-class is an AUTO-INCREMENT integer assigned
+                ;;inside XI_*Set. Unlike a name-derived id it cannot be reconstructed after the
+                ;;fact, yet C_ToggleSet / C_RenameSet / C_UpdateSetNonce* all key on it. The core
+                ;;was discarding it into an empty cumulator output; both halves are fixed.
+                ;;StoicSyntax 2.16.2.
+                (format "Hybrid Set <{}> (set-class {}) for NFT Collection {} defined succesfully" [set-name (at 0 (at "output" ico)) id])
             )
         )
     )

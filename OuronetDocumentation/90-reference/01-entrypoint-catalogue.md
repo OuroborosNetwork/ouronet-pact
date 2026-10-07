@@ -3,17 +3,17 @@
 > **This page is GENERATED.** Edit `REPL/tools/_docsref.py`, never this file — the
 > gate regenerates it and diffs the result. It carries no prose for that reason.
 
-Every client entrypoint Ouronet exposes — **423** of them — with the preview
+Every client entrypoint Ouronet exposes — **427** of them — with the preview
 that prices it and whether the gas station pays for it.
 
 **Bind preview arguments by NAME, never by position.** A preview's parameter list
-differs from its entrypoint's in **410**
+differs from its entrypoint's in **414**
 cases. Positional binding does not fail — the values are mostly strings, so a wrong
 mapping type-checks and returns a confident price for a different question.
 
 | sponsorship | entrypoints |
 |---|---:|
-| fully sponsored | 405 |
+| fully sponsored | 409 |
 | step-0-only | 10 |
 | not sponsored | 8 |
 
@@ -437,6 +437,10 @@ mapping type-checks and returns a confident price for a different question.
 | `AQP-POOL|CC_UnstakeOrtoFungible` | `AQP-INFO.INFO_AQP-POOL|UnstakeOrtoFungible` | yes |
 | `AQP-POOL|CC_UnstakeSemiFungibleCollectable` | `AQP-INFO.INFO_AQP-POOL|UnstakeSemiFungibleCollectable` | yes |
 | `AQP-POOL|CC_UnstakeTrueFungible` | `AQP-INFO.INFO_AQP-POOL|UnstakeTrueFungible` | yes |
+| `AQP-POOL|CC_VacateNonFungible` | `AQP-INFO.INFO_AQP-POOL|VacateNonFungible` | yes |
+| `AQP-POOL|CC_VacateOrtoFungible` | `AQP-INFO.INFO_AQP-POOL|VacateOrtoFungible` | yes |
+| `AQP-POOL|CC_VacateSemiFungible` | `AQP-INFO.INFO_AQP-POOL|VacateSemiFungible` | yes |
+| `AQP-POOL|CC_VacateTrueFungible` | `AQP-INFO.INFO_AQP-POOL|VacateTrueFungible` | yes |
 | `AQP-POOL|CCp_BatchDrainCollectable` | `AQP-INFO.INFO_AQP-POOL|BatchDrainCollectable` | yes |
 | `AQP-POOL|CCp_BatchDrainOrtoFungible` | `AQP-INFO.INFO_AQP-POOL|BatchDrainOrtoFungible` | yes |
 | `AQP-POOL|CCp_BatchDrainTrueFungible` | `AQP-INFO.INFO_AQP-POOL|BatchDrainTrueFungible` | yes |

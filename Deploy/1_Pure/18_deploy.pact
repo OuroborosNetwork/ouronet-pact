@@ -1349,7 +1349,7 @@
         (let
             (
                 (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                 (ref-SWP:module{SwapperV4} SWP)
                 (sentinel:string "|")
                 (pool-score-id:string
@@ -1380,7 +1380,7 @@
         @doc "Pool id for collect/settle SCR reads: score pool or triplet silver pool."
         (let 
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
             )
             (if (= score-entity-type CT_SCORE_ENTITY_SCORE)
                 (ref-SCR::UR_SCR|ScoreAqpoolLink score-entity-id)
@@ -1515,7 +1515,7 @@
             )
             (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (fvt-owner:string (ref-RPS::UR_FVT|OwnerKonto fvt-id))
                 (fvt-class:integer (ref-RPS::UR_FVT|FvtClass fvt-id))
@@ -1574,7 +1574,7 @@
         ;;eagerly, so a triplet that does not exist aborted on "row not found" and the guard was
         ;;unreachable for EVERY input. URC_TripletExists is a with-default-read written precisely
         ;;to answer for a missing row -- it simply never got the chance. Hoisted here.
-        (let ((ref-SCR:module{AcquisitionScoresV1} AQP-SCORE))
+        (let ((ref-SCR:module{AcquisitionScoresV2} AQP-SCORE))
             (enforce (ref-SCR::URC_TripletExists triplet-id) "Triplet must be issued in AQP-SCORE"))
         (let
             (
@@ -1582,7 +1582,7 @@
             )
             (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (fvt-owner:string (ref-RPS::UR_FVT|OwnerKonto fvt-id))
                 (fvt-class:integer (ref-RPS::UR_FVT|FvtClass fvt-id))
@@ -1753,7 +1753,7 @@
             (
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                 (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 (reward-kind:string (ref-RPS::UR_FVT-RG|RewardKind fvt-id reward-dptf-id))
                 ;; the score's employing pool (triplet ⇒ silver leg's pool — mirrors CC_Collect's resolution)
@@ -2081,7 +2081,7 @@
             (let
                 (
                     (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                     (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                     (score-ids:[string]
                         (ref-ANK::UR_BC|ScoreLinks (ref-ANK::UR_ANK|BoostClassId anchor-id)))
@@ -2105,7 +2105,7 @@
             (let
                 (
                     (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                     (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                     (score-ids:[string]
                         (ref-ANK::UR_BC|ScoreLinks (ref-ANK::UR_ANK|BoostClassId anchor-id)))
@@ -2349,7 +2349,7 @@
             (P|UEV_IMC)
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                 (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (fvt-class:integer (ref-RPS::UR_FVT|FvtClass fvt-id))
                 (owner-konto:string (ref-RPS::UR_FVT|OwnerKonto fvt-id))
@@ -2794,7 +2794,7 @@
             (let
                 (
                     (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                     (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                     ;;
                     (boost-class-id:string (ref-ANK::UR_ANK|BoostClassId anchor-id))
@@ -2841,7 +2841,7 @@
             (let
                 (
                     (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                     (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                     ;;
                     (boost-class-id:string (ref-ANK::UR_ANK|BoostClassId anchor-id))
@@ -2884,7 +2884,7 @@
             (let
                 (
                     (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                     (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                     ;;
                     (cursor:object{AcquisitionSchemasV1.FVT|SweepProgress} (UR_FVT|SweepProgress anchor-id))
@@ -2983,7 +2983,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                     ;;
                     (pool-id:string
                         (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET)
@@ -3158,7 +3158,7 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                     ;;
                     (settle-bundle:object{AcquisitionSchemasV1.FVT|StakeSettleBundle}
                         (ref-RPS::URHC_BuildStakeSettleBundle pool-id executee)
@@ -3230,7 +3230,7 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                     ;;
                     ;; M5: executee is authoritative BOTH directions (stake and unstake). The caller supplies
                     ;; the real beneficiary on unstake too, so the exact (owner, beneficiary) tracker row is settled —
@@ -3314,7 +3314,7 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                     ;;
                     ;; M5: executee is authoritative BOTH directions (see CC_OrtoFungibleStakeFlow). The caller
                     ;; supplies the real beneficiary on unstake, so the exact (owner, beneficiary) tracker + Ben rollup

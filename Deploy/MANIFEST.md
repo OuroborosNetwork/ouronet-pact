@@ -20,10 +20,13 @@
 These name an interface that bumped this round, so Pact's cascade rule requires them to be redeployed -- but no deploy chain loads them, so **they are not in the files below**:
 
 - `2_CITIZEN/Stage_Z/AppReads/OuronetUI/13_O-UI-THIRTEEN.pact`
+- `2_CITIZEN/Stage_Z/AppReads/OuronetUI/14_O-UI-FOURTEEN.pact`
 
 `01_DPL-UR.pact` is expected: Stage Z deploys from `deploy-stagezz.repl`, a separate chain that runs last.
 
-`09_AQP-INFO.pact` is **not** expected and is the same module flagged earlier as absent from `deploy-stage02.repl`. It is 1,405 lines of cost-preview code referenced by 18 test files, it names a bumped interface, and nothing deploys it. Either the chain is missing it or it is test-only -- and if it is live on mainnet today, it is about to be left on a stale interface.
+**RESOLVED 2026-10-07, and the resolution is that this list means something narrower than it says.** It used to end: *"`09_AQP-INFO.pact` is **not** expected ... nothing deploys it ... if it is live on mainnet today, it is about to be left on a stale interface."* All three of these are LIVE and CURRENT. `09_AQP-INFO.pact` and `14_O-UI-FOURTEEN.pact` shipped in `Deploy/PureV3/08` (confirmed on chain: `URH_AQP|AllPoolIds` returns 7, and those pools exist only if Step 7 ran, which that transaction carries); `13_O-UI-THIRTEEN.pact` shipped in `Deploy/PureV2/33`; and all three are in `Deploy/PureV4` for the EquityV3 round. `01_DPL-UR.pact` is expected -- Stage Z deploys from `deploy-stagezz.repl`, a separate chain that runs last.
+
+So read this heading as **"not in the FROM-SCRATCH chain"**, not as "not deployed". This tool globs the `deploy-stage0*.repl` loaders, which build a virgin chain; the hand-deploy rounds (`Deploy/PureV2`, `PureV3`, `PureV4`) are a different mechanism it cannot see, and `AppReads` modules load from `modules/APPREADS-OuronetUI.repl` rather than any stage loader. A warning that cannot distinguish "absent" from "shipped by another route" will cry wolf every round, and this one did for three.
 
 ## What was verified, and what was not
 
@@ -42,7 +45,7 @@ Checked deliberately, because a deploy plan that silently omits a module is the 
 | `2_CITIZEN/Stage_Z/01_DPL-UR.pact`, `02_EXPLORER.pact` | deployed by `deploy-stagezz.repl`, a separate chain, deliberately last. Not in this plan. |
 | `2_CITIZEN/2_BloodshedMinter/*` (5), `3_NosferatuMinter/01_NOSFERATU.pact` | citizen minters, loaded only by the `[5.x]_Populate*` fixture suites. Deploy when minting, not as part of the core chain. |
 | `2_CITIZEN/6_OuronetBridge/03_CADUCEUS.pact` | bridge scaffold; loaded only by its own module test. Not ready. |
-| **`STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact`** | **NEEDS A DECISION.** 1,405 lines of code, referenced by **18** `.repl` files including its own suite `Stage_02/[6.5]_AQP-INFO.repl`, and it is an `INFO_` cost-preview module whose previews are counted among the audited client-facing surface -- but it is **not loaded by `deploy-stage02.repl`**. Either the deploy chain is missing it, or it is intentionally test-only. Resolve before deploying. |
+| `STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact` | **DECIDED 2026-10-07: live, and deployed by hand.** This row read *"NEEDS A DECISION ... Either the deploy chain is missing it, or it is intentionally test-only"* -- it is neither. It is 1,405 lines of `INFO_` cost-preview code, referenced by 18 `.repl` files, **on mainnet since `Deploy/PureV3/08`**, and in `Deploy/PureV4/06` for the EquityV3 round. It is absent from `deploy-stage02.repl` and that is a gap in the FROM-SCRATCH chain, which matters only for a virgin deploy (a devnet bring-up would miss it). Add it there before the next from-scratch run; nothing is pending for mainnet. |
 
 ## Tables: already in the batches
 

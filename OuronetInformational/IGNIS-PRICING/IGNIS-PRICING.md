@@ -290,11 +290,47 @@ STOA; the constants-only conversion (65 table reads lifted); the `define-set` / 
 
 ## What is open
 
-**440** Talos client functions carry a price; **11** carry no row, and the sheet now says which:
+**435** Talos client functions carry a price; **15** carry no row, and the sheet now says which:
 
 ```
-183 exact  ·  137 floor  ·  2 STOA-only  ·  118 exempt  ·  0 unresolved  ·  11 unpriced
+199 exact  ·  178 floor  ·  2 STOA-only  ·  56 exempt  ·  5 unresolved  ·  15 unpriced
 ```
+
+**MOVED SHARPLY ON 2026-10-06, AND THE OLD NUMBERS WERE WRONG.** `COLLECTS` -- the regex deciding
+whether a Talos wrapper collects anything -- matched `C_Collect`, which is the spelling the IGNIS
+collectors had BEFORE they became `XE_Collect*` / `XB_Collect*`. Measured in the Talos layer: 378
+`XE_Collect*` calls against 11 surviving `C_Collect`. **The check recognised 3% of the collection
+in the tree and read the other 97% as "no collector here."**
+
+Everything it then classified as *"free by design"* was asserted on that blind spot. Ten
+operations were published as FREE that charge real IGNIS, the worst by a wide margin being
+`AQP-DSA|C_DefineDelegationVault` at **5,011 IGNIS ($50.11)**; also `C_IssueMultipletFamily` 509,
+`C_FuelRoyalty` 505, `C_BurnRoyalty` / `C_WithdrawRoyalty` 405, `C_RecomputeCapture` 321,
+`C_SetOracleAuth` 310, `C_SetAgencyFee` 308, `C_OracleWrite` 222, `C_CombineTripletScoreModel` 116
+-- plus the five VST link creators and `VST|C_Awake`, which are floor-priced from 128 to 1,338.
+
+**`0 → 5 unresolved` is the honest direction.** The five are `C_MultiTransfer`, `C_TransferNonce`
+and `C_TransferNonces`, all driven by `C_IgnisRoyaltyCollector`, whose cumulator comes from a
+reader in another module and cannot be resolved statically. They were previously published as
+*free*; they are not free, and `?` with a stated reason beats a confident zero.
+
+**How it surfaced is worth keeping.** Nothing audited this. It came out of a refactor that changed
+no billing at all: six set-definition wrappers were changed to bind their cumulator so they could
+report the id they generated (StoicSyntax 2.16.2), and binding it moved them into the one narrow
+slice -- cumulator bound, IGNIS legs, no STOA -- where the blind spot was reachable. The sheet
+flipped them from `>= 544` to `0` and the gate went red. A latent error in a generated document is
+found by perturbing it, not by reading it.
+
+**11 → 15 on 2026-10-03, and the four are not new work — they are newly VISIBLE.**
+`TS02-C3`'s four per-leg vacate entrypoints were named `AQP-POOL|XB_Vacate*`, and the sheet
+reads the same `|C{1,2}p?_` filter the registry does, so an `XB_` name was invisible to it.
+They are now `AQP-POOL|C_Vacate*` and the sheet can see them for the first time.
+
+They are **billed** — each ends on `XE_CollectIgnis patron (ref-VCT::XB_Vacate* …)`, which is
+shape A — so "unpriced" here means *no row in the generated sheet*, not *free*. The row arrives
+when the registry picks the new names up, which is `_registrylive.py --record` then
+`_registry.py --probe` after `Deploy/PureV2/28_deploy.pact` lands. Until then the figure is an
+honest four-function gap rather than a silent one, which is the whole point of the prefix fix.
 
 MOVED 2026-09-22, 185 exact → 183. Both rows are `C_RepurposeFragments` (the DPSF and DPNF
 doors onto `DPDC-F::C_RepurposeCollectableFragments`), and they were published as an EXACT

@@ -10,7 +10,7 @@
         (patron:string pool-id:string fvt-id:string ouro-id:string n-scores:integer)
         (let
             (
-                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
                 (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
             )
             (if (<= n-scores 1)
@@ -38,7 +38,7 @@
         (patron:string pool-id:string fvt-id:string ouro-id:string n-scores:integer)
         (let
             (
-                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
                 (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
             )
             (if (<= n-scores 1)
@@ -66,7 +66,7 @@
         (patron:string pool-id:string fvt-id:string ouro-id:string n-scores:integer)
         (let
             (
-                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
                 (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
             )
             (if (<= n-scores 1)
@@ -94,7 +94,7 @@
         (patron:string pool-id:string fvt-id:string ouro-id:string n-scores:integer)
         (let
             (
-                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
                 (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
             )
             (if (<= n-scores 1)
@@ -122,7 +122,7 @@
         (patron:string pool-id:string ouro-id:string amount:decimal)
         (let
             (
-                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
                 (owner:string (UC_Owner))
                 (g-before:integer (env-gas))
             )
@@ -134,7 +134,7 @@
         (patron:string pool-id:string ouro-id:string amount:decimal)
         (let
             (
-                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
                 (owner:string (UC_Owner))
                 (g-before:integer (env-gas))
             )
@@ -146,7 +146,7 @@
         (patron:string pool-id:string dpof-id:string nonces:[integer])
         (let
             (
-                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
                 (owner:string (UC_Owner))
                 (g-before:integer (env-gas))
             )
@@ -158,7 +158,7 @@
         (patron:string pool-id:string dpof-id:string nonces:[integer])
         (let
             (
-                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
                 (owner:string (UC_Owner))
                 (g-before:integer (env-gas))
             )
@@ -170,7 +170,7 @@
         (patron:string pool-id:string dpsf-id:string nonces:[integer])
         (let
             (
-                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
                 (owner:string (UC_Owner))
                 (g-before:integer (env-gas))
             )
@@ -182,7 +182,7 @@
         (patron:string pool-id:string dpsf-id:string nonces:[integer])
         (let
             (
-                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
                 (owner:string (UC_Owner))
                 (g-before:integer (env-gas))
             )
@@ -194,7 +194,7 @@
         (patron:string pool-id:string dpnf-id:string nonces:[integer])
         (let
             (
-                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
                 (owner:string (UC_Owner))
                 (g-before:integer (env-gas))
             )
@@ -206,7 +206,7 @@
         (patron:string pool-id:string dpnf-id:string nonces:[integer])
         (let
             (
-                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
                 (owner:string (UC_Owner))
                 (g-before:integer (env-gas))
             )

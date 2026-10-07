@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 10 of 24
 ;; This is STEP 10 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-9 must have run first, including the init steps between deploys.
-;; 5 source file(s), 228,598 gas measured in the REPL gas model, 204,915 bytes
+;; 5 source file(s), 228,598 gas measured in the REPL gas model, 204,926 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/3_Talos/03_TS01-C2.pact
@@ -629,8 +629,8 @@
                     (ref-ATS::C_AddSecondary patron executor ats reward-token rt-nfr)
                 )
                 (if rt-nfr
-                    (format "Succesfully Added {} as a secondndary Reward Token for the ATS-Pair {} with Native-Fee-Recovery" [ats reward-token])
-                    (format "Succesfully Added {} as a secondndary Reward Token for the ATS-Pair {} without Native-Fee-Recovery" [ats reward-token])
+                    (format "Succesfully Added {} as a secondary Reward Token for the ATS-Pair {} with Native-Fee-Recovery" [reward-token ats])
+                    (format "Succesfully Added {} as a secondary Reward Token for the ATS-Pair {} without Native-Fee-Recovery" [reward-token ats])
                 )
                 
             )
@@ -857,7 +857,7 @@
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-ATSU::CC_RemoveSecondary patron executor ats reward-token)
                 )
-                (format "Succesfully removed RT {} from ATS-Pair" [reward-token ats])
+                (format "Succesfully removed RT {} from ATS-Pair {}" [reward-token ats])
             )
         )
     )
@@ -1188,7 +1188,7 @@
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-ATSU::C_DirectRecovery patron executor ats ra)
                 )
-                (format "Succesfully recovered directly {} RBT Token on ATS-Pair" [ra ats])
+                (format "Succesfully recovered directly {} RBT Token on ATS-Pair {}" [ra ats])
             )
         )
     )
@@ -2541,7 +2541,7 @@
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-SWPLC::C_ToggleAddLiquidity patron executor swpair toggle)
                 )
-                (format "Succesfully toggled Liquidity Provisioning for SWP-Pair" [swpair])
+                (format "Succesfully toggled Liquidity Provisioning for SWP-Pair {}" [swpair])
             )
         )
     )
@@ -2561,7 +2561,7 @@
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-SWPU::C_ToggleSwapCapability patron executor swpair toggle)
                 )
-                (format "Succesfully toggled Swap Capability for SWP-Pair" [swpair])
+                (format "Succesfully toggled Swap Capability for SWP-Pair {}" [swpair])
             )
         )
     )
@@ -2581,7 +2581,7 @@
                 )
                 (ref-IGNIS::XE_CollectIgnis patron ico)
                 (ref-TS01-A::XE_ConditionalFuelSTOA collect)
-                (format "Succesfully toggled the Fee Lock for the SWP-Pair" [swpair])
+                (format "Succesfully toggled the Fee Lock for the SWP-Pair {}" [swpair])
             )
         )
     )

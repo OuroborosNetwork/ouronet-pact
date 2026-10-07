@@ -81,18 +81,18 @@ there isn't is freedom to call something not yet deployed.
 
 | | |
 |---:|---|
-| 123,572 | lines of contract |
-| 8,872 | functions |
+| 124,750 | lines of contract |
+| 8,918 | functions |
 | 988 | capabilities |
 | 99 | modules |
-| 423 | client entrypoints |
+| 427 | client entrypoints |
 
 Those are not padding. The four asset types need genuinely different machinery — a true fungible
 has 2 wipe operations, an orto-fungible has 5, collectables have 7 — because wiping a balance is
 one write and wiping a holder's parcels may be thousands.
 
-And every client operation needs a preview, a cost reader, a capability, and a test. **423
-entrypoints is 423 of each.**
+And every client operation needs a preview, a cost reader, a capability, and a test. **427
+entrypoints is 427 of each.**
 
 ---
 
@@ -109,7 +109,7 @@ The honest ledger:
 | its own account model | one wallet key controlling many accounts, with separate key and code authority |
 | its own gas | **users transact without holding the host chain's currency** |
 
-That last one is the load-bearing answer. Ouronet's gas station sponsors **405 of 423 entrypoints**.
+That last one is the load-bearing answer. Ouronet's gas station sponsors **409 of 427 entrypoints**.
 A user with zero native currency can transact. Achieving that requires a virtual gas economy, a
 price for every operation, a sponsor that can read what a transaction contains, and a revenue split
 that funds it.

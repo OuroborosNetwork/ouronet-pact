@@ -578,7 +578,7 @@
             \ the model's nonce values). The open gate + the capture divisor read this."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
             )
             (+ (ref-SCR::UR_SCR|ScoreTotalBaseScore (ref-SCR::UR_SCR|TripletBronzeScoreId score-entity-id))
                (+ (ref-SCR::UR_SCR|ScoreTotalBaseScore (ref-SCR::UR_SCR|TripletSilverScoreId score-entity-id))

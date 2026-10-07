@@ -15,30 +15,30 @@ Counts are of definitions in the tree, interface declarations included.
 |---|---:|---|
 | `UR_` | 1,469 | reads one row or field by key |
 | `C_` | 1,374 | client entry — builds the bill; reachable only through Talos |
-| `URC_` | 769 | reads and derives; no `enforce` |
-| `INFO_` | 625 | operation preview returning a client-facing cost and description |
-| `URCi_` | 615 | **cost reader** — the single source both billing and the preview call |
-| `UEV_` | 595 | reads and `enforce`s; failure aborts the transaction |
+| `URC_` | 783 | reads and derives; no `enforce` |
+| `INFO_` | 629 | operation preview returning a client-facing cost and description |
+| `URCi_` | 619 | **cost reader** — the single source both billing and the preview call |
+| `UEV_` | 599 | reads and `enforce`s; failure aborts the transaction |
 | `A_` | 555 | admin-key mutation |
 | `UC_` | 440 | pure compute on arguments only — no table reads, no `enforce` |
 | `XI_` | 388 | internal write, this module only, under a capability |
 | `UDC_` | 330 | data construction — a named constructor for an object |
 | `XE_` | 328 | entry point for other modules only |
 | `CT_` | 279 | a constant, exposed as a function |
-| `GOV|` | 159 | governance — keysets and protocol constants |
-| `URH_` | 136 | **scan** — walks a table. Off the execution path; cost grows with data |
+| `GOV|` | 160 | governance — keysets and protocol constants |
+| `URH_` | 153 | **scan** — walks a table. Off the execution path; cost grows with data |
 | `P|` | 121 | policy — inter-module authorisation |
-| `CC_` | 86 | client entry that reaches a **scan** |
-| `XB_` | 70 | callable both internally and externally |
+| `CC_` | 94 | client entry that reaches a **scan** |
+| `XB_` | 62 | callable both internally and externally |
 | `WU_` | 62 | write — update |
 | `UCk_` | 60 | **key builder** — composes a table's composite row key. Pure; returns a string, not a table |
 | `SC_` | 52 | smart-contract account name — a constant, exposed as a function |
-| `URCv_` | 36 | `URC_` with an intrinsic guard |
+| `URCv_` | 37 | `URC_` with an intrinsic guard |
 | `CCp_` | 36 | client recipe that reaches a scan |
 | `UCv_` | 34 | `UC_` whose `enforce` is intrinsic to its own computation |
 | `CAP_` | 33 | account-ownership enforcement |
 | `WW_` | 28 | write — upsert |
-| `URCx_` | 26 | `URC_` auxiliary |
+| `URCx_` | 27 | `URC_` auxiliary |
 | `AU_` | 22 | admin utility |
 | `URHC_` | 22 | scan and derive. Off the execution path |
 | `WI_` | 20 | write — insert |

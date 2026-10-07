@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 7 of 24
 ;; This is STEP 7 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-6 must have run first, including the init steps between deploys.
-;; 2 source file(s), 235,153 gas measured in the REPL gas model, 254,738 bytes
+;; 2 source file(s), 235,153 gas measured in the REPL gas model, 254,723 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/16_SWPI.pact
@@ -495,7 +495,6 @@
     ;;performs the already-validated writes, matching the XE_* contract of no
     ;;enforce/UEV_* beyond P|UEV_IMC.
     (defcap SWPI|XE>ISSUE-WRITE (account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool)
-        @event
         true
     )
     ;;{C2}  Simple

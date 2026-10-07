@@ -19,31 +19,35 @@ these figures are smaller than `OuronetInformational/MODULE-INDEX.md`'s. That fi
 whole tree and reports 152 modules, 433 schemas and 423 tables. Both are correct at their own
 scope; quoting one with the other's label is the mistake to avoid.
 
-> Note the near-collision waiting to trap someone: MODULE-INDEX reports **423 tables** and the
-> registry reports **423 client entrypoints**. Unrelated quantities, equal today.
+> Note the near-collision that USED to wait here: MODULE-INDEX reports **423 tables** and the
+> registry reported **423 client entrypoints** — two unrelated quantities that were equal.
+> **As of 2026-10-05 the entrypoint count is 427 and they have diverged.** The trap sprang in
+> the most useful way possible: anyone who had filed "423" as one fact about Ouronet now holds
+> one number that is still right and one that is not, with nothing in the number to say which.
+> MODULE-INDEX still reports 423 tables; that half did not move.
 
 ```bash
 # source files -- NOT modules; a file may hold an interface and a module together
-find 1_SOVEREIGN 2_CITIZEN -name "*.pact" | wc -l                            # 105
+find 1_SOVEREIGN 2_CITIZEN -name "*.pact" | wc -l                            # 107
 
 # lines
-find 1_SOVEREIGN 2_CITIZEN -name "*.pact" -exec cat {} + | wc -l             # 123,572
+find 1_SOVEREIGN 2_CITIZEN -name "*.pact" -exec cat {} + | wc -l             # 124,750
 
 # definitions, by kind
 for k in defun defcap defschema deftable defpact; do
   printf "%-10s %s\n" "$k" \
     "$(grep -rhoE "^\s*\($k " --include=*.pact 1_SOVEREIGN 2_CITIZEN | wc -l)"
 done
-# defun 8872 · defcap 988 · defschema 206 · deftable 231 · defpact 6
+# defun 8918 · defcap 992 · defschema 206 · deftable 231 · defpact 6
 
 # modules and interfaces -- count the FORMS, at column 0
-grep -rhoE '^\(module [^ ]+'    --include=*.pact 1_SOVEREIGN 2_CITIZEN | wc -l          # 99
+grep -rhoE '^\(module [^ ]+'    --include=*.pact 1_SOVEREIGN 2_CITIZEN | wc -l          # 101
 grep -rhoE '^\(module [^ ]+'    --include=*.pact 1_SOVEREIGN 2_CITIZEN \
-  | awk '{print $2}' | sort -u | wc -l                                       # 98 distinct
-grep -rhoE '^\(interface [^ )]+' --include=*.pact 1_SOVEREIGN 2_CITIZEN | wc -l         # 98
+  | awk '{print $2}' | sort -u | wc -l                                       # 100 distinct
+grep -rhoE '^\(interface [^ )]+' --include=*.pact 1_SOVEREIGN 2_CITIZEN | wc -l         # 100
 ```
 
-**Why 99 module forms but 98 names.** `2_CITIZEN/6_OuronetBridge/03_CADUCEUS.pact` declares
+**Why 101 module forms but 100 names.** `2_CITIZEN/6_OuronetBridge/03_CADUCEUS.pact` declares
 `(module CADUCEUS GOV` twice at column 0 — an abandoned section skeleton at line 1, the real
 module at line 83. No live consequence: the file is a scaffold, excluded from the deploy round
 with that reason recorded in `Deploy/MANIFEST.md`. It is mentioned because a figure that differs
@@ -65,10 +69,10 @@ file, one line below the rule. The lesson is not "be careful": it is that **a co
 next to a figure is not the same as a command that produced it.** Which is why the figures that
 matter are now regenerated and diffed by a tool rather than transcribed — see `../MAINTAINING.md`.
 
-**A caveat on `defun` 8,872.** Pact declares a function in the interface AND defines it in the
+**A caveat on `defun` 8,918.** Pact declares a function in the interface AND defines it in the
 implementing module, so that count includes both. It is the number of `defun` FORMS in the tree,
 which is what the command measures and what this documentation claims — not the number of
-distinct callable functions. Where the distinct figure matters, the registry's 423 client
+distinct callable functions. Where the distinct figure matters, the registry's 427 client
 entrypoints is the honest one.
 
 ## The deploy round
@@ -93,7 +97,7 @@ Hand-deployed batches live alongside: `Deploy/2_Init/` (5), `Deploy/3_Assets/` (
 ```bash
 python3 -c "import json; r=json.load(open('Deploy/OURONET-REGISTRY.json')); \
   print(len(r['entrypoints']), 'entrypoints;', len(r['previews']), 'previews;', r['surfaceHash'])"
-# 423 entrypoints; 428 previews; <a 16-hex surface hash>
+# 427 entrypoints; 432 previews; <a 16-hex surface hash>
 ```
 
 **`surfaceHash` is deliberately NOT quoted as a figure in this documentation**, and the reason is

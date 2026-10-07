@@ -584,7 +584,7 @@
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-SWPLC::C_ToggleAddLiquidity patron executor swpair toggle)
                 )
-                (format "Succesfully toggled Liquidity Provisioning for SWP-Pair" [swpair])
+                (format "Succesfully toggled Liquidity Provisioning for SWP-Pair {}" [swpair])
             )
         )
     )
@@ -604,7 +604,7 @@
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-SWPU::C_ToggleSwapCapability patron executor swpair toggle)
                 )
-                (format "Succesfully toggled Swap Capability for SWP-Pair" [swpair])
+                (format "Succesfully toggled Swap Capability for SWP-Pair {}" [swpair])
             )
         )
     )
@@ -624,7 +624,7 @@
                 )
                 (ref-IGNIS::XE_CollectIgnis patron ico)
                 (ref-TS01-A::XE_ConditionalFuelSTOA collect)
-                (format "Succesfully toggled the Fee Lock for the SWP-Pair" [swpair])
+                (format "Succesfully toggled the Fee Lock for the SWP-Pair {}" [swpair])
             )
         )
     )

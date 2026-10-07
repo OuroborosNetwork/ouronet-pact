@@ -1,5 +1,7 @@
-;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface AcquisitionScoresV1
+;; net: v1   ·   dev: v2   ;; AcquisitionScoresV2 -> V2 (2026-10-06): five URH_ definition-inspection
+;; readers added. The bump was affordable only because the canon sweep already redeploys all ten
+;; modules that name the interface; on its own it would not have been worth the cascade.
+(interface AcquisitionScoresV2
     @doc "Interface for the AQP scoring layer. Declares readers for score config/totals, \
         \ per-(account,pool,score) user weights, SF nonce weights, and NF trait/class \
         \ definitions with revision nonces; stake-weight URC_ deltas; XE_ hooks for \
@@ -121,6 +123,15 @@
     ;; [URH] heavy-read
     ;;
     (defun URH_SCR|AllScoreIds:[string] ())
+    ;; Definition inspection — a score names no asset, it names DEFINITIONS keyed to one.
+    ;; These five are the only way to read back which assets a score was defined against,
+    ;; and therefore the only way to detect a definition written against the wrong asset
+    ;; (which saves cleanly and then scores 0 forever). V2 addition, 2026-10-06.
+    (defun URH_SCR|SFScoreDefinition:[object{AcquisitionSchemasV1.SCR|SF|Schema}] (score-id:string dpsf-id:string))
+    (defun URH_SCR|NFTraitScoreDefinition:[object{AcquisitionSchemasV1.SCR|NF|TraitSchema}] (score-id:string dpnf-id:string))
+    (defun URH_SCR|NFClassScoreDefinition:[object{AcquisitionSchemasV1.SCR|NF|ClassSchema}] (score-id:string dpnf-id:string))
+    (defun URH_SCR|ScoreDefinedSemiFungibles:[string] (score-id:string))
+    (defun URH_SCR|ScoreDefinedNonFungibles:[string] (score-id:string))
     ;;
     ;; [URCi]   cost readers — single source for exec billing + INFO preview
     (defun URCi_IssueScore:object{IgnisCollectorV3.OutputCumulator} (owner-konto:string output:[string]))
@@ -222,15 +233,15 @@
 )
 (module AQP-SCORE GOV
     @doc "AQP-SCORE — sovereign acquisition scoring for AQP pools. Owns global score configuration and totals (SCR|T|Score), per (ouronet-account, pool-id, score-id) user triples (SCR|T|UserScore), semi-fungible nonce weights (SCR|T|SF|Score) and SF DefRevision, and non-fungible definitions on SCR|T|NF|TraitScore vs SCR|T|NF|ClassScore with NF DefRevision split into global-, trait-, and class-revision nonces so trackers and URCX stake math can gate expensive selects. \
-        \ Public surface: AcquisitionScoresV1 reads and stake-weight URC_*; Talos-facing C_* builds IGNIS (and STOA where applicable) and acquires client caps; XI_* performs table writes under require-capability (SECURE / SCR|XI>*); XE_* is for forward modules and likewise does not enforce — the guarding defcap or C_* owns validation and enforce. UCx_ / URCx_ helpers exist only as operands inside URC_* stake deltas. \
-        \ Implements OuronetPolicyV2 and AcquisitionScoresV1."
+        \ Public surface: AcquisitionScoresV2 reads and stake-weight URC_*; Talos-facing C_* builds IGNIS (and STOA where applicable) and acquires client caps; XI_* performs table writes under require-capability (SECURE / SCR|XI>*); XE_* is for forward modules and likewise does not enforce — the guarding defcap or C_* owns validation and enforce. UCx_ / URCx_ helpers exist only as operands inside URC_* stake deltas. \
+        \ Implements OuronetPolicyV2 and AcquisitionScoresV2."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;; REPL: REPL/Stage_02/[6.2.2]_AQP-SCORE.repl — intra-tx groups TX-SCORE-nn · mm in ;;==== … ==== lines (mm = 01.. within each begin-tx).
     ;;
     (implements OuronetPolicyV2)
-    (implements AcquisitionScoresV1)
+    (implements AcquisitionScoresV2)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -484,7 +495,6 @@
             \ nft-score-model. sft-equality is not a cap parameter (boolean; applied at insert only). score-id \
             \ from score-name (UDC_Makeid); can-upgrade and can-change-owner default true at insert. Composed from \
             \ each SCR|C>ISSUE-* client capability."
-        @event
         (let
             (
                 (ref-U|ATS:module{UtilityAtsV3} U|ATS)
@@ -642,18 +652,12 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-U|INT:module{OuronetIntegersV2} U|INT)
                 (ref-DPDC:module{DpdcV2} DPDC)
                 ;;
                 (ref-DPDC-F:module{DpdcFragmentsV2} DPDC-F)
                 (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
-                (score-row-id:string (UR_SCR|ScoreScoreId score-id))
-                (sft-equality:bool (UR_SCR|ScoreSftEquality score-id))
                 (precision:integer (UR_SCR|ScorePrecision score-id))
                 (l1:integer (length nonces))
-                (l2:integer (length nonce-score-values))
-                (max-input-nonce:integer (if (> l1 0) (ref-U|INT::UEV_MaxInteger nonces) 0))
-                (nonces-used:integer (ref-DPDC::UR_NoncesUsed dpsf-id true))
             )
             ;;PRODUCED-TRIAGED (_eagerlet --produced, 2026-09-16): this message claims EXISTENCE, and a
             ;;hard read of the same subject raises before it can say so. Not actionable in isolation --
@@ -663,18 +667,7 @@
             ;;argument-independent) and PINS those aborts. Defaulting a shared reader turns a pinned
             ;;expect-failure red. Full reasoning at 02_SCORE.pact's SCR|XI>X_ISSUE-NF-SCORE-DEFINITION
             ;;and DEFECT-LEDGER G-37..G-41 + 7.2b; 7.3 records the same blocker for RT-K-007's preview half.
-            (enforce
-                (fold (and) true
-                    [
-                        (= score-row-id score-id)
-                        (not sft-equality)
-                        (> l1 0)
-                        (= l1 l2)
-                        (<= max-input-nonce nonces-used)
-                    ]
-                )
-                "Invalid score/dpsf inputs: score must exist, sft-equality false, nonce/value lists aligned, and max nonce <= DPDC nonces-used"
-            )
+            (UEV_SemiFungibleScoreDefinition score-id dpsf-id nonces nonce-score-values)
             (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
             (map
                 (lambda
@@ -895,7 +888,6 @@
     )
     (defcap SCR|XE>CREATE-AQPOOL-LINK (score-id:string pool-id:string)
         @doc "One-time aqpool-link: slot BAR, score owner, pool-id non-BAR. Pool/score pairing rules live in forward modules (e.g. AQP)."
-        @event
         (let
             (
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -921,7 +913,6 @@
     )
     (defcap SCR|XE>REVOKE-AQPOOL-LINK (score-id:string pool-id:string)
         @doc "Clear aqpool-link: slot must equal pool-id, score owner. Pool revoke guards live in forward modules (e.g. AQP)."
-        @event
         (let
             (
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -943,7 +934,6 @@
     )
     (defcap SCR|XE>CREATE-FVT-LINK (score-id:string fvt-id:string)
         @doc "One-time fvt-link: slot BAR, score owner, fvt-id non-BAR. FVT membership rules live in forward modules (e.g. FVT)."
-        @event
         (let
             (
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -2204,19 +2194,106 @@
             (floor (* raw-weight (if direction 1.0 -1.0)) p)
         )
     )
-    (defun URC_SignedBaseDeltaForDpsfStake:decimal
-        (score-id:string dpsf-id:string nonces:[integer] nonce-amounts:[integer] direction:bool)
-        @doc "Signed base delta for class-3 DPSF (score precision): sft-equality true uses UCx_StakeEqualNativeUnitRawWeight; \
-            \ false uses URCx_SfStakeDefinitionWeightedRawWeight (revision 0 => 0; else per-nonce point-read of the SF \
-            \ definition score, undefined nonce => 0). Both branches are point-read/compute only — statically light (URC), \
-            \ no stake-path scan."
+    (defun URCx_EquityShareRawWeight:decimal
+        (dpsf-id:string nonces:[integer] nonce-amounts:[integer])
+        @doc "Share-weighted raw weight for an EQUITY (shareholder) collection: sum_i amount_i x the \
+            \ SHARE VALUE of nonce_i, read LIVE from EQUITY. \
+            \ \
+            \ WHY THIS IS COMPUTED AND NOT DEFINED. An equity collection's nonce 1 is a raw share and \
+            \ nonces 2-8 are package tiers worth `tcs-in-millions x [100 200 500 1000 2000 5000 10000]` \
+            \ shares each, where `tcs-in-millions` is the collection's TOTAL nonce-1 supply over a \
+            \ million. A tier therefore keeps its PERCENTAGE meaning and changes its ABSOLUTE share \
+            \ value whenever the company's share count moves. \
+            \ \
+            \ AND TODAY IT CANNOT MOVE. Stated plainly because the opposite was written here first and \
+            \ was wrong: C_IssueShareholderCollection mints exactly 1,000,000 nonce-1 shares and grants \
+            \ <role-add-quantity> to <dpdc> ALONE; the only two paths that use it \
+            \ (EQUITY::XI_MakePackageShares / XI_ConvertPackageShares) credit PACKAGE nonces, never \
+            \ nonce 1, and Make/Break route shares through <dpdc> as ESCROW rather than minting -- \
+            \ which is why URC_CombineCapacity reads 400,000 and not 450,000 after a 100,000-share \
+            \ Make. So URC_SharesPerMillion is [100 200 500 1000 2000 5000 10000] on every equity \
+            \ collection in existence, and a stored table would not be stale YET. \
+            \ \
+            \ TWO REASONS TO COMPUTE ANYWAY. The variable share count is a STATED REQUIREMENT (owner, \
+            \ 2026-10-07, 'as the company increases or decreases shares'), and the point of deriving \
+            \ NOW is that adding EQUITY's own share-issuance path later must not force a re-settling \
+            \ of every score already issued -- which is exactly the migration a stored table would \
+            \ demand, silently, on rows nobody would think to re-read. And present-tense, independent \
+            \ of any future: a definition table has to be WRITTEN, per score x per collection x per \
+            \ nonce, and every one of those writes is a chance to enter a wrong number -- the failure \
+            \ mode the Bloodshed/Nosferatu/Bunnies settling round spent a day on. There is nothing \
+            \ here to write. \
+            \ \
+            \ WEIGHT IS IN SHARES, so packaging is weight-NEUTRAL: 500 raw shares and one tier-3 \
+            \ package are the same stake, which is the property that makes the score fair across \
+            \ holders who package differently. \
+            \ \
+            \ POINT READS ONLY -- one EQUITY read per staked nonce, no scan, so this stays URC-light \
+            \ like its two siblings. Nonce 1 is the share itself (weight 1); nonces 2-8 map to tiers \
+            \ 1-7; anything else scores 0 rather than aborting, because an equity collection cannot \
+            \ have other nonces and a stake path is the wrong place to discover that it does."
         (let
             (
+                (ref-EQUITY:module{EquityV3} EQUITY)
+                ;;
+                (l:integer (length nonces))
+            )
+            (fold
+                (lambda (acc:decimal idx:integer)
+                    (let
+                        (
+                            (n:integer (at idx nonces))
+                            (q:integer (at idx nonce-amounts))
+                            (unit:decimal
+                                (if (= n 1)
+                                    1.0
+                                    (if (and (>= n 2) (<= n 8))
+                                        (dec (ref-EQUITY::URC_SingleSharePerMillions dpsf-id (- n 1)))
+                                        0.0
+                                    )
+                                )
+                            )
+                        )
+                        (+ acc (* (dec q) unit))
+                    )
+                )
+                0.0
+                (enumerate 0 (- l 1))
+            )
+        )
+    )
+    (defun URC_SignedBaseDeltaForDpsfStake:decimal
+        (score-id:string dpsf-id:string nonces:[integer] nonce-amounts:[integer] direction:bool)
+        @doc "Signed base delta for class-3 DPSF (score precision). THREE branches, and the first is \
+            \ decided by the ASSET rather than by the score: \
+            \ \
+            \   EQUITY collection -> URCx_EquityShareRawWeight, the live share value. \
+            \   sft-equality true -> UCx_StakeEqualNativeUnitRawWeight, every unit counts 1. \
+            \   sft-equality false -> URCx_SfStakeDefinitionWeightedRawWeight (revision 0 => 0; else \
+            \                        per-nonce point-read, undefined nonce => 0). \
+            \ \
+            \ THE EQUITY BRANCH IS NOT A SCORE SETTING, DELIBERATELY. A shareholder collection has \
+            \ exactly one meaningful weighting -- shares -- and its tiers' share values will move the \
+            \ moment a share-issuance path exists (none does yet; see URCx_EquityShareRawWeight). \
+            \ Keying this on the ASSET makes share-weighting UNAVOIDABLE for such a collection: there \
+            \ is no way to issue a score that weights it any other way, and no table to leave stale. \
+            \ Keying it on a score field would have made the correct behaviour something an operator \
+            \ must remember, which is how every dead definition in this system has happened. \
+            \ \
+            \ It also costs no schema change: `sft-equality` stays a bool, and no score row moves. \
+            \ All three branches are point-read/compute only — statically light (URC), no stake-path scan."
+        (let
+            (
+                (ref-EQUITY:module{EquityV3} EQUITY)
+                ;;
                 (sft-equality:bool (UR_SCR|ScoreSftEquality score-id))
                 (raw-weight:decimal
-                    (if sft-equality
-                        (UCx_StakeEqualNativeUnitRawWeight nonces nonce-amounts)
-                        (URCx_SfStakeDefinitionWeightedRawWeight score-id dpsf-id nonces nonce-amounts)
+                    (if (ref-EQUITY::URC_IzEquitySemiFungible dpsf-id)
+                        (URCx_EquityShareRawWeight dpsf-id nonces nonce-amounts)
+                        (if sft-equality
+                            (UCx_StakeEqualNativeUnitRawWeight nonces nonce-amounts)
+                            (URCx_SfStakeDefinitionWeightedRawWeight score-id dpsf-id nonces nonce-amounts)
+                        )
                     )
                 )
                 (p:integer (UR_SCR|ScorePrecision score-id))
@@ -2484,6 +2561,92 @@
     (defun URH_SCR|AllScoreIds:[string] ()
         @doc "Returns all row keys from SCR|T|Score."
         (keys SCR|T|Score)
+    )
+    ;;
+    ;; DEFINITION INSPECTION (slots 3-7 above). A score carries NO asset-id of its own —
+    ;; identity is Score -> aqpool-link -> Pool -> asset-id (SCR|Schema @doc). What a score
+    ;; DOES carry is a set of per-asset weight definitions, keyed (score-id, asset-id, ...).
+    ;; Nothing enumerated them, so an owner could not read back what they had written, and a
+    ;; definition written against the wrong asset-id is INVISIBLE: it is structurally valid,
+    ;; it never errors, and an undefined nonce scores 0 rather than failing. These five make
+    ;; that set readable.
+    ;;
+    ;; IN THE INTERFACE (AcquisitionScoresV2, 2026-10-06) so AQP-POOL can reach them by modref.
+    ;; They started module-only -- the only consumer was the UI, which reads them as a TOP-LEVEL
+    ;; client dot-call, and the interface bump would have forced a lockstep redeploy of all ten
+    ;; modules naming V1 just to ship a read-only view. Two things changed that: the canon sweep
+    ;; redeploys those ten anyway, so the cascade became free; and AQP-POOL now needs
+    ;; URH_SCR|ScoreDefined* to refuse employing a score whose definitions name a different asset
+    ;; (UEV_ScoreDefinitionsMatchPoolAsset), which a dot-call could not do -- it would pin this
+    ;; module's hash and abort with "hash not blessed" on the next upgrade (REPL/tools/_dotpin.py).
+    ;;
+    ;;3] SCR|SF|Schema — the per-nonce weight table for one (score, DPSF) pair.
+    (defun URH_SCR|SFScoreDefinition:[object{AcquisitionSchemasV1.SCR|SF|Schema}]
+        (score-id:string dpsf-id:string)
+        @doc "Returns every SCR|T|SF|Score row for <score-id> and <dpsf-id>, ascending by nonce. \
+            \ Empty list = no definition written for that pair. Note an ABSENT nonce is not the \
+            \ same as a zero one to a reader, but IS the same at stake time: \
+            \ URCx_SfStakeDefinitionWeightedRawWeight scores an undefined nonce as 0."
+        (sort ["nonce"]
+            (select SCR|T|SF|Score
+                (and?
+                    (where "score-id" (= score-id))
+                    (where "dpsf-id" (= dpsf-id))
+                )
+            )
+        )
+    )
+    ;;4] SCR|NF|TraitSchema — the trait weight table for one (score, DPNF) pair (model 1).
+    (defun URH_SCR|NFTraitScoreDefinition:[object{AcquisitionSchemasV1.SCR|NF|TraitSchema}]
+        (score-id:string dpnf-id:string)
+        @doc "Returns every SCR|T|NF|TraitScore row for <score-id> and <dpnf-id>, ordered by \
+            \ trait-key then trait-value. Only consulted when nft-score-model = 1; a trait-key \
+            \ no staked nonce carries contributes nothing, so this is the list to compare \
+            \ against the collection's real metadata."
+        (sort ["trait-key" "trait-value"]
+            (select SCR|T|NF|TraitScore
+                (and?
+                    (where "score-id" (= score-id))
+                    (where "dpnf-id" (= dpnf-id))
+                )
+            )
+        )
+    )
+    ;;5] SCR|NF|ClassSchema — the nonce-class weight table for one (score, DPNF) pair (model 1).
+    (defun URH_SCR|NFClassScoreDefinition:[object{AcquisitionSchemasV1.SCR|NF|ClassSchema}]
+        (score-id:string dpnf-id:string)
+        @doc "Returns every SCR|T|NF|ClassScore row for <score-id> and <dpnf-id>, ascending by \
+            \ dpnf-nonce-class. Class 0 = all native NFTs; >0 = a specific AQP-ANK set class."
+        (sort ["dpnf-nonce-class"]
+            (select SCR|T|NF|ClassScore
+                (and?
+                    (where "score-id" (= score-id))
+                    (where "dpnf-id" (= dpnf-id))
+                )
+            )
+        )
+    )
+    ;;6] SCR|SF|DefRevision — which DPSF collections this score has defined weights for.
+    (defun URH_SCR|ScoreDefinedSemiFungibles:[string] (score-id:string)
+        @doc "Returns the DPSF-IDs for which <score-id> holds any SF definition. This is the \
+            \ answer to 'what assets did I define this score against?' — the score itself \
+            \ names none. Compare against the employing pool's asset-id: any id here that is \
+            \ not the pool's canonical asset is a DEAD definition."
+        (map (at "dpsf-id")
+            (select SCR|T|SF|DefRevision ["dpsf-id"]
+                (where "score-id" (= score-id))
+            )
+        )
+    )
+    ;;7] SCR|NF|DefRevision — which DPNF collections this score has defined weights for.
+    (defun URH_SCR|ScoreDefinedNonFungibles:[string] (score-id:string)
+        @doc "Returns the DPNF-IDs for which <score-id> holds any NF trait or class definition. \
+            \ Same dead-definition comparison as the SF reader above."
+        (map (at "dpnf-id")
+            (select SCR|T|NF|DefRevision ["dpnf-id"]
+                (where "score-id" (= score-id))
+            )
+        )
     )
     ;; [URCi]   cost readers — single source for exec billing + INFO preview
     (defun URCi_IssueScore:object{IgnisCollectorV3.OutputCumulator} (owner-konto:string output:[string])
@@ -2839,6 +3002,53 @@
                     )
                 )
                 (enumerate 0 (- l1 1))
+            )
+        )
+    )
+    (defun UEV_SemiFungibleScoreDefinition
+        (score-id:string dpsf-id:string nonces:[integer] nonce-score-values:[decimal])
+        @doc "SF score-definition shape validation: score row exists under its own id, sft-equality \
+            \ is false (per-nonce weights are only legal then), nonce/value lists are non-empty and \
+            \ aligned, and no input nonce exceeds the collection's nonces-used. \
+            \ \
+            \ EXTRACTED FROM SCR|C>ISSUE-SF-SCORE-DEFINITION, 2026-10-06 (StoicSyntax 2.16.1). It was \
+            \ a raw `enforce (fold (and) true [...])` sitting inline in the capability. The NF side \
+            \ already factored the identical shape into UEV_NonFungibleScoreDefinition* -- so the SF \
+            \ path was the deviation, and this makes the two agree. Behaviour and message are \
+            \ unchanged: the same five predicates, the same string, the same reads in the same order, \
+            \ which matters because [6.5]_AQP-INFO.repl is fixture-free and PINS the aborts these \
+            \ shared readers raise on a nonexistent score."
+        (let
+            (
+                (ref-U|INT:module{OuronetIntegersV2} U|INT)
+                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-EQUITY:module{EquityV3} EQUITY)
+                ;;
+                (l1:integer (length nonces))
+                (l2:integer (length nonce-score-values))
+            )
+            ;;AN EQUITY COLLECTION HAS NO DEFINABLE WEIGHTS, so writing some is refused rather than
+            ;;stored. Its nonces are weighted by LIVE share value in
+            ;;URC_SignedBaseDeltaForDpsfStake, which branches on the asset and never consults this
+            ;;table -- so rows written here would validate, cost the fee, and be read by nothing.
+            ;;That is the exact dead-definition shape this system keeps producing, and here it is
+            ;;preventable: the asset alone decides, so the refusal needs no judgement.
+            (enforce
+                (not (ref-EQUITY::URC_IzEquitySemiFungible dpsf-id))
+                "Equity (shareholder) collections are weighted by live share value and take no score definitions"
+            )
+            (enforce
+                (fold (and) true
+                    [
+                        (= (UR_SCR|ScoreScoreId score-id) score-id)
+                        (not (UR_SCR|ScoreSftEquality score-id))
+                        (> l1 0)
+                        (= l1 l2)
+                        (<= (if (> l1 0) (ref-U|INT::UEV_MaxInteger nonces) 0)
+                            (ref-DPDC::UR_NoncesUsed dpsf-id true))
+                    ]
+                )
+                "Invalid score/dpsf inputs: score must exist, sft-equality false, nonce/value lists aligned, and max nonce <= DPDC nonces-used"
             )
         )
     )

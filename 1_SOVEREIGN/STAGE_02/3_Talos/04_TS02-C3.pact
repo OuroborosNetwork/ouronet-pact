@@ -2,7 +2,7 @@
 ;; History/shared registry: 1_SOVEREIGN/STAGE_02/0_Interfaces/03_Talos.pact
 ;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface TalosStageTwo_ClientThreeV1
+(interface TalosStageTwo_ClientThreeV2
     @doc "Exposes Stage Two Third Batch of Client Functions: \
         \ the AcquisitionPools Client Functions"
 
@@ -46,11 +46,29 @@
     ;;{5.4}  Validate [UEV/CAP]
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
-    (defun AQP-POOL|XB_VacateTrueFungible:string (patron:string executor:string pool-id:string))
-    (defun AQP-POOL|XB_VacateOrtoFungible:string (patron:string executor:string pool-id:string dpof-id:string))
-    (defun AQP-POOL|XB_VacateSemiFungible:string (patron:string executor:string pool-id:string dpsf-id:string))
-    (defun AQP-POOL|XB_VacateNonFungible:string (patron:string executor:string pool-id:string dpnf-id:string))
     ;;{5.7}  User [A/C]
+    ;;
+    ;;  [VCT] -- per-leg vacate. ONE transaction each, standalone, for a pool owner who wants to
+    ;;  clear a single asset leg rather than the whole pool (CC_FullVacate does that).
+    ;;
+    ;;  RENAMED FROM `XB_` 2026-10-03, and the prefix was not a cosmetic error. `XB_` means
+    ;;  "protected, used inside this module AND by a forward module" -- neither is true here:
+    ;;  NOTHING in TS02-C3 calls these (measured: zero in-module callers) and no other module
+    ;;  reaches them. They are ordinary Talos client entrypoints -- (patron, executor), P|TS,
+    ;;  one core call, IGNIS on the patron, a format string -- identical in shape to every `C_`
+    ;;  below, and they were simply named after their CALLEE (`AQP-VCT::XB_Vacate*`) instead of
+    ;;  after their own band.
+    ;;
+    ;;  The consequence was not cosmetic either. `_registry.py`'s entrypoint filter is
+    ;;  `^[A-Za-z0-9|_-]*\|C{1,2}p?_[A-Za-z0-9]+$`, which an `XB_` name cannot match -- so four
+    ;;  live client operations were ABSENT from OURONET-REGISTRY.json and therefore unreachable
+    ;;  from OuronetUI, unpriced in the IGNIS sheet, and invisible to every gate built on it.
+    ;;  They were also the ONLY `X*`-named definitions in all eleven Talos modules.
+    ;;
+    (defun AQP-POOL|CC_VacateTrueFungible:string (patron:string executor:string pool-id:string))
+    (defun AQP-POOL|CC_VacateOrtoFungible:string (patron:string executor:string pool-id:string dpof-id:string))
+    (defun AQP-POOL|CC_VacateSemiFungible:string (patron:string executor:string pool-id:string dpsf-id:string))
+    (defun AQP-POOL|CC_VacateNonFungible:string (patron:string executor:string pool-id:string dpnf-id:string))
     ;;
     ;;  [ANK]
     ;;
@@ -350,7 +368,7 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements TalosStageTwo_ClientThreeV1)
+    (implements TalosStageTwo_ClientThreeV2)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -807,7 +825,7 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                 (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 ;;
@@ -854,8 +872,9 @@
     ;;{5.4}  Validate [UEV/CAP]
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
     ;;Protection: Class 3 — Custom: P|TS
-    (defun AQP-POOL|XB_VacateTrueFungible:string
+    (defun AQP-POOL|CC_VacateTrueFungible:string
         (patron:string executor:string pool-id:string)
         @doc "Vacate rehaul — pool-owner vacate of a pool's TrueFungible leg only (one tx; used standalone or by \
             \ the agnostic CC_FullVacate for a class-1 TF+OF pool). Owner enforced in VCT|C>VACATE; IGNIS on patron."
@@ -871,7 +890,7 @@
         )
     )
     ;;Protection: Class 3 — Custom: P|TS
-    (defun AQP-POOL|XB_VacateOrtoFungible:string
+    (defun AQP-POOL|CC_VacateOrtoFungible:string
         (patron:string executor:string pool-id:string dpof-id:string)
         @doc "Vacate rehaul — pool-owner vacate of ONE OrtoFungible asset of a pool (one tx; standalone or per \
             \ class-1 satellite). Owner enforced in VCT|C>VACATE; IGNIS on patron."
@@ -887,7 +906,7 @@
         )
     )
     ;;Protection: Class 3 — Custom: P|TS
-    (defun AQP-POOL|XB_VacateSemiFungible:string
+    (defun AQP-POOL|CC_VacateSemiFungible:string
         (patron:string executor:string pool-id:string dpsf-id:string)
         @doc "Vacate rehaul — pool-owner vacate of the DPSF (semi-fungible) collection of a class-3 pool (one tx). \
             \ Owner enforced in VCT|C>VACATE; IGNIS on patron."
@@ -903,7 +922,7 @@
         )
     )
     ;;Protection: Class 3 — Custom: P|TS
-    (defun AQP-POOL|XB_VacateNonFungible:string
+    (defun AQP-POOL|CC_VacateNonFungible:string
         (patron:string executor:string pool-id:string dpnf-id:string)
         @doc "Vacate rehaul — pool-owner vacate of the DPNF (non-fungible) collection of a class-4 pool (one tx). \
             \ Owner enforced in VCT|C>VACATE; IGNIS on patron."
@@ -918,7 +937,6 @@
             )
         )
     )
-    ;;{5.7}  User [A/C]
     (defun AQP-DSA|C_DefineDelegationVault:string
         (patron:string executor:string fvt-id:string model-id:string unit-score:integer)
         @doc "DSA (Talos): bind a class-0 FVT as a delegation vault (score-entity model + unit-score); collects \
@@ -1214,12 +1232,19 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-SCR::C_IssueLiquidityScore patron executor score-name precision lp-denominator mx-frozen mx-sleeping)
+                    )
                 )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-SCR::C_IssueLiquidityScore patron executor score-name precision lp-denominator mx-frozen mx-sleeping)
-                )
-                (format "Successfully issued Liquidity Score {} for owner {}." [score-name executor])
+                (ref-IGNIS::XE_CollectIgnis patron ico)
+                ;;REPORTS THE GENERATED score-id, not `score-name`. The name is the caller's own
+                ;;INPUT -- echoing it tells them nothing they did not already type, while the id
+                ;;(`WonderCoach` -> `WonderCoach-nK4O_C00so9w`) is the only thing the transaction
+                ;;produced and the key every later op takes. The core already threaded it out via
+                ;;`URCi_IssueScore executor [score-id]`; this just stopped throwing it away.
+                ;;StoicSyntax 2.16.2.
+                (format "Successfully issued Liquidity Score {} for owner {}." [(at 0 (at "output" ico)) executor])
             )
         )
     )
@@ -1230,12 +1255,19 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-SCR::C_IssueTrueFungibleScore patron executor score-name precision mx-frozen)
+                    )
                 )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-SCR::C_IssueTrueFungibleScore patron executor score-name precision mx-frozen)
-                )
-                (format "Successfully issued TrueFungible Score {} for owner {}." [score-name executor])
+                (ref-IGNIS::XE_CollectIgnis patron ico)
+                ;;REPORTS THE GENERATED score-id, not `score-name`. The name is the caller's own
+                ;;INPUT -- echoing it tells them nothing they did not already type, while the id
+                ;;(`WonderCoach` -> `WonderCoach-nK4O_C00so9w`) is the only thing the transaction
+                ;;produced and the key every later op takes. The core already threaded it out via
+                ;;`URCi_IssueScore executor [score-id]`; this just stopped throwing it away.
+                ;;StoicSyntax 2.16.2.
+                (format "Successfully issued TrueFungible Score {} for owner {}." [(at 0 (at "output" ico)) executor])
             )
         )
     )
@@ -1246,12 +1278,19 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-SCR::C_IssueOrtoFungibleScore patron executor score-name precision mx-sleeping mx-hibernated)
+                    )
                 )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-SCR::C_IssueOrtoFungibleScore patron executor score-name precision mx-sleeping mx-hibernated)
-                )
-                (format "Successfully issued OrtoFungible Score {} for owner {}." [score-name executor])
+                (ref-IGNIS::XE_CollectIgnis patron ico)
+                ;;REPORTS THE GENERATED score-id, not `score-name`. The name is the caller's own
+                ;;INPUT -- echoing it tells them nothing they did not already type, while the id
+                ;;(`WonderCoach` -> `WonderCoach-nK4O_C00so9w`) is the only thing the transaction
+                ;;produced and the key every later op takes. The core already threaded it out via
+                ;;`URCi_IssueScore executor [score-id]`; this just stopped throwing it away.
+                ;;StoicSyntax 2.16.2.
+                (format "Successfully issued OrtoFungible Score {} for owner {}." [(at 0 (at "output" ico)) executor])
             )
         )
     )
@@ -1262,12 +1301,19 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-SCR::C_IssueSemiFungibleScore patron executor score-name precision sft-equality)
+                    )
                 )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-SCR::C_IssueSemiFungibleScore patron executor score-name precision sft-equality)
-                )
-                (format "Successfully issued SemiFungible Score {} for owner {}." [score-name executor])
+                (ref-IGNIS::XE_CollectIgnis patron ico)
+                ;;REPORTS THE GENERATED score-id, not `score-name`. The name is the caller's own
+                ;;INPUT -- echoing it tells them nothing they did not already type, while the id
+                ;;(`WonderCoach` -> `WonderCoach-nK4O_C00so9w`) is the only thing the transaction
+                ;;produced and the key every later op takes. The core already threaded it out via
+                ;;`URCi_IssueScore executor [score-id]`; this just stopped throwing it away.
+                ;;StoicSyntax 2.16.2.
+                (format "Successfully issued SemiFungible Score {} for owner {}." [(at 0 (at "output" ico)) executor])
             )
         )
     )
@@ -1278,12 +1324,19 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-SCR::C_IssueNonFungibleScore patron executor score-name precision nft-score-model)
+                    )
                 )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-SCR::C_IssueNonFungibleScore patron executor score-name precision nft-score-model)
-                )
-                (format "Successfully issued NonFungible Score {} for owner {}." [score-name executor])
+                (ref-IGNIS::XE_CollectIgnis patron ico)
+                ;;REPORTS THE GENERATED score-id, not `score-name`. The name is the caller's own
+                ;;INPUT -- echoing it tells them nothing they did not already type, while the id
+                ;;(`WonderCoach` -> `WonderCoach-nK4O_C00so9w`) is the only thing the transaction
+                ;;produced and the key every later op takes. The core already threaded it out via
+                ;;`URCi_IssueScore executor [score-id]`; this just stopped throwing it away.
+                ;;StoicSyntax 2.16.2.
+                (format "Successfully issued NonFungible Score {} for owner {}." [(at 0 (at "output" ico)) executor])
             )
         )
     )
@@ -1293,7 +1346,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron (ref-SCR::C_RotateOwnership patron executor executee score-id))
                 (format "Successfully rotated ownership for score {} to {}." [score-id executee])
@@ -1306,7 +1359,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-SCR::C_Control patron executor score-id new-can-upgrade new-can-change-owner)
@@ -1321,7 +1374,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron (ref-SCR::C_CreateBoostClassLink patron executor score-id boost-class-id))
                 (format "Successfully linked score {} to BoostClass {}." [score-id boost-class-id])
@@ -1334,7 +1387,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron (ref-SCR::C_CreateBoostLink patron executor score-id boost-score-id))
                 (format "Successfully linked score {} to boost score {}." [score-id boost-score-id])
@@ -1347,7 +1400,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron (ref-SCR::C_EnableDebBoost patron executor score-id))
                 (format "Successfully enabled DEB boost for score {}." [score-id])
@@ -1361,7 +1414,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-SCR::C_IssueTriplet patron executor bronze-score-id silver-score-id golden-score-id)
                     )
@@ -1380,7 +1433,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-SCR::C_IssueSingleScoreModel patron executor model-name score-class collectable-id precision nonces nonce-score-values boost-class-id)
                     )
@@ -1398,7 +1451,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-SCR::C_CombineTripletScoreModel patron executor model-name bronze-model-id silver-model-id golden-model-id)
                     )
@@ -1416,7 +1469,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-SCR::C_IssueScoreFromModel patron executor model-id agency-name)
                     )
@@ -1434,8 +1487,16 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 )
+                ;;DEAD-DEFINITION GUARD (StoicSyntax 2.16, 2026-10-06). If this score is already
+                ;;employed by a pool, the collection being defined must be the one that pool
+                ;;stakes -- otherwise the rows save cleanly and score nothing forever. No-op
+                ;;while aqpool-link is BAR, which is the normal state at definition time.
+                ;;Here rather than in AQP-SCORE because the pool fact lives one module LATER in
+                ;;deploy order: AQP-SCORE cannot reference AQP-POOL, only the reverse.
+                (ref-AQP::UEV_ScoreDefinitionTargetMatchesPool score-id dpsf-id)
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-SCR::C_IssueSemiFungibleScoreDefinition patron executor score-id dpsf-id nonces nonce-score-values)
                 )
@@ -1450,8 +1511,16 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 )
+                ;;DEAD-DEFINITION GUARD (StoicSyntax 2.16, 2026-10-06). If this score is already
+                ;;employed by a pool, the collection being defined must be the one that pool
+                ;;stakes -- otherwise the rows save cleanly and score nothing forever. No-op
+                ;;while aqpool-link is BAR, which is the normal state at definition time.
+                ;;Here rather than in AQP-SCORE because the pool fact lives one module LATER in
+                ;;deploy order: AQP-SCORE cannot reference AQP-POOL, only the reverse.
+                (ref-AQP::UEV_ScoreDefinitionTargetMatchesPool score-id dpnf-id)
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-SCR::C_IssueNonFungibleScoreDefinition patron executor score-id dpnf-id trait-keys trait-values trait-score-values)
                 )
@@ -1466,8 +1535,16 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 )
+                ;;DEAD-DEFINITION GUARD (StoicSyntax 2.16, 2026-10-06). If this score is already
+                ;;employed by a pool, the collection being defined must be the one that pool
+                ;;stakes -- otherwise the rows save cleanly and score nothing forever. No-op
+                ;;while aqpool-link is BAR, which is the normal state at definition time.
+                ;;Here rather than in AQP-SCORE because the pool fact lives one module LATER in
+                ;;deploy order: AQP-SCORE cannot reference AQP-POOL, only the reverse.
+                (ref-AQP::UEV_ScoreDefinitionTargetMatchesPool score-id dpnf-id)
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-SCR::C_IssueNonFungibleSetScoreDefinition patron executor score-id dpnf-id dpnf-nonce-classes class-score-values)
                 )
@@ -2302,7 +2379,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                     (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                     (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                     ;;

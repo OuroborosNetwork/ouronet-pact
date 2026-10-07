@@ -846,6 +846,86 @@
                 [])
         )
     )
+    (defun INFO_AQP-POOL|VacateTrueFungible:object{OuronetInfoV2.ClientInfo}
+        (patron:string pool-id:string)
+        @doc "Cost preview for AQP-POOL|CC_VacateTrueFungible -- the pool's WHOLE TrueFungible \
+            \ side, every live DPTF lane including the F| frozen ones. No STOA. \
+            \ \
+            \ TAKES ONLY A POOL ID, unlike INFO_AQP-POOL|FullVacate, which is handed its lane \
+            \ plan because its caller has already scanned. `URCi_VacateTrueFungible` performs \
+            \ the same scan the exec does, so this is previewable from what the user has in \
+            \ front of them."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Vacate every TrueFungible lane of a pool, for all owners."
+                 "Executes via TS02-C3.AQP-POOL|CC_VacateTrueFungible."]
+                [(format "Vacated the TrueFungible side of Pool {}." [pool-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    (AQP-VCT.URCi_VacateTrueFungible pool-id))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
+        )
+    )
+    (defun INFO_AQP-POOL|VacateOrtoFungible:object{OuronetInfoV2.ClientInfo}
+        (patron:string pool-id:string dpof-id:string)
+        @doc "Cost preview for AQP-POOL|CC_VacateOrtoFungible -- ONE OrtoFungible satellite of a \
+            \ pool, not the pool. A class-1 pool has a TF leg plus one or more OF satellites; \
+            \ this prices one of them. No STOA."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Vacate ONE OrtoFungible satellite of a pool, for all owners."
+                 "Executes via TS02-C3.AQP-POOL|CC_VacateOrtoFungible."]
+                [(format "Vacated OrtoFungible {} of Pool {}." [dpof-id pool-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    (AQP-VCT.URCi_VacateOrtoFungible pool-id dpof-id))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
+        )
+    )
+    (defun INFO_AQP-POOL|VacateSemiFungible:object{OuronetInfoV2.ClientInfo}
+        (patron:string pool-id:string dpsf-id:string)
+        @doc "Cost preview for AQP-POOL|CC_VacateSemiFungible -- ONE DPSF collection of a pool. \
+            \ The DPSF and DPNF previews differ only in which side of the shared reader they \
+            \ select, so they are separate functions rather than one with a flag: a client that \
+            \ passed the wrong flag would quote the other asset's cost and never know."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Vacate ONE semi-fungible collection of a pool, for all owners."
+                 "Executes via TS02-C3.AQP-POOL|CC_VacateSemiFungible."]
+                [(format "Vacated SemiFungible {} of Pool {}." [dpsf-id pool-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    (AQP-VCT.URCi_VacateSemiFungible pool-id dpsf-id))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
+        )
+    )
+    (defun INFO_AQP-POOL|VacateNonFungible:object{OuronetInfoV2.ClientInfo}
+        (patron:string pool-id:string dpnf-id:string)
+        @doc "Cost preview for AQP-POOL|CC_VacateNonFungible -- ONE DPNF collection of a pool. \
+            \ See the DPSF sibling for why these are two functions and not one."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Vacate ONE non-fungible collection of a pool, for all owners."
+                 "Executes via TS02-C3.AQP-POOL|CC_VacateNonFungible."]
+                [(format "Vacated NonFungible {} of Pool {}." [dpnf-id pool-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    (AQP-VCT.URCi_VacateNonFungible pool-id dpnf-id))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
+        )
+    )
     (defun INFO_AQP-POOL|FullVacate:object{OuronetInfoV2.ClientInfo}
         (patron:string pool-id:string
          tf-lanes:[object{AcquisitionSchemasV1.VCT|VacateTfLane}]

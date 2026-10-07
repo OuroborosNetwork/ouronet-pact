@@ -49,7 +49,7 @@ Vested, sleeping and hibernating positions are all parcels, which is why.
 ## 3. Transacting without native currency
 
 **You do not need StoaChain's currency to use Ouronet.** The protocol's gas station pays the chain
-fee for **405 of 423 client operations**.
+fee for **409 of 427 client operations**.
 
 What you pay instead is **IGNIS** — Ouronet's own gas, pegged at **one cent per unit**. You acquire
 it by converting the protocol token in either direction, and both conversions are free.
@@ -75,8 +75,8 @@ on success, and exactly what it will cost — before anything is signed.
 This is not an estimate. The preview and the charge call **the same cost function**, so they cannot
 disagree.
 
-One thing to know if you are reading previews directly rather than through an interface: **410 of
-the 423 previews take a different parameter list from the operation they describe** — different
+One thing to know if you are reading previews directly rather than through an interface: **414 of
+the 427 previews take a different parameter list from the operation they describe** — different
 names, order, arity. Only 13 match. Bind arguments by name.
 
 ---

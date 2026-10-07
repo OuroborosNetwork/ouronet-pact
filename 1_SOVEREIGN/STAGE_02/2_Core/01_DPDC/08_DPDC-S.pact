@@ -1622,7 +1622,15 @@
                         )
                     )
                 )
-                (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico0 ico1] [])
+                ;;THE SET-CLASS IS THE THING THIS CALL CREATED, so it rides out in `output`.
+                ;;It used to be computed, used, and dropped into an empty output list -- and
+                ;;`UDC_ConcatenateOutputCumulators` REPLACES output rather than merging it, so
+                ;;`[]` actively discarded it. The Talos wrapper could then only report the
+                ;;caller-typed set-name, leaving the owner with no way to address the set they
+                ;;had just defined: set-class is an auto-increment integer, so unlike a
+                ;;name-derived id it cannot be reconstructed after the fact.
+                ;;StoicSyntax 2.16.2.
+                (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico0 ico1] [set-class])
             )
         )
     )
@@ -1659,7 +1667,15 @@
                         )
                     )
                 )
-                (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico0 ico1] [])
+                ;;THE SET-CLASS IS THE THING THIS CALL CREATED, so it rides out in `output`.
+                ;;It used to be computed, used, and dropped into an empty output list -- and
+                ;;`UDC_ConcatenateOutputCumulators` REPLACES output rather than merging it, so
+                ;;`[]` actively discarded it. The Talos wrapper could then only report the
+                ;;caller-typed set-name, leaving the owner with no way to address the set they
+                ;;had just defined: set-class is an auto-increment integer, so unlike a
+                ;;name-derived id it cannot be reconstructed after the fact.
+                ;;StoicSyntax 2.16.2.
+                (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico0 ico1] [set-class])
             )
         )
     )
@@ -1701,7 +1717,15 @@
                         )
                     )
                 )
-                (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico0 ico1] [])
+                ;;THE SET-CLASS IS THE THING THIS CALL CREATED, so it rides out in `output`.
+                ;;It used to be computed, used, and dropped into an empty output list -- and
+                ;;`UDC_ConcatenateOutputCumulators` REPLACES output rather than merging it, so
+                ;;`[]` actively discarded it. The Talos wrapper could then only report the
+                ;;caller-typed set-name, leaving the owner with no way to address the set they
+                ;;had just defined: set-class is an auto-increment integer, so unlike a
+                ;;name-derived id it cannot be reconstructed after the fact.
+                ;;StoicSyntax 2.16.2.
+                (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico0 ico1] [set-class])
             )
         )
     )

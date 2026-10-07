@@ -99,6 +99,12 @@
 
     ;;{1}  GOVERNANCE
     (defconst GOV|MD_O-UI-THIRTEEN          (keyset-ref-guard (GOV|Demiurgoi)))
+    ;;The two SPECIAL true-fungible prefixes, mirroring `URCv_CoreDptf`'s own `cond`. Named here
+    ;;because the special link is SYMMETRIC -- `UR_Frozen` answers the parent when handed a
+    ;;special -- so "is this already a special" is the test that stops a link walk going
+    ;;backwards. It is not a copy of `CT_ANK_LP_PREFIXES`; those are a different set for a
+    ;;different question.
+    (defconst CT_13_SPECIAL_PREFIXES:[string]   ["F|" "R|"])
     (defcap GOV ()                          (compose-capability (GOV|O_UI_THIRTEEN_ADMIN)))
     (defcap GOV|O_UI_THIRTEEN_ADMIN ()      (enforce-guard GOV|MD_O-UI-THIRTEEN))
     (defun GOV|Demiurgoi ()
@@ -419,7 +425,18 @@
                         ,"my-aggregate"     : (ref-ANK::UR_UB|AggregatePromile account c)
                         ,"members"          : (map (lambda (a:string) (URC_13|AnchorRow a))
                                                    members)
-                        ,"max-promille"     : (fold (+) 0.0
+                        ;;THE SUM OF THE PER-UNIT RATES, AND NOT A MAXIMUM OF ANYTHING. This
+                        ;;field was called `max-promille`, which claimed a ceiling the contract
+                        ;;does not impose: each rate multiplies by the holder's CONFORMING UNITS,
+                        ;;so staking five NFTs that each meet a 250-promille anchor's terms pays
+                        ;;five times 250. Nothing in `ANK|T|UserBoost` caps the product.
+                        ;;
+                        ;;OWNER CORRECTION: "if you stake multiple nfts with blue eyes, you have
+                        ;;multiple times the 250 promile boost ... there is no upper limit."
+                        ;;
+                        ;;What the number IS, and is useful as: what an account conforming
+                        ;;EXACTLY ONCE to every anchor in the class would hold.
+                        ,"total-promille"   : (fold (+) 0.0
                                                   (map (lambda (a:string)
                                                            (ref-ANK::UR_ANK|Promile a))
                                                        members))}
@@ -430,6 +447,93 @@
         )
     )
 
+    (defun URH_13|MyAuthorityTrueFungibles:[string] (account:string)
+        @doc "True fungibles this account may ANCHOR BUT DOES NOT OWN. \
+            \ \
+            \ `URH_OwnedTrueFungibles` selects on `owner-konto`, so it answers ownership and \
+            \ nothing else. Anchoring authority is wider than ownership in exactly two ways, \
+            \ both of them deliberate, and a manager who sees only what they own cannot reach \
+            \ either: \
+            \ \
+            \   SPECIALS. An `F|` frozen or `R|` reserved token is owned by the VESTING \
+            \     contract -- `XI_CreateSpecialTrueFungibleLink` issues it to VST|SC_NAME with \
+            \     can-change-owner false -- but `CAP_TF|Owner` resolves it to its PARENT and \
+            \     enforces the parent's ownership. So the parent's owner is the authority. \
+            \     Measured on mainnet: VST owns F|ELITEAURYN, F|SPARK, F|VST and R|OURO, and \
+            \     they appeared in the manager ONLY when the VST smart account was selected. \
+            \ \
+            \   LP TOKENS. A liquidity-pool token is owned by SWP|SC_NAME, also permanently. \
+            \     Since 2026-10-03 `URCv_AnchorableDptfAuthority` resolves it to the POOL \
+            \     OWNER of its swpair, so the pool's owner is the authority. \
+            \ \
+            \ BOTH ARE CUSTODY, NOT MANAGEMENT. The owner's ruling is that VST, ATS and SWP own \
+            \ tokens as a protocol function and must never be a route to managing them; the \
+            \ authority resolves through to the real party instead. This reader is the read-side \
+            \ of that ruling -- the contract already enforced it, and nothing showed it. \
+            \ \
+            \ RETURNS IDS ONLY, and never one the account already owns: the caller concatenates \
+            \ this onto `URH_OwnedTrueFungibles`, so a token owned outright must not appear \
+            \ twice. Deduped against that list here rather than at the call site, because a \
+            \ duplicate asset in the picker is indistinguishable from two real assets."
+        (let
+            (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-SWP:module{SwapperV4} SWP)
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
+                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                ;;
+                (owned:[string] (ref-DPTF::URH_OwnedTrueFungibles account))
+                (bar:string (ref-U|CT::CT_BAR))
+            )
+            (let
+                (
+                    ;;THE SPECIAL LINK IS SYMMETRIC, AND THAT IS WHAT MADE THE FIRST VERSION OF
+                    ;;THIS WRONG. `XE_UpdateSpecialTrueFungible` calls `XI_UpdateFrozen` TWICE --
+                    ;;core -> special AND special -> core -- so `UR_Frozen` answers the PARENT
+                    ;;when handed a special. Measured on mainnet:
+                    ;;
+                    ;;    UR_Frozen "F|ELITEAURYN-8ZLws7IkbT7x" -> "ELITEAURYN-8Nh-JO8JO4F5"
+                    ;;    UR_Frozen "ELITEAURYN-8Nh-JO8JO4F5"   -> "F|ELITEAURYN-8ZLws7IkbT7x"
+                    ;;
+                    ;;So walking the links from VST|SC_NAME -- which OWNS the four specials --
+                    ;;returned their four PARENTS, tokens VST neither owns nor may anchor. The
+                    ;;manager showed EliteAuryn, Spark, Vesta and Ouroboros as VST's to manage.
+                    ;;
+                    ;;Hence the `core-only` filter: follow the link only FROM a core token. An
+                    ;;id that is already `F|`/`R|` has no counterpart to find -- it IS one.
+                    (core-only:[string]
+                        (filter (lambda (i:string)
+                                    (not (contains (take 2 i) CT_13_SPECIAL_PREFIXES)))
+                                owned))
+                    ;;The LP token of every swpair this account owns. One pool, one LP token.
+                    (lps:[string]
+                        (map (lambda (p:string) (ref-SWP::UR_TokenLP p))
+                             (ref-SWP::URH_OwnedSwapPairs account)))
+                )
+                (let
+                    (
+                        ;;`UR_Frozen`/`UR_Reservation` answer BAR when no counterpart was ever
+                        ;;created, so this filter separates "has one" from "has none".
+                        (specials:[string]
+                            (filter
+                                (lambda (i:string) (!= i bar))
+                                (+ (map (lambda (i:string) (ref-DPTF::UR_Frozen i)) core-only)
+                                   (map (lambda (i:string) (ref-DPTF::UR_Reservation i))
+                                        core-only))))
+                    )
+                    ;;FILTERED BY THE AUTHORITY RULE ITSELF, not by the derivation that produced
+                    ;;the candidate. This is the invariant the page needs -- "ids this account
+                    ;;may anchor" -- and asking `URCv_AnchorableDptfAuthority` directly makes the
+                    ;;reader correct even if a link direction or a prefix set changes under it.
+                    ;;The derivation above only has to be a superset; this decides.
+                    (filter (lambda (i:string)
+                                (and (not (contains i owned))
+                                     (= (ref-ANK::URCv_AnchorableDptfAuthority i) account)))
+                            (distinct (+ specials lps)))
+                )
+            )
+        )
+    )
     (defun URH_13|MyAnchorableAssets:[object] (account:string)
         @doc "MANAGER: what this account owns that an anchor can be issued against, over \
             \ three asset kinds, each with its name and its current anchor count. \
@@ -451,9 +555,14 @@
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
             (+
-                (map
-                    (lambda (i:string) (URC_13|AnchorableAsset i [true true]))
-                    (ref-DPTF::URH_OwnedTrueFungibles account))
+                (+
+                    (map
+                        (lambda (i:string) (URC_13|AnchorableAsset i [true true]))
+                        (ref-DPTF::URH_OwnedTrueFungibles account))
+                    ;;AUTHORITY, NOT OWNERSHIP -- the two extra true-fungible sources.
+                    (map
+                        (lambda (i:string) (URC_13|AnchorableAsset i [true true]))
+                        (URH_13|MyAuthorityTrueFungibles account)))
                 (+
                     (map
                         (lambda (i:string) (URC_13|AnchorableAsset i [false true]))

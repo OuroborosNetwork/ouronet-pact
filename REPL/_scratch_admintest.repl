@@ -1,0 +1,20 @@
+(load "Stage00_Sanboxes.repl")
+(load "deploy-stage01.repl")
+(load "deploy-stage02.repl")
+(begin-tx "one acquire, several updates, one transaction")
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;THE QUESTION: does `acquire-module-admin` persist for the REST of the transaction, so one
+;;acquire covers several writes? If it does not, a four-operation fix needs four transactions and
+;;four signatures -- and worse, a partial failure could leave the row half-corrected.
+(acquire-module-admin ouronet-ns.AQP-SCORE)
+(print (expect-failure "<<MULTI-1>> first update is reached (fails only on the absent row)"
+  "No row found during update in table"
+  (update ouronet-ns.AQP-SCORE.SCR|T|Score "no-such-a" {"nft-score-model": -1})))
+;;THE ONE THAT MATTERS: a SECOND write after the same acquire. If admin were consumed by the
+;;first, this would fail with "Module admin necessary" instead.
+(print (expect-failure "<<MULTI-2>> and so is a SECOND update, on the same acquire"
+  "No row found during update in table"
+  (update ouronet-ns.AQP-SCORE.SCR|T|Score "no-such-b" {"sft-equality": false})))
+(commit-tx)
+(print "=== END multi-update test ===")

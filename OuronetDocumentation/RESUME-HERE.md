@@ -104,7 +104,7 @@ Material gathered for 01, kept because 02 needs the same sources:
   The figures in the first draft came from a census that collapsed role variants (`UCv_` into
   `UC_`) and scoped forms (`DPTF|C_` into `C_`), and eleven of them were too high. **A count is
   meaningless without its matching rule**, and the rule is what gets lost when a number is quoted
-  onward. These rows do NOT sum to 8,872 — scoped forms match none of them.
+  onward. These rows do NOT sum to 8,918 — scoped forms match none of them.
 - **The `W` family is canon and `CLAUDE.md` omits it.** `WI_` (insert) 20, `WU_` (update) 62, `WW_`
   (upsert) 28 = 110 functions across 8 files (the AQP family plus DPTF and PYTHIA). Documented in
   `StoicSyntax-Prefixes.md` §2 lines 202-208. Worth stating as a gap in the project instructions.
@@ -141,14 +141,18 @@ agent prompts**, each describing Ouronet with the designation the owner had just
 ## Standing rules for this folder, learned the hard way
 
 1. **Count, do not recall.** Four published figures were wrong in the first pass: 68 interfaces
-   (really 98), "105 modules" (105 *files*), read layer 12 (really 14), and the interface-only core
+   (really 98), "107 modules" (105 *files*), read layer 12 (really 14), and the interface-only core
    file (`00_AQP-SCHEMAS.pact`, not Demipad).
 2. **Never write the verification from the claim.** The arithmetic check for the layer diagram
    agreed with a wrong figure because it was written from the page instead of the tree.
 3. **Quote intent, never paraphrase it.** `90-reference/04-the-owner-directive.md` is verbatim for
    this reason — the derived summary had lost two requirements and inverted one term.
 4. **Every figure carries its scope.** `MODULE-INDEX.md` reports 423 *tables* for the whole tree;
-   the registry reports 423 *client entrypoints*. Equal today, unrelated forever.
+   the registry reports 427 *client entrypoints*. **They WERE equal, and as of 2026-10-05 they
+   are not** — the entrypoint count moved to 427 while the table count stayed at 423. The
+   coincidence this rule warned about has now actually ended, which is the best possible
+   evidence for the rule: anyone who had learned "423" as a single fact about Ouronet now holds
+   one number that is right and one that is wrong, with no way to tell which.
 5. **`git add <paths>`, never `-A`.** Commit `30055e2` swept in four foreign `pact-query-cache`
    files after three warnings about exactly that.
 

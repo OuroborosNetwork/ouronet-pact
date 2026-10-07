@@ -339,7 +339,7 @@
             1
             (let
                 (
-                    (ref-EQUITY:module{EquityV2} EQUITY)
+                    (ref-EQUITY:module{EquityV3} EQUITY)
                     (asset:string (UR_AssetID))
                     (tier:integer (- nonce 1))
                 )

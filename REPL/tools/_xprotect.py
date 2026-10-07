@@ -74,7 +74,7 @@ REFBIND = re.compile(r'\((ref-[A-Za-z0-9|_-]+):module\{[A-Za-z0-9|_-]+\}\s+([A-Z
 MODDECL = re.compile(r'^\(module\s+([A-Za-z0-9|_-]+)', re.M)
 # A Pact name is pipe-segmented and the prefix can sit in ANY segment -- at the front
 # (`XE_U|Rnaq`, `XI_1|ApplyOneFlushEntry`, `XB_W|AccountRoles`) or behind a module qualifier
-# (`AQP-POOL|XB_VacateTrueFungible`). Testing only `split('|')[-1]` dropped 124 real X_
+# (`AQP-POOL|CC_VacateTrueFungible`). Testing only `split('|')[-1]` dropped 124 real X_
 # functions from the population and let 4 non-X names in. Test every segment.
 # `\d*v?` so the §7.20 `v` variants (XIv_/XBv_/XEv_) stay IN the protection population.
 # They are still protected X_ functions; the `v` only declares a justified enforce.

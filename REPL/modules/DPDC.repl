@@ -1314,7 +1314,11 @@
         (p:string KST.ANHD)
         (x:string "X")
         (a6:[string] ["a" "b" "c" "d" "e" "f"])
-        (a9:[string] ["1" "2" "3" "4" "5" "6" "7" "8" "9"])
+        ;;ELEVEN since 2026-10-06: Step 7 gained the two UI-issued CORE scores (WonderCoach,
+        ;;Nosferatu) at indices 9 and 10, alongside the nine Steps 4-5 create. Name kept as `a9`
+        ;;deliberately -- it is the "correct-length dh-score-ids" fixture, and renaming it per
+        ;;length would make the next change churn three call sites for nothing.
+        (a9:[string] ["1" "2" "3" "4" "5" "6" "7" "8" "9" "10" "11"])
     )
     (map print
         [
@@ -1331,8 +1335,8 @@
             ;;seven pools itself, from the same name literals its C_Issue calls use, so it now
             ;;derives their ids in its own `let`. There is no length guard left to probe, because
             ;;there is no list left for a caller to get wrong.
-            (expect-failure "<<DPDC-G10>> ...the nine DH scores"
-                "Step 7 expects dh-score-ids=[coding sub-coding bloodshed sub-bloodshed company-share company-snakes sub-wondercoach sub-nosferatu sub-bunnies]."
+            (expect-failure "<<DPDC-G10>> ...the eleven DH scores"
+                "Step 7 expects dh-score-ids=[coding sub-coding bloodshed sub-bloodshed company-share company-snakes sub-wondercoach sub-nosferatu sub-bunnies core-wondercoach core-nosferatu]."
                 (AQP-BOOT.C_Step7_CreatePoolsAndScores p a6 x (+ a9 ["10"]) ["s" "b" "g"]))
             (expect-failure "<<DPDC-G10>> ...and the three OURO triplet scores"
                 "Step 7 expects ouro-triplet-score-ids=[silver bronze golden]."

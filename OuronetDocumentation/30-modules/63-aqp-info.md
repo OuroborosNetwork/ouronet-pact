@@ -32,7 +32,9 @@ A leaf read-only module deployed after everything it describes. It has no interf
 |---|---:|---|---|
 | *(unclassified)* | 86 | carries no StoicSyntax prefix | `CT_Bar`, `GOV|Demiurgoi`, `INFO_AQP-ANK|IssueNonFungibleAnchor`, `INFO_AQP-ANK|IssueNonFungibleSetAnchor`, `INFO_AQP-ANK|IssueSemiFungibleAnchor`, `INFO_AQP-ANK|IssueTrueFungibleAnchor` …+80 |
 
-> Repository and chain agree on every declared shape.
+> **The repository differs from what is deployed.** Everything above describes the CHAIN, which is what a caller actually reaches. The difference is stated rather than resolved:
+>
+> - **functions** in the repository only: `INFO_AQP-POOL|VacateNonFungible`, `INFO_AQP-POOL|VacateOrtoFungible`, `INFO_AQP-POOL|VacateSemiFungible`, `INFO_AQP-POOL|VacateTrueFungible`
 
 **Capabilities** -- 2
 

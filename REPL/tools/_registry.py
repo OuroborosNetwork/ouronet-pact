@@ -58,6 +58,7 @@ import os
 import re
 import sys
 import time
+import http.client
 import urllib.request
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -248,14 +249,73 @@ def rpc(code, gas=10_000_000):
     # real answer and is returned as such.
     for attempt in range(4):
         try:
-            result = json.load(urllib.request.urlopen(req, timeout=60)).get("result", {})
+            # READ THE BODY WHOLE, THEN PARSE. `json.load(fileobj)` parses INCREMENTALLY off the
+            # socket, and on a chunked response large enough to matter that reliably died with
+            # `IncompleteRead` -- measured against `describe-module "ouronet-ns.TS02-C3"`, a
+            # 119,034-byte answer, which failed every time through `json.load` and succeeded
+            # every time through `.read()` in the same minute, across three header variants.
+            # One `.read()` is also what the retry above can actually retry: a half-consumed
+            # stream cannot be re-parsed, a failed read can simply be redone.
+            raw = urllib.request.urlopen(req, timeout=120).read()
+            result = json.loads(raw).get("result", {})
             break
-        except (urllib.error.URLError, TimeoutError, ConnectionError) as e:
+        # `http.client.IncompleteRead` BELONGS HERE AND WAS MISSING (added 2026-10-04). It is an
+        # `HTTPException`, not a `URLError`, so it escaped this handler entirely and aborted the
+        # whole probe -- which is the exact outcome the comment above says this loop exists to
+        # prevent. It surfaced the first time a module got big enough to be chunked: TS02-C3
+        # after the V2 interface landed, truncating at 110,592 bytes on two consecutive runs.
+        # A half-read body is a transport failure by any reading, and a deterministic-looking
+        # one can still be the node, not the payload -- which is why it is retried rather than
+        # special-cased.
+        except (urllib.error.URLError, TimeoutError, ConnectionError,
+                http.client.IncompleteRead, http.client.HTTPException) as e:
             if attempt == 3:
                 raise
             print(f"    transport retry {attempt + 1}/3 ({e})")
             time.sleep(3 * (attempt + 1))
     return result.get("data") if result.get("status") == "success" else None
+
+
+def describe_sliced(module):
+    """`describe-module` for a module too big for the node to return in one response.
+
+    THE NODE TRUNCATES. `describe-module "ouronet-ns.AQP-FVT"` returns a ~190,000-character
+    `code` field and `node2.stoachain.com` consistently cuts the body at 106,000-110,600 bytes --
+    measured six times across three gas limits and three header variants, always a half-read
+    chunked body, never a Pact error. TS02-C3 at 119,034 bytes comes back whole every time, so
+    the ceiling sits between them and it is the NODE's, not Pact's and not this tool's.
+
+    It used to fit: every one of the 423 entrypoints in the committed artefact is
+    `source: "deployed"`, AQP-FVT's 23 included. The module outgrew the ceiling, and because
+    `IncompleteRead` is an `HTTPException` rather than a `URLError` it was not even caught by
+    the retry above -- the whole probe aborted on it.
+
+    SO FETCH THE CODE IN SLICES. `(take N (drop M (at "code" (describe-module ...))))` is
+    evaluated on the node and returns only the window, so each response is small. The pieces are
+    reassembled here and the LENGTH IS ASSERTED against the `length` the chain reported, because
+    a silently short reassembly would produce a module source that parses into a smaller API --
+    entrypoints would simply go missing from the registry, which is the failure this tool exists
+    to prevent.
+    """
+    n = rpc(f'(length (at "code" (describe-module "ouronet-ns.{module}")))')
+    # Pact integers come back as {"int": N} through /local.
+    if isinstance(n, dict) and "int" in n:
+        n = n["int"]
+    if not isinstance(n, int):
+        return None
+    h = rpc(f'(at "hash" (describe-module "ouronet-ns.{module}"))')
+    chunk, parts = 40_000, []
+    for off in range(0, n, chunk):
+        piece = rpc(f'(take {chunk} (drop {off} '
+                    f'(at "code" (describe-module "ouronet-ns.{module}"))))')
+        if not isinstance(piece, str):
+            return None
+        parts.append(piece)
+    code = "".join(parts)
+    if len(code) != n:
+        raise RuntimeError(f"{module}: reassembled {len(code)} chars, chain says {n} -- "
+                           f"a short read here would silently shrink the module's API")
+    return {"code": code, "hash": h}
 
 
 def params_at(text, idx):
@@ -551,7 +611,12 @@ def build(probe):
     for module, (repo_src, relpath) in sorted(repo.items()):
         live_src, module_hash, source = None, None, "repo-only"
         if probe:
-            described = rpc(f'(describe-module "ouronet-ns.{module}")')
+            try:
+                described = rpc(f'(describe-module "ouronet-ns.{module}")')
+            except http.client.IncompleteRead:
+                # Too big for one response -- fetch it in windows. See describe_sliced.
+                print(f"    {module}: oversized, fetching in slices", flush=True)
+                described = describe_sliced(module)
             if isinstance(described, dict) and described.get("code"):
                 live_src, module_hash, source = described["code"], described.get("hash"), "deployed"
                 deployed_src[module] = live_src

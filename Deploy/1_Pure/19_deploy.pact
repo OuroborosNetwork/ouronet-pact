@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 19 of 24
 ;; This is STEP 19 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-18 must have run first, including the init steps between deploys.
-;; 3 source file(s), 849,276 gas measured in the REPL gas model, 269,873 bytes
+;; 3 source file(s), 849,276 gas measured in the REPL gas model, 272,599 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/06_VCT.pact
@@ -1438,6 +1438,45 @@
                 ])
         )
     )
+    (defun URCi_VacateTrueFungible:decimal (pool-id:string)
+        @doc "Cost of XB_VacateTrueFungible, which is the whole of a pool's TF side. \
+            \ \
+            \ MIRRORS THE EXEC EXACTLY: the exec scans `URH_VacateTrueFungiblePoolLegs` and feeds \
+            \ the lanes to `XI_VacateTrueFungiblePoolLegs`, so the cost is the per-batch reader \
+            \ summed over the SAME lanes, read the SAME way. Reading the plan rather than being \
+            \ handed it is what makes this previewable from a pool id alone -- `URCi_FullVacate` \
+            \ takes its lanes as arguments because its caller has already scanned. \
+            \ \
+            \ WRITTEN 2026-10-04 BECAUSE NOTHING COULD PRICE THESE. The four per-leg vacates were \
+            \ named `AQP-POOL|XB_Vacate*` on Talos, which matches neither the registry's \
+            \ entrypoint filter nor the price sheet's, so four BILLED client operations had no \
+            \ preview and nobody noticed. Renaming them to `CC_Vacate*` is what made the gap \
+            \ visible; this closes it."
+        (fold (+) 0.0
+            (map (lambda (l:object{AcquisitionSchemasV1.VCT|VacateTfLane})
+                     (URCi_BatchVacateTrueFungible pool-id (at "asset-id" l) (at "legs" l)))
+                 (URH_VacateTrueFungiblePoolLegs pool-id)))
+    )
+    (defun URCi_VacateOrtoFungible:decimal (pool-id:string dpof-id:string)
+        @doc "Cost of XB_VacateOrtoFungible -- ONE OrtoFungible satellite of a pool. Mirrors the \
+            \ exec: same `URHC_VacateNonceOwnerRowsRaw pool-id dpof-id VACATE-KIND-OF` scan, fed \
+            \ to the same per-batch reader the exec's consume path is priced by."
+        (URCi_BatchVacateOrtoFungible pool-id dpof-id
+            (URHC_VacateNonceOwnerRowsRaw pool-id dpof-id VACATE-KIND-OF))
+    )
+    (defun URCi_VacateSemiFungible:decimal (pool-id:string dpsf-id:string)
+        @doc "Cost of XB_VacateSemiFungible -- ONE DPSF collection of a pool. Mirrors the exec, \
+            \ including `son=true`, which is what selects the DPSF side of the shared reader."
+        (URCi_BatchVacateCollectables pool-id dpsf-id true
+            (URHC_VacateNonceOwnerRowsRaw pool-id dpsf-id VACATE-KIND-DPSF))
+    )
+    (defun URCi_VacateNonFungible:decimal (pool-id:string dpnf-id:string)
+        @doc "Cost of XB_VacateNonFungible -- ONE DPNF collection of a pool. Mirrors the exec, \
+            \ including `son=false`; the DPSF and DPNF paths differ only in that flag and in the \
+            \ scan kind, and getting either wrong prices the other asset."
+        (URCi_BatchVacateCollectables pool-id dpnf-id false
+            (URHC_VacateNonceOwnerRowsRaw pool-id dpnf-id VACATE-KIND-DPNF))
+    )
     (defun URCi_FullVacate:decimal
         (pool-id:string
          tf-lanes:[object{AcquisitionSchemasV1.VCT|VacateTfLane}]
@@ -1990,7 +2029,7 @@
         (let
             (
                 (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                 ;;
                 (nns:integer (ref-AQP::UR_AQP|PoolNns pool-id))
             )
@@ -2303,7 +2342,7 @@
         (let
             (
                 (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                 (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 (fvt-ids:[string]
                     (distinct
@@ -2457,7 +2496,7 @@
                 (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                 ;;
                 (settle-bundle:object
                     (RPS.URHC_BuildStakeSettleBundle pool-id beneficiary-id)
@@ -2772,7 +2811,7 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                 ;;
                 (settle-bundle:object
                     (RPS.URHC_BuildStakeSettleBundle pool-id beneficiary-id)
@@ -2812,7 +2851,7 @@
                 (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                 ;;
                 (settle-bundle:object
                     (RPS.URHC_BuildStakeSettleBundle pool-id beneficiary-id)
@@ -3553,7 +3592,7 @@
             (let
                 (
                     (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                 )
                 ;; 1] nuke each employed score: bulk-zero aggregates + bump vacate-generation (≤7 point writes)
                 (map
@@ -3914,7 +3953,7 @@
             \ recompute-set size. Read-only; sweep-in-progress keeps it fixed across defpact steps."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
             )
             (fold (+) 0
                 (map
@@ -3938,7 +3977,7 @@
                 (lambda (acc:object sid:string)
                     (let
                         (
-                            (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                            (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                             (seen-before:integer (at "seen" acc))
                             (fvt:string (ref-SCR::UR_SCR|ScoreFvtLink sid))
                             (member:string
@@ -4739,7 +4778,7 @@
             \ the model's nonce values). The open gate + the capture divisor read this."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
             )
             (+ (ref-SCR::UR_SCR|ScoreTotalBaseScore (ref-SCR::UR_SCR|TripletBronzeScoreId score-entity-id))
                (+ (ref-SCR::UR_SCR|ScoreTotalBaseScore (ref-SCR::UR_SCR|TripletSilverScoreId score-entity-id))

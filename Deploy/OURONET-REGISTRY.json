@@ -2231,19 +2231,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_Konto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_Konto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -2322,19 +2322,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_Konto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_Konto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -2417,19 +2417,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_Konto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_Konto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -2514,19 +2514,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_Konto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_Konto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -2704,19 +2704,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_Konto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_Konto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -3002,19 +3002,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_Konto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_Konto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -3282,19 +3282,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_Konto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_Konto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -3382,19 +3382,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_Konto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_Konto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -3501,19 +3501,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_Konto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_Konto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -3597,13 +3597,6 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "account",
       "via": "parameter",
       "meaning": "the caller must hold the key for the account passed as `account`",
@@ -3617,6 +3610,13 @@
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_Konto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -3812,19 +3812,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_Konto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_Konto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -3896,17 +3896,17 @@
     "resolved": true,
     "requires": [
      {
-      "account": "executor",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `executor`",
-      "when": "ALWAYS"
-     },
-     {
       "account": "patron",
       "via": "parameter",
       "meaning": "the caller must hold the key for the account passed as `patron`",
       "when": "CONDITIONAL",
       "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
+      "account": "executor",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `executor`",
+      "when": "ALWAYS"
      }
     ],
     "unmapped": [
@@ -3980,6 +3980,13 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "executor",
       "via": "parameter",
       "meaning": "the caller must hold the key for the account passed as `executor`",
@@ -3989,13 +3996,6 @@
       "account": "executee",
       "via": "parameter",
       "meaning": "the caller must hold the key for the account passed as `executee`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
       "when": "CONDITIONAL",
       "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
@@ -4096,19 +4096,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_Konto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_Konto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -4270,19 +4270,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_Konto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_Konto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -4501,19 +4501,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_Konto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_Konto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -4789,19 +4789,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_Konto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_Konto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -4969,19 +4969,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_Konto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_Konto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -5059,19 +5059,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_Konto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_Konto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -5150,19 +5150,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_Konto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_Konto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -5337,19 +5337,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_Konto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_Konto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -5432,19 +5432,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_Konto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_Konto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -5624,19 +5624,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_Konto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_Konto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -5814,19 +5814,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_Konto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_Konto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -6101,19 +6101,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_Konto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_Konto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -6468,19 +6468,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_Konto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_Konto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -6564,19 +6564,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_Konto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_Konto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -14172,19 +14172,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `swpair`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "swpair",
       "meaning": "`swpair` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -14258,19 +14258,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `swpair`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "swpair",
       "meaning": "`swpair` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -14889,19 +14889,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `swpair`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "swpair",
       "meaning": "`swpair` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -15801,19 +15801,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `swpair`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "swpair",
       "meaning": "`swpair` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -15893,19 +15893,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `swpair`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "swpair",
       "meaning": "`swpair` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -15989,19 +15989,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `swpair`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "swpair",
       "meaning": "`swpair` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -16085,19 +16085,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `swpair`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "swpair",
       "meaning": "`swpair` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -16477,19 +16477,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `swpair`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "swpair",
       "meaning": "`swpair` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -16747,17 +16747,17 @@
     "resolved": true,
     "requires": [
      {
-      "account": "executor",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `executor`",
-      "when": "ALWAYS"
-     },
-     {
       "account": "patron",
       "via": "parameter",
       "meaning": "the caller must hold the key for the account passed as `patron`",
       "when": "CONDITIONAL",
       "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
+      "account": "executor",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `executor`",
+      "when": "ALWAYS"
      }
     ],
     "unmapped": [
@@ -18166,12 +18166,6 @@
     "resolved": true,
     "requires": [
      {
-      "account": "executor",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `executor`",
-      "when": "ALWAYS"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
@@ -18185,6 +18179,12 @@
       "meaning": "the caller must hold the key for the account passed as `patron`",
       "when": "CONDITIONAL",
       "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
+      "account": "executor",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `executor`",
+      "when": "ALWAYS"
      }
     ],
     "unmapped": [
@@ -18301,17 +18301,17 @@
     "resolved": true,
     "requires": [
      {
-      "account": "executor",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `executor`",
-      "when": "ALWAYS"
-     },
-     {
       "account": "patron",
       "via": "parameter",
       "meaning": "the caller must hold the key for the account passed as `patron`",
       "when": "CONDITIONAL",
       "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
+      "account": "executor",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `executor`",
+      "when": "ALWAYS"
      }
     ],
     "unmapped": [
@@ -18514,19 +18514,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -18610,19 +18610,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -18715,12 +18715,6 @@
     "resolved": true,
     "requires": [
      {
-      "account": "executor",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `executor`",
-      "when": "ALWAYS"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
@@ -18734,6 +18728,12 @@
       "meaning": "the caller must hold the key for the account passed as `patron`",
       "when": "CONDITIONAL",
       "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
+      "account": "executor",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `executor`",
+      "when": "ALWAYS"
      }
     ],
     "unmapped": [
@@ -18957,19 +18957,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -19215,19 +19215,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -19551,19 +19551,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -19707,19 +19707,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -19852,19 +19852,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -20246,19 +20246,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -20348,19 +20348,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -20550,6 +20550,13 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "executor",
       "via": "parameter",
       "meaning": "the caller must hold the key for the account passed as `executor`",
@@ -20562,13 +20569,6 @@
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -20742,19 +20742,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -21105,19 +21105,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -21209,19 +21209,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -21322,19 +21322,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -21524,19 +21524,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -21718,19 +21718,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -22005,19 +22005,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -22100,19 +22100,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -22398,12 +22398,6 @@
     "resolved": true,
     "requires": [
      {
-      "account": "executor",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `executor`",
-      "when": "ALWAYS"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
@@ -22417,6 +22411,12 @@
       "meaning": "the caller must hold the key for the account passed as `patron`",
       "when": "CONDITIONAL",
       "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
+      "account": "executor",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `executor`",
+      "when": "ALWAYS"
      }
     ],
     "unmapped": [
@@ -22514,12 +22514,6 @@
     "resolved": true,
     "requires": [
      {
-      "account": "executor",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `executor`",
-      "when": "ALWAYS"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
@@ -22533,6 +22527,12 @@
       "meaning": "the caller must hold the key for the account passed as `patron`",
       "when": "CONDITIONAL",
       "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
+      "account": "executor",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `executor`",
+      "when": "ALWAYS"
      }
     ],
     "unmapped": [
@@ -24793,19 +24793,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -24893,19 +24893,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -25095,19 +25095,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -25194,19 +25194,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -25420,19 +25420,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -25512,19 +25512,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -25618,12 +25618,6 @@
     "resolved": true,
     "requires": [
      {
-      "account": "executor",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `executor`",
-      "when": "ALWAYS"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
@@ -25637,6 +25631,12 @@
       "meaning": "the caller must hold the key for the account passed as `patron`",
       "when": "CONDITIONAL",
       "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
+      "account": "executor",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `executor`",
+      "when": "ALWAYS"
      }
     ],
     "unmapped": [
@@ -25735,19 +25735,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -25855,19 +25855,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -26106,19 +26106,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -26272,19 +26272,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -26442,19 +26442,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -26598,19 +26598,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -26743,19 +26743,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -27021,19 +27021,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -27123,19 +27123,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -27408,19 +27408,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -27771,19 +27771,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -27875,19 +27875,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -27988,19 +27988,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -28089,19 +28089,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -28185,19 +28185,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -28379,19 +28379,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -28476,19 +28476,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -28666,19 +28666,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -28761,19 +28761,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -29059,12 +29059,6 @@
     "resolved": true,
     "requires": [
      {
-      "account": "executor",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `executor`",
-      "when": "ALWAYS"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
@@ -29078,6 +29072,12 @@
       "meaning": "the caller must hold the key for the account passed as `patron`",
       "when": "CONDITIONAL",
       "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
+      "account": "executor",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `executor`",
+      "when": "ALWAYS"
      }
     ],
     "unmapped": [
@@ -29175,12 +29175,6 @@
     "resolved": true,
     "requires": [
      {
-      "account": "executor",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `executor`",
-      "when": "ALWAYS"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
@@ -29194,6 +29188,12 @@
       "meaning": "the caller must hold the key for the account passed as `patron`",
       "when": "CONDITIONAL",
       "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
+      "account": "executor",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `executor`",
+      "when": "ALWAYS"
      }
     ],
     "unmapped": [
@@ -31454,19 +31454,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -31554,19 +31554,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -31863,13 +31863,6 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "account",
       "via": "parameter",
       "meaning": "the caller must hold the key for the account passed as `account`",
@@ -31883,6 +31876,13 @@
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -31996,7 +31996,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -32113,7 +32113,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -32227,7 +32227,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -32341,7 +32341,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -32431,7 +32431,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -32509,7 +32509,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -32606,7 +32606,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -32703,7 +32703,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -32794,7 +32794,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -32882,7 +32882,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -32975,7 +32975,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -33053,7 +33053,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -33137,7 +33137,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -33221,7 +33221,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -33313,7 +33313,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -33408,7 +33408,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -33513,7 +33513,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -33605,7 +33605,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -33701,7 +33701,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -33786,7 +33786,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": false,
     "reason": "no ownership enforce in the call tree resolves to one of this entrypoint's own parameters",
@@ -33858,7 +33858,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": false,
     "reason": "no ownership enforce in the call tree resolves to one of this entrypoint's own parameters",
@@ -33930,7 +33930,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -34022,7 +34022,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": false,
     "reason": "no ownership enforce in the call tree resolves to one of this entrypoint's own parameters",
@@ -34098,7 +34098,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": false,
     "reason": "no ownership enforce in the call tree resolves to one of this entrypoint's own parameters",
@@ -34178,7 +34178,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -34276,7 +34276,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -34370,7 +34370,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -34464,7 +34464,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -34551,7 +34551,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -34644,7 +34644,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -34748,22 +34748,22 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
-     {
-      "account": "executor",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `executor`",
-      "when": "ALWAYS"
-     },
      {
       "account": "patron",
       "via": "parameter",
       "meaning": "the caller must hold the key for the account passed as `patron`",
       "when": "CONDITIONAL",
       "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
+      "account": "executor",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `executor`",
+      "when": "ALWAYS"
      }
     ],
     "unmapped": [
@@ -34847,7 +34847,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -34930,7 +34930,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -35018,7 +35018,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -35116,7 +35116,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -35209,7 +35209,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -35296,7 +35296,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -35387,7 +35387,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -35468,7 +35468,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -35567,7 +35567,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -35668,7 +35668,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -35766,7 +35766,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -35867,7 +35867,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -35969,7 +35969,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -36073,7 +36073,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -36175,7 +36175,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -36279,7 +36279,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -36347,6 +36347,368 @@
     "warning": "ILLUSTRATIVE, NOT SUBMITTABLE. Every id was read from mainnet so the SHAPE is real, but the accounts are not yours to sign for and the amounts are placeholders."
    }
   },
+  "TS02-C3.AQP-POOL|CC_VacateNonFungible": {
+   "params": [
+    {
+     "name": "patron",
+     "type": "string"
+    },
+    {
+     "name": "executor",
+     "type": "string"
+    },
+    {
+     "name": "pool-id",
+     "type": "string"
+    },
+    {
+     "name": "dpnf-id",
+     "type": "string"
+    }
+   ],
+   "returns": "string",
+   "source": "deployed",
+   "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
+   "ownership": {
+    "resolved": true,
+    "requires": [
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
+      "account": "owner of `pool-id`",
+      "via": "reader",
+      "reader": "URC_AqpOwnerKonto",
+      "subject": "pool-id",
+      "meaning": "`pool-id` is an ENTITY id, NOT an account. Read `URC_AqpOwnerKonto` with it to get the account whose key is required",
+      "when": "ALWAYS"
+     }
+    ],
+    "unmapped": [
+     "DALOS|SC_NAME",
+     "account",
+     "id",
+     "sender"
+    ],
+    "unmappedNote": "enforces reached DEEPER in the tree whose subject is named for that callee's parameter rather than this entrypoint's. Mapping them back needs argument threading, which is not done -- so they are listed, not guessed."
+   },
+   "sponsorship": {
+    "sponsored": true,
+    "sponsor": "Ouronet gas station",
+    "cap": "ouronet-ns.DALOS.GAS_PAYER",
+    "capArgs": [
+     {
+      "name": "user",
+      "type": "string"
+     },
+     {
+      "name": "limit",
+      "type": "integer"
+     },
+     {
+      "name": "price",
+      "type": "decimal"
+     }
+    ],
+    "suppliedBy": "a signer on the caps key, alongside the guard public keys",
+    "conditional": "GAS_PAYER inspects `exec-code` from the message, so sponsorship depends on what the transaction actually contains"
+   },
+   "execution": {
+    "mode": "direct",
+    "note": "the provided inputs suffice; nothing is read off-chain first"
+   },
+   "preview": "AQP-INFO.INFO_AQP-POOL|VacateNonFungible",
+   "ghost": {
+    "args": {
+     "patron": "\u03a3.\u044a\u03a6\u011e\u03c1\u03bb\u03be\u00e4F\u03c6V\u041f\u00c9\u042b\u00cd\u042c\u00d9G\u011b\u042d\u044b\u0446\u00a5\u0104\u00efsK\u0437\u01648\u00a3\u039e\u03b4\u011a\u00e3l\u00cd\u0143\u00dd\u00fe\u00e1\u03a9\u0118\u039e\u0218\u010e\u0104\u041b\u03b4\u016f\u00d6\u00ee\u010e\u0104\u03a0\u0414\u00c8r\u042aqy\u03c2k\u047a\u03b4K\u0142\u0104\u03c1\u021b\u00d8\u00e4n\u00c0\u015ax\u0447t\u00cd\u03c2\u00c3\u03a9\u20b39\u01657\u00c7\u044f\u0160\u039b\u03b4\u00d3d\u0165\u0417\u039e\u017b\u00db\u03c0\u03a9\u2207\u0446\u0436u\u043bi\u00d8\u0142\u00db\u00e1Y\u03c0O\u043a\u00e6\u00e1Yo\u00f9\u03c7m\u0152\u0443\u015e\u00cb\u041b\u039e\u044cP\u0118\u00e1\u00db\u00ddaB\u00d1\u0411\u017e\u044f\u20b3\u021b\u03c2hr\u011a\u00eb\u20b1d\u00d1L\u00de\u041b\u03b5\u00f1e\u00ee\u00d3\u0423\u0142\u00eb\u03a6",
+     "executor": "\u03a3.\u044a\u03a6\u011e\u03c1\u03bb\u03be\u00e4F\u03c6V\u041f\u00c9\u042b\u00cd\u042c\u00d9G\u011b\u042d\u044b\u0446\u00a5\u0104\u00efsK\u0437\u01648\u00a3\u039e\u03b4\u011a\u00e3l\u00cd\u0143\u00dd\u00fe\u00e1\u03a9\u0118\u039e\u0218\u010e\u0104\u041b\u03b4\u016f\u00d6\u00ee\u010e\u0104\u03a0\u0414\u00c8r\u042aqy\u03c2k\u047a\u03b4K\u0142\u0104\u03c1\u021b\u00d8\u00e4n\u00c0\u015ax\u0447t\u00cd\u03c2\u00c3\u03a9\u20b39\u01657\u00c7\u044f\u0160\u039b\u03b4\u00d3d\u0165\u0417\u039e\u017b\u00db\u03c0\u03a9\u2207\u0446\u0436u\u043bi\u00d8\u0142\u00db\u00e1Y\u03c0O\u043a\u00e6\u00e1Yo\u00f9\u03c7m\u0152\u0443\u015e\u00cb\u041b\u039e\u044cP\u0118\u00e1\u00db\u00ddaB\u00d1\u0411\u017e\u044f\u20b3\u021b\u03c2hr\u011a\u00eb\u20b1d\u00d1L\u00de\u041b\u03b5\u00f1e\u00ee\u00d3\u0423\u0142\u00eb\u03a6",
+     "pool-id": "example",
+     "dpnf-id": "example"
+    },
+    "source": "composed from OURONET-REGISTRY.ghosts.json",
+    "notes": {
+     "patron": "pays the IGNIS. A real Demiurgoi account, read from chain",
+     "executor": "ACTS -- the account whose ownership the chain enforces. Often not the patron",
+     "pool-id": "fallback only -- a string parameter with no name entry above",
+     "dpnf-id": "fallback only -- a string parameter with no name entry above"
+    },
+    "warning": "ILLUSTRATIVE, NOT SUBMITTABLE. Every id was read from mainnet so the SHAPE is real, but the accounts are not yours to sign for and the amounts are placeholders."
+   }
+  },
+  "TS02-C3.AQP-POOL|CC_VacateOrtoFungible": {
+   "params": [
+    {
+     "name": "patron",
+     "type": "string"
+    },
+    {
+     "name": "executor",
+     "type": "string"
+    },
+    {
+     "name": "pool-id",
+     "type": "string"
+    },
+    {
+     "name": "dpof-id",
+     "type": "string"
+    }
+   ],
+   "returns": "string",
+   "source": "deployed",
+   "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
+   "ownership": {
+    "resolved": true,
+    "requires": [
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
+      "account": "owner of `pool-id`",
+      "via": "reader",
+      "reader": "URC_AqpOwnerKonto",
+      "subject": "pool-id",
+      "meaning": "`pool-id` is an ENTITY id, NOT an account. Read `URC_AqpOwnerKonto` with it to get the account whose key is required",
+      "when": "ALWAYS"
+     }
+    ],
+    "unmapped": [
+     "DALOS|SC_NAME",
+     "sender"
+    ],
+    "unmappedNote": "enforces reached DEEPER in the tree whose subject is named for that callee's parameter rather than this entrypoint's. Mapping them back needs argument threading, which is not done -- so they are listed, not guessed."
+   },
+   "sponsorship": {
+    "sponsored": true,
+    "sponsor": "Ouronet gas station",
+    "cap": "ouronet-ns.DALOS.GAS_PAYER",
+    "capArgs": [
+     {
+      "name": "user",
+      "type": "string"
+     },
+     {
+      "name": "limit",
+      "type": "integer"
+     },
+     {
+      "name": "price",
+      "type": "decimal"
+     }
+    ],
+    "suppliedBy": "a signer on the caps key, alongside the guard public keys",
+    "conditional": "GAS_PAYER inspects `exec-code` from the message, so sponsorship depends on what the transaction actually contains"
+   },
+   "execution": {
+    "mode": "direct",
+    "note": "the provided inputs suffice; nothing is read off-chain first"
+   },
+   "preview": "AQP-INFO.INFO_AQP-POOL|VacateOrtoFungible",
+   "ghost": {
+    "args": {
+     "patron": "\u03a3.\u044a\u03a6\u011e\u03c1\u03bb\u03be\u00e4F\u03c6V\u041f\u00c9\u042b\u00cd\u042c\u00d9G\u011b\u042d\u044b\u0446\u00a5\u0104\u00efsK\u0437\u01648\u00a3\u039e\u03b4\u011a\u00e3l\u00cd\u0143\u00dd\u00fe\u00e1\u03a9\u0118\u039e\u0218\u010e\u0104\u041b\u03b4\u016f\u00d6\u00ee\u010e\u0104\u03a0\u0414\u00c8r\u042aqy\u03c2k\u047a\u03b4K\u0142\u0104\u03c1\u021b\u00d8\u00e4n\u00c0\u015ax\u0447t\u00cd\u03c2\u00c3\u03a9\u20b39\u01657\u00c7\u044f\u0160\u039b\u03b4\u00d3d\u0165\u0417\u039e\u017b\u00db\u03c0\u03a9\u2207\u0446\u0436u\u043bi\u00d8\u0142\u00db\u00e1Y\u03c0O\u043a\u00e6\u00e1Yo\u00f9\u03c7m\u0152\u0443\u015e\u00cb\u041b\u039e\u044cP\u0118\u00e1\u00db\u00ddaB\u00d1\u0411\u017e\u044f\u20b3\u021b\u03c2hr\u011a\u00eb\u20b1d\u00d1L\u00de\u041b\u03b5\u00f1e\u00ee\u00d3\u0423\u0142\u00eb\u03a6",
+     "executor": "\u03a3.\u044a\u03a6\u011e\u03c1\u03bb\u03be\u00e4F\u03c6V\u041f\u00c9\u042b\u00cd\u042c\u00d9G\u011b\u042d\u044b\u0446\u00a5\u0104\u00efsK\u0437\u01648\u00a3\u039e\u03b4\u011a\u00e3l\u00cd\u0143\u00dd\u00fe\u00e1\u03a9\u0118\u039e\u0218\u010e\u0104\u041b\u03b4\u016f\u00d6\u00ee\u010e\u0104\u03a0\u0414\u00c8r\u042aqy\u03c2k\u047a\u03b4K\u0142\u0104\u03c1\u021b\u00d8\u00e4n\u00c0\u015ax\u0447t\u00cd\u03c2\u00c3\u03a9\u20b39\u01657\u00c7\u044f\u0160\u039b\u03b4\u00d3d\u0165\u0417\u039e\u017b\u00db\u03c0\u03a9\u2207\u0446\u0436u\u043bi\u00d8\u0142\u00db\u00e1Y\u03c0O\u043a\u00e6\u00e1Yo\u00f9\u03c7m\u0152\u0443\u015e\u00cb\u041b\u039e\u044cP\u0118\u00e1\u00db\u00ddaB\u00d1\u0411\u017e\u044f\u20b3\u021b\u03c2hr\u011a\u00eb\u20b1d\u00d1L\u00de\u041b\u03b5\u00f1e\u00ee\u00d3\u0423\u0142\u00eb\u03a6",
+     "pool-id": "example",
+     "dpof-id": "GSTOA-8Nh-JO8JO4F5"
+    },
+    "source": "composed from OURONET-REGISTRY.ghosts.json",
+    "notes": {
+     "patron": "pays the IGNIS. A real Demiurgoi account, read from chain",
+     "executor": "ACTS -- the account whose ownership the chain enforces. Often not the patron",
+     "pool-id": "fallback only -- a string parameter with no name entry above"
+    },
+    "warning": "ILLUSTRATIVE, NOT SUBMITTABLE. Every id was read from mainnet so the SHAPE is real, but the accounts are not yours to sign for and the amounts are placeholders."
+   }
+  },
+  "TS02-C3.AQP-POOL|CC_VacateSemiFungible": {
+   "params": [
+    {
+     "name": "patron",
+     "type": "string"
+    },
+    {
+     "name": "executor",
+     "type": "string"
+    },
+    {
+     "name": "pool-id",
+     "type": "string"
+    },
+    {
+     "name": "dpsf-id",
+     "type": "string"
+    }
+   ],
+   "returns": "string",
+   "source": "deployed",
+   "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
+   "ownership": {
+    "resolved": true,
+    "requires": [
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
+      "account": "owner of `pool-id`",
+      "via": "reader",
+      "reader": "URC_AqpOwnerKonto",
+      "subject": "pool-id",
+      "meaning": "`pool-id` is an ENTITY id, NOT an account. Read `URC_AqpOwnerKonto` with it to get the account whose key is required",
+      "when": "ALWAYS"
+     }
+    ],
+    "unmapped": [
+     "DALOS|SC_NAME",
+     "account",
+     "id",
+     "sender"
+    ],
+    "unmappedNote": "enforces reached DEEPER in the tree whose subject is named for that callee's parameter rather than this entrypoint's. Mapping them back needs argument threading, which is not done -- so they are listed, not guessed."
+   },
+   "sponsorship": {
+    "sponsored": true,
+    "sponsor": "Ouronet gas station",
+    "cap": "ouronet-ns.DALOS.GAS_PAYER",
+    "capArgs": [
+     {
+      "name": "user",
+      "type": "string"
+     },
+     {
+      "name": "limit",
+      "type": "integer"
+     },
+     {
+      "name": "price",
+      "type": "decimal"
+     }
+    ],
+    "suppliedBy": "a signer on the caps key, alongside the guard public keys",
+    "conditional": "GAS_PAYER inspects `exec-code` from the message, so sponsorship depends on what the transaction actually contains"
+   },
+   "execution": {
+    "mode": "direct",
+    "note": "the provided inputs suffice; nothing is read off-chain first"
+   },
+   "preview": "AQP-INFO.INFO_AQP-POOL|VacateSemiFungible",
+   "ghost": {
+    "args": {
+     "patron": "\u03a3.\u044a\u03a6\u011e\u03c1\u03bb\u03be\u00e4F\u03c6V\u041f\u00c9\u042b\u00cd\u042c\u00d9G\u011b\u042d\u044b\u0446\u00a5\u0104\u00efsK\u0437\u01648\u00a3\u039e\u03b4\u011a\u00e3l\u00cd\u0143\u00dd\u00fe\u00e1\u03a9\u0118\u039e\u0218\u010e\u0104\u041b\u03b4\u016f\u00d6\u00ee\u010e\u0104\u03a0\u0414\u00c8r\u042aqy\u03c2k\u047a\u03b4K\u0142\u0104\u03c1\u021b\u00d8\u00e4n\u00c0\u015ax\u0447t\u00cd\u03c2\u00c3\u03a9\u20b39\u01657\u00c7\u044f\u0160\u039b\u03b4\u00d3d\u0165\u0417\u039e\u017b\u00db\u03c0\u03a9\u2207\u0446\u0436u\u043bi\u00d8\u0142\u00db\u00e1Y\u03c0O\u043a\u00e6\u00e1Yo\u00f9\u03c7m\u0152\u0443\u015e\u00cb\u041b\u039e\u044cP\u0118\u00e1\u00db\u00ddaB\u00d1\u0411\u017e\u044f\u20b3\u021b\u03c2hr\u011a\u00eb\u20b1d\u00d1L\u00de\u041b\u03b5\u00f1e\u00ee\u00d3\u0423\u0142\u00eb\u03a6",
+     "executor": "\u03a3.\u044a\u03a6\u011e\u03c1\u03bb\u03be\u00e4F\u03c6V\u041f\u00c9\u042b\u00cd\u042c\u00d9G\u011b\u042d\u044b\u0446\u00a5\u0104\u00efsK\u0437\u01648\u00a3\u039e\u03b4\u011a\u00e3l\u00cd\u0143\u00dd\u00fe\u00e1\u03a9\u0118\u039e\u0218\u010e\u0104\u041b\u03b4\u016f\u00d6\u00ee\u010e\u0104\u03a0\u0414\u00c8r\u042aqy\u03c2k\u047a\u03b4K\u0142\u0104\u03c1\u021b\u00d8\u00e4n\u00c0\u015ax\u0447t\u00cd\u03c2\u00c3\u03a9\u20b39\u01657\u00c7\u044f\u0160\u039b\u03b4\u00d3d\u0165\u0417\u039e\u017b\u00db\u03c0\u03a9\u2207\u0446\u0436u\u043bi\u00d8\u0142\u00db\u00e1Y\u03c0O\u043a\u00e6\u00e1Yo\u00f9\u03c7m\u0152\u0443\u015e\u00cb\u041b\u039e\u044cP\u0118\u00e1\u00db\u00ddaB\u00d1\u0411\u017e\u044f\u20b3\u021b\u03c2hr\u011a\u00eb\u20b1d\u00d1L\u00de\u041b\u03b5\u00f1e\u00ee\u00d3\u0423\u0142\u00eb\u03a6",
+     "pool-id": "example",
+     "dpsf-id": "example"
+    },
+    "source": "composed from OURONET-REGISTRY.ghosts.json",
+    "notes": {
+     "patron": "pays the IGNIS. A real Demiurgoi account, read from chain",
+     "executor": "ACTS -- the account whose ownership the chain enforces. Often not the patron",
+     "pool-id": "fallback only -- a string parameter with no name entry above",
+     "dpsf-id": "fallback only -- a string parameter with no name entry above"
+    },
+    "warning": "ILLUSTRATIVE, NOT SUBMITTABLE. Every id was read from mainnet so the SHAPE is real, but the accounts are not yours to sign for and the amounts are placeholders."
+   }
+  },
+  "TS02-C3.AQP-POOL|CC_VacateTrueFungible": {
+   "params": [
+    {
+     "name": "patron",
+     "type": "string"
+    },
+    {
+     "name": "executor",
+     "type": "string"
+    },
+    {
+     "name": "pool-id",
+     "type": "string"
+    }
+   ],
+   "returns": "string",
+   "source": "deployed",
+   "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
+   "ownership": {
+    "resolved": true,
+    "requires": [
+     {
+      "account": "owner of `pool-id`",
+      "via": "reader",
+      "reader": "URC_AqpOwnerKonto",
+      "subject": "pool-id",
+      "meaning": "`pool-id` is an ENTITY id, NOT an account. Read `URC_AqpOwnerKonto` with it to get the account whose key is required",
+      "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     }
+    ],
+    "unmapped": [
+     "DALOS|SC_NAME",
+     "account",
+     "id"
+    ],
+    "unmappedNote": "enforces reached DEEPER in the tree whose subject is named for that callee's parameter rather than this entrypoint's. Mapping them back needs argument threading, which is not done -- so they are listed, not guessed."
+   },
+   "sponsorship": {
+    "sponsored": true,
+    "sponsor": "Ouronet gas station",
+    "cap": "ouronet-ns.DALOS.GAS_PAYER",
+    "capArgs": [
+     {
+      "name": "user",
+      "type": "string"
+     },
+     {
+      "name": "limit",
+      "type": "integer"
+     },
+     {
+      "name": "price",
+      "type": "decimal"
+     }
+    ],
+    "suppliedBy": "a signer on the caps key, alongside the guard public keys",
+    "conditional": "GAS_PAYER inspects `exec-code` from the message, so sponsorship depends on what the transaction actually contains"
+   },
+   "execution": {
+    "mode": "direct",
+    "note": "the provided inputs suffice; nothing is read off-chain first"
+   },
+   "preview": "AQP-INFO.INFO_AQP-POOL|VacateTrueFungible",
+   "ghost": {
+    "args": {
+     "patron": "\u03a3.\u044a\u03a6\u011e\u03c1\u03bb\u03be\u00e4F\u03c6V\u041f\u00c9\u042b\u00cd\u042c\u00d9G\u011b\u042d\u044b\u0446\u00a5\u0104\u00efsK\u0437\u01648\u00a3\u039e\u03b4\u011a\u00e3l\u00cd\u0143\u00dd\u00fe\u00e1\u03a9\u0118\u039e\u0218\u010e\u0104\u041b\u03b4\u016f\u00d6\u00ee\u010e\u0104\u03a0\u0414\u00c8r\u042aqy\u03c2k\u047a\u03b4K\u0142\u0104\u03c1\u021b\u00d8\u00e4n\u00c0\u015ax\u0447t\u00cd\u03c2\u00c3\u03a9\u20b39\u01657\u00c7\u044f\u0160\u039b\u03b4\u00d3d\u0165\u0417\u039e\u017b\u00db\u03c0\u03a9\u2207\u0446\u0436u\u043bi\u00d8\u0142\u00db\u00e1Y\u03c0O\u043a\u00e6\u00e1Yo\u00f9\u03c7m\u0152\u0443\u015e\u00cb\u041b\u039e\u044cP\u0118\u00e1\u00db\u00ddaB\u00d1\u0411\u017e\u044f\u20b3\u021b\u03c2hr\u011a\u00eb\u20b1d\u00d1L\u00de\u041b\u03b5\u00f1e\u00ee\u00d3\u0423\u0142\u00eb\u03a6",
+     "executor": "\u03a3.\u044a\u03a6\u011e\u03c1\u03bb\u03be\u00e4F\u03c6V\u041f\u00c9\u042b\u00cd\u042c\u00d9G\u011b\u042d\u044b\u0446\u00a5\u0104\u00efsK\u0437\u01648\u00a3\u039e\u03b4\u011a\u00e3l\u00cd\u0143\u00dd\u00fe\u00e1\u03a9\u0118\u039e\u0218\u010e\u0104\u041b\u03b4\u016f\u00d6\u00ee\u010e\u0104\u03a0\u0414\u00c8r\u042aqy\u03c2k\u047a\u03b4K\u0142\u0104\u03c1\u021b\u00d8\u00e4n\u00c0\u015ax\u0447t\u00cd\u03c2\u00c3\u03a9\u20b39\u01657\u00c7\u044f\u0160\u039b\u03b4\u00d3d\u0165\u0417\u039e\u017b\u00db\u03c0\u03a9\u2207\u0446\u0436u\u043bi\u00d8\u0142\u00db\u00e1Y\u03c0O\u043a\u00e6\u00e1Yo\u00f9\u03c7m\u0152\u0443\u015e\u00cb\u041b\u039e\u044cP\u0118\u00e1\u00db\u00ddaB\u00d1\u0411\u017e\u044f\u20b3\u021b\u03c2hr\u011a\u00eb\u20b1d\u00d1L\u00de\u041b\u03b5\u00f1e\u00ee\u00d3\u0423\u0142\u00eb\u03a6",
+     "pool-id": "example"
+    },
+    "source": "composed from OURONET-REGISTRY.ghosts.json",
+    "notes": {
+     "patron": "pays the IGNIS. A real Demiurgoi account, read from chain",
+     "executor": "ACTS -- the account whose ownership the chain enforces. Often not the patron",
+     "pool-id": "fallback only -- a string parameter with no name entry above"
+    },
+    "warning": "ILLUSTRATIVE, NOT SUBMITTABLE. Every id was read from mainnet so the SHAPE is real, but the accounts are not yours to sign for and the amounts are placeholders."
+   }
+  },
   "TS02-C3.AQP-POOL|CCp_BatchDrainCollectable": {
    "params": [
     {
@@ -36385,7 +36747,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -36513,7 +36875,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -36630,17 +36992,10 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
      {
       "account": "owner of `pool-id`",
       "via": "reader",
@@ -36648,6 +37003,13 @@
       "subject": "pool-id",
       "meaning": "`pool-id` is an ENTITY id, NOT an account. Read `URC_AqpOwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -36750,10 +37112,17 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
      {
       "account": "owner of `pool-id`",
       "via": "reader",
@@ -36761,13 +37130,6 @@
       "subject": "pool-id",
       "meaning": "`pool-id` is an ENTITY id, NOT an account. Read `URC_AqpOwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -36879,17 +37241,10 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
      {
       "account": "owner of `pool-id`",
       "via": "reader",
@@ -36897,6 +37252,13 @@
       "subject": "pool-id",
       "meaning": "`pool-id` is an ENTITY id, NOT an account. Read `URC_AqpOwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -36997,7 +37359,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -37098,7 +37460,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -37186,10 +37548,17 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
      {
       "account": "owner of `pool-id`",
       "via": "reader",
@@ -37197,13 +37566,6 @@
       "subject": "pool-id",
       "meaning": "`pool-id` is an ENTITY id, NOT an account. Read `URC_AqpOwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -37278,10 +37640,17 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
      {
       "account": "owner of `pool-id`",
       "via": "reader",
@@ -37289,13 +37658,6 @@
       "subject": "pool-id",
       "meaning": "`pool-id` is an ENTITY id, NOT an account. Read `URC_AqpOwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -37367,10 +37729,17 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
      {
       "account": "owner of `pool-id`",
       "via": "reader",
@@ -37378,13 +37747,6 @@
       "subject": "pool-id",
       "meaning": "`pool-id` is an ENTITY id, NOT an account. Read `URC_AqpOwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -37456,10 +37818,17 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
      {
       "account": "owner of `pool-id`",
       "via": "reader",
@@ -37467,13 +37836,6 @@
       "subject": "pool-id",
       "meaning": "`pool-id` is an ENTITY id, NOT an account. Read `URC_AqpOwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -37548,7 +37910,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -37643,7 +38005,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -37735,7 +38097,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -37811,7 +38173,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -37887,7 +38249,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -37974,7 +38336,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -38070,7 +38432,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -38153,7 +38515,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -38236,7 +38598,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -38315,7 +38677,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -38408,7 +38770,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -38498,7 +38860,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -38593,7 +38955,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -38693,7 +39055,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -38790,7 +39152,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -38874,7 +39236,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -38961,7 +39323,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -39052,7 +39414,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -39162,22 +39524,22 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
-     {
-      "account": "executor",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `executor`",
-      "when": "ALWAYS"
-     },
      {
       "account": "patron",
       "via": "parameter",
       "meaning": "the caller must hold the key for the account passed as `patron`",
       "when": "CONDITIONAL",
       "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
+      "account": "executor",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `executor`",
+      "when": "ALWAYS"
      }
     ],
     "unmapped": [
@@ -39265,7 +39627,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -39354,7 +39716,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -39437,7 +39799,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -39524,7 +39886,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": false,
     "reason": "no ownership enforce in the call tree resolves to one of this entrypoint's own parameters",
@@ -39617,7 +39979,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
-   "moduleHash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "moduleHash": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
    "ownership": {
     "resolved": false,
     "reason": "no ownership enforce in the call tree resolves to one of this entrypoint's own parameters",
@@ -41426,7 +41788,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-ANK|IssueNonFungibleSetAnchor": {
    "params": [
@@ -41466,7 +41828,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-ANK|IssueSemiFungibleAnchor": {
    "params": [
@@ -41506,7 +41868,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-ANK|IssueTrueFungibleAnchor": {
    "params": [
@@ -41546,7 +41908,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-ANK|RevokeAnchor": {
    "params": [
@@ -41562,7 +41924,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-ANK|RevokeBoostClass": {
    "params": [
@@ -41578,7 +41940,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-DSA|BurnRoyalty": {
    "params": [
@@ -41598,7 +41960,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-DSA|DefineDelegationVault": {
    "params": [
@@ -41622,7 +41984,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-DSA|FuelRoyalty": {
    "params": [
@@ -41646,7 +42008,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-DSA|OpenAgency": {
    "params": [
@@ -41682,7 +42044,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-DSA|OracleWrite": {
    "params": [
@@ -41710,7 +42072,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-DSA|RecomputeCapture": {
    "params": [
@@ -41730,7 +42092,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-DSA|SetAgencyFee": {
    "params": [
@@ -41754,7 +42116,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-DSA|SetOracleAuth": {
    "params": [
@@ -41774,7 +42136,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-DSA|SetOracleValidity": {
    "params": [
@@ -41786,7 +42148,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-DSA|ToggleExternalOracle": {
    "params": [
@@ -41798,7 +42160,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-DSA|WithdrawRoyalty": {
    "params": [
@@ -41818,7 +42180,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-FVT|AddRewardLink": {
    "params": [
@@ -41846,7 +42208,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-FVT|AddScoreEntity": {
    "params": [
@@ -41870,7 +42232,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-FVT|Collect": {
    "params": [
@@ -41898,7 +42260,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-FVT|Control": {
    "params": [
@@ -41922,7 +42284,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-FVT|Inject": {
    "params": [
@@ -41946,7 +42308,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-FVT|InjectFinalize": {
    "params": [
@@ -41970,7 +42332,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-FVT|InjectFixChunk": {
    "params": [
@@ -41994,7 +42356,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-FVT|InjectStream": {
    "params": [
@@ -42022,7 +42384,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-FVT|Issue": {
    "params": [
@@ -42050,7 +42412,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-FVT|IssueGenericEarningVault": {
    "params": [
@@ -42078,7 +42440,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-FVT|IssueMultipletFamily": {
    "params": [
@@ -42110,7 +42472,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-FVT|RotateOwnership": {
    "params": [
@@ -42130,7 +42492,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-FVT|SetCommonDenominator": {
    "params": [
@@ -42150,7 +42512,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-FVT|SetMosaic": {
    "params": [
@@ -42170,7 +42532,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-FVT|SetQualitySplit": {
    "params": [
@@ -42206,7 +42568,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-FVT|SetSplitMode": {
    "params": [
@@ -42226,7 +42588,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-FVT|SweepBegin": {
    "params": [
@@ -42242,7 +42604,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-FVT|SweepRecomputeChunk": {
    "params": [
@@ -42262,7 +42624,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-FVT|SweepRevokeAnchor": {
    "params": [
@@ -42278,7 +42640,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-FVT|ToggleRewardLink": {
    "params": [
@@ -42302,7 +42664,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-FVT|ToggleScoreEntityLink": {
    "params": [
@@ -42330,7 +42692,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-FVT|UnstaleAll": {
    "params": [
@@ -42354,7 +42716,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-FVT|UnstaleMyScores": {
    "params": [
@@ -42370,7 +42732,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-MTX|2Inject": {
    "params": [
@@ -42394,7 +42756,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-MTX|2SweepRevokeAnchor": {
    "params": [
@@ -42410,7 +42772,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-POOL|AbortVacate": {
    "params": [
@@ -42426,7 +42788,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-POOL|AddScore": {
    "params": [
@@ -42446,7 +42808,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-POOL|BatchDrainCollectable": {
    "params": [
@@ -42474,7 +42836,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-POOL|BatchDrainOrtoFungible": {
    "params": [
@@ -42498,7 +42860,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-POOL|BatchDrainTrueFungible": {
    "params": [
@@ -42522,7 +42884,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-POOL|BatchVacateCollectables": {
    "params": [
@@ -42550,7 +42912,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-POOL|BatchVacateOrtoFungible": {
    "params": [
@@ -42574,7 +42936,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-POOL|BatchVacateTrueFungible": {
    "params": [
@@ -42598,7 +42960,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-POOL|DisablePoolStake": {
    "params": [
@@ -42614,7 +42976,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-POOL|EnablePoolStake": {
    "params": [
@@ -42630,7 +42992,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-POOL|FinalizeVacate": {
    "params": [
@@ -42646,7 +43008,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-POOL|FullVacate": {
    "params": [
@@ -42678,7 +43040,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-POOL|Issue": {
    "params": [
@@ -42702,7 +43064,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-POOL|RevokeScore": {
    "params": [
@@ -42722,7 +43084,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-POOL|StakeNonFungibleCollectable": {
    "params": [
@@ -42754,7 +43116,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-POOL|StakeOrtoFungible": {
    "params": [
@@ -42786,7 +43148,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-POOL|StakeSemiFungibleCollectable": {
    "params": [
@@ -42818,7 +43180,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-POOL|StakeTrueFungible": {
    "params": [
@@ -42850,7 +43212,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-POOL|SyncNonFungibleAnchors": {
    "params": [
@@ -42870,7 +43232,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-POOL|SyncSemiFungibleAnchors": {
    "params": [
@@ -42890,7 +43252,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-POOL|SyncTrueFungibleAnchors": {
    "params": [
@@ -42910,7 +43272,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-POOL|UnstakeNonFungibleCollectable": {
    "params": [
@@ -42946,7 +43308,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-POOL|UnstakeOrtoFungible": {
    "params": [
@@ -42978,7 +43340,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-POOL|UnstakeSemiFungibleCollectable": {
    "params": [
@@ -43014,7 +43376,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-POOL|UnstakeTrueFungible": {
    "params": [
@@ -43046,7 +43408,83 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
+  },
+  "AQP-INFO.INFO_AQP-POOL|VacateNonFungible": {
+   "params": [
+    {
+     "name": "patron",
+     "type": "string"
+    },
+    {
+     "name": "pool-id",
+     "type": "string"
+    },
+    {
+     "name": "dpnf-id",
+     "type": "string"
+    }
+   ],
+   "returns": "object{OuronetInfoV2.ClientInfo}",
+   "source": "deployed",
+   "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
+  },
+  "AQP-INFO.INFO_AQP-POOL|VacateOrtoFungible": {
+   "params": [
+    {
+     "name": "patron",
+     "type": "string"
+    },
+    {
+     "name": "pool-id",
+     "type": "string"
+    },
+    {
+     "name": "dpof-id",
+     "type": "string"
+    }
+   ],
+   "returns": "object{OuronetInfoV2.ClientInfo}",
+   "source": "deployed",
+   "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
+  },
+  "AQP-INFO.INFO_AQP-POOL|VacateSemiFungible": {
+   "params": [
+    {
+     "name": "patron",
+     "type": "string"
+    },
+    {
+     "name": "pool-id",
+     "type": "string"
+    },
+    {
+     "name": "dpsf-id",
+     "type": "string"
+    }
+   ],
+   "returns": "object{OuronetInfoV2.ClientInfo}",
+   "source": "deployed",
+   "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
+  },
+  "AQP-INFO.INFO_AQP-POOL|VacateTrueFungible": {
+   "params": [
+    {
+     "name": "patron",
+     "type": "string"
+    },
+    {
+     "name": "pool-id",
+     "type": "string"
+    }
+   ],
+   "returns": "object{OuronetInfoV2.ClientInfo}",
+   "source": "deployed",
+   "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-SCR|CombineTripletScoreModel": {
    "params": [
@@ -43074,7 +43512,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-SCR|ControlScore": {
    "params": [
@@ -43098,7 +43536,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-SCR|CreateScoreBoostClassLink": {
    "params": [
@@ -43118,7 +43556,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-SCR|CreateScoreBoostLink": {
    "params": [
@@ -43138,7 +43576,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-SCR|EnableDebBoost": {
    "params": [
@@ -43154,7 +43592,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-SCR|IssueLiquidityScore": {
    "params": [
@@ -43190,7 +43628,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-SCR|IssueNonFungibleScore": {
    "params": [
@@ -43218,7 +43656,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-SCR|IssueNonFungibleScoreDefinition": {
    "params": [
@@ -43250,7 +43688,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-SCR|IssueNonFungibleSetScoreDefinition": {
    "params": [
@@ -43278,7 +43716,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-SCR|IssueOrtoFungibleScore": {
    "params": [
@@ -43310,7 +43748,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-SCR|IssueScoreFromModel": {
    "params": [
@@ -43334,7 +43772,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-SCR|IssueSemiFungibleScore": {
    "params": [
@@ -43362,7 +43800,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-SCR|IssueSemiFungibleScoreDefinition": {
    "params": [
@@ -43390,7 +43828,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-SCR|IssueSingleScoreModel": {
    "params": [
@@ -43426,7 +43864,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-SCR|IssueTriplet": {
    "params": [
@@ -43450,7 +43888,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-SCR|IssueTrueFungibleScore": {
    "params": [
@@ -43478,7 +43916,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "AQP-INFO.INFO_AQP-SCR|RotateScoreOwnership": {
    "params": [
@@ -43498,7 +43936,7 @@
    "returns": "object{OuronetInfoV2.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-   "moduleHash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0"
+   "moduleHash": "-hrYxifdkjT8o0sVsmddazfFkON4BEZ08TAF52LNVKI"
   },
   "CODEX.INFO_CODEX|RecordArweaveUpload": {
    "params": [
@@ -52421,5 +52859,5 @@
  },
  "divergences": [],
  "notDeployed": [],
- "surfaceHash": "8107265a0be6edc3"
+ "surfaceHash": "37e9979f5a957dd9"
 }

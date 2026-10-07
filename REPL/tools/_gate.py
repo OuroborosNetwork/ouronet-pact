@@ -571,6 +571,39 @@ def main():
         print(_p2.stdout + _p2.stderr)
         sys.exit("GATE FAILED: a Deploy/PureV2 file does not match the module it deploys.")
 
+    # THE V3 HAND-DEPLOY ROUND -- the StoicSyntax 2.16 canon sweep. Same contract as V2 above:
+    # the body of every file is generated from its module sources and diffed here. It adds two
+    # checks V2 has no need for, because V3 is the first round where order is load-bearing:
+    #
+    #   ORDER   every dot-callee must ship in a STRICTLY EARLIER transaction than its callers,
+    #           and AcquisitionScoresV2 before every module naming it. A dot caller left behind
+    #           an upgraded, table-owning callee does not go stale -- it ABORTS.
+    #   SHAPE   zero surviving `create-table` in an upgrade, and exactly one interface form per
+    #           `iface+upgrade` source. The shape check caught three create-tables in
+    #           06_deploy on the round's first emission; they would have aborted that
+    #           transaction on the owner's gas with nothing before it to object.
+    _p3 = subprocess.run([sys.executable, "tools/_purev3.py", "--check"],
+                         capture_output=True, text=True)
+    if _p3.returncode != 0:
+        print(_p3.stdout + _p3.stderr)
+        sys.exit("GATE FAILED: a Deploy/PureV3 file is stale, mis-ordered, or carries a create-table.")
+
+    # Deploy/PureV4 -- share-based (equity) scoring. Same two checks, one addition: V3 hard-coded
+    # "AcquisitionScoresV2 must precede its namers", which is a fact about one round. V4 declares
+    # `NEW_IFACES` and derives the constraint, because the next round will ship a different
+    # interface and a hard-coded name cannot report that it is checking the wrong one.
+    #
+    # V3's MANIFEST is now EMPTY and its eight files are FROZEN: they were executed on mainnet, so
+    # they are records, not sources, and regenerating one when a module later moves would rewrite
+    # what was actually sent. PureV2's notes record that round being bitten by exactly this four
+    # separate times. Confirmed deployed by the chain itself -- `URH_AQP|AllPoolIds` returns 7, and
+    # those pools exist only if Step 7 ran, which requires the AQP-BOOT shipped in V3/08.
+    _p4 = subprocess.run([sys.executable, "tools/_purev4.py", "--check"],
+                         capture_output=True, text=True)
+    if _p4.returncode != 0:
+        print(_p4.stdout + _p4.stderr)
+        sys.exit("GATE FAILED: a Deploy/PureV4 file is stale, mis-ordered, or carries a create-table.")
+
     # GLYPH PARITY. The character IS the wire format. Porting DPL-UR's reads flattened Unicode to
     # ASCII four separate times -- ¢->c, ×->x, ≥->>=, and Ξ₳->Xi-A, the Elite-Auryn symbol itself.
     # Every one of them renders, none looks wrong in isolation, and two reached mainnet. No test

@@ -50,7 +50,9 @@ Between the pools and the reward distributor.
 | `P|` policy | 9 | inter-module authorisation | `P|A_Add`, `P|A_AddIMP`, `P|A_Define`, `P|A_RemoveIMP`, `P|A_SetIMP`, `P|Info` …+3 |
 | *(unclassified)* | 109 | carries no StoicSyntax prefix | `CT_AqpScName`, `CT_Bar`, `CT_EmptyCumulator`, `GOV|Demiurgoi`, `UDC_SCR|NF|ClassSchema`, `UDC_SCR|NF|DefRevision` …+103 |
 
-> Repository and chain agree on every declared shape.
+> **The repository differs from what is deployed.** Everything above describes the CHAIN, which is what a caller actually reaches. The difference is stated rather than resolved:
+>
+> - **functions** in the repository only: `UEV_SemiFungibleScoreDefinition`, `URCx_EquityShareRawWeight`, `URH_SCR|NFClassScoreDefinition`, `URH_SCR|NFTraitScoreDefinition`, `URH_SCR|SFScoreDefinition`, `URH_SCR|ScoreDefinedNonFungibles`, `URH_SCR|ScoreDefinedSemiFungibles`
 
 **Capabilities** -- 36
 

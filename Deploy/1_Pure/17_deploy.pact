@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 17 of 24
 ;; This is STEP 17 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-16 must have run first, including the init steps between deploys.
-;; 1 source file(s), 229,502 gas measured in the REPL gas model, 299,195 bytes
+;; 1 source file(s), 229,502 gas measured in the REPL gas model, 299,180 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/04_RPS.pact
@@ -434,11 +434,11 @@
         ;;not exist aborted on "row not found" and this enforce was unreachable for EVERY input.
         ;;URC_TripletExists is deliberately a with-default-read so it can answer for a missing
         ;;row; it just never got the chance. Hoisted above the let so it can do its job.
-        (let ((ref-SCR:module{AcquisitionScoresV1} AQP-SCORE))
+        (let ((ref-SCR:module{AcquisitionScoresV2} AQP-SCORE))
             (enforce (ref-SCR::URC_TripletExists triplet-id) "Triplet must be issued in AQP-SCORE"))
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (bronze-id:string (ref-SCR::UR_SCR|TripletBronzeScoreId triplet-id))
                 (silver-id:string (ref-SCR::UR_SCR|TripletSilverScoreId triplet-id))
@@ -468,7 +468,6 @@
             \ custody (AQP|SC_NAME) + zeroing royalty-rewards. Enforces a non-empty pool. Composes P|SECURE-CALLER + \
             \ P|RPS|REMOTE-GOV — the AQP custody-governor authority for the TFT leg out of AQP|SC_NAME (same as \
             \ FVT|C>INJECT). Owner authorization is enforced upstream in the DSA A_ shell."
-        @event
         (enforce (> (UR_FVT-RG|RoyaltyRewards fvt-id reward-dptf-id) 0.0) "No royalty to dispose")
         (compose-capability (P|SECURE-CALLER))
         (compose-capability (P|RPS|REMOTE-GOV))
@@ -1235,7 +1234,7 @@
         (let
             (
                 (ref-SWP:module{SwapperV4} SWP)
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                 ;;
                 (staked-amount:decimal
                     (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET)
@@ -1328,7 +1327,7 @@
         @doc "Vault/treasury Tier-2 member weight: score total-deb or sum of triplet score totals."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
             )
             (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET)
                 (let
@@ -1366,7 +1365,7 @@
             \ no staker scan); non-true triplet → Σ of the 3 bundled scores' total-deb; singular score → its total-deb."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
             )
             (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET)
                 (if (ref-SCR::UR_SCR|TripletTrueTriplet score-entity-id)
@@ -1383,7 +1382,7 @@
         @doc "Lane weights from silver base-score × ANK promiles on bronze/silver/golden boost-class-links."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                 (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (silver-id:string (ref-SCR::UR_SCR|TripletSilverScoreId triplet-id))
@@ -1422,7 +1421,7 @@
             \ its own aqpool-link. Matches the non-true divisor (Σ of the 3 scores' total-deb) → conservation."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                 (bronze-id:string (ref-SCR::UR_SCR|TripletBronzeScoreId triplet-id))
                 (silver-id:string (ref-SCR::UR_SCR|TripletSilverScoreId triplet-id))
                 (golden-id:string (ref-SCR::UR_SCR|TripletGoldenScoreId triplet-id))
@@ -1444,7 +1443,7 @@
             \ non-true triplet → Σ user deb over the 3 bundled scores; singular score → SCR deb-user."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
             )
             (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET)
                 (if (ref-SCR::UR_SCR|TripletTrueTriplet score-entity-id)
@@ -1464,7 +1463,7 @@
             \ singular members (BAR for triplets, whose branch ignores it)."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
             )
             (fold (or) false
                 (map
@@ -1490,7 +1489,7 @@
         @doc "Map employed SCR score-id to score-entity-type + score-entity-id for RPS banking."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
             )
             (if (ref-SCR::UR_SCR|ScoreTriplet score-id)
                 {"score-entity-type" : CT_SCORE_ENTITY_TRIPLET
@@ -1537,7 +1536,7 @@
         @doc "True when employed score maps to enabled ScoreEntityLink on issued FVT with ≥1 reward DPTF."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                 (entity:object (URC_ResolveEmployedScoreEntity score-id))
                 (fvt-id:string (ref-SCR::UR_SCR|ScoreFvtLink score-id))
                 (score-entity-id:string (at "score-entity-id" entity))
@@ -1575,7 +1574,7 @@
         @doc "Employed scores that run phase 2.1 settle — fvt-link≠BAR and parent ScoreEntityLink enabled."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
             )
             (filter
                 (lambda (score-id:string)
@@ -1603,7 +1602,7 @@
         @doc "Internal: distinct SCR|ScoreFvtLink values for settle-scores — one FVT entity counted once for IGNIS and settle scope."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
             )
             (distinct
                 ;; map: settle-eligible scores → SCR fvt-link (dedupe for URD bundle scope)
@@ -1875,7 +1874,7 @@
         @doc "Distinct score-entity settle plans — triplet members collapse to one triplet-id plan."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                 (entity-ids:[string]
                     (distinct
                         (map
@@ -1916,7 +1915,7 @@
         @doc "Internal: true when SCR|T|UserScore base, boosted, or deb is > 0 for (beneficiary, pool, score)."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
             )
             (fold (or) false
                 [
@@ -1948,7 +1947,7 @@
         @doc "Employed SCR score-ids for nz/unclaimed probes — triplet plans expand to bronze/silver/golden."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                 (entity-type:integer (at "score-entity-type" plan))
                 (entity-id:string (at "score-entity-id" plan))
             )
@@ -2047,7 +2046,7 @@
             \ (deb-independent lanes) → always false."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                 (triplet:bool (= score-entity-type CT_SCORE_ENTITY_TRIPLET))
                 (deb-based:bool (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET) (not (ref-SCR::UR_SCR|TripletTrueTriplet score-entity-id)) true))
             )
@@ -2100,7 +2099,7 @@
             \ both fold the SAME URH_FvtPresentUsers, so they agree by construction."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
             )
             (fold (+) 0
                 (map
@@ -2660,7 +2659,7 @@
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                 ;;
                 (pool-id:string
                     (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET)
@@ -3297,7 +3296,7 @@
         @doc "Under SECURE: insert enabled ScoreEntityLink; farm adds W_i to S; lock membership-mode when non-mosaic."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
             )
             (WI_ScoreEntityLink fvt-id score-entity-id
                 (UDC_FVT|ScoreEntityLink score-entity-type true swpair ghost-weight 0.0 false 0.0 0.0 STREAM_EPOCH fvt-id score-entity-id)
@@ -3623,7 +3622,7 @@
         ;; SECURE: granted by WU_ScoreEntityLink|TotalLaneWeight / WW_MemberUserWeight (underlying W_).
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
             )
             (map
                 (lambda (plan:object{AcquisitionSchemasV1.FVT|SettleScorePlan})
@@ -4147,7 +4146,7 @@
         (require-capability (SECURE))
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                 (triplet:bool (= score-entity-type CT_SCORE_ENTITY_TRIPLET))
                 (bronze-id:string (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET) (ref-SCR::UR_SCR|TripletBronzeScoreId score-entity-id) score-entity-id))
                 (silver-id:string (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET) (ref-SCR::UR_SCR|TripletSilverScoreId score-entity-id) score-entity-id))
@@ -4211,7 +4210,7 @@
         (require-capability (SECURE))
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                 (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
                 (triplet:bool (= score-entity-type CT_SCORE_ENTITY_TRIPLET))
                 (triplet-true:bool (and (= score-entity-type CT_SCORE_ENTITY_TRIPLET) (ref-SCR::UR_SCR|TripletTrueTriplet score-entity-id)))
@@ -4601,7 +4600,7 @@
                 (lambda (acc:object sid:string)
                     (let
                         (
-                            (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                            (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                             (seen-before:integer (at "seen" acc))
                             (fvt:string (ref-SCR::UR_SCR|ScoreFvtLink sid))
                             (member:string
@@ -5070,7 +5069,7 @@
         (with-capability (FVT|XE>ADMIT-DELEGATION fvt-id triplet-id operator)
             (let
                 (
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                 )
                 (ref-SCR::XE_CreateFvtLink (ref-SCR::UR_SCR|TripletBronzeScoreId triplet-id) fvt-id)
                 (ref-SCR::XE_CreateFvtLink (ref-SCR::UR_SCR|TripletSilverScoreId triplet-id) fvt-id)

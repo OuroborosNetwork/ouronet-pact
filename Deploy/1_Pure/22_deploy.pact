@@ -1204,7 +1204,7 @@
             1
             (let
                 (
-                    (ref-EQUITY:module{EquityV2} EQUITY)
+                    (ref-EQUITY:module{EquityV3} EQUITY)
                     (asset:string (UR_AssetID))
                     (tier:integer (- nonce 1))
                 )
@@ -5335,7 +5335,7 @@
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                 (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-DPDC-I:module{DpdcIssueV2} DPDC-I)
-                (ref-EQUITY:module{EquityV2} EQUITY)
+                (ref-EQUITY:module{EquityV3} EQUITY)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount creator-account))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -5350,7 +5350,7 @@
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-EQUITY:module{EquityV2} EQUITY)
+                (ref-EQUITY:module{EquityV3} EQUITY)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo

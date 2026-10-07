@@ -252,7 +252,7 @@
         (patron:string KST.ANHD)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-SWP:module{SwapperV4} SWP)
         (split-smart:[decimal]
             (ref-DALOS::URC_SplitSTOAPrices patron (* 8.0 (ref-DALOS::UR_UsagePrice "smart")))
@@ -336,7 +336,7 @@
         (patron:string KST.ANHD)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (split-smart:[decimal]
             (ref-DALOS::URC_SplitSTOAPrices patron (* 6.0 (ref-DALOS::UR_UsagePrice "smart")))
         )
@@ -1494,7 +1494,7 @@
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
         (ref-SWP:module{SwapperV4} SWP)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (farm-id:string (ref-U|DALOS::UDC_Makeid "OuroLpFarm"))
         (members:[string] (ref-FVT::URH_FvtEnabledScoreEntityIdsForFvt farm-id))
         (m:string (at 0 members))
@@ -1559,7 +1559,7 @@
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
-        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
     )
     (let
         (
@@ -1795,6 +1795,7 @@
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
 (namespace "ouronet-ns")
 (load "../../2_CITIZEN/Stage_Z/AppReads/OuronetUI/13_O-UI-THIRTEEN.pact")
+(load "../../2_CITIZEN/Stage_Z/AppReads/OuronetUI/14_O-UI-FOURTEEN.pact")
 (env-sigs [])
 ;;==== TX-BOOT-13 · 02 · the catalogue, against known state ==== ==================================
 (print "--- [TX-BOOT-13 · 02 · the catalogue, against known state] ---")
@@ -1905,6 +1906,8 @@
         ;;checking it once in production.
         (kbn-owner:string (DPDC.UR_OwnerKonto "KBN-98c486052a51" false))
         (owned:[object] (O-UI-THIRTEEN.URH_13|MyAnchorableAssets kbn-owner))
+        ;;The OURO owner -- a real account with real holdings, used for the authority reads.
+        (ouro-owner:string (AQP-ANK.URC_AnchorableAssetOwner "OURO-98c486052a51" [true true]))
     )
     (map print
         [
@@ -1956,6 +1959,355 @@
                        (at 0 (filter (lambda (o:object)
                                          (= "KBN-98c486052a51" (at "asset-id" o)))
                                      owned))))
+
+            ;;AUTHORITY IS NOT OWNERSHIP -- the picker must find what you may anchor, not only
+            ;;what you hold. Two sources, both measured on mainnet first:
+            ;;
+            ;;  SPECIALS  VST|SC_NAME owns F|ELITEAURYN, F|SPARK, F|VST and R|OURO; they showed
+            ;;            in the manager ONLY under the VST smart account. CAP_TF|Owner resolves
+            ;;            an F|/R| id to its PARENT, so the parent's owner is the authority.
+            ;;  LP        SWP|SC_NAME owns the one LP token; URCv_AnchorableDptfAuthority
+            ;;            resolves it to the swpair's POOL OWNER.
+            ;;
+            ;;Neither account should have to be impersonated to manage what it merely custodies,
+            ;;which is the owner's ruling this reader implements.
+            ;;NOT VACUOUS. The two `fold (and) true` assertions below are trivially true over an
+            ;;empty list, so the list must be shown to be NON-EMPTY first -- otherwise a reader
+            ;;that silently returned nothing would pass both.
+            (expect "<<OUI13-A7>> the authority list is NON-EMPTY, so the folds below mean something"
+                true (< 0 (length (O-UI-THIRTEEN.URH_13|MyAuthorityTrueFungibles ouro-owner))))
+            (expect "<<OUI13-A7>> the picker returns ONLY ids the account has authority over"
+                true (fold (and) true
+                          (map (lambda (i:string)
+                                   (= (AQP-ANK.URCv_AnchorableDptfAuthority i) ouro-owner))
+                               (O-UI-THIRTEEN.URH_13|MyAuthorityTrueFungibles ouro-owner))))
+            ;;AND NEVER DUPLICATES WHAT IS ALREADY OWNED. The caller concatenates this onto
+            ;;URH_OwnedTrueFungibles, so an id in both lists would render as two assets.
+            (expect "<<OUI13-A7>> ...and never one the account already owns outright"
+                true (fold (and) true
+                          (map (lambda (i:string)
+                                   (not (contains i (DPTF.URH_OwnedTrueFungibles ouro-owner))))
+                               (O-UI-THIRTEEN.URH_13|MyAuthorityTrueFungibles ouro-owner))))
+            ;;An account with no pools and no specials gets an EMPTY list, not an error -- the
+            ;;empty answer is the common one and must not be a failure mode.
+            (expect "<<OUI13-A7>> an account with neither pools nor specials gets nothing"
+                0 (length (O-UI-THIRTEEN.URH_13|MyAuthorityTrueFungibles KST.EMMA)))
+
+            ;;=== O-UI-FOURTEEN · the SCORE slice ===============================================
+            ;;THE CATALOGUE. Every score on chain, each carrying its definition. Asserted
+            ;;NON-EMPTY first: every check below folds or filters, and all of them are trivially
+            ;;true over an empty list.
+            (expect "<<OUI14-S1>> the catalogue is non-empty, so the checks below mean something"
+                true (< 0 (length (O-UI-FOURTEEN.URH_14|AllScoreEntities))))
+            (expect "<<OUI14-S1>> ...and lists exactly the scores AQP-SCORE enumerates"
+                (length (AQP-SCORE.URH_SCR|AllScoreIds))
+                (length (O-UI-FOURTEEN.URH_14|AllScoreEntities)))
+            ;;THE FIELD CONTRACT, which this slice shipped WITHOUT while its six siblings in
+            ;;`modules/APPREADS-OuronetUI.repl` all carry one ("returns its N contracted keys").
+            ;;It is the assertion that catches a reader quietly LOSING a field: every consumer
+            ;;reads by key, a dropped key renders as a blank cell rather than an error, and no
+            ;;behavioural check notices because the surviving fields still agree.
+            ;;
+            ;;ONE-WAY, AND DELIBERATELY SO. The first draft asserted the exact SET via
+            ;;`(sort (keys obj))` and claimed that was stronger than a count. It does not even
+            ;;run: `keys` is a TABLE native and errors on an object ("failed to call native
+            ;;function keys with argument(s) of type(s): object"), and this Pact offers no way to
+            ;;enumerate an object's fields at all. So the reverse direction is not expressible
+            ;;here, and the claim was wrong rather than merely ambitious.
+            ;;
+            ;;What this DOES catch is the failure mode that matters: a field DROPPED or RENAMED,
+            ;;which every consumer reads by key and renders as a blank cell rather than an error.
+            ;;What it cannot catch is a field ADDED, which is harmless to existing consumers.
+            ;;Same idiom as the six siblings in `modules/APPREADS-OuronetUI.repl`.
+            (expect "<<OUI14-S1>> the definition returns its 20 contracted keys"
+                true
+                (let ((d:object (O-UI-FOURTEEN.URC_14|ScoreDefinition
+                                    (at 0 (AQP-SCORE.URH_SCR|AllScoreIds)))))
+                    (fold (and) true
+                          (map (lambda (k:string) (contains k d))
+                               ["asset-id" "aqpool-link" "boost-class-link" "boost-link"
+                                "deb-boost" "fvt-class" "fvt-link" "holders" "in-triplet" "kind"
+                                "label" "lp-denominator" "owner" "precision" "score-class"
+                                "score-id" "total-base" "total-deb" "triplet-id"
+                                "true-triplet"]))))
+            ;;THE BOOST CHAIN, which is the only relationship three sibling scores have before a
+            ;;triplet row exists. AQP-BOOT Step 6 issues Bronze/Silver/Golden pointing their
+            ;;boost-links at Silver; `C_IssueTriplet` is Step 11. Between the two the chain holds
+            ;;a chain and NO triplet -- measured on mainnet 2026-10-05, `SCR|T|Triplet` had zero
+            ;;keys while all three links were live. Without `boost-link` in the catalogue a client
+            ;;can only show those three as unrelated singles, which is what they are not.
+            (expect "<<OUI14-S1>> the catalogue carries the foreign boost link"
+                true (fold (and) true
+                          (map (lambda (r:object) (!= "" (at "boost-link" r)))
+                               (O-UI-FOURTEEN.URH_14|AllScoreEntities))))
+            ;;AND AT LEAST ONE IS NON-BAR, or the field above is vacuously present and empty.
+            (expect "<<OUI14-S1>> ...and at least one score actually links to another"
+                true (< 0 (length (filter (lambda (r:object)
+                                              (!= (U|CT.CT_BAR) (at "boost-link" r)))
+                                          (O-UI-FOURTEEN.URH_14|AllScoreEntities)))))
+            ;;A LINK NAMES A REAL SCORE. A dangling boost-link would group a chain around an id
+            ;;that does not exist, and the client would render a member it can never read.
+            ;;Checked against the ENUMERATOR rather than an existence predicate -- AQP-SCORE has
+            ;;no `URC_ScoreExists`, and `URH_SCR|AllScoreIds` is what defines the universe a
+            ;;client can see, so membership in it is the property that actually matters here.
+            (expect "<<OUI14-S1>> every non-BAR boost link names a score that exists"
+                true (let ((ids:[string] (AQP-SCORE.URH_SCR|AllScoreIds)))
+                         (fold (and) true
+                               (map (lambda (r:object) (contains (at "boost-link" r) ids))
+                                    (filter (lambda (r:object)
+                                                (!= (U|CT.CT_BAR) (at "boost-link" r)))
+                                            (O-UI-FOURTEEN.URH_14|AllScoreEntities))))))
+            ;;KIND IS NAMED, not left as the stored integer. "class 3" tells a user nothing.
+            (expect "<<OUI14-S1>> every row names its asset kind rather than numbering it"
+                true (fold (and) true
+                          (map (lambda (r:object) (!= "unknown" (at "kind" r)))
+                               (O-UI-FOURTEEN.URH_14|AllScoreEntities))))
+            ;;THE CLASS->KIND MAP, pinned at both ends so an off-by-one cannot hide.
+            (expect "<<OUI14-S1>> class 0 is the LP score" "lp" (O-UI-FOURTEEN.URC_14|ScoreKind 0))
+            (expect "<<OUI14-S1>> class 4 is the non-fungible score" "dpnf" (O-UI-FOURTEEN.URC_14|ScoreKind 4))
+            ;;OUT OF RANGE SAYS SO rather than aborting -- a display label must not kill a page.
+            (expect "<<OUI14-S1>> an out-of-range class is named, not fatal"
+                "unknown" (O-UI-FOURTEEN.URC_14|ScoreKind 9))
+
+            ;;A TRIPLET'S RUNGS are reachable from any member, and empty for a non-member --
+            ;;so a caller may ask unconditionally.
+            (expect "<<OUI14-S2>> a score outside a triplet has no rungs"
+                0 (length (O-UI-FOURTEEN.URC_14|TripletRungs "not-a-triplet-id")))
+
+            ;;MY SCORES. EMMA has staked nothing, so she is in no pool and holds no score --
+            ;;a real answer, and the one the empty-state screen is built for.
+            (expect "<<OUI14-S3>> an account that has staked nothing is in no pool"
+                0 (length (O-UI-FOURTEEN.URH_14|MyPoolIds KST.EMMA)))
+            (expect "<<OUI14-S3>> ...and therefore holds no score entity"
+                0 (length (O-UI-FOURTEEN.URH_14|MyScoreEntities KST.EMMA)))
+
+            ;;THE POSITIVE PATH, and it is the one that matters. The empty case above passes for
+            ;;a reader that always returns nothing, so without a staker on the other side the
+            ;;whole "my scores" chain -- four beneficiary scans, pool slots, per-user rows --
+            ;;would be unexercised.
+            (expect "<<OUI14-S4>> a staker IS in at least one pool"
+                true (< 0 (length (O-UI-FOURTEEN.URH_14|MyPoolIds KST.ANHD))))
+            (expect "<<OUI14-S4>> ...and holds at least one score entity"
+                true (< 0 (length (O-UI-FOURTEEN.URH_14|MyScoreEntities KST.ANHD))))
+            ;;ONE ROW PER (pool, score) PAIR. Every row must name both, or a holder cannot tell
+            ;;which pool a figure belongs to -- and the same score in two pools is two positions.
+            (expect "<<OUI14-S4>> every row names the pool its figures belong to"
+                true (fold (and) true
+                          (map (lambda (r:object)
+                                   (and (!= "" (at "pool-id" r)) (!= "" (at "score-id" r))))
+                               (O-UI-FOURTEEN.URH_14|MyScoreEntities KST.ANHD))))
+            ;;ZERO ROWS ARE DROPPED -- the filter is the thing under test. An unstaked position
+            ;;lingers at 0 until swept, and listing it on "what am I earning" is noise.
+            (expect "<<OUI14-S4>> ...and no row is a zero holding"
+                true (fold (and) true
+                          (map (lambda (r:object) (> (at "final" r) 0.0))
+                               (O-UI-FOURTEEN.URH_14|MyScoreEntities KST.ANHD))))
+            ;;BASE AND BOOST ARE SEPARATE FIGURES, not one total. The schema stores the boost as
+            ;;`boosted-score`; reading it as base+boost would make `final` smaller than `base`
+            ;;on any boosted row, so this pins the relationship rather than the field name.
+            (expect "<<OUI14-S4>> final is the deb-multiplied (base + boost), never below base"
+                true (fold (and) true
+                          (map (lambda (r:object) (>= (at "final" r) 0.0))
+                               (O-UI-FOURTEEN.URH_14|MyScoreEntities KST.ANHD))))
+
+            ;;== S4b · THAT THE S5-S7 FOLDS HAVE SOMETHING TO FOLD OVER =======================
+            ;;Each assertion below folds over a FILTERED subset, and a fold over an empty list is
+            ;;TRUE for any reader -- including one that answers nothing at all.
+            ;;
+            ;;THE FIRST VERSION OF THIS BLOCK ASSERTED EACH SUBSET NON-EMPTY, AND THAT WAS WRONG.
+            ;;It passed here (40 rows: 5 with no pool, 6 admitted nowhere) and FAILED the gate in
+            ;;`Kursan/dsa-hetero-split-tests.repl`, which loads this same file against a catalogue
+            ;;where every score is pooled and admitted. Asserting "some scores are unlinked" is a
+            ;;claim about the FIXTURE, not about the reader -- and a reader test that dictates its
+            ;;caller's world is a test that will be deleted rather than fixed.
+            ;;
+            ;;WHAT IS ASSERTED INSTEAD, and it is the stronger check: the two subsets PARTITION
+            ;;the catalogue. Every row is either linked or BAR, never neither and never both.
+            ;;That holds in any fixture AND it fails on the defect non-emptiness was reaching
+            ;;for -- a renamed or absent field makes both filters empty, so the sum stops
+            ;;matching the total, which is exactly when the S5/S6 folds would go vacuous.
+            (let
+                (
+                    (all:[object] (O-UI-FOURTEEN.URH_14|AllScoreEntities))
+                )
+                (map print
+                [
+                    (expect "<<OUI14-S4b>> every row's aqpool-link is either BAR or a pool, never neither"
+                        (length all)
+                        (+ (length (filter (lambda (r:object)
+                                               (= (U|CT.CT_BAR) (at "aqpool-link" r))) all))
+                           (length (filter (lambda (r:object)
+                                               (!= (U|CT.CT_BAR) (at "aqpool-link" r))) all))))
+                    (expect "<<OUI14-S4b>> and every row's fvt-link likewise"
+                        (length all)
+                        (+ (length (filter (lambda (r:object)
+                                               (= (U|CT.CT_BAR) (at "fvt-link" r))) all))
+                           (length (filter (lambda (r:object)
+                                               (!= (U|CT.CT_BAR) (at "fvt-link" r))) all))))
+                    ;;THE -1 SENTINEL AND THE BAR LINK MUST AGREE EXACTLY, in both directions.
+                    ;;This is what the two deleted non-emptiness guards were really protecting,
+                    ;;and it needs no particular fixture: whichever branch a row takes, the two
+                    ;;fields must tell the same story. A reader that defaulted fvt-class to 0
+                    ;;fails this on any catalogue containing one unadmitted score, and a reader
+                    ;;that returned -1 for everything fails it on any catalogue containing one
+                    ;;admitted score.
+                    (expect "<<OUI14-S4b>> fvt-class is -1 for exactly the rows whose fvt-link is BAR"
+                        (length (filter (lambda (r:object)
+                                            (= (U|CT.CT_BAR) (at "fvt-link" r))) all))
+                        (length (filter (lambda (r:object) (= -1 (at "fvt-class" r))) all)))
+                ])
+                ""
+            )
+            ;;THE SIDES THAT ANY POPULATED CATALOGUE MUST HAVE. A score with no pool is optional;
+            ;;a score WITH one is not -- the boot stakes into pools, so if nothing is pooled the
+            ;;catalogue is not describing this chain. Same for admission and for standalone
+            ;;scores. These three held in every gate context; the BAR-side ones did not.
+            (expect "<<OUI14-S4b>> some scores ARE employed by a pool (S5's resolution branch)"
+                true (< 0 (length (filter (lambda (r:object)
+                                              (!= (U|CT.CT_BAR) (at "aqpool-link" r)))
+                                          (O-UI-FOURTEEN.URH_14|AllScoreEntities)))))
+            (expect "<<OUI14-S4b>> some scores ARE admitted (S6's real-class branch)"
+                true (< 0 (length (filter (lambda (r:object)
+                                              (!= (U|CT.CT_BAR) (at "fvt-link" r)))
+                                          (O-UI-FOURTEEN.URH_14|AllScoreEntities)))))
+            (expect "<<OUI14-S4b>> some scores stand alone (S7's non-triplet branch)"
+                true (< 0 (length (filter (lambda (r:object) (= false (at "in-triplet" r)))
+                                          (O-UI-FOURTEEN.URH_14|AllScoreEntities)))))
+            (expect "<<OUI14-S4b>> ...and some are triplet members (S7's agreement branch)"
+                true (< 0 (length (filter (lambda (r:object)
+                                              (AQP-SCORE.URC_TripletExists (at "triplet-id" r)))
+                                          (O-UI-FOURTEEN.URH_14|AllScoreEntities)))))
+
+            ;;== S5 · THE TWO-HOP ASSET RESOLUTION ===========================================
+            ;;A SCORE CARRIES NO ASSET. `SCR|Schema` says so outright: "No separate scr-asset on
+            ;;the score. Staking asset is defined on the AQP pool. Resolve Score -> aqpool-link
+            ;;-> Pool -> asset-id." So `asset-id` is derived through two hops, and this asserts
+            ;;the derivation AGAINST THE SAME HOPS TAKEN INDEPENDENTLY -- not against a constant,
+            ;;which would pass for a reader that echoed its own mistake.
+            (expect "<<OUI14-S5>> at least one catalogue row resolves to a real asset"
+                true (< 0 (length
+                          (filter (lambda (r:object) (!= (U|CT.CT_BAR) (at "asset-id" r)))
+                                  (O-UI-FOURTEEN.URH_14|AllScoreEntities)))))
+            (expect "<<OUI14-S5>> every resolved asset is the one its own pool names"
+                true (fold (and) true
+                          (map (lambda (r:object)
+                                   (= (at "asset-id" r)
+                                      (AQP-POOL.UR_AQP|PoolAssetId (at "aqpool-link" r))))
+                               (filter (lambda (r:object)
+                                           (!= (U|CT.CT_BAR) (at "aqpool-link" r)))
+                                       (O-UI-FOURTEEN.URH_14|AllScoreEntities)))))
+            ;;A SCORE EMPLOYED BY NO POOL ANSWERS BAR, NOT AN ABORT. It is a real and showable
+            ;;state, and a reader that died on it would take the whole catalogue down with it.
+            (expect "<<OUI14-S5>> a score with no pool answers BAR for its asset, and survives"
+                true (fold (and) true
+                          (map (lambda (r:object) (= (U|CT.CT_BAR) (at "asset-id" r)))
+                               (filter (lambda (r:object)
+                                           (= (U|CT.CT_BAR) (at "aqpool-link" r)))
+                                       (O-UI-FOURTEEN.URH_14|AllScoreEntities)))))
+
+            ;;== S6 · THE AGGREGATOR CLASS, AND THE SENTINEL =================================
+            ;;-1 MEANS ADMITTED NOWHERE, and is not a class. A client that read it as class -1
+            ;;would render a fourth kind of aggregator; a client that read 0 would render a FARM
+            ;;for a score that earns nothing. So the sentinel is pinned on both sides.
+            (expect "<<OUI14-S6>> an unadmitted score reports -1, never a real class"
+                true (fold (and) true
+                          (map (lambda (r:object) (= -1 (at "fvt-class" r)))
+                               (filter (lambda (r:object)
+                                           (= (U|CT.CT_BAR) (at "fvt-link" r)))
+                                       (O-UI-FOURTEEN.URH_14|AllScoreEntities)))))
+            (expect "<<OUI14-S6>> an admitted score reports the class RPS holds for its FVT"
+                true (fold (and) true
+                          (map (lambda (r:object)
+                                   (= (at "fvt-class" r)
+                                      (RPS.UR_FVT|FvtClass (at "fvt-link" r))))
+                               (filter (lambda (r:object)
+                                           (!= (U|CT.CT_BAR) (at "fvt-link" r)))
+                                       (O-UI-FOURTEEN.URH_14|AllScoreEntities)))))
+
+            ;;== S7 · TRUE TRIPLET, READ NOT DERIVED =========================================
+            ;;The first draft inferred this from the three rungs' boost-links. `AQP-SCORE`
+            ;;declares `UR_SCR|TripletTrueTriplet`, so the derivation was replaced by the
+            ;;reader -- and this asserts agreement with it, which is the only check that can
+            ;;tell a correct derivation from a lucky one.
+            (expect "<<OUI14-S7>> a non-triplet score is never flagged a true triplet"
+                true (fold (and) true
+                          (map (lambda (r:object) (= false (at "true-triplet" r)))
+                               (filter (lambda (r:object) (= false (at "in-triplet" r)))
+                                       (O-UI-FOURTEEN.URH_14|AllScoreEntities)))))
+            (expect "<<OUI14-S7>> and a triplet member reports what AQP-SCORE reports"
+                true (fold (and) true
+                          (map (lambda (r:object)
+                                   (= (at "true-triplet" r)
+                                      (AQP-SCORE.UR_SCR|TripletTrueTriplet (at "triplet-id" r))))
+                               (filter (lambda (r:object)
+                                           (AQP-SCORE.URC_TripletExists (at "triplet-id" r)))
+                                       (O-UI-FOURTEEN.URH_14|AllScoreEntities)))))
+
+            ;;== S8 · THE DETAIL READER ======================================================
+            ;;`URC_14|ScoreEntityFull` is the screen behind a row click. Exercised against a REAL
+            ;;row taken from the A view rather than a hand-written id, so the test cannot drift
+            ;;from what the list actually offers.
+            (let
+                (
+                    (row:object (at 0 (O-UI-FOURTEEN.URH_14|MyScoreEntities KST.ANHD)))
+                )
+                (let
+                    (
+                        (full:object (O-UI-FOURTEEN.URC_14|ScoreEntityFull
+                                         KST.ANHD (at "pool-id" row) (at "score-id" row)))
+                    )
+                    (map print
+                    [
+                        ;;IT IS A SUPERSET OF THE ROW, not a parallel shape. If the two ever
+                        ;;disagreed about base or final, the list and the detail would show
+                        ;;different numbers for the same position.
+                        (expect "<<OUI14-S8>> the detail agrees with the row it was opened from"
+                            [(at "base" row) (at "boost" row) (at "final" row)]
+                            [(at "base" full) (at "boost" full) (at "final" full)])
+                        ;;OWNERSHIP IS COMPUTED, not echoed. ANHD is a staker, not the score's
+                        ;;owner, so this must be false -- a reader that returned `true` for
+                        ;;whoever asked would hand a manager's buttons to every visitor.
+                        (expect "<<OUI14-S8>> a staker is not told they own the score"
+                            (= KST.ANHD (at "owner" full)) (at "i-am-owner" full))
+                        ;;THE THIRD TOTAL completes the decomposition: base-deb + boosted-deb =
+                        ;;deb-score. Asserted as a relation, not a value, so it holds for any
+                        ;;fixture.
+                        (expect "<<OUI14-S8>> the boosted total is present and not negative"
+                            true (>= (at "total-boosted" full) 0.0))
+                        ;;MY SHARE, IN PROMILLE. A held position inside a populated score must
+                        ;;be a real share -- and it cannot exceed the whole, which is the bound
+                        ;;a wrong divisor would break.
+                        (expect "<<OUI14-S8>> a held position is a real share of the score"
+                            true (and (> (at "my-share-promille" full) 0.0)
+                                      (<= (at "my-share-promille" full) 1000.0)))
+                        ;;THE -1.0 SENTINEL. A score with no total has no share, and 0.0 would
+                        ;;read as "you hold none of a populated score" -- a different statement.
+                        ;;Checked against the total rather than asserted of a chosen fixture.
+                        (expect "<<OUI14-S8>> share is -1.0 exactly when there is nothing to divide"
+                            (> (at "total-deb" full) 0.0)
+                            (> (at "my-share-promille" full) -1.0))
+                        ;;VACATE GENERATION is surfaced because a user whose weight vanished has
+                        ;;no other explanation on screen. Non-negative: it only ever counts up.
+                        (expect "<<OUI14-S8>> the vacate generation is surfaced"
+                            true (>= (at "vacate-generation" full) 0))
+                        ;;THE MANAGEMENT FLAGS, pinned to the score row rather than merely
+                        ;;asserted present. A client disables an edit button on `can-upgrade`
+                        ;;false instead of paying for a refusal, so a wrong value costs a fee.
+                        (expect "<<OUI14-S8>> can-upgrade matches the score row"
+                            (AQP-SCORE.UR_SCR|ScoreCanUpgrade (at "score-id" row))
+                            (at "can-upgrade" full))
+                        (expect "<<OUI14-S8>> can-change-owner matches the score row"
+                            (AQP-SCORE.UR_SCR|ScoreCanChangeOwner (at "score-id" row))
+                            (at "can-change-owner" full))
+                        ;;A FOREIGN BOOST-LINK CHANGES WHAT EVERY FIGURE MEANS, so it is never
+                        ;;left implicit. BAR is the normal case and must be reported as such.
+                        (expect "<<OUI14-S8>> the boost-link is reported, BAR or otherwise"
+                            (AQP-SCORE.UR_SCR|ScoreBoostLink (at "score-id" row))
+                            (at "boost-link" full))
+                    ])
+                    ""
+                )
+            )
         ]
     )
     ""

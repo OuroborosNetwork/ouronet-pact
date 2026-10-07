@@ -85,12 +85,12 @@ code this documents is the code that is running.
 |---|---|
 | `.pact` source files | 105 |
 | modules / interfaces declared | 99 forms (98 names) / 98 |
-| lines | 123,572 |
-| `defun` forms | 8,872 |
+| lines | 124,750 |
+| `defun` forms | 8,918 |
 | capabilities | 988 `defcap` |
 | schemas / tables | 206 / 231 |
 | the deploy round | 80 modules + 85 interfaces, 24 transactions |
-| client entrypoints | 423, catalogued machine-readably |
+| client entrypoints | 427, catalogued machine-readably |
 
 Measured 2026-09-27, scoped to `1_SOVEREIGN/` + `2_CITIZEN/`. **Re-measure rather than trusting
 this table** — the commands are in `90-reference/03-how-these-figures-were-obtained.md`, which

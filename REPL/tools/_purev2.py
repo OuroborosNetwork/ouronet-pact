@@ -25,6 +25,17 @@ import sys, os, re, difflib
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 DEPLOY = os.path.join(ROOT, "Deploy", "PureV2")
 SRC = os.path.join(ROOT, "2_CITIZEN", "Stage_Z")   # manifest paths hang off here
+# A `create-table` form INCLUDING a trailing ;; comment.
+#
+# CORRECTED 2026-10-06. This was `^\(create-table [^)]+\)\s*$`, which misses any form carrying a
+# trailing comment -- `(create-table FVT|T)   ;; Key = <FVT-ID>`. No PureV2 file happens to contain
+# one, so it never bit here; the identical pattern in the V3 round left THREE create-table forms in
+# an upgrade transaction, and a surviving create-table ABORTS the whole transaction on a table that
+# already exists. The cost of the miss is the owner's gas, at signing time, with nothing before it
+# to object. (`_deploybundle.py` is unaffected: its TABLE_RE has no `$` anchor and re-emits table
+# names canonically rather than deleting lines.)
+CT_RE = r'^\(create-table [^)]*\)[ \t]*(;;.*)?$'
+
 MARK = ";;@GENERATED-BODY-BELOW -- do not edit past this line; see REPL/tools/_purev2.py"
 
 # deploy file -> list of sources in deploy order.  A source is "path" for the whole file, or
@@ -36,46 +47,68 @@ MARK = ";;@GENERATED-BODY-BELOW -- do not edit past this line; see REPL/tools/_p
 # ("Interface cannot be upgraded"), which is how deploy round V1 lost tx 11 and tx 21.  Modules
 # upgrade freely; interfaces never do.
 MANIFEST = {
-    "13_deploy.pact": [("AppReads/OuronetUI/01_O-UI-ONE.pact", "module-only"),
-                       ("AppReads/OuronetUI/02_O-UI-TWO.pact", "module-only"),
-                       ("AppReads/OuronetUI/03_O-UI-THREE.pact", "module-only"),
-                       ("AppReads/OuronetUI/12_O-UI-TWELVE.pact", "module-only")],
-    "14_deploy.pact": [("01_DPL-UR.pact", "module-only")],
-    "16_deploy.pact": [("../../1_SOVEREIGN/STAGE_01/2_Core/01_DALOS.pact",
-                        "module-only")],
-    "17_deploy.pact": ["AppReads/OuronetUI/08_O-UI-EIGHT.pact",
-                       "AppReads/OuronetUI/09_O-UI-NINE.pact"],
-    "18_deploy.pact": [("AppReads/OuronetUI/02_O-UI-TWO.pact", "module-only")],
-    "19_deploy.pact": ["AppReads/Pythia/01_P-UI-ONE.pact"],
-    "20_deploy.pact": [("../../1_SOVEREIGN/STAGE_01/Z_Reads/02_INFO-ONE+.pact",
-                        "module-only")],
-    "22_deploy.pact": [("../../1_SOVEREIGN/STAGE_01/2_Core/08_ATS.pact",
-                        "module-only")],
-    "23_deploy.pact": [("../4_BunniesMinter/02_KBunnies.pact", "module-only")],
-    # ONE FILE, TWO MODULES, IN DEPLOY ORDER. IGNIS is sovereign core and AQP-BOOT is a citizen
-    # module that reaches it through Talos, so IGNIS must load first. Both module-only: their
-    # interfaces (IgnisCollectorV3, AcquisitionPoolBootV1) are already live and a deployed
-    # interface cannot be re-sent.
-    "24_deploy.pact": [("../../1_SOVEREIGN/STAGE_01/2_Core/02_IGNIS.pact", "module-only"),
-                       ("../5_VaultsMinter/04_AQP-BOOT.pact", "module-only")],
-    # FIRST DEPLOY, so the whole file -- interface AND module. Every other entry in this round
-    # is "module-only" because its interface is already live; OUiThirteenV1 is not, and a module
-    # cannot implement an interface that has never been deployed.
-    # 26 is the SAME module again, module-only this time: 25 shipped OUiThirteenV1 and a
-    # deployed interface cannot be re-sent. A read module owns no tables, so a later slice is
-    # a plain redeploy -- which is the property that makes iterating on it cheap.
-    "26_deploy.pact": [("AppReads/OuronetUI/13_O-UI-THIRTEEN.pact", "module-only")],
+    # EMPTY, AND THAT IS THE POINT: ROUND V2 IS COMPLETE.
+    #
+    # The owner deployed through 34 on 2026-10-06 ("I have deployed up to deploy 34"), and 35 is
+    # superseded by round V3. A deploy file that has been SENT is a record of what was sent, so it
+    # must never be regenerated when its source later moves -- that is what FROZEN is for, and
+    # four separate notes below record the round leaving a landed file in MANIFEST and having its
+    # body silently rewritten by the next source change.
+    #
+    # New work goes to `Deploy/PureV3/` and `REPL/tools/_purev3.py`. This tool stays live because
+    # it still answers two questions: that no frozen body was touched, and that no file appeared
+    # in the directory without an entry -- the ORPHAN check, which is the only reason the loss of
+    # this tool's uncommitted state on 2026-10-06 was noticeable at all.
 }
 
-# Hand-written files with no module source: init transactions, table repairs. They are not
-# generated, so there is nothing to diff -- but they are listed so the orphan sweep does not
-# report them, and so "not generated" is a recorded decision rather than an omission.
 HANDWRITTEN = {
+    # NOT GENERATED: it has no module body at all. It is a table-repair transaction -- the seven
+    # `(create-table ouronet-ns.X.Y)` forms round V1 shipped commented out -- plus
+    # SWPI::A_RebuildGraph to backfill the swap graph. Its create-tables are its PURPOSE, which is
+    # why the `check_shape`-style create-table alarm added to the V3 tool would be wrong here.
     "15_deploy.pact": "create-table repair for the eight tables round V1 shipped commented out, "
                       "plus SWPI::A_RebuildGraph to backfill the swap graph. No module body.",
 }
 
 FROZEN = {
+    # ── 13-35, FROZEN 2026-10-06 ──────────────────────────────────────────────────────────────
+    # Basis: the owner's statement that mainnet carries through 34, plus 35 superseded by V3.
+    # RECONSTRUCTED after a `git checkout` of this tool discarded the prior session's uncommitted
+    # entries; the files were on disk and surfaced as ORPHANs, which is how the loss was seen.
+    "13_deploy.pact": "AppReads O-UI-ONE/TWO/THREE/TWELVE. Deployed.",
+    "14_deploy.pact": "DPL-UR. Deployed.",
+    "16_deploy.pact": "DALOS. Deployed.",
+    "17_deploy.pact": "O-UI-EIGHT + O-UI-NINE. Deployed.",
+    "18_deploy.pact": "O-UI-TWO. Deployed.",
+    "19_deploy.pact": "P-UI-ONE. Deployed.",
+    "20_deploy.pact": "INFO-ONE+. Deployed.",
+    "22_deploy.pact": "ATS. Deployed.",
+    "23_deploy.pact": "KBunnies. Deployed.",
+    "24_deploy.pact": "IGNIS + AQP-BOOT. Deployed -- its body predates the TS02-C3 V2 cascade, "
+                      "which is why it no longer matches today's source. That is a record, not drift.",
+    "26_deploy.pact": "O-UI-THIRTEEN. Deployed -- body predates later O-UI-THIRTEEN work.",
+    "27_deploy.pact": "AQP-ANK LP anchors. Deployed. Module re-ships in Deploy/PureV3/01.",
+    "28_deploy.pact": "Talos vacate rename + interface cascade. Deployed.",
+    "29_deploy.pact": "Deployed.",
+    "30_deploy.pact": "Deployed.",
+    "31_deploy.pact": "Deployed (owner-confirmed).",
+    "32_deploy.pact": "Deployed.",
+    "33_deploy.pact": "Deployed.",
+    "34_deploy.pact": "O-UI-FOURTEEN boost-link + lp-denominator. Deployed (owner-confirmed).",
+    # ── 35: DEPLOYED, AND SUPERSEDED. Owner-confirmed 2026-10-06. ─────────────────────────────
+    # The AQP-BOOT Step 7 fix (the eager `let` that read seven pools before creating them). It IS
+    # on mainnet; `URH_AQP|AllPoolIds` reads 0 only because Step 7 has not been RE-RUN since.
+    #
+    # Harmless where it sits, because it landed BEFORE round V3. The hazard was only ever the
+    # other order: re-sending it AFTER V3/03 would put back an AQP-BOOT naming
+    # `module{AcquisitionScoresV1}`, which stops resolving once AQP-SCORE implements only V2 --
+    # and because AQP-BOOT DOT-CALLS AQP-POOL, that copy would ABORT with "hash not blessed"
+    # rather than going quietly stale. V3/08 re-ships the identical Step 7 fix with the bump.
+    #
+    # ONE OPERATIONAL CONSEQUENCE: do not run Step 7 BETWEEN V3/04 and V3/08. V3/04 upgrades
+    # AQP-POOL, which this AQP-BOOT dot-calls, so the boot is pinned-and-broken until V3/08
+    # redeploys it. Run Step 7 before the round starts, or after it finishes.
+    "35_deploy.pact": "AQP-BOOT Step 7 fix -- DEPLOYED, superseded by Deploy/PureV3/08.",
     # EXECUTED ON MAINNET 2026-10-03 -- module hash czxa3OAGASamWMsViJlVsX7SvuA1odY6L5-cKL7gsKw.
     # It was in MANIFEST until the moment it landed, and the very next `--write` regenerated its
     # body from a source that had since gained URC_13|AnchorFull -- rewriting the record of what
@@ -132,7 +165,7 @@ def body_for(sources):
             # exists". The AppReads upgrades have no tables, so this went unnoticed until
             # 16_deploy carried DALOS, whose source ends in seven of them. Caught by loading the
             # emitted file in the REPL, which is the only reason it did not reach a signer.
-            text = re.sub(r'^\(create-table [^)]+\)\s*$', '', text[i:], flags=re.M)
+            text = re.sub(CT_RE, '', text[i:], flags=re.M)
             i = 0
         else:
             # drop the file's own ;;-comment banner; the deploy file has its own header

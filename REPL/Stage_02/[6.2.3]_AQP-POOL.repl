@@ -32,9 +32,9 @@
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (score-b:string (ref-U|DALOS::UDC_Makeid probe-b-name))
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
         (split-stoa:[decimal]
             (ref-DALOS::URC_SplitSTOAPrices patron (* 3.0 (ref-DALOS::UR_UsagePrice "smart")))
@@ -107,6 +107,37 @@
             ]
         )
     )
+    ;;==== TX-POOL-01 · 03b · dead-definition guard (StoicSyntax 2.16) — REPL =========
+    (print "--- [TX-POOL-01 · 03b · dead-definition guard] ---")
+    ;;WHAT THIS PROTECTS. A score carries no asset-id; it carries weight DEFINITIONS keyed to an
+    ;;asset. Define weights against a collection the employing pool does not stake and the rows
+    ;;save cleanly, validate cleanly, and are NEVER read -- the stake path scores an undefined
+    ;;nonce as 0 rather than failing. Green transaction, dead weights, no signal anywhere.
+    ;;`UEV_ScoreDefinitionTargetMatchesPool` is the only thing that says so.
+    ;;
+    ;;score-a is employed by pool-id (asserted two blocks above), and pool-id stakes DHCD. So a
+    ;;definition naming DHWC must be refused.
+    ;;
+    ;;ASSERTED ON THE MESSAGE, NOT MERELY ON FAILURE, and that is load-bearing here: score-a was
+    ;;issued with sft-equality TRUE, so a definition on it is illegal for a SECOND, unrelated
+    ;;reason. A bare expect-failure would pass whether the guard existed or not. The guard runs
+    ;;in the Talos wrapper BEFORE delegating to AQP-SCORE, so its message is what comes back --
+    ;;and matching it is the only way this test can tell the two refusals apart.
+    (map print
+        [
+            (expect-failure "<<TX-POOL-01 GUARD>> a definition for a collection the pool does not stake is refused, and says so"
+                "would score nothing"
+                (ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScoreDefinition
+                    patron owner-konto score-a "DHWC-98c486052a51" [1] [1.0]))
+            ;;NON-VACUITY: the guard must be a no-op when no pool employs the score, which is the
+            ;;normal state at definition time (scores are issued before pools). TheCodingDivision
+            ;;has definitions written in [6.2.2] and an unset aqpool-link -- if the guard refused
+            ;;that case too, every definition in the suite would already have failed.
+            (expect "<<TX-POOL-01 GUARD>> ...and an unemployed score has nothing to compare against"
+                (ref-SCR::CT_Bar)
+                (ref-SCR::UR_SCR|ScoreAqpoolLink "TheCodingDivision-98c486052a51"))
+        ]
+    )
     ;;==== TX-POOL-01 · 04 · C_RevokeScore score-a (compact) — REPL ====================
     (print "--- [TX-POOL-01 · 04 · C_RevokeScore score-a] ---")
     (print (format "<(TS02-C3.AQP-POOL|C_RevokeScore score-a)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|C_RevokeScore patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id score-a)]))
@@ -168,9 +199,9 @@
         (sat-b-name:string "TripletSatB")
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
         (hub-id:string (ref-U|DALOS::UDC_Makeid hub-name))
         (sat-a-id:string (ref-U|DALOS::UDC_Makeid sat-a-name))
         (sat-b-id:string (ref-U|DALOS::UDC_Makeid sat-b-name))

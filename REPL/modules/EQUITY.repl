@@ -34,7 +34,7 @@
 (print "--- [EQUITY-G1 — the share-tier guard family · 02 · let / invocation] ---")
 (let
     (
-        (ref-EQ:module{EquityV2} EQUITY)
+        (ref-EQ:module{EquityV3} EQUITY)
         (eq:string "E|TSEQ-98c486052a51")
     )
     (map print
@@ -78,7 +78,7 @@
 ;;delegated guard and prove nothing about these functions at all.
 (let
     (
-        (ref-EQ:module{EquityV2} EQUITY)
+        (ref-EQ:module{EquityV3} EQUITY)
         (eq:string "E|TSEQ-98c486052a51")
     )
     (let
@@ -295,7 +295,7 @@
         (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
         (ref-DPDC:module{DpdcV2} DPDC)
         (ref-DPDC-I:module{DpdcIssueV2} DPDC-I)
-        (ref-EQUITY:module{EquityV2} EQUITY)
+        (ref-EQUITY:module{EquityV3} EQUITY)
         (ref-U|VST:module{UtilityVstV2} U|VST)
     )
     (let

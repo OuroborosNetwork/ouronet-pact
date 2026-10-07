@@ -1,7 +1,7 @@
 # What the complexity buys
 
 The previous two chapters compare Ouronet to specific alternatives. This one answers the question
-underneath them: **123,572 lines is a lot. What is it for?**
+underneath them: **124,750 lines is a lot. What is it for?**
 
 The answer is a ledger, not an argument. Each row is a cost this documentation has already
 established, paired with what it purchases.
@@ -26,7 +26,7 @@ That last row is the load-bearing one, and everything above it is partly in serv
 
 ## 2. The one that justifies the rest
 
-**405 of 423 client operations are gas-sponsored.** A user with an empty native balance can hold
+**409 of 427 client operations are gas-sponsored.** A user with an empty native balance can hold
 tokens, stake, swap, and claim.
 
 That is not a convenience feature. It is the difference between a system a newcomer can use and one

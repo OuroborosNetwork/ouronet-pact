@@ -35,7 +35,7 @@ you get a plausible wrong answer rather than an error.
 
 ### Previews do not share the shape of what they preview
 
-**410 of 423 entrypoints have a preview whose parameter list differs from their own** — different
+**414 of 427 entrypoints have a preview whose parameter list differs from their own** — different
 names, different order, different arity. Only 13 match.
 
 **Bind by name, never by position.** Positional binding does not fail. The values are mostly
@@ -72,7 +72,7 @@ emptiness gets the wrong answer, and code passing it onward uses it as a key.
 
 ### Not everything is sponsored
 
-**405 of 423** operations are gas-sponsored. Ten are multi-step, and their continuations carry no
+**409 of 427** operations are gas-sponsored. Ten are multi-step, and their continuations carry no
 code for the gas station to inspect — **the user pays for those**. Eight more are not sponsored at
 all.
 

@@ -272,6 +272,99 @@ are applied.
 
 ---
 
+## 2.16 EVENTS AND OUTPUT STRINGS (owner rulings, 2026-10-06)
+
+Two rulings from the same observation: the owner issued a score, opened the transaction in the
+block explorer, and could not tell from it either **what had happened** or **what had been
+created**. Both were conventions the tree mostly followed and nothing enforced — which is the
+condition under which a convention silently stops being true.
+
+### 2.16.1 ONE USER FUNCTION, ONE EVENTED CAPABILITY
+
+> *"Only the main capability of a given User function (either `C_` or `A_`) must be evented, not
+> its internal capability. If more evented capabilities appear on explorer, it poisons the well."*
+
+**`@event` belongs on the MAIN capability of a `C_` / `A_` entrypoint, and nowhere else.** An
+`XI_` / `XE_` / `XB_` capability — one composed into that main capability, or entered by a forward
+module — **must not** carry `@event`.
+
+The reason is that a transaction's event list is the only machine-readable account of what it did.
+One operation that emits two events is indistinguishable, to anything reading the chain, from two
+operations. Indexers double-count, explorers show a user an action they did not take, and a
+downstream consumer that filters on the inner event sees a subset of reality that happens to look
+complete. The inner capability has no independent existence — it cannot be acquired except through
+the outer one — so its event carries no information the outer event does not already carry.
+
+**Measured at the ruling, 2026-10-06: 376 evented capabilities in `1_SOVEREIGN`, 8 violations
+across 4 modules** — `02_SCORE` ×4 (`SCR|XI>ISSUE-SCORE`, `SCR|XE>CREATE-AQPOOL-LINK`,
+`SCR|XE>REVOKE-AQPOOL-LINK`, `SCR|XE>CREATE-FVT-LINK`), plus `ANK|XE>SWEEP-REVOKE`,
+`FVT|XE>DISPOSE-ROYALTY`, `SWPI|XE>ISSUE-WRITE`, `IGNIS|XB>COMPRESS`. So 368 were already right;
+this codifies what the tree overwhelmingly did.
+
+`IGNIS|XB>COMPRESS` is the clearest illustration of the harm: it is the internal twin of
+`IGNIS|C>COMPRESS`, which is correctly evented as a `C_Compress` main cap. With both evented, an
+indexer counting compressions **double-counts every one a module performs internally**.
+
+**Three things that look like violations and are not.**
+
+**A `@doc` that mentions `@event` is not an `@event`.** The first scan for this ruling reported 10
+violations; two were `AQP|XE>TRUE-FUNGIBLE-POOL-CUSTODY` and `AQP|XE>SET-BENEFICIARY-DPTF-ANK-SYNC`,
+whose `@doc` ends *"Not @event — P|UEV_IMC on XE entry."* A substring search matched the prose that
+documents compliance and reported it as the breach. **Match a standalone `@event` metadata line**
+(`^\s*@event\s*$`), never the bare token.
+
+The **`|S>` band** (`DPTF|S>CONTROL`, `ATS|S>SYPHON`, `SWP|S>WEIGHTS`, …) is an older spelling of
+`|C>` — these ARE main capabilities, entered directly by their `C_`. A scan keyed on `|C>` alone
+reports roughly forty false positives. Classify by **what enters the capability**, not by its name.
+
+**Citizen modules are out of scope**, per the 2026-09-26 ruling that citizen modules may construct
+functions as they please. `DSP|*`, `STOAICO|*`, `CUSTODIANS|ACQUIRE`, `SNAKES|ACQUIRE` are not
+violations.
+
+**Corollary — raw `enforce` in a capability.** The same inspection found
+`SCR|C>ISSUE-SF-SCORE-DEFINITION` carrying an inline `(enforce (fold (and) true [...]) "...")`.
+The §1 combining rule says *how* to write a multi-condition enforce; it does not say a capability
+is where one belongs. **A multi-condition validation gets its own `UEV_*`** — the capability calls
+it by name. The tree already does this on the NF side (`UEV_NonFungibleScoreDefinition`) while the
+SF side left it inline, so the SF path was the deviation, not the NF one.
+
+### 2.16.2 AN ISSUANCE MUST RETURN THE ID IT CREATED
+
+> *"ALWAYS when issuing an entity that has an ID, that id must be properly shown in the output
+> string, so that I know what the hell I emitted."*
+
+**When a user-facing function creates an entity that receives a GENERATED id, the returned string
+must contain that id.** Reporting the human name the caller typed does not satisfy this: the name
+is an *input*, already known to whoever sent the transaction, and the id is the only thing the
+transaction actually produced.
+
+```pact
+;; WRONG -- reports the stem the caller typed; the real id was WonderCoach-nK4O_C00so9w
+(format "Successfully issued SemiFungible Score {} for owner {}." [score-name executor])
+
+;; RIGHT -- the pattern the pool/anchor/triplet/FVT wrappers already use
+(format "Successfully issued Acquisition Pool {} (class {} for asset {})." [pool-id aqp-class asset-id])
+```
+
+The test is **not** "is a name present" but **"can the caller address the thing afterwards?"**
+Every subsequent operation on a score takes `score-id`; if the issuing transaction never printed
+it, the only way to recover it is to scan the chain for what you just made.
+
+**This binds the CORE as much as the Talos wrapper.** A wrapper can only report an id the core
+hands back. Measured 2026-10-06: the score path already threaded it
+(`URCi_IssueScore executor [score-id]`), so that fix was presentational; the DPSF/DPNF set path
+computed `set-class`, used it, and discarded it into an empty cumulator output — so **surfacing
+the id was a core change**. When adding an issuance, put the id in the `OutputCumulator`'s
+`output` list at the point of creation, whether or not today's caller formats it.
+
+**Measured at the ruling: 11 violations across 291 Talos wrappers that return a format string**
+(5 score issuers in `04_TS02-C3`, 6 set definers in `01_TS02-C1` / `02_TS02-C2`). All in Stage 2;
+Stage 1 Talos was clean.
+
+**A deterministic id is not a generated one.** `C_MakeFragments` reports `nonce` while the fragment
+is `-nonce` — mechanically derivable, so not a violation. Judge by whether the caller can compute
+the id from what was printed.
+
 ## 2.15 WHAT "PROTECTED" MEANS (owner ruling, 2026-09-20)
 
 **Protection means LOCKING OUT.** A function is protected when something must have been *granted

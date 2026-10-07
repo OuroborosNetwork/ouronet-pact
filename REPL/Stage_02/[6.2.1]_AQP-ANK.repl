@@ -57,7 +57,7 @@
         (ouro-id:string "OURO-98c486052a51")
         (ouro-owner:string (AQP-ANK.URC_AnchorableAssetOwner ouro-id [true true]))
         (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
         (core-class-name:string "CoreBoostTFa")
         (core-class-id:string "CoreBoostTFa-98c486052a51")
@@ -202,7 +202,7 @@
         (ouro-id:string "OURO-98c486052a51")
         (ouro-owner:string (AQP-ANK.URC_AnchorableAssetOwner ouro-id [true true]))
         (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
         (temp-class-name:string "TempClassTF")
         (temp-class-id:string "TempClassTF-98c486052a51")
@@ -403,7 +403,7 @@
         (ouro-owner:string (AQP-ANK.URC_AnchorableAssetOwner ouro-id [true true]))
         (dhcd-id:string "DHCD-98c486052a51")
         (kbn-id:string "KBN-98c486052a51")
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
         (tf-ids:[string] (ref-ANK::UR_ANK|AnchorsForAsset ouro-id))
         (sf-ids:[string] (ref-ANK::UR_ANK|AnchorsForAsset dhcd-id))
@@ -679,7 +679,7 @@
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
     )
     (let
         (
@@ -757,7 +757,7 @@
         (class-name:string "RtAnkOwnerClass")
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         ;;acnoi=true costs 2x the anchor STOA deterrence; "standard" is the same 50 STOA figure.
         (split-stoa:[decimal]
             (ref-DALOS::URC_SplitSTOAPrices KST.ANHD (* (ref-DALOS::UR_UsagePrice "standard") 2.0))
@@ -796,6 +796,228 @@
 (rollback-tx)
 (print "")
 (print "=== END TX008b =========================================================")
+(print "")
+(print "")
+(begin-tx "TX009 - WHICH DPTF VARIANTS CAN BE ANCHORED: specials YES, LP NO")
+(print "")
+(print "=== TX009 - CAP_TF|Owner's three-variant rule, verified =================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;
+;;WHY THIS BLOCK EXISTS.
+;;
+;;`01_ANK.pact` CAP_TF|Owner's @doc states the rule as five numbered lines:
+;;
+;;    1] Pure DPTF      = Its Owner
+;;    2] Frozen DPTF    = DPTF Parent Ownership
+;;    3] Reserved DPTF  = DPTF Parent Ownership
+;;    4] LP DPTF        = Cannot exist as underlaying DPTF-Based Anchor
+;;    5] Frozen LP DPTF = Cannot exist as underlaying DPTF-Based Anchor
+;;
+;;and NOTHING IN THE TREE PROVED ANY OF IT. Lines 2-4 are the whole answer to "can I anchor a
+;;special token / an LP token", a question that reached the UI as a display gap, and the answer
+;;was resting on a comment. Note that 4] and 5] are not an `enforce` anywhere -- they are a
+;;CONSEQUENCE of `XE_IssueLP` issuing to `SWP|SC_NAME` with can-change-owner=false, so
+;;`URCv_CoreDptf` returns the LP id unchanged and `CAP_EnforceAccountOwnership` is handed a
+;;smart-contract account no user can sign for. An emergent guarantee is exactly the kind that
+;;breaks silently, which is why it is pinned here rather than trusted.
+;;
+;;==== TX009 · 01 · the resolver, on a pure DPTF and on an LP ======================
+(print "--- [TX009 · 01 · URCv_CoreDptf on a pure DPTF and on an LP] ---")
+(let
+    (
+        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-SWP:module{SwapperV4} SWP)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ouro-id:string "OURO-98c486052a51")
+        (ouro-owner:string (AQP-ANK.URC_AnchorableAssetOwner "OURO-98c486052a51" [true true]))
+        (swpair:string "W|OURO-98c486052a51|TSTY-98c486052a51")
+    )
+    (let
+        (
+            ;;THE LP LEG IS CONDITIONAL, AND THIS IS WHY.
+            ;;
+            ;;This suite is loaded by SIXTEEN gate entrypoints, and most of them never run
+            ;;`Stage_01/[6.3]_SWP.repl`, so `SWP|Pairs` has no row for this swpair and a bare
+            ;;`UR_TokenLP` ABORTS the whole file. Measured the hard way: the first version of
+            ;;this block broke all sixteen while ZALL itself stayed green, because ZALL is the
+            ;;one runner that does load [6.3].
+            ;;
+            ;;So the lookup is defaulted and the leg SKIPS LOUDLY when the fixture is absent. A
+            ;;skip that prints is honest; a cross-suite state dependency that breaks fifteen
+            ;;unrelated files is not. The assertions still execute under ZALL, which is the
+            ;;exhaustive runner and the one the gate counts.
+            (lp-id:string (try "NO-SWP-FIXTURE" (ref-SWP::UR_TokenLP swpair)))
+            (swp-sc:string (ref-DALOS::GOV|SWP|SC_NAME))
+        )
+        (print (format "<(SWP|UR_TokenLP)> => \"{}\"" [lp-id]))
+        ;;1] PURE DPTF — passthrough. OURO exists wherever AQP does, so this is unconditional.
+        (print
+            (expect (format "<<TX-ANK-VAR1>> a pure DPTF resolves to itself got={}" [(ref-ANK::URCv_CoreDptf ouro-id)])
+                ouro-id (ref-ANK::URCv_CoreDptf ouro-id)))
+        (if (= lp-id "NO-SWP-FIXTURE")
+            (print "<<TX-ANK-VAR4>> SKIPPED — no Stage-1 SWP fixture in this entrypoint (ZALL asserts it)")
+            (map print
+                [
+                    ;;4] LP DPTF — the TOKEN still resolves to itself and is still owned by a
+                    ;;   smart account. Both facts are unchanged by the 2026-10-03 fix and both
+                    ;;   are asserted, because they are WHY the naive rule failed.
+                    (expect (format "<<TX-ANK-VAR4>> an LP DPTF resolves to ITSELF, not to a parent got={}" [(ref-ANK::URCv_CoreDptf lp-id)])
+                        lp-id (ref-ANK::URCv_CoreDptf lp-id))
+                    (expect (format "<<TX-ANK-VAR4>> ...and that id's token-owner IS the SWP smart contract got={}" [(ref-DPTF::UR_Konto lp-id)])
+                        swp-sc (ref-DPTF::UR_Konto lp-id))
+                    (expect "<<TX-ANK-VAR4>> ...and the LP token's owner can NEVER be changed"
+                        false (ref-DPTF::UR_CanChangeOwner lp-id))
+
+                    ;;THE FIX. `URCv_AnchorableDptfAuthority` does NOT stop at the token owner:
+                    ;;it recognises the LP prefix and resolves to the swpair's POOL OWNER, which
+                    ;;is a real signable account. This is the assertion that separates the two
+                    ;;behaviours -- before the fix it would have answered the smart account.
+                    (expect (format "<<TX-ANK-VAR4c>> the ANCHOR AUTHORITY of an LP is the POOL owner, not the token owner got={}" [(ref-ANK::URCv_AnchorableDptfAuthority lp-id)])
+                        (ref-SWP::UR_OwnerKonto swpair) (ref-ANK::URCv_AnchorableDptfAuthority lp-id))
+                    (expect "<<TX-ANK-VAR4c>> ...which is NOT the SWP smart contract"
+                        false (= swp-sc (ref-ANK::URCv_AnchorableDptfAuthority lp-id)))
+                    ;;And the reader the UI calls must agree with the gate -- three call sites,
+                    ;;one rule, which is the whole reason the resolver was extracted.
+                    (expect "<<TX-ANK-VAR4c>> ...and URC_AnchorableAssetOwner agrees with it"
+                        (ref-ANK::URCv_AnchorableDptfAuthority lp-id)
+                        (ref-ANK::URC_AnchorableAssetOwner lp-id [true true]))
+                    ;;A PURE token is unaffected: its authority is still its own owner.
+                    (expect "<<TX-ANK-VAR4c>> ...while a pure DPTF's authority is unchanged"
+                        (ref-DPTF::UR_Konto ouro-id) (ref-ANK::URCv_AnchorableDptfAuthority ouro-id))
+
+                    ;;CUSTODY IS NOT MANAGEMENT. The three smart accounts that hold tokens as a
+                    ;;protocol function are refused as executors outright, and the refusal NAMES
+                    ;;custody rather than leaving the caller to infer it from an ownership error.
+                    ;;
+                    ;;This is defence in depth: the authority resolution already keeps them out
+                    ;;(an LP resolves to the POOL owner, so SWP is not the authority for its own
+                    ;;LP token). Asserting it separately is what stops the guard being deleted as
+                    ;;unreachable -- and what would catch the resolution being loosened.
+                    (expect-failure "<<TX-ANK-VAR5>> the SWP contract may not act as an anchor executor"
+                        "CUSTODY only"
+                        (AQP-ANK.UEV_ExecutorNotCustodial (ref-DALOS::GOV|SWP|SC_NAME)))
+                    (expect-failure "<<TX-ANK-VAR5>> nor the VST contract"
+                        "CUSTODY only"
+                        (AQP-ANK.UEV_ExecutorNotCustodial (ref-DALOS::GOV|VST|SC_NAME)))
+                    (expect-failure "<<TX-ANK-VAR5>> nor the ATS contract"
+                        "CUSTODY only"
+                        (AQP-ANK.UEV_ExecutorNotCustodial (ref-DALOS::GOV|ATS|SC_NAME)))
+                    ;;AND AN ORDINARY ACCOUNT IS NOT REFUSED -- without this the three above
+                    ;;would pass just as well against an enforce that refused everybody.
+                    (expect "<<TX-ANK-VAR5>> ...but an ordinary account passes"
+                        true (AQP-ANK.UEV_ExecutorNotCustodial ouro-owner))
+                ]
+            )
+        )
+    )
+    ""
+)
+(commit-tx)
+(print "")
+(print "=== END TX009 ==========================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX009b - an LP token CANNOT be anchored, end to end through Talos")
+(print "")
+(print "=== TX009b - the 4] exclusion, through the real client path =============")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX009b · 01 · env-sigs (the LP's owner cannot be signed for) ===============
+(print "--- [TX009b · 01 · env-sigs] ---")
+;;THE PATRON'S STOA LEGS MUST BE SIGNED EXPLICITLY. `env-sigs` with an empty cap list is NOT
+;;enough: `XB_MoveDalosFuel` calls `coin.transfer`, which is a MANAGED capability, so an
+;;unrestricted signature does not install it and the collection aborts with "Managed capability
+;;not installed". Issuing with `acnoi=true` costs 2x the anchor STOA, so the split is taken
+;;against `standard x 20` -- generously over, which a managed cap permits (it bounds the
+;;amount, it does not require it to be met exactly). Same block as TX001.
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+(let
+    (
+        (patron:string KST.ANHD)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-SWP:module{SwapperV4} SWP)
+        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (swpair:string "W|OURO-98c486052a51|TSTY-98c486052a51")
+    )
+    (let
+        (
+            ;;Defaulted for the same reason as TX009 — see the note there.
+            (lp-id:string (try "NO-SWP-FIXTURE" (ref-SWP::UR_TokenLP swpair)))
+            (split-stoa:[decimal]
+                (ref-DALOS::URC_SplitSTOAPrices
+                    patron
+                    (* (ref-DALOS::UR_UsagePrice "standard") 20.0)
+                )
+            )
+        )
+        (env-sigs
+            [
+                { "key": "PK_AncientHodler", "caps": [] }
+                { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                , "caps":
+                    [
+                        (coin.TRANSFER
+                            "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                            "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
+                            (at 2 split-stoa))
+                        (coin.TRANSFER
+                            "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                            "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
+                            (at 0 split-stoa))
+                        (coin.TRANSFER
+                            "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                            "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
+                            (at 3 split-stoa))
+                        (coin.TRANSFER
+                            "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                            "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
+                            (at 1 split-stoa))
+                    ]
+                }
+            ]
+        )
+        ;;==== TX009b · 02 · issuance is refused ==================================
+        (print "--- [TX009b · 02 · C_IssueTrueFungibleAnchor on an LP token] ---")
+        (if (= lp-id "NO-SWP-FIXTURE")
+            (print "<<TX-ANK-VAR4b>> SKIPPED — no Stage-1 SWP fixture in this entrypoint (ZALL asserts it)")
+            ;;AN LP TOKEN CAN NOW BE ANCHORED, BY ITS POOL'S OWNER.
+            ;;
+            ;;This assertion was an `expect-failure` until 2026-10-03 and it passed -- the
+            ;;refusal was real. It was also indefensible: a FROZEN LP resolved to the native LP
+            ;;and hit the same wall, while a frozen ordinary token resolved to its parent and
+            ;;was accepted. The authority now resolves to the swpair's owner, so the pool owner
+            ;;may anchor their own pool's LP token. Flipping the assertion rather than deleting
+            ;;it is deliberate: the pair of commits reads as a behaviour change, not a gap.
+            (let
+                (
+                    (pool-owner:string (ref-SWP::UR_OwnerKonto swpair))
+                )
+                (print (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor LP)> => \"{}\""
+                    [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor
+                        patron pool-owner "LpAnchorA" lp-id true "LpBoostA" 3 100.0 1000.0)]))
+                (map print
+                    [
+                        (expect "<<TX-ANK-VAR4b>> an LP token CAN be anchored -- the anchor exists and is live"
+                            true (ref-ANK::UR_ANK|State "LpAnchorA-98c486052a51"))
+                        (expect "<<TX-ANK-VAR4b>> ...standing on the LP token itself"
+                            lp-id (ref-ANK::UR_ANK|AnchoredAsset "LpAnchorA-98c486052a51"))
+                    ]
+                )
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+(print "")
+(print "=== END TX009b =========================================================")
 (print "")
 (print "=== END [6.2.1]_AQP-ANK.repl (AQP-FAST: TX001–005 + TX003 cap-chain + TX008/TX008b owner gate; FULL: uncomment TX006–007) ===")
 (print "")

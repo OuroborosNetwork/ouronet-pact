@@ -185,11 +185,11 @@ looks connected to the others.
 
 ### How much is sponsored
 
-Measured from the generated registry, all **423** client entrypoints carry a sponsorship record:
+Measured from the generated registry, all **427** client entrypoints carry a sponsorship record:
 
 | | |
 |---|---:|
-| fully sponsored | **405** |
+| fully sponsored | **409** |
 | first step only | 10 |
 | not sponsored | 8 |
 

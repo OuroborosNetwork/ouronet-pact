@@ -34,7 +34,7 @@
         (amount:decimal         100.0)
         (ref-U|DALOS:module{UtilityDalosV2}                 U|DALOS)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2}      DPTF)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1}    TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2}    TS02-C3)
         (pool-id:string         (ref-U|DALOS::UDC_Makeid "TfStakePool"))
         ;; 1) PREVIEW on pre-stake state
         (info                   (AQP-INFO.INFO_AQP-POOL|StakeTrueFungible
@@ -97,7 +97,7 @@
         (amount:decimal         50.0)
         (ref-U|DALOS:module{UtilityDalosV2}                 U|DALOS)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2}      DPTF)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1}    TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2}    TS02-C3)
         (pool-id:string         (ref-U|DALOS::UDC_Makeid "TfStakePool"))
         (info                   (AQP-INFO.INFO_AQP-POOL|UnstakeTrueFungible
                                     patron pool-id owner-id beneficiary-id ouro-id amount))
@@ -158,7 +158,7 @@
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
         (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
         (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
@@ -221,7 +221,7 @@
         (ref-U|DALOS:module{UtilityDalosV2}                 U|DALOS)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2}      DPTF)
         (ref-DPOF:module{DemiourgosPactOrtoFungibleV2}      DPOF)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1}    TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2}    TS02-C3)
         (pool-id:string         (ref-U|DALOS::UDC_Makeid "InfoGtOfPool"))
         (stake-nonce:integer    (at 0 (ref-DPOF::URH_AccountNonces owner-id dpof-id)))
         (nonces:[integer]       [stake-nonce])
@@ -298,7 +298,7 @@
         (pool-name:string "InfoGtSfPool")
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
         (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
@@ -356,7 +356,7 @@
         (ref-U|DALOS:module{UtilityDalosV2}                 U|DALOS)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2}      DPTF)
         (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1}    TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2}    TS02-C3)
         (pool-id:string         (ref-U|DALOS::UDC_Makeid "InfoGtSfPool"))
         (owned:[integer]        (ref-DPDC::URH_AccountNonces owner-id dpsf-id true))
         (stake-nonce:integer    (at 0 owned))
@@ -422,7 +422,7 @@
         (amount:decimal         100.0)
         (ref-U|DALOS:module{UtilityDalosV2}                 U|DALOS)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2}      DPTF)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1}    TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2}    TS02-C3)
         (pool-id:string         (ref-U|DALOS::UDC_Makeid "TfStakePool"))
     )
     ;; 1) Re-stake a fresh TF position so there is something to vacate (TfStakePool is restakeable).
@@ -487,7 +487,7 @@
         (gas-id:string          "GAS-98c486052a51")
         (ref-U|DALOS:module{UtilityDalosV2}                 U|DALOS)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2}      DPTF)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1}    TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2}    TS02-C3)
         (pool-id:string         (ref-U|DALOS::UDC_Makeid "InfoGtOfPool"))
     )
     ;; PHASE-1 dirty-read scan: the exact lane plan the exec consumes, fed to BOTH INFO and exec.
@@ -549,7 +549,7 @@
         (son:bool               true)
         (ref-U|DALOS:module{UtilityDalosV2}                 U|DALOS)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2}      DPTF)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1}    TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2}    TS02-C3)
         (pool-id:string         (ref-U|DALOS::UDC_Makeid "InfoGtSfPool"))
     )
     (let
@@ -612,7 +612,7 @@
         (pool-name:string "InfoGtTfDrPool")
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
         (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
@@ -657,7 +657,7 @@
     (
         (patron:string KST.ANHD) (ouro-id:string "OURO-98c486052a51")
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (pool-id:string (ref-U|DALOS::UDC_Makeid "InfoGtTfDrPool"))
     )
     (print (format "<(stake)> => \"{}\""
@@ -684,7 +684,7 @@
         (patron:string KST.ANHD) (gas-id:string "GAS-98c486052a51")
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (pool-id:string (ref-U|DALOS::UDC_Makeid "InfoGtTfDrPool"))
     )
     ;; PHASE-1 dirty-read scan: the exact TF lane plan, fed to BOTH INFO and exec.
@@ -744,7 +744,7 @@
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
         (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
@@ -791,7 +791,7 @@
         (patron:string KST.ANHD) (dpof-id:string "MVST-98c486052a51")
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (pool-id:string (ref-U|DALOS::UDC_Makeid "InfoGtOfDrPool"))
         (owned:[integer] (ref-DPOF::URH_AccountNonces patron dpof-id))
     )
@@ -822,7 +822,7 @@
         (patron:string KST.ANHD) (gas-id:string "GAS-98c486052a51")
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (pool-id:string (ref-U|DALOS::UDC_Makeid "InfoGtOfDrPool"))
     )
     (let ((lane:object{AcquisitionSchemasV1.VCT|VacateNonceLane} (at 0 (AQP-VCT.URH_VacateOrtoFungiblePoolLegs pool-id))))
@@ -876,7 +876,7 @@
         (score-name:string "InfoGtSfDrScore") (fvt-name:string "InfoGtSfDrVault") (pool-name:string "InfoGtSfDrPool")
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
         (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
@@ -922,7 +922,7 @@
         (patron:string KST.ANHD) (dpsf-id:string "DHCD-98c486052a51")
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (pool-id:string (ref-U|DALOS::UDC_Makeid "InfoGtSfDrPool"))
         (owned:[integer] (ref-DPDC::URH_AccountNonces patron dpsf-id true))
     )
@@ -952,7 +952,7 @@
         (patron:string KST.ANHD) (gas-id:string "GAS-98c486052a51") (son:bool true)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (pool-id:string (ref-U|DALOS::UDC_Makeid "InfoGtSfDrPool"))
     )
     (let ((lane:object{AcquisitionSchemasV1.VCT|VacateNonceLane} (at 0 (AQP-VCT.URH_VacateCollectablesPoolLegs pool-id son))))
@@ -1009,7 +1009,7 @@
         (score-name:string "InfoGtFvScore") (fvt-name:string "InfoGtFvVault") (pool-name:string "InfoGtFvPool")
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
         (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
@@ -1054,7 +1054,7 @@
     (
         (patron:string KST.ANHD) (ouro-id:string "OURO-98c486052a51")
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (pool-id:string (ref-U|DALOS::UDC_Makeid "InfoGtFvPool"))
     )
     (print (format "<(stake)> => \"{}\""
@@ -1081,7 +1081,7 @@
         (patron:string KST.ANHD) (gas-id:string "GAS-98c486052a51")
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (pool-id:string (ref-U|DALOS::UDC_Makeid "InfoGtFvPool"))
     )
     ;; PHASE-1 dirty-read scan fed to both INFO and exec. Class-1 (TF-family): the exec's
@@ -1147,7 +1147,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (patron:string KST.ANHD)
@@ -1217,7 +1217,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
         (patron:string KST.ANHD)
@@ -1296,7 +1296,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
         (patron:string KST.ANHD)
@@ -1370,7 +1370,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
         (patron:string KST.ANHD)
@@ -1439,7 +1439,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
         (patron:string KST.ANHD)
@@ -1519,7 +1519,7 @@
 )
 (let
     (
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (patron:string KST.ANHD)
@@ -1595,7 +1595,7 @@
 )
 (let
     (
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (patron:string KST.ANHD)
@@ -1674,7 +1674,7 @@
 )
 (let
     (
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (patron:string KST.ANHD)
@@ -1735,7 +1735,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (patron:string KST.ANHD)
         (gas-id:string "GAS-98c486052a51")
@@ -1779,7 +1779,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (patron:string KST.ANHD)
         (gas-id:string "GAS-98c486052a51")
@@ -1841,7 +1841,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (patron:string KST.ANHD)
@@ -1902,7 +1902,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (patron:string KST.ANHD)
         (dpsf-id:string "DHCD-98c486052a51")
@@ -1963,7 +1963,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (patron:string KST.ANHD)
@@ -2025,7 +2025,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-DPDC:module{DpdcV2} DPDC)
         (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
@@ -2105,7 +2105,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (patron:string KST.ANHD)
@@ -2180,7 +2180,7 @@
 )
 (let
     (
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -2241,7 +2241,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (patron:string KST.ANHD)
@@ -2288,7 +2288,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (patron:string KST.ANHD)
@@ -2334,7 +2334,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (patron:string KST.ANHD)
@@ -2402,7 +2402,7 @@
 )
 (let
     (
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (patron:string KST.ANHD)
@@ -2469,7 +2469,7 @@
 )
 (let
     (
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (patron:string KST.ANHD)
@@ -2539,7 +2539,7 @@
 )
 (let
     (
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (patron:string KST.ANHD)
@@ -2590,7 +2590,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (patron:string KST.ANHD)
@@ -2658,7 +2658,7 @@
 )
 (let
     (
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (patron:string KST.ANHD)
@@ -2715,7 +2715,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (patron:string KST.ANHD)
@@ -2760,7 +2760,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (patron:string KST.ANHD)
@@ -2813,7 +2813,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
         (ref-DPDC:module{DpdcV2} DPDC)
@@ -2891,7 +2891,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
         (ref-DPDC:module{DpdcV2} DPDC)
@@ -2966,7 +2966,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-DPDC:module{DpdcV2} DPDC)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -3032,7 +3032,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-DPDC:module{DpdcV2} DPDC)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -3107,7 +3107,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-DPDC:module{DpdcV2} DPDC)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -3174,7 +3174,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (patron:string KST.ANHD)
@@ -3246,7 +3246,7 @@
 )
 (let
     (
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
@@ -3331,7 +3331,7 @@
 )
 (let
     (
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-SWP:module{SwapperV4} SWP)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -3410,7 +3410,7 @@
 )
 (let
     (
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -3490,7 +3490,7 @@
 )
 (let
     (
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -3573,7 +3573,7 @@
 )
 (let
     (
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -3651,7 +3651,7 @@
 )
 (let
     (
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -3730,7 +3730,7 @@
 )
 (let
     (
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -3808,7 +3808,7 @@
 )
 (let
     (
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (patron:string KST.ANHD)
     )
     (print (format "<(issue GtSeAddScoreVault, fvt-class 1)> => \"{}\""
@@ -3850,7 +3850,7 @@
 )
 (let
     (
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -3934,7 +3934,7 @@
 )
 (let
     (
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -4006,7 +4006,7 @@
 )
 (let
     (
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -4085,7 +4085,7 @@
 )
 (let
     (
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (patron:string KST.ANHD)
@@ -4152,7 +4152,7 @@
 )
 (let
     (
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (patron:string KST.ANHD)
@@ -4228,7 +4228,7 @@
 )
 (let
     (
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (patron:string KST.ANHD)
@@ -4320,7 +4320,7 @@
     (
         (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (patron:string KST.ANHD)
         (t0:string "GTM0-98c486052a51")
@@ -4398,7 +4398,7 @@
     (
         (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
         (patron:string KST.ANHD)

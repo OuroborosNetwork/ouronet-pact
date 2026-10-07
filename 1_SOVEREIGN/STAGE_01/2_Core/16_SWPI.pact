@@ -465,7 +465,6 @@
     ;;performs the already-validated writes, matching the XE_* contract of no
     ;;enforce/UEV_* beyond P|UEV_IMC.
     (defcap SWPI|XE>ISSUE-WRITE (account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool)
-        @event
         true
     )
     ;;{C2}  Simple

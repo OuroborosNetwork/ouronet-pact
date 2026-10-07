@@ -334,7 +334,7 @@
             \ recompute-set size. Read-only; sweep-in-progress keeps it fixed across defpact steps."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
             )
             (fold (+) 0
                 (map
@@ -358,7 +358,7 @@
                 (lambda (acc:object sid:string)
                     (let
                         (
-                            (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                            (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                             (seen-before:integer (at "seen" acc))
                             (fvt:string (ref-SCR::UR_SCR|ScoreFvtLink sid))
                             (member:string

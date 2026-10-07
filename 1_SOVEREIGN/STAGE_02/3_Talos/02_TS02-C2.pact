@@ -994,11 +994,18 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-DPDC-S::C_DefinePrimordialSet patron executor id false set-name score-multiplier set-definition ind)
+                    )
                 )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-S::C_DefinePrimordialSet patron executor id false set-name score-multiplier set-definition ind)
-                )
-                (format "Primordial Set <{}> for NFT Collection {} defined succesfully" [set-name id])
+                (ref-IGNIS::XE_CollectIgnis patron ico)
+                ;;REPORTS THE GENERATED set-class. It used to report only `set-name` -- the
+                ;;caller's own input -- while set-class is an AUTO-INCREMENT integer assigned
+                ;;inside XI_*Set. Unlike a name-derived id it cannot be reconstructed after the
+                ;;fact, yet C_ToggleSet / C_RenameSet / C_UpdateSetNonce* all key on it. The core
+                ;;was discarding it into an empty cumulator output; both halves are fixed.
+                ;;StoicSyntax 2.16.2.
+                (format "Primordial Set <{}> (set-class {}) for NFT Collection {} defined succesfully" [set-name (at 0 (at "output" ico)) id])
             )
         )
     )
@@ -1014,11 +1021,18 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-DPDC-S::C_DefineCompositeSet patron executor id false set-name score-multiplier set-definition ind)
+                    )
                 )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-S::C_DefineCompositeSet patron executor id false set-name score-multiplier set-definition ind)
-                )
-                (format "Composite Set <{}> for NFT Collection {} defined succesfully" [set-name id])
+                (ref-IGNIS::XE_CollectIgnis patron ico)
+                ;;REPORTS THE GENERATED set-class. It used to report only `set-name` -- the
+                ;;caller's own input -- while set-class is an AUTO-INCREMENT integer assigned
+                ;;inside XI_*Set. Unlike a name-derived id it cannot be reconstructed after the
+                ;;fact, yet C_ToggleSet / C_RenameSet / C_UpdateSetNonce* all key on it. The core
+                ;;was discarding it into an empty cumulator output; both halves are fixed.
+                ;;StoicSyntax 2.16.2.
+                (format "Composite Set <{}> (set-class {}) for NFT Collection {} defined succesfully" [set-name (at 0 (at "output" ico)) id])
             )
         )
     )
@@ -1035,11 +1049,18 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-DPDC-S::C_DefineHybridSet patron executor id false set-name score-multiplier primordial-sd composite-sd ind)
+                    )
                 )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-S::C_DefineHybridSet patron executor id false set-name score-multiplier primordial-sd composite-sd ind)
-                )
-                (format "Hybrid Set <{}> for NFT Collection {} defined succesfully" [set-name id])
+                (ref-IGNIS::XE_CollectIgnis patron ico)
+                ;;REPORTS THE GENERATED set-class. It used to report only `set-name` -- the
+                ;;caller's own input -- while set-class is an AUTO-INCREMENT integer assigned
+                ;;inside XI_*Set. Unlike a name-derived id it cannot be reconstructed after the
+                ;;fact, yet C_ToggleSet / C_RenameSet / C_UpdateSetNonce* all key on it. The core
+                ;;was discarding it into an empty cumulator output; both halves are fixed.
+                ;;StoicSyntax 2.16.2.
+                (format "Hybrid Set <{}> (set-class {}) for NFT Collection {} defined succesfully" [set-name (at 0 (at "output" ico)) id])
             )
         )
     )

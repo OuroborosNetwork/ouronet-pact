@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 13 of 24
 ;; This is STEP 13 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-12 must have run first, including the init steps between deploys.
-;; 5 source file(s), 315,762 gas measured in the REPL gas model, 258,483 bytes
+;; 5 source file(s), 315,762 gas measured in the REPL gas model, 261,722 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/07_DPDC-T.pact
@@ -36,7 +36,7 @@
 ;;      table      P|T
 ;;      table      P|MT
 ;;   -- 1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/11_EQUITY+.pact
-;;      interface  EquityV2
+;;      interface  EquityV3
 ;;      module     EQUITY
 ;;      table      P|T
 ;;      table      P|MT
@@ -2819,7 +2819,15 @@
                         )
                     )
                 )
-                (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico0 ico1] [])
+                ;;THE SET-CLASS IS THE THING THIS CALL CREATED, so it rides out in `output`.
+                ;;It used to be computed, used, and dropped into an empty output list -- and
+                ;;`UDC_ConcatenateOutputCumulators` REPLACES output rather than merging it, so
+                ;;`[]` actively discarded it. The Talos wrapper could then only report the
+                ;;caller-typed set-name, leaving the owner with no way to address the set they
+                ;;had just defined: set-class is an auto-increment integer, so unlike a
+                ;;name-derived id it cannot be reconstructed after the fact.
+                ;;StoicSyntax 2.16.2.
+                (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico0 ico1] [set-class])
             )
         )
     )
@@ -2856,7 +2864,15 @@
                         )
                     )
                 )
-                (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico0 ico1] [])
+                ;;THE SET-CLASS IS THE THING THIS CALL CREATED, so it rides out in `output`.
+                ;;It used to be computed, used, and dropped into an empty output list -- and
+                ;;`UDC_ConcatenateOutputCumulators` REPLACES output rather than merging it, so
+                ;;`[]` actively discarded it. The Talos wrapper could then only report the
+                ;;caller-typed set-name, leaving the owner with no way to address the set they
+                ;;had just defined: set-class is an auto-increment integer, so unlike a
+                ;;name-derived id it cannot be reconstructed after the fact.
+                ;;StoicSyntax 2.16.2.
+                (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico0 ico1] [set-class])
             )
         )
     )
@@ -2898,7 +2914,15 @@
                         )
                     )
                 )
-                (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico0 ico1] [])
+                ;;THE SET-CLASS IS THE THING THIS CALL CREATED, so it rides out in `output`.
+                ;;It used to be computed, used, and dropped into an empty output list -- and
+                ;;`UDC_ConcatenateOutputCumulators` REPLACES output rather than merging it, so
+                ;;`[]` actively discarded it. The Talos wrapper could then only report the
+                ;;caller-typed set-name, leaving the owner with no way to address the set they
+                ;;had just defined: set-class is an auto-increment integer, so unlike a
+                ;;name-derived id it cannot be reconstructed after the fact.
+                ;;StoicSyntax 2.16.2.
+                (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico0 ico1] [set-class])
             )
         )
     )
@@ -4595,8 +4619,8 @@
 
 ;; ===== 1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/11_EQUITY+.pact =========
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface EquityV2
-    @doc "EquityV2 is the interface contract for the EQUITY shareholder/equity-collection \
+(interface EquityV3
+    @doc "EquityV3 is the interface contract for the EQUITY shareholder/equity-collection \
         \ policy, declaring the signatures every implementer must provide. It specifies \
         \ compute helpers, read/cost-preview functions (tier supplies, share \
         \ package/per-million math, combine capacity, URCi_ cost readers), validators (share \
@@ -4651,6 +4675,11 @@
     ;;
     ;;  [URC]
     ;;
+    ;; THE ONE PLACE THE "E|" RULE LIVES, from 2026-10-07. The prefix test was written out by hand
+    ;; in three separate modules (DPDC-C and DPDC-T for pricing, and this module's own
+    ;; UEV_EquitySemiFungibleID), and AQP-SCORE was about to be a fourth. A rule copied four times
+    ;; is a rule that will be changed in three places.
+    (defun URC_IzEquitySemiFungible:bool (id:string))
     (defun URC_MakeSharePackage:integer (id:string shares-amount:integer package-share-tier:integer))
     (defun URC_SharesPerMillion:[integer] (id:string))
     (defun URC_SingleSharePerMillions:integer (id:string package-share-tier:integer))
@@ -4682,7 +4711,7 @@
 
 )
 (module EQUITY GOV
-    @doc "EQUITY implements OuronetPolicyV2 and EquityV2 to create and manage Shareholder \
+    @doc "EQUITY implements OuronetPolicyV2 and EquityV3 to create and manage Shareholder \
         \ DPSF (SFT) collections representing company equity, where nonce 1 is the barebone \
         \ share and nonces 2-8 are packaged share tiers. Its main entrypoints are \
         \ C_IssueShareholderCollection (issues an Elite equity SFT collection via \
@@ -4695,7 +4724,7 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements EquityV2)
+    (implements EquityV3)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -5019,6 +5048,19 @@
             \ total share count. See URC_SharesPerMillion."
         (at (- package-share-tier 1) (URC_SharesPerMillion id))
 
+    )
+    (defun URC_IzEquitySemiFungible:bool (id:string)
+        @doc "True when <id> names an EQUITY (shareholder) SFT collection. \
+            \ \
+            \ PREDICATE, NOT AN ENFORCE -- which is why it is not UEV_EquitySemiFungibleID. A caller \
+            \ that must DISPATCH on the answer (AQP-SCORE weights an equity collection by live share \
+            \ value and everything else by its own tables) needs a boolean; an enforce can only \
+            \ abort, and wrapping one in `try` to recover the boolean would make an ordinary branch \
+            \ look like an error path. \
+            \ \
+            \ Identity is the NAME PREFIX, which is the same test the three existing sites use; \
+            \ there is no flag on the collection row to consult."
+        (= (take 2 id) "E|")
     )
     (defun URC_CombineCapacity:integer (id:string)
         @doc "Remaining share-equivalent headroom that may still be packaged into tier-units (nonces \

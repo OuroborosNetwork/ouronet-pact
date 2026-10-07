@@ -84,10 +84,10 @@ RULES = {
     #
     # The two DIRECT ref-VCT:: probes in [6.2.10] are NOT covered and must not be: they exist to
     # die at P|UEV_IMC before anything is read, so their executor stays a plain account.
-    "AQP-POOL|XB_VacateTrueFungible": (3, "(AQP-POOL.URC_AqpOwnerKonto {1})"),
-    "AQP-POOL|XB_VacateOrtoFungible": (4, "(AQP-POOL.URC_AqpOwnerKonto {1})"),
-    "AQP-POOL|XB_VacateSemiFungible": (4, "(AQP-POOL.URC_AqpOwnerKonto {1})"),
-    "AQP-POOL|XB_VacateNonFungible":  (4, "(AQP-POOL.URC_AqpOwnerKonto {1})"),
+    "AQP-POOL|CC_VacateTrueFungible": (3, "(AQP-POOL.URC_AqpOwnerKonto {1})"),
+    "AQP-POOL|CC_VacateOrtoFungible": (4, "(AQP-POOL.URC_AqpOwnerKonto {1})"),
+    "AQP-POOL|CC_VacateSemiFungible": (4, "(AQP-POOL.URC_AqpOwnerKonto {1})"),
+    "AQP-POOL|CC_VacateNonFungible":  (4, "(AQP-POOL.URC_AqpOwnerKonto {1})"),
     "AQP-POOL|C_AbortVacate":         (3, "(AQP-POOL.URC_AqpOwnerKonto {1})"),
     "AQP-POOL|C_FinalizeVacate":      (3, "(AQP-POOL.URC_AqpOwnerKonto {1})"),
     "AQP-POOL|CC_FullVacate":         (3, "(AQP-POOL.URC_AqpOwnerKonto {1})"),

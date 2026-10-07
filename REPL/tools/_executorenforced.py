@@ -100,6 +100,22 @@ INDIRECT = {
     # So the ambiguity was harmless TODAY and fragile FOREVER: if a Talos entrypoint ever stopped
     # being forwarded, it would silently inherit a core module's route-claim and report proven on
     # the strength of a sentence written about a different function.
+    # THE THREE PER-LEG VACATE WRAPPERS, newly visible 2026-10-03. They were named
+    # `AQP-POOL|XB_Vacate*` and an `XB_` name is not an entrypoint to this tool any more than it
+    # is to the registry -- so three live client functions taking an `executor` had NEVER been
+    # put to this question. Renaming them to `|C_Vacate*` is what surfaced them, which is the
+    # clearest argument the prefix fix needed.
+    #
+    # THE ROUTE IS REAL, not a waiver. Each wrapper's only call is
+    # `ref-VCT::XB_Vacate*(executor, pool-id)`, which opens `VCT|C>VACATE`, whose body runs
+    # `(UEV_ExecutorIzVacatePoolOwner executor pool-id)` -- the executor is bound to the pool's
+    # owner before any write. Their `@doc`s already say "Owner enforced in VCT|C>VACATE", which
+    # is the sentence this table requires them to carry.
+    #
+    # `C_VacateOrtoFungible` is absent because it passes DIRECT and needs no route.
+    "04_TS02-C3.pact::CC_VacateTrueFungible": "VCT|C>VACATE",
+    "04_TS02-C3.pact::CC_VacateSemiFungible": "VCT|C>VACATE",
+    "04_TS02-C3.pact::CC_VacateNonFungible":  "VCT|C>VACATE",
     "09_TFT.pact::C_Transmute":     "XB_DebitTrueFungible",
     "01_DALOS.pact::A_UpdatePublicKey": "GOV|DALOS_ADMIN",
     "C_DonateStoa":           "EXECUTOR",

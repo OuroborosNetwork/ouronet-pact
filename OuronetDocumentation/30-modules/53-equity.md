@@ -46,7 +46,9 @@ The last module in the collectables family.
 | `P|` policy | 9 | inter-module authorisation | `P|A_Add`, `P|A_AddIMP`, `P|A_Define`, `P|A_RemoveIMP`, `P|A_SetIMP`, `P|Info` …+3 |
 | *(unclassified)* | 2 | carries no StoicSyntax prefix | `CT_Bar`, `GOV|Demiurgoi` |
 
-> Repository and chain agree on every declared shape.
+> **The repository differs from what is deployed.** Everything above describes the CHAIN, which is what a caller actually reaches. The difference is stated rather than resolved:
+>
+> - **functions** in the repository only: `URC_IzEquitySemiFungible`
 
 **Capabilities** -- 10
 

@@ -26,7 +26,7 @@ five launchpad sales.
 **The orchestration layer, and only it.**
 
 Core modules expose client functions, but those build an unfinished bill that only the orchestration
-layer may settle. You have no permission for them. What you call are **finished operations** — 423
+layer may settle. You have no permission for them. What you call are **finished operations** — 427
 of them, each of which charges its own gas and returns a result.
 
 So a citizen module is a **composition of complete operations**, not an assembly of parts.

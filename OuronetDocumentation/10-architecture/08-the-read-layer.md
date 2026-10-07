@@ -218,9 +218,9 @@ registry:
 
 | | |
 |---|---:|
-| client entrypoints | **423** |
-| entrypoints with a preview | **423** |
-| previews whose parameter list **differs** from the entrypoint's | **410** |
+| client entrypoints | **427** |
+| entrypoints with a preview | **427** |
+| previews whose parameter list **differs** from the entrypoint's | **414** |
 | previews whose parameter list **matches** | **13** |
 
 **Divergence is the normal case.** A preview may take different parameter names, in a different
@@ -301,5 +301,5 @@ And the reason the old module was emptied rather than left in place:
 - `OuronetInformational/MODULE-SIZING.md` — measured deploy gas
 - `Deploy/OURONET-REGISTRY.json` — entrypoint and preview shapes
 
-The 410/13 split was computed directly from the registry. See
+The 414/13 split was computed directly from the registry. See
 `90-reference/03-how-these-figures-were-obtained.md`.

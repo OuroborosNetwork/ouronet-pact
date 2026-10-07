@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 14 of 24
 ;; This is STEP 14 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-13 must have run first, including the init steps between deploys.
-;; 3 source file(s), 102,008 gas measured in the REPL gas model, 274,559 bytes
+;; 3 source file(s), 102,008 gas measured in the REPL gas model, 281,844 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/02_DEMIPAD/00_Demipad.pact
@@ -3178,6 +3178,10 @@
     (defconst CT_ANK_PRECISION:integer                  3)          ;; anchors use exactly 3 decimals of promile precision
     (defconst CT_ANK_MIN_PROMILE:decimal                1.0)        ;; minimum anchor promile
     (defconst CT_ANK_MAX_PROMILE:decimal                10000.0)    ;; maximum anchor promile (caps a single anchor's boost)
+    ;;The three NATIVE liquidity-pool token prefixes. Same set as `05_DPTF.pact`'s DPTF|C>MINT
+    ;;and `03_AQP.pact`'s LP predicate -- named here so the anchor authority rule and those two
+    ;;cannot drift apart silently. `F|` wrappers are stripped BEFORE this is consulted.
+    (defconst CT_ANK_LP_PREFIXES:[string]               ["S|" "W|" "P|"])
     (defconst CT_ANK_MIN_DPTF_AMOUNT:decimal            1000.0)     ;; minimum TF-anchor denominated amount
     (defconst CT_ANK_MAX_DPTF_AMOUNT:decimal            1000000.0)  ;; maximum TF-anchor denominated amount
     ;;{3.2}  schemas
@@ -3302,21 +3306,34 @@
             (
                 (ref-U|ATS:module{UtilityAtsV3} U|ATS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                ;;
-                (fourth:string (drop 3 (take 4 dptf-id)))
-                (first-two:string (take 2 dptf-id))
             )
-            (enforce
-                (fold (and) true 
-                    [
-                        (!= fourth BAR)
-                        (!= first-two "S|")
-                        (!= first-two "W|")
-                        (!= first-two "P|")
-                    ]
-                )
-                (format "Anchor cannot be issued for the DPTF {}." [dptf-id])
-            )
+            ;;LIQUIDITY-POOL TOKENS ARE ANCHORABLE AS OF 2026-10-03. The enforce that used to
+            ;;stand here blocked them, in two clauses that together implemented lines 4] and 5]
+            ;;of CAP_TF|Owner's doc:
+            ;;
+            ;;    (!= first-two "S|") (!= first-two "W|") (!= first-two "P|")
+            ;;        -- a NATIVE LP token, by its prefix.
+            ;;    (!= fourth BAR)
+            ;;        -- a FROZEN LP, `F|W|...`, whose FOURTH character is the bar. Compact, and
+            ;;           the only thing that caught a frozen LP at all.
+            ;;
+            ;;It is REMOVED rather than narrowed, because what it protected against is gone. It
+            ;;existed because an LP token's owner is SWP|SC_NAME -- a smart account nobody can
+            ;;sign for -- so issuance would have failed later and far less legibly.
+            ;;`URCv_AnchorableDptfAuthority` now resolves an LP (native or frozen) to its
+            ;;swpair's POOL OWNER, a real signable account, which is the authority every other
+            ;;LP operation already uses: 15_SWP's XE_EnableFrozenLP says in as many words that
+            ;;"SWP's executor is the POOL owner (UR_OwnerKonto swpair)", as distinct from the LP
+            ;;token's owner. With that resolution in place this enforce blocks a legal operation
+            ;;and nothing else.
+            ;;
+            ;;THE ASYMMETRY IS WHY IT CHANGED. A frozen ORDINARY token resolved to its parent
+            ;;and was accepted; a frozen LP resolved to the native LP and was refused. Same
+            ;;rule, opposite outcome, for no reason a user could see -- and a pool owner could
+            ;;not anchor their own pool's LP token.
+            ;;
+            ;;SHAPE VALIDATION IS NOT LOST WITH IT: `UEV_id` two lines below is what actually
+            ;;checks the id, and always was.
             (ref-U|ATS::UEV_AutostakeIndex anchor-name)
             (ref-DPTF::UEV_id dptf-id)
             (ref-DPTF::UEV_Amount dptf-id dptf-amount)
@@ -3475,7 +3492,6 @@
         @doc "Forward (re-score sweep terminal): authorize SWEPT revocation of an EMPLOYED anchor — liveness + \
             \ owner enforced, but NOT the #9 score-link lock (the sweep has already refreshed every affected \
             \ holder, so no staleness remains). Distinct from ANK|C>REVOKE (gated on set==0 for UNemployed anchors)."
-        @event
         (UEV_LiveAnchor anchor-id)
         (CAP_Owner anchor-id)
         (compose-capability (SECURE))
@@ -4403,11 +4419,10 @@
             \ the executor was named, that distinction was invisible at every call site."
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
             (if (= asset-fungibility [true true])
-                (ref-DPTF::UR_Konto (URCv_CoreDptf ank-asset))
+                (URCv_AnchorableDptfAuthority ank-asset)
                 (ref-DPDC::UR_OwnerKonto ank-asset (= asset-fungibility [false true]))
             )
         )
@@ -4427,6 +4442,46 @@
                 ((= first-two "F|") (ref-DPTF::UR_Frozen dptf-id))
                 ((= first-two "R|") (ref-DPTF::UR_Reservation dptf-id))
                 dptf-id
+            )
+        )
+    )
+    (defun URCv_AnchorableDptfAuthority:string (dptf-id:string)
+        @doc "The ACCOUNT that may anchor <dptf-id>. ONE rule, read by all THREE places that \
+            \ need it -- URC_AnchorableAssetOwner (the reader), CAP_TF|Owner (the ownership \
+            \ gate) and UEV_ExecutorIzAssetAuthority (the executor check). Three copies of a \
+            \ resolution that must agree is the failure class URCv_CoreDptf was extracted to \
+            \ prevent; this extends the same discipline to the liquidity-pool case. \
+            \ \
+            \ FOUR SHAPES: \
+            \   pure DPTF        -> its own owner \
+            \   F| / R| special  -> its PARENT's owner (URCv_CoreDptf follows the link) \
+            \   native LP        -> the POOL OWNER of the swpair behind it \
+            \   F| frozen LP     -> the same pool owner, through the same two steps \
+            \ \
+            \ WHY THE LP BRANCH EXISTS (2026-10-03). It did not, and the asymmetry it left was \
+            \ indefensible: a frozen special resolved to its parent and was ACCEPTED, so a \
+            \ frozen LP resolved to the native LP -- owned by SWP|SC_NAME, a smart account \
+            \ nobody can sign for -- and was REFUSED. Same rule, opposite outcome, for no \
+            \ reason a user could see. A pool owner could not anchor their own pool's LP token. \
+            \ \
+            \ The pool owner is the right answer and the system already said so elsewhere: \
+            \ 15_SWP's XE_EnableFrozenLP records that SWP's executor is the POOL owner \
+            \ (UR_OwnerKonto swpair), as distinct from the LP TOKEN's owner, which is a smart \
+            \ account. Anchoring now draws the same distinction every other LP operation does."
+        (let
+            (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-SWP:module{SwapperV4} SWP)
+                ;;
+                ;;Specials first. An `F|`/`R|` id resolves through the back-link that
+                ;;XE_UpdateSpecialTrueFungible writes in BOTH directions. A frozen LP lands here
+                ;;too -- C_EnableFrozenLP creates it through VST::C_CreateFrozenLink, the same
+                ;;path -- so past this line a frozen LP is indistinguishable from a native one.
+                (core:string (URCv_CoreDptf dptf-id))
+            )
+            (if (contains (take 2 core) CT_ANK_LP_PREFIXES)
+                (ref-SWP::UR_OwnerKonto (ref-SWP::UR_GetLpSwpair core))
+                (ref-DPTF::UR_Konto core)
             )
         )
     )
@@ -4478,23 +4533,61 @@
             (enforce (< (at "anchors-active" aa) 49) (format "{} Asset {} at 49-anchor cap" [E-ANK ank-asset]))
         )
     )
+    (defun UEV_ExecutorNotCustodial (executor:string)
+        @doc "Refuses the three smart accounts that hold tokens as CUSTODY, never as management. \
+            \ \
+            \   SWP|SC_NAME  owns every liquidity-pool token \
+            \   VST|SC_NAME  owns every frozen and reserved special token \
+            \   ATS|SC_NAME  owns the hot-RBTs \
+            \ \
+            \ OWNER RULING, 2026-10-04: those three own tokens as a PROTOCOL FUNCTION, and that \
+            \ must never become a route to managing them. Management flows through the parent -- \
+            \ an LP through its POOL OWNER, a special through the owner of the token it was \
+            \ derived from -- which is exactly what `URCv_AnchorableDptfAuthority` resolves. \
+            \ \
+            \ THIS IS DEFENCE IN DEPTH, NOT THE PRIMARY GATE, and saying so matters because an \
+            \ enforce that is already unreachable invites deletion. The authority resolution \
+            \ ALREADY keeps these accounts out: an LP resolves to the pool owner, so SWP is not \
+            \ the authority for its own LP token and `CAP_TF|Owner` refuses it. This catches the \
+            \ case where that resolution is ever wrong, loosened, or outgrown by a fourth \
+            \ custodial account -- and it fails with a message that NAMES custody, where the \
+            \ ownership gate would only say the executor is not the authority. \
+            \ \
+            \ It is on the shared authority check, so it covers ISSUE and REVOKE alike: a \
+            \ custodial account must not be able to revoke an anchor either."
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (enforce
+                (not (contains executor
+                        [(ref-DALOS::GOV|SWP|SC_NAME)
+                         (ref-DALOS::GOV|VST|SC_NAME)
+                         (ref-DALOS::GOV|ATS|SC_NAME)]))
+                (format "{} Executor {} holds tokens as CUSTODY only; anchor management flows \
+                    \ through the asset's parent -- a pool's owner, or the owner of the token a \
+                    \ special was derived from" [E-ANK executor])
+            )
+        )
+    )
     (defun UEV_ExecutorIzAssetAuthority (executor:string ank-asset:string asset-fungibility:[bool])
         @doc "Enforces that <executor> IS the anchored asset's authority, mirroring -- never replacing \
             \ -- the CAP_ gate running alongside it. The authority differs by asset kind, and that \
             \ difference is why this is one helper rather than three inline checks: a DPTF has exactly \
-            \ ONE authority (its owner, resolved through F|/R| to the core token), a collectable has \
+            \ ONE authority (URCv_AnchorableDptfAuthority: its own owner, or its parent's for an \
+            \ F|/R| special, or the POOL OWNER for a liquidity-pool token), a collectable has \
             \ TWO (owner OR creator) and is therefore a DISJUNCTION, not a value. Band 1's usual \
             \ prescription -- 'enforce executor equals the derived owner' -- has no single owner to \
             \ equal in the collectable case, which is exactly why MTX-AQP's C_2|SweepRevokeAnchor \
             \ could not be done inline and waited for this."
+        (UEV_ExecutorNotCustodial executor)
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
             (enforce
                 (if (= asset-fungibility [true true])
-                    (= executor (ref-DPTF::UR_Konto (URCv_CoreDptf ank-asset)))
+                    (= executor (URCv_AnchorableDptfAuthority ank-asset))
                     (let
                         (
                             (son:bool (= asset-fungibility [false true]))
@@ -4506,7 +4599,7 @@
                 (format "Executor {} is not an authority for anchored asset {}; authority is {}"
                     [executor ank-asset
                         (if (= asset-fungibility [true true])
-                            [(ref-DPTF::UR_Konto (URCv_CoreDptf ank-asset))]
+                            [(URCv_AnchorableDptfAuthority ank-asset)]
                             (let
                                 (
                                     (son:bool (= asset-fungibility [false true]))
@@ -4597,21 +4690,30 @@
         )
     )
     (defun CAP_TF|Owner (dptf-id:string)
-        @doc "Enforces dptf-id Ownership, as underlying Dptf-Based Anchor Ownership \
-        \ 3 DPTF variants can exist as underlying anchored asset: \
+        @doc "Enforces dptf-id Ownership, as underlying Dptf-Based Anchor Ownership. \
+        \ FIVE DPTF variants can exist as underlying anchored asset, and the rule for each is \
+        \ URCv_AnchorableDptfAuthority's -- this gate only enforces what that returns: \
         \ 1] Pure DPTF      = Its Owner \
         \ 2] Frozen DPTF    = DPTF Parent Ownership \
         \ 3] Reserved DPTF  = DPTF Parent Ownership \
+        \ 4] LP DPTF        = The POOL OWNER of its swpair \
+        \ 5] Frozen LP DPTF = The same pool owner \
         \ \
+        \ CORRECTED 2026-10-03. Lines 4] and 5] read 'Cannot exist as underlaying DPTF-Based \
+        \ Anchor', which was true and indefensible: an LP token is owned by SWP|SC_NAME with \
+        \ can-change-owner false, so the ownership enforce could never pass and a pool owner \
+        \ could not anchor their own pool's LP token. Worse, it was INCONSISTENT -- 2] accepts \
+        \ a frozen token by resolving to its parent, so a frozen LP resolved to the native LP \
+        \ and was then refused for being owned by a contract. Same rule, opposite outcome. \
         \ \
-        \ 4] LP DPTF        = Cannot exist as underlaying DPTF-Based Anchor \
-        \ 5] Frozen LP DPTF = Cannot exist as underlaying DPTF-Based Anchor"
+        \ Note 4] and 5] were never an enforce: they were a CONSEQUENCE, which is why nothing \
+        \ caught the inconsistency. [6.2.1] <<TX-ANK-VAR4b>> pinned the old refusal; it now \
+        \ pins the new acceptance."
         (let
             (
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 ;;
-                (owner:string (ref-DPTF::UR_Konto (URCv_CoreDptf dptf-id)))
+                (owner:string (URCv_AnchorableDptfAuthority dptf-id))
             )
             (ref-DALOS::CAP_EnforceAccountOwnership owner)
         )

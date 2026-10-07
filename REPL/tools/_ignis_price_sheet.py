@@ -297,7 +297,25 @@ for _k, _dk in re.findall(
     STOA_DETER[_k] = _dk
 
 EMPTY_OC = re.compile(r'\b(?:UC_EmptyOc|EOC)\b')
-COLLECTS = re.compile(r'(?:IGNIS[^\s]*::)?(?:STOA\|)?C_Collect')
+# WHAT COUNTS AS COLLECTING. Two corrections, 2026-10-06, both found when a refactor that changed
+# NO billing flipped six rows to "free".
+#
+# 1. THE COLLECTORS WERE RENAMED. This matched `C_Collect` only, which is the OLD spelling: the
+#    IGNIS collectors became `XE_Collect*` / `XB_Collect*` when they stopped being `C_` functions.
+#    Measured in the Talos layer: 378 `XE_Collect*` calls against 11 surviving `C_Collect`. So the
+#    regex recognised 3% of the collection in the tree and read the other 97% as "no collector
+#    here". It stayed invisible because `_discards_cumulators` only consults it for wrappers that
+#    BIND a cumulator and have IGNIS-but-no-STOA legs -- a narrow enough slice that no live row
+#    sat in it, until `AQP-SCR|C_Issue*ScoreDefinition` and the six set definers were refactored
+#    to bind `ico` so they could report the id they generated (StoicSyntax 2.16.2). Those six
+#    publish >= 544 IGNIS and the sheet began publishing 0.
+#
+# 2. `C_Collect` MATCHED `C_Collectable...`. Bare prefix, no boundary, so `C_Collectable`,
+#    `CC_CollectableStakeFlow` and `C_SyncCollectableAnchors` all read as collectors. That error
+#    points the safe way (a row is NOT flagged as free), which is why it survived -- but it makes
+#    the check assert something it never tested. `(?![a-z])` keeps `XE_CollectIgnis` and
+#    `CC_Collect` while dropping every `Collectable`.
+COLLECTS = re.compile(r'(?:(?:IGNIS|STOA)[^\s]*::)?(?:STOA\|)?(?:C|XE|XB)_Collect(?![a-z])')
 TIER = {'UDC_SmallestCumulator':'ignis|smallest','UDC_SmallCumulator':'ignis|small',
         'UDC_MediumCumulator':'ignis|medium','UDC_BigCumulator':'ignis|big',
         'UDC_BiggestCumulator':'ignis|biggest'}

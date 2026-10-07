@@ -16,14 +16,24 @@ over live state — tier discounts, fee toggles, per-pool settings, route length
 concatenation that exists nowhere outside its reader.
 
 So the only honest way to show a cost is to **ask the chain**, through the `INFO_` reader paired
-with the operation. The registry carries **428** of them, and **all 423** client
-entrypoints are paired — none is left without a cost preview.
+with the operation. The registry carries **432** of them, and **all 427** client entrypoints
+are paired — none is left without a cost preview.
+
+That was briefly untrue, and the exception is worth recording because of how it arose. Four
+per-leg vacate entrypoints were named `AQP-POOL|XB_Vacate*`, and an `XB_` name matches neither
+the registry's entrypoint filter nor the price sheet's — so four live, BILLED client operations
+sat in neither, for as long as they had existed. Renaming them to `CC_Vacate*` did not create
+the gap; it made it reportable, and the gate reported it the same hour. Their `INFO_` readers
+shipped in `PureV2/30`.
+
+The lesson is about the filter, not the four: a naming convention that decides what a tool can
+SEE will hide anything misnamed, and it will hide it silently.
 
 ---
 
 ## 1. The hazard that dominates everything else
 
-**410 of the 423 entrypoints have a preview whose parameter list differs from their own.**
+**414 of the 427 entrypoints have a preview whose parameter list differs from their own.**
 Only 13 match. Different names, different order, different arity.
 
 A live example — the two are not close:

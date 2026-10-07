@@ -9,11 +9,11 @@
   "TS01-CP": "Zs8-rMtVbMr5bdSrAQyEYkDPHAlLQFg8BMh8e9QxxTs",
   "TS02-C1": "0cu6G7nPCnerl9A-585XViL3YGiUfElCr6Y5kUGQKzE",
   "TS02-C2": "Mqi49RwMD1hmiCHvHxD-w4QBiSXYGyKywMcD3cBakS4",
-  "TS02-C3": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+  "TS02-C3": "cpXiY8UyF5yTXErmBn-Ad4YXkdvlJJiZUtIstiDTgPE",
   "TS02-CPAD": "DvLbtKVBl02gLcsLCq4NQKlnqGZdGRCTH7Fg3S6UIK8",
   "TS02-DPAD": "dLztzfE3wr8Rv2uTgBd8LOJx7OVW79Rr0LO7UvPKQ1c"
  },
  "note": "WHEN the registry snapshot was last confirmed against mainnet, by REPL/tools/_registrylive.py. Written only on a clean run. The offline gate prints this date; it cannot verify it.",
- "surfaceHash": "7c2b70c6118d6db2",
- "verifiedAt": "2026-09-27"
+ "surfaceHash": "37e9979f5a957dd9",
+ "verifiedAt": "2026-10-05"
 }

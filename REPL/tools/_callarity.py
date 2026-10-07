@@ -95,7 +95,7 @@ ALIAS_RE = re.compile(r'\(\s*(ref-[A-Za-z0-9|_\-]+)\s*:module\{[^}]*\}\s+([A-Za-
 def alias_map(src):
     """{alias -> module} from this file's own `(ref-X:module{Iface} MODULE)` bindings.
 
-    THE ALIAS IS NOT ALWAYS THE MODULE NAME. `(ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)`
+    THE ALIAS IS NOT ALWAYS THE MODULE NAME. `(ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)`
     binds `SCR` to `AQP-SCORE`; `ref-FVT` to `AQP-FVT`. Assuming alias == module resolved most
     calls and quietly parked the abbreviated ones in UNCHECKED -- including call sites of
     functions a sweep had just re-signed. Reading the binding is exact where the convention is

@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 6 of 24
 ;; This is STEP 6 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-5 must have run first, including the init steps between deploys.
-;; 3 source file(s), 231,586 gas measured in the REPL gas model, 226,265 bytes
+;; 3 source file(s), 231,586 gas measured in the REPL gas model, 226,250 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/13_OUROBOROS.pact
@@ -400,7 +400,6 @@
             \ e.g. AQP-FVT normalizing an IGNIS royalty leg to OURO before disposal). Same conversion as \
             \ IGNIS|C>COMPRESS but WITHOUT the standard-account restriction; the caller-module IMC gate (P|UEV_IMC in \
             \ XB_Compress) is the trust boundary."
-        @event
         (compose-capability (IGNIS|XB>CONVERT client))
     )
     (defcap IGNIS|XB>CONVERT (client:string)

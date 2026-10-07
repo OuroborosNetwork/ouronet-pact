@@ -68,7 +68,7 @@ is what permits functions to be module-only — defined here and absent from any
 is the read layer's escape from the cascade rule. Adding a function to a *published* interface
 means a new version and every consumer bumping with it.
 
-**A preview's parameter list usually differs from the operation's** — 410 of 423 across the
+**A preview's parameter list usually differs from the operation's** — 414 of 427 across the
 system, only 13 matching. Bind arguments by name. Positional binding does not fail: the values are
 mostly strings, so a wrong mapping type-checks and returns a confident price for a different
 question.

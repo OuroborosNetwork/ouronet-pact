@@ -33,10 +33,10 @@ You want the operation surface and the traps, not the internals.
 3. `../10-architecture/08-the-read-layer.md` — what to call for data, and what not to
 4. **`docs/CHAPTER-INTEGRATION/`** in this repository — five files written for exactly this job:
    orchestration, signing and capabilities, cost preview, errors, reading data
-5. `../90-reference/01-entrypoint-catalogue.md` — all 423 entrypoints, generated
+5. `../90-reference/01-entrypoint-catalogue.md` — all 427 entrypoints, generated
 
 **Do not skip step 4**, and read `03-cost-preview.md` in it before writing any preview code. The
-single most dangerous fact in the client surface lives there: **410 of the 423 entrypoints have a
+single most dangerous fact in the client surface lives there: **414 of the 427 entrypoints have a
 cost-preview function whose parameter list differs from their own** — different names, different
 order, different arity. Only 13 match. Binding preview arguments positionally produces a confident,
 wrong price rather than an error, because the values are all strings and nothing type-checks.
@@ -110,7 +110,7 @@ three or four in full to learn the template, then use it as a lookup.
 ## Sources
 
 - File count from `BUILD-PLAN.md` §3, which enumerates all 132.
-- The 410-of-423 preview divergence: `Deploy/OURONET-REGISTRY.json`, recomputed and gate-checked by
+- The 414-of-427 preview divergence: `Deploy/OURONET-REGISTRY.json`, recomputed and gate-checked by
   `REPL/tools/_chapterfigures.py`; explained in `docs/CHAPTER-INTEGRATION/03-cost-preview.md` §1.
 - The citizen-freedom ruling: owner, 2026-09-26, recorded in `CLAUDE.md` under the
   patron/executor/executee canon and in `OuronetInformational/StoicSyntax-Prefixes.md` §2.2.
