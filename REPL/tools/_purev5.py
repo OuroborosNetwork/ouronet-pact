@@ -1,90 +1,49 @@
 #!/usr/bin/env python3
-"""Emit and verify the PureV4 hand-deploy round -- share-based (equity) scoring.
+"""Emit and verify the PureV5 hand-deploy round.
 
-WHY THIS ROUND EXISTS.  Owner observation, 2026-10-07, settling how `E|` shareholder collections
-score.  Demiourgos Snakes was *meant* to read "the nonce valued at 500 shares is worth 100", but
-the system had no way to say that: a semi-fungible score definition stores a weight PER NONCE,
-and an equity nonce's worth in shares is not fixed -- `EQUITY::URC_SingleSharePerMillions`
-derives it from the collection's live total, so raising a collection from 1M to 10M shares makes
-every stored per-nonce weight stale the instant it is written.
+ROUND V5 IS OPEN AND EMPTY. This is the scaffold the next contract change lands in, created
+2026-10-08 so that a change has somewhere to go the moment it exists -- V3 and V4 both began as
+an edit made first and a pipeline assembled afterwards, which is how `Deploy/` drifted from its
+sources twice.
 
-  RULING.  An `E|` collection exposes share-based scoring and NOTHING ELSE -- it is a BUILT-IN
-  mechanism, not a definition.  The score itself only decides whether the stake earns debt.
-  Score definitions on an equity collection are therefore REFUSED, not merely ignored, because a
-  stored definition that can never be read is a lie the UI will eventually display.
+HOW TO FILL IT. Add sources to `MANIFEST` keyed by deploy file, in deploy order, then:
 
-AND THE SHARE COUNT CANNOT MOVE TODAY -- recorded because the first draft of this file said it
-could, and that was wrong.  `C_IssueShareholderCollection` mints exactly 1,000,000 nonce-1 shares
-and grants `R-AddQuantity` to <dpdc> ALONE; the two functions that use it credit PACKAGE nonces,
-never nonce 1, and Make/Break escrow shares through <dpdc> rather than minting.  So a stored
-per-nonce table would not be stale YET.  The reasons to derive anyway are (a) the variable share
-count is a STATED REQUIREMENT, and deriving now means adding EQUITY's own issuance path later will
-not force a re-settling of every score already issued, and (b) a table has to be WRITTEN, per
-score x per collection x per nonce, and every write is a chance to enter a wrong number.
+    python3 REPL/tools/_purev5.py --plan     size + gas + the order proof, before writing
+    python3 REPL/tools/_purev5.py --write    emit the bodies under the hand-written headers
+    python3 REPL/tools/_purev5.py --check    regenerate in memory and diff (fatal in _gate)
 
-WHAT CHANGED, in three places:
+THREE THINGS THAT DECIDE THE PACKING, all of them learned the expensive way:
 
-  `URC_IzEquitySemiFungible` (EQUITY)   the `E|` predicate, promoted to the interface so
-                                       AQP-SCORE can ask.  This is why EquityV2 -> V3.
-  `URCx_EquityShareRawWeight` (SCORE)   raw weight = SUM over staked nonces of quantity x share
-                                       value: 1.0 for nonce 1 (raw shares), and
-                                       `URC_SingleSharePerMillions` for the package tiers 2-8.
-                                       Derived at STAKE time, so it tracks the live total.
-  the dispatch (SCORE)                 `URC_SignedBaseDeltaForDpsfStake` is now three-way:
-                                       equity -> share weight, `sft-equality` -> flat, else the
-                                       stored per-nonce definition.
+  GAS GROWS AS THE SEVENTH POWER OF SIZE. `gas ~= 95_225 * (KB/256)**7`, ceiling ~395 KB at the
+  2.00M limit. Fewer, bigger transactions is the wrong instinct: V3 was nearly consolidated from
+  8 files to 3 of ~692 KB, which would have cost ~100,000,000 gas EACH. BALANCE beats count.
 
-REPL EVIDENCE, in three parts, and the second and third both exist because the first was not
-enough.
+  THE DOT-PIN CASCADE IS USUALLY MOST OF THE ROUND. A dot call resolves at the CALLER's deploy
+  time, and a stale caller of a table-owning callee ABORTS with "hash not blessed" rather than
+  going quietly stale. V4 was twelve modules for a three-place change; seven of them were
+  byte-identical to what was live. Run `python3 REPL/tools/_dotpin.py` and take the closure.
 
-  `[6.1.1]_EQUITY.repl` `TX-EQUITY-004`   the predicate, the weight helper (packaging
-                                          weight-neutrality, additivity, out-of-range -> 0), and
-                                          the TRACKING property -- the supply is driven 1M -> 10M
-                                          with `env-module-admin`, the same module-admin write the
-                                          owner uses on mainnet, and the tier weight follows it
-                                          x10 while a raw share stays at 1.  Restored in-tx.
-  `[6.2.2]_AQP-SCORE.repl` `<<TX-SCORE-15>>`   the definition REFUSAL, plus its non-vacuity pair.
-  `[6.2.2]_AQP-SCORE.repl` `<<TX-SCORE-15b>>`  the DISPATCH, through
-                                          `URC_SignedBaseDeltaForDpsfStake`.
+  A NEW INTERFACE CANNOT BE SIMULATED BEFORE IT EXISTS. Any module naming an interface this round
+  introduces will fail the wallet's simulation until the transaction defining it has landed. That
+  is expected and is not a reason to repack -- the modules that simulate FINE are the ones
+  ordering actually protects. See `Deploy/PureV4/README.md` for the worked case.
 
-WHY 15b IS A SEPARATE TRANSACTION.  Every helper assertion above passed with the dispatch branch
-DELETED -- they call the helper directly and never traverse the stake path, so the one line that
-makes the feature reachable was unpinned.  And the first version of the dispatch assertion sat
-inside `<<TX-SCORE-15>>` and read `E|TSEQ-98c486052a51` out of `[6.1.1]`'s fixture, which SEVEN of
-the eight gate entrypoints that load `[6.2.2]` never load: green under Stage02_Tester, "No value
-found in table DPSF|T|Nonces" everywhere else.  A cross-suite fixture is a load-order bet, not a
-fixture.  `<<TX-SCORE-15b>>` issues its own company under a ticker nothing else uses and rolls the
-transaction back, so it is self-sufficient in all eight and leaves no trace in any.
+CANDIDATES ALREADY KNOWN FOR THIS ROUND (neither is committed to -- both need an owner ruling):
 
-THE ROUND IS 12 MODULES, AND ONLY FIVE CHANGED.  The rest are cascade:
-
-  INTERFACE CASCADE.  EquityV2 -> V3.  Every module naming it moves together: AQP-SCORE,
-  TS02-C1, INFO-TWO and the citizen DEMIPAD-SNAKES.
-
-  DOT-PIN CASCADE, and it is the expensive one.  AQP-SCORE owns 12 tables and is dot-called by
-  RPS and AQP-INFO; RPS is dot-called by AQP-FVT, AQP-VCT, MTX-AQP, AQP-DSA and AQP-INFO;
-  AQP-FVT by AQP-INFO and AQP-BOOT.  A stale dot-caller of a table-owning callee does not go
-  quietly stale -- it ABORTS with "hash not blessed" -- so the closure is forced even though
-  seven of these modules are byte-identical to what is already live.  See REPL/tools/_dotpin.py.
-
-  EQUITY itself is NOT a dot-callee (0 sites), which is the only reason the round is not larger.
-
-PACKING.  1,397,160 EMITTED bytes (sources plus this tool's headers, minus the stripped
-create-tables), RPS alone at 296,148 -- so a floor of 5 transactions, and this round is 6.  Gas
-grows as the SEVENTH power of size (see MAXBYTES), so the partition is balanced, not greedy: six
-balanced transactions total ~412k gas with a worst single transaction of ~224k, which is *below*
-V3's worst at eight.  Five would put ~760k on the round and 2.4x the worst case.  Fewer files is
-not cheaper here, and --plan measures the EMITTED file rather than the body for the same reason.
-
-  python3 REPL/tools/_purev4.py --check    regenerate in memory, report drift (fatal in _gate)
-  python3 REPL/tools/_purev4.py --write    rewrite the bodies
-  python3 REPL/tools/_purev4.py --plan     print the packing with sizes, gas and the order proof
+  * `SCR|C>ENABLE-DEB-BOOST-SCORE` could enforce that a satellite's DEB flag matches its hub's,
+    at ENABLE time rather than by inheriting at read time. Read-time inheritance would make
+    `UR_SCR|ScoreDebBoost` stop reporting what is stored, and the deb-staleness check at
+    `02_SCORE.pact:1691` compares against exactly that. Enforcing at the write is the smaller,
+    honest version.
+  * `09_AQP-INFO.pact` is absent from `deploy-stage02.repl`. It is live on mainnet (V3/08, and
+    again in V4/06) so nothing is pending there, but a FROM-SCRATCH chain would miss it. That is
+    a loader fix, not a deploy -- listed here so it is not forgotten when one is next assembled.
 """
 import sys, os, re, difflib
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-DEPLOY = os.path.join(ROOT, "Deploy", "PureV4")
-MARK = ";;@GENERATED-BODY-BELOW -- do not edit past this line; see REPL/tools/_purev4.py"
+DEPLOY = os.path.join(ROOT, "Deploy", "PureV5")
+MARK = ";;@GENERATED-BODY-BELOW -- do not edit past this line; see REPL/tools/_purev5.py"
 
 # 320,000 BYTES -- the same cap as V3, for the same measured reason. The binding constraint is
 # GAS, and it scales as the seventh power of transaction size:
@@ -112,39 +71,23 @@ AQP = "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/"
 #   module-only    ship from `(module `, create-table stripped -- the interface is already live
 #   iface+upgrade  ship a NEW interface whole, then the module as an upgrade
 MANIFEST = {
-    # EMPTY: ROUND V4 IS COMPLETE AND ON MAINNET, deployed 2026-10-07 in six consecutive
-    # transactions. Verified by the chain itself rather than by the receipts:
-    # `EQUITY.URC_IzEquitySemiFungible` resolves (it ships in V4/01), and
-    # `URC_SignedBaseDeltaForDpsfStake` now answers 500 for one tier-3 package on
-    # DemiourgosShareholder where it answered 1 before, and 500 on DemiourgosSnakes where it
-    # answered 0. Neither is possible unless 01 and 02 both landed.
-    #
-    # Every file below is therefore a RECORD of what was sent, not a source to regenerate. The
-    # next round goes to `Deploy/PureV5/` and `_purev5.py`.
+    # EMPTY -- nothing is queued for V5 yet. Add entries as ("path", mode):
+    #   "01_deploy.pact": [("1_SOVEREIGN/.../FOO.pact", "module-only")],
+    # mode is "module-only" when the interface is already live, "iface+upgrade" when this round
+    # ships a NEW interface whole and the module as an upgrade.
 }
-# EXECUTED ON MAINNET and therefore records, not sources.
-FROZEN = {
-    "01_deploy.pact": "EquityV3 (new interface) + EQUITY + TS02-C1 + INFO-TWO + DEMIPAD-SNAKES. Deployed.",
-    "02_deploy.pact": "AQP-SCORE -- the equity dispatch and the definition refusal. Deployed.",
-    "03_deploy.pact": "RPS (dot-pin re-pin only, byte-identical). Deployed.",
-    "04_deploy.pact": "MTX-AQP + AQP-DSA + AQP-VCT (dot-pin re-pin). Deployed.",
-    "05_deploy.pact": "AQP-FVT (dot-pin re-pin). Deployed.",
-    "06_deploy.pact": "AQP-INFO + AQP-BOOT (dot-pin tail). Deployed.",
-}
+FROZEN = {}
 HANDWRITTEN = {}
 
 # Interfaces SHIPPED NEW by this round. Every module naming one must come LATER in the global
 # sequence; a module naming an interface that has not loaded yet fails its modref at deploy.
-NEW_IFACES = ["EquityV3"]
+NEW_IFACES: list[str] = []
 
 # (callee module, caller module) pairs this round must honour: callee ships STRICTLY earlier.
 # Derived from `_dotpin.py` and restricted to modules in this round.
-DOT_EDGES = [
-    ("AQP-SCORE", "RPS"), ("AQP-SCORE", "AQP-INFO"),
-    ("RPS", "AQP-FVT"), ("RPS", "AQP-VCT"), ("RPS", "MTX-AQP"), ("RPS", "AQP-DSA"),
-    ("RPS", "AQP-INFO"),
-    ("AQP-FVT", "AQP-INFO"), ("AQP-FVT", "AQP-BOOT"),
-    ("AQP-VCT", "AQP-INFO"), ("AQP-DSA", "AQP-INFO"),
+DOT_EDGES: list[tuple[str, str]] = [
+    # (callee, caller) pairs this round must honour: the callee ships STRICTLY earlier in the
+    # global sequence. Derive from `python3 REPL/tools/_dotpin.py`, restricted to this round.
 ]
 
 
@@ -328,10 +271,10 @@ def main():
             print(f"  ORPHAN   {f}")
             bad += 1
     if bad and not write:
-        print(f"PureV4: {bad} problem(s). Run REPL/tools/_purev4.py --write")
+        print(f"PureV5: {bad} problem(s). Run REPL/tools/_purev5.py --write")
         return 1
     if not bad:
-        print(f"PureV4: clean -- {len(MANIFEST)} generated, {len(FROZEN)} frozen")
+        print(f"PureV5: clean -- {len(MANIFEST)} generated, {len(FROZEN)} frozen")
     return 0
 
 

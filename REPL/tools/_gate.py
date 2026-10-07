@@ -604,6 +604,20 @@ def main():
         print(_p4.stdout + _p4.stderr)
         sys.exit("GATE FAILED: a Deploy/PureV4 file is stale, mis-ordered, or carries a create-table.")
 
+    # Deploy/PureV5 -- open and empty until the next contract change. Checked from the day it is
+    # created rather than the day it is filled: V3 and V4 both began as an edit made first and a
+    # pipeline assembled afterwards, which is how `Deploy/` drifted from its sources twice. An
+    # empty round passes trivially, so this costs nothing until it matters.
+    #
+    # V4 is now FROZEN alongside V3 -- deployed 2026-10-07, confirmed by the chain rather than by
+    # the receipts (`URC_IzEquitySemiFungible` resolves, and the stake dispatch answers 500 where
+    # it answered 1 and 0 before).
+    _p5 = subprocess.run([sys.executable, "tools/_purev5.py", "--check"],
+                         capture_output=True, text=True)
+    if _p5.returncode != 0:
+        print(_p5.stdout + _p5.stderr)
+        sys.exit("GATE FAILED: a Deploy/PureV5 file is stale, mis-ordered, or carries a create-table.")
+
     # GLYPH PARITY. The character IS the wire format. Porting DPL-UR's reads flattened Unicode to
     # ASCII four separate times -- ¢->c, ×->x, ≥->>=, and Ξ₳->Xi-A, the Elite-Auryn symbol itself.
     # Every one of them renders, none looks wrong in isolation, and two reached mainnet. No test
