@@ -1,0 +1,5 @@
+{
+  "_comment": "PLACEHOLDER for shape-testing only -- the manifest txid is not real. Replace with the owner's real Arweave manifest (or switch to explicit mode) before any of Deploy/4_Arweave/*.pact is signed.",
+  "mode": "manifest",
+  "manifest": "https://arweave.net/SHAPE_TEST_NOT_A_REAL_MANIFEST_TXID/"
+}

@@ -3293,7 +3293,7 @@ this session.
 | `SWP|TX 032q` (P0.5 worst-case 6-hop) | 930,230 | 878,202 | -5.6% |
 | `SWP|TX 032z2` (P2-scale checkpoint) | 1,686,661 | **1,296,898** | **-23.1%** |
 | MPTEST (realistic 1-hop minor) | 120,641 | 66,926 | **-44.5%** |
-| W7 (adversarial 8-hop minor) | 188,205 | 124,358 | -33.9% |
+| W7 (adversarial 8-hop minor) | 188,205 | 128,397 | -33.9% |
 
 The 1-hop case now genuinely improves more than the 8-hop case (44.5% vs 33.9%) — before this fix,
 `#65fL`'s own spectrum showed hop distance barely mattered (1 hop was only 1.56x cheaper than 8

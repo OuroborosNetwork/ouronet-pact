@@ -1191,6 +1191,19 @@
             (map print
                 [
                     (format "<(SWEEP01 post: agg-promile / lane-weight)> => {} / {}" [agg-post lane-post])
+                    ;;DIAGNOSTIC, kept permanently (2026-10-09). When the lane fix landed, this
+                    ;;assertion failed with 220->220 and NOTHING on screen said why -- the lane is a
+                    ;;derived figure, so a stale input and a broken derivation look identical from
+                    ;;here. These four are the inputs the lane is now made of.
+                    (format "<(SWEEP01 post: silver deb-boost / base / boosted / deb-score)> => {} / {} / {} / {}"
+                        [(ref-SCR::UR_SCR|ScoreDebBoost silver-score)
+                         (ref-SCR::UR_U-SCR|UserScoreBaseScore anhd ouro-pool silver-score)
+                         (ref-SCR::UR_U-SCR|UserScoreBoostedScore anhd ouro-pool silver-score)
+                         (ref-SCR::UR_U-SCR|UserScoreDebScore anhd ouro-pool silver-score)])
+                    (format "<(SWEEP01 post: silver stale? / triplet / true-triplet)> => {} / {} / {}"
+                        [(ref-SCR::URC_U-SCR|UserScoreDebStale anhd ouro-pool silver-score)
+                         triplet-id
+                         (ref-SCR::UR_SCR|TripletTrueTriplet triplet-id)])
                     (format "<(SWEEP01 post: silver-class links / pool frozen)> => {} / {}" [links-post frozen-post])
                     ;; (a) the holder's aggregate-promile DROPPED (AurynRain removed from silver-class)
                     (expect (format "<<TX-SWEEP01>> aggregate-promile DROPPED {}->{}" [agg-pre agg-post]) true (< agg-post agg-pre))

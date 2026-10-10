@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 19 of 24
 ;; This is STEP 19 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-18 must have run first, including the init steps between deploys.
-;; 3 source file(s), 849,276 gas measured in the REPL gas model, 272,599 bytes
+;; 3 source file(s), 849,276 gas measured in the REPL gas model, 274,447 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/06_VCT.pact
@@ -1075,6 +1075,28 @@
     (defun UC_VacateUniqueBeneficiaries:[string] (beneficiary-ids:[string])
         @doc "Order-preserving distinct beneficiary-ids (the merge target set for per-beneficiary rollup)."
         (fold (lambda (acc:[string] b:string) (if (contains b acc) acc (+ acc [b]))) [] beneficiary-ids)
+    )
+    (defun UC_VacateOrtoDestinations:[string] (owner-ids:[string] beneficiary-ids:[string])
+        @doc "Where each vacated DPOF row's nonces must actually be SENT. \
+            \ \
+            \ For almost every row this is the owner column, and for a CUSTODIAL SLEEPING position \
+            \ it cannot be: that column holds `AQP|SC_NAME`, because naming the pool as owner IS \
+            \ the custody mechanism (`XI_OrtoStakePhases`). Vacate bulk-transfers OUT OF the pool \
+            \ smart account, so sending to the owner column would make the pool both sender and \
+            \ recipient -- the batch would never leave, while the tracker row and the score were \
+            \ unwound around it. The position would be gone and the asset still inside, with no \
+            \ row left to find it by. \
+            \ \
+            \ The beneficiary is the right destination and not merely an available one: a \
+            \ custodial row can only be created by `CCp_StakeSpecialCustodial`, which moves the \
+            \ batch FROM the staker and records that same staker as beneficiary. So the \
+            \ substitution returns the asset to the account it came from. \
+            \ \
+            \ IT RETURNS THE STILL-SLEEPING BATCH, not the native counterpart. A vacate is a \
+            \ wind-down that may run long before maturity, when unsleeping is impossible; the \
+            \ holder keeps both the asset and the remaining lock. Maturity-gated dissolution is \
+            \ `CCp_ReleaseSpecialCustodial`'s job, not this one."
+        (zip (lambda (o:string b:string) (if (= o AQP|SC_NAME) b o)) owner-ids beneficiary-ids)
     )
     (defun UC_VacateMergeDecimalNonceRowsForBeneficiary:object
         (beneficiary-id:string beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[decimal]])
@@ -3042,7 +3064,9 @@
                 (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                 ;;
                 (bulk-oc:object{IgnisCollectorV3.OutputCumulator}
-                    (ref-DPOF::C_BulkTransfer patron AQP|SC_NAME owner-ids dpof-id nonces-array true)
+                    (ref-DPOF::C_BulkTransfer patron AQP|SC_NAME
+                        (UC_VacateOrtoDestinations owner-ids beneficiary-ids)
+                        dpof-id nonces-array true)
                 )
                 (unwind-oc:object{IgnisCollectorV3.OutputCumulator}
                     (XI_1|VacateOrtoFungibleUnwindBatch
@@ -3161,7 +3185,9 @@
                 (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                 ;;
                 (bulk-oc:object{IgnisCollectorV3.OutputCumulator}
-                    (ref-DPOF::C_BulkTransfer patron AQP|SC_NAME owner-ids dpof-id nonces-array true)
+                    (ref-DPOF::C_BulkTransfer patron AQP|SC_NAME
+                        (UC_VacateOrtoDestinations owner-ids beneficiary-ids)
+                        dpof-id nonces-array true)
                 )
                 (unwind-oc:object{IgnisCollectorV3.OutputCumulator}
                     (XI_1|DrainOrtoFungibleUnwindBatch

@@ -404,7 +404,14 @@ Interface updates (`02_Core`, `03_Talos`) and module load order land with the ab
 ## 15. Open decisions (track before coding)
 
 1. **Talos composite collect:** single tx collecting all anchors for one user vs explicit per-anchor calls.
-2. **Foreign surplus vs lane weights:** lane formula uses `base × promile/1000` on silver base-score; satellite `deb-score` surplus fields are not used for FVT lanes.
+2. ~~**Foreign surplus vs lane weights:** lane formula uses `base × promile/1000` on silver base-score; satellite `deb-score` surplus fields are not used for FVT lanes.~~
+   **CLOSED 2026-10-09 — it was not a decision, it was a defect, and writing it down as an open question is
+   how it survived.** Both halves of that sentence were true and both were wrong. The lane formula DID read
+   `silver base × promile`, which dropped the hub's base (a holder with no boosters scored 0, so
+   `total-lane-weight` was 0 and the member's whole Tier-2 tranche was undistributable) and assumed the hub
+   is the silver slot when the rules only say `boost-link = BAR`. And the satellites' `deb-score` fields
+   WERE unused by the lanes — they are now the lanes. `URC_ComputeTripletLanes` reads each leg's stored
+   deb-score, so Σ lanes ≡ `URC_TripletUserDebSum`, the same basis the non-true path always used.
 
 ---
 

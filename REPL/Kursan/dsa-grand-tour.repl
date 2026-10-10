@@ -1242,7 +1242,7 @@
         (ouro:string (DALOS.UR_OuroborosID))
         (pool:string "DHOuroLp-98c486052a51")
     )
-    (ref-TS02-C3::AQP-SCR|C_IssueLiquidityScore KST.ANHD KST.ANHD "FvtProbeScore" 6 ouro 2.0 2.0)
+    (ref-TS02-C3::AQP-SCR|C_IssueLiquidityScore KST.ANHD KST.ANHD "FvtProbeScore" 6 ouro 2.998 1.999)
     (let*
         (
             (sc:string (ref-U|DALOS::UDC_Makeid "FvtProbeScore"))
@@ -1369,10 +1369,10 @@
         (auryn:string (DALOS.UR_AurynID))
         (pool:string "DHOuroLp-98c486052a51")
     )
-    (ref-TS02-C3::AQP-SCR|C_IssueLiquidityScore KST.ANHD KST.ANHD "TripBronze" 6 ouro 2.0 2.0)
-    (ref-TS02-C3::AQP-SCR|C_IssueLiquidityScore KST.ANHD KST.ANHD "TripSilver" 6 ouro 2.0 2.0)
-    (ref-TS02-C3::AQP-SCR|C_IssueLiquidityScore KST.ANHD KST.ANHD "TripGolden" 6 ouro 2.0 2.0)
-    (ref-TS02-C3::AQP-SCR|C_IssueLiquidityScore KST.ANHD KST.ANHD "TripOddOne" 6 auryn 2.0 2.0)
+    (ref-TS02-C3::AQP-SCR|C_IssueLiquidityScore KST.ANHD KST.ANHD "TripBronze" 6 ouro 2.998 1.999)
+    (ref-TS02-C3::AQP-SCR|C_IssueLiquidityScore KST.ANHD KST.ANHD "TripSilver" 6 ouro 2.998 1.999)
+    (ref-TS02-C3::AQP-SCR|C_IssueLiquidityScore KST.ANHD KST.ANHD "TripGolden" 6 ouro 2.998 1.999)
+    (ref-TS02-C3::AQP-SCR|C_IssueLiquidityScore KST.ANHD KST.ANHD "TripOddOne" 6 auryn 2.998 1.999)
     (let*
         (
             (b:string (ref-U|DALOS::UDC_Makeid "TripBronze"))

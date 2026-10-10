@@ -733,6 +733,141 @@
         (UEV_StakeTrueFungibleDptfLeg dptf-id)
         (compose-capability (SECURE))
     )
+    (defcap AQP|C>UPDATE-SCORE-MULTIPLIERS
+        (patron:string executor:string score-id:string mx-frozen:decimal mx-sleeping:decimal mx-hibernated:decimal)
+        @doc "Re-set a score's frozen/sleeping multipliers. THE EMPTINESS GATE LIVES HERE because \
+            \ this is the only module that can see both the pool tracker and the score: AQP-SCORE \
+            \ deploys first and cannot read this tracker at all. Ownership, fee validity and the \
+            \ ordering invariant are enforced by the callee's own capability, which is where they \
+            \ belong — each layer proves what it can see. Patron pays IGNIS; composes SECURE."
+        @event
+        ;;THE EXECUTOR IS BOUND, not merely declared. `CAP_EnforceAccountOwnership` in the callee
+        ;;proves somebody signed for the score's OWNER, but the owner is a DERIVED account that
+        ;;names no actor (HANDOFF 4g) — without this the caller could put any name in the
+        ;;`executor` slot and the emitted event would implicate an account that never took part.
+        ;;`UEV_ExecutorIzScoreOwner` does this inside AQP-SCORE but is not interface-declared, so
+        ;;the same binding is made here from the reader that is.
+        (let
+            (
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+            )
+            (enforce
+                (= executor (ref-SCR::UR_SCR|ScoreOwnerKonto score-id))
+                "executor must be the score owner"
+            )
+        )
+        ;;THE EMPTINESS GATE IS ENFORCED IN THE CLIENT BODY (`UEV_AQP|ScoreMxChangeSafe`), which
+        ;;binds its tracker scan before enforcing it -- a scan cannot be an `enforce` ARGUMENT
+        ;;anywhere, defcap or not. Kept out here so the heavy read is visible at the call site.
+        (compose-capability (SECURE))
+    )
+    (defcap AQP|C>BACKFILL-SCORE-SLICE
+        (patron:string pool-id:string score-id:string beneficiaries:[string])
+        @doc "One fed slice of the re-rate sweep: drive each listed holder's stored base to the \
+            \ canonical target for (pool-id, score-id). Patron pays IGNIS; composes SECURE. \
+            \ \
+            \ PERMISSIONLESS, LIKE THE ANCHOR SYNCS BESIDE IT, and that is a safety argument rather \
+            \ than a convenience. The slice cannot express a wrong outcome: it carries no amounts \
+            \ and no deltas, only WHICH ACCOUNTS to recompute, and the figure written is derived \
+            \ from the live tracker inside the transaction. So the worst a hostile caller achieves \
+            \ is paying IGNIS to make the chain MORE correct, while the pool stays repairable even \
+            \ if its owner never returns. Gating it on the owner would buy nothing and could strand \
+            \ a pool whose scores are provably mis-rated. \
+            \ \
+            \ NO MEMBERSHIP CHECK ON THE SLICE, DELIBERATELY. A listed account that is already \
+            \ correctly rated computes a delta of 0.0 and writes nothing, so a stale slice, an \
+            \ overlapping slice and a REPEATED account are all harmless — the target is recomputed \
+            \ immediately before each write, never batched ahead of the writes. That is the same \
+            \ property that makes two slices order-independent, and it is why this needs no job \
+            \ state: `URHC_AQP|ScoreBackfillOutstanding` reading [] is the completion record. \
+            \ \
+            \ THE ONE THING IT REFUSES is a score whose base is not Σ(amount × mx) at all \
+            \ (`URC_AQP|ScoreBackfillSupported`). There the formula itself is wrong, so every delta \
+            \ would be invented — and unlike a stale slice, that does not converge to anything."
+        @event
+        (enforce
+            (> (length beneficiaries) 0)
+            "Empty slice"
+        )
+        (enforce
+            (URC_AQP|ScoreBackfillSupported pool-id score-id)
+            "Score is not re-ratable: it must be a class-0 LP score employed by this pool and not an additive satellite"
+        )
+        (compose-capability (SECURE))
+    )
+    (defcap AQP|C>BEGIN-SCORE-REVOKE
+        (patron:string executor:string pool-id:string score-id:string slot-index:integer)
+        @doc "Phase 1 of 3 — vacate the score's POOL SLOT and freeze the pool for the drain. \
+            \ Pool owner only; patron pays IGNIS; composes SECURE. \
+            \ \
+            \ VACATING THE SLOT IS WHAT MAKES THE DRAIN LEGAL, and it is deliberately the only \
+            \ state this phase changes. A score that is LINKED to a pool but holds no SLOT is \
+            \ exactly 'being retired': it no longer scores anything new (it is out of \
+            \ `URC_PoolActiveScoreIds`, so no stake credits it), while the link that survives is \
+            \ what still identifies the pool its orphaned rows belong to. That one bit of \
+            \ asymmetry is the pending-revoke marker -- which is why this needs no new column and \
+            \ no migration. \
+            \ \
+            \ THE POOL FREEZES because the drain and the stake path would otherwise write the same \
+            \ score rows from both ends: a stake crediting a score mid-drain would re-create the \
+            \ weight the drain just retired, and the sweep would never converge."
+        @event
+        (UEV_BeginScoreRevoke pool-id score-id slot-index)
+        (CAP_PoolOwner pool-id)
+        (UEV_ExecutorIzPoolOwner executor pool-id)
+        (compose-capability (SECURE))
+    )
+    (defcap AQP|C>DRAIN-SCORE-SLICE
+        (patron:string pool-id:string score-id:string accounts:[string])
+        @doc "Phase 2 of 3 — retire one SLICE of the holders of a score this pool has stopped \
+            \ employing. Patron pays IGNIS; composes SECURE. \
+            \ \
+            \ THE GATE IS 'NOT SLOTTED, STILL LINKED', and both halves matter. Not slotted proves \
+            \ the owner has begun a revoke, so this cannot zero weight in a live score. Still \
+            \ linked proves the rows belong to THIS pool, so a caller cannot aim the drain at an \
+            \ unrelated pair. The score-side capability re-checks the link from its own tables; \
+            \ this checks the slot, which only this module can see. \
+            \ \
+            \ PERMISSIONLESS, for the same reason the re-rate sweep is: the slice carries no \
+            \ figures, only WHICH ACCOUNTS to retire, and the target is 0.0 by definition. There is \
+            \ no wrong outcome a hostile caller can express -- only IGNIS they can waste -- and a \
+            \ pool whose owner vanishes mid-revoke stays finishable by anyone."
+        @event
+        (enforce
+            (> (length accounts) 0)
+            "Empty slice"
+        )
+        (let
+            (
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+            )
+            (enforce
+                (and
+                    (not (contains score-id (URC_PoolActiveScoreIds pool-id)))
+                    (= (ref-SCR::UR_SCR|ScoreAqpoolLink score-id) pool-id)
+                )
+                "Score is not mid-revoke on this pool: it must be unslotted but still linked"
+            )
+        )
+        (compose-capability (SECURE))
+    )
+    (defcap AQP|C>FINALIZE-SCORE-REVOKE
+        (patron:string executor:string pool-id:string score-id:string)
+        @doc "Phase 3 of 3 — cut the aqpool-link once the drain is provably complete. Pool owner; \
+            \ patron pays IGNIS; composes SECURE. \
+            \ \
+            \ COMPLETENESS IS MEASURED, NOT ASSERTED. The gate re-reads the drain's own work list \
+            \ and refuses while a single holder remains, so the link cannot be cut over weight that \
+            \ still exists. A client that trusted a caller's 'done' flag would strand exactly the \
+            \ rows nothing can find afterwards -- with the link gone, even the orphan scan loses \
+            \ the pool it belonged to."
+        @event
+        ;;COMPLETENESS IS ENFORCED IN THE CLIENT BODY (`UEV_AQP|ScoreDrainComplete`), which binds
+        ;;its user-score scan before enforcing it. Authorisation stays here, where it belongs.
+        (CAP_PoolOwner pool-id)
+        (UEV_ExecutorIzPoolOwner executor pool-id)
+        (compose-capability (SECURE))
+    )
     (defcap AQP|C>SYNC-TF-ANCHORS
         (patron:string beneficiary-id:string dptf-id:string)
         @doc "Pool-agnostic ANK repair for one beneficiary × dptf-id leg. Patron pays IGNIS; composes SECURE."
@@ -1032,6 +1167,65 @@
     (defun UR_AQP|PoolAqpClass:integer (pool-id:string)
         @doc "Reads aqp-class from pool row."
         (at "aqp-class" (read AQP|T|Pool pool-id ["aqp-class"]))
+    )
+    (defun URC_AQP|ScoreMxChangeSafe:bool (score-id:string)
+        @doc "HEAVY (two tracker scans). True iff this score has NO frozen and NO sleeping position, \
+            \ which is exactly the condition under which its multipliers may be re-set without \
+            \ corrupting anybody's weight. \
+            \ \
+            \ WHY NOT `nzs-count = 0`, the obvious gate: it is the count of holders with ANY weight, \
+            \ so a score with ordinary native stakers fails it — and on the live chain that is \
+            \ SilverSnakePower, with three native holders, the score most in need of the change. \
+            \ Native stakes multiply by 1.0 and never read `mx` \
+            \ (`URC_SignedBaseDeltaForDptfLpStake`), so they are not what makes a change unsafe. \
+            \ The frozen and sleeping LEGS are. \
+            \ \
+            \ WHAT MAKES A CHANGE UNSAFE is not staleness. The base is an accumulated SIGNED delta \
+            \ that promises 'a full unstake reverses exactly and nets to 0'; change `mx` between a \
+            \ stake and its unstake and the reversal stops cancelling, the row can go NEGATIVE and \
+            \ the global total with it. Deb-staleness never compares `mx`, so nothing reports it. \
+            \ \
+            \ TEMPORARY. The owner's standing decision is that a change triggers a parallel re-rate \
+            \ sweep instead of being refused. When that sweep lands, this predicate stops being a \
+            \ gate and becomes the test for whether the sweep is NEEDED."
+        (let
+            (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                ;;
+                (pool-id:string (ref-SCR::UR_SCR|ScoreAqpoolLink score-id))
+            )
+            ;;A COLLECTION POOL HAS NO DPTF ASSET, AND READING ONE ABORTS. aqp-class 3 (DPSF) and
+            ;;4 (DPNF) hold a collection, which has no row in `DPTF|PropertiesTable` -- so the bare
+            ;;`UR_Frozen` below does not return a default, it ABORTS the whole transaction with
+            ;;"No value found in table ... for key: DHB-...". Measured 2026-10-10 against mainnet:
+            ;;ELEVEN of the fifteen live scores failed this way, which made
+            ;;`CC_UpdateScoreMultipliers` unusable for every collection score and reported it with
+            ;;a message naming neither the score nor the cause.
+            ;;
+            ;;TRUE IS THE CORRECT ANSWER, not merely the safe one: freezing and sleeping are
+            ;;variants of a FUNGIBLE. An asset that has no DPTF properties cannot have a frozen or
+            ;;sleeping DPTF leg, so there is nothing a multiplier change could mis-rate.
+            (if (or (= pool-id BAR) (> (UR_AQP|PoolAqpClass pool-id) 2))
+                true
+                (let
+                    (
+                        (asset:string (UR_AQP|PoolAssetId pool-id))
+                    )
+                    (let
+                        (
+                            (frozen:string (ref-DPTF::UR_Frozen asset))
+                            (sleeping:string (ref-DPTF::UR_Sleeping asset))
+                        )
+                        (and
+                            (if (= frozen BAR) true
+                                (= (length (URH_AQP|ActiveDptfTrackerRows pool-id frozen)) 0))
+                            (if (= sleeping BAR) true
+                                (= (length (URH_AQP|ActiveDpofTrackerRows pool-id sleeping)) 0)))
+                    )
+                )
+            )
+        )
     )
     (defun UR_AQP|PoolAssetId:string (pool-id:string)
         @doc "Reads canonical asset-id from pool row."
@@ -1609,11 +1803,29 @@
         )
     )
     (defun URC_PoolUnstakeAdmissionOk:bool (pool-id:string)
-        @doc "True when the UNSTAKE direction is allowed: the pool must NOT be vacate-in-progress. A vacate session \
-            \ (begin→finalize) force-unwinds every staker itself, so a concurrent user-initiated unstake would race \
-            \ the same tracker/aggregate rows the drain writes — freeze it until finalize. (Unlike stake admission, \
-            \ this does NOT require stake-enabled or employed scores — exiting a disabled/empty pool stays allowed.)"
-        (not (UR_AQP|PoolVacateInProgress pool-id))
+        @doc "True when the UNSTAKE direction is allowed: the pool must be neither vacate-in-progress \
+            \ NOR sweep-in-progress. A vacate session (begin→finalize) force-unwinds every staker \
+            \ itself, so a concurrent user-initiated unstake would race the same tracker/aggregate \
+            \ rows the drain writes — freeze it until finalize. (Unlike stake admission, this does \
+            \ NOT require stake-enabled or employed scores — exiting a disabled/empty pool stays \
+            \ allowed.) \
+            \ \
+            \ UNSTAKE IS NOW BLOCKED MID-SWEEP TOO, and it was not before — stake admission has \
+            \ carried the sweep guard since D3 while this direction only ever checked vacate. The \
+            \ asymmetry was wrong in a way that only a re-rate makes reachable: a sweep exists \
+            \ precisely because stored weights DISAGREE with their canonical targets, and an \
+            \ unstake reverses the STORED figure. Exiting mid-sweep therefore reverses a number \
+            \ the chain has already decided is wrong, and the residue it leaves behind is \
+            \ unrecoverable — the position is gone, so no later sweep can recompute what it \
+            \ should have been. Blocking the exit is the only way the reversal stays exact. \
+            \ \
+            \ The freeze is never a trap: every sweep that sets it is PERMISSIONLESS to run and \
+            \ `CC_ClearPoolSweep` is permissionless to call, so a holder who wants out can finish \
+            \ the work themselves rather than wait for an admin."
+        (and
+            (not (UR_AQP|PoolVacateInProgress pool-id))
+            (not (UR_AQP|PoolSweepInProgress pool-id))
+        )
     )
     (defun URC_StakeTrueFungiblePoolClassOk:bool (pool-id:string)
         @doc "True when pool aqp-class is 0 (LP via TF) or 1 (non-LP DPTF)."
@@ -1902,6 +2114,421 @@
         )
     )
     ;;
+    ;; ── RE-RATE / BACK-FILL ENGINE ─────────────────────────────────────────────
+    ;; One question, asked four ways: WHAT BASE SHOULD THIS HOLDER HAVE RIGHT NOW?
+    ;;
+    ;;   target(holder) = floor(Σn × 1.0, p) + floor(Σf × mx-frozen, p) + Σ ledger(sleeping slots)
+    ;;
+    ;; The stored base is a MAINTAINED SIGNED ACCUMULATOR -- every stake adds a delta, every
+    ;; unstake subtracts one, and nothing ever recomputes across holders. That is what makes the
+    ;; system cheap, and it is why several separate problems reduce to this one function:
+    ;;
+    ;;   1] A SCORE WAS ADDED to a pool that already had stakers: every target is non-zero while
+    ;;      every base is 0. (The owner's bunny-pool question.)
+    ;;   2] A SCORE WAS REVOKED, or a row was ORPHANED: base non-zero, target 0.
+    ;;   3] ROUNDING DRIFT from a position staked in several tranches and withdrawn in one.
+    ;;
+    ;; NOTE WHAT IS *NOT* ON THAT LIST ANY MORE: a maturing sleeping batch. Its weight is derived
+    ;; from the STORED TERM in `SCR|T|SleepStake` -- how much of the lock the nonce had left when
+    ;; it was staked -- and never from the live clock, because a sleeping multiplier is fixed at
+    ;; STAKE time. The term is what is stored, not the weight: a term is ceiling-INDEPENDENT, so
+    ;; ONE row per nonce serves all of a pool's scores, each re-deriving its own figure at its own
+    ;; precision (`URC_SCR|SleepingLegHeldWeight`).
+    ;; A target that re-derived it from today's multiplier would drag the base away from the
+    ;; figure the unstake will reverse, and once the position is gone that gap is unrecoverable.
+    ;; A sleeping holder's weight is therefore meant to hold still: they already committed what
+    ;; they committed, and because the rate was set by REMAINING time there was never anything to
+    ;; gamble. Changing a score's mx CEILING does not retroactively move them either; re-rating
+    ;; an existing ledger to a new ceiling is deliberately separate work.
+    ;;
+    ;; APPLIED AS A DELTA, NEVER AS AN ABSOLUTE WRITE -- `target - current` goes through
+    ;; `SCR::XE_ApplyRawBaseDelta`, the same writer every stake uses, so the user row, the score's
+    ;; vault totals and `nzs-count` stay maintained by ONE piece of code. The alternative (a second
+    ;; writer that sets the base directly) would have to reproduce all three and would be free to
+    ;; disagree with the first.
+    ;;
+    ;; IDEMPOTENT, ORDER-INDEPENDENT, AND SELF-CHECKING. A slice recomputes the target from the
+    ;; tracker, so a replayed slice computes delta 0 and writes nothing; two disjoint slices touch
+    ;; disjoint user rows and compose into a shared total by += ; and `URHC_AQP|ScoreBackfillOutstanding`
+    ;; returning [] IS the proof that no sweep is needed. No job state, no cursor: the live table is
+    ;; the completion ledger. This is a FED SLICE, the parallel-safe recipe shape.
+    (defun UC_AQP|BackfillUniqueBeneficiaries:[string] (rows:[object])
+        @doc "First-seen-order dedupe of `beneficiary-id` across tracker rows. \
+            \ ONE BENEFICIARY MAY HOLD THROUGH MANY OWNERS and across all three legs, so the same \
+            \ account appears in several rows while owning exactly ONE user-score row. Collapsing \
+            \ them is what makes the target one figure per ACCOUNT rather than per row."
+        (fold
+            (lambda (acc:[string] row:object)
+                (let
+                    (
+                        (b:string (at "beneficiary-id" row))
+                    )
+                    (if (contains b acc) acc (+ acc [b]))
+                )
+            )
+            []
+            rows
+        )
+    )
+    (defun UC_AQP|BackfillRowsForBeneficiary:[object] (beneficiary-id:string rows:[object])
+        @doc "The subset of tracker rows crediting one beneficiary."
+        (filter
+            (lambda (row:object) (= (at "beneficiary-id" row) beneficiary-id))
+            rows
+        )
+    )
+    (defun UC_AQP|BackfillSumForBeneficiary:decimal (beneficiary-id:string rows:[object])
+        @doc "Σ `balance` over the rows crediting one beneficiary. RAW amount, UNWEIGHTED -- the \
+            \ multiplier is applied once to this sum, never per row, because the stake path floors \
+            \ ONCE PER CALL and a per-row floor would not reproduce it."
+        (fold (+) 0.0
+            (map
+                (lambda (row:object) (at "balance" row))
+                (UC_AQP|BackfillRowsForBeneficiary beneficiary-id rows)
+            )
+        )
+    )
+    (defun URC_AQP|PoolLiquidityLegs:object (pool-id:string)
+        @doc "The three asset-ids a liquidity pool weighs: the native LP DPTF, its FROZEN DPTF twin \
+            \ and its SLEEPING DPOF twin. BAR when the asset declares no such twin, which is what \
+            \ the callers branch on -- an absent twin contributes nothing rather than refusing."
+        (let
+            (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (asset:string (UR_AQP|PoolAssetId pool-id))
+            )
+            {"native"   : asset
+            ,"frozen"   : (ref-DPTF::UR_Frozen asset)
+            ,"sleeping" : (ref-DPTF::UR_Sleeping asset)}
+        )
+    )
+    (defun URC_AQP|ScoreBackfillSupported:bool (pool-id:string score-id:string)
+        @doc "True iff `target = Σ(amount × mx)` is the CORRECT formula for this score's base. \
+            \ Everything downstream refuses rather than computes when this is false, because a \
+            \ delta derived from the wrong formula does not fail -- it writes a plausible wrong \
+            \ number into a maintained accumulator, where it is indistinguishable from a real one. \
+            \ \
+            \ Three conditions, and the third is the one that is easy to miss: \
+            \ \
+            \ 1] THE SCORE IS EMPLOYED BY THIS POOL. A (pool, score) pair the chain does not relate \
+            \    has no holders and no meaning. \
+            \ 2] CLASS 0 OR CLASS 1 -- the two whose base really is `amount × mx`. Class 0 is LP \
+            \    via a true fungible, class 1 is a plain DPTF, and their per-leg arithmetic is \
+            \    IDENTICAL: `URC_SignedBaseDeltaForDptfStake` and \
+            \    `URC_SignedBaseDeltaForDptfLpStake` are both `floor(amount × mx, p)` with mx \
+            \    1.0 native / mx-frozen frozen. Pinned equal by [6.2.17] TX-RERATE-04, and the \
+            \    target still calls the one matching the class rather than relying on that. \
+            \    EXCLUDED: class 2 (DPOF) weighs per-nonce amounts through a DIFFERENT pair of \
+            \    functions, and classes 3/4 (SF/NF) weigh per-nonce and per-trait TABLE VALUES \
+            \    that are not amounts at all. Supporting class 2 is part of the sleeping-token \
+            \    custody work, not this engine. \
+            \ 3] NOT AN ADDITIVE SATELLITE. When a score has BOTH a boost-link and a boost-class- \
+            \    link, `URC_SingularUserScoreDeltaFromSignedUserBase` pins its stored base at \
+            \    EXACTLY 0.0 -- the hub owns the canonical base and the satellite is a boosting row. \
+            \    Its target under this formula is non-zero, so without this clause the sweep would \
+            \    compute a delta, apply it, read 0.0 back, and report the holder outstanding again \
+            \    FOREVER: a sweep that never converges and bills every pass. A satellite needs no \
+            \    back-fill of its own; when the HUB's base moves, the satellite's boosted/deb values \
+            \    go stale and the EXISTING deb-staleness sweep is what repairs them."
+        (let
+            (
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+            )
+            (fold (and) true
+                [
+                    (= (ref-SCR::UR_SCR|ScoreAqpoolLink score-id) pool-id)
+                    (contains score-id (URC_PoolActiveScoreIds pool-id))
+                    (contains (ref-SCR::UR_SCR|ScoreClass score-id) [0 1])
+                    (not
+                        (and
+                            (!= (ref-SCR::UR_SCR|ScoreBoostLink score-id) BAR)
+                            (!= (ref-SCR::UR_SCR|ScoreBoostClassLink score-id) BAR)
+                        )
+                    )
+                ]
+            )
+        )
+    )
+    (defun URH_AQP|ScoreTargetBaseForBeneficiary:decimal
+        (pool-id:string score-id:string beneficiary-id:string
+         nat-rows:[object] frz-rows:[object] slp-rows:[object])
+        @doc "The canonical base ONE beneficiary should carry, from pre-scanned tracker rows. \
+            \ \
+            \ Takes the rows rather than reading them so the three `select`s happen ONCE per \
+            \ transaction instead of once per holder. \
+            \ \
+            \ THE DPTF LEGS ARE RECOMPUTED, THE SLEEPING LEG IS READ. `URC_SignedBaseDeltaFor*` \
+            \ are CALLED rather than reimplemented, so there is exactly one copy of the weighting \
+            \ rule -- and for native and frozen that recomputation is EXACT, because their \
+            \ multipliers never move (1.0 and a flat `mx-frozen`). \
+            \ \
+            \ The SLEEPING leg is recomputed too, but from the STORED TERM rather than the live \
+            \ clock: its multiplier was fixed at STAKE time from the lock's remaining term, and \
+            \ `SCR|T|SleepStake` is what remembers that term. Deriving it from today's remaining \
+            \ time instead would move the base off the figure the unstake reverses, and once the \
+            \ position is gone that gap is unrecoverable. The stake, the unstake and this target \
+            \ all call ONE function -- `URC_SCR|SleepingLegHeldWeight` -- so they cannot drift."
+        (let
+            (
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                (legs:object (URC_AQP|PoolLiquidityLegs pool-id))
+                (slp-mine:[object] (UC_AQP|BackfillRowsForBeneficiary beneficiary-id slp-rows))
+            )
+            (fold (+) 0.0
+                [
+                    ;;THE LEG FUNCTION FOLLOWS THE SCORE CLASS, not the other way round. The two
+                    ;;are the same arithmetic today -- `floor(amount x mx, p)` either way, pinned
+                    ;;equal by [6.2.17] TX-RERATE-04 -- so this branch changes no number. It is
+                    ;;here because the target must be whatever the STAKE PATH would have written,
+                    ;;and the stake path dispatches on class (XE_ApplyTrueFungibleStakeDelta sends
+                    ;;class 0 to XI_1|UpdateScoreDataForTrueFungibleLP and everything else to
+                    ;;XI_1|UpdateScoreDataForTrueFungible). Calling one function for both would
+                    ;;make the engine correct only while the two happen to agree, and silently
+                    ;;wrong the day one of them changes.
+                    (if (= (ref-SCR::UR_SCR|ScoreClass score-id) 0)
+                        (ref-SCR::URC_SignedBaseDeltaForDptfLpStake
+                            score-id (at "native" legs)
+                            (UC_AQP|BackfillSumForBeneficiary beneficiary-id nat-rows)
+                            true true)
+                        (ref-SCR::URC_SignedBaseDeltaForDptfStake
+                            score-id (at "native" legs)
+                            (UC_AQP|BackfillSumForBeneficiary beneficiary-id nat-rows)
+                            true true)
+                    )
+                    (if (= (at "frozen" legs) BAR)
+                        0.0
+                        (if (= (ref-SCR::UR_SCR|ScoreClass score-id) 0)
+                            (ref-SCR::URC_SignedBaseDeltaForDptfLpStake
+                                score-id (at "frozen" legs)
+                                (UC_AQP|BackfillSumForBeneficiary beneficiary-id frz-rows)
+                                false true)
+                            (ref-SCR::URC_SignedBaseDeltaForDptfStake
+                                score-id (at "frozen" legs)
+                                (UC_AQP|BackfillSumForBeneficiary beneficiary-id frz-rows)
+                                false true)
+                        )
+                    )
+                    ;;THE SLEEPING LEG IS DERIVED FROM THE STORED TERM, NOT FROM THE LIVE CLOCK,
+                    ;;and that is the difference between a sweep that converges and one that
+                    ;;quietly breaks every sleeping position it touches. A sleeping multiplier is
+                    ;;fixed when the lock is STAKED, from the time it had left at that moment, and
+                    ;;`SCR|T|SleepStake` records that term so the unstake gives back exactly what
+                    ;;the stake credited. If the target re-derived the leg from TODAY's remaining
+                    ;;time the sweep would move the base away from the figure the unstake will
+                    ;;reverse -- and once the position is gone that difference is unrecoverable.
+                    ;;
+                    ;;EXACT ONLY WHILE THE SCORE'S CEILING HOLDS STILL, and that is not an
+                    ;;assumption, it is an enforced pairing: `SCR|C>UPDATE-MULTIPLIERS` refuses a
+                    ;;change while any sleeping position exists. The two halves are one mechanism
+                    ;;-- the ledger stores a ceiling-independent TERM so one row can serve every
+                    ;;score on the pool, and the gate is what stops the ceiling moving underneath
+                    ;;it. Relaxing that gate without ALSO re-rating the stored legs would make the
+                    ;;unstake reverse at a rate the stake never credited.
+                    ;;
+                    ;;So the sweep repairs the NATIVE and FROZEN legs (whose multipliers are
+                    ;;constant, so recomputation is exact) and the add-score backfill, and leaves
+                    ;;sleeping weights where their owners earned them.
+                    ;;
+                    ;;CLASS 0 ONLY, still: a class-1 pool admits DPTF legs and nothing else
+                    ;;(URC_StakeTrueFungibleDptfMatchesPool), so its tracker can never hold a
+                    ;;sleeping row even when the asset declares a twin.
+                    (if (or (= (at "sleeping" legs) BAR)
+                            (!= (ref-SCR::UR_SCR|ScoreClass score-id) 0))
+                        0.0
+                        (ref-SCR::URC_SCR|SleepingLegHeldWeight
+                            score-id (at "sleeping" legs)
+                            (map (lambda (r:object) (at "nonce" r)) slp-mine)
+                            (map (lambda (r:object) (at "balance" r)) slp-mine)
+                            300
+                        )
+                    )
+                ]
+            )
+        )
+    )
+    (defun URH_AQP|ScoreBackfillLegRows:object (pool-id:string)
+        @doc "HEAVY (up to three tracker scans). The pool's whole live liquidity position, by leg: \
+            \ {nat-rows, frz-rows, slp-rows}. Scanned ONCE and threaded through every holder."
+        (let
+            (
+                (legs:object (URC_AQP|PoolLiquidityLegs pool-id))
+            )
+            {"nat-rows" : (URH_AQP|ActiveDptfTrackerRows pool-id (at "native" legs))
+            ,"frz-rows" : (if (= (at "frozen" legs) BAR)
+                            []
+                            (URH_AQP|ActiveDptfTrackerRows pool-id (at "frozen" legs)))
+            ,"slp-rows" : (if (= (at "sleeping" legs) BAR)
+                            []
+                            (URH_AQP|ActiveDpofTrackerRows pool-id (at "sleeping" legs)))}
+        )
+    )
+    (defun URHC_AQP|ScoreBackfillCandidates:[string] (pool-id:string score-id:string leg-rows:object)
+        @doc "HEAVY. Every account the sweep must consider: the UNION of the pool tracker's \
+            \ beneficiaries and `SCR::URH_SCR|ScoreHolderAccounts`. \
+            \ \
+            \ THE UNION IS NOT REDUNDANT, and taking only the first half is the bug that makes a \
+            \ back-fill look complete while leaving the worst rows behind. The tracker answers 'who \
+            \ holds a position', the score table answers 'who carries a base'. The two disagree in \
+            \ both directions, and each direction is a real repair: \
+            \ \
+            \   TRACKER ONLY -> a holder who staked before the score existed (target > 0, base 0). \
+            \   SCORE ONLY   -> an ORPHAN: base non-zero with no position left (target 0). This is \
+            \                   what `C_AddScore`'s unguarded signed delta produces, and it was \
+            \                   measured BELOW ZERO on the deployed chain. Nothing else enumerates \
+            \                   it, so no other sweep in the system can reach it."
+        (fold
+            (lambda (acc:[string] a:string) (if (contains a acc) acc (+ acc [a])))
+            (UC_AQP|BackfillUniqueBeneficiaries
+                (+ (+ (at "nat-rows" leg-rows) (at "frz-rows" leg-rows)) (at "slp-rows" leg-rows))
+            )
+            (let
+                (
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                )
+                (ref-SCR::URH_SCR|ScoreHolderAccounts pool-id score-id)
+            )
+        )
+    )
+    (defun URHC_AQP|ScoreBackfillOutstanding:[object] (pool-id:string score-id:string)
+        @doc "HEAVY. The sweep's WORK LIST and its 'is it needed?' answer in one read: every holder \
+            \ whose stored base disagrees with the canonical target, as \
+            \ {beneficiary-id, target, current, delta}, delta != 0. \
+            \ \
+            \ EMPTY MEANS FULLY RATED -- every slice would be a no-op. That is the signal a UI shows \
+            \ an admin as 'score stale', and the condition a pool can clear itself on. \
+            \ \
+            \ ALSO EMPTY for a score this engine does not support (`URC_AQP|ScoreBackfillSupported`). \
+            \ Zero rows, never a wrong count: an unsupported score's base is not Σ(amount × mx), so \
+            \ a 'delta' measured against that formula would be invented work that CORRUPTS the row \
+            \ if executed. Refusing to answer is the only safe answer."
+        (if (not (URC_AQP|ScoreBackfillSupported pool-id score-id))
+            []
+            (let
+                (
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                    (leg-rows:object (URH_AQP|ScoreBackfillLegRows pool-id))
+                )
+                (filter
+                    (lambda (row:object) (!= (at "delta" row) 0.0))
+                    (map
+                        (lambda (b:string)
+                            (let
+                                (
+                                    (target:decimal
+                                        (URH_AQP|ScoreTargetBaseForBeneficiary
+                                            pool-id score-id b
+                                            (at "nat-rows" leg-rows)
+                                            (at "frz-rows" leg-rows)
+                                            (at "slp-rows" leg-rows)))
+                                    (current:decimal
+                                        (ref-SCR::UR_U-SCR|UserScoreBaseScore b pool-id score-id))
+                                )
+                                {"beneficiary-id" : b
+                                ,"target"         : target
+                                ,"current"        : current
+                                ,"delta"          : (- target current)}
+                            )
+                        )
+                        (URHC_AQP|ScoreBackfillCandidates pool-id score-id leg-rows)
+                    )
+                )
+            )
+        )
+    )
+    (defun URHC_AQP|ScoreBackfillNeeded:bool (pool-id:string score-id:string)
+        @doc "HEAVY. True when a re-rate sweep has work left on (pool-id, score-id). The cheap \
+            \ question a client asks before paying for a slice, and the one a pool clears on."
+        (> (length (URHC_AQP|ScoreBackfillOutstanding pool-id score-id)) 0)
+    )
+    (defun URC_AQP|PoolHasWeightedStakers:bool (pool-id:string)
+        @doc "CHEAP (at most seven point reads). True when some employed score of this pool already \
+            \ carries weight -- which is the only thing that makes adding or revoking a score an \
+            \ expensive operation rather than a free one. \
+            \ \
+            \ WHY NOT THE TRACKER, WHICH IS THE OBVIOUS PLACE TO ASK: answering from the tracker \
+            \ costs a `select` per asset leg, and this is consulted on the ADD-SCORE path, which \
+            \ every pool owner walks. `nzs-count` is already maintained on each score by the stake \
+            \ writer, so the question 'has anybody got weight here' is a handful of point reads. \
+            \ \
+            \ WHY NOT `nns`, WHICH SOUNDS EXACTLY RIGHT: `nns` is the nonce-occupancy counter and \
+            \ it is **-1 on class 0 and class 1 pools** by construction (they are AMOUNT pools --\
+            \ see UR_AQP|PoolNns). On the live LP pools it would therefore answer -1 forever, and \
+            \ a gate built on it would never fire where it matters most. \
+            \ \
+            \ ONE BLIND SPOT, STATED: a holder whose weight is exactly 0 is not counted, so a pool \
+            \ staked ONLY by additive satellites (whose base is pinned at 0.0 by design) reads \
+            \ false. That shape cannot occur -- a satellite boosts off a hub's base, so the hub is \
+            \ employed by the same pool and carries the weight that makes this true."
+        (let
+            (
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+            )
+            (> (length
+                   (filter
+                       (lambda (sid:string) (> (ref-SCR::UR_SCR|ScoreNzsCount sid) 0))
+                       (URC_PoolActiveScoreIds pool-id)))
+               0)
+        )
+    )
+    (defun URHC_AQP|PoolOrphanedScores:[string] (pool-id:string)
+        @doc "HEAVY (one select over the user-score table). The scores this pool has STOPPED \
+            \ employing but whose holders still carry weight for them: \
+            \ \
+            \     orphans = (scores with holders in this pool) - (scores the pool employs) \
+            \ \
+            \ EVERY ENTRY IS A DRAIN SWEEP WAITING TO RUN, and an empty list is the pool saying it \
+            \ has no retired weight left anywhere. `C_RevokeScore` cannot do this work itself: the \
+            \ number of holders is unbounded, so retiring them is a paged, parallel job and not one \
+            \ transaction's writes."
+        (let
+            (
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                (employed:[string] (URC_PoolActiveScoreIds pool-id))
+            )
+            (filter
+                (lambda (sid:string) (not (contains sid employed)))
+                (ref-SCR::URH_SCR|PoolScoreIdsWithHolders pool-id)
+            )
+        )
+    )
+    (defun URHC_AQP|ScoreDrainOutstanding:[string] (pool-id:string score-id:string)
+        @doc "HEAVY. The accounts still carrying weight for a score this pool no longer employs -- \
+            \ the drain sweep's work list, and its completion record when it reads []. \
+            \ \
+            \ EMPTY FOR A SCORE THE POOL STILL EMPLOYS, never a wrong list: a live score is \
+            \ re-rated, not drained, and reporting its holders here would invite a caller to zero \
+            \ weight that is genuinely earned. The mirror of `URHC_AQP|ScoreBackfillOutstanding`, \
+            \ which is empty for exactly the scores this one answers for."
+        (if (contains score-id (URC_PoolActiveScoreIds pool-id))
+            []
+            (let
+                (
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                )
+                (ref-SCR::URH_SCR|ScoreHolderAccounts pool-id score-id)
+            )
+        )
+    )
+    (defun URHC_AQP|PoolSweepClear:bool (pool-id:string)
+        @doc "HEAVY. True when this pool has NO outstanding re-rate and NO outstanding drain on any \
+            \ score -- the condition under which `sweep-in-progress` may be released and the pool \
+            \ returned to trading. \
+            \ \
+            \ THE WHOLE GATE IN ONE READ, and it is deliberately the SAME read the clearing client \
+            \ enforces. A pool is unfrozen because the work is provably done, never because \
+            \ somebody asserted it was: a client that trusted a caller's 'finished' flag would \
+            \ unfreeze a half-swept pool, and the half left behind is weight nobody can see is \
+            \ wrong."
+        (and
+            (= (length
+                   (filter
+                       (lambda (sid:string) (URHC_AQP|ScoreBackfillNeeded pool-id sid))
+                       (URC_PoolActiveScoreIds pool-id)))
+               0)
+            (= (length (URHC_AQP|PoolOrphanedScores pool-id)) 0)
+        )
+    )
+    ;;
     ;; ── M5 (#14) UI OBSERVABILITY ──────────────────────────────────────────────
     ;; Cross-pool, dirty-read `select` helpers over the trackers (no maintained tables). For a user U:
     ;;   ByOwner(U)       → every leg U staked (as owner). Split: self = rows where beneficiary-id = U;
@@ -2065,6 +2692,68 @@
             )
             (r::UDC_ConstructOutputCumulator
                 (r::UC_IgnisPrice "AQP-POOL|C_SyncTrueFungibleAnchors" "sync-anchors")
+                AQP|SC_NAME (r::URC_IsVirtualGasZero) output)
+        ))
+    (defun URCi_UpdateScoreMultipliers:object{IgnisCollectorV3.OutputCumulator} (output:[string])
+        @doc "Cost of re-setting a score's frozen/sleeping multipliers — a settings write, priced \
+            \ alongside the other one-shot score settings."
+        (let
+            (
+                (r:module{IgnisCollectorV3} IGNIS)
+            )
+            (r::UDC_ConstructOutputCumulator
+                (r::UC_IgnisPrice "AQP-POOL|CC_UpdateScoreMultipliers" "setup")
+                AQP|SC_NAME (r::URC_IsVirtualGasZero) output)
+        ))
+    (defun URCi_BackfillScoreSlice:object{IgnisCollectorV3.OutputCumulator}
+        (beneficiaries:[string] output:[string])
+        @doc "Gas leg for one re-rate slice. PRICED PER HOLDER, because that is what the \
+            \ transaction actually does — one target recomputation and one delta write each. A flat \
+            \ price would make a 1-account slice as expensive as a 40-account one and push callers \
+            \ toward the single shape the recipe exists to avoid."
+        (let
+            (
+                (r:module{IgnisCollectorV3} IGNIS)
+            )
+            (r::UDC_ConstructOutputCumulator
+                (* (dec (length beneficiaries))
+                   (r::UC_IgnisPrice "AQP-POOL|CCp_BackfillScoreSlice" "backfill"))
+                AQP|SC_NAME (r::URC_IsVirtualGasZero) output)
+        ))
+    (defun URCi_BeginScoreRevoke:object{IgnisCollectorV3.OutputCumulator} (output:[string])
+        @doc "Cost of vacating a score's pool slot to begin a revoke — a config write, priced with \
+            \ the other pool-settings ops."
+        (let
+            (
+                (r:module{IgnisCollectorV3} IGNIS)
+            )
+            (r::UDC_ConstructOutputCumulator
+                (r::UC_IgnisPrice "AQP-POOL|C_BeginScoreRevoke" "setup")
+                AQP|SC_NAME (r::URC_IsVirtualGasZero) output)
+        ))
+    (defun URCi_DrainScoreSlice:object{IgnisCollectorV3.OutputCumulator}
+        (accounts:[string] output:[string])
+        @doc "Gas leg for one drain slice. PRICED PER HOLDER, like the re-rate slice and for the \
+            \ same reason: the transaction does one read and one delta write per account, so a flat \
+            \ price would make a one-account slice cost what a forty-account slice costs and push \
+            \ callers toward the shape the recipe exists to avoid."
+        (let
+            (
+                (r:module{IgnisCollectorV3} IGNIS)
+            )
+            (r::UDC_ConstructOutputCumulator
+                (* (dec (length accounts))
+                   (r::UC_IgnisPrice "AQP-POOL|Cp_DrainScoreSlice" "backfill"))
+                AQP|SC_NAME (r::URC_IsVirtualGasZero) output)
+        ))
+    (defun URCi_FinalizeScoreRevoke:object{IgnisCollectorV3.OutputCumulator} (output:[string])
+        @doc "Cost of cutting the aqpool-link once a drain is complete — a config write."
+        (let
+            (
+                (r:module{IgnisCollectorV3} IGNIS)
+            )
+            (r::UDC_ConstructOutputCumulator
+                (r::UC_IgnisPrice "AQP-POOL|CC_FinalizeScoreRevoke" "setup")
                 AQP|SC_NAME (r::URC_IsVirtualGasZero) output)
         ))
     (defun URCi_SyncCollectableAnchors:object{IgnisCollectorV3.OutputCumulator} (output:[string])
@@ -2329,6 +3018,98 @@
                     ]
                 )
                 "Invalid score revoke for pool (slot, aqpool-link, zero totals, fvt-link, or boost-link dependents)"
+            )
+        )
+    )
+    (defun UEV_AQP|ScoreMxChangeSafe (score-id:string)
+        @doc "HEAVY. Refuses a multiplier change while any frozen or sleeping position exists on the score -- the condition under which nothing can yet be mis-rated. \
+            \ \
+            \ THE SCAN IS BOUND BEFORE THE `enforce`, AND IT HAS TO BE. Pact evaluates an \
+            \ `enforce` CONDITION in read-only/sys-only mode, where a table scan is refused \
+            \ outright -- `select` there aborts the transaction with \"Operation disallowed in \
+            \ read-only or sys-only mode\". Binding the result in a `let` first moves the scan \
+            \ out of that mode, which is exactly what the tree already does for \
+            \ `URC_PoolStakeAdmissionOk` (`(enforce stake-admission-ok ...)`). \
+            \ \
+            \ MEASURED, AND THE OBVIOUS DIAGNOSIS WAS WRONG. The first reading of the abort was \
+            \ \"a defcap cannot run a select\", so these checks were moved out of their \
+            \ capabilities -- and failed in exactly the same way from a function body, because \
+            \ the capability was never the problem. A bound scan works fine inside a defcap. \
+            \ What cannot work, anywhere, is a scan as the argument to `enforce`. \
+            \ \
+            \ It stayed hidden because the only fixture that reached the multiplier gate used a \
+            \ score whose pool link was BAR, which short-circuits before the scan. Every score \
+            \ actually linked to a pool would have aborted on chain."
+        (let
+            (
+                (safe:bool (URC_AQP|ScoreMxChangeSafe score-id))
+            )
+            (enforce
+                safe
+                "A frozen or sleeping position exists for this score -- re-rate it first"
+            )
+        )
+    )
+    (defun UEV_AQP|ScoreDrainComplete (pool-id:string score-id:string)
+        @doc "HEAVY. Refuses to cut a score's aqpool-link while any holder still carries weight for it -- the last moment at which the remaining work is discoverable, since the link is what tells the orphan scan which pool those rows belong to. \
+            \ \
+            \ THE SCAN IS BOUND BEFORE THE `enforce`, AND IT HAS TO BE. Pact evaluates an \
+            \ `enforce` CONDITION in read-only/sys-only mode, where a table scan is refused \
+            \ outright -- `select` there aborts the transaction with \"Operation disallowed in \
+            \ read-only or sys-only mode\". Binding the result in a `let` first moves the scan \
+            \ out of that mode, which is exactly what the tree already does for \
+            \ `URC_PoolStakeAdmissionOk` (`(enforce stake-admission-ok ...)`). \
+            \ \
+            \ MEASURED, AND THE OBVIOUS DIAGNOSIS WAS WRONG. The first reading of the abort was \
+            \ \"a defcap cannot run a select\", so these checks were moved out of their \
+            \ capabilities -- and failed in exactly the same way from a function body, because \
+            \ the capability was never the problem. A bound scan works fine inside a defcap. \
+            \ What cannot work, anywhere, is a scan as the argument to `enforce`. \
+            \ \
+            \ It stayed hidden because the only fixture that reached the multiplier gate used a \
+            \ score whose pool link was BAR, which short-circuits before the scan. Every score \
+            \ actually linked to a pool would have aborted on chain."
+        (let
+            (
+                (remaining:integer (length (URHC_AQP|ScoreDrainOutstanding pool-id score-id)))
+            )
+            (enforce
+                (= remaining 0)
+                "Drain is not complete: holders still carry weight for this score"
+            )
+        )
+    )
+    (defun UEV_BeginScoreRevoke (pool-id:string score-id:string slot-index:integer)
+        @doc "Validates the STRUCTURAL half of a revoke: the slot really holds this score, the \
+            \ score links back, it is not wired into an FVT, and no employed peer boosts off it. \
+            \ \
+            \ EVERYTHING `UEV_RevokeScorePoolAndScore` CHECKS EXCEPT THE ZERO TOTALS, and the \
+            \ omission is the entire purpose. That validator refuses a score any holder still \
+            \ carries weight for -- correctly, because revoking it would strand that weight in the \
+            \ score's totals and its `nzs-count` with nothing left to reverse it. But it also made \
+            \ revoke UNREACHABLE on a pool anybody had staked into: there was no legitimate way to \
+            \ get the totals to zero, since an admin cannot unstake on a holder's behalf. \
+            \ \
+            \ So the zero-totals requirement moves from a precondition to a GOAL: this begins the \
+            \ revoke by vacating the slot, the drain sweep retires the holders in parallel slices, \
+            \ and `CC_FinalizeScoreRevoke` cuts the link once the work is provably done. The totals \
+            \ still have to be zero before the link goes -- just later, and reachably."
+        (let
+            (
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+            )
+            (enforce (!= slot-index -1) "score-id is not assigned to pool")
+            (enforce
+                (fold (and) true
+                    [
+                        (contains slot-index (enumerate 0 6))
+                        (= (URC_PoolScoreSlotValue pool-id slot-index) score-id)
+                        (= (ref-SCR::UR_SCR|ScoreAqpoolLink score-id) pool-id)
+                        (= (ref-SCR::UR_SCR|ScoreFvtLink score-id) BAR)
+                        (URC_NoEmployedBoostLinkTarget pool-id score-id)
+                    ]
+                )
+                "Invalid score revoke-begin for pool (slot, aqpool-link, fvt-link, or boost-link dependents)"
             )
         )
     )
@@ -3342,6 +4123,30 @@
                     )
                     (ref-SCR::XE_CreateAqpoolLink score-id pool-id)
                     (XI_AddScoreToPool pool-id score-id slot-index)
+                    ;;FREEZE A POOL THAT ALREADY HAS WEIGHT. Every existing staker's base for the
+                    ;;new score is 0 while their canonical target is not, so from this instant the
+                    ;;pool is mis-scored until the re-rate sweep runs. Leaving it tradeable would
+                    ;;let stakes and claims land against weights the chain already knows are
+                    ;;wrong, and an UNSTAKE would reverse a figure the chain has already decided
+                    ;;is wrong -- irrecoverably, because the position is then gone.
+                    ;;Checked AFTER the slot write, which is harmless: the score just added has
+                    ;;`nzs-count` 0 and so cannot be what makes the staker test true.
+                    ;;
+                    ;;FREEZE ONLY IF A SWEEP COULD ACTUALLY CLEAR IT, which is the second
+                    ;;conjunct and is not optional. The re-rate engine supports class-0 LP scores
+                    ;;only -- an SF/NF score's base is per-nonce TABLE VALUES, not amount x mx --
+                    ;;so on any other pool shape there is no sweep that can make progress and a
+                    ;;freeze would be a pool nobody could ever unfreeze by doing the work.
+                    ;;Measured, not theorised: `CustodiansPool` is aqp-class 3, and
+                    ;;`CC_Step14_OpenCustodiansAgency` employs an agency's triplet in it and
+                    ;;stakes IN THE SAME TRANSACTION. Freezing on the staker test alone broke
+                    ;;that flow at the second agency, for a sweep that would have had nothing to
+                    ;;do. Both conjuncts are CHEAP -- point reads and the slot list, no select --
+                    ;;which is why this stays a `C_` and not a `CC_`.
+                    (if (and (URC_AQP|PoolHasWeightedStakers pool-id)
+                             (URC_AQP|ScoreBackfillSupported pool-id score-id))
+                        (WU_Pool|SweepInProgress pool-id true)
+                        "No re-ratable drift: either the pool carries no weight yet, or this score shape has no sweep")
                     (URCi_AddScore [pool-id score-id])
                 )
             )
@@ -3403,6 +4208,219 @@
                 (URCi_SetPoolStake [pool-id])
             )
         )
+    )
+    (defun CC_UpdateScoreMultipliers:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string executor:string score-id:string
+         mx-frozen:decimal mx-sleeping:decimal mx-hibernated:decimal)
+        @doc "Re-set a score's frozen, sleeping and hibernating multipliers. Score owner only. \
+            \ \
+            \ LIVES HERE RATHER THAN IN AQP-SCORE FOR ONE REASON: the safety condition is about \
+            \ POOL POSITIONS, and AQP-SCORE deploys first — it cannot read this module's tracker. \
+            \ AQP-POOL can see both, so the gate is enforced here and the write is delegated to \
+            \ `SCR::XE_SetScoreMultipliers`, which enforces what IT can prove: ownership, fee \
+            \ validity, and `mx-frozen >= 2*mx-sleeping - 1`. \
+            \ \
+            \ WHY `mx-sleeping` IS NOW A CEILING AND NOT A FACTOR. A sleeping lock earns \
+            \ `1 + (months/300) x (mx-sleeping - 1)`, reaching the ceiling only at the full \
+            \ 25-year term the chain itself refuses to exceed. Before this, one day of sleep and \
+            \ twenty-five years earned the identical multiplier, which is free money for whoever \
+            \ noticed. `mx-frozen` stays FLAT because a freeze is irreversible — there is no \
+            \ unfreeze in the tree — so it is already the maximum commitment and has nothing to \
+            \ scale against. \
+            \ \
+            \ REFUSED WHILE A FROZEN OR SLEEPING POSITION EXISTS, and this gate is TEMPORARY. The \
+            \ owner's standing decision is that a change re-rates every affected stake through a \
+            \ parallel sweep; that sweep is not in this round, so until it lands a change is \
+            \ allowed only where it provably cannot corrupt anything. Native stakes multiply by \
+            \ 1.0 and never read `mx`, so native holders — the only kind on chain today — neither \
+            \ block the change nor are touched by it. \
+            \ EXECUTOR: BOUND IN `AQP|C>UPDATE-SCORE-MULTIPLIERS`, which enforces \
+            \ `executor == UR_SCR|ScoreOwnerKonto(score-id)`, and PROVEN by the callee's \
+            \ `SCR|C>UPDATE-MULTIPLIERS` reaching `CAP_EnforceAccountOwnership` on that same \
+            \ owner. Named here because the canon requires the route to be stated, not inferred. \
+            \ (patron/executor canon 2.2.)"
+        (P|UEV_IMC)
+        (UEV_AQP|ScoreMxChangeSafe score-id)
+        (with-capability
+            (AQP|C>UPDATE-SCORE-MULTIPLIERS patron executor score-id mx-frozen mx-sleeping mx-hibernated)
+            (let
+                (
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                )
+                (ref-SCR::XE_SetScoreMultipliers score-id mx-frozen mx-sleeping mx-hibernated)
+            )
+        )
+        ;;THE MESSAGE NAMES WHICH ONES SCALE AND WHICH DO NOT, because the three numbers do not
+        ;;mean the same kind of thing and a caller reading back "2.0 / 2.0 / 2.0" would reasonably
+        ;;assume they do. Frozen is flat because a freeze is irreversible and already the maximum
+        ;;commitment; sleeping is a CEILING reached only at the full 300-month term; hibernating is
+        ;;flat because it asks no commitment at all.
+        (URCi_UpdateScoreMultipliers
+            [(format "Score {} multipliers set: frozen {} (flat) / sleeping UP TO {} (ceiling at 300 months) / hibernating {} (flat)"
+                [score-id mx-frozen mx-sleeping mx-hibernated])])
+    )
+    (defun CCp_BackfillScoreSlice:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string pool-id:string score-id:string beneficiaries:[string])
+        @doc "HYDRA FED SLICE — re-rate exactly the listed holders of <score-id> to their canonical \
+            \ base. Run one per slice of `URHC_AQP|ScoreBackfillOutstanding`; slices are \
+            \ order-independent and may be sent in parallel. \
+            \ \
+            \ FED SLICE, NOT A CURSOR PAGER, and the distinction is the whole reason this is safe to \
+            \ fan out: the caller passes the explicit account list, so nothing is read from stored \
+            \ progress and two transactions cannot race over a shared cursor. A pager — which \
+            \ computes its own window — would have to be sent strictly sequentially. \
+            \ \
+            \ TARGET RECOMPUTED IMMEDIATELY BEFORE EACH WRITE, inside the map, never batched ahead \
+            \ of them. That one ordering choice is what makes the recipe idempotent, repeat-safe and \
+            \ order-independent at once: whatever earlier slices did is already visible, so an \
+            \ account that no longer needs work contributes a delta of exactly 0.0. Batching the \
+            \ deltas first would reintroduce every one of those hazards while looking tidier. \
+            \ \
+            \ THE DELTA GOES THROUGH THE STAKE PATH'S OWN WRITER (`SCR::XE_ApplyRawBaseDelta` → \
+            \ `XI_2|ApplySingularUserScoreDelta`), so the user row, the score's vault totals and \
+            \ `nzs-count` stay maintained by the single piece of code that already knows how. This \
+            \ module never writes a base itself. \
+            \ \
+            \ EXECUTORLESS BY DESIGN (canon 2.2, as for `C_SyncTrueFungibleAnchors`): no actor's \
+            \ authority is being exercised. The accounts named are SUBJECTS of a recomputation, not \
+            \ signatories, and an executor slot would imply a permission deliberately not required \
+            \ — see `AQP|C>BACKFILL-SCORE-SLICE` for why permissionless is the stronger position. \
+            \ \
+            \ WHAT IT DOES NOT REPAIR: an additive satellite's boosted/deb values. Those derive from \
+            \ the HUB's base, so when a hub is re-rated its satellites go deb-stale and the EXISTING \
+            \ staleness sweep fixes them — this recipe refuses satellites outright rather than write \
+            \ a base that `URC_SingularUserScoreDeltaFromSignedUserBase` pins to 0.0."
+        (P|UEV_IMC)
+        (with-capability (AQP|C>BACKFILL-SCORE-SLICE patron pool-id score-id beneficiaries)
+            (let
+                (
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                    ;;Scanned ONCE per transaction and threaded through every holder: the trackers
+                    ;;cannot change inside this tx, so a per-holder rescan would be identical work.
+                    (leg-rows:object (URH_AQP|ScoreBackfillLegRows pool-id))
+                )
+                (map
+                    (lambda (b:string)
+                        (ref-SCR::XE_ApplyRawBaseDelta b pool-id score-id
+                            ;;target - current, both read HERE, after every earlier write in this map
+                            (-
+                                (URH_AQP|ScoreTargetBaseForBeneficiary
+                                    pool-id score-id b
+                                    (at "nat-rows" leg-rows)
+                                    (at "frz-rows" leg-rows)
+                                    (at "slp-rows" leg-rows))
+                                (ref-SCR::UR_U-SCR|UserScoreBaseScore b pool-id score-id)
+                            )
+                        )
+                    )
+                    beneficiaries
+                )
+            )
+        )
+        (URCi_BackfillScoreSlice beneficiaries
+            [(format "Re-rated {} holder(s) of score {} in pool {}"
+                [(length beneficiaries) score-id pool-id])])
+    )
+    (defun C_BeginScoreRevoke:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string executor:string pool-id:string score-id:string)
+        @doc "PHASE 1 of 3 — begin retiring <score-id> from <pool-id>: vacate its pool slot and \
+            \ freeze the pool. Pool owner. \
+            \ \
+            \ WHY REVOKE NEEDED THREE PHASES AT ALL. `C_RevokeScore` refuses a score whose totals \
+            \ are not zero, which is right -- cutting the link would strand that weight in the \
+            \ score's totals and `nzs-count` with nothing left able to reverse it. But it also made \
+            \ revoke unreachable on any pool somebody had staked into, because an admin cannot \
+            \ unstake on a holder's behalf and there was no other way to reach zero. So the \
+            \ requirement became a GOAL instead of a precondition: \
+            \ \
+            \   1] this vacates the SLOT, so the score stops being credited by new stakes \
+            \   2] `Cp_DrainScoreSlice` retires the holders in parallel slices \
+            \   3] `CC_FinalizeScoreRevoke` cuts the link once the work is provably done \
+            \ \
+            \ UNSLOTTED-BUT-STILL-LINKED IS THE PENDING-REVOKE MARKER, which is why none of this \
+            \ needs a new column or a migration transaction: the asymmetry between the pool's slots \
+            \ and the score's own link already expresses 'being retired', and the surviving link is \
+            \ what still tells the orphan scan which pool those rows belong to. \
+            \ \
+            \ `C_RevokeScore` REMAINS the one-shot path for a score nobody holds weight in. This is \
+            \ for the case that one refuses. EXECUTOR: pool owner, proven by `CAP_PoolOwner` plus \
+            \ `UEV_ExecutorIzPoolOwner` in `AQP|C>BEGIN-SCORE-REVOKE` (canon 2.2)."
+        (P|UEV_IMC)
+        (let
+            (
+                (slot-index:integer (URC_ScoreSlotIndexForScore pool-id score-id))
+            )
+            (with-capability (AQP|C>BEGIN-SCORE-REVOKE patron executor pool-id score-id slot-index)
+                (do
+                    ;;1] the score stops being employed -- no new stake can credit it
+                    (XI_RevokeScoreFromPool pool-id slot-index)
+                    ;;2] freeze: a stake mid-drain would re-create the weight the drain retires
+                    (WU_Pool|SweepInProgress pool-id true)
+                    ;;The holder count is NOT reported here on purpose: reading it is a table scan,
+                    ;;and a `C_` whose tree reaches one must be renamed `CC_` by the prefix canon.
+                    ;;The caller reads `URHC_AQP|ScoreDrainOutstanding` itself to size its slices.
+                    (URCi_BeginScoreRevoke
+                        [(format "Score {} unslotted from pool {}: pool frozen. Drain its holders, finalize, then clear."
+                            [score-id pool-id])])
+                )
+            )
+        )
+    )
+    (defun Cp_DrainScoreSlice:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string pool-id:string score-id:string accounts:[string])
+        @doc "PHASE 2 of 3 — HYDRA FED SLICE: retire exactly the listed holders of a score that is \
+            \ mid-revoke, driving each stored base to 0.0. Run one per slice of \
+            \ `URHC_AQP|ScoreDrainOutstanding`; order-independent and sendable in parallel. \
+            \ \
+            \ IDEMPOTENT FOR THE SAME REASON THE RE-RATE SLICE IS, but more simply: the target here \
+            \ is 0.0 by definition, so a holder already drained yields a delta of exactly 0.0 and \
+            \ nothing moves. A replayed slice, an overlapping slice and a repeated account are all \
+            \ harmless, and no job state is needed -- `URHC_AQP|ScoreDrainOutstanding` reading [] IS \
+            \ the completion record, and it is what phase 3 re-checks. \
+            \ \
+            \ EXECUTORLESS BY DESIGN (canon 2.2, as for the re-rate slice and the anchor syncs): the \
+            \ accounts named are SUBJECTS of a retirement the pool owner already authorised in phase \
+            \ 1, not signatories. Inventing an executor would imply a permission that is \
+            \ deliberately not required."
+        (P|UEV_IMC)
+        (with-capability (AQP|C>DRAIN-SCORE-SLICE patron pool-id score-id accounts)
+            (let
+                (
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                )
+                (map
+                    (lambda (a:string) (ref-SCR::XE_DrainBase a pool-id score-id))
+                    accounts
+                )
+            )
+        )
+        (URCi_DrainScoreSlice accounts
+            [(format "Retired {} holder(s) of score {} in pool {}" [(length accounts) score-id pool-id])])
+    )
+    (defun CC_FinalizeScoreRevoke:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string executor:string pool-id:string score-id:string)
+        @doc "PHASE 3 of 3 — cut the aqpool-link now that no holder carries weight for the score. \
+            \ Pool owner. Refused while a single holder remains, re-reading the drain's own work \
+            \ list rather than trusting a flag: with the link gone even the orphan scan loses the \
+            \ pool those rows belonged to, so this is the last moment at which the remaining work \
+            \ is still discoverable. \
+            \ \
+            \ Does NOT release the pool freeze -- `CC_ClearPoolSweep` does, and only when EVERY \
+            \ score on the pool is clear. A pool mid-revoke on two scores must finish both. \
+            \ EXECUTOR: pool owner, proven in `AQP|C>FINALIZE-SCORE-REVOKE` (canon 2.2)."
+        (P|UEV_IMC)
+        (UEV_AQP|ScoreDrainComplete pool-id score-id)
+        (with-capability (AQP|C>FINALIZE-SCORE-REVOKE patron executor pool-id score-id)
+            (let
+                (
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                )
+                (ref-SCR::XE_RevokeAqpoolLink score-id pool-id)
+            )
+        )
+        (URCi_FinalizeScoreRevoke
+            [(format "Score {} fully retired from pool {}: link cut. Pool stays frozen until CC_ClearPoolSweep."
+                [score-id pool-id])])
     )
     (defun C_SyncTrueFungibleAnchors:object{IgnisCollectorV3.OutputCumulator}
         (patron:string executee:string dptf-id:string)

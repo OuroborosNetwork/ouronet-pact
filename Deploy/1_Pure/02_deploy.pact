@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 2 of 24
 ;; This is STEP 2 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-1 must have run first, including the init steps between deploys.
-;; 3 source file(s), 198,069 gas measured in the REPL gas model, 235,327 bytes
+;; 3 source file(s), 198,069 gas measured in the REPL gas model, 236,464 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/01_DALOS.pact
@@ -2723,6 +2723,12 @@
         ,"aqp-inject"        : 500.0
         ,"aqp-collect"       : 500.0
         ,"sync-anchors"      : 50.0
+        ;;Re-rating is permissionless maintenance, like the anchor syncs it sits beside, so it
+        ;;carries their deterrence rather than a settings-change tier. The charge is FLAT per
+        ;;transaction while the component charge is PER HOLDER, which is the combination that
+        ;;makes a one-account slice uneconomic and a forty-account slice cheap -- the sweep is
+        ;;designed to be fanned out in batches, not fired one holder at a time.
+        ,"backfill"          : 50.0
         ,"recompute-capture" : 300.0
         ,"set-oracle-auth"   : 300.0
         ,"oracle-write"      : 200.0
@@ -2831,6 +2837,15 @@
         ,"AQP-POOL|C_SyncNonFungibleAnchors"            : 36.0
         ,"AQP-POOL|C_SyncSemiFungibleAnchors"           : 36.0
         ,"AQP-POOL|C_SyncTrueFungibleAnchors"           : 16.0
+        ,"AQP-POOL|CC_UpdateScoreMultipliers"            : 13.0
+        ,"AQP-POOL|CCp_BackfillScoreSlice"              : 9.0
+        ;;THE THREE-PHASE SCORE REVOKE, plus the freeze release. The two config writes are
+        ;;priced with the other pool settings; the DRAIN is priced like the re-rate it mirrors,
+        ;;per holder, because that is what the transaction does one of per account.
+        ,"AQP-POOL|C_BeginScoreRevoke"                 : 13.0
+        ,"AQP-POOL|Cp_DrainScoreSlice"                : 9.0
+        ,"AQP-POOL|CC_FinalizeScoreRevoke"              : 13.0
+        ,"AQP-FVT|CC_ClearPoolSweep"                   : 5.0
         ,"AQP-SCR|C_CombineTripletScoreModel"           : 16.0
         ,"AQP-SCR|C_ControlScore"                       : 13.0
         ,"AQP-SCR|C_CreateScoreBoostClassLink"          : 26.0

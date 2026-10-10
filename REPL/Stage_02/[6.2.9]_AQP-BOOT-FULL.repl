@@ -14,7 +14,7 @@
 (print "=== TX-BOOT-01 — Step1 BunnySet (requires KBN nonces 1+ from PopulateBunnies) =====")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
-;;==== TX-BOOT-01 - AQP-BOOT Step1 BunnySet · 01 · env-sigs (caps) ==== ===========================
+;;==== TX-BOOT-01 - AQP-BOOT Step1 BunnySet · 01 · env-sigs (funded) ==== ===========================
 (print "--- [TX-BOOT-01 - AQP-BOOT Step1 BunnySet · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
@@ -1086,6 +1086,48 @@
                         [(RPS.URC_ComputeTripletLanes patron pool-id anhd-triplet)]))
                     (print (format "<(lanes EMMA)> => {}"
                         [(RPS.URC_ComputeTripletLanes KST.EMMA pool-id emma-triplet)]))
+                    ;;TRUE-TRIPLET LANE REGRESSION (D2), added 2026-10-09.
+                    ;;The lanes were `silver base-score x that slot's own ANK promile`. Three things
+                    ;;were wrong and only the third is obvious. (a) The HUB's lane multiplied the base
+                    ;;by the hub's OWN promile, so the base was not carried -- it was REPLACED by a
+                    ;;fraction of itself, and a holder with no boosters had w-user = 0. (b) DEB never
+                    ;;entered, though the whole point of a tier is that it does. (c) It assumed the hub
+                    ;;is the SILVER slot; the rules only say the hub is the leg with boost-link = BAR.
+                    ;;
+                    ;;On mainnet every holder of the Snake triplet had w-user = 0, so total-lane-weight
+                    ;;was 0 and the member's entire Tier-2 tranche was undistributable. Nothing failed
+                    ;;-- a divisor of zero short-circuits to "nothing to pay" -- which is why only a
+                    ;;holder asking "why is my weight zero" surfaced it.
+                    ;;
+                    ;;These assertions pin the BASIS rather than a magic number, so they survive any
+                    ;;fixture change: lanes are the legs' deb-scores, so Sigma lanes must equal
+                    ;;URC_TripletUserDebSum exactly, and the weight the payout actually divides by
+                    ;;must equal that same sum. One basis, asserted to be one basis.
+                    (map print
+                        [
+                            (expect (format "<<TX-BOOT-LANE1>> ANHD Sigma lanes == URC_TripletUserDebSum lanes={}" [(RPS.URC_ComputeTripletLanes patron pool-id anhd-triplet)])
+                                (RPS.URC_TripletUserDebSum patron anhd-triplet)
+                                (at "w-user" (RPS.URC_ComputeTripletLanes patron pool-id anhd-triplet)))
+                            (expect (format "<<TX-BOOT-LANE2>> EMMA Sigma lanes == URC_TripletUserDebSum lanes={}" [(RPS.URC_ComputeTripletLanes KST.EMMA pool-id emma-triplet)])
+                                (RPS.URC_TripletUserDebSum KST.EMMA emma-triplet)
+                                (at "w-user" (RPS.URC_ComputeTripletLanes KST.EMMA pool-id emma-triplet)))
+                            ;;The paying numerator reads the same basis (no snapshot in the path).
+                            (expect (format "<<TX-BOOT-LANE3>> ANHD Tier-1 numerator == Sigma lanes" [])
+                                (at "w-user" (RPS.URC_ComputeTripletLanes patron pool-id anhd-triplet))
+                                (RPS.URC_ScoreEntityUserWeight patron fvt-id pool-id 3 anhd-triplet))
+                            ;;THE DEFECT ITSELF: a staked hub must never yield a zero triplet weight.
+                            (expect (format "<<TX-BOOT-LANE4>> ANHD w-user > 0 with a staked hub got={}" [(at "w-user" (RPS.URC_ComputeTripletLanes patron pool-id anhd-triplet))])
+                                true (> (at "w-user" (RPS.URC_ComputeTripletLanes patron pool-id anhd-triplet)) 0.0))
+                            ;;...and the hub's own deb-score must be fully INSIDE that weight, since
+                            ;;satellites are additive. This is the assertion that fails on the old code
+                            ;;even when boosters happen to make w-user nonzero.
+                            (expect (format "<<TX-BOOT-LANE5>> ANHD w-user >= hub deb-score (base is carried, not replaced)" [])
+                                true
+                                (>= (at "w-user" (RPS.URC_ComputeTripletLanes patron pool-id anhd-triplet))
+                                    (AQP-SCORE.UR_U-SCR|UserScoreDebScore patron
+                                        (AQP-SCORE.UR_SCR|ScoreAqpoolLink (AQP-SCORE.UR_SCR|TripletSilverScoreId anhd-triplet))
+                                        (AQP-SCORE.UR_SCR|TripletSilverScoreId anhd-triplet))))
+                        ])
                     (print (format "<(inject 3000 OURO)> => \"{}\""
                         [(TS02-C3.AQP-FVT|CC_Inject patron patron fvt-id ouro 3000.0)]))
                     (let
@@ -1480,7 +1522,7 @@
 (print "=== TX-BOOT-13-SPLIT — the SAME member's W_i flips STAKED<->TVL on the real LP farm ==")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
-;;==== TX-BOOT-13-SPLIT - dual reward-split ECONOMIC flip on OuroLpFarm (task #89 / D1-G2) · 01 · env-sigs (caps) ==== 
+;;==== TX-BOOT-13-SPLIT - dual reward-split ECONOMIC flip on OuroLpFarm (task #89 / D1-G2) · 01 · env-sigs (funded) ==== 
 (print "--- [TX-BOOT-13-SPLIT - dual reward-split ECONOMIC flip on OuroLpFarm (task #89 / D1-G2) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 ;; The OuroLpFarm has a live LP triplet member (Step11) on a seeded swpair (Step08b, StoaValue > 0).
@@ -1550,7 +1592,7 @@
 ;;the guards cost nothing beyond asking.
 ;;
 ;;What is reachable, and what is not, is stated explicitly below rather than left as silence.
-;;==== TX-BOOT-G1 - the AddScoreEntity context validators, probed against the boot fixture · 01 · env-sigs (caps) ==== 
+;;==== TX-BOOT-G1 - the AddScoreEntity context validators, probed against the boot fixture · 01 · env-sigs (funded) ==== 
 (print "--- [TX-BOOT-G1 - the AddScoreEntity context validators, probed against the boot fixture · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 ;;==== TX-BOOT-G1 - the AddScoreEntity context validators, probed against the boot fixture · 02 · let / invocation ==== 
@@ -1675,7 +1717,7 @@
 ;;OuroLpFarm has linked entities (TX-BOOT-11 wired its triplet), so BOTH inputs below trip the
 ;;immutability guard — a valid-looking denominator and a BAR one alike. That is asserted rather
 ;;than assumed, and it is why the shape guard is recorded as unreachable here instead of claimed.
-;;==== TX-BOOT-G2 - UEV_SetCommonDenominatorContext, which needs the class-0 FARM · 01 · env-sigs (caps) ==== 
+;;==== TX-BOOT-G2 - UEV_SetCommonDenominatorContext, which needs the class-0 FARM · 01 · env-sigs (funded) ==== 
 (print "--- [TX-BOOT-G2 - UEV_SetCommonDenominatorContext, which needs the class-0 FARM · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 ;;==== TX-BOOT-G2 - UEV_SetCommonDenominatorContext, which needs the class-0 FARM · 02 · let / invocation ==== 
@@ -2315,4 +2357,361 @@
 ;;==== TX-BOOT-13 · 06 · gas echo ==== ===========================================================
 (print "--- [TX-BOOT-13 · 06 · gas echo] ---")
 (print (format "<<<<<<<O-UI-THIRTEEN anchor reads cost {} GAS>>>>>>>" [(env-gas)]))
+(commit-tx)
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+
+(begin-tx "TX-BOOT-14 - the LATE steps 7b/8b/9b/12b: the three UI-issued orphan scores")
+(env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "=== TX-BOOT-14 — Steps 7b/8b/9b/12b: NosferatuDracula, WonderCoach, StoicPower ====")
+;;  WHAT THIS COVERS AND WHY IT HAD TO BE WRITTEN.
+;;
+;;  Three scores on mainnet are NOT created by the boot ladder -- the owner issues them from
+;;  the UI. Step 7 already attaches two of them to pools (dh-score-ids[9..10]); nothing in the
+;;  ladder ever gave any of the three an FVT, and StoicPower had no pool either. So:
+;;
+;;    NosferatuDracula  class 4 NF   pool yes   FVT no     -> Step 8b/9b
+;;    WonderCoach       class 3 SF   pool yes   FVT no     -> Step 8b/9b
+;;    StoicPower        class 1 TF   pool NO    FVT no     -> Step 7b + 8b/9b
+;;
+;;  The three scores are MINTED HERE, standing in for the UI-issued originals, because the
+;;  fixture has never had them -- which is exactly why nothing caught the gap.
+;;
+;;  THE ASSERTION THAT MATTERS IS THE LAST ONE. Every intermediate check could pass while the
+;;  pool still refused every stake: `URC_PoolEmployedScoresFvtStakeReady` is the gate
+;;  (05_FVT.pact:986) that blocked all seven live pools, and it is false until an FVT is
+;;  issued, the score admitted, the link enabled AND a reward token registered. Asserting the
+;;  four parts separately would prove each ingredient and not the dish.
+;;==== TX-BOOT-14 · 01 · env-sigs (funded) ==== ====================================================
+(print "--- [TX-BOOT-14 · 01 · env-sigs (funded)] ---")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (patron:string KST.ANHD)
+        ;;FUNDED SIGS, lifted from TX-BOOT-02. Issuing a score / pool / FVT costs STOA, and the
+        ;;patron needs KDA fuel granted IN THIS TRANSACTION -- `env-sigs` does not carry across
+        ;;one. The first version of this block used a bare `env-sigs [{key, caps: []}]` and died
+        ;;inside `coin.transfer` in `IGNIS.XB_MoveDalosFuel`, which reads as an IGNIS defect and
+        ;;is a missing signature. x12 covers the three scores, the pool, the three FVTs, the
+        ;;three admissions and the three reward links with room to spare.
+        (split-stoa:[decimal]
+            (ref-DALOS::URC_SplitSTOAPrices KST.ANHD (* (ref-DALOS::UR_UsagePrice "standard") 12.0))
+        )
+    )
+    (env-sigs
+        [
+            ;;PK_Lumy / PK_Emma are here because the POOL OWNER is not always ANHD: the fixture's
+            ;;DPNF and DPSF collections are owned by other keys, and `AQP|C>ADD-SCORE` enforces
+            ;;`CAP_PoolOwner` on the pool's own owner konto. Signing only as ANHD fails with
+            ;;`Keyset failure (keys-all): [PK_Lumy...]`, which reads as a permission bug and is a
+            ;;missing signer. Same three keys TX-BOOT-02 uses.
+            { "key": "PK_Lumy", "caps": [] }
+            { "key": "PK_Emma", "caps": [] }
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa))
+                ]
+            }
+        ]
+    )
+)
+;;==== TX-BOOT-14 · 02 · mint the three UI-issued stand-ins ==== =================================
+(print "--- [TX-BOOT-14 · 02 · mint the three stand-in scores] ---")
+(let
+    (
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (patron:string KST.ANHD)
+        (owner:string KST.ANHD)
+    )
+    (map print
+        [
+            (format "<(core Nosferatu score)> => [{}]"
+                [(ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScore
+                    ;;PRECISION 6, NOT 0. `UEV_ScoreIssuanceParams` requires 3..24 and the
+                    ;;first version of this block passed 0 -- caught only because the suite
+                    ;;actually runs the call. These three are the LIVE mainnet precisions
+                    ;;(6 / 3 / 24), so the stand-ins are the shape of the originals.
+                    patron owner "NosferatuDracula" 6 (- 1))])
+            (format "<(core WonderCoach score)> => [{}]"
+                [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore
+                    patron owner "WonderCoachCore" 3 true)])
+            ;;THE TRUE-FUNGIBLE ONE, which is the shape with no pool on mainnet.
+            (format "<(StoicPower score)> => [{}]"
+                [(ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore
+                    patron owner "StoicPower" 24 2.0)])
+        ]
+    )
+    ;;AND INTO THEIR POOLS -- because on mainnet Step 7 already did this, and because a score
+    ;;with NO pool CANNOT BE ADMITTED AT ALL. `URC_ResolveScoreEntitySwpair` binds
+    ;;    (asset-id (UR_AQP|PoolAssetId pool-id))
+    ;;in an EAGER `let`, so it reads the pool row even for vault/treasury, where the value is
+    ;;then unused. A BAR pool-link therefore aborts `C_AddScoreEntity` outright:
+    ;;    No value found in table AQP|T|Pool for key: |
+    ;;The first version of this fixture minted the three scores and went straight to Step 9b,
+    ;;which is how that was found. StoicPower gets its pool from Step 7b below; these two get
+    ;;theirs here, exactly as Step 7 gives them theirs on chain.
+    (let
+        (
+            (pool-nosferatu:string (ref-U|DALOS::UDC_Makeid "DHNosferatu"))
+            (pool-wondercoach:string (ref-U|DALOS::UDC_Makeid "DHWonderCoach"))
+        )
+        (map print
+            [
+                (format "<(core Nosferatu -> DHNosferatu)> => [{}]"
+                    [(ref-TS02-C3::AQP-POOL|C_AddScore patron
+                        (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset 4 "DHN-98c486052a51")
+                        pool-nosferatu (ref-U|DALOS::UDC_Makeid "NosferatuDracula"))])
+                (format "<(core WonderCoach -> DHWonderCoach)> => [{}]"
+                    [(ref-TS02-C3::AQP-POOL|C_AddScore patron
+                        (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset 3 "DHWC-98c486052a51")
+                        pool-wondercoach (ref-U|DALOS::UDC_Makeid "WonderCoachCore"))])
+            ]
+        )
+        ""
+    )
+)
+(commit-tx)
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+
+(begin-tx "TX-BOOT-15 - Step 7b: the pool StoicPower never had")
+(env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "=== TX-BOOT-15 — Step 7b: StoicismPool over a true fungible =======================")
+;;==== TX-BOOT-15 · 01 · env-sigs (funded) ==== ====================================================
+(print "--- [TX-BOOT-15 · 01 · env-sigs (funded)] ---")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (patron:string KST.ANHD)
+        ;;FUNDED SIGS, lifted from TX-BOOT-02. Issuing a score / pool / FVT costs STOA, and the
+        ;;patron needs KDA fuel granted IN THIS TRANSACTION -- `env-sigs` does not carry across
+        ;;one. The first version of this block used a bare `env-sigs [{key, caps: []}]` and died
+        ;;inside `coin.transfer` in `IGNIS.XB_MoveDalosFuel`, which reads as an IGNIS defect and
+        ;;is a missing signature. x12 covers the three scores, the pool, the three FVTs, the
+        ;;three admissions and the three reward links with room to spare.
+        (split-stoa:[decimal]
+            (ref-DALOS::URC_SplitSTOAPrices KST.ANHD (* (ref-DALOS::UR_UsagePrice "standard") 12.0))
+        )
+    )
+    (env-sigs
+        [
+            ;;PK_Lumy / PK_Emma are here because the POOL OWNER is not always ANHD: the fixture's
+            ;;DPNF and DPSF collections are owned by other keys, and `AQP|C>ADD-SCORE` enforces
+            ;;`CAP_PoolOwner` on the pool's own owner konto. Signing only as ANHD fails with
+            ;;`Keyset failure (keys-all): [PK_Lumy...]`, which reads as a permission bug and is a
+            ;;missing signer. Same three keys TX-BOOT-02 uses.
+            { "key": "PK_Lumy", "caps": [] }
+            { "key": "PK_Emma", "caps": [] }
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa))
+                ]
+            }
+        ]
+    )
+)
+;;==== TX-BOOT-15 · 02 · pre-state: the score has NO pool ==== ===================================
+(print "--- [TX-BOOT-15 · 02 · pre-state] ---")
+(let
+    (
+        (score:string (U|DALOS.UDC_Makeid "StoicPower"))
+    )
+    ;;NON-VACUITY. Without this the next block's assertion could pass against a pool that had
+    ;;always been there, which is the state this step exists to change.
+    (map print
+        [
+            (expect "<<BOOT-7b>> pre-state: StoicPower is employed in NO pool"
+                "|" (AQP-SCORE.UR_SCR|ScoreAqpoolLink score))
+        ]
+    )
+    ""
+)
+;;==== TX-BOOT-15 · 03 · Step 7b ==== ============================================================
+(print "--- [TX-BOOT-15 · 03 · C_Step7b_CreateStoicismPool] ---")
+(let
+    (
+        (score:string (U|DALOS.UDC_Makeid "StoicPower"))
+        (pool:string (U|DALOS.UDC_Makeid "StoicismPool"))
+    )
+    (map print
+        [
+            (format "<(C_Step7b)> => [{}]"
+                [(AQP-BOOT.C_Step7b_CreateStoicismPool KST.ANHD "OURO-98c486052a51" score)])
+            (expect "<<BOOT-7b>> the pool exists at aqp-class 1 (non-LP true fungible)"
+                1 (AQP-POOL.UR_AQP|PoolAqpClass pool))
+            (expect "<<BOOT-7b>> the pool stakes the token that was passed in"
+                "OURO-98c486052a51" (AQP-POOL.UR_AQP|PoolAssetId pool))
+            (expect "<<BOOT-7b>> StoicPower is now employed in it"
+                pool (AQP-SCORE.UR_SCR|ScoreAqpoolLink score))
+            (expect "<<BOOT-7b>> and it occupies the FIRST slot, not a later one"
+                score (AQP-POOL.UR_AQP|PoolScorePrimary pool))
+        ]
+    )
+    ""
+)
+(print "===^^^===")
+(commit-tx)
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+
+(begin-tx "TX-BOOT-16 - Steps 8b/9b/12b and the gate that was blocking every pool")
+(env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "=== TX-BOOT-16 — Steps 8b/9b/12b: issue, admit, reward, and the gate ==============")
+;;==== TX-BOOT-16 · 01 · env-sigs (funded) ==== ====================================================
+(print "--- [TX-BOOT-16 · 01 · env-sigs (funded)] ---")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (patron:string KST.ANHD)
+        ;;FUNDED SIGS, lifted from TX-BOOT-02. Issuing a score / pool / FVT costs STOA, and the
+        ;;patron needs KDA fuel granted IN THIS TRANSACTION -- `env-sigs` does not carry across
+        ;;one. The first version of this block used a bare `env-sigs [{key, caps: []}]` and died
+        ;;inside `coin.transfer` in `IGNIS.XB_MoveDalosFuel`, which reads as an IGNIS defect and
+        ;;is a missing signature. x12 covers the three scores, the pool, the three FVTs, the
+        ;;three admissions and the three reward links with room to spare.
+        (split-stoa:[decimal]
+            (ref-DALOS::URC_SplitSTOAPrices KST.ANHD (* (ref-DALOS::UR_UsagePrice "standard") 12.0))
+        )
+    )
+    (env-sigs
+        [
+            ;;PK_Lumy / PK_Emma are here because the POOL OWNER is not always ANHD: the fixture's
+            ;;DPNF and DPSF collections are owned by other keys, and `AQP|C>ADD-SCORE` enforces
+            ;;`CAP_PoolOwner` on the pool's own owner konto. Signing only as ANHD fails with
+            ;;`Keyset failure (keys-all): [PK_Lumy...]`, which reads as a permission bug and is a
+            ;;missing signer. Same three keys TX-BOOT-02 uses.
+            { "key": "PK_Lumy", "caps": [] }
+            { "key": "PK_Emma", "caps": [] }
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa))
+                ]
+            }
+        ]
+    )
+)
+;;==== TX-BOOT-16 · 02 · Step 8b — three entities, two classes ==== ==============================
+(print "--- [TX-BOOT-16 · 02 · C_Step8b_IssueLateFvtEntities] ---")
+(let
+    (
+        (nos-t:string (U|DALOS.UDC_Makeid "NosferatuTreasury"))
+        (wc-t:string (U|DALOS.UDC_Makeid "WonderCoachTreasury"))
+        (st-v:string (U|DALOS.UDC_Makeid "StoicismVault"))
+    )
+    (map print
+        [
+            (format "<(C_Step8b)> => [{}]"
+                [(AQP-BOOT.C_Step8b_IssueLateFvtEntities KST.ANHD KST.ANHD)])
+            ;;THE CLASSES ARE THE POINT. Treasury(2) admits score-class 3/4 and vault(1) admits
+            ;;1/2, so issuing the Stoicism one as a treasury would typecheck, deploy, and then
+            ;;refuse StoicPower at admission -- a failure three steps downstream of its cause.
+            (expect "<<BOOT-8b>> NosferatuTreasury is a TREASURY (class 2, admits NF)"
+                2 (AQP-FVT.UR_FVT|FvtClass nos-t))
+            (expect "<<BOOT-8b>> WonderCoachTreasury is a TREASURY (class 2, admits SF)"
+                2 (AQP-FVT.UR_FVT|FvtClass wc-t))
+            (expect "<<BOOT-8b>> StoicismVault is a VAULT (class 1, admits TF) -- NOT a treasury"
+                1 (AQP-FVT.UR_FVT|FvtClass st-v))
+            (expect "<<BOOT-8b>> all three carry the BAR denominator; only a farm has a real one"
+                true (fold (and) true
+                    (map (lambda (f:string) (= "|" (AQP-FVT.UR_FVT|CommonDenominator f)))
+                        [nos-t wc-t st-v])))
+        ]
+    )
+    ""
+)
+;;==== TX-BOOT-16 · 03 · Step 9b — admit the three ==== ==========================================
+(print "--- [TX-BOOT-16 · 03 · C_Step9b_AddLateFvtScoreEntities] ---")
+(let
+    (
+        (nos-t:string (U|DALOS.UDC_Makeid "NosferatuTreasury"))
+        (wc-t:string (U|DALOS.UDC_Makeid "WonderCoachTreasury"))
+        (st-v:string (U|DALOS.UDC_Makeid "StoicismVault"))
+        (s-nos:string (U|DALOS.UDC_Makeid "NosferatuDracula"))
+        (s-wc:string (U|DALOS.UDC_Makeid "WonderCoachCore"))
+        (s-st:string (U|DALOS.UDC_Makeid "StoicPower"))
+    )
+    (map print
+        [
+            (expect "<<BOOT-9b>> pre-state: StoicPower is admitted NOWHERE"
+                "|" (AQP-SCORE.UR_SCR|ScoreFvtLink s-st))
+            (format "<(C_Step9b)> => [{}]"
+                [(AQP-BOOT.C_Step9b_AddLateFvtScoreEntities
+                    KST.ANHD nos-t wc-t st-v s-nos s-wc s-st)])
+            (expect "<<BOOT-9b>> NosferatuDracula now points at its treasury"
+                nos-t (AQP-SCORE.UR_SCR|ScoreFvtLink s-nos))
+            (expect "<<BOOT-9b>> WonderCoach now points at its treasury"
+                wc-t (AQP-SCORE.UR_SCR|ScoreFvtLink s-wc))
+            (expect "<<BOOT-9b>> StoicPower now points at the vault"
+                st-v (AQP-SCORE.UR_SCR|ScoreFvtLink s-st))
+            ;;ADMISSION IS WRITE-ONCE. A second run must ABORT rather than re-point, or an
+            ;;operator re-running a step would silently move a score between aggregators.
+            (expect-failure "<<BOOT-9b>> re-running Step 9b aborts; fvt-link is never re-pointed"
+                (AQP-BOOT.C_Step9b_AddLateFvtScoreEntities
+                    KST.ANHD nos-t wc-t st-v s-nos s-wc s-st))
+        ]
+    )
+    ""
+)
+;;==== TX-BOOT-16 · 04 · the gate, before and after Step 12b ==== ================================
+(print "--- [TX-BOOT-16 · 04 · C_Step12b_AddLateFvtRewardLinks and the gate] ---")
+(let
+    (
+        (nos-t:string (U|DALOS.UDC_Makeid "NosferatuTreasury"))
+        (wc-t:string (U|DALOS.UDC_Makeid "WonderCoachTreasury"))
+        (st-v:string (U|DALOS.UDC_Makeid "StoicismVault"))
+        (s-st:string (U|DALOS.UDC_Makeid "StoicPower"))
+        (pool:string (U|DALOS.UDC_Makeid "StoicismPool"))
+    )
+    (map print
+        [
+            ;;ADMITTED IS NOT READY. This is the whole reason Step 12b is not optional: the score
+            ;;is linked to an issued FVT whose link is enabled, and the pool STILL refuses every
+            ;;stake, because the aggregator has no reward token to pay from.
+            (expect "<<BOOT-12b>> admitted but NOT yet stake-ready -- no reward token"
+                false (RPS.URC_ScoreFvtStakeReady s-st))
+            (expect "<<BOOT-12b>> and the pool therefore refuses stakes"
+                false (RPS.URC_PoolEmployedScoresFvtStakeReady pool))
+            (format "<(C_Step12b)> => [{}]"
+                [(AQP-BOOT.C_Step12b_AddLateFvtRewardLinks
+                    KST.ANHD nos-t wc-t st-v
+                    "AURYN-98c486052a51" "AURYN-98c486052a51" "AURYN-98c486052a51")])
+            (expect "<<BOOT-12b>> each late entity now has exactly one enabled reward token"
+                [1 1 1]
+                (map (lambda (f:string) (AQP-FVT.UR_FVT|EnabledRewardCount f)) [nos-t wc-t st-v]))
+            ;;THE PAYOFF ASSERTION. Gate 7a, the one that refused all seven live pools.
+            (expect "<<BOOT-12b>> StoicPower is now stake-ready"
+                true (RPS.URC_ScoreFvtStakeReady s-st))
+            (expect "<<BOOT-12b>> and StoicismPool now ACCEPTS stakes -- the Stoicism vault is live"
+                true (RPS.URC_PoolEmployedScoresFvtStakeReady pool))
+        ]
+    )
+    ""
+)
+(print "===^^^===")
+(print (format "<<<<<<<AQP-BOOT late steps cost {} GAS>>>>>>>" [(env-gas)]))
 (commit-tx)

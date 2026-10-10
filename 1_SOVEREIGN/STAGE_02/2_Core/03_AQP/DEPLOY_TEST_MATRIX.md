@@ -156,7 +156,8 @@
 | SCR-47 | LP class-0: DPTF LP amount → denominator-equivalent base | P0 | PASS | TRIPLET-DIAG |
 | SCR-48 | LP orto `Z\|` LP path | P1 | MISSING | — |
 | SCR-49 | Multi employed-ids updated in one stake | P0 | PARTIAL | Triplet pool ×3; assert all three rows |
-| SCR-50 | Foreign boost-link surplus (Bronze/Golden boosted, base=0) | P0 | PASS | TRIPLET-DIAG |
+| SCR-50 | Additive satellite: boosted == hub-base x own promile, base == 0 | P0 | PASS | TRIPLET-DIAG `TX-AQP-TD-D1a..i` |
+| | *Recorded PASS 2026-09→2026-10-08 while every satellite read 0. The row asserted only `base=0`, which was the half that worked; the boosted value was printed in a NOTE, not asserted. Now nine assertions, including the fixture precondition and the EXACT value — `> 0` alone passed the magnitude defect that followed.* | | | |
 | SCR-51 | Unstake clears user score to zero when full exit | P0 | PASS | TF `[6.2.4]` TX-FVT-07; OF/DC smoke |
 | SCR-52 | `URD_UserScoreStakerAccounts` returns stakers with deb>0 (triplet Tier-2) | P0 | PASS | Used by FVT farm triplet settle |
 

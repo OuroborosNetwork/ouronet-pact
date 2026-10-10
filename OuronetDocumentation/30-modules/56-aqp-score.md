@@ -52,7 +52,10 @@ Between the pools and the reward distributor.
 
 > **The repository differs from what is deployed.** Everything above describes the CHAIN, which is what a caller actually reaches. The difference is stated rather than resolved:
 >
-> - **functions** in the repository only: `UEV_SemiFungibleScoreDefinition`, `URCx_EquityShareRawWeight`, `URH_SCR|NFClassScoreDefinition`, `URH_SCR|NFTraitScoreDefinition`, `URH_SCR|SFScoreDefinition`, `URH_SCR|ScoreDefinedNonFungibles`, `URH_SCR|ScoreDefinedSemiFungibles`
+> - **schemas** in the repository only: `SCR|SleepStake`
+> - **tables** in the repository only: `SCR|T|SleepStake`
+> - **capabilities** in the repository only: `SCR|C>UPDATE-MULTIPLIERS`, `SCR|XE>APPLY-RAW-BASE-DELTA`, `SCR|XE>DRAIN-BASE`
+> - **functions** in the repository only: `UC_DecayMonthsRemaining`, `UC_MxAtMonths`, `UC_MxForRemaining`, `UC_MxFrozenFloor`, `UC_MxOrderingOk`, `UC_MxSleepIntervalOk`, `UC_SleepMonthsRemaining`, `UC_SleepMxAtMonths`
 
 **Capabilities** -- 36
 

@@ -706,7 +706,7 @@ revert-and-compare (gas reverted UP, values stayed byte-identical, then restored
 permanent proof (`SWP|TX 032z8d`) comparing live `UC_BFS` vs `UC_BFSTargeted` on the real
 ~102-pool topology. Measured: `SWP|TX 032q` 930,230→878,202, `SWP|TX 032z2` **1,686,661→1,296,898
 (23.1% further, the largest single win of the `#65bL` arc)**, MPTEST (1-hop) 120,641→66,926
-(44.5%), W7 (8-hop) 188,205→124,358 (33.9%) — closer targets now genuinely cost proportionally
+(44.5%), W7 (8-hop) 188,205→128,397 (33.9%) — closer targets now genuinely cost proportionally
 less, confirming the fix and the owner's own instinct that nothing beats BFS here. **Cumulative
 (cold cache): 5,094,054→1,296,898 gas, a 74.5% reduction.** Full writeup in
 `ROUND-01-OWNER-FEEDBACK.md`'s `#65bL` entry (Phase 9 addendum). — *#65hL*

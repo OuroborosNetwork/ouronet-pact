@@ -15,3 +15,10 @@ __pycache__/
 # make the committed artefact's diff unreadable. The SHAPES live in
 # Deploy/LIVE-MODULES.json and are committed.
 Deploy/.live-source-cache.json
+
+# The multipact ROUND manifest is a byte-for-byte re-packaging of the .pact files
+# beside it (which `_arweave.py --check` already diffs), so it carries no state of
+# its own -- committing 3.5 MB of already-checked duplication buys nothing.
+# Regenerate with `python3 REPL/tools/_arweave.py --multipact`.
+# The small committed format fixture is links/SAMPLE.multipact.json, NOT this.
+Deploy/4_Arweave/ROUND.multipact.json

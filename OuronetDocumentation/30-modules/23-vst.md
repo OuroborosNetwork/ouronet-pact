@@ -49,6 +49,8 @@ A Stage-1 core above the token modules. It owns the transitions; the link fields
 > **The repository differs from what is deployed.** Everything above describes the CHAIN, which is what a caller actually reaches. The difference is stated rather than resolved:
 >
 > - **schemas** in the repository only: `VST|HibernatingSchema`, `VST|MetaDataSchema`
+> - **capabilities** in the repository only: `VST|XE>UNSLEEP`
+> - **functions** in the repository only: `URC_HibernationFeePromile`, `URC_SpecialLegIssuerRestricted`, `XE_Unsleep`
 
 **Capabilities** -- 42
 

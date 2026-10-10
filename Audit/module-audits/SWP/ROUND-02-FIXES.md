@@ -2016,7 +2016,7 @@ reconfirmed the optimized numbers held.
 | `SWP\|TX 032z2` (P2-scale checkpoint) | 1,686,661 | **1,296,898 (23.1% further)** | 1,705,522 |
 | `URC_Hopper(OURO→WSTOA)` isolated | 110,099 | **61,852** | — |
 | MPTEST (realistic 1-hop minor-principal, `#65fL`'s own fixture) | 120,641 | **66,926 (44.5%)** | 122,778 |
-| W7 (adversarial 8-hop minor-principal) | 188,205 | **124,358 (33.9%)** | 190,276 |
+| W7 (adversarial 8-hop minor-principal) | 188,205 | **128,397 (33.9%)** | 190,276 |
 
 This is the largest single gas win of the whole `#65bL` arc. It also directly answers the "cheaper
 if closer" question with real numbers: the realistic 1-hop case improved proportionally more

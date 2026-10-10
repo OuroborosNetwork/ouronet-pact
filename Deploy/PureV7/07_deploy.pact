@@ -1,0 +1,2794 @@
+;; -------------------------------------------------------------------------
+;; TX 07/09 -- TS02-C3
+;;
+;; DOT-PIN CASCADE ONLY -- dot-calls RPS. Carries the Talos surface the reset
+;; transaction (09) calls into.
+;;
+;; SEND IN ORDER. This round is SEQUENTIAL: every module here either changed or dot-calls one
+;; that did, and a dot-caller compiled against a superseded table-owning callee aborts on its
+;; next table access rather than failing at deploy. Parallel submission orders nothing.
+;;
+;; SIGNERS: this module's governance keyset.
+;; -------------------------------------------------------------------------
+
+;;@GENERATED-BODY-BELOW -- do not edit past this line; see REPL/tools/_purev7.py
+
+(namespace "ouronet-ns")
+
+;; ---- source: 1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact (module only -- its interface is already live)
+(module TS02-C3 GOV
+    @doc "TALOS Stage 2 Client Functiones Part 3 - Acquisition Pools Functions"
+
+    ;;<=========================================================================>
+    ;;{0}  IMPLEMENTERS
+    ;;
+    (implements OuronetPolicyV2)
+    (implements TalosStageTwo_ClientThreeV2)
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;
+    ;;Defaults for AQP-FVT|C_IssueGenericEarningVault. Named rather than inlined because each one
+    ;;is a class rule a caller would otherwise have to know: getting any of them wrong builds a
+    ;;vault that looks issued and cannot be staked.
+    (defconst GV|PRECISION:integer                      6)
+    (defconst GV|MX_FROZEN:decimal                      2.0)
+    (defconst GV|POOL_CLASS_TF:integer                  1)      ;;aqp-class 1 = non-LP true fungible
+    (defconst GV|FVT_CLASS_VAULT:integer                1)      ;;fvt-class 1 = Vault
+    (defconst GV|SCORE_ENTITY_SCORE:integer             1)
+    (defconst GV|COMMON_BAR:string                      "|")
+    (defconst GOV|MD_TS02-C3                            (keyset-ref-guard (GOV|Demiurgoi)))
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    (defcap GOV ()                                      (compose-capability (GOV|TS02-C3_ADMIN)))
+    (defcap GOV|TS02-C3_ADMIN ()                        (enforce-guard GOV|MD_TS02-C3))
+    ;;{G5}  functions
+    (defun GOV|Demiurgoi ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::GOV|Demiurgoi)
+        )
+    )
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    (defconst P|I                                       (P|Info))
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;
+    (deftable P|T:{OuronetPolicyV2.P|S})
+    (deftable P|MT:{OuronetPolicyV2.P|MS})
+    ;;{P4}  capabilities
+    (defcap P|TS ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (gap:bool (ref-DALOS::UR_GAP))
+            )
+            (enforce (not gap) "While Global Administrative Pause is online, no client Functions can be executed")
+            (compose-capability (P|TALOS-SUMMONER))
+        )
+    )
+    (defcap P|TALOS-SUMMONER ()
+        @doc "Talos Summoner Capability"
+        true
+    )
+    ;;{P5}  functions
+    (defun P|Info ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::P|Info)
+        )
+    )
+    (defun P|UR:guard (policy-name:string)
+        (at "policy" (read P|T policy-name ["policy"]))
+    )
+    (defun P|UR_IMP:[guard] ()
+        ;;DEFAULT ADDED 2026-09-14 (owner ruling). This was a bare `read`, which RAISES
+        ;;`No value found in table <M>_P|MT for key: InterModulePolicies` when the row does not
+        ;;exist -- i.e. before ANY module has registered. P|UEV_IMC is built on this, so in that
+        ;;window the inter-module gate answered with a raw table error naming a row key instead of
+        ;;refusing cleanly. Surfaced by the X-01 repair, which removed the harness registration
+        ;;that had been creating the row as a side effect.
+        ;;
+        ;;The default is the module's OWN SECURE capability guard, which is exactly what
+        ;;P|A_AddIMP already seeds the row with. So reader and writer now agree on what an
+        ;;unregistered policy list contains, and the gate's answer is the same before and after
+        ;;the first registration: satisfiable only from inside this module.
+        (with-default-read P|MT P|I
+            {"m-policies" : [(create-capability-guard (SECURE))]}
+            {"m-policies" := mp}
+            mp
+        )
+    )
+    (defun P|UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV2} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|TS02-C3_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        @doc "Registers <policy-guard> as a trusted inter-module caller of this module. \
+            \ IDEMPOTENT: a guard already in the chain is left alone rather than appended \
+            \ a second time. See OuronetPolicyV2 for why that is load-bearing."
+        (with-capability (GOV|TS02-C3_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
+                    ;;
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" :
+                            (if (contains policy-guard mp)
+                                mp
+                                (ref-U|LST::UC_AppL mp policy-guard)
+                            )
+                        }
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_RemoveIMP (policy-guard:guard)
+        @doc "Revokes <policy-guard> from this module's guard chain. Removes EVERY occurrence, so \
+            \ it doubles as the cleanup for duplicates left behind by the pre-idempotence append. \
+            \ Refuses to drop this module's own SECURE seed -- see OuronetPolicyV2."
+        (with-capability (GOV|TS02-C3_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
+                    ;;
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (enforce (!= policy-guard dg) "The module's own SECURE seed cannot be revoked")
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_RemoveItem mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_SetIMP (policy-guards:[guard])
+        @doc "Replaces this module's whole guard chain in one write -- the recovery hatch. \
+            \ Deduplicates, and enforces that the module's own SECURE seed survives: without it \
+            \ the module can no longer reach its own P|UEV_IMC-gated functions."
+        (with-capability (GOV|TS02-C3_ADMIN)
+            (let
+                (
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (enforce (contains dg policy-guards) "The module's own SECURE seed must be present")
+                (write P|MT P|I
+                    {"m-policies" : (distinct policy-guards)}
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        (let
+            (
+                (ref-P|TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+                (ref-P|ANK:module{OuronetPolicyV2} AQP-ANK)
+                (ref-P|SCR:module{OuronetPolicyV2} AQP-SCORE)
+                (ref-P|AQP:module{OuronetPolicyV2} AQP-POOL)
+                (ref-P|FVT:module{OuronetPolicyV2} AQP-FVT)
+                (ref-P|VCT:module{OuronetPolicyV2} AQP-VCT)
+                (ref-P|ATSU:module{OuronetPolicyV2} ATSU)
+                (ref-P|MTX-AQP:module{OuronetPolicyV2} MTX-AQP)
+                (ref-P|DSA:module{OuronetPolicyV2} AQP-DSA)
+                (ref-P|IGNIS:module{OuronetPolicyV2} IGNIS)
+                (mg:guard (create-capability-guard (P|TALOS-SUMMONER)))
+            )
+            (ref-P|TS01-A::P|A_AddIMP mg)
+            (ref-P|ANK::P|A_AddIMP mg)
+            (ref-P|SCR::P|A_AddIMP mg)
+            (ref-P|AQP::P|A_AddIMP mg)
+            (ref-P|FVT::P|A_AddIMP mg)
+            (ref-P|VCT::P|A_AddIMP mg)
+            (ref-P|ATSU::P|A_AddIMP mg)
+            ;; MTX-AQP defpact wrapper below — register the Talos summoner as an allowed IMC caller of MTX-AQP.
+            (ref-P|MTX-AQP::P|A_AddIMP mg)
+            ;; DSA vault/agency wrappers below — register the Talos summoner as an allowed IMC caller of AQP-DSA.
+            (ref-P|DSA::P|A_AddIMP mg)
+            ;;IGNIS RESTRUCTURE 2026-09-20: the collectors became protected X_ functions
+            ;;behind `P|UEV_IMC`, so every module that bills must be a registered IMP peer
+            ;;of IGNIS or the fee call dies with "None of the guards passed".
+            (ref-P|IGNIS::P|A_AddIMP mg)
+        )
+    )
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    (defconst BAR                                       (CT_Bar))
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;
+    ;;
+    (defcap SECURE ()
+        true
+    )
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    (defcap AQP|C>STAKE-TRUE-FUNGIBLE
+        (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
+        @doc "AQP client event: stake TrueFungible. Composes P|TS only; sovereign recipe in FVT::CC_TrueFungibleStakeFlow."
+        @event
+        (compose-capability (P|TS))
+    )
+    (defcap AQP|C>UNSTAKE-TRUE-FUNGIBLE
+        (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
+        @doc "AQP client event: unstake TrueFungible. Composes P|TS only; sovereign recipe in FVT::CC_TrueFungibleStakeFlow."
+        @event
+        (compose-capability (P|TS))
+    )
+    (defcap AQP|C>STAKE-SPECIAL-CUSTODIAL
+        (patron:string pool-id:string owner-id:string beneficiary-id:string dpof-id:string
+         nonces:[integer] nonce-amounts:[decimal])
+        @doc "AQP client event: stake SLEEPING batches under pool custody. Composes P|TS only. \
+            \ Distinct from `AQP|C>STAKE-ORTO-FUNGIBLE` so the explorer can tell a custodial stake \
+            \ from an ordinary one -- they differ in who the tracker names as owner, which is \
+            \ exactly the fact an observer needs and cannot otherwise see."
+        @event
+        (compose-capability (P|TS))
+    )
+    (defcap AQP|C>RELEASE-SPECIAL-CUSTODIAL
+        (patron:string pool-id:string beneficiary-id:string dpof-id:string nonce:integer)
+        @doc "AQP client event: release a MATURED custodial sleeping position. Composes P|TS only; \
+            \ maturity is enforced by VST and custody by AQP-FVT."
+        @event
+        (compose-capability (P|TS))
+    )
+    (defcap AQP|C>STAKE-ORTO-FUNGIBLE
+        (patron:string pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal])
+        @doc "AQP client event: stake OrtoFungible. nonces and nonce-amounts are resolved before this cap \
+            \ (DPOF::UR_NoncesSupplies — whole nonce only) so the explorer records the exact legs moved."
+        @event
+        (compose-capability (P|TS))
+    )
+    (defcap AQP|C>UNSTAKE-ORTO-FUNGIBLE
+        (patron:string pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal])
+        @doc "AQP client event: unstake OrtoFungible. nonces and nonce-amounts resolved before this cap \
+            \ (DPOF::UR_NoncesSupplies — whole nonce only) for explorer visibility."
+        @event
+        (compose-capability (P|TS))
+    )
+    (defcap AQP|C>STAKE-SEMI-FUNGIBLE-COLLECTABLE
+        (patron:string pool-id:string owner-id:string beneficiary-id:string collectable-id:string nonces:[integer] nonce-amounts:[integer])
+        @doc "AQP client event: stake DPSF collectable (son=true). Composes P|TS only."
+        @event
+        (compose-capability (P|TS))
+    )
+    (defcap AQP|C>UNSTAKE-SEMI-FUNGIBLE-COLLECTABLE
+        (patron:string pool-id:string owner-id:string beneficiary-id:string collectable-id:string nonces:[integer] nonce-amounts:[integer])
+        @doc "AQP client event: unstake DPSF collectable (son=true). Composes P|TS only."
+        @event
+        (compose-capability (P|TS))
+    )
+    (defcap AQP|C>STAKE-NON-FUNGIBLE-COLLECTABLE
+        (patron:string pool-id:string owner-id:string beneficiary-id:string collectable-id:string nonces:[integer] nonce-amounts:[integer])
+        @doc "AQP client event: stake DPNF collectable (son=false). Composes P|TS only."
+        @event
+        (compose-capability (P|TS))
+    )
+    (defcap AQP|C>UNSTAKE-NON-FUNGIBLE-COLLECTABLE
+        (patron:string pool-id:string owner-id:string beneficiary-id:string collectable-id:string nonces:[integer] nonce-amounts:[integer])
+        @doc "AQP client event: unstake DPNF collectable (son=false). Composes P|TS only."
+        @event
+        (compose-capability (P|TS))
+    )
+    (defcap AQP|C>UPDATE-SCORE-MULTIPLIERS
+        (patron:string executor:string score-id:string
+         mx-frozen:decimal mx-sleeping:decimal mx-hibernated:decimal)
+        @doc "AQP client event: re-set a score's frozen/sleeping multipliers. Composes P|TS only. \
+            \ THE TALOS MIRROR CARRIES NO VALIDATION, deliberately and like its siblings: acquiring \
+            \ it is what puts a registered inter-module guard in scope so the core client's \
+            \ `P|UEV_IMC` passes. The real conditions — the emptiness gate in AQP-POOL, and \
+            \ ownership plus the ordering invariant in AQP-SCORE — are enforced by the modules that \
+            \ can actually see what they are checking. Duplicating them here would be a second \
+            \ copy free to drift."
+        @event
+        (compose-capability (P|TS))
+    )
+    (defcap AQP|C>BEGIN-SCORE-REVOKE
+        (patron:string executor:string pool-id:string score-id:string slot-index:integer)
+        @doc "AQP client event: phase 1 of a score revoke — vacate the slot, freeze the pool. \
+            \ Composes P|TS only; the conditions live in AQP-POOL, which can see the slots."
+        @event
+        (compose-capability (P|TS))
+    )
+    (defcap AQP|C>DRAIN-SCORE-SLICE
+        (patron:string pool-id:string score-id:string accounts:[string])
+        @doc "AQP client event: phase 2 — one fed slice of a score drain. Composes P|TS only."
+        @event
+        (compose-capability (P|TS))
+    )
+    (defcap AQP|C>FINALIZE-SCORE-REVOKE
+        (patron:string executor:string pool-id:string score-id:string)
+        @doc "AQP client event: phase 3 — cut the aqpool-link once the drain is complete. \
+            \ Composes P|TS only."
+        @event
+        (compose-capability (P|TS))
+    )
+    (defcap AQP|C>REASSIGN-CUSTODIAL-BENEFICIARY
+        (patron:string executor:string pool-id:string dpof-id:string nonce:integer new-beneficiary:string)
+        @doc "AQP client event: hand a custodial sleeping position's earnings to another account. \
+            \ Composes P|TS only -- the conditions live in AQP-FVT, which can see the tracker and \
+            \ can ask the token layer whether this counterparty may receive the asset at all."
+        @event
+        (compose-capability (P|TS))
+    )
+    (defcap FVT|C>CLEAR-POOL-SWEEP
+        (patron:string pool-id:string)
+        @doc "AQP-FVT client event: release a pool's sweep freeze. Composes P|TS only. \
+            \ Mirrors AQP-FVT's cap, not AQP-POOL's: the release lives in AQP-FVT because the \
+            \ freeze has two owners and only that module can see both."
+        @event
+        (compose-capability (P|TS))
+    )
+    (defcap AQP|C>BACKFILL-SCORE-SLICE
+        (patron:string pool-id:string score-id:string beneficiaries:[string])
+        @doc "AQP client event: one fed slice of the score re-rate sweep. Composes P|TS only. \
+            \ No validation here, as for every mirror beside it — acquiring this is what puts a \
+            \ registered inter-module guard in scope so the core client's `P|UEV_IMC` passes, and \
+            \ the real conditions live in AQP-POOL, the only module that can see the tracker."
+        @event
+        (compose-capability (P|TS))
+    )
+    (defcap AQP|C>SYNC-TF-ANCHORS
+        (patron:string beneficiary-id:string dptf-id:string)
+        @doc "AQP client event: pool-agnostic TF anchor repair. Composes P|TS only."
+        @event
+        (compose-capability (P|TS))
+    )
+    (defcap AQP|C>SYNC-SEMI-FUNGIBLE-ANCHORS
+        (patron:string beneficiary-id:string dpsf-id:string)
+        @doc "AQP client event: pool-agnostic DPSF anchor repair. Composes P|TS only."
+        @event
+        (compose-capability (P|TS))
+    )
+    (defcap AQP|C>SYNC-NON-FUNGIBLE-ANCHORS
+        (patron:string beneficiary-id:string dpnf-id:string)
+        @doc "AQP client event: pool-agnostic DPNF anchor repair. Composes P|TS only."
+        @event
+        (compose-capability (P|TS))
+    )
+    (defcap AQP|C>ABORT-VACATE
+        (patron:string pool-id:string)
+        @doc "AQP client event: clear vacate-in-progress (stake stays disabled). Composes P|TS only."
+        @event
+        (compose-capability (P|TS))
+    )
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    (defun CT_Bar ()
+        (let
+            (
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
+            )
+            (ref-U|CT::CT_BAR)
+        )
+    )
+    ;;{5.2}  Compute [UC]
+    ;;
+    (defun UC_ShortAccount:string (account:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UC_ShortAccount account)
+        )
+    )
+    (defun UC_FormatStakeTrueFungibleResult:string
+        (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
+        @doc "Stake success text: self-stake when owner=beneficiary; else names short owner and beneficiary."
+        (if (= owner-id beneficiary-id)
+            (format "Successfully staked TrueFungible {} amount {} into Pool {} (self-stake, {}). "
+                [dptf-id amount pool-id (UC_ShortAccount owner-id)]
+            )
+            (format "Successfully staked TrueFungible {} amount {} into Pool {} for beneficiary {} (owner {}). "
+                [dptf-id amount pool-id (UC_ShortAccount beneficiary-id) (UC_ShortAccount owner-id)]
+            )
+        )
+    )
+    (defun UC_FormatUnstakeTrueFungibleResult:string
+        (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
+        @doc "Unstake success text: self-stake when owner=beneficiary; else names short owner and beneficiary."
+        (if (= owner-id beneficiary-id)
+            (format "Successfully unstaked TrueFungible {} amount {} from Pool {} (self-stake, {}). "
+                [dptf-id amount pool-id (UC_ShortAccount owner-id)]
+            )
+            (format "Successfully unstaked TrueFungible {} amount {} from Pool {} for beneficiary {} (owner {}). "
+                [dptf-id amount pool-id (UC_ShortAccount beneficiary-id) (UC_ShortAccount owner-id)]
+            )
+        )
+    )
+    (defun UC_FormatStakeOrtoFungibleResult:string
+        (pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonce-count:integer)
+        @doc "Stake OF success text (whole-nonce Transfer)."
+        (if (= owner-id beneficiary-id)
+            (format "Successfully staked OrtoFungible {} ({} whole nonces) into Pool {} (self-stake, {}). "
+                [
+                    dpof-id
+                    nonce-count
+                    pool-id
+                    (UC_ShortAccount owner-id)
+                ]
+            )
+            (format "Successfully staked OrtoFungible {} ({} whole nonces) into Pool {} for beneficiary {} (owner {}). "
+                [
+                    dpof-id
+                    nonce-count
+                    pool-id
+                    (UC_ShortAccount beneficiary-id)
+                    (UC_ShortAccount owner-id)
+                ]
+            )
+        )
+    )
+    (defun UC_FormatUnstakeOrtoFungibleResult:string
+        (pool-id:string owner-id:string dpof-id:string nonce-count:integer)
+        @doc "Unstake OF success text; beneficiary resolved from tracker in sovereign phase 1."
+        (format "Successfully unstaked OrtoFungible {} ({} whole nonces) from Pool {} (owner {}). "
+            [
+                dpof-id
+                nonce-count
+                pool-id
+                (UC_ShortAccount owner-id)
+            ]
+        )
+    )
+    (defun UC_FormatStakeCollectableResult:string
+        (
+            pool-id:string
+            owner-id:string
+            beneficiary-id:string
+            collectable-id:string
+            son:bool
+            nonce-count:integer
+        )
+        @doc "Stake collectable success text."
+        (if (= owner-id beneficiary-id)
+            (format "Successfully staked {} {} ({} nonces) into Pool {} (self-stake, {}). "
+                [
+                    (if son "DPSF" "DPNF")
+                    collectable-id
+                    nonce-count
+                    pool-id
+                    (UC_ShortAccount owner-id)
+                ]
+            )
+            (format "Successfully staked {} {} ({} nonces) into Pool {} for beneficiary {} (owner {}). "
+                [
+                    (if son "DPSF" "DPNF")
+                    collectable-id
+                    nonce-count
+                    pool-id
+                    (UC_ShortAccount beneficiary-id)
+                    (UC_ShortAccount owner-id)
+                ]
+            )
+        )
+    )
+    (defun UC_FormatUnstakeCollectableResult:string
+        (pool-id:string owner-id:string collectable-id:string son:bool nonce-count:integer)
+        @doc "Unstake collectable success text."
+        (format "Successfully unstaked {} {} ({} nonces) from Pool {} (owner {}). "
+            [
+                (if son "DPSF" "DPNF")
+                collectable-id
+                nonce-count
+                pool-id
+                (UC_ShortAccount owner-id)
+            ]
+        )
+    )
+    (defun UC_FormatVacateCollectableResult:string
+        (
+            pool-id:string
+            owner-id:string
+            beneficiary-id:string
+            collectable-id:string
+            son:bool
+            nonce-count:integer
+        )
+        @doc "Vacate collectable success text (pool-owner forced unstake)."
+        (format "Successfully vacated {} {} ({} nonces) from Pool {} (owner {} → beneficiary {}). "
+            [
+                (if son "DPSF" "DPNF")
+                collectable-id
+                nonce-count
+                pool-id
+                (UC_ShortAccount owner-id)
+                (UC_ShortAccount beneficiary-id)
+            ]
+        )
+    )
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;ADDED 2026-09-19. The generic-vault cost reader. It lives HERE, under {5.3} Read, and not
+    ;;beside the client function it prices: URCi_ is a reader, and the canonical section order
+    ;;puts every UR/URC/URH/URCi/INFO in this block regardless of what consumes it.
+    (defun URCi_IssueGenericEarningVault:object{IgnisCollectorV3.OutputCumulator}
+        (owner-konto:string vault-name:string stake-dptf-id:string reward-dptf-id:string)
+        @doc "Cost reader for AQP-FVT|C_IssueGenericEarningVault: the six component cumulators, \
+            \ concatenated exactly as the operation concatenates them."
+        ;;WHY IT COMPOSES RATHER THAN NAMING A PRICE. The operation is six core calls; its cost is
+        ;;whatever those six cost. Writing a standalone price here would be a SECOND definition of
+        ;;the same number, free to drift from the first -- the failure this codebase has found in
+        ;;its own artefacts repeatedly. Concatenating the same six readers the operation's own
+        ;;cumulators come from means the preview cannot disagree with the charge by construction.
+        ;;
+        ;;The component readers live in four different modules, and two of them are on RPS rather
+        ;;than FVT (AddScoreEntity, AddRewardLink) -- which is worth knowing, because looking for
+        ;;them on FVT beside the ops they price finds nothing.
+        (let*
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                ;;
+                (score-name:string (concat [vault-name "Score"]))
+                (pool-name:string (concat [vault-name "Pool"]))
+                (fvt-name:string (concat [vault-name "Vault"]))
+                (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
+                (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+                (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                [
+                    (ref-SCR::URCi_IssueScore owner-konto [score-id])
+                    (ref-AQP::URCi_Issue [pool-id])
+                    (ref-AQP::URCi_AddScore [pool-id score-id])
+                    (ref-FVT::URCi_Issue owner-konto [fvt-id])
+                    ;;THE LAST TWO ARE BUILT HERE RATHER THAN CALLED, and the reason is specific.
+                    ;;RPS::URCi_AddScoreEntity and URCi_AddRewardLink resolve their active-account
+                    ;;with `UR_FVT|OwnerKonto fvt-id` -- a READ of the FVT row. For a PREVIEW of a
+                    ;;vault that does not exist yet, that row is absent and the reader aborts:
+                    ;;  No value found in table RPS_FVT|T|RewardAggregate for key: <name>Vault-...
+                    ;;A cost preview for a CREATION operation cannot depend on reading the thing it
+                    ;;is about to create. (Found by running it; the RT-K family is about exactly
+                    ;;this class of preview/exec divergence.)
+                    ;;
+                    ;;The PRICE is not the problem -- it is static, from the same price-table keys
+                    ;;below. Only the active-account came from the row, and here it is `owner-konto`,
+                    ;;which the caller supplies. So these two use the identical UC_IgnisPrice keys
+                    ;;and substitute the account. No price is restated; nothing can drift.
+                    (ref-IGNIS::UDC_ConstructOutputCumulator
+                        (ref-IGNIS::UC_IgnisPrice "AQP-FVT|C_AddScoreEntity" "add-score-entity")
+                        owner-konto (ref-IGNIS::URC_IsVirtualGasZero) [fvt-id score-id])
+                    (ref-IGNIS::UDC_ConstructOutputCumulator
+                        (ref-IGNIS::UC_IgnisPrice "AQP-FVT|C_AddRewardLink" "add-reward-link")
+                        owner-konto (ref-IGNIS::URC_IsVirtualGasZero)
+                        [fvt-id reward-dptf-id GV|COMMON_BAR])
+                ]
+                []
+            )
+        )
+    )
+
+
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+    ;;Protection: Class 3 — Custom: P|TS
+    (defun AQP-POOL|CC_VacateTrueFungible:string
+        (patron:string executor:string pool-id:string)
+        @doc "Vacate rehaul — pool-owner vacate of a pool's TrueFungible leg only (one tx; used standalone or by \
+            \ the agnostic CC_FullVacate for a class-1 TF+OF pool). Owner enforced in VCT|C>VACATE; IGNIS on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron (ref-VCT::XB_VacateTrueFungible executor pool-id))
+                (format "Successfully vacated the TrueFungible leg of Pool {}." [pool-id])
+            )
+        )
+    )
+    ;;Protection: Class 3 — Custom: P|TS
+    (defun AQP-POOL|CC_VacateOrtoFungible:string
+        (patron:string executor:string pool-id:string dpof-id:string)
+        @doc "Vacate rehaul — pool-owner vacate of ONE OrtoFungible asset of a pool (one tx; standalone or per \
+            \ class-1 satellite). Owner enforced in VCT|C>VACATE; IGNIS on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron (ref-VCT::XB_VacateOrtoFungible patron executor pool-id dpof-id))
+                (format "Successfully vacated OrtoFungible {} of Pool {}." [dpof-id pool-id])
+            )
+        )
+    )
+    ;;Protection: Class 3 — Custom: P|TS
+    (defun AQP-POOL|CC_VacateSemiFungible:string
+        (patron:string executor:string pool-id:string dpsf-id:string)
+        @doc "Vacate rehaul — pool-owner vacate of the DPSF (semi-fungible) collection of a class-3 pool (one tx). \
+            \ Owner enforced in VCT|C>VACATE; IGNIS on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron (ref-VCT::XB_VacateSemiFungible executor pool-id dpsf-id))
+                (format "Successfully vacated SemiFungible {} of Pool {}." [dpsf-id pool-id])
+            )
+        )
+    )
+    ;;Protection: Class 3 — Custom: P|TS
+    (defun AQP-POOL|CC_VacateNonFungible:string
+        (patron:string executor:string pool-id:string dpnf-id:string)
+        @doc "Vacate rehaul — pool-owner vacate of the DPNF (non-fungible) collection of a class-4 pool (one tx). \
+            \ Owner enforced in VCT|C>VACATE; IGNIS on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron (ref-VCT::XB_VacateNonFungible executor pool-id dpnf-id))
+                (format "Successfully vacated NonFungible {} of Pool {}." [dpnf-id pool-id])
+            )
+        )
+    )
+    (defun AQP-DSA|C_DefineDelegationVault:string
+        (patron:string executor:string fvt-id:string model-id:string unit-score:integer)
+        @doc "DSA (Talos): bind a class-0 FVT as a delegation vault (score-entity model + unit-score); collects \
+            \ IGNIS on patron. Only the FVT owner may run it."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DSA:module{DsaV1} AQP-DSA)
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-DSA::C_DefineDelegationVault patron executor fvt-id model-id unit-score)
+                    )
+                )
+                (ref-IGNIS::XE_CollectIgnis patron ico)
+                (format "DSA vault defined on FVT {} (model {}, unit-score {})." [fvt-id model-id unit-score])
+            )
+        )
+    )
+    (defun AQP-DSA|C_SetOracleAuth:string
+        (patron:string executor:string fvt-id:string oracle-guard:guard)
+        @doc "DSA (Talos): owner authorizes the delegated oracle key for a vault + arms the 25h capture expiry; \
+            \ collects IGNIS on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DSA:module{DsaV1} AQP-DSA)
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-DSA::C_SetOracleAuth patron executor fvt-id oracle-guard)
+                    )
+                )
+                (ref-IGNIS::XE_CollectIgnis patron ico)
+                (format "Oracle authority set + oracle-on armed on FVT {}." [fvt-id])
+            )
+        )
+    )
+    (defun AQP-DSA|C_OracleWrite:string
+        (patron:string fvt-id:string score-entity-id:string nodes:integer uptime:integer)
+        @doc "DSA (Talos): the delegated oracle writes an agency's daily {nodes, uptime} + recomputes its capture \
+            \ (fresh oracle-ts); collects IGNIS on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DSA:module{DsaV1} AQP-DSA)
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-DSA::C_OracleWrite patron fvt-id score-entity-id nodes uptime)
+                    )
+                )
+                (ref-IGNIS::XE_CollectIgnis patron ico)
+                (format "Oracle wrote nodes {} / uptime {}‰ for agency {}." [nodes uptime score-entity-id])
+            )
+        )
+    )
+    (defun AQP-DSA|C_WithdrawRoyalty:string
+        (patron:string executor:string fvt-id:string reward-dptf-id:string)
+        @doc "DSA (Talos): the FVT owner withdraws the whole royalty pool of <reward-dptf-id> on vault <fvt-id> to \
+            \ the owner konto; collects IGNIS on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DSA:module{DsaV1} AQP-DSA)
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-DSA::C_WithdrawRoyalty patron executor fvt-id reward-dptf-id)
+                    )
+                )
+                (ref-IGNIS::XE_CollectIgnis patron ico)
+                (format "Royalty pool of {} on FVT {} withdrawn to the owner." [reward-dptf-id fvt-id])
+            )
+        )
+    )
+    (defun AQP-DSA|C_BurnRoyalty:string
+        (patron:string executor:string fvt-id:string reward-dptf-id:string)
+        @doc "DSA (Talos): the FVT owner BURNS the whole royalty pool of <reward-dptf-id> on vault <fvt-id>; \
+            \ collects IGNIS on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DSA:module{DsaV1} AQP-DSA)
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-DSA::C_BurnRoyalty patron executor fvt-id reward-dptf-id)
+                    )
+                )
+                (ref-IGNIS::XE_CollectIgnis patron ico)
+                (format "Royalty pool of {} on FVT {} burned." [reward-dptf-id fvt-id])
+            )
+        )
+    )
+    (defun AQP-DSA|C_FuelRoyalty:string
+        (patron:string executor:string fvt-id:string reward-dptf-id:string swpair:string)
+        @doc "DSA (Talos): the FVT owner FUELS <swpair> with the whole royalty pool of <reward-dptf-id> on vault \
+            \ <fvt-id> (adds liquidity, no LP mint); collects IGNIS on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DSA:module{DsaV1} AQP-DSA)
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-DSA::C_FuelRoyalty patron executor fvt-id reward-dptf-id swpair)
+                    )
+                )
+                (ref-IGNIS::XE_CollectIgnis patron ico)
+                (format "Royalty pool of {} on FVT {} fueled into swpair {}." [reward-dptf-id fvt-id swpair])
+            )
+        )
+    )
+    (defun AQP-DSA|C_SetAgencyFee:string
+        (patron:string executor:string fvt-id:string score-entity-id:string fee-per-mille:integer)
+        @doc "DSA (Talos): the FVT owner changes a delegation agency's operator fee (reprices only future injects); \
+            \ collects IGNIS on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DSA:module{DsaV1} AQP-DSA)
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-DSA::C_SetAgencyFee patron executor fvt-id score-entity-id fee-per-mille)
+                    )
+                )
+                (ref-IGNIS::XE_CollectIgnis patron ico)
+                (format "Agency {} fee set to {} per-mille." [score-entity-id fee-per-mille])
+            )
+        )
+    )
+    (defun AQP-DSA|A_ToggleExternalOracle:string (patron:string executor:string on:bool)
+        @doc "DSA (Talos): MODULE ADMIN (GOV) flip of the SINGULAR GLOBAL external-oracle switch for ALL agencies. \
+            \ No IGNIS billing (pure governance, master-signed, no OutputCumulator)."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-DSA:module{DsaV1} AQP-DSA)
+                )
+                (ref-DSA::A_ToggleExternalOracle patron executor on)
+                (format "Global external-oracle switch set to {}." [on])
+            )
+        )
+    )
+    (defun AQP-DSA|A_SetOracleValidity:string (patron:string executor:string seconds:integer)
+        @doc "DSA (Talos): MODULE ADMIN (GOV) set of the GLOBAL oracle-validity window (freshness horizon, seconds). \
+            \ No IGNIS billing (pure governance, master-signed, no OutputCumulator)."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-DSA:module{DsaV1} AQP-DSA)
+                )
+                (ref-DSA::A_SetOracleValidity patron executor seconds)
+                (format "Global oracle-validity window set to {} seconds." [seconds])
+            )
+        )
+    )
+    ;;
+    (defun AQP-ANK|C_RevokeBoostClass:string
+        (patron:string executor:string boost-class-id:string)
+        @doc "Revokes an empty BoostClass."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-ANK::C_RevokeBoostClass patron executor boost-class-id)
+                )
+                (format "Successfully revoked BoostClass {}." [boost-class-id])
+            )
+        )
+    )
+    (defun AQP-ANK|C_IssueTrueFungibleAnchor:string
+        (patron:string executor:string anchor-name:string dptf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dptf-amount:decimal)
+        @doc "Issues a DPTF Anchor. acnoi=true creates BoostClass inline (2x STOA); false links to existing (1x STOA)."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-ANK::C_IssueTrueFungibleAnchor 
+                            patron executor anchor-name dptf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dptf-amount
+                        )
+                    )
+                    (out:[string] (at "output" ico))
+                    (anchor-id:string (at 0 out))
+                )
+                (ref-IGNIS::XE_CollectIgnis patron ico)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
+                (if acnoi
+                    (format "Successfully issued TrueFungible Anchor {} (new BoostClass {}) for {}." [anchor-id (at 1 out) dptf-id])
+                    (format "Successfully issued TrueFungible Anchor {} for {}." [anchor-id dptf-id])
+                )
+            )
+        )
+    )
+    (defun AQP-ANK|C_IssueSemiFungibleAnchor:string
+        (patron:string executor:string anchor-name:string dpsf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpsf-nonce:integer)
+        @doc "Issues a DPSF Anchor. acnoi=true creates BoostClass inline (2x STOA); false links to existing (1x STOA)."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-ANK::C_IssueSemiFungibleAnchor 
+                            patron executor anchor-name dpsf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dpsf-nonce
+                        )
+                    )
+                    (out:[string] (at "output" ico))
+                    (anchor-id:string (at 0 out))
+                )
+                (ref-IGNIS::XE_CollectIgnis patron ico)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
+                (if acnoi
+                    (format "Successfully issued SemiFungible Anchor {} (new BoostClass {}) for {}." [anchor-id (at 1 out) dpsf-id])
+                    (format "Successfully issued SemiFungible Anchor {} for {}." [anchor-id dpsf-id])
+                )
+            )
+        )
+    )
+    (defun AQP-ANK|C_IssueNonFungibleAnchor:string
+        (patron:string executor:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-trait-key:string dpnf-trait-value:string)
+        @doc "Issues a DPNF trait-Anchor. acnoi=true creates BoostClass inline (2x STOA); false links to existing (1x STOA)."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-ANK::C_IssueNonFungibleAnchor 
+                            patron executor anchor-name dpnf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dpnf-trait-key dpnf-trait-value
+                        )
+                    )
+                    (out:[string] (at "output" ico))
+                    (anchor-id:string (at 0 out))
+                )
+                (ref-IGNIS::XE_CollectIgnis patron ico)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
+                (if acnoi
+                    (format "Successfully issued NonFungible Anchor {} (new BoostClass {}) for {}." [anchor-id (at 1 out) dpnf-id])
+                    (format "Successfully issued NonFungible Anchor {} for {}." [anchor-id dpnf-id])
+                )
+            )
+        )
+    )
+    (defun AQP-ANK|C_IssueNonFungibleSetAnchor:string
+        (patron:string executor:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-nonce-class:integer)
+        @doc "Issues a DPNF set-Anchor. acnoi=true creates BoostClass inline (2x STOA); false links to existing (1x STOA)."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-ANK::C_IssueNonFungibleSetAnchor
+                            patron executor anchor-name dpnf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dpnf-nonce-class
+                        )
+                    )
+                    (out:[string] (at "output" ico))
+                    (anchor-id:string (at 0 out))
+                )
+                (ref-IGNIS::XE_CollectIgnis patron ico)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
+                (if acnoi
+                    (format "Successfully issued NonFungible Set Anchor {} (new BoostClass {}) for {}." [anchor-id (at 1 out) dpnf-id])
+                    (format "Successfully issued NonFungible Set Anchor {} for {}." [anchor-id dpnf-id])
+                )
+            )
+        )
+    )
+    (defun AQP-ANK|C_RevokeAnchor:string (patron:string executor:string anchor-id:string)
+        @doc "Revokes an existing Anchor, removing it from its BoostClass and AssetAnchors bookkeeping."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron 
+                    (ref-ANK::C_RevokeAnchor patron executor anchor-id)
+                )
+                (format "Successfully revoked Anchor {}." [anchor-id])
+            )
+        )
+    )
+    (defun AQP-SCR|C_IssueLiquidityScore:string
+        (patron:string executor:string score-name:string precision:integer lp-denominator:string mx-frozen:decimal mx-sleeping:decimal)
+        @doc "Issues score-class 0 (LP) in AQP-SCORE and collects resulting IGNIS output on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-SCR::C_IssueLiquidityScore patron executor score-name precision lp-denominator mx-frozen mx-sleeping)
+                    )
+                )
+                (ref-IGNIS::XE_CollectIgnis patron ico)
+                ;;REPORTS THE GENERATED score-id, not `score-name`. The name is the caller's own
+                ;;INPUT -- echoing it tells them nothing they did not already type, while the id
+                ;;(`WonderCoach` -> `WonderCoach-nK4O_C00so9w`) is the only thing the transaction
+                ;;produced and the key every later op takes. The core already threaded it out via
+                ;;`URCi_IssueScore executor [score-id]`; this just stopped throwing it away.
+                ;;StoicSyntax 2.16.2.
+                (format "Successfully issued Liquidity Score {} for owner {}." [(at 0 (at "output" ico)) executor])
+            )
+        )
+    )
+    (defun AQP-SCR|C_IssueTrueFungibleScore:string
+        (patron:string executor:string score-name:string precision:integer mx-frozen:decimal)
+        @doc "Issues score-class 1 (DPTF) in AQP-SCORE and collects resulting IGNIS output on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-SCR::C_IssueTrueFungibleScore patron executor score-name precision mx-frozen)
+                    )
+                )
+                (ref-IGNIS::XE_CollectIgnis patron ico)
+                ;;REPORTS THE GENERATED score-id, not `score-name`. The name is the caller's own
+                ;;INPUT -- echoing it tells them nothing they did not already type, while the id
+                ;;(`WonderCoach` -> `WonderCoach-nK4O_C00so9w`) is the only thing the transaction
+                ;;produced and the key every later op takes. The core already threaded it out via
+                ;;`URCi_IssueScore executor [score-id]`; this just stopped throwing it away.
+                ;;StoicSyntax 2.16.2.
+                (format "Successfully issued TrueFungible Score {} for owner {}." [(at 0 (at "output" ico)) executor])
+            )
+        )
+    )
+    (defun AQP-SCR|C_IssueOrtoFungibleScore:string
+        (patron:string executor:string score-name:string precision:integer mx-sleeping:decimal mx-hibernated:decimal)
+        @doc "Issues score-class 2 (DPOF) in AQP-SCORE and collects resulting IGNIS output on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-SCR::C_IssueOrtoFungibleScore patron executor score-name precision mx-sleeping mx-hibernated)
+                    )
+                )
+                (ref-IGNIS::XE_CollectIgnis patron ico)
+                ;;REPORTS THE GENERATED score-id, not `score-name`. The name is the caller's own
+                ;;INPUT -- echoing it tells them nothing they did not already type, while the id
+                ;;(`WonderCoach` -> `WonderCoach-nK4O_C00so9w`) is the only thing the transaction
+                ;;produced and the key every later op takes. The core already threaded it out via
+                ;;`URCi_IssueScore executor [score-id]`; this just stopped throwing it away.
+                ;;StoicSyntax 2.16.2.
+                (format "Successfully issued OrtoFungible Score {} for owner {}." [(at 0 (at "output" ico)) executor])
+            )
+        )
+    )
+    (defun AQP-SCR|C_IssueSemiFungibleScore:string
+        (patron:string executor:string score-name:string precision:integer sft-equality:bool)
+        @doc "Issues score-class 3 (DPSF) in AQP-SCORE and collects resulting IGNIS output on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-SCR::C_IssueSemiFungibleScore patron executor score-name precision sft-equality)
+                    )
+                )
+                (ref-IGNIS::XE_CollectIgnis patron ico)
+                ;;REPORTS THE GENERATED score-id, not `score-name`. The name is the caller's own
+                ;;INPUT -- echoing it tells them nothing they did not already type, while the id
+                ;;(`WonderCoach` -> `WonderCoach-nK4O_C00so9w`) is the only thing the transaction
+                ;;produced and the key every later op takes. The core already threaded it out via
+                ;;`URCi_IssueScore executor [score-id]`; this just stopped throwing it away.
+                ;;StoicSyntax 2.16.2.
+                (format "Successfully issued SemiFungible Score {} for owner {}." [(at 0 (at "output" ico)) executor])
+            )
+        )
+    )
+    (defun AQP-SCR|C_IssueNonFungibleScore:string
+        (patron:string executor:string score-name:string precision:integer nft-score-model:integer)
+        @doc "Issues score-class 4 (DPNF) in AQP-SCORE and collects resulting IGNIS output on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-SCR::C_IssueNonFungibleScore patron executor score-name precision nft-score-model)
+                    )
+                )
+                (ref-IGNIS::XE_CollectIgnis patron ico)
+                ;;REPORTS THE GENERATED score-id, not `score-name`. The name is the caller's own
+                ;;INPUT -- echoing it tells them nothing they did not already type, while the id
+                ;;(`WonderCoach` -> `WonderCoach-nK4O_C00so9w`) is the only thing the transaction
+                ;;produced and the key every later op takes. The core already threaded it out via
+                ;;`URCi_IssueScore executor [score-id]`; this just stopped throwing it away.
+                ;;StoicSyntax 2.16.2.
+                (format "Successfully issued NonFungible Score {} for owner {}." [(at 0 (at "output" ico)) executor])
+            )
+        )
+    )
+    (defun AQP-SCR|C_RotateScoreOwnership:string (patron:string executor:string executee:string score-id:string)
+        @doc "Rotates score ownership in AQP-SCORE and collects resulting IGNIS output on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron (ref-SCR::C_RotateOwnership patron executor executee score-id))
+                (format "Successfully rotated ownership for score {} to {}." [score-id executee])
+            )
+        )
+    )
+    (defun AQP-SCR|C_ControlScore:string (patron:string executor:string score-id:string new-can-upgrade:bool new-can-change-owner:bool)
+        @doc "Updates score control flags in AQP-SCORE and collects resulting IGNIS output on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-SCR::C_Control patron executor score-id new-can-upgrade new-can-change-owner)
+                )
+                (format "Successfully updated control flags for score {}." [score-id])
+            )
+        )
+    )
+    (defun AQP-SCR|C_CreateScoreBoostClassLink:string (patron:string executor:string score-id:string boost-class-id:string)
+        @doc "Creates score -> boost-class link in AQP-SCORE and collects resulting IGNIS output on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron (ref-SCR::C_CreateBoostClassLink patron executor score-id boost-class-id))
+                (format "Successfully linked score {} to BoostClass {}." [score-id boost-class-id])
+            )
+        )
+    )
+    (defun AQP-SCR|C_CreateScoreBoostLink:string (patron:string executor:string score-id:string boost-score-id:string)
+        @doc "Creates score -> boost-score link in AQP-SCORE and collects resulting IGNIS output on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron (ref-SCR::C_CreateBoostLink patron executor score-id boost-score-id))
+                (format "Successfully linked score {} to boost score {}." [score-id boost-score-id])
+            )
+        )
+    )
+    (defun AQP-SCR|C_EnableDebBoost:string (patron:string executor:string score-id:string)
+        @doc "Enables irreversible DEB boost on the score row. Medium IGNIS cost; no native STOA."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron (ref-SCR::C_EnableDebBoost patron executor score-id))
+                (format "Successfully enabled DEB boost for score {}." [score-id])
+            )
+        )
+    )
+    (defun AQP-SCR|C_IssueTriplet:string
+        (patron:string executor:string bronze-score-id:string silver-score-id:string golden-score-id:string)
+        @doc "Issues SCR triplet bundle T|bronze|silver|golden and collects IGNIS on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-SCR::C_IssueTriplet patron executor bronze-score-id silver-score-id golden-score-id)
+                    )
+                    (out:[string] (at "output" ico))
+                    (triplet-id:string (at 0 out))
+                )
+                (ref-IGNIS::XE_CollectIgnis patron ico)
+                (format "Successfully issued triplet {}." [triplet-id])
+            )
+        )
+    )
+    (defun AQP-SCR|C_IssueSingleScoreModel:string
+        (patron:string executor:string model-name:string score-class:integer collectable-id:string precision:integer nonces:[integer] nonce-score-values:[decimal] boost-class-id:string)
+        @doc "Defines a SINGLE score-entity model in AQP-SCORE and collects IGNIS on patron. Returns the model-id."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-SCR::C_IssueSingleScoreModel patron executor model-name score-class collectable-id precision nonces nonce-score-values boost-class-id)
+                    )
+                    (model-id:string (at 0 (at "output" ico)))
+                )
+                (ref-IGNIS::XE_CollectIgnis patron ico)
+                (format "Successfully defined single score-entity model {}." [model-id])
+            )
+        )
+    )
+    (defun AQP-SCR|C_CombineTripletScoreModel:string
+        (patron:string executor:string model-name:string bronze-model-id:string silver-model-id:string golden-model-id:string)
+        @doc "Combines three single models into a TRIPLET score-entity model in AQP-SCORE and collects IGNIS on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-SCR::C_CombineTripletScoreModel patron executor model-name bronze-model-id silver-model-id golden-model-id)
+                    )
+                    (model-id:string (at 0 (at "output" ico)))
+                )
+                (ref-IGNIS::XE_CollectIgnis patron ico)
+                (format "Successfully combined triplet score-entity model {}." [model-id])
+            )
+        )
+    )
+    (defun AQP-SCR|C_IssueScoreFromModel:string (patron:string executor:string model-id:string agency-name:string)
+        @doc "FACTORY (Talos): issue a conforming score entity from <model-id> for executor; collects IGNIS on \
+            \ patron. Returns the (score | triplet) id."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-SCR::C_IssueScoreFromModel patron executor model-id agency-name)
+                    )
+                    (entity-id:string (at 0 (at "output" ico)))
+                )
+                (ref-IGNIS::XE_CollectIgnis patron ico)
+                (format "Successfully issued score entity {} from model {}." [entity-id model-id])
+            )
+        )
+    )
+    (defun AQP-SCR|C_IssueSemiFungibleScoreDefinition:string
+        (patron:string executor:string score-id:string dpsf-id:string nonces:[integer] nonce-score-values:[decimal])
+        @doc "Writes DPSF nonce score definitions in AQP-SCORE and collects resulting IGNIS output on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                )
+                ;;DEAD-DEFINITION GUARD (StoicSyntax 2.16, 2026-10-06). If this score is already
+                ;;employed by a pool, the collection being defined must be the one that pool
+                ;;stakes -- otherwise the rows save cleanly and score nothing forever. No-op
+                ;;while aqpool-link is BAR, which is the normal state at definition time.
+                ;;Here rather than in AQP-SCORE because the pool fact lives one module LATER in
+                ;;deploy order: AQP-SCORE cannot reference AQP-POOL, only the reverse.
+                (ref-AQP::UEV_ScoreDefinitionTargetMatchesPool score-id dpsf-id)
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-SCR::C_IssueSemiFungibleScoreDefinition patron executor score-id dpsf-id nonces nonce-score-values)
+                )
+                (format "Successfully issued SemiFungible score definitions for score {} and dpsf-id {}." [score-id dpsf-id])
+            )
+        )
+    )
+    (defun AQP-SCR|C_IssueNonFungibleScoreDefinition:string
+        (patron:string executor:string score-id:string dpnf-id:string trait-keys:[string] trait-values:[string] trait-score-values:[decimal])
+        @doc "Writes DPNF trait score definitions in AQP-SCORE and collects resulting IGNIS output on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                )
+                ;;DEAD-DEFINITION GUARD (StoicSyntax 2.16, 2026-10-06). If this score is already
+                ;;employed by a pool, the collection being defined must be the one that pool
+                ;;stakes -- otherwise the rows save cleanly and score nothing forever. No-op
+                ;;while aqpool-link is BAR, which is the normal state at definition time.
+                ;;Here rather than in AQP-SCORE because the pool fact lives one module LATER in
+                ;;deploy order: AQP-SCORE cannot reference AQP-POOL, only the reverse.
+                (ref-AQP::UEV_ScoreDefinitionTargetMatchesPool score-id dpnf-id)
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-SCR::C_IssueNonFungibleScoreDefinition patron executor score-id dpnf-id trait-keys trait-values trait-score-values)
+                )
+                (format "Successfully issued NonFungible score definitions for score {} and dpnf-id {}." [score-id dpnf-id])
+            )
+        )
+    )
+    (defun AQP-SCR|C_IssueNonFungibleSetScoreDefinition:string
+        (patron:string executor:string score-id:string dpnf-id:string dpnf-nonce-classes:[integer] class-score-values:[decimal])
+        @doc "Writes DPNF set-mode (nonce-class) score definitions in AQP-SCORE and collects resulting IGNIS output on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                )
+                ;;DEAD-DEFINITION GUARD (StoicSyntax 2.16, 2026-10-06). If this score is already
+                ;;employed by a pool, the collection being defined must be the one that pool
+                ;;stakes -- otherwise the rows save cleanly and score nothing forever. No-op
+                ;;while aqpool-link is BAR, which is the normal state at definition time.
+                ;;Here rather than in AQP-SCORE because the pool fact lives one module LATER in
+                ;;deploy order: AQP-SCORE cannot reference AQP-POOL, only the reverse.
+                (ref-AQP::UEV_ScoreDefinitionTargetMatchesPool score-id dpnf-id)
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-SCR::C_IssueNonFungibleSetScoreDefinition patron executor score-id dpnf-id dpnf-nonce-classes class-score-values)
+                )
+                (format "Successfully issued NonFungible set score definitions for score {} and dpnf-id {}." [score-id dpnf-id])
+            )
+        )
+    )
+    (defun AQP-POOL|C_Issue:string
+        (patron:string executor:string pool-name:string asset-id:string aqp-class:integer)
+        @doc "Issues an acquisition pool (aqp-class + canonical native asset-id) and collects IGNIS output on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-AQP::C_Issue patron executor pool-name asset-id aqp-class)
+                    )
+                    (out:[string] (at "output" ico))
+                    (pool-id:string (at 0 out))
+                )
+                (ref-IGNIS::XE_CollectIgnis patron ico)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
+                (format "Successfully issued Acquisition Pool {} (class {} for asset {})." [pool-id aqp-class asset-id])
+            )
+        )
+    )
+    (defun AQP-POOL|C_AddScore:string
+        (patron:string executor:string pool-id:string score-id:string)
+        @doc "Assigns score-id to the first free slot on pool-id; collects IGNIS output on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-AQP::C_AddScore patron executor pool-id score-id)
+                )
+                (ref-TS01-A::XB_DynamicFuelSTOA)
+                (format "Successfully assigned Score {} to Pool {}." [score-id pool-id])
+            )
+        )
+    )
+    (defun AQP-POOL|C_RevokeScore:string
+        (patron:string executor:string pool-id:string score-id:string)
+        @doc "Revokes score-id from pool-id (compact slots, clear aqpool-link); collects IGNIS output on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-AQP::C_RevokeScore patron executor pool-id score-id)
+                )
+                (ref-TS01-A::XB_DynamicFuelSTOA)
+                (format "Successfully revoked Score {} from Pool {}." [score-id pool-id])
+            )
+        )
+    )
+    (defun AQP-POOL|C_DisablePoolStake:string
+        (patron:string executor:string pool-id:string)
+        @doc "Pool owner pauses new stakes (stake-enabled → false); collects IGNIS output on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-AQP::C_DisablePoolStake patron executor pool-id)
+                )
+                (ref-TS01-A::XB_DynamicFuelSTOA)
+                (format "Successfully disabled staking on Pool {}." [pool-id])
+            )
+        )
+    )
+    (defun AQP-POOL|C_EnablePoolStake:string
+        (patron:string executor:string pool-id:string)
+        @doc "Pool owner re-enables new stakes (stake-enabled → true); collects IGNIS output on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-AQP::C_EnablePoolStake patron executor pool-id)
+                )
+                (ref-TS01-A::XB_DynamicFuelSTOA)
+                (format "Successfully enabled staking on Pool {}." [pool-id])
+            )
+        )
+    )
+    ;;
+    (defun AQP-POOL|CC_StakeTrueFungible:string
+        (patron:string executor:string executee:string pool-id:string dptf-id:string amount:decimal)
+        @doc "Stake DPTF (or native|F| LP) into pool-id. Talos client shell: event cap + FVT::CC_TrueFungibleStakeFlow direction=true."
+        (with-capability (AQP|C>STAKE-TRUE-FUNGIBLE patron pool-id executor executee dptf-id amount)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-FVT::CC_TrueFungibleStakeFlow patron executor executee pool-id dptf-id amount true)
+                )
+                (UC_FormatStakeTrueFungibleResult pool-id executor executee dptf-id amount)
+            )
+        )
+    )
+    (defun AQP-POOL|CC_UnstakeTrueFungible:string
+        (patron:string executor:string executee:string pool-id:string dptf-id:string amount:decimal)
+        @doc "Unstake DPTF from pool-id. Talos client shell: event cap + FVT::CC_TrueFungibleStakeFlow direction=false."
+        (with-capability (AQP|C>UNSTAKE-TRUE-FUNGIBLE patron pool-id executor executee dptf-id amount)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-FVT::CC_TrueFungibleStakeFlow patron executor executee pool-id dptf-id amount false)
+                )
+                (UC_FormatUnstakeTrueFungibleResult pool-id executor executee dptf-id amount)
+            )
+        )
+    )
+    (defun AQP-POOL|CCp_StakeSpecialCustodial:string
+        (
+            patron:string
+            executor:string
+            executee:string
+            pool-id:string
+            dpof-id:string
+            nonces:[integer]
+        )
+        @doc "Stake whole SLEEPING (Z|) nonces into a pool UNDER CUSTODY: the batches leave \
+            \ <executor>, but the tracker records the pool as their owner, so they cannot be \
+            \ withdrawn until the lock matures. Scores, rewards and claims still accrue to \
+            \ <executee> exactly as on an ordinary stake. \
+            \ \
+            \ Release with `AQP-POOL|CCp_ReleaseSpecialCustodial`, which is PERMISSIONLESS once \
+            \ the lock matures and can only pay the beneficiary -- so the time-lock is on the \
+            \ asset, not on the staker's ability to get it back. Talos shell → \
+            \ AQP-FVT::CCp_StakeSpecialCustodial."
+        (let
+            (
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                ;;
+                (nonce-count:integer (length nonces))
+                (nonce-amounts:[decimal] (ref-DPOF::UR_NoncesSupplies dpof-id nonces))
+            )
+            (with-capability
+                (AQP|C>STAKE-SPECIAL-CUSTODIAL patron pool-id executor executee dpof-id nonces nonce-amounts)
+                (let
+                    (
+                        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                    )
+                    (ref-IGNIS::XE_CollectIgnis patron
+                        (ref-FVT::CCp_StakeSpecialCustodial
+                            patron executor executee pool-id dpof-id nonces nonce-amounts
+                        )
+                    )
+                    (format "Staked {} sleeping nonce(s) of {} into pool {} under POOL CUSTODY for {}. Releasable only at maturity."
+                        [nonce-count dpof-id pool-id (UC_ShortAccount executee)]
+                    )
+                )
+            )
+        )
+    )
+    (defun AQP-POOL|CCp_ReleaseSpecialCustodial:string
+        (patron:string pool-id:string executee:string dpof-id:string nonce:integer)
+        @doc "Release a MATURED custodial sleeping position: unwind the score and tracker, dissolve \
+            \ the batch, and send the native counterpart to <executee>. Talos shell → \
+            \ AQP-FVT::CCp_ReleaseSpecialCustodial. \
+            \ \
+            \ PERMISSIONLESS BY DESIGN, and that is what makes custody safe to accept: the staker \
+            \ cannot trigger this themselves (the pool owns the tracker row), so if it needed the \
+            \ pool owner's signature an absent owner could hold a matured position forever. Anyone \
+            \ may call it and nobody can profit from doing so -- the native tokens go to the \
+            \ beneficiary recorded in the tracker, never to the caller. \
+            \ \
+            \ Refused before maturity by `VST|XE>UNSLEEP`, the same gate a user's own unsleep must \
+            \ pass."
+        (with-capability
+            (AQP|C>RELEASE-SPECIAL-CUSTODIAL patron pool-id executee dpof-id nonce)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-FVT::CCp_ReleaseSpecialCustodial patron pool-id executee dpof-id nonce)
+                )
+                (format "Released sleeping nonce {} of {} from pool {}: batch dissolved, native sent to {}."
+                    [nonce dpof-id pool-id (UC_ShortAccount executee)]
+                )
+            )
+        )
+    )
+    (defun AQP-POOL|CCp_ReassignCustodialBeneficiary:string
+        (
+            patron:string
+            executor:string
+            pool-id:string
+            dpof-id:string
+            nonce:integer
+            new-beneficiary:string
+        )
+        @doc "Sell a locked position without unlocking it: <executor> stops earning from a \
+            \ custodial sleeping nonce and <new-beneficiary> starts, while the batch stays with \
+            \ the pool until its lock matures. \
+            \ \
+            \ THE ONLY EXIT A CUSTODIAL STAKER HAS BEFORE MATURITY, and it is deliberately not a \
+            \ withdrawal: the asset does not move, so the time-lock the multiplier priced is \
+            \ still honoured. What changes hands is who collects, and who receives the native \
+            \ counterpart at release. \
+            \ \
+            \ REFUSED WHEN A DIRECT TRANSFER WOULD BE. The sleeping variant's own transfer roles \
+            \ decide: a token with none set is unrestricted and passes, and a restricted one \
+            \ passes only for a whitelisted recipient -- because the release pays the NATIVE \
+            \ asset to whoever is beneficiary at maturity, so this is a deferred delivery and not \
+            \ just the sale of a claim. \
+            \ \
+            \ Requires the CURRENT beneficiary's signature, unlike the release, which is \
+            \ permissionless because it can only ever pay the beneficiary. \
+            \ Talos shell → AQP-FVT::CCp_ReassignCustodialBeneficiary."
+        (with-capability
+            (AQP|C>REASSIGN-CUSTODIAL-BENEFICIARY patron executor pool-id dpof-id nonce new-beneficiary)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-FVT::CCp_ReassignCustodialBeneficiary
+                        patron executor pool-id dpof-id nonce new-beneficiary
+                    )
+                )
+                (format "Nonce {} of {} in pool {} now earns for {} instead of {}; the batch stays locked with the pool until maturity."
+                    [nonce dpof-id pool-id (UC_ShortAccount new-beneficiary) (UC_ShortAccount executor)]
+                )
+            )
+        )
+    )
+    (defun AQP-POOL|CC_StakeOrtoFungible:string
+        (
+            patron:string
+            executor:string
+            executee:string
+            pool-id:string
+            dpof-id:string
+            nonces:[integer]
+        )
+        @doc "Stake whole DPOF nonces via C_Transfer. Poll DPOF::UR_NoncesSupplies, then @event cap with resolved legs."
+        (let
+            (
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                ;;
+                (nonce-count:integer (length nonces))
+                (nonce-amounts:[decimal] (ref-DPOF::UR_NoncesSupplies dpof-id nonces))
+            )
+            (with-capability (AQP|C>STAKE-ORTO-FUNGIBLE patron pool-id executor executee dpof-id nonces nonce-amounts)
+                (let
+                    (
+                        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                    )
+                    (ref-IGNIS::XE_CollectIgnis patron
+                        (ref-FVT::CC_OrtoFungibleStakeFlow
+                            patron executor executee pool-id dpof-id nonces nonce-amounts true
+                        )
+                    )
+                    (UC_FormatStakeOrtoFungibleResult pool-id executor executee dpof-id nonce-count)
+                )
+            )
+        )
+    )
+    (defun AQP-POOL|CC_UnstakeOrtoFungible:string
+        (
+            patron:string
+            executor:string
+            executee:string
+            pool-id:string
+            dpof-id:string
+            nonces:[integer]
+        )
+        @doc "Unstake whole DPOF nonces via C_Transfer from the (owner, beneficiary) row. M5: executee is \
+            \ caller-supplied (self OR foreign) so the exact staked row is located — mirrors TF. Poll UR_NoncesSupplies, \
+            \ then @event cap with resolved legs."
+        (let
+            (
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                ;;
+                (nonce-count:integer (length nonces))
+                (nonce-amounts:[decimal] (ref-DPOF::UR_NoncesSupplies dpof-id nonces))
+            )
+            (with-capability (AQP|C>UNSTAKE-ORTO-FUNGIBLE patron pool-id executor executee dpof-id nonces nonce-amounts)
+                (let
+                    (
+                        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                    )
+                    (ref-IGNIS::XE_CollectIgnis patron
+                        (ref-FVT::CC_OrtoFungibleStakeFlow
+                            patron executor executee pool-id dpof-id nonces nonce-amounts false
+                        )
+                    )
+                    (UC_FormatUnstakeOrtoFungibleResult pool-id executor dpof-id nonce-count)
+                )
+            )
+        )
+    )
+    ;;
+    (defun AQP-POOL|CC_StakeSemiFungibleCollectable:string
+        (
+            patron:string
+            executor:string
+            executee:string
+            pool-id:string
+            collectable-id:string
+            nonces:[integer]
+        )
+        @doc "Stake DPSF collectable (son=true). Poll DPDC::UR_AccountNoncesSupplies, then FVT::CC_CollectableStakeFlow."
+        (let
+            (
+                (ref-DPDC:module{DpdcV2} DPDC)
+                ;;
+                (nonce-count:integer (length nonces))
+                (nonce-amounts:[integer] (ref-DPDC::UR_AccountNoncesSupplies executor collectable-id true nonces))
+            )
+            (with-capability
+                (AQP|C>STAKE-SEMI-FUNGIBLE-COLLECTABLE
+                    patron pool-id executor executee collectable-id nonces nonce-amounts
+                )
+                (let
+                    (
+                        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                    )
+                    (ref-IGNIS::XE_CollectIgnis patron
+                        (ref-FVT::CC_CollectableStakeFlow
+                            patron executor executee pool-id collectable-id true nonces nonce-amounts true
+                        )
+                    )
+                    (UC_FormatStakeCollectableResult
+                        pool-id executor executee collectable-id true nonce-count
+                    )
+                )
+            )
+        )
+    )
+    (defun AQP-POOL|CC_UnstakeSemiFungibleCollectable:string
+        (
+            patron:string
+            executor:string
+            executee:string
+            pool-id:string
+            collectable-id:string
+            nonces:[integer]
+            nonce-amounts:[integer]
+        )
+        @doc "Unstake DPSF collectable (son=true) from the (owner, beneficiary) row. M5: executee caller-supplied \
+            \ (self OR foreign) so the exact staked row is located — mirrors TF."
+        (let
+            (
+                (nonce-count:integer (length nonces))
+            )
+            (with-capability
+                (AQP|C>UNSTAKE-SEMI-FUNGIBLE-COLLECTABLE
+                    patron pool-id executor executee collectable-id nonces nonce-amounts
+                )
+                (let
+                    (
+                        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                    )
+                    (ref-IGNIS::XE_CollectIgnis patron
+                        (ref-FVT::CC_CollectableStakeFlow
+                            patron executor executee pool-id collectable-id true nonces nonce-amounts false
+                        )
+                    )
+                    (UC_FormatUnstakeCollectableResult pool-id executor collectable-id true nonce-count)
+                )
+            )
+        )
+    )
+    (defun AQP-POOL|CC_StakeNonFungibleCollectable:string
+        (
+            patron:string
+            executor:string
+            executee:string
+            pool-id:string
+            collectable-id:string
+            nonces:[integer]
+        )
+        @doc "Stake DPNF collectable (son=false). Poll DPDC::UR_AccountNoncesSupplies, then FVT::CC_CollectableStakeFlow."
+        (let
+            (
+                (ref-DPDC:module{DpdcV2} DPDC)
+                ;;
+                (nonce-count:integer (length nonces))
+                (nonce-amounts:[integer] (ref-DPDC::UR_AccountNoncesSupplies executor collectable-id false nonces))
+            )
+            (with-capability
+                (AQP|C>STAKE-NON-FUNGIBLE-COLLECTABLE
+                    patron pool-id executor executee collectable-id nonces nonce-amounts
+                )
+                (let
+                    (
+                        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                    )
+                    (ref-IGNIS::XE_CollectIgnis patron
+                        (ref-FVT::CC_CollectableStakeFlow
+                            patron executor executee pool-id collectable-id false nonces nonce-amounts true
+                        )
+                    )
+                    (UC_FormatStakeCollectableResult
+                        pool-id executor executee collectable-id false nonce-count
+                    )
+                )
+            )
+        )
+    )
+    (defun AQP-POOL|CC_UnstakeNonFungibleCollectable:string
+        (
+            patron:string
+            executor:string
+            executee:string
+            pool-id:string
+            collectable-id:string
+            nonces:[integer]
+            nonce-amounts:[integer]
+        )
+        @doc "Unstake DPNF collectable (son=false) from the (owner, beneficiary) row. M5: executee caller-supplied \
+            \ (self OR foreign) so the exact staked row is located — mirrors TF."
+        (let
+            (
+                (nonce-count:integer (length nonces))
+            )
+            (with-capability
+                (AQP|C>UNSTAKE-NON-FUNGIBLE-COLLECTABLE
+                    patron pool-id executor executee collectable-id nonces nonce-amounts
+                )
+                (let
+                    (
+                        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                    )
+                    (ref-IGNIS::XE_CollectIgnis patron
+                        (ref-FVT::CC_CollectableStakeFlow
+                            patron executor executee pool-id collectable-id false nonces nonce-amounts false
+                        )
+                    )
+                    (UC_FormatUnstakeCollectableResult pool-id executor collectable-id false nonce-count)
+                )
+            )
+        )
+    )
+    ;;
+    ;; Vacate — Full (1 tx) or Stateless Legs (N txs; auto-begin; finalize on last)
+    ;;
+    (defun AQP-POOL|C_AbortVacate:string
+        (patron:string executor:string pool-id:string)
+        @doc "Clear vacate-in-progress; stake stays disabled. Talos → AQP-VCT::C_AbortVacate."
+        (with-capability (AQP|C>ABORT-VACATE patron pool-id)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-VCT::C_AbortVacate patron executor pool-id)
+                )
+                (format "Successfully aborted vacate-in-progress on Pool {} (stake remains disabled)."
+                    [pool-id]
+                )
+            )
+        )
+    )
+    (defun AQP-POOL|C_FinalizeVacate:string
+        (patron:string executor:string pool-id:string)
+        @doc "Vacate-v2 FINALIZE (nuke) — after a pool has been fully drained via AQP-POOL|Cp_BatchDrain*, this \
+            \ bulk-zeroes every employed score + bumps their vacate-generation (lazily invalidating all per-user \
+            \ rows), then clears vacate-in-progress, re-enables stake, and unfreezes the pool's FVTs. Pool-owner + \
+            \ nns==0 gated in VCT; IGNIS on patron. The commit-forward terminal step of a v2 drain campaign."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron (ref-VCT::C_FinalizeVacate patron executor pool-id))
+                (format "Successfully finalized vacate on Pool {} — scores nuked, stake re-enabled." [pool-id])
+            )
+        )
+    )
+    (defun AQP-POOL|CC_FullVacate:string
+        (patron:string executor:string pool-id:string)
+        @doc "Vacate rehaul — pool-owner AGNOSTIC full vacate (one tx): input is JUST the pool-id. VCT reads the \
+            \ pool class + scans its inventory on-chain and vacates every asset type. Owner enforced in VCT|C>VACATE; \
+            \ collects IGNIS on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron (ref-VCT::CC_FullVacate patron executor pool-id))
+                (format "Successfully full-vacated Pool {} (all asset types)." [pool-id])
+            )
+        )
+    )
+    (defun AQP-POOL|CCp_BatchVacateTrueFungible:string
+        (patron:string pool-id:string dptf-id:string owner-ids:[string] beneficiary-ids:[string] amounts:[decimal])
+        @doc "One TF batch of a UI-sliced vacate campaign. The first successful batch freezes the pool + its FVTs; \
+            \ the batch that empties the pool auto-finalizes/unfreezes. Owner enforced in VCT; IGNIS on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-VCT::CCp_BatchVacateTrueFungible pool-id dptf-id owner-ids beneficiary-ids amounts))
+                (format "Batch-vacated {} TF leg(s) on Pool {} (asset {})." [(length owner-ids) pool-id dptf-id])
+            )
+        )
+    )
+    (defun AQP-POOL|CCp_BatchDrainTrueFungible:string
+        (patron:string pool-id:string dptf-id:string owner-ids:[string] beneficiary-ids:[string] amounts:[decimal])
+        @doc "Vacate-v2 FAST-DRAIN — one TF batch that returns assets + preserves rewards WITHOUT touching scores \
+            \ and WITHOUT finalizing (cheaper than CCp_BatchVacateTrueFungible for large pools). First batch freezes \
+            \ the pool + its FVTs; the pool stays frozen until AQP-POOL|C_FinalizeVacate nukes the scores once \
+            \ empty. Owner enforced in VCT; IGNIS on patron. Commit-forward — CCp_BatchVacateTrueFungible is the \
+            \ abortable path."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-VCT::CCp_BatchDrainTrueFungible pool-id dptf-id owner-ids beneficiary-ids amounts))
+                (format "Fast-drained {} TF leg(s) on Pool {} (asset {}) — scores untouched, awaiting finalize."
+                    [(length owner-ids) pool-id dptf-id])
+            )
+        )
+    )
+    (defun AQP-POOL|CCp_BatchDrainOrtoFungible:string
+        (patron:string pool-id:string dpof-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]])
+        @doc "Vacate-v2 FAST-DRAIN — one OF batch that returns nonces + preserves rewards WITHOUT touching scores \
+            \ and WITHOUT finalizing. Amounts resolved on-chain from the tracker. First batch freezes the pool + \
+            \ its FVTs; it stays frozen until AQP-POOL|C_FinalizeVacate nukes the scores once empty. Owner enforced \
+            \ in VCT; IGNIS on patron. Commit-forward — CCp_BatchVacateOrtoFungible is the abortable path."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-VCT::CCp_BatchDrainOrtoFungible patron pool-id dpof-id owner-ids beneficiary-ids nonces-array))
+                (format "Fast-drained {} OF leg(s) on Pool {} (asset {}) — scores untouched, awaiting finalize."
+                    [(length owner-ids) pool-id dpof-id])
+            )
+        )
+    )
+    (defun AQP-POOL|CCp_BatchDrainCollectable:string
+        (patron:string pool-id:string collectable-id:string son:bool owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]])
+        @doc "Vacate-v2 FAST-DRAIN — one DPSF (son=true) / DPNF (son=false) batch that returns nonces + preserves \
+            \ rewards WITHOUT touching scores and WITHOUT finalizing. First batch freezes the pool + its FVTs; it \
+            \ stays frozen until AQP-POOL|C_FinalizeVacate nukes the scores once empty. Owner enforced in VCT; \
+            \ IGNIS on patron. Commit-forward — CCp_BatchVacateCollectables is the abortable path."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-VCT::CCp_BatchDrainCollectable pool-id collectable-id son owner-ids beneficiary-ids nonces-array amounts-array))
+                (format "Fast-drained {} collectable leg(s) on Pool {} (asset {}, son {}) — scores untouched, awaiting finalize."
+                    [(length owner-ids) pool-id collectable-id son])
+            )
+        )
+    )
+    (defun AQP-POOL|CCp_BatchVacateOrtoFungible:string
+        (patron:string pool-id:string dpof-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]])
+        @doc "One OF batch of a UI-sliced vacate campaign (amounts resolved on-chain from the tracker). First batch \
+            \ freezes; the emptying batch auto-finalizes/unfreezes. Owner enforced in VCT; IGNIS on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-VCT::CCp_BatchVacateOrtoFungible patron pool-id dpof-id owner-ids beneficiary-ids nonces-array))
+                (format "Batch-vacated {} OF leg(s) on Pool {} (asset {})." [(length owner-ids) pool-id dpof-id])
+            )
+        )
+    )
+    (defun AQP-POOL|CCp_BatchVacateCollectables:string
+        (patron:string pool-id:string collectable-id:string son:bool owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]])
+        @doc "One DPSF (son=true) / DPNF (son=false) batch of a UI-sliced vacate campaign. First batch freezes; the \
+            \ emptying batch auto-finalizes/unfreezes. Owner enforced in VCT; IGNIS on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-VCT::CCp_BatchVacateCollectables pool-id collectable-id son owner-ids beneficiary-ids nonces-array amounts-array))
+                (format "Batch-vacated {} collectable leg(s) on Pool {} (asset {}, son {})."
+                    [(length owner-ids) pool-id collectable-id son])
+            )
+        )
+    )
+    (defun AQP-POOL|CC_UpdateScoreMultipliers:string
+        (patron:string executor:string score-id:string
+         mx-frozen:decimal mx-sleeping:decimal mx-hibernated:decimal)
+        @doc "Re-set a score's frozen/sleeping/hibernating multipliers. Talos shell → AQP-POOL::CC_UpdateScoreMultipliers. \
+            \ Refused while a frozen or sleeping position exists on the score; the result string says \
+            \ which rule a caller just satisfied, because `mx-sleeping` is a CEILING and reads like a \
+            \ factor."
+        ;;THE CAPABILITY IS ACQUIRED HERE, AND THAT IS WHAT MAKES THE CALL LEGAL. `P|UEV_IMC` on
+        ;;the core client asks whether a registered inter-module guard is in scope; acquiring the
+        ;;callee's own `AQP|C>...` from Talos is what puts one there. Calling the client directly
+        ;;fails with "None of the guards passed" from `U|G::UEV_Any`, several frames below the
+        ;;mistake -- which is exactly how this was found.
+        (with-capability
+            (AQP|C>UPDATE-SCORE-MULTIPLIERS patron executor score-id mx-frozen mx-sleeping mx-hibernated)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-AQP::CC_UpdateScoreMultipliers patron executor score-id mx-frozen mx-sleeping mx-hibernated)
+                )
+                (format "Score {} now frozen x{} (flat, a freeze is permanent), sleeping UP TO x{} (reached only at the full 25-year lock), hibernating x{} (flat, it asks no commitment)."
+                    [score-id mx-frozen mx-sleeping mx-hibernated]
+                )
+            )
+        )
+    )
+    (defun AQP-POOL|C_BeginScoreRevoke:string
+        (patron:string executor:string pool-id:string score-id:string)
+        @doc "PHASE 1 of 3 — begin retiring a score from a pool: vacate its slot and freeze the \
+            \ pool. Pool owner. Talos shell → AQP-POOL::C_BeginScoreRevoke. \
+            \ \
+            \ Use this when `AQP-POOL|C_RevokeScore` refuses because holders still carry weight \
+            \ for the score. Then drain with `AQP-POOL|Cp_DrainScoreSlice` until \
+            \ `URHC_AQP|ScoreDrainOutstanding` is empty, finalize, and clear the freeze."
+        ;;THE SLOT INDEX IS READ THROUGH THE MODREF, not by a dot call. `AQP-POOL.URC_...` would
+        ;;have PINNED AQP-POOL's code hash at this module's deploy time, adding a permanent
+        ;;(callee, caller) edge that forces Talos to redeploy with every AQP-POOL change -- and
+        ;;a stale dot caller of a table-owning callee does not go quietly stale, it aborts with
+        ;;"hash not blessed". `_dotpin.py --check` refused the first draft of this wrapper.
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+            )
+            (with-capability (AQP|C>BEGIN-SCORE-REVOKE patron executor pool-id score-id
+                                (ref-AQP::URC_ScoreSlotIndexForScore pool-id score-id))
+                (do
+                    (ref-IGNIS::XE_CollectIgnis patron
+                        (ref-AQP::C_BeginScoreRevoke patron executor pool-id score-id)
+                    )
+                    (format "Score {} unslotted from pool {}. Pool is FROZEN: drain its holders, finalize, then clear."
+                        [score-id pool-id]
+                    )
+                )
+            )
+        )
+    )
+    (defun AQP-POOL|Cp_DrainScoreSlice:string
+        (patron:string pool-id:string score-id:string accounts:[string])
+        @doc "PHASE 2 of 3 — retire one SLICE of the holders of a score that is mid-revoke. Talos \
+            \ shell → AQP-POOL::Cp_DrainScoreSlice. Permissionless and idempotent: send one per \
+            \ slice of `URHC_AQP|ScoreDrainOutstanding`, in any order, in parallel, as often as you \
+            \ like — an account already retired contributes a zero delta. Complete when that read \
+            \ returns []."
+        (with-capability (AQP|C>DRAIN-SCORE-SLICE patron pool-id score-id accounts)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-AQP::Cp_DrainScoreSlice patron pool-id score-id accounts)
+                )
+                (format "Retired {} holder(s) of score {} in pool {}. Drain is complete when URHC_AQP|ScoreDrainOutstanding returns []."
+                    [(length accounts) score-id pool-id]
+                )
+            )
+        )
+    )
+    (defun AQP-POOL|CC_FinalizeScoreRevoke:string
+        (patron:string executor:string pool-id:string score-id:string)
+        @doc "PHASE 3 of 3 — cut the score's aqpool-link now that no holder carries weight for it. \
+            \ Pool owner. Talos shell → AQP-POOL::CC_FinalizeScoreRevoke. Refused while a single \
+            \ holder remains. Does NOT release the pool freeze — `AQP-POOL|CC_ClearPoolSweep` does, \
+            \ and only when every score on the pool is clear."
+        (with-capability (AQP|C>FINALIZE-SCORE-REVOKE patron executor pool-id score-id)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-AQP::CC_FinalizeScoreRevoke patron executor pool-id score-id)
+                )
+                (format "Score {} fully retired from pool {}." [score-id pool-id])
+            )
+        )
+    )
+    (defun AQP-FVT|CC_ClearPoolSweep:string
+        (patron:string pool-id:string)
+        @doc "Release a pool's sweep freeze and return it to trading. Talos shell → \
+            \ AQP-FVT::CC_ClearPoolSweep. PERMISSIONLESS and self-proving: it succeeds only when \
+            \ every employed score is fully re-rated and no retired score still holds weight, so \
+            \ anybody may be the one to finish the job — including a holder who wants to exit."
+        (with-capability (FVT|C>CLEAR-POOL-SWEEP patron pool-id)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-FVT::CC_ClearPoolSweep patron pool-id)
+                )
+                (format "Pool {} released: no outstanding re-rate or drain work remains." [pool-id])
+            )
+        )
+    )
+    (defun AQP-POOL|CCp_BackfillScoreSlice:string
+        (patron:string pool-id:string score-id:string beneficiaries:[string])
+        @doc "Re-rate one SLICE of a score's holders to their canonical base. Talos shell → \
+            \ AQP-POOL::CCp_BackfillScoreSlice. Permissionless and idempotent: send one per slice \
+            \ of `URHC_AQP|ScoreBackfillOutstanding`, in any order, in parallel, as many times as \
+            \ you like — a holder already correctly rated contributes a zero delta. The sweep is \
+            \ complete when that read returns []."
+        (with-capability (AQP|C>BACKFILL-SCORE-SLICE patron pool-id score-id beneficiaries)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-AQP::CCp_BackfillScoreSlice patron pool-id score-id beneficiaries)
+                )
+                (format "Re-rated {} holder(s) of score {} in pool {}. The sweep is complete when URHC_AQP|ScoreBackfillOutstanding returns []."
+                    [(length beneficiaries) score-id pool-id]
+                )
+            )
+        )
+    )
+    (defun AQP-POOL|C_SyncTrueFungibleAnchors:string
+        (patron:string executee:string dptf-id:string)
+        @doc "Pool-agnostic TF anchor repair for beneficiary × dptf-id. Talos shell → AQP-POOL::C_SyncTrueFungibleAnchors."
+        (with-capability (AQP|C>SYNC-TF-ANCHORS patron executee dptf-id)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-AQP::C_SyncTrueFungibleAnchors patron executee dptf-id)
+                )
+                (format "Successfully synced TrueFungible anchors for beneficiary {} on {}."
+                    [(UC_ShortAccount executee) dptf-id]
+                )
+            )
+        )
+    )
+    (defun AQP-POOL|C_SyncSemiFungibleAnchors:string
+        (patron:string executee:string dpsf-id:string)
+        @doc "Pool-agnostic DPSF anchor repair. Talos shell → AQP-POOL::C_SyncCollectableAnchors son=true."
+        (with-capability (AQP|C>SYNC-SEMI-FUNGIBLE-ANCHORS patron executee dpsf-id)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-AQP::C_SyncCollectableAnchors patron executee dpsf-id true)
+                )
+                (format "Successfully synced SemiFungible anchors for beneficiary {} on {}."
+                    [(UC_ShortAccount executee) dpsf-id]
+                )
+            )
+        )
+    )
+    (defun AQP-POOL|C_SyncNonFungibleAnchors:string
+        (patron:string executee:string dpnf-id:string)
+        @doc "Pool-agnostic DPNF anchor repair. Talos shell → AQP-POOL::C_SyncCollectableAnchors son=false."
+        (with-capability (AQP|C>SYNC-NON-FUNGIBLE-ANCHORS patron executee dpnf-id)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-AQP::C_SyncCollectableAnchors patron executee dpnf-id false)
+                )
+                (format "Successfully synced NonFungible anchors for beneficiary {} on {}."
+                    [(UC_ShortAccount executee) dpnf-id]
+                )
+            )
+        )
+    )
+    ;;
+    ;; --- AQP-FVT lifecycle (Talos client shell → AQP-FVT::C_*) ---
+    (defun AQP-FVT|C_Issue:string
+        (patron:string executor:string fvt-name:string fvt-class:integer common-denominator:string)
+        @doc "Issues an FVT (farm/vault/treasury) and collects IGNIS output on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-FVT::C_Issue patron executor fvt-name fvt-class common-denominator)
+                    )
+                    (out:[string] (at "output" ico))
+                    (fvt-id:string (at 0 out))
+                )
+                (ref-IGNIS::XE_CollectIgnis patron ico)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
+                (format "Successfully issued FVT {} (class {})." [fvt-id fvt-class])
+            )
+        )
+    )
+    (defun AQP-FVT|C_IssueMultipletFamily:string
+        (
+            patron:string
+            executor:string
+            token-0-id:string
+            token-1-id:string
+            token-2-id:string
+            ats-0-1-id:string
+            ats-1-2-id:string
+        )
+        @doc "Issues chain-wide MultipletFamily F|t0|t1|t2 (rank 3) with ATS ladder validation."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-FVT::C_IssueMultipletFamily
+                            patron executor token-0-id token-1-id token-2-id ats-0-1-id ats-1-2-id
+                        )
+                    )
+                    (out:[string] (at "output" ico))
+                    (family-id:string (at 0 out))
+                )
+                (ref-IGNIS::XE_CollectIgnis patron ico)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
+                (format "Successfully issued MultipletFamily {}." [family-id])
+            )
+        )
+    )
+    (defun AQP-FVT|C_AddScoreEntity:string
+        (patron:string executor:string fvt-id:string score-entity-type:integer score-entity-id:string)
+        @doc "Admits score (type 1) or triplet (type 3) to fvt-id via ScoreEntityLink."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-FVT::C_AddScoreEntity patron executor fvt-id score-entity-type score-entity-id)
+                )
+                (ref-TS01-A::XB_DynamicFuelSTOA)
+                (format "Successfully added score-entity type {} id {} to FVT {}."
+                    [score-entity-type score-entity-id fvt-id]
+                )
+            )
+        )
+    )
+    (defun AQP-FVT|C_AddRewardLink:string
+        (patron:string executor:string fvt-id:string reward-dptf-id:string segmentation:bool multiplet-family-id:string)
+        @doc "Registers one reward DPTF on fvt-id (multiplet-family-id BAR for plain tokens). Collects IGNIS on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-FVT::C_AddRewardLink patron executor fvt-id reward-dptf-id segmentation multiplet-family-id)
+                )
+                (ref-TS01-A::XB_DynamicFuelSTOA)
+                (format "Successfully added reward link {} on FVT {} (family={})."
+                    [reward-dptf-id fvt-id multiplet-family-id]
+                )
+            )
+        )
+    )
+    (defun AQP-FVT|C_ToggleScoreEntityLink:string
+        (patron:string executor:string fvt-id:string score-entity-type:integer score-entity-id:string enabled:bool)
+        @doc "Toggles ScoreEntityLink.enabled and collects IGNIS output on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-FVT::C_ToggleScoreEntityLink patron executor fvt-id score-entity-type score-entity-id enabled)
+                )
+                (format "Successfully toggled score-entity type {} id {} on FVT {} to enabled={}."
+                    [score-entity-type score-entity-id fvt-id enabled]
+                )
+            )
+        )
+    )
+    (defun AQP-FVT|C_ToggleRewardLink:string
+        (patron:string executor:string fvt-id:string reward-dptf-id:string enabled:bool)
+        @doc "Toggles reward-enabled and collects IGNIS output on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-FVT::C_ToggleRewardLink patron executor fvt-id reward-dptf-id enabled)
+                )
+                (format "Successfully toggled reward link {} on FVT {} to enabled={}." [reward-dptf-id fvt-id enabled])
+            )
+        )
+    )
+    (defun AQP-FVT|C_SetQualitySplit:string
+        (patron:string executor:string fvt-id:string reward-dptf-id:string mode:string bronze-split:[integer] silver-split:[integer] gold-split:[integer])
+        @doc "Round B: set a MULTIPLET_BASE reward's quality-split MODE + heterogeneous MATRIX (owner-gated). \
+            \ HOMOGENEOUS routes each lane to its one ladder token; HETEROGENEOUS splits each lane across all 3 \
+            \ ladder tokens per its [to-t0 to-t1 to-t2] per-mille row. Collects IGNIS output on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-FVT::C_SetQualitySplit patron executor fvt-id reward-dptf-id mode bronze-split silver-split gold-split)
+                )
+                (format "Successfully set quality split mode={} on reward {} of FVT {}." [mode reward-dptf-id fvt-id])
+            )
+        )
+    )
+    (defun AQP-FVT|C_Control:string
+        (patron:string executor:string fvt-id:string new-can-upgrade:bool new-can-change-owner:bool)
+        @doc "Updates FVT control flags and collects IGNIS output on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-FVT::C_Control patron executor fvt-id new-can-upgrade new-can-change-owner)
+                )
+                (format "Successfully updated control flags for FVT {}." [fvt-id])
+            )
+        )
+    )
+    (defun AQP-FVT|C_RotateOwnership:string
+        (patron:string executor:string executee:string fvt-id:string)
+        @doc "Rotates FVT ownership and collects IGNIS output on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-FVT::C_RotateOwnership patron executor executee fvt-id)
+                )
+                (format "Successfully rotated ownership for FVT {} to {}." [fvt-id executee])
+            )
+        )
+    )
+    (defun AQP-FVT|C_SetCommonDenominator:string
+        (patron:string executor:string fvt-id:string common-denominator:string)
+        @doc "Sets farm common-denominator (before ScoreEntityLinks) and collects IGNIS on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-FVT::C_SetCommonDenominator patron executor fvt-id common-denominator)
+                )
+                (ref-TS01-A::XB_DynamicFuelSTOA)
+                (format "Successfully set common-denominator on FVT {} to {}." [fvt-id common-denominator])
+            )
+        )
+    )
+    (defun AQP-FVT|C_SetMosaic:string
+        (patron:string executor:string fvt-id:string mosaic:bool)
+        @doc "Sets mosaic membership policy when FVT has no member links; collects IGNIS on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-FVT::C_SetMosaic patron executor fvt-id mosaic)
+                )
+                (format "Successfully set mosaic on FVT {} to {}." [fvt-id mosaic])
+            )
+        )
+    )
+    (defun AQP-FVT|C_SetSplitMode:string
+        (patron:string executor:string fvt-id:string split-mode:string)
+        @doc "Sets a farm's reward-split mode (SPLIT|STAKED participation | SPLIT|TVL pool-size); collects IGNIS on patron. \
+            \ Freely mutable — re-weights only future injects."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-FVT::C_SetSplitMode patron executor fvt-id split-mode)
+                )
+                (format "Successfully set reward-split mode on farm {} to {}." [fvt-id split-mode])
+            )
+        )
+    )
+    (defun AQP-FVT|C_IssueGenericEarningVault:string
+        (patron:string executor:string vault-name:string stake-dptf-id:string reward-dptf-id:string)
+        @doc "Stand up a complete single-asset earning Vault in ONE transaction and ONE IGNIS \
+            \ collection: stake a true fungible, earn another true fungible. Composes the six core \
+            \ operations a Vault needs and concatenates their cumulators, so the caller pays once \
+            \ rather than six times."
+        ;; WHY THIS IS A TALOS ORCHESTRATOR AND NOT A CITIZEN HELPER
+        ;;   The same six steps written in a citizen module would call the six TS02-C3 wrappers,
+        ;;   and EVERY ONE OF THOSE COLLECTS IGNIS ON ITS OWN -- six collections for one logical
+        ;;   operation. Composing the CORE C_ functions here and concatenating their cumulators
+        ;;   collects once, which is the entire reason this belongs in Talos.
+        ;;
+        ;; WHAT A VAULT ACTUALLY NEEDS -- six operations, four class constants
+        ;;   1 score for the staked DPTF   score-class 1
+        ;;   2 pool it is staked into      aqp-class 1   (0 is reserved for LP)
+        ;;   3 score -> pool link          without it the pool scores nothing
+        ;;   4 the FVT entity              fvt-class 1 (Vault)
+        ;;   5 score admitted to the FVT   score-entity type 1
+        ;;   6 reward token registered     multiplet-family-id BAR (plain, not a laddered family)
+        ;;
+        ;;   Step 6 is not optional: an EMPLOYED score with no reward link makes every stake abort
+        ;;   in the FVT pipeline (05_FVT.pact:1210). Doing 1-5 without 6 builds a vault nobody can
+        ;;   use, which is a state this function makes unreachable.
+        ;;
+        ;; CLASS SAFETY
+        ;;   Two sovereign admission rules disagree about fvt-class for SF/NF
+        ;;   (URC_ScoreClassMatchesFvtClass vs URC_TripletCategoryMatchesFvtClass). They AGREE for
+        ;;   true fungibles: score-class 1 is admitted at fvt-class 1 by the first, and VAULT_TF
+        ;;   maps to 1 in the second. A TF-in/TF-out vault is the case both describe identically,
+        ;;   so this function does not depend on how that dispute is settled.
+        ;;
+        ;; NAMING -- one name in, three derived, and they MUST differ
+        ;;   UDC_Makeid is <name>-<block-hash> and ids collide across families because
+        ;;   BRD|BrandingTable is shared (DPDC audit #33M). Three entities minted from one name in
+        ;;   one transaction would produce three byte-identical ids and the second insert would
+        ;;   hard-abort. Hence <name>Score / <name>Pool / <name>Vault.
+        (with-capability (P|TS)
+            (let*
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+                    (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                    ;;
+                    (score-name:string (concat [vault-name "Score"]))
+                    (pool-name:string (concat [vault-name "Pool"]))
+                    (fvt-name:string (concat [vault-name "Vault"]))
+                    ;;ids are derived in THIS transaction for entities minted in THIS transaction,
+                    ;;so UDC_Makeid returns exactly what the C_Issue calls below are about to make.
+                    (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
+                    (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+                    (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
+                    ;;The POOL's executor is the STAKED ASSET's owner konto -- which is NOT
+                    ;;necessarily `executor`, the account that will own the score and vault.
+                    ;;A vault operator may stake a token somebody else issued. Derived, not assumed.
+                    (stake-asset-owner:string
+                        (ref-AQP::URC_AqpOwnerKontoFromClassAndAsset GV|POOL_CLASS_TF stake-dptf-id))
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                        [
+                            (ref-SCR::C_IssueTrueFungibleScore
+                                patron executor score-name GV|PRECISION GV|MX_FROZEN)
+                            (ref-AQP::C_Issue patron stake-asset-owner pool-name stake-dptf-id GV|POOL_CLASS_TF)
+                            (ref-AQP::C_AddScore patron stake-asset-owner pool-id score-id)
+                            (ref-FVT::C_Issue
+                                patron executor fvt-name GV|FVT_CLASS_VAULT GV|COMMON_BAR)
+                            ;;The FVT's executor here IS `executor` -- C_Issue two lines up
+                            ;;makes that account the vault's owner, so it is derived, not assumed.
+                            (ref-FVT::C_AddScoreEntity
+                                patron executor fvt-id GV|SCORE_ENTITY_SCORE score-id)
+                            (ref-FVT::C_AddRewardLink
+                                patron executor fvt-id reward-dptf-id false GV|COMMON_BAR)
+                        ]
+                        []
+                    )
+                )
+                (ref-TS01-A::XB_DynamicFuelSTOA)
+                (format
+                    "Successfully issued Generic Earning Vault {}: stake {} earn {}. score={} pool={} fvt={}."
+                    [vault-name stake-dptf-id reward-dptf-id score-id pool-id fvt-id]
+                )
+            )
+        )
+    )
+
+    (defun AQP-FVT|CC_InjectStream:string
+        (patron:string executor:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
+        @doc "Injects reward DPTF as a TIME-STREAM (linear vesting over `duration` seconds, 1h..365d) into fvt-id \
+            \ and collects IGNIS on patron. The DELAYED counterpart of AQP-FVT|CC_Inject (instant): the amount vests \
+            \ continuously and whoever is staked during each slice earns it (late stakers included). Independent \
+            \ overlapping streams, capped by the FVT owner konto's Elite tier. See Audit/STREAMED-INJECT-DESIGN.md."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-FVT::CC_InjectStream patron executor fvt-id reward-dptf-id amount duration)
+                )
+                (ref-TS01-A::XB_DynamicFuelSTOA)
+                (format "Successfully streamed {} {} into FVT {} over {}s." [amount reward-dptf-id fvt-id duration])
+            )
+        )
+    )
+    (defun AQP-FVT|CC_Inject:string
+        (patron:string executor:string fvt-id:string reward-dptf-id:string amount:decimal)
+        @doc "HEAVY enforced-FRESH inject for ANY FVT class (farm/vault/treasury; M3 #12): refreshes every stale \
+            \ staker's deb so the divisor is live before injecting, then injects + collects IGNIS on patron. Same \
+            \ shape as C_Inject. Farms are covered too — a mosaic farm's singular/non-true-triplet members are \
+            \ deb-stale-exposed via SCR|ScoreTotalDebScore just like a vault."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-FVT::CC_Inject patron executor fvt-id reward-dptf-id amount)
+                )
+                (ref-TS01-A::XB_DynamicFuelSTOA)
+                (format "Successfully FRESH-injected {} {} into FVT {}." [amount reward-dptf-id fvt-id])
+            )
+        )
+    )
+    (defun AQP-FVT|CCp_FvtFixSlice:string
+        (patron:string fvt-id:string reward-dptf-id:string users:[string])
+        @doc "PARALLEL fed slice of the enforced-fresh inject's fix phase: refresh exactly the \
+            \ LISTED stale stakers. Read `URH_FvtStalePresentUsers`, split it into DISJOINT slices, \
+            \ and send them together -- then `AQP-FVT|CC_InjectFinalize`. \
+            \ \
+            \ PREFER THIS OVER `AQP-FVT|CCp_InjectFixChunk` WHEN FANNING OUT. That one takes a \
+            \ chunk SIZE and takes the first N of the shared stale list, so two concurrent sends \
+            \ pick the SAME users -- duplicate work, and the 2e forced-fix penalty recorded twice \
+            \ against those holders. This one takes the accounts, and re-checks staleness inside \
+            \ the transaction, so an overlapping or replayed slice simply finds them fresh and \
+            \ skips them with no second penalty. \
+            \ \
+            \ WHEN A SLICE IS NEEDED: adding or revoking a score entity on an FVT makes its \
+            \ members deb-stale. That does NOT block stake or unstake -- a stale member mis-states \
+            \ reward SHARES, never the base -- but `CC_InjectFinalize` refuses to inject while any \
+            \ stale member remains, so the work has to be done before the next reward injection. \
+            \ Lives in AQP-FVT."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+                )
+                (let
+                    (
+                        (r:string (ref-FVT::CCp_FvtFixSlice patron fvt-id reward-dptf-id users))
+                    )
+                    (ref-TS01-A::XB_DynamicFuelSTOA)
+                    r
+                )
+            )
+        )
+    )
+    (defun AQP-FVT|CCp_InjectFixChunk:string
+        (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
+        @doc "PAGE the enforced-fresh inject's fix phase — refresh up to `chunk` currently-stale stakers (penalized), \
+            \ the scalable prelude to AQP-FVT|CC_InjectFinalize for stale sets exceeding one tx. Repeat until none \
+            \ remain. `chunk` is the UI's simulated slice (bounded by AQP-FVT's loose INJECT-FIX-CHUNK-MAX). Lives \
+            \ in AQP-FVT."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+                )
+                (let
+                    (
+                        (r:string (ref-FVT::CCp_InjectFixChunk patron fvt-id reward-dptf-id chunk))
+                    )
+                    (ref-TS01-A::XB_DynamicFuelSTOA)
+                    r
+                )
+            )
+        )
+    )
+    (defun AQP-FVT|CC_InjectFinalize:string
+        (patron:string executor:string fvt-id:string reward-dptf-id:string amount:decimal)
+        @doc "FINALIZE a paginated enforced-fresh inject: after CCp_InjectFixChunk pages left ZERO stale, inject on \
+            \ the fresh divisor + collect IGNIS on patron — same outcome as the single-tx AQP-FVT|CC_Inject. Lives \
+            \ in AQP-FVT."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-FVT::CC_InjectFinalize patron executor fvt-id reward-dptf-id amount)
+                )
+                (ref-TS01-A::XB_DynamicFuelSTOA)
+                (format "Successfully FRESH-injected {} {} into FVT {} (paginated)." [amount reward-dptf-id fvt-id])
+            )
+        )
+    )
+    (defun AQP-FVT|CCp_UnstaleAll:string
+        (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
+        @doc "OWNER mass deb-unstale — force-refresh up to `chunk` currently-stale present stakers (penalized, same \
+            \ 2e tag as an inject's fix) to make the FVT INJECTION-READY, WITHOUT injecting. Repeat until the report \
+            \ says injection-ready (or `all up to date` when nothing is stale), then run a light AQP-FVT|CC_Inject. \
+            \ Owner-gated in AQP-FVT::CCp_UnstaleAll. `chunk` is the UI's simulated slice (bounded by INJECT-FIX-CHUNK-MAX). \
+            \ Lives in AQP-FVT."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+                )
+                (let
+                    (
+                        (r:string (ref-FVT::CCp_UnstaleAll patron fvt-id reward-dptf-id chunk))
+                    )
+                    (ref-TS01-A::XB_DynamicFuelSTOA)
+                    r
+                )
+            )
+        )
+    )
+    (defun MTX-AQP|2|CC_Inject:string
+        (patron:string executor:string fvt-id:string reward-dptf-id:string amount:decimal)
+        @doc "Starts the 2-step enforced-fresh inject defpact (MTX-AQP — spike fallback for AQP-FVT|CC_Inject when \
+            \ the stale set exceeds one tx). Step 0 runs here; advance with (continue-pact 1). Each defpact step \
+            \ collects its own IGNIS on patron, so this wrapper only summons the pact."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-MTX-AQP:module{AqpMtxV1} MTX-AQP)
+                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+                )
+                (let
+                    (
+                        (r:string (ref-MTX-AQP::C_2|Inject patron executor fvt-id reward-dptf-id amount))
+                    )
+                    (ref-TS01-A::XB_DynamicFuelSTOA)
+                    r
+                )
+            )
+        )
+    )
+    (defun MTX-AQP|2|CC_SweepRevokeAnchor:string
+        (patron:string executor:string anchor-id:string)
+        @doc "Starts the 2-step paginated re-score SWEEP defpact (MTX-AQP — spike fallback for \
+            \ AQP-FVT|CC_SweepRevokeAnchor when the recompute set exceeds one tx). Step 0 brackets (freeze + \
+            \ swept-revoke) + recomputes the first window here; advance with (continue-pact 1). The defpact is \
+            \ gas-only (no reward inject), so this wrapper just summons the pact and refuels."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-MTX-AQP:module{AqpMtxV1} MTX-AQP)
+                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+                )
+                (let
+                    (
+                        (r:string (ref-MTX-AQP::C_2|SweepRevokeAnchor patron executor anchor-id))
+                    )
+                    (ref-TS01-A::XB_DynamicFuelSTOA)
+                    r
+                )
+            )
+        )
+    )
+    (defun AQP-FVT|CC_SweepRevokeAnchor:string
+        (patron:string executor:string anchor-id:string)
+        @doc "Single-tx re-score SWEEP that retires an EMPLOYED anchor (H4 half-2): freezes the affected pools, \
+            \ removes the anchor (swept-revoke), recomputes every affected holder (aggregate/lane refold + deb), \
+            \ then unfreezes. Owner-initiated (patron = the anchored-asset owner). Lives in AQP-FVT."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+                )
+                (let
+                    (
+                        (r:string (ref-FVT::CC_SweepRevokeAnchor patron executor anchor-id))
+                    )
+                    (ref-TS01-A::XB_DynamicFuelSTOA)
+                    r
+                )
+            )
+        )
+    )
+    (defun AQP-FVT|CC_SweepBegin:string
+        (patron:string executor:string anchor-id:string)
+        @doc "OPEN a paginated (defun+gate) re-score sweep — the scalable twin of AQP-FVT|CC_SweepRevokeAnchor for \
+            \ holder sets exceeding one tx: freezes the affected pools + swept-revokes the anchor, then defers the \
+            \ recompute to AQP-FVT|CCp_SweepRecomputeChunk calls under the held freeze. Owner-initiated. Lives in AQP-FVT."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+                )
+                (let
+                    (
+                        (r:string (ref-FVT::CC_SweepBegin patron executor anchor-id))
+                    )
+                    (ref-TS01-A::XB_DynamicFuelSTOA)
+                    r
+                )
+            )
+        )
+    )
+    (defun AQP-FVT|CCp_SweepRecomputeChunk:string
+        (patron:string anchor-id:string chunk:integer)
+        @doc "PAGE an open re-score sweep: recompute the next `chunk` holders over the frozen global present set, \
+            \ advancing the cursor; the finalizing chunk (set exhausted) unfreezes the affected pools. `chunk` is \
+            \ the UI's simulated slice size (bounded by AQP-FVT's loose SWEEP-CHUNK-MAX backstop). Lives in AQP-FVT."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+                )
+                (let
+                    (
+                        (r:string (ref-FVT::CCp_SweepRecomputeChunk patron anchor-id chunk))
+                    )
+                    (ref-TS01-A::XB_DynamicFuelSTOA)
+                    r
+                )
+            )
+        )
+    )
+    (defun AQP-FVT|CC_UnstaleMyScores:string
+        (patron:string executor:string fvt-ids:[string])
+        @doc "User self-service deb-unstale: the caller refreshes THEIR OWN stale scores across the listed FVTs \
+            \ (non-penalized — the cheap alternative to being force-fixed by an inject), then collects IGNIS on \
+            \ patron. The UI finds the FVT list via RPS.URC_FvtUserHasStaleMember per FVT the user stakes. \
+            \ Lives in AQP-FVT."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-FVT::CC_UnstaleMyScores patron executor fvt-ids)
+                )
+                (ref-TS01-A::XB_DynamicFuelSTOA)
+                (format "Refreshed your stale scores across {} FVT(s)." [(length fvt-ids)])
+            )
+        )
+    )
+    (defun AQP-FVT|CC_Collect:string
+        (patron:string executor:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
+        @doc "Collects pending reward DPTF for patron on one score-entity from fvt-id; collects IGNIS on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (bal-before:decimal (ref-DPTF::UR_AccountSupply reward-dptf-id patron))
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-FVT::CC_Collect patron executor fvt-id score-entity-type score-entity-id reward-dptf-id)
+                )
+                (ref-TS01-A::XB_DynamicFuelSTOA)
+                (let
+                    (
+                        (bal-after:decimal (ref-DPTF::UR_AccountSupply reward-dptf-id patron))
+                        (payout:decimal (- bal-after bal-before))
+                    )
+                    (format "Successfully collected {} {} rewards from FVT {} for score-entity type {} id {}."
+                        [payout reward-dptf-id fvt-id score-entity-type score-entity-id]
+                    )
+                )
+            )
+        )
+    )
+    (defun AQP-DSA|CC_OpenAgency:string
+        (patron:string executor:string fvt-id:string pool-id:string score-entity-id:string fee-per-mille:integer
+         collectable-id:string stake-nonces:[integer])
+        @doc "DSA (Talos): open a delegation agency ATOMICALLY under P|TS — (1) admit the operator's BLANK triplet \
+            \ <score-entity-id> to vault <fvt-id> (AQP-DSA::C_AdmitAgency); (2) stake the operator's initial \
+            \ <collectable-id>/<stake-nonces> from <pool-id> (FVT::CC_CollectableStakeFlow — runs under P|TS so the \
+            \ deep DPDC custody transfer's IMC passes); (3) enforce the terminal quintessence >= unit-score/2 open \
+            \ gate (AQP-DSA::UEV_OpenGate — a short stake reverts the whole open). Collects both cumulators on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC:module{DpdcV2} DPDC)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                    (ref-DSA:module{DsaV1} AQP-DSA)
+                )
+                ;; (1) admit the blank triplet (fvt-links must be BAR) + record the agency
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DSA::C_AdmitAgency patron executor fvt-id score-entity-id fee-per-mille))
+                ;; (2) stake the operator's initial quintessence into the now-linked, reward-ready triplet
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-FVT::CC_CollectableStakeFlow
+                        patron executor executor pool-id collectable-id true
+                        stake-nonces (ref-DPDC::UR_AccountNoncesSupplies executor collectable-id true stake-nonces) true))
+                ;; (3) terminal atomic gate — after the stake, Q must clear unit-score/2 or the whole tx reverts
+                (ref-DSA::UEV_OpenGate fvt-id score-entity-id)
+                (format "Agency opened on FVT {} for score-entity {} (fee {} per-mille)." [fvt-id score-entity-id fee-per-mille])
+            )
+        )
+    )
+    (defun AQP-DSA|C_RecomputeCapture:string
+        (patron:string fvt-id:string score-entity-id:string)
+        @doc "DSA (Talos): permissionlessly recompute an agency's capture from its current quintessence (after a \
+            \ delegator stake/unstake changed Q); collects IGNIS on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DSA:module{DsaV1} AQP-DSA)
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-DSA::C_RecomputeCapture patron fvt-id score-entity-id)
+                    )
+                )
+                (ref-IGNIS::XE_CollectIgnis patron ico)
+                (format "Capture recomputed for agency {} on FVT {}." [score-entity-id fvt-id])
+            )
+        )
+    )
+
+    ;;<=========================================================================>
+    ;;{6}  REPL
+    ;;
+    ;; --- REPL dry-run (P|TS client shell → AQP-FVT::REPL_BootstrapVault under GOV|FVT_ADMIN) ---
+    (defun AQP-FVT|REPL_BootstrapVault:string
+        (patron:string fvt-id:string owner-konto:string score-id:string reward-dptf-id:string)
+        @doc "REPL-only Talos shell: composes P|TS for SCR XE IMC; forwards to AQP-FVT::REPL_BootstrapVault."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                )
+                (ref-FVT::REPL_BootstrapVault fvt-id owner-konto score-id reward-dptf-id)
+            )
+        )
+    )
+    (defun AQP-FVT|REPL_BootstrapTreasury:string
+        (patron:string fvt-id:string owner-konto:string score-id:string reward-dptf-id:string)
+        @doc "REPL-only Talos shell: class-2 treasury bootstrap for OF score pools."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                )
+                (ref-FVT::REPL_BootstrapTreasury fvt-id owner-konto score-id reward-dptf-id)
+            )
+        )
+    )
+
+
+)
+

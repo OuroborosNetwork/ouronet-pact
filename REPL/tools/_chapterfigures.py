@@ -83,23 +83,26 @@ def figures():
 
 # (file, the exact substring the prose must contain, key into figures(), how it is written)
 CLAIMS = [
-    ("03-cost-preview.md", "**414 of the 427 entrypoints have a preview", "preview_params_diff", 414),
-    ("03-cost-preview.md", "Only 13 match",                          "preview_params_same", 13),
-    ("03-cost-preview.md", "carries **432** of them",                "previews",            432),
-    # PAIRED IS NOT THE ENTRYPOINT COUNT, and conflating them is how this line went stale. 427
-    # entrypoints exist; 423 have an `INFO_` preview. The four `CC_Vacate*` added on 2026-10-03
-    # have none yet -- they were invisible to the registry under their old `XB_` names, so they
-    # were never paired. The chapter now states the gap instead of rounding it away.
-    ("03-cost-preview.md", "**all 427** client",                     "paired",              427),
+    ("03-cost-preview.md", "**421 of the 437 entrypoints have a preview", "preview_params_diff", 421),
+    ("03-cost-preview.md", "Only 16 match",                          "preview_params_same", 16),
+    ("03-cost-preview.md", "carries **442** of them",                "previews",            442),
+    # PAIRED IS NOT THE ENTRYPOINT COUNT, and conflating them is how this line went stale once
+    # already. CORRECTED 2026-10-10: the gap it described is CLOSED -- all 437 entrypoints now
+    # have an `INFO_` preview, because PureV6 gave the four `CC_Vacate*` the previews they had
+    # been missing. So paired == entrypoints TODAY, which is exactly the coincidence that made
+    # the two look interchangeable the first time. They are still different questions; this row
+    # checks `paired`, and it will diverge again the next time an entrypoint ships ahead of its
+    # preview.
+    ("03-cost-preview.md", "**all 437** client",                     "paired",              437),
     ("03-cost-preview.md", "**Twenty-one** entrypoints have a reader", "alias_paired",      21),
-    ("02-signing-and-caps.md", "419 of the 427 client entrypoints",  "sponsored",           419),
-    ("02-signing-and-caps.md", "Every one of those 419",             "sponsored",           419),
+    ("02-signing-and-caps.md", "429 of the 437 client entrypoints",  "sponsored",           429),
+    ("02-signing-and-caps.md", "Every one of those 429",             "sponsored",           429),
     ("02-signing-and-caps.md", "### The eight that are NOT sponsored", "unsponsored",        8),
-    ("02-signing-and-caps.md", "**388 of 427** entrypoints",         "ownership_resolved",  388),
-    ("02-signing-and-caps.md", "180 requirements always bind",       "ownership_always",    180),
-    ("02-signing-and-caps.md", "385 are reached inside an `if`",     "ownership_cond",      385),
-    ("02-signing-and-caps.md", "408 requirements name an account",   "own_via_parameter",   408),
-    ("02-signing-and-caps.md", "157 name one the contract",          "own_via_reader",      157),
+    ("02-signing-and-caps.md", "**397 of 437** entrypoints",         "ownership_resolved",  397),
+    ("02-signing-and-caps.md", "184 requirements always bind",       "ownership_always",    184),
+    ("02-signing-and-caps.md", "394 are reached inside an `if`",     "ownership_cond",      394),
+    ("02-signing-and-caps.md", "418 requirements name an account",   "own_via_parameter",   418),
+    ("02-signing-and-caps.md", "160 name one the contract",          "own_via_reader",      160),
     ("02-signing-and-caps.md", "Four launchpad purchases require",   "external_caps",       4),
     ("05-reading-data.md", "It contains\n**zero reader functions**",     "readers_indexed",     0),
 ]

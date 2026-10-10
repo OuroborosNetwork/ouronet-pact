@@ -290,10 +290,10 @@ STOA; the constants-only conversion (65 table reads lifted); the `define-set` / 
 
 ## What is open
 
-**435** Talos client functions carry a price; **15** carry no row, and the sheet now says which:
+**445** Talos client functions carry a price; **15** carry no row, and the sheet now says which:
 
 ```
-199 exact  ·  178 floor  ·  2 STOA-only  ·  56 exempt  ·  5 unresolved  ·  15 unpriced
+199 exact  ·  187 floor  ·  2 STOA-only  ·  57 exempt  ·  5 unresolved  ·  15 unpriced
 ```
 
 **MOVED SHARPLY ON 2026-10-06, AND THE OLD NUMBERS WERE WRONG.** `COLLECTS` -- the regex deciding

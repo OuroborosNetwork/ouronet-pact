@@ -166,11 +166,11 @@
         )
         ;;precision 6, mx-frozen/mx-sleeping 2.0 -- the values AQP-BOOT's Step 6 uses. The issuer bounds
         ;;precision to [3,24] and requires BOTH multipliers to be strictly positive; 0.0 was rejected on
-        ;;the first attempt with "Invalid precision, score-class, mx-frozen, mx-sleeping, mx-hibernated
+        ;;the first attempt with "Invalid precision, score-class, nft-score-model, or a multiplier below 1.0
         ;;or nft-score-model" -- one message over eight conjuncts, so the only way to know which was
         ;;wrong was to read them.
         (ref-TS02-C3::AQP-SCR|C_IssueLiquidityScore
-            KST.ANHD KST.ANHD "LpProbeScore" 6 outsider 2.0 2.0)
+            KST.ANHD KST.ANHD "LpProbeScore" 6 outsider 2.998 1.999)
         (let
             (
                 (sc:string (ref-U|DALOS::UDC_Makeid "LpProbeScore"))
@@ -292,4 +292,10 @@
 ;;the pool is kept, like the score: both are fixtures the next pass builds on
 (commit-tx)
 (print "")
+;;THE RE-RATE SUITE RIDES HERE, and it has to ride somewhere specific: it needs a CLASS-0 score
+;;and a CLASS-0 pool, and this is the only chain in the tree that builds either. Loaded at the
+;;end so the fixtures above are committed; `modules/*.repl` is a gate entrypoint glob, so adding
+;;the load is what puts those assertions inside the gate rather than beside it.
+(load "../Stage_02/[6.2.17]_AQP-RERATE.repl")
+
 (print "=== END modules/AQP-LP.repl ===")

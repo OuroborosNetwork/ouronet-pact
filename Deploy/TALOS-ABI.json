@@ -7748,6 +7748,16 @@
     "type": "string"
    }
   ],
+  "TS02-C3.AQP-FVT|CC_ClearPoolSweep": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "pool-id",
+    "type": "string"
+   }
+  ],
   "TS02-C3.AQP-FVT|CC_Collect": [
    {
     "name": "patron",
@@ -7883,6 +7893,24 @@
    },
    {
     "name": "fvt-ids",
+    "type": "[string]"
+   }
+  ],
+  "TS02-C3.AQP-FVT|CCp_FvtFixSlice": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "fvt-id",
+    "type": "string"
+   },
+   {
+    "name": "reward-dptf-id",
+    "type": "string"
+   },
+   {
+    "name": "users",
     "type": "[string]"
    }
   ],
@@ -8234,6 +8262,24 @@
     "type": "bool"
    }
   ],
+  "TS02-C3.AQP-POOL|CC_FinalizeScoreRevoke": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "executor",
+    "type": "string"
+   },
+   {
+    "name": "pool-id",
+    "type": "string"
+   },
+   {
+    "name": "score-id",
+    "type": "string"
+   }
+  ],
   "TS02-C3.AQP-POOL|CC_FullVacate": [
    {
     "name": "patron",
@@ -8464,6 +8510,32 @@
     "type": "decimal"
    }
   ],
+  "TS02-C3.AQP-POOL|CC_UpdateScoreMultipliers": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "executor",
+    "type": "string"
+   },
+   {
+    "name": "score-id",
+    "type": "string"
+   },
+   {
+    "name": "mx-frozen",
+    "type": "decimal"
+   },
+   {
+    "name": "mx-sleeping",
+    "type": "decimal"
+   },
+   {
+    "name": "mx-hibernated",
+    "type": "decimal"
+   }
+  ],
   "TS02-C3.AQP-POOL|CC_VacateNonFungible": [
    {
     "name": "patron",
@@ -8530,6 +8602,24 @@
    {
     "name": "pool-id",
     "type": "string"
+   }
+  ],
+  "TS02-C3.AQP-POOL|CCp_BackfillScoreSlice": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "pool-id",
+    "type": "string"
+   },
+   {
+    "name": "score-id",
+    "type": "string"
+   },
+   {
+    "name": "beneficiaries",
+    "type": "[string]"
    }
   ],
   "TS02-C3.AQP-POOL|CCp_BatchDrainCollectable": [
@@ -8704,6 +8794,80 @@
     "type": "[decimal]"
    }
   ],
+  "TS02-C3.AQP-POOL|CCp_ReassignCustodialBeneficiary": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "executor",
+    "type": "string"
+   },
+   {
+    "name": "pool-id",
+    "type": "string"
+   },
+   {
+    "name": "dpof-id",
+    "type": "string"
+   },
+   {
+    "name": "nonce",
+    "type": "integer"
+   },
+   {
+    "name": "new-beneficiary",
+    "type": "string"
+   }
+  ],
+  "TS02-C3.AQP-POOL|CCp_ReleaseSpecialCustodial": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "pool-id",
+    "type": "string"
+   },
+   {
+    "name": "executee",
+    "type": "string"
+   },
+   {
+    "name": "dpof-id",
+    "type": "string"
+   },
+   {
+    "name": "nonce",
+    "type": "integer"
+   }
+  ],
+  "TS02-C3.AQP-POOL|CCp_StakeSpecialCustodial": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "executor",
+    "type": "string"
+   },
+   {
+    "name": "executee",
+    "type": "string"
+   },
+   {
+    "name": "pool-id",
+    "type": "string"
+   },
+   {
+    "name": "dpof-id",
+    "type": "string"
+   },
+   {
+    "name": "nonces",
+    "type": "[integer]"
+   }
+  ],
   "TS02-C3.AQP-POOL|C_AbortVacate": [
    {
     "name": "patron",
@@ -8719,6 +8883,24 @@
    }
   ],
   "TS02-C3.AQP-POOL|C_AddScore": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "executor",
+    "type": "string"
+   },
+   {
+    "name": "pool-id",
+    "type": "string"
+   },
+   {
+    "name": "score-id",
+    "type": "string"
+   }
+  ],
+  "TS02-C3.AQP-POOL|C_BeginScoreRevoke": [
    {
     "name": "patron",
     "type": "string"
@@ -8858,6 +9040,24 @@
    {
     "name": "dptf-id",
     "type": "string"
+   }
+  ],
+  "TS02-C3.AQP-POOL|Cp_DrainScoreSlice": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "pool-id",
+    "type": "string"
+   },
+   {
+    "name": "score-id",
+    "type": "string"
+   },
+   {
+    "name": "accounts",
+    "type": "[string]"
    }
   ],
   "TS02-C3.AQP-SCR|C_CombineTripletScoreModel": [
@@ -10020,6 +10220,16 @@
     "type": "string"
    }
   ],
+  "AQP-INFO.INFO_AQP-FVT|ClearPoolSweep": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "pool-id",
+    "type": "string"
+   }
+  ],
   "AQP-INFO.INFO_AQP-FVT|Collect": [
    {
     "name": "patron",
@@ -10058,6 +10268,20 @@
    {
     "name": "new-can-change-owner",
     "type": "bool"
+   }
+  ],
+  "AQP-INFO.INFO_AQP-FVT|FvtFixSlice": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "fvt-id",
+    "type": "string"
+   },
+   {
+    "name": "accounts",
+    "type": "[string]"
    }
   ],
   "AQP-INFO.INFO_AQP-FVT|Inject": [
@@ -10446,6 +10670,24 @@
     "type": "string"
    }
   ],
+  "AQP-INFO.INFO_AQP-POOL|BackfillScoreSlice": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "pool-id",
+    "type": "string"
+   },
+   {
+    "name": "score-id",
+    "type": "string"
+   },
+   {
+    "name": "beneficiaries",
+    "type": "[string]"
+   }
+  ],
   "AQP-INFO.INFO_AQP-POOL|BatchDrainCollectable": [
    {
     "name": "patron",
@@ -10562,6 +10804,24 @@
     "type": "[object{AcquisitionSchemasV1.VCT|VacateTfLeg}]"
    }
   ],
+  "AQP-INFO.INFO_AQP-POOL|BeginScoreRevoke": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "pool-id",
+    "type": "string"
+   },
+   {
+    "name": "score-id",
+    "type": "string"
+   },
+   {
+    "name": "slot-index",
+    "type": "integer"
+   }
+  ],
   "AQP-INFO.INFO_AQP-POOL|DisablePoolStake": [
    {
     "name": "patron",
@@ -10572,6 +10832,24 @@
     "type": "string"
    }
   ],
+  "AQP-INFO.INFO_AQP-POOL|DrainScoreSlice": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "pool-id",
+    "type": "string"
+   },
+   {
+    "name": "score-id",
+    "type": "string"
+   },
+   {
+    "name": "accounts",
+    "type": "[string]"
+   }
+  ],
   "AQP-INFO.INFO_AQP-POOL|EnablePoolStake": [
    {
     "name": "patron",
@@ -10579,6 +10857,20 @@
    },
    {
     "name": "pool-id",
+    "type": "string"
+   }
+  ],
+  "AQP-INFO.INFO_AQP-POOL|FinalizeScoreRevoke": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "pool-id",
+    "type": "string"
+   },
+   {
+    "name": "score-id",
     "type": "string"
    }
   ],
@@ -10633,6 +10925,54 @@
    },
    {
     "name": "aqp-class",
+    "type": "integer"
+   }
+  ],
+  "AQP-INFO.INFO_AQP-POOL|ReassignCustodialBeneficiary": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "pool-id",
+    "type": "string"
+   },
+   {
+    "name": "executor",
+    "type": "string"
+   },
+   {
+    "name": "new-beneficiary",
+    "type": "string"
+   },
+   {
+    "name": "dpof-id",
+    "type": "string"
+   },
+   {
+    "name": "nonce",
+    "type": "integer"
+   }
+  ],
+  "AQP-INFO.INFO_AQP-POOL|ReleaseSpecialCustodial": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "pool-id",
+    "type": "string"
+   },
+   {
+    "name": "beneficiary-id",
+    "type": "string"
+   },
+   {
+    "name": "dpof-id",
+    "type": "string"
+   },
+   {
+    "name": "nonce",
     "type": "integer"
    }
   ],
@@ -10721,6 +11061,32 @@
    },
    {
     "name": "collectable-id",
+    "type": "string"
+   },
+   {
+    "name": "nonces",
+    "type": "[integer]"
+   }
+  ],
+  "AQP-INFO.INFO_AQP-POOL|StakeSpecialCustodial": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "pool-id",
+    "type": "string"
+   },
+   {
+    "name": "owner-id",
+    "type": "string"
+   },
+   {
+    "name": "beneficiary-id",
+    "type": "string"
+   },
+   {
+    "name": "dpof-id",
     "type": "string"
    },
    {
@@ -10905,6 +11271,28 @@
    },
    {
     "name": "amount",
+    "type": "decimal"
+   }
+  ],
+  "AQP-INFO.INFO_AQP-POOL|UpdateScoreMultipliers": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "score-id",
+    "type": "string"
+   },
+   {
+    "name": "mx-frozen",
+    "type": "decimal"
+   },
+   {
+    "name": "mx-sleeping",
+    "type": "decimal"
+   },
+   {
+    "name": "mx-hibernated",
     "type": "decimal"
    }
   ],
@@ -18448,6 +18836,7 @@
   "TS02-C3.AQP-DSA|C_SetAgencyFee": "AQP-INFO.INFO_AQP-DSA|SetAgencyFee",
   "TS02-C3.AQP-DSA|C_SetOracleAuth": "AQP-INFO.INFO_AQP-DSA|SetOracleAuth",
   "TS02-C3.AQP-DSA|C_WithdrawRoyalty": "AQP-INFO.INFO_AQP-DSA|WithdrawRoyalty",
+  "TS02-C3.AQP-FVT|CC_ClearPoolSweep": "AQP-INFO.INFO_AQP-FVT|ClearPoolSweep",
   "TS02-C3.AQP-FVT|CC_Collect": "AQP-INFO.INFO_AQP-FVT|Collect",
   "TS02-C3.AQP-FVT|CC_Inject": "AQP-INFO.INFO_AQP-FVT|Inject",
   "TS02-C3.AQP-FVT|CC_InjectFinalize": "AQP-INFO.INFO_AQP-FVT|InjectFinalize",
@@ -18455,6 +18844,7 @@
   "TS02-C3.AQP-FVT|CC_SweepBegin": "AQP-INFO.INFO_AQP-FVT|SweepBegin",
   "TS02-C3.AQP-FVT|CC_SweepRevokeAnchor": "AQP-INFO.INFO_AQP-FVT|SweepRevokeAnchor",
   "TS02-C3.AQP-FVT|CC_UnstaleMyScores": "AQP-INFO.INFO_AQP-FVT|UnstaleMyScores",
+  "TS02-C3.AQP-FVT|CCp_FvtFixSlice": "AQP-INFO.INFO_AQP-FVT|FvtFixSlice",
   "TS02-C3.AQP-FVT|CCp_InjectFixChunk": "AQP-INFO.INFO_AQP-FVT|InjectFixChunk",
   "TS02-C3.AQP-FVT|CCp_SweepRecomputeChunk": "AQP-INFO.INFO_AQP-FVT|SweepRecomputeChunk",
   "TS02-C3.AQP-FVT|CCp_UnstaleAll": "AQP-INFO.INFO_AQP-FVT|UnstaleAll",
@@ -18471,6 +18861,7 @@
   "TS02-C3.AQP-FVT|C_SetSplitMode": "AQP-INFO.INFO_AQP-FVT|SetSplitMode",
   "TS02-C3.AQP-FVT|C_ToggleRewardLink": "AQP-INFO.INFO_AQP-FVT|ToggleRewardLink",
   "TS02-C3.AQP-FVT|C_ToggleScoreEntityLink": "AQP-INFO.INFO_AQP-FVT|ToggleScoreEntityLink",
+  "TS02-C3.AQP-POOL|CC_FinalizeScoreRevoke": "AQP-INFO.INFO_AQP-POOL|FinalizeScoreRevoke",
   "TS02-C3.AQP-POOL|CC_FullVacate": "AQP-INFO.INFO_AQP-POOL|FullVacate",
   "TS02-C3.AQP-POOL|CC_StakeNonFungibleCollectable": "AQP-INFO.INFO_AQP-POOL|StakeNonFungibleCollectable",
   "TS02-C3.AQP-POOL|CC_StakeOrtoFungible": "AQP-INFO.INFO_AQP-POOL|StakeOrtoFungible",
@@ -18480,18 +18871,24 @@
   "TS02-C3.AQP-POOL|CC_UnstakeOrtoFungible": "AQP-INFO.INFO_AQP-POOL|UnstakeOrtoFungible",
   "TS02-C3.AQP-POOL|CC_UnstakeSemiFungibleCollectable": "AQP-INFO.INFO_AQP-POOL|UnstakeSemiFungibleCollectable",
   "TS02-C3.AQP-POOL|CC_UnstakeTrueFungible": "AQP-INFO.INFO_AQP-POOL|UnstakeTrueFungible",
+  "TS02-C3.AQP-POOL|CC_UpdateScoreMultipliers": "AQP-INFO.INFO_AQP-POOL|UpdateScoreMultipliers",
   "TS02-C3.AQP-POOL|CC_VacateNonFungible": "AQP-INFO.INFO_AQP-POOL|VacateNonFungible",
   "TS02-C3.AQP-POOL|CC_VacateOrtoFungible": "AQP-INFO.INFO_AQP-POOL|VacateOrtoFungible",
   "TS02-C3.AQP-POOL|CC_VacateSemiFungible": "AQP-INFO.INFO_AQP-POOL|VacateSemiFungible",
   "TS02-C3.AQP-POOL|CC_VacateTrueFungible": "AQP-INFO.INFO_AQP-POOL|VacateTrueFungible",
+  "TS02-C3.AQP-POOL|CCp_BackfillScoreSlice": "AQP-INFO.INFO_AQP-POOL|BackfillScoreSlice",
   "TS02-C3.AQP-POOL|CCp_BatchDrainCollectable": "AQP-INFO.INFO_AQP-POOL|BatchDrainCollectable",
   "TS02-C3.AQP-POOL|CCp_BatchDrainOrtoFungible": "AQP-INFO.INFO_AQP-POOL|BatchDrainOrtoFungible",
   "TS02-C3.AQP-POOL|CCp_BatchDrainTrueFungible": "AQP-INFO.INFO_AQP-POOL|BatchDrainTrueFungible",
   "TS02-C3.AQP-POOL|CCp_BatchVacateCollectables": "AQP-INFO.INFO_AQP-POOL|BatchVacateCollectables",
   "TS02-C3.AQP-POOL|CCp_BatchVacateOrtoFungible": "AQP-INFO.INFO_AQP-POOL|BatchVacateOrtoFungible",
   "TS02-C3.AQP-POOL|CCp_BatchVacateTrueFungible": "AQP-INFO.INFO_AQP-POOL|BatchVacateTrueFungible",
+  "TS02-C3.AQP-POOL|CCp_ReassignCustodialBeneficiary": "AQP-INFO.INFO_AQP-POOL|ReassignCustodialBeneficiary",
+  "TS02-C3.AQP-POOL|CCp_ReleaseSpecialCustodial": "AQP-INFO.INFO_AQP-POOL|ReleaseSpecialCustodial",
+  "TS02-C3.AQP-POOL|CCp_StakeSpecialCustodial": "AQP-INFO.INFO_AQP-POOL|StakeSpecialCustodial",
   "TS02-C3.AQP-POOL|C_AbortVacate": "AQP-INFO.INFO_AQP-POOL|AbortVacate",
   "TS02-C3.AQP-POOL|C_AddScore": "AQP-INFO.INFO_AQP-POOL|AddScore",
+  "TS02-C3.AQP-POOL|C_BeginScoreRevoke": "AQP-INFO.INFO_AQP-POOL|BeginScoreRevoke",
   "TS02-C3.AQP-POOL|C_DisablePoolStake": "AQP-INFO.INFO_AQP-POOL|DisablePoolStake",
   "TS02-C3.AQP-POOL|C_EnablePoolStake": "AQP-INFO.INFO_AQP-POOL|EnablePoolStake",
   "TS02-C3.AQP-POOL|C_FinalizeVacate": "AQP-INFO.INFO_AQP-POOL|FinalizeVacate",
@@ -18500,6 +18897,7 @@
   "TS02-C3.AQP-POOL|C_SyncNonFungibleAnchors": "AQP-INFO.INFO_AQP-POOL|SyncNonFungibleAnchors",
   "TS02-C3.AQP-POOL|C_SyncSemiFungibleAnchors": "AQP-INFO.INFO_AQP-POOL|SyncSemiFungibleAnchors",
   "TS02-C3.AQP-POOL|C_SyncTrueFungibleAnchors": "AQP-INFO.INFO_AQP-POOL|SyncTrueFungibleAnchors",
+  "TS02-C3.AQP-POOL|Cp_DrainScoreSlice": "AQP-INFO.INFO_AQP-POOL|DrainScoreSlice",
   "TS02-C3.AQP-SCR|C_CombineTripletScoreModel": "AQP-INFO.INFO_AQP-SCR|CombineTripletScoreModel",
   "TS02-C3.AQP-SCR|C_ControlScore": "AQP-INFO.INFO_AQP-SCR|ControlScore",
   "TS02-C3.AQP-SCR|C_CreateScoreBoostClassLink": "AQP-INFO.INFO_AQP-SCR|CreateScoreBoostClassLink",
@@ -18528,5 +18926,5 @@
   "TS02-DPAD.DEMIPAD|C_RetrieveTrueFungible": "INFO-TWO.INFO_DEMIPAD|RetrieveTrueFungible",
   "TS02-DPAD.DEMIPAD|C_Withdraw": "INFO-TWO.INFO_DEMIPAD|Withdraw"
  },
- "surfaceHash": "ff39b4d11aa3b2ac"
+ "surfaceHash": "db8cbd29b5fa3de1"
 }

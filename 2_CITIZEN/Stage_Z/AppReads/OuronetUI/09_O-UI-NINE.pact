@@ -150,7 +150,6 @@
         (let
             (
                 (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                 (ref-SWPI:module{SwapperIssueV4} SWPI)
                 ;;
@@ -162,7 +161,19 @@
                 (
                     (token-worth-in-dollarz:decimal (* stoa-pid token-worth-in-stoa))
                 )
-                {"t1"                       : (ref-DPTF::UR_Name sleeping-id)
+                ;;`sleeping-id` IS A DPOF, AND THIS LINE READ IT AS A DPTF. A sleeping LP is an
+                ;;ORTOFUNGIBLE -- it has no row in `DPTF|PropertiesTable` -- so `DPTF::UR_Name`
+                ;;aborted the whole valuation with "No value found in table ... for key: Z|...".
+                ;;Every other field here already used `ref-DPOF`; only the NAME was wrong, which
+                ;;is why the row carried correct nonce data beside a zeroed everything-else.
+                ;;
+                ;;IT WAS INVISIBLE BECAUSE THE CALLER WRAPS THIS IN `try`. `URCv_04|LpEntry` has
+                ;;`(try (UDC_ZeroValuation) (URC_LpValuation ...))`, whose fallback is a full
+                ;;object rather than a `false`, so the abort degraded silently into a dead row:
+                ;;`entry-ok false`, `t1 "--"`, supplies 0.0 -- indistinguishable from a pool that
+                ;;genuinely has no sleeping counterpart. The UI rendered "No Existing Supply"
+                ;;over a batch of 10,000 LP. Measured on mainnet 2026-10-10.
+                {"t1"                       : (ref-DPOF::UR_Name sleeping-id)
                 ,"wallet-supply"            : wallet-supply
                 ,"dpof-supply"              : (ref-DPOF::UR_Supply sleeping-id)
                 ,"wallet-worth-in-stoa"     : (floor (* wallet-supply token-worth-in-stoa) 12)
@@ -345,7 +356,19 @@
                     ,"unsleep"      : (fold (and) true
                                         [iz-single iz-sleeping (not iz-smart)
                                          (= cull-amount nonce-supply)])
-                    ,"merge"        : (fold (and) true [(not iz-empty) iz-sleeping])
+                    ;;`not iz-single`, NOT `not iz-empty`. Merging one nonce is refused on chain
+                    ;;-- `VST|C>MERGE` calls `UEV_NoncesForMerging`, which enforces `>= 2` -- so
+                    ;;`not iz-empty` enabled a button for an operation that cannot succeed. The
+                    ;;user reached the modal, the INFO preview quoted a price and printed
+                    ;;"Succesfully merged ... Nonces [1]", and only the signed transaction would
+                    ;;have failed. Reported 2026-10-10; measured: the real path returns
+                    ;;"Merging requires at least 2 nonces" while the preview returns success.
+                    ;;
+                    ;;`slumber` ONE LINE BELOW IS THE PROOF THIS WAS A SLIP, not a reading of the
+                    ;;rule: it is the hibernating twin, it calls the SAME `UEV_NoncesForMerging`
+                    ;;via `VST|C>SLUMBER`, and it already said `not iz-single`. Two buttons over
+                    ;;one guard disagreed about that guard's precondition.
+                    ,"merge"        : (fold (and) true [(not iz-single) iz-sleeping])
                     ,"awake"        : (fold (and) true [iz-single iz-hibernated])
                     ,"slumber"      : (fold (and) true [(not iz-single) iz-hibernated])
                     ,"redeem"       : redeem-and-revert

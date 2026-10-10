@@ -13,7 +13,7 @@ which is not, because a claim of self-auditing that does not draw that line is m
 
 ## 1. What "auditable" has to mean at this size
 
-124,750 lines. An auditor cannot read them, and neither can a maintainer. So the only questions
+128,397 lines. An auditor cannot read them, and neither can a maintainer. So the only questions
 worth asking are the ones that can be asked of **all** of it at once.
 
 Consider a single ordinary question: *does any function that claims to be pure actually read a
@@ -21,7 +21,7 @@ table?*
 
 - **Without the naming**, that question has no addressable subject. There is no set of "functions
   that claim to be pure" — you would have to read every function, decide what it claims, then
-  check it. For 8,918 `defun` forms that is not an audit, it is a career.
+  check it. For 9,008 `defun` forms that is not an audit, it is a career.
 - **With the naming**, the subject is `^\(defun UC_`, and the check is whether any of them contains
   a table read. That is a script.
 

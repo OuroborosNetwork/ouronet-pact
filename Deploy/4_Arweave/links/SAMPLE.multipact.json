@@ -1,0 +1,64 @@
+{
+ "format": "ouronet-multipact",
+ "version": 1,
+ "name": "Multipact format fixture (not a real round)",
+ "created": "2026-10-08",
+ "source": "python3 REPL/tools/_arweave.py --multipact-fixture",
+ "network": "stoa",
+ "chainId": "0",
+ "draft": false,
+ "signer": {
+  "role": "UR_CreatorKonto",
+  "note": "fixture only -- do not sign"
+ },
+ "defaults": {
+  "gasLimit": 1800000
+ },
+ "groups": [
+  {
+   "label": "interfaces (order matters)",
+   "mode": "sequential",
+   "note": "a deploy round is sequential: a module may only call what already exists",
+   "transactions": [
+    {
+     "id": "01_iface",
+     "label": "DemoV1 interface",
+     "sha256": "51d8deb739ab3977aa3ac0d58fc982abdfa5304d8bfff225406b05426d2a66b3",
+     "bytes": 84,
+     "code": "(namespace \"ouronet-ns\")\n(interface DemoV1\n    (defun UC_Demo:integer (x:integer))\n)",
+     "gasLimit": 150000,
+     "estGas": 120000
+    }
+   ]
+  },
+  {
+   "label": "data batches (order does not matter)",
+   "mode": "parallel",
+   "note": "idempotent and disjoint, so they may fire together",
+   "transactions": [
+    {
+     "id": "02_batch_a",
+     "label": "batch A",
+     "sha256": "fa474ee8a549ae85e9842b06df25686762e3f775b2bd91ed7234a8760152e04d",
+     "bytes": 46,
+     "code": "(let\n    (\n        (n:integer 1)\n    )\n    n\n)",
+     "gasLimit": 1800000,
+     "estGas": 900000
+    },
+    {
+     "id": "03_batch_b",
+     "label": "batch B",
+     "sha256": "c7f09dc82f4c9446578de2db474b6fc293dec64139ff70f3037a5f61e6b283ac",
+     "bytes": 46,
+     "code": "(let\n    (\n        (n:integer 2)\n    )\n    n\n)",
+     "gasLimit": 1800000,
+     "estGas": 900000
+    }
+   ]
+  }
+ ],
+ "integrity": {
+  "algo": "sha256",
+  "body": "7dae0ed935fd921dfa435ce7b24367617c7211078a0db83f2a308a03e2f8f695"
+ }
+}

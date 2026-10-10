@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 23 of 24
 ;; This is STEP 23 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-22 must have run first, including the init steps between deploys.
-;; 1 source file(s), 0 gas measured in the REPL gas model, 92,205 bytes
+;; 1 source file(s), 0 gas measured in the REPL gas model, 108,597 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   2_CITIZEN/5_VaultsMinter/04_AQP-BOOT.pact
@@ -148,6 +148,24 @@
     (defun C_IssueGenericEarningVault:string
         (patron:string owner-konto:string vault-name:string stake-dptf-id:string reward-dptf-id:string)
     )
+    ;;THE FOUR LATE STEPS ARE DELIBERATELY NOT DECLARED HERE. Added to this interface first, on
+    ;;2026-10-08, and removed the same day once the chain was asked:
+    ;;
+    ;;    (describe-module "ouronet-ns.AcquisitionPoolBootV1")
+    ;;      hash BB3RVLU5ocTAc7PTAMZJC5lq4kUlVoGCkEm9xal1psY
+    ;;
+    ;;AcquisitionPoolBootV1 IS LIVE, and a deployed interface cannot be changed in Pact. Shipping
+    ;;it with four extra declarations would have failed the upgrade outright -- at signing time,
+    ;;on the owner's gas, with nothing before it to object.
+    ;;
+    ;;The alternatives were a V2 bump or module-only. Module-only, because NOTHING MODREFS THIS
+    ;;INTERFACE: its single use anywhere in the tree is AQP-BOOT's own `implements`, so it carries
+    ;;no coupling and a bump would buy nothing but a second live interface. The module still
+    ;;satisfies V1 -- every function V1 declares is still defined -- and a module may define more
+    ;;than its interface declares. `Deploy/PureV2/24_deploy.pact` records AQP-BOOT being upgraded
+    ;;module-only before, for this same reason.
+    ;;
+    ;;DO NOT ADD THEM BACK unless this interface is being versioned on purpose.
 
 )
 
@@ -199,8 +217,17 @@
     (defconst BOOT|SCORE_BRONZE:string                  "BronzeSnakePower")
     (defconst BOOT|SCORE_GOLDEN:string                  "GoldenSnakePower")
     (defconst BOOT|PRECISION:integer                    6)
-    (defconst BOOT|MX_FROZEN:decimal                    2.0)
-    (defconst BOOT|MX_SLEEPING:decimal                  2.0)
+    ;;THE CANONICAL DEFAULTS, 2026-10-10. These were 2.0 / 2.0, and that pair is now ILLEGAL on
+    ;;both of the rules AQP-SCORE enforces: a sleeping interval of 1.0 does not divide by three
+    ;;(`UC_MxSleepIntervalOk`), and 2.0 frozen is below the 3.0 floor that a 2.0 ceiling demands
+    ;;(`UC_MxOrderingOk`). Boot produced the only three LP scores on mainnet -- Bronze, Silver and
+    ;;Golden SnakePower all carry 2.0/2.0 because of these two lines -- so this is where the wrong
+    ;;numbers came from, and changing them here is what stops the next boot reintroducing them.
+    ;;Deliberately NOT a reference to AQP-SCORE's CT_MX_* constants: AQP-BOOT is a CITIZEN module
+    ;;and reaching into a sovereign module's constants for a value it passes as an ARGUMENT would
+    ;;couple a boot script to an internal it does not own.
+    (defconst BOOT|MX_FROZEN:decimal                    2.998)
+    (defconst BOOT|MX_SLEEPING:decimal                  1.999)
     (defconst BOOT|FVT_OURO_LP_FARM:string              "OuroLpFarm")
     (defconst BOOT|FVT_SUBSIDIARY_TREASURY:string       "SubsidiaryTreasury")
     (defconst BOOT|FVT_CODING_TREASURY:string           "CodingDivisionTreasury")
@@ -214,6 +241,31 @@
     ;;bloodshed score, and we need to be able to earn stuff via that score alone" -- so it earns,
     ;;and it earns through its own class-2 Treasury (the score is NF, and treasuries take SF/NF).
     (defconst BOOT|FVT_BLOODSHED_TREASURY:string "BloodshedTreasury")
+    ;;THE THREE LATE ENTITIES, added 2026-10-08. Steps 8/9/12 were written when the boot ladder
+    ;;owned every score it wired. Three scores exist that it does not:
+    ;;
+    ;;  NosferatuDracula  class 4 (DPNF)  pool DHNosferatu     -- issued from the UI
+    ;;  WonderCoach       class 3 (DPSF)  pool DHWonderCoach   -- issued from the UI
+    ;;  StoicPower        class 1 (DPTF)  pool NONE            -- issued from the UI
+    ;;
+    ;;Step 7 already attaches the first two to their pools (dh-score-ids[9..10]); what it has
+    ;;never had is an FVT for either, so Step 9 could not admit them and their pools would stay
+    ;;unstakeable however many aggregators existed. StoicPower has neither pool nor FVT.
+    (defconst BOOT|FVT_NOSFERATU_TREASURY:string        "NosferatuTreasury")
+    (defconst BOOT|FVT_WONDERCOACH_TREASURY:string      "WonderCoachTreasury")
+    (defconst BOOT|FVT_STOICISM_VAULT:string            "StoicismVault")
+    (defconst BOOT|POOL_STOICISM:string                 "StoicismPool")
+    ;;CLASS CONSTANTS, named rather than written as digits at the call site. The two sovereign
+    ;;admission rules disagree about SF/NF (see Step 8's @doc), so the one thing that must not be
+    ;;a bare literal is the class.
+    ;;  treasury(2) admits score-class 3/4  -- NosferatuDracula(4), WonderCoach(3)
+    ;;  vault(1)    admits score-class 1/2  -- StoicPower(1)
+    ;;TF-in/TF-out is the case BOTH rules describe identically, so the Stoicism vault does not
+    ;;depend on how that dispute is settled; the two treasuries follow the same class the four
+    ;;existing ones were issued at.
+    (defconst BOOT|FVT_CLASS_VAULT:integer              1)
+    (defconst BOOT|FVT_CLASS_TREASURY:integer           2)
+    (defconst BOOT|POOL_CLASS_TF:integer                1)
 
     ;;<---------------------------------------------------------------------->
     ;; CUSTODIANS DELEGATED-STAKING VAULT (Steps 13-14). Added 2026-09-19.
@@ -1343,6 +1395,198 @@
                             patron fee-per-mille bronze-id silver-id golden-id
                         ]
                     )
+                )
+            )
+        )
+    )
+    ;;<=========================================================================>
+    ;;  THE LATE STEPS — 7b, 8b, 9b, 12b   (added 2026-10-08)
+    ;;
+    ;;  WHY SEPARATE STEPS AND NOT EDITS TO 7/8/9/12.
+    ;;    Steps 7 and 8 HAVE ALREADY RUN ON MAINNET. Step 8 minted six FVT entities, and
+    ;;    `C_Issue` aborts on a duplicate name, so adding three entities to Step 8 would make
+    ;;    that step permanently unrunnable rather than usefully extended. Step 7 likewise
+    ;;    already created its seven pools. An additive step can run NOW, against the chain as
+    ;;    it actually is; an edited one could only run on a chain that no longer exists.
+    ;;
+    ;;    Steps 9 and 12 have NOT run, so they COULD have been widened -- but Step 9 already
+    ;;    takes 11 arguments and Step 12 nine, and both are hand-fed on mainnet from earlier
+    ;;    transactions' output strings. Widening them to 17 and 15 would put the new work and
+    ;;    the old work in one irreversible paste. These stay small and are run beside them.
+    ;;
+    ;;  ORDER: 7b and 8b are independent of each other and of everything else. 9b needs 8b
+    ;;  (and, for StoicPower, 7b). 12b needs 8b. Nothing here needs 9 or 12 to have run.
+    ;;<=========================================================================>
+    (defun C_Step7b_CreateStoicismPool:string
+        (patron:string stoicism-dptf-id:string stoic-power-score-id:string)
+        @doc "Step 7b — The one pool Step 7 never made. Issues <StoicismPool> at aqp-class 1 \
+            \ (non-LP true fungible) over the STOICISM DPTF and employs the existing StoicPower \
+            \ score in it. Step 7 builds pools for the six DH collections and the OURO LP; \
+            \ StoicPower is a true-fungible score over a plain token and belongs to neither \
+            \ group, so it was left with no pool at all -- the only score on chain in that state. \
+            \ NEXT=Step8b (the vault), then Step9b (admit), then Step12b (reward link)."
+        ;;
+        ;; INPUT
+        ;;   stoicism-dptf-id    — the STOICISM DPTF id (the token users stake)
+        ;;   stoic-power-score-id — the EXISTING StoicPower score, carried from its issue tx
+        ;;
+        ;; WHY NOT `C_IssueGenericEarningVault`, WHICH DOES ALL OF THIS IN ONE CALL:
+        ;;   because it MINTS ITS OWN SCORE (`<name>Score`). StoicPower already exists, with its
+        ;;   own weighting, and the request is to build a pool FOR IT. Calling the generic vault
+        ;;   would stand up a second, empty `StoicismScore` beside it and leave StoicPower exactly
+        ;;   as orphaned as it is now. The generic function remains the right tool for a vault
+        ;;   that has no score yet; this is the variant for one that does.
+        (with-capability (GOV|AQP_BOOT_ADMIN)
+            (let
+                (
+                    (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+                    (pool-id:string (ref-U|DALOS::UDC_Makeid BOOT|POOL_STOICISM))
+                    ;;THE STAKED ASSET'S OWNER, DERIVED -- not read from the pool row, which this
+                    ;;transaction has not created yet. Step 7 aborted for exactly that reason on
+                    ;;every chain until 2026-10-06: a Pact `let` is EAGER, so a read of
+                    ;;`AQP|T|Pool` for a pool created later in the same body runs first and fails.
+                    ;;`URC_AqpOwnerKontoFromClassAndAsset` is documented for the pre-pool-row case
+                    ;;and resolves the same value the row would have held.
+                    (stake-asset-owner:string
+                        (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset
+                            BOOT|POOL_CLASS_TF stoicism-dptf-id))
+                )
+                (ref-TS02-C3::AQP-POOL|C_Issue
+                    patron stake-asset-owner BOOT|POOL_STOICISM stoicism-dptf-id BOOT|POOL_CLASS_TF)
+                ;;The executor on C_AddScore is the ASSET's owner, matching the issue above and
+                ;;`AQP-FVT|C_IssueGenericEarningVault`'s own sequence -- a vault operator may
+                ;;stake a token somebody else issued, so this is not necessarily `patron`.
+                (ref-TS02-C3::AQP-POOL|C_AddScore
+                    patron stake-asset-owner pool-id stoic-power-score-id)
+                (format "AQP-BOOT Step 7b done. pool={} asset={} score={}. NEXT=Step8b:C_IssueLateFvtEntities."
+                    [pool-id stoicism-dptf-id stoic-power-score-id]
+                )
+            )
+        )
+    )
+    (defun C_Step8b_IssueLateFvtEntities:string
+        (patron:string owner-konto:string)
+        @doc "Step 8b — The three FVT entities Step 8 never issued. NosferatuTreasury and \
+            \ WonderCoachTreasury at fvt-class 2 (treasury), matching the four Step 8 issued for \
+            \ the other collection cores; StoicismVault at fvt-class 1 (vault), because \
+            \ StoicPower is a true fungible and treasury admits only SF/NF. All three take the \
+            \ BAR common denominator -- only a farm carries a real one. \
+            \ SAFE TO RUN AFTER STEP 8: these are three NEW names, so nothing collides. \
+            \ NEXT=Step9b with the three ids below."
+        ;;
+        ;; INPUT — patron, owner-konto (the FVT owner; the same account Step 8 used)
+        ;; OUTPUT — three fvt-ids, to be pasted into Step 9b AND Step 12b
+        (with-capability (GOV|AQP_BOOT_ADMIN)
+            (let
+                (
+                    (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+                    (nosferatu-treasury-id:string
+                        (ref-U|DALOS::UDC_Makeid BOOT|FVT_NOSFERATU_TREASURY))
+                    (wondercoach-treasury-id:string
+                        (ref-U|DALOS::UDC_Makeid BOOT|FVT_WONDERCOACH_TREASURY))
+                    (stoicism-vault-id:string
+                        (ref-U|DALOS::UDC_Makeid BOOT|FVT_STOICISM_VAULT))
+                )
+                (ref-TS02-C3::AQP-FVT|C_Issue patron owner-konto
+                    BOOT|FVT_NOSFERATU_TREASURY BOOT|FVT_CLASS_TREASURY BOOT|TREASURY_COMMON)
+                (ref-TS02-C3::AQP-FVT|C_Issue patron owner-konto
+                    BOOT|FVT_WONDERCOACH_TREASURY BOOT|FVT_CLASS_TREASURY BOOT|TREASURY_COMMON)
+                (ref-TS02-C3::AQP-FVT|C_Issue patron owner-konto
+                    BOOT|FVT_STOICISM_VAULT BOOT|FVT_CLASS_VAULT BOOT|TREASURY_COMMON)
+                (format "AQP-BOOT Step 8b done. fvt-ids=[nosferatu-treasury={} wondercoach-treasury={} stoicism-vault={}]. NEXT=Step9b:C_AddLateFvtScoreEntities."
+                    [nosferatu-treasury-id wondercoach-treasury-id stoicism-vault-id]
+                )
+            )
+        )
+    )
+    (defun C_Step9b_AddLateFvtScoreEntities:string
+        (patron:string nosferatu-treasury-id:string wondercoach-treasury-id:string stoicism-vault-id:string core-nosferatu-score-id:string core-wondercoach-score-id:string stoic-power-score-id:string)
+        @doc "Step 9b — Admit the three late scores (score-entity type 1) on the three Step 8b \
+            \ entities: NosferatuDracula -> NosferatuTreasury, WonderCoach -> WonderCoachTreasury, \
+            \ StoicPower -> StoicismVault. Independent of Step 9, which admits the nine scores \
+            \ the boot ladder itself created. \
+            \ A SCORE MAY BE ADMITTED ONCE: fvt-link is written once and never re-pointed, so \
+            \ running this twice aborts rather than moving anything."
+        ;;
+        ;; INPUT — fvt-ids from Step 8b's output; the three score ids from their issue txs
+        ;;
+        ;; HARD PRECONDITION — EVERY SCORE HERE MUST ALREADY BE EMPLOYED IN A POOL.
+        ;;   CORRECTED 2026-10-08. This note used to say Step 7b "must have run, or it has no
+        ;;   pool and the aggregate still refuses its stakes" -- i.e. that admitting a pool-less
+        ;;   score merely under-earns. It does not. It ABORTS:
+        ;;
+        ;;     No value found in table ouronet-ns.AQP-POOL_AQP|T|Pool for key: |
+        ;;
+        ;;   `URC_ResolveScoreEntitySwpair` (05_FVT.pact:1334) binds
+        ;;   `(asset-id (UR_AQP|PoolAssetId pool-id))` in an EAGER `let`, so the pool row is read
+        ;;   even at fvt-class 1/2 where the value is never used. A BAR pool-link is therefore
+        ;;   fatal at admission, not at earning time.
+        ;;
+        ;;   On chain the two core scores are already pooled by Step 7; StoicPower is not, so
+        ;;   STEP 7b MUST LAND BEFORE THIS STEP. Found by the REPL fixture, which minted the three
+        ;;   scores and went straight here -- the error above is verbatim from that run.
+        (with-capability (GOV|AQP_BOOT_ADMIN)
+            (let
+                (
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+                )
+                (ref-TS02-C3::AQP-FVT|C_AddScoreEntity patron
+                    (AQP-FVT.UR_FVT|OwnerKonto nosferatu-treasury-id)
+                    nosferatu-treasury-id BOOT|SCORE_ENTITY_SCORE core-nosferatu-score-id)
+                (ref-TS02-C3::AQP-FVT|C_AddScoreEntity patron
+                    (AQP-FVT.UR_FVT|OwnerKonto wondercoach-treasury-id)
+                    wondercoach-treasury-id BOOT|SCORE_ENTITY_SCORE core-wondercoach-score-id)
+                (ref-TS02-C3::AQP-FVT|C_AddScoreEntity patron
+                    (AQP-FVT.UR_FVT|OwnerKonto stoicism-vault-id)
+                    stoicism-vault-id BOOT|SCORE_ENTITY_SCORE stoic-power-score-id)
+                (format "AQP-BOOT Step 9b done. admitted=[{}->{} {}->{} {}->{}]. NEXT=Step12b:C_AddLateFvtRewardLinks."
+                    [
+                        core-nosferatu-score-id nosferatu-treasury-id
+                        core-wondercoach-score-id wondercoach-treasury-id
+                        stoic-power-score-id stoicism-vault-id
+                    ]
+                )
+            )
+        )
+    )
+    (defun C_Step12b_AddLateFvtRewardLinks:string
+        (patron:string nosferatu-treasury-id:string wondercoach-treasury-id:string stoicism-vault-id:string nosferatu-reward-id:string wondercoach-reward-id:string stoicism-reward-id:string)
+        @doc "Step 12b — Register one reward token on each Step 8b entity. \
+            \ NOT OPTIONAL: an employed score whose FVT has no enabled reward token makes every \
+            \ stake abort in the FVT pipeline (05_FVT.pact:1210), so Steps 7b/8b/9b without this \
+            \ one build three aggregators nobody can stake into. \
+            \ THE REWARD TOKENS ARE PARAMETERS, NOT BAKED IN. Step 12 hardcodes its mapping \
+            \ (sub/snakes->Auryn, coding->Wstoa, shares->Ouroboros, bloodshed->both) because \
+            \ those were ruled on. Only the Stoicism one has been: owner, 2026-10-08 -- stake \
+            \ Stoicism, earn WSTOA. What NosferatuTreasury and WonderCoachTreasury should pay \
+            \ has not, so this step asks rather than guessing."
+        ;;
+        ;; INPUT — fvt-ids from Step 8b; three reward DPTF ids chosen by the operator
+        ;;   stoicism-reward-id — WSTOA, per the owner ruling above
+        (with-capability (GOV|AQP_BOOT_ADMIN)
+            (let
+                (
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+                    (ref-U|CT:module{OuronetConstantsV2} U|CT)
+                    (bar:string (ref-U|CT::CT_BAR))
+                )
+                (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron
+                    (AQP-FVT.UR_FVT|OwnerKonto nosferatu-treasury-id)
+                    nosferatu-treasury-id nosferatu-reward-id false bar)
+                (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron
+                    (AQP-FVT.UR_FVT|OwnerKonto wondercoach-treasury-id)
+                    wondercoach-treasury-id wondercoach-reward-id false bar)
+                (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron
+                    (AQP-FVT.UR_FVT|OwnerKonto stoicism-vault-id)
+                    stoicism-vault-id stoicism-reward-id false bar)
+                (format "AQP-BOOT Step 12b done. reward-links=[{}<-{} {}<-{} {}<-{}]. The three late entities are now stakeable."
+                    [
+                        nosferatu-treasury-id nosferatu-reward-id
+                        wondercoach-treasury-id wondercoach-reward-id
+                        stoicism-vault-id stoicism-reward-id
+                    ]
                 )
             )
         )

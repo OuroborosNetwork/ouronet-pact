@@ -99,7 +99,7 @@ The tree is split `STAGE_01` / `STAGE_02`, and it is **chronology, not architect
 | | |
 |---|---|
 | **Stage 1** | identity, IGNIS, the fungible types, vesting, autostake, the swap family. 46 files, 58,687 lines. |
-| **Stage 2** | collectables, equity, the launchpad, the acquisition pools. 29 files, 48,918 lines. |
+| **Stage 2** | collectables, equity, the launchpad, the acquisition pools. 29 files, 48,923 lines. |
 
 Stage 2 was built after Stage 1 was live, and depends on it. Nothing is duplicated between them —
 Stage 2's collectables use Stage 1's accounts and Stage 1's gas. Each stage has its own Talos
@@ -132,7 +132,7 @@ Stated, because a mental model that hides something important is worse than a co
 ## Sources
 
 Per-layer figures counted 2026-09-27 with `find <dir> -name '*.pact'` and `-exec cat {} + | wc -l`;
-they sum to the 107 files and 124,750 lines on the front page. Layer membership is the directory
+they sum to the 107 files and 128,397 lines on the front page. Layer membership is the directory
 structure of `1_SOVEREIGN/` and `2_CITIZEN/`; module roles from
 `OuronetInformational/MODULE-INDEX.md` (generated) and `MODULE_ARCHITECTURE.md`. **Two counts here were wrong in the first draft and the correction is worth
 keeping**, because it is the failure mode this documentation is built against. The read layer was

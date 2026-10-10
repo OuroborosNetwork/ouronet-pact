@@ -507,7 +507,7 @@
             ;;before ownership is ever consulted. A test written this way passes identically with
             ;;`CAP_EnforceAccountOwnership` deleted.
             (expect-failure "<<TX-SCORE-12>> SHADOW: precision 2 is refused by the argument enforce, NOT by ownership"
-                "Invalid precision, score-class, mx-frozen, mx-sleeping, mx-hibernated or nft-score-model"
+                "Invalid precision, score-class, nft-score-model, or a multiplier below 1.0"
                 (ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore attacker victim score-name 2 true))
             ;;THE GATE. The identical call with precision 3. The message changes to a keyset failure
             ;;naming the VICTIM's key, so the refusal is attributable to the ownership call and to
@@ -1128,6 +1128,239 @@
 ;;ROLLBACK: the company issued above exists only for this transaction. Nothing downstream in this
 ;;suite, or in the seven entrypoints that load it, sees an extra collection.
 (rollback-tx)
+(begin-tx "TX-SCORE-16 - sleeping-LP duration scale: rounding, clamp, exact ceiling")
+(print "")
+(print "=== TX-SCORE-16 — sleeping multiplier is a CEILING reached over 300 months =====")
+(namespace "ouronet-ns")
+;;==== TX-SCORE-16 · 01 · pure duration maths ====
+(print "--- [TX-SCORE-16 · 01 · pure duration maths] ---")
+;;WHY THESE ARE ASSERTED AT ALL: `mx-sleeping` used to be a FLAT factor, so a one-day sleep and
+;;a twenty-five year sleep earned the same multiplier and the difference was free money. It is
+;;now a CEILING approached over 300 months of 2,628,000 s. Both halves of that sentence are
+;;load-bearing and both are pinned here, because neither can be seen from a passing stake.
+(let
+    (
+        (MONTH:decimal 2628000.0)
+    )
+    (map print
+        [
+          ;;ROUNDING, NOT FLOORING, and this is the assertion that would have caught the
+          ;;plausible implementation. A holder sleeping 3 years stakes some seconds later and
+          ;;has 35.9996 months left; floor gives 35 and silently short-changes every sleep by
+          ;;the gap between the two transactions.
+          (expect "<<TX-SCORE-16>> a hair under 36 months rounds UP to 36"
+              36 (AQP-SCORE.UC_SleepMonthsRemaining (- (* 36.0 MONTH) 3600.0)))
+          (expect "<<TX-SCORE-16>> a hair over 36 months stays 36"
+              36 (AQP-SCORE.UC_SleepMonthsRemaining (+ (* 36.0 MONTH) 3600.0)))
+          (expect "<<TX-SCORE-16>> exactly one month is 1"
+              1 (AQP-SCORE.UC_SleepMonthsRemaining MONTH))
+          ;;CLAMPED BOTH ENDS. A matured batch is 0 (no bonus); nothing may exceed the 25-year
+          ;;horizon `VST|C>SLEEP` itself refuses to go past.
+          (expect "<<TX-SCORE-16>> a matured batch is 0 months, never negative"
+              0 (AQP-SCORE.UC_SleepMonthsRemaining -500000.0))
+          (expect "<<TX-SCORE-16>> the full 25-year horizon is exactly 300 months"
+              300 (AQP-SCORE.UC_SleepMonthsRemaining 788400000.0))
+          (expect "<<TX-SCORE-16>> beyond the horizon clamps to 300"
+              300 (AQP-SCORE.UC_SleepMonthsRemaining 999999999.0))
+        ]
+    )
+)
+;;==== TX-SCORE-16 · 02 · the ceiling is reached EXACTLY ====
+(print "--- [TX-SCORE-16 · 02 · the ceiling is reached EXACTLY] ---")
+;;THE REASON THE FORMULA MULTIPLIES BEFORE DIVIDING. A per-month step computed first
+;;(0.00333 for a 1.999 ceiling) and multiplied by 300 does NOT return 1.999 — it returns
+;;0.999 of it and the top of the scale is never reachable. Cancelling the 300 instead makes
+;;the ceiling exact for ANY value, which is what removes the "interval must divide by 300"
+;;rule and the 5-decimal field it would have required.
+(map print
+    [
+      (expect "<<TX-SCORE-16>> 1.999 ceiling is hit EXACTLY at 300 months"
+          1.999 (AQP-SCORE.UC_SleepMxAtMonths 1.999 300))
+      (expect "<<TX-SCORE-16>> 2.2 ceiling is hit EXACTLY at 300 months"
+          2.2 (AQP-SCORE.UC_SleepMxAtMonths 2.2 300))
+      ;;A ceiling that does NOT divide evenly by 300 — the case the dropped rule existed for.
+      (expect "<<TX-SCORE-16>> an awkward 1.7777 ceiling is still exact at full term"
+          1.7777 (AQP-SCORE.UC_SleepMxAtMonths 1.7777 300))
+      (expect "<<TX-SCORE-16>> zero months earns the PLAIN rate, not the ceiling"
+          1.0 (AQP-SCORE.UC_SleepMxAtMonths 1.999 0))
+      (expect "<<TX-SCORE-16>> half term earns half the spread"
+          1.4995 (AQP-SCORE.UC_SleepMxAtMonths 1.999 150))
+      ;;The per-month increment the owner worried about needing 5 stored decimals. It is a
+      ;;DERIVED value and never a field, which is why 4-decimal `UEV_Fee` is no constraint.
+      (expect "<<TX-SCORE-16>> one month of a 1.999 ceiling is 1.00333"
+          1.00333 (AQP-SCORE.UC_SleepMxAtMonths 1.999 1))
+    ]
+)
+;;==== TX-SCORE-16 · 03 · monotonic — longer lock is never worth less ====
+(print "--- [TX-SCORE-16 · 03 · monotonic] ---")
+;;THE PROPERTY THE WHOLE MECHANISM RESTS ON. If a longer lock could ever be worth less, the
+;;gaming this replaces would simply move somewhere else.
+(let
+    (
+        (ms:[integer] [0 1 12 37 150 299 300])
+    )
+    (print
+        (expect "<<TX-SCORE-16>> the scale is strictly increasing in months"
+            true
+            (fold (and) true
+                (zip (lambda (a:decimal b:decimal) (< a b))
+                    (map (lambda (k:integer) (AQP-SCORE.UC_SleepMxAtMonths 1.999 k)) (take 6 ms))
+                    (map (lambda (k:integer) (AQP-SCORE.UC_SleepMxAtMonths 1.999 k)) (drop 1 ms))))))
+)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+
+(begin-tx "TX-SCORE-17 - the multiplier setter: invariant, ownership, and the live write")
+(print "")
+(print "=== TX-SCORE-17 — mx setter: ordering invariant + owner gate ===================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-SCORE-17 · 01 · the ordering invariant, pure ====
+(print "--- [TX-SCORE-17 · 01 · ordering invariant] ---")
+;;FROZEN MUST OUT-RANK SLEEPING BY THE SAME SPREAD SLEEPING OUT-RANKS PLAIN STAKING:
+;;    mx-frozen >= (2 x mx-sleeping) - 1
+;;A freeze is IRREVERSIBLE -- there is no unfreeze in the tree. If frozen merely edged ahead,
+;;surrendering an asset forever would be worth a rounding error more than a lock that expires,
+;;and nobody would ever freeze. The ordering has to be worth something.
+(map print
+    [
+      (expect "<<TX-SCORE-17>> 1.999 sleeping needs 2.998 frozen — exactly on the floor passes"
+          true (AQP-SCORE.UC_MxOrderingOk 2.998 1.999))
+      (expect "<<TX-SCORE-17>> a hair under the floor is refused"
+          false (AQP-SCORE.UC_MxOrderingOk 2.997 1.999))
+      (expect "<<TX-SCORE-17>> 2.2 sleeping needs 3.4 frozen"
+          true (AQP-SCORE.UC_MxOrderingOk 3.4 2.2))
+      (expect "<<TX-SCORE-17>> 2.2 sleeping with 3.0 frozen is refused"
+          false (AQP-SCORE.UC_MxOrderingOk 3.0 2.2))
+      ;;THE LIVE CHAIN TODAY fails this — 2.0/2.0 has frozen not out-ranking sleeping at all.
+      ;;Asserted so the starting state is on the record rather than remembered.
+      (expect "<<TX-SCORE-17>> the pre-round live config (2.0/2.0) does NOT satisfy it"
+          false (AQP-SCORE.UC_MxOrderingOk 2.0 2.0))
+      (expect "<<TX-SCORE-17>> 1x/1x (no bonus at all) is legal — the floor is 2*1-1 = 1"
+          true (AQP-SCORE.UC_MxOrderingOk 1.0 1.0))
+    ]
+)
+;;==== TX-SCORE-17 · 02 · the live write, end to end through Talos ====
+(print "--- [TX-SCORE-17 · 02 · live write through Talos] ---")
+;;COMPILING IS NOT WORKING. The invariant above is pure arithmetic; this exercises the actual
+;;path a signer takes -- Talos wrapper, IGNIS collection, the AQP-POOL emptiness gate, and
+;;AQP-SCORE's owner/fee/ordering capability -- and reads the stored row back afterwards.
+(let
+    (
+        (patron:string KST.ANHD)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+    )
+    (let
+        (
+            ;;BootPhaseProbe is the score this suite already issues and owns (TX-SCORE-02). Reusing it
+            ;;keeps the test self-contained; the setter is score-class agnostic.
+            (sid:string (ref-U|DALOS::UDC_Makeid "BootPhaseProbe"))
+        )
+        (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+        (print (format "<(pre mx frozen/sleeping)> => {} / {}"
+            [(ref-SCR::UR_SCR|ScoreMxFrozen sid) (ref-SCR::UR_SCR|ScoreMxSleeping sid)]))
+        (print (format "<(TS02-C3.AQP-POOL|CC_UpdateScoreMultipliers 2.998 / 1.999 / 1.5)> => \"{}\""
+            [(ref-TS02-C3::AQP-POOL|CC_UpdateScoreMultipliers patron
+                (ref-SCR::UR_SCR|ScoreOwnerKonto sid) sid 2.998 1.999 1.5)]))
+        (map print
+            [
+              (expect "<<TX-SCORE-17>> mx-frozen is stored" 2.998 (ref-SCR::UR_SCR|ScoreMxFrozen sid))
+              (expect "<<TX-SCORE-17>> mx-sleeping is stored as the CEILING" 1.999 (ref-SCR::UR_SCR|ScoreMxSleeping sid))
+              ;;`mx-hibernated` BECAME SETTABLE 2026-10-10, and before that it was unreachable:
+              ;;issuance hard-coded 1.0 for every class but 2 and no setter existed at all. It
+              ;;takes NO ordering constraint against the other two -- a freeze out-ranks a sleep
+              ;;because both are commitments and the irreversible one must pay more, while
+              ;;hibernation is not a commitment in that sense, so 1.5 against a 1.999 sleeping
+              ;;ceiling is a legal configuration rather than an inverted one.
+              (expect "<<TX-SCORE-17>> mx-hibernated is stored too, and is NOT bound by the frozen/sleeping ordering"
+                  1.5 (ref-SCR::UR_SCR|ScoreMxHibernated sid))
+            ]
+        )
+        ;;THE INVARIANT IS ENFORCED ON THE REAL PATH, not only in the pure helper. 2.5 frozen
+        ;;against 1.999 sleeping is below the 2.998 floor and must be refused.
+        (print
+            (expect-failure "<<TX-SCORE-17>> a frozen value below the ordering floor is REFUSED"
+                "every multiplier must be >= 1.0, (mx-sleeping - 1) must divide by 3 exactly, and mx-frozen >= 2*mx-sleeping - 1"
+                (ref-TS02-C3::AQP-POOL|CC_UpdateScoreMultipliers patron
+                    (ref-SCR::UR_SCR|ScoreOwnerKonto sid) sid 2.5 1.999 1.0)))
+        ;;AND THE SLEEPING INTERVAL MUST DIVIDE BY THREE (owner ruling 2026-10-10). 1.5 gives an
+        ;;interval of 0.5, which is 5000 units of 0.0001 and leaves 2 over -- so the three equal
+        ;;steps the scale is built around would not land on representable values.
+        ;;
+        ;;PAIRED WITH ITS OWN FROZEN CEILING SO THE ORDERING RULE CANNOT BE WHAT REFUSES IT.
+        ;;2.0 against 1.5 sleeping is exactly the 2*1.5-1 floor, so it SATISFIES the ordering
+        ;;clause; the only thing left to object is the interval. Picking a frozen value that
+        ;;failed both would have passed this test while proving nothing about the new rule --
+        ;;the same shadowed-guard trap the ordering fixture above was written to avoid.
+        (print
+            (expect-failure "<<TX-SCORE-17>> a sleeping interval NOT divisible by three is REFUSED"
+                "every multiplier must be >= 1.0, (mx-sleeping - 1) must divide by 3 exactly, and mx-frozen >= 2*mx-sleeping - 1"
+                (ref-TS02-C3::AQP-POOL|CC_UpdateScoreMultipliers patron
+                    (ref-SCR::UR_SCR|ScoreOwnerKonto sid) sid 2.0 1.5 1.0)))
+        ;;AND THE DEFAULT PAIR IS ACCEPTED -- the rule must admit the values the chain ships with,
+        ;;or every score becomes un-updatable. 1.999 -> interval 0.999 -> 9990 units -> divides by
+        ;;three exactly, and 2.998 sits on the ordering floor.
+        (print
+            (expect "<<TX-SCORE-17>> the canonical default triple is ACCEPTED"
+                1.999
+                (let ((_:string (ref-TS02-C3::AQP-POOL|CC_UpdateScoreMultipliers patron
+                                   (ref-SCR::UR_SCR|ScoreOwnerKonto sid) sid 2.998 1.999 1.0)))
+                    (ref-SCR::UR_SCR|ScoreMxSleeping sid))))
+        ;;AND NO MULTIPLIER MAY GO BELOW 1.0 (owner ruling 2026-10-10). A value under 1.0 would
+        ;;PENALISE the holder for using the instrument the score exists to reward, and it reads
+        ;;like a weight, so nothing about the number itself would look wrong.
+        ;;
+        ;;0.0, NOT 0.5, AND THAT CHOICE IS THE TEST. `UEV_Fee` runs first and accepts exactly
+        ;;`-1.0`, `0.0`, or `[1.0 .. 999.0]` -- so 0.5 is refused by the FEE validator and the
+        ;;1.0 floor is never reached. A test written with 0.5 passes while saying nothing: delete
+        ;;the floor and it still goes green. 0.0 SATISFIES `UEV_Fee` and is below 1.0, so the
+        ;;floor is the only thing left that can refuse it. (CLAUDE.md, "authorisation precedes
+        ;;validation": pick the fixture that gets past the first guard.)
+        ;;
+        ;;0.0 is also the value that would do the damage -- it zeroes the leg's entire weight --
+        ;;and `-1.0`, the other one `UEV_Fee` waves through, is a sentinel.
+        ;;
+        ;;Asserted on the HIBERNATING slot because it is the one with no ordering partner: the
+        ;;frozen/sleeping pair would also trip `UC_MxOrderingOk`, so a refusal there proves less.
+        (print
+            (expect-failure "<<TX-SCORE-17>> a hibernating multiplier of 0.0 is REFUSED — it clears UEV_Fee, so only the 1.0 floor can stop it"
+                "every multiplier must be >= 1.0"
+                (ref-TS02-C3::AQP-POOL|CC_UpdateScoreMultipliers patron
+                    (ref-SCR::UR_SCR|ScoreOwnerKonto sid) sid 2.998 1.999 0.0)))
+        ;;TWO GUARDS STAND HERE AND EACH NEEDS ITS OWN FIXTURE, because whichever fires first
+        ;;hides the other. The executor BINDING (`executor == score owner`) refuses a wrong NAME;
+        ;;the ownership KEYSET refuses a wrong SIGNER. A single "EMMA tries it" case trips the
+        ;;binding and would pass unchanged with the keyset deleted — the exact shape CLAUDE.md
+        ;;records under "authorisation precedes validation".
+        ;;
+        ;;(a) WRONG NAME, right signer: ANHD signs and names EMMA as executor. The binding is the
+        ;;    only thing that can refuse this.
+        (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+        (print
+            (expect-failure "<<TX-SCORE-17>> naming a non-owner as executor is REFUSED (the binding)"
+                "executor must be the score owner"
+                (ref-TS02-C3::AQP-POOL|CC_UpdateScoreMultipliers patron KST.EMMA sid 3.4 2.2 1.0)))
+        ;;(b) RIGHT NAME, wrong signer: the executor IS the owner, so the binding passes and the
+        ;;    keyset is the only thing left that can refuse. This is the case that proves the
+        ;;    ownership check is actually wired.
+        (env-sigs [{ "key": "PK_Emma", "caps": [] }])
+        (print
+            (expect-failure "<<TX-SCORE-17>> the owner's name without the owner's key is REFUSED (the keyset)"
+                "Keyset failure"
+                (ref-TS02-C3::AQP-POOL|CC_UpdateScoreMultipliers patron
+                    (ref-SCR::UR_SCR|ScoreOwnerKonto sid) sid 3.4 2.2 1.0)))
+        (env-sigs [])
+    )
+)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+
 (print "")
 (print "=== END TX-SCORE-15b · FILE [6.2.2]_AQP-SCORE.repl DONE ======================")
 (print "=== AQP-FAST: TX-SCORE-01–09,11–14b run; FULL: restore TX-SCORE-10 + [6.2.1] TX006–007 ===")

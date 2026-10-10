@@ -10,7 +10,7 @@ That is the whole idea. What follows is the system, and the next chapter
 
 ## 1. Why a codebase needs this
 
-124,750 lines of Pact. At that size the question stops being *"is this function correct"* and
+128,397 lines of Pact. At that size the question stops being *"is this function correct"* and
 becomes *"can anyone tell?"* — and the answer depends almost entirely on whether a reader can know
 what a function is **allowed** to do without reading it.
 
@@ -28,7 +28,7 @@ number look the same from the call site.
 
 StoicSyntax makes all three visible in the identifier. It was designed before the bulk of the code
 was written, which is why it is consistent enough to be checkable — retrofitting a naming
-discipline across 8,918 function forms is not a thing anyone does.
+discipline across 9,008 function forms is not a thing anyone does.
 
 ## 2. The composition rule
 
@@ -105,7 +105,7 @@ grep -rhoE "^\s*\(defun <PREFIX>_" --include=*.pact 1_SOVEREIGN 2_CITIZEN | wc -
 So a **role variant** counts separately — `UCv_` and `UCx_` are not in the `UC_` row — and a
 **scoped** form is not counted at all: `DPTF|C_Transfer` is a `C_` client entrypoint, but it does
 not match `^\(defun C_`. That is why the `C_` row reads 604 while the family including scoped
-forms is roughly twice that, and why these rows do **not** sum to the 8,918 `defun` forms on the
+forms is roughly twice that, and why these rows do **not** sum to the 9,008 `defun` forms on the
 front page.
 
 This is stated rather than smoothed over because the first draft of this table did smooth it over
@@ -194,7 +194,7 @@ Three things follow mechanically from the naming, and they are the reason it ear
 
 1. **A reviewer can read a call site.** `(UC_Split a b)` cannot touch a table. `(URH_Holdings acct)`
    scans. You know before you look.
-2. **A machine can check it.** `_conformance.py` runs 26 structural rules across 124,750 lines and
+2. **A machine can check it.** `_conformance.py` runs 26 structural rules across 128,397 lines and
    reports **0 violations** — `UC_` never reads, `UR_` never enforces, `XI_` never validates, `XE_`
    always starts with its inter-module gate. None of those checks is possible without the naming.
 3. **The exceptions are bounded.** Where the code legitimately does something the rule does not

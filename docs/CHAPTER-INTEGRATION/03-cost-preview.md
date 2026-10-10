@@ -16,7 +16,7 @@ over live state — tier discounts, fee toggles, per-pool settings, route length
 concatenation that exists nowhere outside its reader.
 
 So the only honest way to show a cost is to **ask the chain**, through the `INFO_` reader paired
-with the operation. The registry carries **432** of them, and **all 427** client entrypoints
+with the operation. The registry carries **442** of them, and **all 437** client entrypoints
 are paired — none is left without a cost preview.
 
 That was briefly untrue, and the exception is worth recording because of how it arose. Four
@@ -33,8 +33,8 @@ SEE will hide anything misnamed, and it will hide it silently.
 
 ## 1. The hazard that dominates everything else
 
-**414 of the 427 entrypoints have a preview whose parameter list differs from their own.**
-Only 13 match. Different names, different order, different arity.
+**421 of the 437 entrypoints have a preview whose parameter list differs from their own.**
+Only 16 match. Different names, different order, different arity.
 
 A live example — the two are not close:
 

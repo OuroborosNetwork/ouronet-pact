@@ -1,7 +1,16 @@
 # Asset tree — WRITTEN, NOT CLEARED TO RUN
 
 This folder holds the acquisition-pool asset tree: the AQP pool definitions, their issuance, and
-the score/FVT wiring. Sixteen hand-authored transactions, `00_step0` … `15_custodians_agency`.
+the score/FVT wiring. Fifteen hand-authored transactions, `00_step0` … `14_custodians_agency`.
+
+RENUMBERED 2026-10-08. There were sixteen: `13_stoicism_vault` stood up the Stoicism vault
+through `C_IssueGenericEarningVault`, which mints its own `<name>Score`. The Stoicism vault
+was instead built around the EXISTING `StoicPower` score by AQP-BOOT steps 7b/8b/9b/12b, so
+that transaction is not merely redundant -- running it now would mint a SECOND Stoicism pool
+and vault beside the live ones, plus a `StoicismScore` nobody wants. `UDC_Makeid` is
+`<name>-<prev-block-hash>`, so the duplicate ids differ by suffix and NOTHING would refuse it:
+simulated 2026-10-08, it stops only at the signature. Removed rather than left in place, and
+`14`/`15` moved down to `13`/`14`.
 
 CORRECTED 2026-09-24. This file used to open *"NOT YET GENERATED … it is deliberately empty"*,
 and had said so since 2026-09-19 — while sitting in a directory holding sixteen tracked files

@@ -55,7 +55,7 @@ Above the pools and the reward engine, coordinating both.
 
 > **The repository differs from what is deployed.** Everything above describes the CHAIN, which is what a caller actually reaches. The difference is stated rather than resolved:
 >
-> - **functions** in the repository only: `URCi_VacateNonFungible`, `URCi_VacateOrtoFungible`, `URCi_VacateSemiFungible`, `URCi_VacateTrueFungible`
+> - **functions** in the repository only: `UC_VacateOrtoDestinations`, `URCi_VacateNonFungible`, `URCi_VacateOrtoFungible`, `URCi_VacateSemiFungible`, `URCi_VacateTrueFungible`
 
 **Capabilities** -- 15
 

@@ -34,7 +34,7 @@ A leaf read-only module deployed after everything it describes. It has no interf
 
 > **The repository differs from what is deployed.** Everything above describes the CHAIN, which is what a caller actually reaches. The difference is stated rather than resolved:
 >
-> - **functions** in the repository only: `INFO_AQP-POOL|VacateNonFungible`, `INFO_AQP-POOL|VacateOrtoFungible`, `INFO_AQP-POOL|VacateSemiFungible`, `INFO_AQP-POOL|VacateTrueFungible`
+> - **functions** in the repository only: `INFO_AQP-FVT|ClearPoolSweep`, `INFO_AQP-FVT|FvtFixSlice`, `INFO_AQP-POOL|BackfillScoreSlice`, `INFO_AQP-POOL|BeginScoreRevoke`, `INFO_AQP-POOL|DrainScoreSlice`, `INFO_AQP-POOL|FinalizeScoreRevoke`, `INFO_AQP-POOL|ReassignCustodialBeneficiary`, `INFO_AQP-POOL|ReleaseSpecialCustodial`
 
 **Capabilities** -- 2
 

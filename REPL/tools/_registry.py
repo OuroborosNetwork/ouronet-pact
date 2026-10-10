@@ -228,6 +228,19 @@ LEG_PREFLIGHT = {
     "AQP-POOL|CCp_BatchDrainTrueFungible":   ["AQP-VCT.URH_VacateTrueFungiblePoolLegs"],
     "AQP-POOL|CCp_BatchDrainOrtoFungible":   ["AQP-VCT.URH_VacateOrtoFungiblePoolLegs"],
     "AQP-POOL|CCp_BatchDrainCollectable":    ["AQP-VCT.URH_VacateCollectablesPoolLegs"],
+    # ADDED 2026-10-10 for the six recipes PureV6 shipped. Without a row here each emitted
+    # `preflightUnresolved`, which the gate refuses -- correctly: a parallel recipe a caller
+    # cannot slice is an entrypoint nobody can act on, and "we forgot" looks identical to
+    # "this one genuinely has no preflight" once it is in the artefact.
+    "AQP-FVT|CCp_FvtFixSlice":               ["AQP-FVT.URH_FvtStalePresentUsers"],
+    "AQP-POOL|CCp_BackfillScoreSlice":       ["AQP-POOL.URHC_AQP|ScoreBackfillOutstanding"],
+    "AQP-POOL|Cp_DrainScoreSlice":           ["AQP-POOL.URHC_AQP|ScoreDrainOutstanding"],
+    # THE THREE CUSTODIAL RECIPES TAKE A SCALAR NONCE, not a slice list, so their preflight is
+    # the NONCE ENUMERATION rather than a slice planner -- one transaction per nonce, and the
+    # nonces are order-independent, which is what makes them parallel in the same sense.
+    "AQP-POOL|CCp_StakeSpecialCustodial":    ["DPOF.URH_AccountNonces"],
+    "AQP-POOL|CCp_ReleaseSpecialCustodial":  ["AQP-POOL.URH_AQP|DpofStakesByBeneficiary"],
+    "AQP-POOL|CCp_ReassignCustodialBeneficiary": ["AQP-POOL.URH_AQP|DpofStakesByOwner"],
 }
 
 

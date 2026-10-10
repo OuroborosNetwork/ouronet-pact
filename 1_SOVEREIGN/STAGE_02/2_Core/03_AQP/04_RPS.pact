@@ -825,7 +825,9 @@
     )
 
     (defun UR_FVT-SEL|TotalLaneWeight:decimal (fvt-id:string score-entity-id:string)
-        @doc "Reads total-lane-weight (farm-triplet Level-1 divisor Σ w-user) from ScoreEntityLink row."
+        @doc "Reads total-lane-weight (Σ w-user) from the ScoreEntityLink row. NOTE since 2026-10-08: this is a \
+            \ MAINTAINED MIRROR, no longer the Tier-2 divisor — URC_ScoreEntityMemberTier2Divisor reads the SCORE \
+            \ total-deb basis so numerator and divisor share one ledger. Kept for inspection and continuity."
         (at "total-lane-weight" (UR_FVT-SEL|ScoreEntityLink fvt-id score-entity-id))
     )
 
@@ -1191,7 +1193,7 @@
             \ staked LP amount (SCORE total-base) x per-LP STOA value (stoa-value / LP-supply). Uses the \
             \ SWP-maintained stoa-value (cheap point read, refreshed by Talos on every SWP op). 0.0 until users stake. \
             \ Triplet: SUM the three scores' total-base — the hub (boost-link BAR) carries the LP base, the two \
-            \ satellites are surplus-only (base 0), so the sum equals the single underlying LP position (mirrors \
+            \ satellites are additive satellites (base 0), so the sum equals the single underlying LP position (mirrors \
             \ URC_ScoreEntityMemberDebWeight's triplet handling; the hub is not necessarily the silver slot)."
         (let
             (
@@ -1322,48 +1324,38 @@
 
     (defun URC_ScoreEntityMemberTier2Divisor:decimal
         (fvt-id:string score-entity-type:integer score-entity-id:string)
-        @doc "Tier-2 L_i advance divisor. Branches on the TRUE-TRIPLET flag (any FVT class), not class: \
-            \ true triplet → maintained Σ w-user (total-lane-weight point-read, snapshot-maintained at stake, \
-            \ no staker scan); non-true triplet → Σ of the 3 bundled scores' total-deb; singular score → its total-deb."
-        (let
-            (
-                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-            )
-            (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET)
-                (if (ref-SCR::UR_SCR|TripletTrueTriplet score-entity-id)
-                    (UR_FVT-SEL|TotalLaneWeight fvt-id score-entity-id)
-                    (URC_ScoreEntityMemberDebWeight score-entity-type score-entity-id)
-                )
-                (URC_ScoreEntityMemberDebWeight score-entity-type score-entity-id)
-            )
-        )
+        @doc "Tier-2 L_i advance divisor = Σ of the member's scores' total-deb (3 legs for a triplet, its own \
+            \ for a singular score). Still a point-read, still no staker scan. \
+            \ CHANGED 2026-10-08: true triplets used to divide by the maintained total-lane-weight snapshot while \
+            \ their numerator came from the contrib-weight snapshot. Both snapshots were fed by the broken lane \
+            \ formula, so both were 0 and the tranche could not move. Now numerator and divisor share the SCORE \
+            \ deb basis, which SCORE maintains itself on every stake/unstake/deb-refresh — one basis, no \
+            \ second ledger to keep in step. fvt-id is retained in the signature for call-shape stability."
+        (URC_ScoreEntityMemberDebWeight score-entity-type score-entity-id)
     )
 
     (defun URC_ComputeTripletLanes:object
         (user-id:string pool-id:string triplet-id:string)
-        @doc "Lane weights from silver base-score × ANK promiles on bronze/silver/golden boost-class-links."
+        @doc "Per-slot lane weights = each leg's STORED deb-score, read at that leg's OWN aqpool-link. \
+            \ `pool-id` is accepted for call-shape symmetry and deliberately IGNORED (each leg owns its pool). \
+            \ FIXED 2026-10-08. The previous formula was `silver base-score × that slot's ANK promile`, which \
+            \ was wrong three ways: (a) it DROPPED THE BASE — the hub's own lane was base×its-own-promile, so a \
+            \ holder with no boosters had w-user = 0 and the member's whole Tier-2 tranche was undistributable; \
+            \ (b) it ignored DEB entirely; (c) it assumed the hub is the SILVER slot, which the triplet rules do \
+            \ not guarantee (the hub is whichever leg has boost-link = BAR). Reading the stored deb-scores fixes \
+            \ all three at once and is slot-agnostic, because SCORE already computes exactly the owner's model: \
+            \ the hub row holds (base + its own boost)×deb and an additive-satellite row holds \
+            \ (hub base × that satellite's promile)×deb with base 0. Σ lanes is therefore the triplet's whole \
+            \ weight, and it equals URC_TripletUserDebSum by construction — same basis as the non-true path."
         (let
             (
                 (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (silver-id:string (ref-SCR::UR_SCR|TripletSilverScoreId triplet-id))
                 (bronze-id:string (ref-SCR::UR_SCR|TripletBronzeScoreId triplet-id))
+                (silver-id:string (ref-SCR::UR_SCR|TripletSilverScoreId triplet-id))
                 (golden-id:string (ref-SCR::UR_SCR|TripletGoldenScoreId triplet-id))
-                (base:decimal (ref-SCR::UR_U-SCR|UserScoreBaseScore user-id pool-id silver-id))
-                ;; Lane flooring precision is class-agnostic: LP scores use the pool leg's decimals; non-LP
-                ;; (vault/treasury true triplets, lp-denominator BAR) use the score's own precision.
-                (lp-denom:string (ref-SCR::UR_SCR|ScoreLpDenominator silver-id))
-                (p:integer
-                    (if (= lp-denom BAR)
-                        (ref-SCR::UR_SCR|ScorePrecision silver-id)
-                        (ref-DPTF::UR_Decimals lp-denom)))
-                (prom-b:decimal (ref-ANK::UR_UB|AggregatePromile user-id (ref-SCR::UR_SCR|ScoreBoostClassLink bronze-id)))
-                (prom-s:decimal (ref-ANK::UR_UB|AggregatePromile user-id (ref-SCR::UR_SCR|ScoreBoostClassLink silver-id)))
-                (prom-g:decimal (ref-ANK::UR_UB|AggregatePromile user-id (ref-SCR::UR_SCR|ScoreBoostClassLink golden-id)))
-                (lane-b:decimal (floor (* base (/ prom-b 1000.0)) p))
-                (lane-s:decimal (floor (* base (/ prom-s 1000.0)) p))
-                (lane-g:decimal (floor (* base (/ prom-g 1000.0)) p))
+                (lane-b:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore user-id (ref-SCR::UR_SCR|ScoreAqpoolLink bronze-id) bronze-id))
+                (lane-s:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore user-id (ref-SCR::UR_SCR|ScoreAqpoolLink silver-id) silver-id))
+                (lane-g:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore user-id (ref-SCR::UR_SCR|ScoreAqpoolLink golden-id) golden-id))
             )
             {"lane-b" : lane-b, "lane-s" : lane-s, "lane-g" : lane-g
             ,"w-user" : (+ lane-b (+ lane-s lane-g))}
@@ -1372,8 +1364,10 @@
 
     (defun URC_TripletUserLaneWeightLive:decimal
         (user-id:string pool-id:string triplet-id:string)
-        @doc "Live w-user for a TRUE triplet (Σ lanes = silver base × Σ promiles). Used ONLY to (re)snapshot the \
-            \ stored contrib-weight at stake/unstake (phase 4.6); banking reads the snapshot, not this."
+        @doc "Live w-user for a TRUE triplet = Σ of the three legs' deb-scores. Feeds the contrib-weight \
+            \ re-snapshot at stake/unstake (phase 4.6). Since 2026-10-08 BANKING ALSO READS THIS BASIS LIVE \
+            \ (via URC_TripletUserDebSum, the identical sum), so the snapshot is a maintained mirror rather \
+            \ than the source of truth — no stale snapshot can mis-pay a holder."
         (at "w-user" (URC_ComputeTripletLanes user-id pool-id triplet-id))
     )
 
@@ -1401,17 +1395,19 @@
     (defun URC_ScoreEntityUserWeight:decimal
         (user-id:string fvt-id:string pool-id:string score-entity-type:integer score-entity-id:string)
         @doc "Tier-1 user weight (numerator). Branches on the TRUE-TRIPLET flag (any FVT class): true triplet → \
-            \ stored contrib-weight snapshot (shares the total-lane-weight divisor basis → conservation); \
-            \ non-true triplet → Σ user deb over the 3 bundled scores; singular score → SCR deb-user."
+            \ ANY triplet → Σ user deb over the 3 bundled legs; singular score → SCR deb-user. \
+            \ CHANGED 2026-10-08: the true-triplet branch used to read the stored contrib-weight SNAPSHOT. Now \
+            \ that lanes ARE the legs' deb-scores, Σ lanes ≡ URC_TripletUserDebSum, so the live read is the same \
+            \ number with none of the snapshot's staleness surface — and conservation is the non-true argument \
+            \ verbatim: Σ over holders of (Σ legs user-deb) = Σ legs total-deb = the divisor. The snapshot is \
+            \ still MAINTAINED (XI_SyncTripletLaneWeights) so the columns stay meaningful, but nothing reads it \
+            \ to pay anyone, which is why no admin correction tx is needed to recover the zeroed snapshots."
         (let
             (
                 (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
             )
             (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET)
-                (if (ref-SCR::UR_SCR|TripletTrueTriplet score-entity-id)
-                    (UR_FVT-MUW|ContribWeight user-id fvt-id score-entity-id)
-                    (URC_TripletUserDebSum user-id score-entity-id)
-                )
+                (URC_TripletUserDebSum user-id score-entity-id)
                 (ref-SCR::UR_U-SCR|UserScoreDebScore user-id pool-id score-entity-id)
             )
         )
@@ -2003,22 +1999,23 @@
 
     (defun URC_FvtMemberDebNeedsFix:bool
         (fvt-id:string user-id:string score-entity-type:integer score-entity-id:string)
-        @doc "True iff (user, member) is deb-based (singular / NON-true triplet) AND deb-stale — the exact condition \
-            \ XI_FixUserMemberDeb acts on. Shared by the sweep scan so scan and fix never disagree. True triplets \
-            \ (deb-independent lanes) → always false."
+        @doc "True iff (user, member) is deb-stale — the exact condition XI_FixUserMemberDeb acts on. Shared by \
+            \ the sweep scan so scan and fix never disagree. \
+            \ CHANGED 2026-10-08: this used to return false for TRUE triplets, on the premise that their lanes \
+            \ were deb-INDEPENDENT. That premise died with the lane fix — every triplet weight is now a deb-score \
+            \ — and leaving the exemption would have made a true triplet the one member kind a DEB change could \
+            \ never refresh. The exemption is therefore gone and ALL members are deb-based."
         (let
             (
                 (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                 (triplet:bool (= score-entity-type CT_SCORE_ENTITY_TRIPLET))
-                (deb-based:bool (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET) (not (ref-SCR::UR_SCR|TripletTrueTriplet score-entity-id)) true))
             )
-            (and deb-based
-                (if triplet
-                    (fold (or) false
-                        [ (ref-SCR::URC_U-SCR|UserScoreDebStale user-id (ref-SCR::UR_SCR|ScoreAqpoolLink (ref-SCR::UR_SCR|TripletBronzeScoreId score-entity-id)) (ref-SCR::UR_SCR|TripletBronzeScoreId score-entity-id))
-                          (ref-SCR::URC_U-SCR|UserScoreDebStale user-id (ref-SCR::UR_SCR|ScoreAqpoolLink (ref-SCR::UR_SCR|TripletSilverScoreId score-entity-id)) (ref-SCR::UR_SCR|TripletSilverScoreId score-entity-id))
-                          (ref-SCR::URC_U-SCR|UserScoreDebStale user-id (ref-SCR::UR_SCR|ScoreAqpoolLink (ref-SCR::UR_SCR|TripletGoldenScoreId score-entity-id)) (ref-SCR::UR_SCR|TripletGoldenScoreId score-entity-id)) ])
-                    (ref-SCR::URC_U-SCR|UserScoreDebStale user-id (ref-SCR::UR_SCR|ScoreAqpoolLink score-entity-id) score-entity-id)))
+            (if triplet
+                (fold (or) false
+                    [ (ref-SCR::URC_U-SCR|UserScoreDebStale user-id (ref-SCR::UR_SCR|ScoreAqpoolLink (ref-SCR::UR_SCR|TripletBronzeScoreId score-entity-id)) (ref-SCR::UR_SCR|TripletBronzeScoreId score-entity-id))
+                      (ref-SCR::URC_U-SCR|UserScoreDebStale user-id (ref-SCR::UR_SCR|ScoreAqpoolLink (ref-SCR::UR_SCR|TripletSilverScoreId score-entity-id)) (ref-SCR::UR_SCR|TripletSilverScoreId score-entity-id))
+                      (ref-SCR::URC_U-SCR|UserScoreDebStale user-id (ref-SCR::UR_SCR|ScoreAqpoolLink (ref-SCR::UR_SCR|TripletGoldenScoreId score-entity-id)) (ref-SCR::UR_SCR|TripletGoldenScoreId score-entity-id)) ])
+                (ref-SCR::URC_U-SCR|UserScoreDebStale user-id (ref-SCR::UR_SCR|ScoreAqpoolLink score-entity-id) score-entity-id))
         )
     )
 
@@ -3578,9 +3575,11 @@
         (beneficiary-id:string settle-plans:[object{AcquisitionSchemasV1.FVT|SettleScorePlan}])
         @doc "Phase 4.6 — after SCORE: for each TRUE-triplet member (any FVT class) the staker touched, \
             \ re-snapshot the user's Level-1 weight (live w-user) and adjust ScoreEntityLink.total-lane-weight \
-            \ by (new − old). Keeps the L_i divisor a point-read (no staker scan) and consistent with the banked \
-            \ numerator. Mirrors the read-old-at-2.3 / write-after-SCORE ordering XI_SyncFvtTotalDebMirrors relies \
-            \ on. Non-true-triplet and singular members are skipped (they use the maintained SCR total-deb)."
+            \ by (new − old). Mirrors the read-old-at-2.3 / write-after-SCORE ordering XI_SyncFvtTotalDebMirrors \
+            \ relies on. Non-true-triplet and singular members are skipped (they use the maintained SCR total-deb). \
+            \ CHANGED 2026-10-08: the live weight it snapshots is now Σ of the legs' deb-scores, and both the Tier-1 \
+            \ numerator and the Tier-2 divisor read that basis DIRECTLY. So this keeps the columns truthful but is \
+            \ no longer load-bearing for payouts — which is why the lane defect needed no corrective admin tx."
         ;; SECURE: granted by WU_ScoreEntityLink|TotalLaneWeight / WW_MemberUserWeight (underlying W_).
         (let
             (
@@ -4102,7 +4101,10 @@
             \ advance each last-rps to its current index (settle-before-weight-change MUST cover every stream, \
             \ because the deb-score is shared across streams); (2) refresh the SCORE deb-score(s) to the live \
             \ Elite-DEB (each triplet leg at its OWN aqpool-link); (3) resync the FVT total-deb mirror by the \
-            \ member delta. No-op when fresh or a TRUE triplet (deb-independent lanes). Does NOT pay out. \
+            \ member delta; (4) for a TRUE triplet, re-snapshot its lanes so the maintained columns track the new \
+            \ deb (the PAYING weight is read live, so this is bookkeeping, not a payout input). \
+            \ No-op only when fresh — the old 'or a TRUE triplet (deb-independent lanes)' exemption is gone as \
+            \ of 2026-10-08, since triplet weights are deb-scores now. Does NOT pay out. \
             \ NOTE: assumes the user's RPS|User rows exist for every enabled reward-dptf (ensured at stake); a \
             \ reward-dptf enabled AFTER the user staked is a known edge (ensure-rows-first) — TODO."
         (require-capability (SECURE))
@@ -4141,6 +4143,19 @@
                         (ref-SCR::XE_RefreshUserScoreDeb user-id member-pool score-entity-id))
                     ;; 3. resync the FVT total-deb mirror by the member delta
                     (XI_SyncFvtTotalDebMirrors pre-member-debs)
+                    ;; 4. TRUE triplet: re-snapshot the lanes so contrib-weight / total-lane-weight track the new
+                    ;;    deb. Bookkeeping only — the paying weight is read live (URC_ScoreEntityUserWeight) since
+                    ;;    2026-10-08 — but a maintained column that silently diverges is how the lane defect hid.
+                    ;; Both branches must yield an OutputCumulator: this `if` is the LET'S VALUE,
+                    ;; and the let is the true arm of the needs-fix `if`, so it is this function's
+                    ;; return. A bare `true` here typechecks at parse and dies at runtime --
+                    ;; "argument is bool, but expected object{IgnisCollectorV3.OutputCumulator}",
+                    ;; five suites deep inside CC_Collect. XI_SyncTripletLaneWeights already ends
+                    ;; on UC_EmptyOc, so the two arms agree.
+                    (if (and triplet (ref-SCR::UR_SCR|TripletTrueTriplet score-entity-id))
+                        (XI_SyncTripletLaneWeights user-id
+                            [(UDC_FVT|SettleScorePlan score-entity-type score-entity-id fvt-id [])])
+                        (UC_EmptyOc))
                 )
                 (UC_EmptyOc)
             )
@@ -4188,32 +4203,34 @@
                         (WU_RpsUser|LastRps user-id fvt-id score-entity-id rdptf
                             (URC_FvtTier1IndexRps fvt-id score-entity-id rdptf))))
                 reward-rows)
-            ;; 2. refold the holder's aggregate-promile for the swept class — BOTH paths need it: the deb path picks
-            ;;    it up via the score deb-recompute, AND the TRUE-triplet lanes read UR_UB|AggregatePromile directly
-            ;;    (URC_ComputeTripletLanes). The DEEPER recompute the deb-fix omits — must precede the dispatch.
+            ;; 2. refold the holder's aggregate-promile for the swept class — EVERY member kind needs it, because
+            ;;    the promile is what SCORE multiplies the base by to get the boost part. Must precede the refresh.
             (ref-ANK::XE_RecomputeUserBoostAggregates user-id [swept-boost-class-id])
-            (if triplet-true
-                ;; TRUE triplet (deb-independent): refold the Level-1 lanes — they read the now-fresh aggregate
-                (XI_SyncTripletLaneWeights user-id
-                    [(UDC_FVT|SettleScorePlan score-entity-type score-entity-id fvt-id [])])
-                ;; deb-based (singular / NON-true triplet): refresh deb at the new aggregate → resync mirror
-                (let
-                    (
-                        (pre-member-debs:[object{AcquisitionSchemasV1.FVT|MemberPreDeb}]
-                            [ {"fvt-id"            : fvt-id
-                              ,"score-entity-type" : score-entity-type
-                              ,"score-entity-id"   : score-entity-id
-                              ,"pre-deb"           : (URC_ScoreEntityMemberDebWeight score-entity-type score-entity-id)} ])
-                    )
-                    ;; 3. refresh the SCORE deb-score(s) at the new aggregate (triplet legs at their OWN pools)
-                    (if triplet
-                        (map
-                            (lambda (sid:string) (ref-SCR::XE_RefreshUserScoreDeb user-id (ref-SCR::UR_SCR|ScoreAqpoolLink sid) sid))
-                            [ (ref-SCR::UR_SCR|TripletBronzeScoreId score-entity-id) silver-id (ref-SCR::UR_SCR|TripletGoldenScoreId score-entity-id) ])
-                        (ref-SCR::XE_RefreshUserScoreDeb user-id member-pool score-entity-id))
-                    ;; 4. resync the FVT total-deb mirror by the member delta
-                    (XI_SyncFvtTotalDebMirrors pre-member-debs)
+            ;; CHANGED 2026-10-08: there used to be a `triplet-true` fork here that refolded ONLY the lanes for a
+            ;; true triplet and skipped the SCORE deb refresh, because lanes were computed from base × promile and
+            ;; owed nothing to deb. Lanes ARE the legs' deb-scores now, so skipping the refresh would leave the
+            ;; swept class's boost part stale in the very rows the weight is read from. One path for everyone.
+            (let
+                (
+                    (pre-member-debs:[object{AcquisitionSchemasV1.FVT|MemberPreDeb}]
+                        [ {"fvt-id"            : fvt-id
+                          ,"score-entity-type" : score-entity-type
+                          ,"score-entity-id"   : score-entity-id
+                          ,"pre-deb"           : (URC_ScoreEntityMemberDebWeight score-entity-type score-entity-id)} ])
                 )
+                ;; 3. refresh the SCORE deb-score(s) at the new aggregate (triplet legs at their OWN pools)
+                (if triplet
+                    (map
+                        (lambda (sid:string) (ref-SCR::XE_RefreshUserScoreDeb user-id (ref-SCR::UR_SCR|ScoreAqpoolLink sid) sid))
+                        [ (ref-SCR::UR_SCR|TripletBronzeScoreId score-entity-id) silver-id (ref-SCR::UR_SCR|TripletGoldenScoreId score-entity-id) ])
+                    (ref-SCR::XE_RefreshUserScoreDeb user-id member-pool score-entity-id))
+                ;; 4. resync the FVT total-deb mirror by the member delta
+                (XI_SyncFvtTotalDebMirrors pre-member-debs)
+                ;; 5. TRUE triplet: re-snapshot the maintained lane columns at the refreshed deb (bookkeeping).
+                (if triplet-true
+                    (XI_SyncTripletLaneWeights user-id
+                        [(UDC_FVT|SettleScorePlan score-entity-type score-entity-id fvt-id [])])
+                    true)
             )
             (UC_EmptyOc)
         )
@@ -4938,8 +4955,8 @@
         (beneficiary-id:string fvt-id:string score-entity-id:string)
         @doc "Forward (re-score sweep): re-snapshot a TRUE-triplet member's Level-1 lane weight for this holder at \
             \ the LIVE promile (after an anchor change) and delta-adjust ScoreEntityLink.total-lane-weight — the \
-            \ triplet analogue of ANK::XE_RecomputeUserBoostAggregates / SCR::XE_RefreshUserScoreDeb (true-triplets \
-            \ are deb-independent; their anchor staleness lives in the lanes). Self-no-ops for non-true-triplet / \
+            \ triplet analogue of ANK::XE_RecomputeUserBoostAggregates / SCR::XE_RefreshUserScoreDeb. Self-no-ops \
+            \ for non-true-triplet / \
             \ singular members (XI_SyncTripletLaneWeights guards on the true-triplet flag). NO fund movement; the \
             \ sweep defpact bills IGNIS. P|UEV_IMC + FVT|XE>SWEEP-FIX (composes SECURE)."
         (P|UEV_IMC)

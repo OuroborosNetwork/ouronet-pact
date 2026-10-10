@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 """Emit and verify the PureV5 hand-deploy round.
 
-ROUND V5 IS OPEN AND EMPTY. This is the scaffold the next contract change lands in, created
+ROUND V5 IS CLOSED -- all six transactions are on mainnet (01 the AQP-BOOT late steps, 02-06 the
+true-triplet weight fix, confirmed by the owner 2026-10-09 with weights reading 2.5 / 56.25 / 298
+where every holder had previously read 0). The next round is `Deploy/PureV6/`.
+
+This scaffold was created
 2026-10-08 so that a change has somewhere to go the moment it exists -- V3 and V4 both began as
 an edit made first and a pipeline assembled afterwards, which is how `Deploy/` drifted from its
 sources twice.
@@ -71,12 +75,25 @@ AQP = "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/"
 #   module-only    ship from `(module `, create-table stripped -- the interface is already live
 #   iface+upgrade  ship a NEW interface whole, then the module as an upgrade
 MANIFEST = {
-    # EMPTY -- nothing is queued for V5 yet. Add entries as ("path", mode):
-    #   "01_deploy.pact": [("1_SOVEREIGN/.../FOO.pact", "module-only")],
-    # mode is "module-only" when the interface is already live, "iface+upgrade" when this round
-    # ships a NEW interface whole and the module as an upgrade.
+    # EMPTY: ROUND V5 IS ON CHAIN. The next round goes to `Deploy/PureV6/` and `_purev6.py`.
+    #
+    # DO NOT RE-ADD A SOURCE HERE TO "REFRESH" A FILE. `--write` regenerates from the CURRENT
+    # tree, and these six files are the record of what was SENT -- the AQP-SCORE source has
+    # already moved on (the sleeping-LP duration scale) and regenerating 02 would overwrite the
+    # bytes the owner signed with bytes nobody has deployed. The folder README says it: each
+    # round "is kept exactly as it went out".
 }
-FROZEN = {}
+# EXECUTED ON MAINNET and therefore records, not sources.
+FROZEN = {
+    "01_deploy.pact": "AQP-BOOT -- the four late steps (7b/8b/9b/12b). Deployed.",
+    "02_deploy.pact": "AQP-SCORE -- D1 (additive satellites stopped clamping to 0), D3 (hubs-first "
+                      "ordering), D4 (staleness sees a booster change). Deployed.",
+    "03_deploy.pact": "RPS -- D2, the true-triplet lane fix: lanes are the legs' deb-scores and both "
+                      "tiers read that basis live. Deployed.",
+    "04_deploy.pact": "MTX-AQP + AQP-DSA + AQP-VCT (dot-pin re-pin). Deployed.",
+    "05_deploy.pact": "AQP-FVT (dot-pin re-pin + corrected docstrings). Deployed.",
+    "06_deploy.pact": "AQP-INFO + AQP-BOOT + O-UI-FOURTEEN (dot-pin tail). Deployed.",
+}
 HANDWRITTEN = {}
 
 # Interfaces SHIPPED NEW by this round. Every module naming one must come LATER in the global
@@ -88,6 +105,22 @@ NEW_IFACES: list[str] = []
 DOT_EDGES: list[tuple[str, str]] = [
     # (callee, caller) pairs this round must honour: the callee ships STRICTLY earlier in the
     # global sequence. Derive from `python3 REPL/tools/_dotpin.py`, restricted to this round.
+    #
+    # The two CHANGED modules are AQP-SCORE and RPS; everything else below is in the round only
+    # because it dot-calls one of them. A stale dot-caller of a TABLE-OWNING callee does not go
+    # quietly stale -- it aborts with "hash not blessed" -- so these ship byte-identical to what
+    # is live and still have to ship.
+    ("AQP-SCORE", "RPS"),
+    ("AQP-SCORE", "AQP-INFO"),
+    ("RPS", "AQP-FVT"),
+    ("RPS", "AQP-VCT"),
+    ("RPS", "MTX-AQP"),
+    ("RPS", "AQP-DSA"),
+    ("RPS", "AQP-INFO"),
+    ("AQP-FVT", "AQP-INFO"),
+    ("AQP-FVT", "AQP-BOOT"),
+    ("AQP-VCT", "AQP-INFO"),
+    ("AQP-DSA", "AQP-INFO"),
 ]
 
 

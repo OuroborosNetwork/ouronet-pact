@@ -144,30 +144,84 @@ The value written to `SCR|T|UserScore.boosted-score` is that **nominal** boosted
 
 If `deb-boost = true`, **nominal** deb applies the account's Elite DEB multiplier from DALOS (`UR_Elite-DEB`) to **nominal** boosted. If `deb-boost = false`, **nominal** deb equals **nominal** boosted.
 
-The value written to `SCR|T|UserScore.deb-score` follows the same **foreign surplus** rule as boosted when a foreign `boost-link` is active.
+The value written to `SCR|T|UserScore.deb-score` is the DEB multiple of the stored boosted value. For an
+**additive satellite** (foreign `boost-link`) that stored boosted value is the boost PART, so deb-score is
+`boost_part x Elite-DEB`.
 
-### Foreign boost-link (composite / split scores)
+### Foreign boost-link = ADDITIVE SATELLITE
 
-**When** `boost-link` is set to **another** score-id (not `BAR`; never this score's id — enforced at link creation) **and** `boost-class-link` is not `BAR`:
+**REWRITTEN 2026-10-09, because the rule this section used to describe was arithmetically dead and the
+section is what kept it alive.** What follows the horizontal rule is the old text, preserved — a silently
+replaced specification teaches nobody how long it was wrong, and this one reached the contract.
 
-1. This score's user **`base-score` is stored as `0.0`** (canonical base lives on the linked score; this row is surplus-only for base).
-2. Read **foreign base** = that linked score's user `base-score` for the same `(ouronet-account, pool-id)`.
-3. **Promile input** = `floor(foreign_base + signed_lp_delta, precision)` where `signed_lp_delta` is this stake leg's contribution in the same weight units (LP path: from `URC_SignedBaseDeltaFor*LpStake`).
-4. Compute **nominal boosted** = `floor(promile_input * (promile / 1000), precision)` using the user's aggregate promile on **this** score's `boost-class-link`.
-5. Compute **nominal deb** from **nominal boosted** (DEB multiplier when `deb-boost`).
-6. **Store only the surplus** over the foreign reference base (subtract **foreign base** only, not the LP delta term):
-   - `boosted-score = max(0, floor(nominal_boosted - foreign_base, precision))`
-   - `deb-score = max(0, floor(nominal_deb - foreign_base, precision))`
+**When** `boost-link` is set to **another** score-id (not `BAR`; never this score's id — enforced at link
+creation) **and** `boost-class-link` is not `BAR`, this score is an **additive satellite**. Owner ruling,
+2026-10-08: *"one base score, the others are additive satellites which are there for boosting purposes …
+in essence it's like a single score, which has boosters that generate their boost as a different quality."*
 
-**Example (Score B uses Score A's base 100, promile 1100 ‰ ⇒ ×1.10, DEB ×1.30 on nominal boosted):**
+1. This score's user **`base-score` is stored as `0.0`**. The canonical base lives on the hub. **Staking
+   into a satellite earns nothing there** — this is the sentence a client must surface, and the reason the
+   "what each unit is worth" table is relabelled on a satellite.
+2. **Hub base** = the linked score's user `base-score` for the same `(ouronet-account, pool-id)`, read
+   AFTER the hub's own row has been written for this stake. `URC_HubsFirstScoreIds` guarantees that
+   ordering; before it existed the order was the pool's SLOT order and the answer depended on it.
+3. **Boost part** = `floor(hub_base * (promile / 1000), precision)`, using the user's aggregate promile on
+   **this** score's `boost-class-link`. No foreign-base subtraction, and no stake-delta term.
+4. **Stored** `boosted-score` = that boost part. **Stored** `deb-score` = `floor(boost_part * Elite-DEB,
+   precision)` when `deb-boost`, else the boost part.
 
-| Step | Would be if everything were "full" values | Stored on B's `SCR|T|UserScore` |
-|------|--------------------------------------------|----------------------------------|
-| Base | 100.0 (from A) | **0.0** (foreign base is not duplicated here) |
-| Boosted | 110.0 | **10.0** (= 110 − 100, only the extra over the foreign base) |
-| Deb | 143.0 (= 110 × 1.30) | **43.0** (= 143 − 100) |
+**Example, the owner's own:** stake 100 LP at Elite-DEB x2 with a booster worth 10% (promile 100) on the
+satellite's class.
 
-**Intent:** several scores can each hold **only their incremental** boosted/deb portions while sharing one **logical** base that lives on a primary score (Score A). Summing **base + boosted + deb** across entities is **not** intended to reconstruct a single "full" triple without knowing which row owns the foreign base; the **foreign** score holds the canonical base, satellites hold **surpluses**.
+| | hub | satellite |
+|---|---|---|
+| base | 100 | **0** |
+| boosted (boost part) | 0 (no booster on its own class) | **10** = 100 x 100/1000 |
+| deb-score | **200** = 100 x 2 | **20** = 10 x 2 |
+
+Triplet weight = 200 + 20 + 0 = **220**. With no booster at all it is 200 + 0 + 0 = 200, and the satellites
+are worth zero — which is correct, not a fault.
+
+**Intent:** the hub owns the base; each satellite converts its OWN boosters into its OWN reward quality,
+measured against that one shared base. Summing the three legs' **deb-scores** IS the triplet's weight —
+that is exactly what `RPS.URC_TripletUserDebSum` does, and since 2026-10-08 it is what the aggregator pays
+from. (Summing `base + boosted + deb` across legs still reconstructs nothing meaningful; the columns are
+not a triple.)
+
+---
+
+#### SUPERSEDED — the "store only the surplus" rule, and why it failed
+
+The rule below stood until 2026-10-09 and is kept because the failure is instructive.
+
+> 3. **Promile input** = `floor(foreign_base + signed_lp_delta, precision)`.
+> 4. **nominal boosted** = `floor(promile_input * (promile / 1000), precision)`.
+> 6. **Store only the surplus** over the foreign reference base (subtract **foreign base** only, not the
+>    LP delta term):
+>    - `boosted-score = max(0, floor(nominal_boosted - foreign_base, precision))`
+>    - `deb-score = max(0, floor(nominal_deb - foreign_base, precision))`
+>
+> **Example (Score B uses Score A's base 100, promile 1100 permille => x1.10, DEB x1.30):** Boosted stored
+> as **10.0** (= 110 - 100), Deb stored as **43.0** (= 143 - 100).
+
+**Read that example's promile.** `1100 permille => x1.10` — the old convention expressed a promile as
+`1000 + bonus`, so `base x prom/1000` was the boosted **TOTAL** and subtracting the base correctly left the
+increment. Self-consistent, and it is the arithmetic the contract carried.
+
+**ANK promiles are the bonus ALONE.** A booster advertised at 5% stores 50, not 1050 — confirmed by the
+`[6.4]` fixture (`b-prom = 50.0`) and by the owner describing *"a bunny bronze bunny bringing 5% boost"*.
+Under that convention `base x prom/1000` is already the increment, so subtracting the base again is a
+SECOND subtraction, and `max(0, …)` clamps the result to **zero for every promile below 1000** — i.e. for
+every real booster. Every satellite on chain read 0.
+
+Change M3 redefined `boosted-score` as the increment and moved the normal branch over, while the code
+comment recorded that it deliberately *"keeps the nominal-* surplus math unchanged"*. So one convention was
+replaced under half the function and this document kept describing the other half. Two consistent
+specifications, one function, and the join between them was the defect. `[6.4]` even OBSERVED the zero and
+printed a NOTE blaming it on needing *"aggregate promile >500 permille"* — reasoning backwards from the
+clamp to a threshold, and turning the symptom into documentation.
+
+---
 
 **Singular user-base delta:** `URC_SingularUserScoreDeltaFromSignedUserBase` in `02_SCORE.pact` implements this netting for any path that applies one signed base delta at score precision; LP stake uses `XI_ApplySingularUserScoreDelta` behind `SCR|XE>UPDATE-LP-STAKE-*`.
 

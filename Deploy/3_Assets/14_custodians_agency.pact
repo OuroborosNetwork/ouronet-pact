@@ -73,7 +73,7 @@
     "AGENCY_NAME"                        ;; <- names the three scores <name>Bronze/Silver/Golden.
                                          ;;    Must be unique per agency or the second collides
                                          ;;    on the shared branding table. REPL uses "OuronetPrime".
-    "CUSTODIANS_DPSF_ID"                 ;; <- same collection id as transaction 14
+    "CUSTODIANS_DPSF_ID"                 ;; <- same collection id as transaction 13
     [3]                                  ;; <- YOUR opening stake. [3] = whole golden (100 units
                                          ;;    = 10000 quintessence). Use [-3] for golden fragments,
                                          ;;    [1] for the whole bronze tier, [1 2 3] to stake all.

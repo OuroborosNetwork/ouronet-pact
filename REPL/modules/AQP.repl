@@ -574,7 +574,7 @@
             (expect-failure "<<AQP-G9>> orto flow: one nonce against two amounts is refused"
                 "Invalid nonces / nonce-amounts: equal positive length required"
                 (test-capability (AQP-FVT.FVT|C>ORTO-FUNGIBLE-STAKE-FLOW
-                    of KST.ANHD KST.ANHD "MVST-98c486052a51" [1] [1.0 2.0] true)))
+                    of KST.ANHD KST.ANHD KST.ANHD "MVST-98c486052a51" [1] [1.0 2.0] true)))
             (expect-failure "<<AQP-G9>> collectable flow: likewise"
                 "Invalid nonces / nonce-amounts: equal positive length required"
                 (test-capability (AQP-FVT.FVT|C>COLLECTABLE-STAKE-FLOW
@@ -700,7 +700,7 @@
             (expect-failure "<<AQP-G11b>> the ORTO stake flow refuses a closed pool"
                 "Invalid pool-id: pool stake disabled or has no employed scores"
                 (test-capability (AQP-FVT.FVT|C>ORTO-FUNGIBLE-STAKE-FLOW
-                    of KST.ANHD KST.ANHD "MVST-98c486052a51" [1] [1.0] true)))
+                    of KST.ANHD KST.ANHD KST.ANHD "MVST-98c486052a51" [1] [1.0] true)))
         ]
     )
     ""
@@ -973,7 +973,7 @@
                 false (ref-RPS::URC_PoolEmployedScoresFvtStakeReady pool))
             (expect-failure "<<AQP-G13b>> so the orto-fungible stake flow refuses it"
                 "Invalid FVT reward pipeline: employed score missing enabled FVT ScoreEntityLink or reward DPTF"
-                (test-capability (AQP-FVT.FVT|C>ORTO-FUNGIBLE-STAKE-FLOW pool KST.ANHD KST.ANHD "MVST-98c486052a51" [1] [1.0] true)))
+                (test-capability (AQP-FVT.FVT|C>ORTO-FUNGIBLE-STAKE-FLOW pool KST.ANHD KST.ANHD KST.ANHD "MVST-98c486052a51" [1] [1.0] true)))
         ]
     )
     ""
@@ -1208,10 +1208,10 @@
     (map print
         [
             (expect-failure "<<AQP-G16>> a precision outside 3..24 is refused"
-                "Invalid precision, score-class, mx-frozen, mx-sleeping, mx-hibernated or nft-score-model"
+                "Invalid precision, score-class, nft-score-model, or a multiplier below 1.0"
                 (ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore KST.ANHD KST.ANHD "BadPrecScore" 99 false))
             (expect-failure "<<AQP-G16>> ...and an nft-score-model outside {-1,0,1} likewise"
-                "Invalid precision, score-class, mx-frozen, mx-sleeping, mx-hibernated or nft-score-model"
+                "Invalid precision, score-class, nft-score-model, or a multiplier below 1.0"
                 (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScore KST.ANHD KST.ANHD "BadNftScore" 2 99))
             ;;valid shape, so the fold passes and only the denominator rule is left to object
             (expect-failure "<<AQP-G16>> a class-0 liquidity score with a BAR lp-denominator is refused"

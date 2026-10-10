@@ -1,6 +1,6 @@
 # Tables, per module
 
-**Mode: `upgrade`.** 224 tables are defined across the modules in this plan.
+**Mode: `upgrade`.** 225 tables are defined across the modules in this plan.
 
 `(create-table X)` **fails if X already exists**, and which tables exist is a property of the chain that this repository cannot determine (see the note at the top of `REPL/tools/_deploybundle.py`). So ask the chain.
 
@@ -196,6 +196,7 @@ It returns a row per table that exists and errors on the first that does not, so
 (try "MISSING P|MT" (let ((x (describe-table P|MT))) "P|MT"))
 (try "MISSING SCR|T|Score" (let ((x (describe-table SCR|T|Score))) "SCR|T|Score"))
 (try "MISSING SCR|T|UserScore" (let ((x (describe-table SCR|T|UserScore))) "SCR|T|UserScore"))
+(try "MISSING SCR|T|SleepStake" (let ((x (describe-table SCR|T|SleepStake))) "SCR|T|SleepStake"))
 (try "MISSING SCR|T|SF|Score" (let ((x (describe-table SCR|T|SF|Score))) "SCR|T|SF|Score"))
 (try "MISSING SCR|T|NF|TraitScore" (let ((x (describe-table SCR|T|NF|TraitScore))) "SCR|T|NF|TraitScore"))
 (try "MISSING SCR|T|NF|ClassScore" (let ((x (describe-table SCR|T|NF|ClassScore))) "SCR|T|NF|ClassScore"))
@@ -355,7 +356,7 @@ It returns a row per table that exists and errors on the first that does not, so
 | `00_Demipad.pact` | `P|T`, `P|MT`, `DEMIPAD|T|Ledger`, `DEMIPAD|T|Properties` |
 | `00_AQP-SCHEMAS.pact` | *none* |
 | `01_ANK.pact` | `P|T`, `P|MT`, `ANK|T|Anchor`, `ANK|T|BoostClass`, `ANK|T|AssetAnchors`, `ANK|T|BoostClassScoreLinks`, `ANK|T|Anchors`, `ANK|T|UserBoost` |
-| `02_SCORE.pact` | `P|T`, `P|MT`, `SCR|T|Score`, `SCR|T|UserScore`, `SCR|T|SF|Score`, `SCR|T|NF|TraitScore`, `SCR|T|NF|ClassScore`, `SCR|T|SF|DefRevision`, `SCR|T|NF|DefRevision`, `SCR|T|NF|TraitKeys`, `SCR|T|Triplet`, `SCR|T|ScoreEntityModel` |
+| `02_SCORE.pact` | `P|T`, `P|MT`, `SCR|T|Score`, `SCR|T|UserScore`, `SCR|T|SleepStake`, `SCR|T|SF|Score`, `SCR|T|NF|TraitScore`, `SCR|T|NF|ClassScore`, `SCR|T|SF|DefRevision`, `SCR|T|NF|DefRevision`, `SCR|T|NF|TraitKeys`, `SCR|T|Triplet`, `SCR|T|ScoreEntityModel` |
 | `03_AQP.pact` | `P|T`, `P|MT`, `AQP|T|Pool`, `AQP|T|DPTFTracker`, `AQP|T|DPOFTracker`, `AQP|T|DPSFTracker`, `AQP|T|DPNFTracker`, `AQP|T|BenDptfTotal`, `AQP|T|BenDpsfNonceTotal`, `AQP|T|BenDpnfNonceTotal`, `AQP|T|BenDpsfAnkMeta`, `AQP|T|BenDpnfAnkMeta`, `AQP|T|UserOccupancy` |
 | `04_RPS.pact` | `P|T`, `P|MT`, `FVT|T|RPS|Global`, `FVT|T|RPS|Member`, `FVT|T|RPS|User`, `FVT|T|RPS|Stream`, `FVT|T|MemberUserWeight`, `FVT|T|MemberVault`, `FVT|T|ForcedFixCount`, `FVT|T|RewardAggregate`, `FVT|T|ScoreEntityLink`, `FVT|T|MultipletFamily`, `FVT|T|UserPresence`, `FVT|T|AgencyFee`, `FVT|T|QualitySplit`, `FVT|T|DsaOracleConfig` |
 | `05_FVT.pact` | `P|T`, `P|MT`, `FVT|T`, `FVT|T|VacateFreeze`, `FVT|T|SweepProgress` |

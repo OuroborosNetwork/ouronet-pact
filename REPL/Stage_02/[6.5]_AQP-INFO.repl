@@ -503,6 +503,88 @@
                     0.0 (at "ignis-need" (at "ignis" (AQP-INFO.INFO_AQP-POOL|AbortVacate anhd "SfStakePool-98c486052a51"))))
                 (expect "<<POOL>> ...and zero STOA too"
                     0.0 (at "stoa-need" (at "stoa" (AQP-INFO.INFO_AQP-POOL|AbortVacate anhd "SfStakePool-98c486052a51"))))
+                ;;FUNCTION COVERAGE — the seven previews added with the re-rate / revoke / sweep
+                ;;surface. All seven are priced from a FLAT component (or none), so they quote
+                ;;correctly against dummy ids and belong here; the two CUSTODIAL previews read
+                ;;live tables and are measured against a real position in
+                ;;`Stage_02/[6.4]_AQP-TRIPLET-COLLECT.repl <<TX-AQP-CL06>>` instead.
+                ;;
+                ;;PRICED OPS ARE ASSERTED NON-ZERO, which is the defect this group exists to
+                ;;catch: a preview that quotes a literal zero for a currency its op really charges
+                ;;(the `INFO_SWP|ToggleFeeLock` shape). A quote of zero is only correct when the
+                ;;cumulator really is empty, and three previews have gotten that wrong before.
+                (expect "<<POOL>> update-multipliers quotes a real price (flat setup component)"
+                    true (> (at "ignis-full" (at "ignis" (AQP-INFO.INFO_AQP-POOL|UpdateScoreMultipliers anhd "SCR-x" 3.4 2.2 1.0))) 0.0))
+                (expect "<<POOL>> begin-score-revoke quotes a real price"
+                    true (> (at "ignis-full" (at "ignis" (AQP-INFO.INFO_AQP-POOL|BeginScoreRevoke anhd "POOL-x" "SCR-x" 0))) 0.0))
+                (expect "<<POOL>> finalize-score-revoke quotes a real price"
+                    true (> (at "ignis-full" (at "ignis" (AQP-INFO.INFO_AQP-POOL|FinalizeScoreRevoke anhd "POOL-x" "SCR-x"))) 0.0))
+                (expect "<<FVT>> clear-pool-sweep quotes a real price (backfill component)"
+                    true (> (at "ignis-full" (at "ignis" (AQP-INFO.INFO_AQP-FVT|ClearPoolSweep anhd "POOL-x"))) 0.0))
+                ;;THE TWO FED SLICES ARE PRICED PER HOLDER, and that is asserted as a SCALING law
+                ;;rather than as "non-zero". The reason is what the quote is FOR: the UI sizes a
+                ;;slice by it, so a flat quote would be worse than a wrong one -- it would read as
+                ;;"any slice size costs the same" and invite a single oversized transaction. A
+                ;;three-account slice must cost exactly three times a one-account slice.
+                (expect "<<POOL>> backfill-slice price scales exactly per holder (3x == 3 holders)"
+                    true
+                    (= (at "ignis-full" (at "ignis" (AQP-INFO.INFO_AQP-POOL|BackfillScoreSlice anhd "POOL-x" "SCR-x" ["a" "b" "c"])))
+                       (* 3.0 (at "ignis-full" (at "ignis" (AQP-INFO.INFO_AQP-POOL|BackfillScoreSlice anhd "POOL-x" "SCR-x" ["a"]))))))
+                (expect "<<POOL>> drain-slice price scales exactly per holder (3x == 3 holders)"
+                    true
+                    (= (at "ignis-full" (at "ignis" (AQP-INFO.INFO_AQP-POOL|DrainScoreSlice anhd "POOL-x" "SCR-x" ["a" "b" "c"])))
+                       (* 3.0 (at "ignis-full" (at "ignis" (AQP-INFO.INFO_AQP-POOL|DrainScoreSlice anhd "POOL-x" "SCR-x" ["a"]))))))
+                ;;AND THE SUBSIDISED ONE QUOTES ZERO, the other half of the same rule: the parallel
+                ;;FVT fixer is gas-station funded exactly like the cursor pager it replaces, so a
+                ;;non-zero quote here would be the mirror defect.
+                ;;THE CUSTODIAL STAKE PREVIEW QUOTES EXACTLY THE ORDINARY ONE, which is the claim
+                ;;its own @doc makes -- "IDENTICAL IGNIS TO AN ORDINARY ORTO STAKE ... the quote is
+                ;;exact, not a stand-in". Asserted as an EQUALITY against the already-measured
+                ;;sibling rather than as "non-zero", because that is the thing that could actually
+                ;;be wrong: custody runs the same `XI_OrtoStakePhases` chain and differs only in
+                ;;the tracker's owner column, which `URCi_OrtoFungibleStakeFlow` does not read. If
+                ;;custody ever grows a leg of its own, this is what fails.
+                ;;`MVST-98c486052a51` is a real DPOF in this chain, so both sides price real legs.
+                (expect "<<POOL>> custodial stake quotes EXACTLY the ordinary orto stake — same phase chain"
+                    true
+                    (= (at "ignis-full" (at "ignis" (AQP-INFO.INFO_AQP-POOL|StakeSpecialCustodial
+                           anhd "OfStakePool-98c486052a51" anhd anhd "MVST-98c486052a51" [1])))
+                       (at "ignis-full" (at "ignis" (AQP-INFO.INFO_AQP-POOL|StakeOrtoFungible
+                           anhd "OfStakePool-98c486052a51" anhd anhd "MVST-98c486052a51" [1])))))
+                ;;THE REASSIGNMENT PREVIEW PRICES *BOTH* LEGS, asserted as an EXACT doubling
+                ;;rather than as "more than one". `CCp_ReassignCustodialBeneficiary` runs the orto
+                ;;phase chain twice -- an unstake for the seller, a stake for the buyer -- and
+                ;;`URCi_OrtoFungibleStakeFlow` is direction-independent in every leg it prices, so
+                ;;naming the SAME account on both sides makes the two halves identical and the
+                ;;total exactly 2x a single orto stake. That is a falsifiable number: drop either
+                ;;leg from the reader and this goes red, where a "> single" assertion would not.
+                (expect "<<POOL>> reassignment quotes BOTH phase-chain runs — exactly twice a single orto stake"
+                    (* 2.0 (at "ignis-full" (at "ignis" (AQP-INFO.INFO_AQP-POOL|StakeOrtoFungible
+                               anhd "OfStakePool-98c486052a51" anhd anhd "MVST-98c486052a51" [1]))))
+                    (at "ignis-full" (at "ignis" (AQP-INFO.INFO_AQP-POOL|ReassignCustodialBeneficiary
+                               anhd "OfStakePool-98c486052a51" anhd anhd "MVST-98c486052a51" 1))))
+                ;;AND THE RELEASE PREVIEW REACHES ITS VST LEG, pinned the way this file already
+                ;;pins `INFO_AQP-MTX|2Inject` -- by the abort an unsatisfiable id produces. The
+                ;;release prices `VST::XE_Unsleep`, which resolves the batch's native counterpart
+                ;;via `DPOF::UR_Sleeping`; `MVST` is a NATIVE DPOF with no sleeping link, so the
+                ;;transfer leg has no DPTF to price and the quote aborts. That abort is the
+                ;;evidence the VST leg is really in the sum: a preview that had silently dropped
+                ;;it would return a number here instead.
+                ;;
+                ;;ITS NUMERIC VALUE IS NOT MEASURED against a live charge, and that gap is real:
+                ;;no chain in the tree holds both AQP-INFO and a live custodial sleeping position
+                ;;(`[6.4]_AQP-TRIPLET-COLLECT` is a destructive tail, excluded from AQP-FULL).
+                ;;Recorded rather than papered over -- the two legs are each reconstructed from
+                ;;the same readers the execution path calls, which is sound but is not a balance
+                ;;delta.
+                (expect-failure "<<POOL>> release preview really prices the VST unsleep leg — a native DPOF has no counterpart to quote"
+                    "No value found in table"
+                    (AQP-INFO.INFO_AQP-POOL|ReleaseSpecialCustodial
+                        anhd "OfStakePool-98c486052a51" anhd "MVST-98c486052a51" 1))
+                (expect "<<FVT>> fvt-fix-slice is gas-station subsidised — zero IGNIS and zero STOA"
+                    [0.0 0.0]
+                    [(at "ignis-full" (at "ignis" (AQP-INFO.INFO_AQP-FVT|FvtFixSlice anhd "FVT-x" ["a" "b"])))
+                     (at "stoa-need"  (at "stoa"  (AQP-INFO.INFO_AQP-FVT|FvtFixSlice anhd "FVT-x" ["a" "b"])))])
             ]
         )
     )

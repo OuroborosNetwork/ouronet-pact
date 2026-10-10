@@ -182,6 +182,21 @@ INDIRECT = {
     # -- a real cross-module forward that FORWARDED still cannot match, because the executor
     # lands in slot 2 of the callee (behind an op-key) rather than the executor slot it scans.
     "05_FVT.pact::C_RotateOwnership":  "CAP_EnforceAccountOwnership owner-now",
+    # 03_AQP (2026-10-09). The SCR|C>ISSUE-TRIPLET shape, across a module boundary this time.
+    # AQP|C>UPDATE-SCORE-MULTIPLIERS binds (= executor (ref-SCR::UR_SCR|ScoreOwnerKonto score-id))
+    # and the CALLEE's capability -- SCR|C>UPDATE-MULTIPLIERS -- runs CAP_EnforceAccountOwnership
+    # on that same derived owner. Both halves exist; neither is where the matcher looks, because
+    # the binding is an `enforce (= …)` rather than an ownership call, and the ownership call is
+    # in another module. The split is not avoidable: the emptiness gate needs the POOL tracker
+    # and the ownership needs the SCORE row, and AQP-SCORE deploys first so it cannot read the
+    # tracker at all.
+    "03_AQP.pact::CC_UpdateScoreMultipliers": "CAP_EnforceAccountOwnership",
+    # The ORTO phase chain was extracted to XI_OrtoStakePhases so the ordinary flow and the two
+    # CUSTODIAL recipes share one copy. `executor` crosses that boundary as `transfer-sender`,
+    # reaches AQP::XE_OrtoFungibleTransfer and is proven by CAP_StakeOwner inside
+    # AQP|XE>ORTO-FUNGIBLE-POOL-CUSTODY -- exactly as it was before the extraction. Only the
+    # NAME changes at the call, which is all a static trace has to follow.
+    "05_FVT.pact::CC_OrtoFungibleStakeFlow": "CAP_StakeOwner",
     "05_FVT.pact::CC_InjectStream":    "XE_XI_FvtAddStream",
     "05_FVT.pact::CC_Inject":          "XE_XI_FvtInjectCore",
     "05_FVT.pact::CC_InjectFinalize":  "XE_XI_FvtInjectCore",

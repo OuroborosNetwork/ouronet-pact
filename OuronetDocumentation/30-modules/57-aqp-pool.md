@@ -53,7 +53,8 @@ The family's state module for staking.
 
 > **The repository differs from what is deployed.** Everything above describes the CHAIN, which is what a caller actually reaches. The difference is stated rather than resolved:
 >
-> - **functions** in the repository only: `UEV_ScoreDefinitionTargetMatchesPool`
+> - **capabilities** in the repository only: `AQP|C>BACKFILL-SCORE-SLICE`, `AQP|C>BEGIN-SCORE-REVOKE`, `AQP|C>DRAIN-SCORE-SLICE`, `AQP|C>FINALIZE-SCORE-REVOKE`, `AQP|C>UPDATE-SCORE-MULTIPLIERS`
+> - **functions** in the repository only: `CC_FinalizeScoreRevoke`, `CC_UpdateScoreMultipliers`, `CCp_BackfillScoreSlice`, `C_BeginScoreRevoke`, `Cp_DrainScoreSlice`, `UC_AQP|BackfillRowsForBeneficiary`, `UC_AQP|BackfillSumForBeneficiary`, `UC_AQP|BackfillUniqueBeneficiaries`
 
 **Capabilities** -- 19
 

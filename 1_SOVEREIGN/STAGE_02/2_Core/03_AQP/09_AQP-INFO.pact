@@ -658,6 +658,80 @@
                 [(length nonces)])
         )
     )
+    (defun INFO_AQP-POOL|StakeSpecialCustodial:object{OuronetInfoV2.ClientInfo}
+        (patron:string pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer])
+        @doc "Cost preview for AQP-POOL|CCp_StakeSpecialCustodial. \
+            \ IDENTICAL IGNIS TO AN ORDINARY ORTO STAKE, and that is a fact about the code rather \
+            \ than an approximation: custody runs the SAME phase chain (`XI_OrtoStakePhases`) and \
+            \ differs only in which account goes in the tracker's owner column. \
+            \ `URCi_OrtoFungibleStakeFlow` does not read that column -- its legs are the transfer, \
+            \ the per-nonce tracker write, the settle bundle, the score delta, the book and the \
+            \ checkpoint -- so the quote is exact, not a stand-in. No STOA."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Stake sleeping (Z|) LP nonces under POOL CUSTODY — held until the lock matures."
+                 "Scores and rewards still accrue to the beneficiary; release is permissionless once matured."
+                 "Executes via TS02-C3.AQP-POOL|CCp_StakeSpecialCustodial."]
+                [(format "Staked {} sleeping nonce(s) of {} into pool {} under custody for {}."
+                    [(length nonces) dpof-id pool-id beneficiary-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    (RPS.URCi_OrtoFungibleStakeFlow pool-id owner-id beneficiary-id dpof-id nonces true))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [(length nonces)])
+        )
+    )
+    (defun INFO_AQP-POOL|ReleaseSpecialCustodial:object{OuronetInfoV2.ClientInfo}
+        (patron:string pool-id:string beneficiary-id:string dpof-id:string nonce:integer)
+        @doc "Cost preview for AQP-POOL|CCp_ReleaseSpecialCustodial. TWO LEGS, because the release \
+            \ does two things: it unwinds the stake (the orto flow in the UNSTAKE direction, over \
+            \ the single nonce) and it dissolves the batch through `VST::XE_Unsleep`. Both legs \
+            \ are reconstructed from the same cost readers the execution path calls. No STOA. \
+            \ \
+            \ PERMISSIONLESS, so the patron quoted here need not be the beneficiary -- anyone may \
+            \ pay to finish a matured release, and the native tokens still go to the staker."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Release a MATURED custodial sleeping position — dissolve the batch, send the native asset to the staker."
+                 "Permissionless once the lock has matured; refused before."
+                 "Executes via TS02-C3.AQP-POOL|CCp_ReleaseSpecialCustodial."]
+                [(format "Released nonce {} of {} from pool {} to {}." [nonce dpof-id pool-id beneficiary-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    (AQP-FVT.URCi_ReleaseSpecialCustodial pool-id beneficiary-id dpof-id nonce))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [nonce])
+        )
+    )
+    (defun INFO_AQP-POOL|ReassignCustodialBeneficiary:object{OuronetInfoV2.ClientInfo}
+        (patron:string pool-id:string executor:string new-beneficiary:string dpof-id:string nonce:integer)
+        @doc "Cost preview for AQP-POOL|CCp_ReassignCustodialBeneficiary. The orto phase chain \
+            \ priced TWICE over one nonce -- the seller's unstake leg and the buyer's stake leg -- \
+            \ reconstructed from the same reader the execution path uses. No STOA. \
+            \ \
+            \ NO ASSET MOVES, but the quote still carries a transfer leg per run, because \
+            \ `URCi_OrtoFungibleStakeFlow` prices that leg direction-independently. See \
+            \ `AQP-FVT::URCi_ReassignCustodialBeneficiary` for why that is left in rather than \
+            \ netted out."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Hand a custodial sleeping position's earnings to another account — the batch stays locked with the pool."
+                 "Requires the current beneficiary's signature, and is refused when a direct transfer to the recipient would be."
+                 "Executes via TS02-C3.AQP-POOL|CCp_ReassignCustodialBeneficiary."]
+                [(format "Nonce {} of {} in pool {} now earns for {}." [nonce dpof-id pool-id new-beneficiary])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    (AQP-FVT.URCi_ReassignCustodialBeneficiary pool-id executor new-beneficiary dpof-id nonce))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [nonce])
+        )
+    )
     (defun INFO_AQP-POOL|StakeSemiFungibleCollectable:object{OuronetInfoV2.ClientInfo}
         (patron:string pool-id:string owner-id:string beneficiary-id:string collectable-id:string nonces:[integer])
         @doc "Cost preview for AQP-POOL|CC_StakeSemiFungibleCollectable (DPSF, son=true / class-3). Multi-leg IGNIS \
@@ -979,6 +1053,115 @@
                  "Executes via TS02-C3.AQP-POOL|C_AbortVacate."]
                 [(format "Aborted vacate on pool {}." [pool-id])]
                 (ref-I|OURONET::OI|UDC_NoIgnisCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
+        )
+    )
+    ;;
+    (defun INFO_AQP-POOL|UpdateScoreMultipliers:object{OuronetInfoV2.ClientInfo}
+        (patron:string score-id:string mx-frozen:decimal mx-sleeping:decimal mx-hibernated:decimal)
+        @doc "Cost preview for AQP-POOL|CC_UpdateScoreMultipliers. Flat 'setup' component — a \
+            \ settings write, priced with the other one-shot score settings. No STOA. \
+            \ \
+            \ THE OP IS REFUSED while any frozen or sleeping position exists on the score, and \
+            \ this quote does not try to predict that: a preview prices the transaction, and the \
+            \ emptiness gate is a condition the caller discovers by reading the pool. Quoting \
+            \ zero for a call that will abort would be worse than quoting its real price."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Re-set a score's frozen, sleeping and hibernating multipliers."
+                 "Refused while any frozen or sleeping position exists on the score."
+                 "Executes via TS02-C3.AQP-POOL|CC_UpdateScoreMultipliers."]
+                [(format "Score {} multipliers set to frozen={} sleeping={} hibernated={}."
+                    [score-id mx-frozen mx-sleeping mx-hibernated])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-POOL.URCi_UpdateScoreMultipliers [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
+        )
+    )
+    (defun INFO_AQP-POOL|BackfillScoreSlice:object{OuronetInfoV2.ClientInfo}
+        (patron:string pool-id:string score-id:string beneficiaries:[string])
+        @doc "Cost preview for AQP-POOL|CCp_BackfillScoreSlice — one fed slice of the re-rate sweep. \
+            \ PRICED PER HOLDER, matching the execution path exactly: the transaction recomputes \
+            \ one target and writes one delta per account. So the quote SCALES with the slice the \
+            \ caller intends to send, which is what makes it usable for sizing -- a flat price \
+            \ would make a 1-account slice cost what a 40-account slice costs. No STOA."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Re-rate one slice of holders after a score was added to a pool."
+                 "Order-independent and replay-safe — fire slices in parallel; a converged holder is a no-op."
+                 "Executes via TS02-C3.AQP-POOL|CCp_BackfillScoreSlice."]
+                [(format "Re-rated {} holder(s) on score {} of pool {}." [(length beneficiaries) score-id pool-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    (ref-I|OURONET::OI|UC_IfpFromOutputCumulator
+                        (AQP-POOL.URCi_BackfillScoreSlice beneficiaries [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [(length beneficiaries)])
+        )
+    )
+    (defun INFO_AQP-POOL|BeginScoreRevoke:object{OuronetInfoV2.ClientInfo}
+        (patron:string pool-id:string score-id:string slot-index:integer)
+        @doc "Cost preview for AQP-POOL|C_BeginScoreRevoke — phase 1 of 3. Flat 'setup' component: \
+            \ vacate the score's pool slot and freeze the pool. No STOA."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Begin revoking a score from a pool (phase 1/3 — vacate the slot, freeze the pool)."
+                 "Then drain with Cp_DrainScoreSlice, and finish with CC_FinalizeScoreRevoke."
+                 "Executes via TS02-C3.AQP-POOL|C_BeginScoreRevoke."]
+                [(format "Score {} vacated from slot {} of pool {}; pool frozen pending drain." [score-id slot-index pool-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-POOL.URCi_BeginScoreRevoke [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
+        )
+    )
+    (defun INFO_AQP-POOL|DrainScoreSlice:object{OuronetInfoV2.ClientInfo}
+        (patron:string pool-id:string score-id:string accounts:[string])
+        @doc "Cost preview for AQP-POOL|Cp_DrainScoreSlice — phase 2 of 3, one fed slice. \
+            \ PRICED PER HOLDER for the same reason as the re-rate slice: one read and one delta \
+            \ write each, so the quote tracks the slice the caller means to send. No STOA."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Drain one slice of holders' bases for a score being revoked (phase 2/3)."
+                 "Order-independent and replay-safe — fire slices in parallel."
+                 "Executes via TS02-C3.AQP-POOL|Cp_DrainScoreSlice."]
+                [(format "Drained {} holder(s) of score {} on pool {}." [(length accounts) score-id pool-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    (ref-I|OURONET::OI|UC_IfpFromOutputCumulator
+                        (AQP-POOL.URCi_DrainScoreSlice accounts [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [(length accounts)])
+        )
+    )
+    (defun INFO_AQP-POOL|FinalizeScoreRevoke:object{OuronetInfoV2.ClientInfo}
+        (patron:string pool-id:string score-id:string)
+        @doc "Cost preview for AQP-POOL|CC_FinalizeScoreRevoke — phase 3 of 3. Flat 'setup' \
+            \ component: cut the aqpool-link once the drain has reached zero. Refused while any \
+            \ holder still carries a base for the score. No STOA."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Finish revoking a score from a pool (phase 3/3 — cut the link, release the freeze)."
+                 "Refused while any holder still carries a base for the score."
+                 "Executes via TS02-C3.AQP-POOL|CC_FinalizeScoreRevoke."]
+                [(format "Score {} unlinked from pool {}." [score-id pool-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-POOL.URCi_FinalizeScoreRevoke [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [])
         )
@@ -1379,6 +1562,56 @@
                 (ref-I|OURONET::OI|UDC_NoIgnisCosts)
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [])
+        )
+    )
+    ;;
+    (defun INFO_AQP-FVT|ClearPoolSweep:object{OuronetInfoV2.ClientInfo}
+        (patron:string pool-id:string)
+        @doc "Cost preview for AQP-FVT|CC_ClearPoolSweep. Flat 'backfill' component — priced as \
+            \ sweep maintenance rather than a settings change, because it is the last step of a \
+            \ job ANYBODY may finish. No STOA. \
+            \ \
+            \ IT LIVES IN AQP-FVT, not AQP-POOL, and the preview sits here for the same reason: \
+            \ the pool's sweep flag has two owners (the add-score re-rate and the FVT anchor \
+            \ sweep) and AQP-FVT is the only module that can see both, so it is the only one that \
+            \ can refuse to lift a freeze whose other owner is still running."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Release a pool's sweep freeze once the outstanding work list is empty."
+                 "Permissionless — anyone may finish the job; refused while either owner still has work."
+                 "Executes via TS02-C3.AQP-FVT|CC_ClearPoolSweep."]
+                [(format "Sweep freeze lifted on pool {}." [pool-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-FVT.URCi_ClearPoolSweep [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
+        )
+    )
+    (defun INFO_AQP-FVT|FvtFixSlice:object{OuronetInfoV2.ClientInfo}
+        (patron:string fvt-id:string accounts:[string])
+        @doc "Cost preview for AQP-FVT|CCp_FvtFixSlice. Gas-station subsidised — no IGNIS/STOA to \
+            \ the patron, exactly like the sequential fixer it parallelises. \
+            \ \
+            \ THE FED-SLICE FORM IS WHY IT EXISTS: the cursor pager takes a `chunk` and computes \
+            \ its own window, so two concurrent sends pick the SAME members and charge the \
+            \ forced-fix penalty twice. This one takes the accounts explicitly and re-checks \
+            \ staleness in-transaction, so an overlapping or replayed slice skips rather than \
+            \ re-penalising."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Fix one explicit slice of deb-stale FVT members (parallel-safe)."
+                 "Gas-station subsidised — costs you nothing."
+                 "Executes via TS02-C3.AQP-FVT|CCp_FvtFixSlice."]
+                [(format "Fixed up to {} stale member(s) on FVT {}." [(length accounts) fvt-id])]
+                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [(length accounts)])
         )
     )
     ;;

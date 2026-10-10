@@ -22,7 +22,7 @@ family, and moving them also broke their relative (load "Stage00_Sanboxes.repl")
 paths, so they could not have run even in place. ~125 assertions silently left the
 suite and the ledger never noticed, because the ledger counts files, not execution.
 """
-import argparse, collections, glob, os, re, shutil, subprocess, sys, time
+import argparse, collections, glob, os, re, shutil, subprocess, sys, tempfile, time
 
 # The pact binary. Resolved once, with an env override, because a PATH that lacks ~/.local/bin
 # is a common way for the gate to "fail" for a reason that has nothing to do with the suite.
@@ -232,6 +232,72 @@ def run_one(path):
 GATE_RECEIPT = "/tmp/.ouronet-gate-receipt.log"
 
 
+# ──────────────────────────────────────────────────────────────────────────────────────────────
+# SINGLE-RUN LOCK -- because the gate MUTATES THE TREE and two runs corrupt each other
+# ──────────────────────────────────────────────────────────────────────────────────────────────
+#
+# Added 2026-10-10 after a FALSE RED cost an investigation. Two gates were running at once; one
+# reported:
+#
+#     DRIFT: IGNIS-PRICE-SHEET.md -- 2 line(s)
+#     -| `C_Issue` | ... | **>= 1001** | ...        (committed)
+#     +| `C_Issue` | ... | **>= 1000** | ...        (regenerated)
+#
+# There was no drift. `1001` is the string `_pricesync.py --selftest` DELIBERATELY writes over
+# `1000` to prove its own checker catches a perturbed figure; it restores the file in a `finally`.
+# The other gate's `--check` simply read the artefact inside that window. The gate runs
+# `--selftest` on every tool that has one, and several of those selftests write tracked files, so
+# a concurrent run observes another run's deliberate corruption and reports it as real.
+#
+# WHY THIS IS WORSE THAN LOST TIME. The diff names a published PRICE and reads as authoritative.
+# Resolving it the obvious way -- make the artefact say what the "committed" side said -- commits
+# `>= 1001`, a wrong price in the published sheet, with a green gate afterwards. A false RED that
+# tells you exactly which wrong edit to make is more dangerous than a false GREEN.
+#
+# A STALE LOCK IS NOT TREATED AS A LOCK. `atexit` releases on every normal and `sys.exit` path
+# but not on SIGKILL -- and this session has killed its own shells with `pkill -f` twice. So a
+# dead owner is taken over rather than obeyed, because a lockfile nobody owns must not wedge the
+# gate forever. It warns when it does, since a gate killed mid-selftest may have left a
+# perturbed artefact behind, and `git diff` on the generated files is how you find out.
+def _acquire_gate_lock():
+    import atexit, hashlib
+    tag = hashlib.sha256(os.getcwd().encode()).hexdigest()[:12]   # per-checkout, not per-machine
+    lock = os.path.join(tempfile.gettempdir(), f"ouronet-gate-{tag}.lock")
+    while True:
+        try:
+            fd = os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o644)
+            os.write(fd, f"{os.getpid()}\n".encode())
+            os.close(fd)
+            break
+        except FileExistsError:
+            try:
+                owner = int(open(lock).read().split()[0])
+            except (ValueError, IndexError, OSError):
+                owner = -1                                        # unreadable == not an owner
+            alive = owner > 0
+            if alive:
+                try:
+                    os.kill(owner, 0)
+                except OSError:
+                    alive = False
+            if alive:
+                sys.exit(
+                    f"GATE REFUSED: another gate is already running in this checkout "
+                    f"(pid {owner}, lock {lock}).\n"
+                    f"   The gate's tool selftests WRITE tracked files, so a second run reads "
+                    f"another run's\n   deliberate perturbations and reports them as drift. "
+                    f"Wait for pid {owner} to finish.\n"
+                    f"   If it is gone, delete {lock}.")
+            print(f"   note: took over a stale gate lock from dead pid {owner}. A gate killed "
+                  f"mid-selftest\n         can leave a generated artefact perturbed -- check "
+                  f"`git diff` on the generated files.", flush=True)
+            try:
+                os.unlink(lock)
+            except OSError:
+                pass
+    atexit.register(lambda: (os.path.exists(lock) and os.unlink(lock)) or None)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("-j", type=int, default=os.cpu_count())
@@ -258,6 +324,8 @@ def main():
     # find. The header below is the whole defence, and it is sufficient: no header, no run.)
     print(f"GATE RUN STARTED {time.strftime('%Y-%m-%d %H:%M:%S')} "
           f"(pid {os.getpid()})", flush=True)
+
+    _acquire_gate_lock()
 
     # Scratch probes. Iterating on this suite means dropping a throwaway loader in modules/ to see
     # what a function does; modules/*.repl is GLOBBED into the gate, so a forgotten one runs as a
@@ -612,11 +680,35 @@ def main():
     # V4 is now FROZEN alongside V3 -- deployed 2026-10-07, confirmed by the chain rather than by
     # the receipts (`URC_IzEquitySemiFungible` resolves, and the stake dispatch answers 500 where
     # it answered 1 and 0 before).
-    _p5 = subprocess.run([sys.executable, "tools/_purev5.py", "--check"],
+    #
+    # V5 IS NOW FROZEN TOO -- deployed 2026-10-09, confirmed by the chain rather than by the
+    # receipts: the three Snake-triplet holders read 2.5 / 56.25 / 298 where every one of them
+    # had read 0. V6 is the open round. BOTH are checked, because a frozen round's check is what
+    # catches the folder being edited after the fact, and an empty open round costs nothing.
+    for _round, _tool in (("PureV5", "tools/_purev5.py"), ("PureV6", "tools/_purev6.py")):
+        _p = subprocess.run([sys.executable, _tool, "--check"], capture_output=True, text=True)
+        if _p.returncode != 0:
+            print(_p.stdout + _p.stderr)
+            sys.exit(f"GATE FAILED: a Deploy/{_round} file is stale, mis-ordered, "
+                     f"or carries a create-table.")
+
+    # THE ARWEAVE URI MIGRATION (Deploy/4_Arweave) is a DATA round, so none of the checks
+    # above reach it: there is no module to diff, no interface to order and no create-table to
+    # strip. What can go wrong instead is coverage -- a nonce rewritten twice, a nonce missed, a
+    # link map that names something out of scope, or a batch planned over the gas budget -- and
+    # `_arweave.py --check` is what asks. It also diffs the 20 emitted transactions byte for
+    # byte against the generator, so a change to a `UC_*Link` grammar or to links/LINKS.json
+    # cannot land without the transactions following it.
+    #
+    # It reads the IPFS gateway OUT OF the three minter sources rather than carrying a copy, and
+    # treats disagreement between them as fatal: if the minters stop agreeing about the gateway,
+    # no single migration can be correct, and silently preferring one would plan the round
+    # against a tree that half the collections never used.
+    _aw = subprocess.run([sys.executable, "tools/_arweave.py", "--check"],
                          capture_output=True, text=True)
-    if _p5.returncode != 0:
-        print(_p5.stdout + _p5.stderr)
-        sys.exit("GATE FAILED: a Deploy/PureV5 file is stale, mis-ordered, or carries a create-table.")
+    if _aw.returncode != 0:
+        print(_aw.stdout + _aw.stderr)
+        sys.exit("GATE FAILED: the Deploy/4_Arweave plan is stale, miscovered, or over budget.")
 
     # GLYPH PARITY. The character IS the wire format. Porting DPL-UR's reads flattened Unicode to
     # ASCII four separate times -- ¢->c, ×->x, ≥->>=, and Ξ₳->Xi-A, the Elite-Auryn symbol itself.

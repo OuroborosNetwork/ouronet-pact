@@ -178,10 +178,17 @@
                 ,"in-triplet"      : (ref-SCR::UR_SCR|ScoreTriplet score-id)
                 ,"triplet-id"      : triplet-id
                 ;;A DIRECT READER, NOT A DERIVATION. A TRUE triplet is one whose rungs form a
-                ;;closed boost ring, and it matters to a client for one reason: its weight comes
-                ;;from maintained LANE WEIGHTS rather than a deb product, so it is
-                ;;deb-independent, cannot go stale, and `CC_UnstaleMyScores` no-ops on it. The
-                ;;first draft of this field inferred the property from the three rungs'
+                ;;closed boost ring: ONE HUB carrying the staked base and two ADDITIVE SATELLITES
+                ;;whose base is 0 and which earn only what their own boosters make against the
+                ;;hub's base. That is what a client needs it for -- a zero on a satellite is
+                ;;EXPECTED, not a missing position.
+                ;;CORRECTED 2026-10-09. This said a true triplet's weight "comes from maintained
+                ;;LANE WEIGHTS rather than a deb product, so it is deb-independent, cannot go
+                ;;stale, and `CC_UnstaleMyScores` no-ops on it". All three clauses are now false:
+                ;;`URC_ComputeTripletLanes` reads the legs' deb-scores, `URC_ScoreEntityUserWeight`
+                ;;reads that sum LIVE, and the true-triplet short-circuit was removed from
+                ;;`URC_FvtMemberDebNeedsFix` -- so a true triplet CAN go stale and IS repaired.
+                ;;The first draft of this field inferred the property from the three rungs'
                 ;;boost-links; `UR_SCR|TripletTrueTriplet` answers it outright.
                 ,"true-triplet"    : (if (ref-SCR::URC_TripletExists triplet-id)
                                          (ref-SCR::UR_SCR|TripletTrueTriplet triplet-id)
@@ -319,11 +326,14 @@
                 "can-upgrade"       : (ref-SCR::UR_SCR|ScoreCanUpgrade score-id)
                ,"can-change-owner"  : (ref-SCR::UR_SCR|ScoreCanChangeOwner score-id)
                ,"i-am-owner"        : (= account (ref-SCR::UR_SCR|ScoreOwnerKonto score-id))
-                ;;A FOREIGN BOOST-LINK CHANGES WHAT EVERY NUMBER MEANS. When non-BAR, the
-                ;;promille is applied to ANOTHER score's user base and this row holds only the
-                ;;surplus -- so a client showing base+boost without saying so is showing a
-                ;;figure that does not mean what the label claims. BAR = own base, the normal
-                ;;case, and never this score itself (`SCR|C>CREATE-BOOST-LINK-SCORE` forbids it).
+                ;;A FOREIGN BOOST-LINK CHANGES WHAT EVERY NUMBER MEANS. When non-BAR this score
+                ;;is an ADDITIVE SATELLITE: its own base is stored as 0 and the promille applies
+                ;;to the HUB's user base, so the row holds boost ONLY. A client showing
+                ;;base+boost without saying so is showing a figure that does not mean what the
+                ;;label claims -- and specifically must not imply a staked unit is worth anything
+                ;;here, because without a booster in this score's own class it is worth zero.
+                ;;BAR = own base, the normal case, and never this score itself
+                ;;(`SCR|C>CREATE-BOOST-LINK-SCORE` forbids it).
                ,"boost-link"        : (ref-SCR::UR_SCR|ScoreBoostLink score-id)
                 ;;THE THIRD TOTAL. The definition carries total-base and total-deb; the boosted
                 ;;total completes the decomposition the module header spells out:

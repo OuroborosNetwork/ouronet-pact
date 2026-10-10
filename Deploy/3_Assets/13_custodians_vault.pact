@@ -52,7 +52,7 @@
 ;;   * Nonce 4 (OG Founder, 105 units) scores nothing. A triplet has no fourth lane.
 ;;   * "20% of daily OURO issuance delivered here" is an inject/emission lever OUTSIDE AQP.
 ;;     Rewards arrive through AQP-FVT|CC_Inject; no FVT field schedules them.
-;;   * The oracle. Capture stays 0 until one reports nodes — see transaction 15's tail.
+;;   * The oracle. Capture stays 0 until one reports nodes — see transaction 14's tail.
 ;;
 ;; SIGNING: GOV|AQP_BOOT_ADMIN, plus coin.TRANSFER managed caps for the STOA-priced issuances
 ;; (score models, FVT, pool). Measured in the REPL at 12x UR_UsagePrice "smart", four-way split.

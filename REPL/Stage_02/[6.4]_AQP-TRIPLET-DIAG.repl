@@ -114,12 +114,12 @@
                       (ref-SCR::UR_U-SCR|UserScoreBoostedScore owner pool-id silver-id)
                       (ref-SCR::UR_U-SCR|UserScoreDebScore owner pool-id silver-id)
                   ])
-                  (format "<(Bronze base/boost/deb)> => \"{} / {} / {}\" (boost-link to Silver, surplus-only)" [
+                  (format "<(Bronze base/boost/deb)> => \"{} / {} / {}\" (boost-link to Silver, additive satellite)" [
                       (ref-SCR::UR_U-SCR|UserScoreBaseScore owner pool-id bronze-id)
                       (ref-SCR::UR_U-SCR|UserScoreBoostedScore owner pool-id bronze-id)
                       (ref-SCR::UR_U-SCR|UserScoreDebScore owner pool-id bronze-id)
                   ])
-                  (format "<(Golden base/boost/deb)> => \"{} / {} / {}\" (boost-link to Silver, surplus-only)" [
+                  (format "<(Golden base/boost/deb)> => \"{} / {} / {}\" (boost-link to Silver, additive satellite)" [
                       (ref-SCR::UR_U-SCR|UserScoreBaseScore owner pool-id golden-id)
                       (ref-SCR::UR_U-SCR|UserScoreBoostedScore owner pool-id golden-id)
                       (ref-SCR::UR_U-SCR|UserScoreDebScore owner pool-id golden-id)
@@ -130,19 +130,65 @@
                       true (> (ref-SCR::UR_U-SCR|UserScoreDebScore owner pool-id silver-id) 0.0))
               ]
           )
+          ;;==== TX-AQP-TD01 · 02 · ADDITIVE-SATELLITE REGRESSION (D1) ====
+          (print "--- [TX-AQP-TD01 · 02 · additive-satellite regression] ---")
+          ;;WHY THIS BLOCK EXISTS, 2026-10-09. What stood here was two `if`s that PRINTED either
+          ;;"OK Bronze surplus boosted>0" or a NOTE claiming a satellite needs "aggregate promile
+          ;;>500 permille" to register anything. The NOTE was not a caveat, it was the defect: the
+          ;;pre-M3 "store only the surplus over the foreign base" rule subtracted the hub's WHOLE
+          ;;base from a boost part that was ALREADY the increment, so the stored value clamped to 0
+          ;;unless prom x deb > 1000 permille. Every satellite on mainnet read 0, and the matrix
+          ;;recorded SCR-50 as PASS because the only thing it asserted was base = 0.
+          ;;
+          ;;So the lesson is not "assert more", it is that a conditional assertion is indistinguish-
+          ;;able from an absent one. The fixture PRECONDITION is therefore asserted FIRST: if the
+          ;;boot stops granting these boost classes a promile, THAT fails, loudly, instead of
+          ;;silently excusing a zero. Owner ruling 2026-10-08: a satellite's boost is
+          ;;hub-base x its OWN promile, deb-multiplied, with no subtraction.
           (let
               (
                   (b-boost:decimal (ref-SCR::UR_U-SCR|UserScoreBoostedScore owner pool-id bronze-id))
                   (g-boost:decimal (ref-SCR::UR_U-SCR|UserScoreBoostedScore owner pool-id golden-id))
+                  (b-prom:decimal (ref-ANK::UR_UB|AggregatePromile owner bronze-bc))
+                  (g-prom:decimal (ref-ANK::UR_UB|AggregatePromile owner golden-bc))
+                  (hub-base:decimal (ref-SCR::UR_U-SCR|UserScoreBaseScore owner pool-id silver-id))
               )
-              (if (> b-boost 0.0)
-                  (print (format "OK Bronze surplus boosted>0 got={}" [b-boost]))
-                  (print "NOTE: Bronze boosted=0 — foreign surplus needs aggregate promile >500‰ on first LP leg (boot OuroborosRain=50‰ each)")
+              (map print
+                  [
+                      ;;PRECONDITION, asserted so it cannot become an excuse.
+                      (expect (format "<<TX-AQP-TD-D1a>> fixture grants Bronze BC a promile got={}" [b-prom])
+                          true (> b-prom 0.0))
+                      (expect (format "<<TX-AQP-TD-D1b>> fixture grants Golden BC a promile got={}" [g-prom])
+                          true (> g-prom 0.0))
+                      (expect (format "<<TX-AQP-TD-D1c>> hub (Silver) carries the LP base got={}" [hub-base])
+                          true (> hub-base 0.0))
+                      ;;THE REGRESSION, IN TWO STRENGTHS. The `> 0` pair is what the old surplus
+                      ;;subtraction failed: it clamped every satellite to 0 for any sane promile.
+                      (expect (format "<<TX-AQP-TD-D1d>> Bronze additive satellite earns at all hub={} prom={} got={}" [hub-base b-prom b-boost])
+                          true (> b-boost 0.0))
+                      (expect (format "<<TX-AQP-TD-D1e>> Golden additive satellite earns at all hub={} prom={} got={}" [hub-base g-prom g-boost])
+                          true (> g-boost 0.0))
+                      ;;AND THE EXACT VALUES, which `> 0` cannot speak to -- that is how a MAGNITUDE
+                      ;;error hides behind a presence check. It did: with the surplus subtraction gone
+                      ;;but the ordering defect still in place, these two read 25 and 300 against a hub
+                      ;;base of 400, because `base-for-boost` was hub-base + the satellite's OWN stake
+                      ;;delta (500) rather than the hub base. Both passed `> 0` and both were wrong.
+                      ;;Expected is computed from the live hub base and promile, not written as a
+                      ;;literal, so the fixture can grow without the assertion going vacuous.
+                      (expect (format "<<TX-AQP-TD-D1h>> Bronze boost == floor(HUB base x prom/1000) exactly hub={} prom={}" [hub-base b-prom])
+                          (floor (* hub-base (/ b-prom 1000.0)) (ref-SCR::UR_SCR|ScorePrecision bronze-id))
+                          b-boost)
+                      (expect (format "<<TX-AQP-TD-D1i>> Golden boost == floor(HUB base x prom/1000) exactly hub={} prom={}" [hub-base g-prom])
+                          (floor (* hub-base (/ g-prom 1000.0)) (ref-SCR::UR_SCR|ScorePrecision golden-id))
+                          g-boost)
+                      ;;A satellite still owns NO base -- that half of SCR-50 was always right.
+                      (expect (format "<<TX-AQP-TD-D1f>> Bronze satellite holds no base got={}" [(ref-SCR::UR_U-SCR|UserScoreBaseScore owner pool-id bronze-id)])
+                          0.0 (ref-SCR::UR_U-SCR|UserScoreBaseScore owner pool-id bronze-id))
+                      (expect (format "<<TX-AQP-TD-D1g>> Golden satellite holds no base got={}" [(ref-SCR::UR_U-SCR|UserScoreBaseScore owner pool-id golden-id)])
+                          0.0 (ref-SCR::UR_U-SCR|UserScoreBaseScore owner pool-id golden-id))
+                  ]
               )
-              (if (> g-boost 0.0)
-                  (print (format "OK Golden surplus boosted>0 got={}" [g-boost]))
-                  (print "NOTE: Golden boosted=0 — foreign surplus needs aggregate promile >500‰ on first LP leg (boot EliteAurynRain=200‰ each)")
-              )
+              ""
           )
       )
       (print (format "SKIP TX-AQP-TD01: DHOuroLp not ready (lp-bal={} pool-class={})" [lp-bal pool-class]))

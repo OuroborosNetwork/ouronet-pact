@@ -4117,3 +4117,580 @@ on the tool's say-so would have deleted `ps10`/`ps20`/`ps40` and left a 70% shor
 
 **Result: gate GREEN at 25,641**, up 10 from 25,631 — `<<DSP-G1>>`'s four assertions and
 `<<SWP-G29>>`'s two, the former reached from more than one entrypoint.
+
+## 8.38 Pool custody made every vacate strand the position it was protecting
+
+**Found 2026-10-10, in code shipped the previous day. Asset loss, not staleness.**
+
+The custody feature stakes a sleeping batch with `AQP|SC_NAME` in the tracker's **owner** column —
+that one column IS the mechanism, because `CAP_StakeOwner` reads it and so an early user exit is
+refused by a guard that already existed, with nothing new to write and nothing to forget.
+
+Both DPOF vacate paths then did:
+
+```pact
+(ref-DPOF::C_BulkTransfer patron AQP|SC_NAME owner-ids dpof-id nonces-array true)
+```
+
+Sender `AQP|SC_NAME` → recipients `owner-ids`, read from that same column. **For a custodial row
+the two are the same account.** The pool was both sender and recipient: the batch never moved,
+while `XI_1|VacateOrtoFungibleUnwindBatch` drained the tracker row and unwound the score *around*
+it. Position gone, asset still inside the pool, **and no row left to find it by** — the tracker is
+how a holding is located at all.
+
+`XI_VacateOrtoFungibleBatch` (full vacate) and `XI_DrainOrtoFungibleBatch` (fast drain). The
+`DPDC-T` siblings are unaffected: custody is DPOF-only.
+
+### Why nothing caught it
+
+The only fixture that vacated a `Z|` satellite — `[6.4]` `<<TX-AQP-CL05>>` — staked it on the
+**ordinary** path, so `owner-ids` held the staker and the transfer was a real move. The custody
+tests (`<<TX-AQP-CL06>>`) exercised the custodial *release*, never a vacate. Two features, each
+covered, and the interaction between them covered by neither. **The defect lived exactly in the
+gap between two test suites that were both green.**
+
+### The fix, and why the beneficiary is the right destination
+
+`UC_VacateOrtoDestinations owner-ids beneficiary-ids` substitutes the beneficiary wherever the
+owner is the pool. That is not merely an available account, it is provably the correct one: a
+custodial row can **only** be created by `CCp_StakeSleepingCustodial`, which moves the batch FROM
+the staker and records that same staker as beneficiary. The substitution returns the asset to the
+account it came from.
+
+It returns the **still-sleeping batch**, not the native counterpart. A vacate may run long before
+maturity, when unsleeping is impossible; the holder keeps the asset *and* the remaining lock.
+Maturity-gated dissolution stays `CCp_ReleaseSleepingCustodial`'s job.
+
+### How it is now pinned
+
+`[6.4]` `<<TX-AQP-CL05>>` was migrated to the custodial client — which it had to be anyway, since
+the ordinary path now refuses a `Z|` leg. Its pre-existing `Z| LP returned got=5.0` assertion now
+runs against a custodial row through the real agnostic `CC_FullVacate`, and **fails without the
+helper**. One fixture change, two subjects, no new test.
+
+---
+
+## 8.39 The custody rule was keyed on a PREFIX, and the prefix is not where the money is
+
+Caught before shipping, in the fix for §8.38, and it took two corrections to land.
+
+**First cut:** mandatory custody for every `URC_OrtoDpofIsSpecialLeg` — `Z|` **or** `H|`. But
+`CCp_ReleaseSpecialCustodial` dissolves through `VST::XE_Unsleep`, which resolves the native
+counterpart via `DPOF::UR_Sleeping`. A hibernating batch links through `UR_Hibernation`, carries
+`{mint-time, release-date}` instead of `{release-amount, release-date}`, and is dissolved by
+`C_Awake` — a different operation with an **80% peak fee decaying to zero at the release date**,
+not a mirror. So the rule would have forced hibernating batches down a path with **no exit**:
+the ordinary unstake could no longer find a row keyed to the staker, and the custodial release
+would refuse forever. Exactly §8.38's failure mode, re-created by its own fix.
+
+**Second cut** scoped it to `Z|`. Still wrong, and wrong in the direction that costs a USER rather
+than the protocol. Measuring what a `Z|` leg actually earns:
+
+- `UEV_AddScorePoolAndScore` (`03_AQP.pact:2965`) enforces `score-class == aqp-class`, so every
+  score a pool can employ shares the pool's class.
+- `XE_ApplyOrtoFungibleStakeDelta` (`02_SCORE.pact`) handles score-class **0 and 2 only**;
+  anything else falls through to an `"of-skip"` cumulator of **0.0**.
+- `URC_StakeOrtoFungibleDpofMatchesPool` lets aqp-class **1** ADMIT `Z|`/`H|` satellites, and
+  aqp-class **2** admit NATIVE DPOF only.
+
+Composed: **a sleeping satellite staked into an aqp-class-1 pool moves, is tracked, and scores
+nothing.** Requiring custody there would have locked it for up to twenty-five years in exchange
+for weight it provably never receives. The gamble the rule exists to close costs the protocol a
+mispriced multiplier; the over-broad rule would have cost a holder their asset.
+
+**Final:** custody follows the MULTIPLIER, not the prefix — mandatory iff the leg is `Z|` **and**
+the pool is aqp-class 0, which measurement says is the only place a duration-scaled multiplier is
+earned. Forbidden everywhere else, because the only exit from a custodial row is the sleeping one.
+
+Both halves asserted: `[6.4]` `<<TX-AQP-CL06>>` (the earning case must be custodial),
+`[6.2.5]` `<<TX-VCT-L01b>>` (a native leg may not be), and `[6.2.17]` `<<TX-RERATE-SKIP>>` — which
+pins the zero **positively**, asserting that the ordinary path ACCEPTS a non-earning satellite. A
+prefix-keyed rule makes that assertion go red, which is the point of writing it that way.
+
+### The correction this forces to §3 of the sleeping-LP handoff
+
+The same composition makes `XI_1|UpdateScoreDataForSpecialOrtoFungible` **unreachable from the
+client surface**: a score-class-2 score can only live on an aqp-class-2 pool, and those refuse
+`Z|`/`H|` outright. So `mx-sleeping`/`mx-hibernated` on a class-2 score can never be reached by
+any live path.
+
+**That means the "class-2 flat-ceiling gamble" recorded on 2026-10-09 was never live.** The fix
+made to `URC_SignedBaseDeltaForSpecialDpofStake` (flat ceiling → per-nonce duration decay) is
+correct and harmless, but it was applied to dead code and was reported as closing an open
+exploit. It did not. The only live duration multiplier in the system is **class-0 `mx-sleeping`**,
+the sleeping-LP leg — which is what `[6.4]` CL05/CL06 exercise and what the ledger, the custody
+rule and the signed-floor fix all actually protect.
+
+Recorded because the error was not in the code but in the claim: a function being *correct* was
+mistaken for a path being *reachable*, and nothing in the gate distinguishes those.
+
+### One toolchain symptom, unresolved
+
+`VST|C_CreateHibernatingLink` on **OURO**, called from the Stage-2 AQP chain, **kills the `pact`
+binary with no Pact-level error and no output** — exit 1, nothing on stdout or stderr after the
+preceding `print`. Reproduced twice, with and without a preceding `env-chain-data`. Not chased
+further because the hibernating path turned out not to need building; noted because a silent
+interpreter death is the one failure mode no assertion can catch, and the next person to touch
+hibernation on OURO will hit it.
+
+
+## 8.40 Special-token satellites were admitted, tracked, and scored NOTHING
+
+**Found 2026-10-10 by measurement, not by a failing test — nothing could fail, because nothing
+asserted it.** Three rules composed into a silent dead end and none of them stated it:
+
+- `UEV_AddScorePoolAndScore` (`03_AQP.pact`) enforces `score-class == aqp-class`, so a pool's
+  employed scores all share its class.
+- `XE_ApplyOrtoFungibleStakeDelta` (`02_SCORE.pact`) handled score-class **0 and 2 only**;
+  everything else fell through to an `"of-skip"` cumulator of **0.0**.
+- `URC_StakeOrtoFungibleDpofMatchesPool` lets aqp-class **1** ADMIT `Z|`/`H|` satellites, while
+  aqp-class **2** admits native DPOF only.
+
+Net: a sleeping or hibernating satellite staked into a class-1 pool **moved, was tracked, and
+earned nothing** — and the score-class-2 path that did the weighting was unreachable from any
+client, because a class-2 score can only live on a class-2 pool and those refuse special legs.
+
+So `mx-sleeping` and `mx-hibernated` were unreachable except on the class-0 sleeping-LP leg. The
+owner's intent — *"special token satelites must behave like the native token plus their designated
+multiplier"* — was not implemented, and the "class-2 flat-ceiling gamble" recorded on 2026-10-09
+had never been live (see §8.39).
+
+**Fixed by routing on the LEG, not the score class**: a special leg now goes to
+`XI_1|UpdateScoreDataForSpecialOrtoFungible` on any class that can hold one, with
+`UEV_DpofSpecialStakeScoreContext` (class 1 **or** 2) replacing the class-2-only validator on that
+path. The native path keeps the exact check, because a native DPOF can only ever be a class-2
+pool's own asset.
+
+**The legitimate zero was never in that branch**, which is why the fix could not break it: an
+additive boosting satellite in a true triplet contributes no base by design, and that is enforced
+downstream in `URC_SingularUserScoreDeltaFromSignedUserBase` (boost-link and boost-class-link both
+non-BAR ⇒ user base 0). Routing through the normal machinery preserves it exactly rather than
+re-deriving it.
+
+Pinned by `[6.2.17]` `<<TX-RERATE-SAT>>`, which **replaced a test asserting the opposite.** That
+earlier test pinned the zero and said in its own comment that it would go red the day class-1
+scoring was wired up. It did — 1000.0 → 1025.0 — which is how the fix was confirmed rather than
+assumed. Writing the wart down as an assertion is what made its removal self-announcing.
+
+---
+
+## 8.41 Collapsing two clocks into one re-created the phantom-weight defect
+
+**Introduced and caught inside an hour, 2026-10-10.** While single-sourcing the weighting rule
+(owner ruling: hibernation flat, sleeping decaying) I replaced both the stake and the unstake with
+one call to `URC_SCR|SleepingLegWeight`. The rule was correctly shared. The **clock** was not
+supposed to be:
+
+- a STAKE is priced from the **live** remaining term, the commitment being made now, and
+  `XI_SleepStakeRecord` stamps that same figure;
+- an UNSTAKE must reverse **the stamp**, because by the time a position comes out its lock has run
+  down.
+
+Reading the live clock on the way out gives back less than was credited and strands the difference
+on the holder's base permanently — exactly the defect `SCR|T|SleepStake` was created to prevent,
+re-created by the refactor that was meant to make it harder to get wrong.
+
+`[6.4]` `<<TX-AQP-CL06>>` failed immediately and quantitatively: a 5.0 batch credited at the 2.0
+ceiling reversed at 1.0 and left **exactly 5.0** behind. The number named the bug.
+
+Fixed by threading `(not direction)` as the clock selector, so one rule still serves three callers
+while the two times stay distinct. The lesson is narrow and worth keeping: *"share the rule, not
+the inputs"* — a shared formula applied to the wrong operand is harder to see than two formulas,
+because the duplication it removed was never the risk.
+
+---
+
+## 8.42 Every special token is transfer-restricted from birth, which killed a stated policy rule
+
+**Found 2026-10-10 while gating the custodial beneficiary reassignment.**
+
+The owner's rule for that feature was: *"this changing on custody should be allowed only when the
+sleeping token is freely movable."* Implemented literally — refuse whenever
+`DPOF::UEV_MoveRoleCheck` finds roles active — and the first fixture refused a sale nobody had
+restricted: *"Incompatible Transfer Roles from Alice to Bob."*
+
+The cause is in `VST::XI_CreateSpecialOrtoFungibleLink`:
+
+```pact
+(ref-DPOF::C_ToggleTransferRole patron (UR_Konto special-dpof) VST|SC_NAME special-dpof true)
+```
+
+**VST grants itself the transfer role on every special token at creation**, because dissolution
+moves the batch to `VST|SC_NAME` and the role check would otherwise refuse it. So
+`are-transfer-roles-active` is TRUE for every sleeping, vested and hibernating token that has ever
+existed. "Does this token have transfer roles" is a question with one answer and no information in
+it; as a policy gate it refuses everything, forever.
+
+Worth recording separately because the *general* default is the opposite: `r-transfer` initialises
+to `[BAR]` on every token (`06_DPOF.pact`, `05_DPTF.pact`) and the gate checks nothing in that
+state — so ordinary tokens are freely movable and the restriction is opt-in. The exception is
+exactly the special family, and exactly because of the infrastructure grant.
+
+Resolved with `VST::URC_SpecialLegIssuerRestricted`, which asks whether any role-holder exists
+**besides VST's own account**. Every other name got there through `C_ToggleTransferRole*`, which
+only the token owner can call — so its presence is the owner's intent and its absence is the
+absence of intent. The predicate lives in VST because VST creates the exception: a consumer cannot
+be expected to know that one role-holder is an implementation detail of unsleeping.
+
+Both answers are pinned, which is the only way this stays honest: `[6.2.17]`
+`<<TX-RERATE-SELL>>` sells a position on a token carrying only the infrastructure grant and
+succeeds; `[6.4]` `<<TX-AQP-CL06>>` is refused on a token whose owner added a holder.
+
+**Why the gate exists at all**, since "it's locked anyway" argues the other way: the release pays
+the **native** counterpart to whoever is beneficiary at maturity, so a reassignment is a DEFERRED
+DELIVERY of the asset — not the sale of a claim. Nothing downstream re-checks it, because the
+release moves the native token, whose role list is a different object from the sleeping variant's.
+
+## 8.43 A false RED that named the wrong edit — the gate corrupts itself when run twice
+
+Found 2026-10-10, not by a test but by distrusting a gate failure that looked authoritative.
+
+Two gate runs were in flight at once (my own mistake — one backgrounded, one foreground). The
+second reported:
+
+```
+DRIFT: OuronetInformational/IGNIS-PRICING/IGNIS-PRICE-SHEET.md -- 2 line(s)
+-| `C_Issue` | ... | **>= 1001** | ...   (committed)
++| `C_Issue` | ... | **>= 1000** | ...   (regenerated)
+GATE FAILED: a generated pricing artefact does not match its generator.
+```
+
+**There was no drift.** `1001` is a string `_pricesync.py --selftest` WRITES ON PURPOSE —
+
+```python
+bad = original.replace("| **>= 1000** |", "| **>= 1001** |", 1)
+```
+
+— to prove its own checker catches a perturbed published figure, restoring the file in a
+`finally`. `_gate.py` runs `--selftest` on every tool that has one, so several gate steps
+deliberately mutate tracked files for a few milliseconds each. The other run's `--check` read the
+artefact inside that window and faithfully reported what it saw.
+
+### Why this is worse than wasted time
+
+A false GREEN hides a defect. **This false RED told you precisely which wrong edit to make.** The
+diff names a published PRICE, labels the perturbed side `(committed)`, and the obvious resolution
+— make the artefact agree with the "committed" column — commits `>= 1001` as the price of
+`DPOF|C_Issue` and leaves the gate green afterwards. One wrong number in the sheet that feeds the
+Chapter-2 documentation, arrived at by doing exactly what the failure asked.
+
+It also inverts the repo's most-repeated lesson. Everywhere else here, a checker that resolves
+drift by overwriting it is the hazard — `_pricesync.py`'s own `__main__` carries a comment about
+the first cut of that line passing `write=True` under `--check`. This is the mirror image: a
+checker that is *correct*, reading a file that a *different* correct checker is mid-way through
+corrupting on purpose.
+
+### The fix, and the part of it that is not obvious
+
+`_gate.py` now takes a single-run lock (`_acquire_gate_lock`, keyed by a hash of the checkout path
+so two clones do not block each other) immediately **after** the freshness header — not before,
+because "no header, no run" must stay true of a refused run too.
+
+The non-obvious half is that **a stale lock is not treated as a lock.** `atexit` releases on every
+normal and `sys.exit` path but not on `SIGKILL`, and this very session killed its own shells twice
+with a self-matching `pkill -f`. A dead owner is therefore taken over with a warning rather than
+obeyed, because a lockfile nobody owns must not wedge the gate permanently — the failure mode of a
+naive lock is a tool that refuses to run and cannot explain why. The warning says what the stale
+lock implies: a gate killed mid-selftest may have left a generated artefact perturbed, and
+`git diff` on the generated files is how you find out. An unreadable or empty lockfile is treated
+the same way, for the same reason.
+
+All four paths are proven, not assumed: lone acquire-and-release; a live second run refused by
+pid; a dead owner taken over with the warning; an empty lockfile not wedging anything.
+
+### What it does not change
+
+The gate was and is **GREEN at 28,344 assertions** (22,986 positive, 5,358 negative). The verdict
+was never in doubt once the run was serialised — which is the one good thing about this class of
+bug: the lock makes the failure impossible rather than merely unlikely, because the mutation
+window is inherent to testing a checker and cannot be designed away.
+
+## 8.44 Four live entrypoints had no execution spec, and two completeness guards both passed
+
+Found 2026-10-10 by the Scripts pane, on its first real run, against the thing it was built for.
+
+Exercising the new dev-only script endpoint end-to-end meant actually POSTing one of its
+regenerators rather than mocking it. `generate-execution-specs.py` returned exit 0 and reported
+**one changed file** — and the change was not cosmetic:
+
+```
+409 specs -> 413 specs      surface 7e59e59d4c5b7257 -> 37e9979f5a957dd9
++ TS02-C3.AQP-POOL|CC_VacateNonFungible
++ TS02-C3.AQP-POOL|CC_VacateOrtoFungible
++ TS02-C3.AQP-POOL|CC_VacateSemiFungible
++ TS02-C3.AQP-POOL|CC_VacateTrueFungible
+```
+
+`Deploy/OURONET-REGISTRY.json` was **clean in git and six days old** (2026-10-04), and already
+carried all four. Nobody had re-run the specs generator after the registry was regenerated, so
+OuronetUI's ExecutionTooltip had no spec for four live entrypoints — in a component whose entire
+stated claim is that *a correct render proves correct wiring*.
+
+### Why both existing guards passed
+
+`src/__tests__/signature-sources-agree.test.ts` already checked completeness, twice:
+
+| case | direction | verdict |
+|---|---|---|
+| "bundled signatures cover everything the chain offers" | registry → **signatures** | passed, correctly |
+| "every execution spec's entrypoint has a signature" | **specs** → signatures | passed, correctly |
+
+Neither can see an entrypoint with a signature and **no spec**. It satisfies the first (the
+signature is present) and is absent from the second's *domain* (there is no spec to be orphaned).
+The uncovered direction is the diagonal, **registry → specs**, and that is the one that drifted.
+Two guards pointing at the same corner is not the same as covering it, and the count of guards is
+what made it feel covered.
+
+The staleness was also invisible in the artefact itself. The file recorded `409 specs · 14
+skipped` in a header comment and nothing more, so a reader could not tell a legitimate skip from a
+missing key, and no test could either.
+
+### The fix
+
+`generate-execution-specs.py` now **exports** its skips as `SPEC_SKIPPED`, key → reason — all 14
+are `no ghost for object{…}` / `[[string]]` params the ghost synthesiser cannot build, which is a
+real and coherent reason that was previously only a line of stdout. With the skips exported, the
+invariant becomes an exact partition rather than a pair of subset checks:
+
+```
+registry entrypoints (427) == EXECUTION_SPECS (413) + SPEC_SKIPPED (14)
+```
+
+Asserted in **both** directions, because each catches a different failure: an unaccounted
+entrypoint means the artefact is stale, and a spec or skip for an entrypoint the registry no
+longer offers means it is ahead of the chain — or that a skip has outlived its site, which is the
+same stale-excuse pattern `_patronslots.py` was corrected for on 2026-09-26.
+
+Mutation-proven, not assumed: deleting exactly those four rows fails the new case and names all
+four with the command to fix them. 1,639 UI tests green afterwards.
+
+### The lesson worth keeping
+
+**A subset check in each direction is not a partition check.** Two assertions that each look like
+"nothing is missing" can leave a hole neither can express, and adding a third guard of the same
+shape would not have found it — only stating the invariant as an equality did.
+
+Second: the Scripts pane found this because exercising it for real required *running* a
+regenerator instead of mocking one. The mocked component tests and the plugin's unit tests were
+both green and both correct; neither could have surfaced a stale artefact, because neither
+regenerated anything. **The git-diff readout that was added to answer "did it actually do
+anything" is what made the drift visible** — "exit 0, one file changed" was the whole finding.
+
+## 8.45 `create-table` on a deployed module needs `acquire-module-admin` — tx 11 failed on chain
+
+Owner-reported 2026-10-10, mid-deploy. `Deploy/PureV6/11_init_create-table.pact` was written as:
+
+```pact
+(namespace "ouronet-ns")
+(create-table ouronet-ns.AQP-SCORE.SCR|T|SleepStake)
+```
+
+and failed with **"Module admin is necessary but has not been acquired"**. The owner fixed it
+himself by inserting `(acquire-module-admin AQP-SCORE)` and the transaction landed.
+
+**Why it was not caught by anything.** Creating a table belonging to a module you are not
+*inside* is a governed operation. Every other `create-table` in this repository sits in a
+first-deploy source, where the module's own governance is already in scope and the call is
+implicit — so there was no counter-example anywhere in the tree to pattern-match against, and
+the REPL never exercises the case either: it deploys modules from scratch, where the table is
+created by the module's own load. The shape only appears when a table is added to an **already
+deployed** module, which had never happened before this round.
+
+Both packers strip `create-table` from upgrade sources (correctly — it aborts when the table
+exists), so the hand-written init transaction is the one place this can occur, and it is written
+by hand precisely because it is rare.
+
+**The rule, stated so the next one is right:** a standalone `create-table` for an existing module
+must acquire that module's admin first, and the signer must be the module's **governance** keyset
+rather than any admin key.
+
+## 8.46 The multiplier-change gate ABORTS on collection pools instead of answering
+
+Found 2026-10-10 while building the post-deploy transaction that sets every live score's
+multipliers to their defaults. Of the 15 scores on chain, **11 abort**
+`AQP-POOL::URC_AQP|ScoreMxChangeSafe` with:
+
+```
+No value found in table ouronet-ns.DPTF_DPTF|PropertiesTable for key: DHB-...
+```
+
+`03_AQP.pact:1206-1207` reads `DPTF::UR_Frozen` / `UR_Sleeping` on the **pool's asset**, which
+assumes every pool's asset is a true fungible. The 11 are class-3 (DPSF/SFT) and class-4
+(DPNF/NFT) **collection** pools; their asset has no row in `DPTF|PropertiesTable` and the bare
+read aborts rather than returning a default.
+
+The correct answer for such a pool is **true** — an asset with no DPTF properties cannot have a
+frozen or sleeping DPTF leg — so the fix is a default-read, not new logic.
+
+**Severity is low, and the reason is worth stating** rather than assumed: frozen, sleeping and
+hibernating are variants of fungibles and ortofungibles, so a collection score's three multiplier
+fields are **never read by anything**. The abort therefore blocks only the writing of values
+nothing consults. What it does cost is a client entrypoint that hard-errors with a message naming
+neither the score nor the real cause — and anyone reading that message would reasonably conclude
+their token registry was corrupt.
+
+It also means the natural request "set the defaults on ALL scores" cannot be satisfied as asked,
+and the honest answer is that it should not be: the four scores whose multipliers are live are
+the whole correct set.
+
+## 8.47 The defaults the owner chose were never in the code — only in docstrings
+
+Owner-reported 2026-10-10, and he was right while I had twice told him otherwise.
+
+The agreed multiplier defaults are **2.998 frozen / 1.999 sleeping / 1.0 hibernated**, with two
+rules: the sleeping interval divides by THREE, and the frozen interval is at least DOUBLE it.
+Measured against the shipped code:
+
+| claim | reality before V7 |
+|---|---|
+| those three are the defaults | **FALSE.** `1.999`/`2.998` appeared ONLY inside `@doc` strings as worked examples. Issuance hard-coded `2.0 / 1.0 / 1.0` for classes 3 and 4, `2.0` frozen for class 2, `1.0` sleeping for class 1 |
+| sleeping interval divides by three | **NOT ENFORCED** anywhere |
+| frozen interval at least double | enforced, correctly, as `UC_MxOrderingOk` |
+
+So one of three was real. Worse, I had *checked* this once and reported the docstrings back as
+if they were the implementation — the function's own documentation says *"1.999 forces >= 2.998"*,
+which is a true statement about the RULE and says nothing about what issuance passes.
+
+**A default with no named constant cannot be verified.** There was no symbol to grep, no artefact
+to diff, and the only place the numbers appeared was prose that was itself correct. Every
+mechanism this repo uses to catch drift — `_pricesync`, `_figuresync`, `_chapterfigures` — works
+by comparing a generated figure to a stated one. A value that exists in exactly one place, as
+prose, is outside all of them.
+
+Fixed by naming them (`CT_MX_*_DEFAULT`) and using them at every issuance site, plus
+`UC_MxSleepIntervalOk` for the missing rule.
+
+### The bug the fix caused, which is the more useful half
+
+Changing the defaults broke **eight REPL suites** with `require-capability: not granted`. The
+cause: `SCR|XI>ISSUE-SCORE` is **granted** by a defcap and **required** inside `XI_Issue`, and the
+nine-value tuple is written out at BOTH ends. I updated the five grants and not the five calls, so
+the capability was granted with `(2.998, 1.999, 1.0)` and required with `(2.0, 1.0, 1.0)`.
+
+That is DEFECT-LEDGER 8.41 again — *"share the rule, not the inputs"* — in its other form: here
+the two sites share no code at all, they restate the same tuple, and Pact's capability equality is
+what notices. It failed loudly and immediately, which is the one mercy: a capability tuple
+mismatch cannot be silent, unlike the phantom-weight case that needed a test to find.
+
+**`BOOT|MX_FROZEN` / `BOOT|MX_SLEEPING` were the actual origin of the wrong numbers on mainnet.**
+Both were `2.0`, and `AQP-BOOT` Step 6 minted the only three LP scores the chain has — Bronze,
+Silver and Golden SnakePower all carry `2.0 / 2.0` because of those two lines. The pair is now
+illegal on *both* rules, so the constants had to move or boot itself would abort. Finding them
+answered a question nobody had asked: not "what should the defaults be" but "where did the live
+values come from".
+
+### What the round could NOT fix, and why that is correct
+
+A multiplier change still cannot be applied to a score with a frozen or sleeping position; the
+re-rate sweep exists but the gate stays. Nothing in V7 relaxes it.
+
+## 8.48 A `try` whose fallback is a well-formed object is indistinguishable from success
+
+Owner-reported 2026-10-10, right after the first real sleeping batch existed: the UI showed
+**"No Existing Supply · 1 batch"** over 10,000 freshly slept LP, in two different views.
+
+Chain had everything. `DPOF::UR_Supply` on the sleeping id returned `10000`, `UR_Name` returned
+`Sleeping^W|SilverStoa^Ouroboros^WrappedStoa`, and the account held nonce 1. The UI was not
+failing to find the data; it was being handed a dead row.
+
+### The defect
+
+`O-UI-NINE::URC_LpValuation` built its display name with
+
+```pact
+,"t1" : (ref-DPTF::UR_Name sleeping-id)
+```
+
+A sleeping LP is an **ORTOFUNGIBLE**. It has no row in `DPTF|PropertiesTable`, so that read did
+not return a default — it **aborted the whole valuation**. Every other field in the same function
+already used `ref-DPOF`, and the sibling `URC_TokenValuation` reads the name correctly one
+hundred lines earlier. A lone copy-paste divergence, one word wide.
+
+### Why nobody saw it for as long as the feature existed
+
+The only caller wraps it:
+
+```pact
+(try (UDC_ZeroValuation) (URC_LpValuation account swpair sleeping-id))
+```
+
+and `UDC_ZeroValuation` is a **complete object with every key the live valuation returns** —
+`entry-ok false`, `t1 "--"`, supplies `0.0`. That is exactly, byte for byte, the correct answer
+for a pool with no sleeping counterpart. So the abort degraded into the legitimate "nothing here"
+row, and while no sleeping batch existed anywhere on chain the two were **indistinguishable by
+construction**. The feature looked correct for as long as it was unused.
+
+What finally exposed it is the shape of the broken row: `wallet-nonces` and `wallet-nonces-no`
+are built OUTSIDE the `try` and were right, so the UI printed "1 batch" next to a supply of zero.
+A row that contradicts itself is the only evidence this failure mode can produce.
+
+### The lesson, which is NOT "don't use try"
+
+`try` with a `false` fallback is self-announcing: the caller must branch, and the branch is
+visible. **`try` with a well-formed object fallback is a silent substitution** — the consumer
+indexes the same keys, gets plausible values, and cannot tell. The guard's own docstring says the
+fallback exists so "a consumer indexing the merged entry cannot hit a key-not-found", which is a
+real goal and is exactly what makes it undetectable.
+
+Second instance of a bad `try` in the same week, and the pair is instructive because the failures
+are opposite. In the UI (8.48's sibling, `swp-pairs-proto.tsx`) `try` wrapped a `select`, which
+Pact refuses under restricted purity, so the guard MANUFACTURED a failure out of the success
+path. Here the guard SWALLOWED a real failure into a plausible success. Same keyword, inverted
+damage, and in both cases the comment above it asserted it was load-bearing.
+
+**What would have caught it:** an assertion that a pool with a KNOWN sleeping counterpart returns
+`entry-ok true`. The existing coverage only ever exercised the absent case, where the dead row is
+the right answer — so every test was green against a function that could not succeed.
+
+Fixed in `Deploy/PostV7/01_o-ui-nine.pact`. Safe standalone: `_dotpin.py` reports no module
+dot-calls O-UI-NINE, it owns no tables, and the signatures are unchanged so the deployed
+`OUiNineV2` interface is still satisfied.
+
+## 8.49 Two buttons over one guard disagreed about that guard's precondition
+
+Owner-reported 2026-10-10, from the nonce view of the first real sleeping batch: the Merge button
+starts disabled on a single nonce — correct — and then **enables**, once the chain's button
+reader answers.
+
+`O-UI-NINE::URC_06|Buttons`:
+
+```pact
+,"merge"   : (fold (and) true [(not iz-empty)  iz-sleeping])      ;; >= 1  -- WRONG
+,"slumber" : (fold (and) true [(not iz-single) iz-hibernated])    ;; >= 2  -- right
+```
+
+`iz-empty` is `length = 0`; `iz-single` is `length = 1`. Merging one nonce is refused on chain —
+`VST|C>MERGE` calls `UEV_NoncesForMerging`, which is `(enforce (>= l 2) "Merging requires at
+least 2 nonces")`. Measured on mainnet, all three answers:
+
+```
+INFO_VST|Merge      "…" [1]  -> OK, 110.24 IGNIS, "Succesfully merged … Nonces [1]"
+TS01-C2.VST|C_Merge "…" [1]  -> ERR  Merging requires at least 2 nonces
+VST.UEV_NoncesForMerging [1] -> ERR  Merging requires at least 2 nonces
+```
+
+**`slumber` is the proof this was a slip rather than a reading of the rule.** It is merge's
+hibernating twin, `VST|C>SLUMBER` calls the *same* `UEV_NoncesForMerging`, and it already said
+`not iz-single`. One guard, two consumers, two different ideas of what it requires — and the
+right answer was already written one line below the wrong one.
+
+### What the user would have hit
+
+Nothing unsafe: the chain refuses it. But the path to that refusal is as misleading as it could
+be. The button enables, the modal opens, and `INFO_VST|Merge` quotes **110.24 IGNIS** and prints
+*"Succesfully merged … Nonces [1]"* — because an `INFO_` reader is a COST PREVIEW and does not
+run the operation's capability guards. The user signs on the strength of a success sentence and
+the transaction fails.
+
+That is the general hazard worth naming: **an `INFO_` preview's prose is not a validation.** It
+reports what the operation would cost and what it would say, computed from the arguments, with no
+guard in the path. Anywhere a button's enablement and a preview's optimism both come from
+somewhere other than the guard, the guard is the only thing that disagrees — at signing time.
+
+### Why no UI change
+
+OuronetUI holds no local merge rule; `TokenActionBar` is a catalogue and enablement comes
+entirely from `URC_06|Buttons`. The chain is the authority on what is callable, which is the
+right design — the defect was in the chain's answer, so the one-word fix is the whole fix.
+
+Shipped in `Deploy/PostV7/01_o-ui-nine.pact` alongside the DPOF/DPTF name fix (8.48).

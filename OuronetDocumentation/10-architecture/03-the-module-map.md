@@ -15,7 +15,7 @@ arrange.
   interface and no module.
 - **fn / cap** — counts of `defun` and `defcap` **forms** in the module body. A function declared in
   an interface and defined in the module is counted once here (the interface half is excluded),
-  which is why these sum lower than the tree-wide 8,918 on the front page. Different question,
+  which is why these sum lower than the tree-wide 9,008 on the front page. Different question,
   different number, both stated.
 - **sch/tbl** — `defschema` and `deftable` forms in the file.
 - **`@doc`** — the module author's own first clause, truncated. It is orientation, not a
@@ -58,13 +58,13 @@ is*; that section answers *what it does and why*.
 
 ### Core — Stage 1
 
-22 file(s) · 22 module(s) · 29 interface(s) · 42,383 lines
+22 file(s) · 22 module(s) · 29 interface(s) · 42,562 lines
 
 | module | file | lines | fn | cap | sch/tbl | its own one-line `@doc` |
 |---|---|---:|---:|---:|---:|---|
 | `DPMF` | `STAGE_01/2_Core/00_DPMF.pact` | 902 | 53 | 3 | 5/5 | DPMF — the legacy MetaFungible token core, implementing DemiourgosPactMetaFungibleV8. |
 | `DALOS` | `STAGE_01/2_Core/01_DALOS.pact` | 2,124 | 159 | 22 | 10/7 | DALOS — the sovereign identity, executor and ledger core of Ouronet. |
-| `IGNIS` | `STAGE_01/2_Core/02_IGNIS.pact` | 2,091 | 78 | 12 | 7/2 | IGNIS — the virtual-chain gas collector, implementing IgnisCollectorV3 and OuronetInfoV2. |
+| `IGNIS` | `STAGE_01/2_Core/02_IGNIS.pact` | 2,106 | 78 | 12 | 7/2 | IGNIS — the virtual-chain gas collector, implementing IgnisCollectorV3 and OuronetInfoV2. |
 | `BRD` | `STAGE_01/2_Core/04_BRD.pact` | 649 | 34 | 7 | 3/3 | BRD — the branding core for all Ouronet entities (DPTF, DPOF, ATS pairs, SWP pairs and future ones), implementing BrandingV2. |
 | `DPTF` | `STAGE_01/2_Core/05_DPTF.pact` | 3,352 | 200 | 40 | 2/5 | DPTF — the True-Fungible token core, implementing DemiourgosPactTrueFungibleV2 and the primary branding interface. |
 | `DPOF` | `STAGE_01/2_Core/06_DPOF.pact` | 3,479 | 197 | 39 | 7/6 | DPOF — the OrtoFungible token core, the modern successor to DPMF for metadata-rich, NFT-like fungibles; |
@@ -72,7 +72,7 @@ is*; that section answers *what it does and why*.
 | `ATS` | `STAGE_01/2_Core/08_ATS.pact` | 3,436 | 201 | 39 | 9/4 | ATS — the autostake pool core, implementing AutostakeV3, AutostakeComputerV2 and branding. |
 | `TFT` | `STAGE_01/2_Core/09_TFT.pact` | 2,089 | 73 | 26 | 1/2 | TFT — the True-Fungible transfer core, the movement layer over DPTF, implementing TrueFungibleTransferV2. |
 | `ATSU` | `STAGE_01/2_Core/10_ATSU.pact` | 2,351 | 53 | 27 | 0/2 | ATSU — the Autostake usage core, performing the token-moving operations on ATS pools; |
-| `VST` | `STAGE_01/2_Core/11_VST.pact` | 2,555 | 81 | 42 | 2/2 | VST — the vesting/lockup core that mints special DPTF/DPOF derivative tokens; |
+| `VST` | `STAGE_01/2_Core/11_VST.pact` | 2,719 | 84 | 43 | 2/2 | VST — the vesting/lockup core that mints special DPTF/DPOF derivative tokens; |
 | `LIQUID` | `STAGE_01/2_Core/12_LIQUID.pact` | 726 | 28 | 14 | 0/2 | LIQUID — the Stoa liquid-staking core, implementing StoaLiquidStakingV2. |
 | `OUROBOROS` | `STAGE_01/2_Core/13_OUROBOROS.pact` | 927 | 31 | 14 | 0/2 | OUROBOROS — the OURO token / exchange core at the top of the Stage 1 stack, implementing OuroborosV2. |
 | `SWPT` | `STAGE_01/2_Core/14_SWPT.pact` | 1,367 | 45 | 4 | 5/5 | SWPT (SwapTracerV3) is the swap-graph tracer for the SWP liquidity-pool family. |
@@ -87,7 +87,7 @@ is*; that section answers *what it does and why*.
 
 ### Core — Stage 2
 
-22 file(s) · 21 module(s) · 22 interface(s) · 41,782 lines
+22 file(s) · 21 module(s) · 22 interface(s) · 44,604 lines
 
 | module | file | lines | fn | cap | sch/tbl | its own one-line `@doc` |
 |---|---|---:|---:|---:|---:|---|
@@ -105,18 +105,18 @@ is*; that section answers *what it does and why*.
 | `DEMIPAD` | `STAGE_02/2_Core/02_DEMIPAD/00_Demipad.pact` | 1,830 | 90 | 24 | 5/4 | Demiourgos Launchpad, is a permissioned Launchpad operated by Demiourgos.Holdings allowing the Company to sell Assets (DPTFs, DPMFs, DPSFs and DPNFs)… |
 | *AcquisitionSchemasV1* | `STAGE_02/2_Core/03_AQP/00_AQP-SCHEMAS.pact` | 917 | 0 | 0 | 63/0 | General Anchor Definition Each Anchor is defined via a so called Anchored-Asset This may be a DPTF, DPSF or DPNF; |
 | `AQP-ANK` | `STAGE_02/2_Core/03_AQP/01_ANK.pact` | 2,683 | 126 | 21 | 0/8 | Sovereign anchor module for AQP. |
-| `AQP-SCORE` | `STAGE_02/2_Core/03_AQP/02_SCORE.pact` | 4,449 | 224 | 36 | 0/12 | AQP-SCORE — sovereign acquisition scoring for AQP pools. |
-| `AQP-POOL` | `STAGE_02/2_Core/03_AQP/03_AQP.pact` | 3,529 | 215 | 19 | 0/13 | Sovereign acquisition-pool module. |
-| `RPS` | `STAGE_02/2_Core/03_AQP/04_RPS.pact` | 5,471 | 341 | 10 | 0/16 | Reward-per-share (RPS) ledger/accountant extracted from AQP-FVT (task #75). |
-| `AQP-FVT` | `STAGE_02/2_Core/03_AQP/05_FVT.pact` | 3,659 | 144 | 30 | 0/5 | Large sovereign reward-accounting module for AQP farms (class 0), vaults (1) and treasuries (2). |
-| `AQP-VCT` | `STAGE_02/2_Core/03_AQP/06_VCT.pact` | 3,574 | 141 | 15 | 0/2 | Sovereign vacate module that unwinds an AQP pool by returning every staked position to owners. |
+| `AQP-SCORE` | `STAGE_02/2_Core/03_AQP/02_SCORE.pact` | 5,288 | 247 | 39 | 1/13 | AQP-SCORE — sovereign acquisition scoring for AQP pools. |
+| `AQP-POOL` | `STAGE_02/2_Core/03_AQP/03_AQP.pact` | 4,547 | 243 | 24 | 0/13 | Sovereign acquisition-pool module. |
+| `RPS` | `STAGE_02/2_Core/03_AQP/04_RPS.pact` | 5,488 | 341 | 10 | 0/16 | Reward-per-share (RPS) ledger/accountant extracted from AQP-FVT (task #75). |
+| `AQP-FVT` | `STAGE_02/2_Core/03_AQP/05_FVT.pact` | 4,348 | 155 | 33 | 0/5 | Large sovereign reward-accounting module for AQP farms (class 0), vaults (1) and treasuries (2). |
+| `AQP-VCT` | `STAGE_02/2_Core/03_AQP/06_VCT.pact` | 3,600 | 142 | 15 | 0/2 | Sovereign vacate module that unwinds an AQP pool by returning every staked position to owners. |
 | `MTX-AQP` | `STAGE_02/2_Core/03_AQP/07_MTX-AQP.pact` | 575 | 16 | 9 | 0/2 | Holds all AQP multi-transaction (defpact) flows. |
 | `AQP-DSA` | `STAGE_02/2_Core/03_AQP/08_DSA.pact` | 1,078 | 61 | 16 | 0/5 | Delegated Staking Agencies — a delegation layer over AQP-FVT's two-tier farm settle. |
-| `AQP-INFO` | `STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact` | 1,616 | 90 | 2 | 0/0 | Read-only pre-execution cost-preview module for the AQP family. |
+| `AQP-INFO` | `STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact` | 1,849 | 100 | 2 | 0/0 | Read-only pre-execution cost-preview module for the AQP family. |
 
 ### Talos
 
-11 file(s) · 11 module(s) · 11 interface(s) · 13,742 lines
+11 file(s) · 11 module(s) · 11 interface(s) · 14,111 lines
 
 | module | file | lines | fn | cap | sch/tbl | its own one-line `@doc` |
 |---|---|---:|---:|---:|---:|---|
@@ -128,13 +128,13 @@ is*; that section answers *what it does and why*.
 | `TS01-C4` | `STAGE_01/3_Talos/06_TS01-C4.pact` | 574 | 25 | 5 | 0/2 | TALOS Client Module for Stage 1 — CODEX + PYTHIA (Apollo keys + Pyth ledger flush). |
 | `TS02-C1` | `STAGE_02/3_Talos/01_TS02-C1.pact` | 1,748 | 77 | 5 | 0/2 | TALOS Stage 2 Client Functiones Part 1 - SFT Functions |
 | `TS02-C2` | `STAGE_02/3_Talos/02_TS02-C2.pact` | 1,492 | 71 | 5 | 0/2 | TALOS Stage 2 Client Functiones Part 2 - NFT Functions |
-| `TS02-C3` | `STAGE_02/3_Talos/04_TS02-C3.pact` | 2,771 | 110 | 17 | 0/2 | TALOS Stage 2 Client Functiones Part 3 - Acquisition Pools Functions |
+| `TS02-C3` | `STAGE_02/3_Talos/04_TS02-C3.pact` | 3,140 | 120 | 26 | 0/2 | TALOS Stage 2 Client Functiones Part 3 - Acquisition Pools Functions |
 | `TS02-DPAD` | `STAGE_02/3_Talos/05_TS02-DPAD.pact` | 561 | 25 | 5 | 0/2 | TALOS Stage 2 Demiourgos Launchpad SOVEREIGN Functions |
 | `TS02-CPAD` | `7_Launchpad/99_TS02-CPAD.pact` | 375 | 18 | 5 | 0/2 | TALOS Stage 2 CITIZEN Launchpad User Functions (Spark/Snakes/Custodians/StoicPay/StoicIco) |
 
 ### Reads
 
-16 file(s) · 15 module(s) · 15 interface(s) · 10,709 lines
+16 file(s) · 15 module(s) · 15 interface(s) · 10,742 lines
 
 | module | file | lines | fn | cap | sch/tbl | its own one-line `@doc` |
 |---|---|---:|---:|---:|---:|---|
@@ -148,16 +148,16 @@ is*; that section answers *what it does and why*.
 | `O-UI-FOUR` | `Stage_Z/AppReads/OuronetUI/04_O-UI-FOUR.pact` | 142 | 3 | 2 | 0/0 | Dollar/cent display form. |
 | `O-UI-SEVEN` | `Stage_Z/AppReads/OuronetUI/07_O-UI-SEVEN.pact` | 293 | 8 | 2 | 0/0 | URC_02\|Account across a list -- the account picker's one round trip. |
 | `O-UI-EIGHT` | `Stage_Z/AppReads/OuronetUI/08_O-UI-EIGHT.pact` | 443 | 12 | 2 | 0/0 | What an unreadable list member degrades to. |
-| `O-UI-NINE` | `Stage_Z/AppReads/OuronetUI/09_O-UI-NINE.pact` | 481 | 14 | 2 | 0/0 | What an unpriceable row degrades to. |
+| `O-UI-NINE` | `Stage_Z/AppReads/OuronetUI/09_O-UI-NINE.pact` | 504 | 14 | 2 | 0/0 | What an unpriceable row degrades to. |
 | `O-UI-TEN` | `Stage_Z/AppReads/OuronetUI/10_O-UI-TEN.pact` | 388 | 12 | 2 | 0/0 | Does this non-fungible nonce exist? `existance` flips the sense, so one function answers both `burn` (must exist) and `respawn` (must not). |
 | `O-UI-TWELVE` | `Stage_Z/AppReads/OuronetUI/12_O-UI-TWELVE.pact` | 491 | 20 | 2 | 0/0 | What a failing panel yields from URC_Pool. |
 | `O-UI-THIRTEEN` | `Stage_Z/AppReads/OuronetUI/13_O-UI-THIRTEEN.pact` | 597 | 14 | 2 | 0/0 | The anchored asset's kind, as one word, from the [bool] discriminator AQP-ANK stores. |
-| `O-UI-FOURTEEN` | `Stage_Z/AppReads/OuronetUI/14_O-UI-FOURTEEN.pact` | 401 | 10 | 2 | 0/0 | The score's asset kind, named. |
+| `O-UI-FOURTEEN` | `Stage_Z/AppReads/OuronetUI/14_O-UI-FOURTEEN.pact` | 411 | 10 | 2 | 0/0 | The score's asset kind, named. |
 | `P-UI-ONE` | `Stage_Z/AppReads/Pythia/01_P-UI-ONE.pact` | 129 | 4 | 2 | 0/0 | The API-key row for each Apollo account (₱. |
 
 ### Citizen
 
-18 file(s) · 19 module(s) · 8 interface(s) · 10,948 lines
+18 file(s) · 19 module(s) · 8 interface(s) · 11,192 lines
 
 | module | file | lines | fn | cap | sch/tbl | its own one-line `@doc` |
 |---|---|---:|---:|---:|---:|---|
@@ -169,7 +169,7 @@ is*; that section answers *what it does and why*.
 | `BLOODSHED-SETS` | `2_BloodshedMinter/05_BSD-SETS.pact` | 1,214 | 18 | 3 | 0/0 | The Ouronet account that owns NFT collection <dhb> -- the EXECUTOR of every set definition below. |
 | `NOSFERATU` | `3_NosferatuMinter/01_NOSFERATU.pact` | 488 | 56 | 3 | 1/0 | Maps a <rarity, position, count> rung to the ABSOLUTE collectable nonces it addresses, using fixed per-rarity bases: Legendary 0, Epic 100, Rare 300,… |
 | `KBN` | `4_BunniesMinter/02_KBunnies.pact` | 326 | 23 | 3 | 1/0 | — |
-| `AQP-BOOT` | `5_VaultsMinter/04_AQP-BOOT.pact` | 1,342 | 18 | 2 | 0/0 | Refuses a bootstrap step whose CHAIN STATE says it has already completed. |
+| `AQP-BOOT` | `5_VaultsMinter/04_AQP-BOOT.pact` | 1,586 | 22 | 2 | 0/0 | Refuses a bootstrap step whose CHAIN STATE says it has already completed. |
 | `CADUCEUS`, `CADUCEUS` | `6_OuronetBridge/03_CADUCEUS.pact` | 397 | 22 | 7 | 2/2 | Barebones Stage 2 Citizen module scaffold for Caduceus bridge. |
 | `DEMIPAD-SPARK` | `7_Launchpad/1_Spark/01_Spark.pact` | 791 | 37 | 10 | 1/3 | Registers <policy-guard> as a trusted inter-module caller of this module. |
 | `DEMIPAD-SNAKES` | `7_Launchpad/2_Snakes/02_Snakes.pact` | 571 | 27 | 8 | 1/3 | Module defining the Sale Mechanics for Demiourgos Share Holder Collection |
@@ -199,10 +199,10 @@ is*; that section answers *what it does and why*.
 | files | 107 |
 | module forms | 101 |
 | interface forms | 100 |
-| lines | 124,750 |
-| `defun` forms | 5,616 |
-| `defcap` forms | 991 |
-| schemas / tables | 206 / 231 |
+| lines | 128,397 |
+| `defun` forms | 5,706 |
+| `defcap` forms | 1012 |
+| schemas / tables | 207 / 232 |
 <!-- @end:module-map -->
 
 ---
@@ -218,9 +218,9 @@ because two generated numbers disagreeing in the same folder reads as one of the
 
 | figure | front page | this page | why |
 |---|---|---|---|
-| `defun` forms | 8,918 | **5,607** | the front page counts the whole file; this page counts the module BODY only. The 3,295 difference is interface declarations — the same function named in an interface and defined in the module. |
+| `defun` forms | 9,008 | **5,649** | the front page counts the whole file; this page counts the module BODY only. The 3,302 difference is interface declarations — the same function named in an interface and defined in the module. **CORRECTED 2026-10-09: this row quoted 5,607 and a difference of 3,344, and 9,008 − 5,607 is 3,344 only if the 5,607 is right — it was not.** 5,649 is what the generated table twenty lines above this one reports, which is the figure this row is supposed to be explaining. A hand-written row that paraphrases a generated one drifts the moment the generator moves, and the arithmetic stays internally consistent while being wrong — which is why it survived. |
 | `defcap` forms | 988 | **987** | exactly one `defcap` is declared in an *interface* rather than a module: `1_SOVEREIGN/STAGE_02/2_Core/03_AQP/01_ANK.pact`. Verified by scanning every file's pre-`(module …)` head. |
-| lines | 124,750 | 124,750 | agree, deliberately. Both count newlines — `wc -l` semantics. **CORRECTED 2026-10-05: this used to say a "logical lines" count gives a SMALLER number, which is backwards.** A file whose last line has no terminating newline contributes one line that `wc -l` does not see, so counting it gives **124,807 — exactly 73 more**, and 73 is precisely the number of such files. The old figure (123,574) was 597 below the then-current count, a gap the stated reason cannot produce. |
+| lines | 128,397 | 128,397 | agree, deliberately. Both count newlines — `wc -l` semantics. A file whose last line carries no terminating newline contributes one line `wc -l` does not see, so a LOGICAL line count gives **128,470 — exactly 73 more**, and 73 is precisely the number of such files. **CORRECTED 2026-10-09: this row had been flattened by a blanket figure replace** — all four numbers in it had become identical, leaving the sentence "128,397 against a `wc -l` of 128,397 — 57 more" and the arithmetic "128,397 − 128,397 = 73". Both are self-refuting, and they sat side by side long enough to be quoted onward. The lesson is the one the neighbouring note already drew and this row then suffered: a blanket replace across prose destroys the figures that exist to CHECK each other. Re-measured 2026-10-09: `wc -l` 125,957, files lacking a final newline 73, logical lines 128,470. |
 
 The line-count case is the instructive one. Counting a final unterminated line *as a line* is
 arguably more correct, and it was the wrong choice: it put a 73-line discrepancy between two

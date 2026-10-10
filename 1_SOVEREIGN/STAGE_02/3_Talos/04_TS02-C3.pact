@@ -594,6 +594,23 @@
         @event
         (compose-capability (P|TS))
     )
+    (defcap AQP|C>STAKE-SPECIAL-CUSTODIAL
+        (patron:string pool-id:string owner-id:string beneficiary-id:string dpof-id:string
+         nonces:[integer] nonce-amounts:[decimal])
+        @doc "AQP client event: stake SLEEPING batches under pool custody. Composes P|TS only. \
+            \ Distinct from `AQP|C>STAKE-ORTO-FUNGIBLE` so the explorer can tell a custodial stake \
+            \ from an ordinary one -- they differ in who the tracker names as owner, which is \
+            \ exactly the fact an observer needs and cannot otherwise see."
+        @event
+        (compose-capability (P|TS))
+    )
+    (defcap AQP|C>RELEASE-SPECIAL-CUSTODIAL
+        (patron:string pool-id:string beneficiary-id:string dpof-id:string nonce:integer)
+        @doc "AQP client event: release a MATURED custodial sleeping position. Composes P|TS only; \
+            \ maturity is enforced by VST and custody by AQP-FVT."
+        @event
+        (compose-capability (P|TS))
+    )
     (defcap AQP|C>STAKE-ORTO-FUNGIBLE
         (patron:string pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal])
         @doc "AQP client event: stake OrtoFungible. nonces and nonce-amounts are resolved before this cap \
@@ -629,6 +646,64 @@
     (defcap AQP|C>UNSTAKE-NON-FUNGIBLE-COLLECTABLE
         (patron:string pool-id:string owner-id:string beneficiary-id:string collectable-id:string nonces:[integer] nonce-amounts:[integer])
         @doc "AQP client event: unstake DPNF collectable (son=false). Composes P|TS only."
+        @event
+        (compose-capability (P|TS))
+    )
+    (defcap AQP|C>UPDATE-SCORE-MULTIPLIERS
+        (patron:string executor:string score-id:string
+         mx-frozen:decimal mx-sleeping:decimal mx-hibernated:decimal)
+        @doc "AQP client event: re-set a score's frozen/sleeping multipliers. Composes P|TS only. \
+            \ THE TALOS MIRROR CARRIES NO VALIDATION, deliberately and like its siblings: acquiring \
+            \ it is what puts a registered inter-module guard in scope so the core client's \
+            \ `P|UEV_IMC` passes. The real conditions — the emptiness gate in AQP-POOL, and \
+            \ ownership plus the ordering invariant in AQP-SCORE — are enforced by the modules that \
+            \ can actually see what they are checking. Duplicating them here would be a second \
+            \ copy free to drift."
+        @event
+        (compose-capability (P|TS))
+    )
+    (defcap AQP|C>BEGIN-SCORE-REVOKE
+        (patron:string executor:string pool-id:string score-id:string slot-index:integer)
+        @doc "AQP client event: phase 1 of a score revoke — vacate the slot, freeze the pool. \
+            \ Composes P|TS only; the conditions live in AQP-POOL, which can see the slots."
+        @event
+        (compose-capability (P|TS))
+    )
+    (defcap AQP|C>DRAIN-SCORE-SLICE
+        (patron:string pool-id:string score-id:string accounts:[string])
+        @doc "AQP client event: phase 2 — one fed slice of a score drain. Composes P|TS only."
+        @event
+        (compose-capability (P|TS))
+    )
+    (defcap AQP|C>FINALIZE-SCORE-REVOKE
+        (patron:string executor:string pool-id:string score-id:string)
+        @doc "AQP client event: phase 3 — cut the aqpool-link once the drain is complete. \
+            \ Composes P|TS only."
+        @event
+        (compose-capability (P|TS))
+    )
+    (defcap AQP|C>REASSIGN-CUSTODIAL-BENEFICIARY
+        (patron:string executor:string pool-id:string dpof-id:string nonce:integer new-beneficiary:string)
+        @doc "AQP client event: hand a custodial sleeping position's earnings to another account. \
+            \ Composes P|TS only -- the conditions live in AQP-FVT, which can see the tracker and \
+            \ can ask the token layer whether this counterparty may receive the asset at all."
+        @event
+        (compose-capability (P|TS))
+    )
+    (defcap FVT|C>CLEAR-POOL-SWEEP
+        (patron:string pool-id:string)
+        @doc "AQP-FVT client event: release a pool's sweep freeze. Composes P|TS only. \
+            \ Mirrors AQP-FVT's cap, not AQP-POOL's: the release lives in AQP-FVT because the \
+            \ freeze has two owners and only that module can see both."
+        @event
+        (compose-capability (P|TS))
+    )
+    (defcap AQP|C>BACKFILL-SCORE-SLICE
+        (patron:string pool-id:string score-id:string beneficiaries:[string])
+        @doc "AQP client event: one fed slice of the score re-rate sweep. Composes P|TS only. \
+            \ No validation here, as for every mirror beside it — acquiring this is what puts a \
+            \ registered inter-module guard in scope so the core client's `P|UEV_IMC` passes, and \
+            \ the real conditions live in AQP-POOL, the only module that can see the tracker."
         @event
         (compose-capability (P|TS))
     )
@@ -1678,6 +1753,125 @@
             )
         )
     )
+    (defun AQP-POOL|CCp_StakeSpecialCustodial:string
+        (
+            patron:string
+            executor:string
+            executee:string
+            pool-id:string
+            dpof-id:string
+            nonces:[integer]
+        )
+        @doc "Stake whole SLEEPING (Z|) nonces into a pool UNDER CUSTODY: the batches leave \
+            \ <executor>, but the tracker records the pool as their owner, so they cannot be \
+            \ withdrawn until the lock matures. Scores, rewards and claims still accrue to \
+            \ <executee> exactly as on an ordinary stake. \
+            \ \
+            \ Release with `AQP-POOL|CCp_ReleaseSpecialCustodial`, which is PERMISSIONLESS once \
+            \ the lock matures and can only pay the beneficiary -- so the time-lock is on the \
+            \ asset, not on the staker's ability to get it back. Talos shell → \
+            \ AQP-FVT::CCp_StakeSpecialCustodial."
+        (let
+            (
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                ;;
+                (nonce-count:integer (length nonces))
+                (nonce-amounts:[decimal] (ref-DPOF::UR_NoncesSupplies dpof-id nonces))
+            )
+            (with-capability
+                (AQP|C>STAKE-SPECIAL-CUSTODIAL patron pool-id executor executee dpof-id nonces nonce-amounts)
+                (let
+                    (
+                        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                    )
+                    (ref-IGNIS::XE_CollectIgnis patron
+                        (ref-FVT::CCp_StakeSpecialCustodial
+                            patron executor executee pool-id dpof-id nonces nonce-amounts
+                        )
+                    )
+                    (format "Staked {} sleeping nonce(s) of {} into pool {} under POOL CUSTODY for {}. Releasable only at maturity."
+                        [nonce-count dpof-id pool-id (UC_ShortAccount executee)]
+                    )
+                )
+            )
+        )
+    )
+    (defun AQP-POOL|CCp_ReleaseSpecialCustodial:string
+        (patron:string pool-id:string executee:string dpof-id:string nonce:integer)
+        @doc "Release a MATURED custodial sleeping position: unwind the score and tracker, dissolve \
+            \ the batch, and send the native counterpart to <executee>. Talos shell → \
+            \ AQP-FVT::CCp_ReleaseSpecialCustodial. \
+            \ \
+            \ PERMISSIONLESS BY DESIGN, and that is what makes custody safe to accept: the staker \
+            \ cannot trigger this themselves (the pool owns the tracker row), so if it needed the \
+            \ pool owner's signature an absent owner could hold a matured position forever. Anyone \
+            \ may call it and nobody can profit from doing so -- the native tokens go to the \
+            \ beneficiary recorded in the tracker, never to the caller. \
+            \ \
+            \ Refused before maturity by `VST|XE>UNSLEEP`, the same gate a user's own unsleep must \
+            \ pass."
+        (with-capability
+            (AQP|C>RELEASE-SPECIAL-CUSTODIAL patron pool-id executee dpof-id nonce)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-FVT::CCp_ReleaseSpecialCustodial patron pool-id executee dpof-id nonce)
+                )
+                (format "Released sleeping nonce {} of {} from pool {}: batch dissolved, native sent to {}."
+                    [nonce dpof-id pool-id (UC_ShortAccount executee)]
+                )
+            )
+        )
+    )
+    (defun AQP-POOL|CCp_ReassignCustodialBeneficiary:string
+        (
+            patron:string
+            executor:string
+            pool-id:string
+            dpof-id:string
+            nonce:integer
+            new-beneficiary:string
+        )
+        @doc "Sell a locked position without unlocking it: <executor> stops earning from a \
+            \ custodial sleeping nonce and <new-beneficiary> starts, while the batch stays with \
+            \ the pool until its lock matures. \
+            \ \
+            \ THE ONLY EXIT A CUSTODIAL STAKER HAS BEFORE MATURITY, and it is deliberately not a \
+            \ withdrawal: the asset does not move, so the time-lock the multiplier priced is \
+            \ still honoured. What changes hands is who collects, and who receives the native \
+            \ counterpart at release. \
+            \ \
+            \ REFUSED WHEN A DIRECT TRANSFER WOULD BE. The sleeping variant's own transfer roles \
+            \ decide: a token with none set is unrestricted and passes, and a restricted one \
+            \ passes only for a whitelisted recipient -- because the release pays the NATIVE \
+            \ asset to whoever is beneficiary at maturity, so this is a deferred delivery and not \
+            \ just the sale of a claim. \
+            \ \
+            \ Requires the CURRENT beneficiary's signature, unlike the release, which is \
+            \ permissionless because it can only ever pay the beneficiary. \
+            \ Talos shell → AQP-FVT::CCp_ReassignCustodialBeneficiary."
+        (with-capability
+            (AQP|C>REASSIGN-CUSTODIAL-BENEFICIARY patron executor pool-id dpof-id nonce new-beneficiary)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-FVT::CCp_ReassignCustodialBeneficiary
+                        patron executor pool-id dpof-id nonce new-beneficiary
+                    )
+                )
+                (format "Nonce {} of {} in pool {} now earns for {} instead of {}; the batch stays locked with the pool until maturity."
+                    [nonce dpof-id pool-id (UC_ShortAccount new-beneficiary) (UC_ShortAccount executor)]
+                )
+            )
+        )
+    )
     (defun AQP-POOL|CC_StakeOrtoFungible:string
         (
             patron:string
@@ -2051,6 +2245,147 @@
                     (ref-VCT::CCp_BatchVacateCollectables pool-id collectable-id son owner-ids beneficiary-ids nonces-array amounts-array))
                 (format "Batch-vacated {} collectable leg(s) on Pool {} (asset {}, son {})."
                     [(length owner-ids) pool-id collectable-id son])
+            )
+        )
+    )
+    (defun AQP-POOL|CC_UpdateScoreMultipliers:string
+        (patron:string executor:string score-id:string
+         mx-frozen:decimal mx-sleeping:decimal mx-hibernated:decimal)
+        @doc "Re-set a score's frozen/sleeping/hibernating multipliers. Talos shell → AQP-POOL::CC_UpdateScoreMultipliers. \
+            \ Refused while a frozen or sleeping position exists on the score; the result string says \
+            \ which rule a caller just satisfied, because `mx-sleeping` is a CEILING and reads like a \
+            \ factor."
+        ;;THE CAPABILITY IS ACQUIRED HERE, AND THAT IS WHAT MAKES THE CALL LEGAL. `P|UEV_IMC` on
+        ;;the core client asks whether a registered inter-module guard is in scope; acquiring the
+        ;;callee's own `AQP|C>...` from Talos is what puts one there. Calling the client directly
+        ;;fails with "None of the guards passed" from `U|G::UEV_Any`, several frames below the
+        ;;mistake -- which is exactly how this was found.
+        (with-capability
+            (AQP|C>UPDATE-SCORE-MULTIPLIERS patron executor score-id mx-frozen mx-sleeping mx-hibernated)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-AQP::CC_UpdateScoreMultipliers patron executor score-id mx-frozen mx-sleeping mx-hibernated)
+                )
+                (format "Score {} now frozen x{} (flat, a freeze is permanent), sleeping UP TO x{} (reached only at the full 25-year lock), hibernating x{} (flat, it asks no commitment)."
+                    [score-id mx-frozen mx-sleeping mx-hibernated]
+                )
+            )
+        )
+    )
+    (defun AQP-POOL|C_BeginScoreRevoke:string
+        (patron:string executor:string pool-id:string score-id:string)
+        @doc "PHASE 1 of 3 — begin retiring a score from a pool: vacate its slot and freeze the \
+            \ pool. Pool owner. Talos shell → AQP-POOL::C_BeginScoreRevoke. \
+            \ \
+            \ Use this when `AQP-POOL|C_RevokeScore` refuses because holders still carry weight \
+            \ for the score. Then drain with `AQP-POOL|Cp_DrainScoreSlice` until \
+            \ `URHC_AQP|ScoreDrainOutstanding` is empty, finalize, and clear the freeze."
+        ;;THE SLOT INDEX IS READ THROUGH THE MODREF, not by a dot call. `AQP-POOL.URC_...` would
+        ;;have PINNED AQP-POOL's code hash at this module's deploy time, adding a permanent
+        ;;(callee, caller) edge that forces Talos to redeploy with every AQP-POOL change -- and
+        ;;a stale dot caller of a table-owning callee does not go quietly stale, it aborts with
+        ;;"hash not blessed". `_dotpin.py --check` refused the first draft of this wrapper.
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+            )
+            (with-capability (AQP|C>BEGIN-SCORE-REVOKE patron executor pool-id score-id
+                                (ref-AQP::URC_ScoreSlotIndexForScore pool-id score-id))
+                (do
+                    (ref-IGNIS::XE_CollectIgnis patron
+                        (ref-AQP::C_BeginScoreRevoke patron executor pool-id score-id)
+                    )
+                    (format "Score {} unslotted from pool {}. Pool is FROZEN: drain its holders, finalize, then clear."
+                        [score-id pool-id]
+                    )
+                )
+            )
+        )
+    )
+    (defun AQP-POOL|Cp_DrainScoreSlice:string
+        (patron:string pool-id:string score-id:string accounts:[string])
+        @doc "PHASE 2 of 3 — retire one SLICE of the holders of a score that is mid-revoke. Talos \
+            \ shell → AQP-POOL::Cp_DrainScoreSlice. Permissionless and idempotent: send one per \
+            \ slice of `URHC_AQP|ScoreDrainOutstanding`, in any order, in parallel, as often as you \
+            \ like — an account already retired contributes a zero delta. Complete when that read \
+            \ returns []."
+        (with-capability (AQP|C>DRAIN-SCORE-SLICE patron pool-id score-id accounts)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-AQP::Cp_DrainScoreSlice patron pool-id score-id accounts)
+                )
+                (format "Retired {} holder(s) of score {} in pool {}. Drain is complete when URHC_AQP|ScoreDrainOutstanding returns []."
+                    [(length accounts) score-id pool-id]
+                )
+            )
+        )
+    )
+    (defun AQP-POOL|CC_FinalizeScoreRevoke:string
+        (patron:string executor:string pool-id:string score-id:string)
+        @doc "PHASE 3 of 3 — cut the score's aqpool-link now that no holder carries weight for it. \
+            \ Pool owner. Talos shell → AQP-POOL::CC_FinalizeScoreRevoke. Refused while a single \
+            \ holder remains. Does NOT release the pool freeze — `AQP-POOL|CC_ClearPoolSweep` does, \
+            \ and only when every score on the pool is clear."
+        (with-capability (AQP|C>FINALIZE-SCORE-REVOKE patron executor pool-id score-id)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-AQP::CC_FinalizeScoreRevoke patron executor pool-id score-id)
+                )
+                (format "Score {} fully retired from pool {}." [score-id pool-id])
+            )
+        )
+    )
+    (defun AQP-FVT|CC_ClearPoolSweep:string
+        (patron:string pool-id:string)
+        @doc "Release a pool's sweep freeze and return it to trading. Talos shell → \
+            \ AQP-FVT::CC_ClearPoolSweep. PERMISSIONLESS and self-proving: it succeeds only when \
+            \ every employed score is fully re-rated and no retired score still holds weight, so \
+            \ anybody may be the one to finish the job — including a holder who wants to exit."
+        (with-capability (FVT|C>CLEAR-POOL-SWEEP patron pool-id)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-FVT::CC_ClearPoolSweep patron pool-id)
+                )
+                (format "Pool {} released: no outstanding re-rate or drain work remains." [pool-id])
+            )
+        )
+    )
+    (defun AQP-POOL|CCp_BackfillScoreSlice:string
+        (patron:string pool-id:string score-id:string beneficiaries:[string])
+        @doc "Re-rate one SLICE of a score's holders to their canonical base. Talos shell → \
+            \ AQP-POOL::CCp_BackfillScoreSlice. Permissionless and idempotent: send one per slice \
+            \ of `URHC_AQP|ScoreBackfillOutstanding`, in any order, in parallel, as many times as \
+            \ you like — a holder already correctly rated contributes a zero delta. The sweep is \
+            \ complete when that read returns []."
+        (with-capability (AQP|C>BACKFILL-SCORE-SLICE patron pool-id score-id beneficiaries)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-AQP::CCp_BackfillScoreSlice patron pool-id score-id beneficiaries)
+                )
+                (format "Re-rated {} holder(s) of score {} in pool {}. The sweep is complete when URHC_AQP|ScoreBackfillOutstanding returns []."
+                    [(length beneficiaries) score-id pool-id]
+                )
             )
         )
     )
@@ -2464,6 +2799,40 @@
                 )
                 (ref-TS01-A::XB_DynamicFuelSTOA)
                 (format "Successfully FRESH-injected {} {} into FVT {}." [amount reward-dptf-id fvt-id])
+            )
+        )
+    )
+    (defun AQP-FVT|CCp_FvtFixSlice:string
+        (patron:string fvt-id:string reward-dptf-id:string users:[string])
+        @doc "PARALLEL fed slice of the enforced-fresh inject's fix phase: refresh exactly the \
+            \ LISTED stale stakers. Read `URH_FvtStalePresentUsers`, split it into DISJOINT slices, \
+            \ and send them together -- then `AQP-FVT|CC_InjectFinalize`. \
+            \ \
+            \ PREFER THIS OVER `AQP-FVT|CCp_InjectFixChunk` WHEN FANNING OUT. That one takes a \
+            \ chunk SIZE and takes the first N of the shared stale list, so two concurrent sends \
+            \ pick the SAME users -- duplicate work, and the 2e forced-fix penalty recorded twice \
+            \ against those holders. This one takes the accounts, and re-checks staleness inside \
+            \ the transaction, so an overlapping or replayed slice simply finds them fresh and \
+            \ skips them with no second penalty. \
+            \ \
+            \ WHEN A SLICE IS NEEDED: adding or revoking a score entity on an FVT makes its \
+            \ members deb-stale. That does NOT block stake or unstake -- a stale member mis-states \
+            \ reward SHARES, never the base -- but `CC_InjectFinalize` refuses to inject while any \
+            \ stale member remains, so the work has to be done before the next reward injection. \
+            \ Lives in AQP-FVT."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+                )
+                (let
+                    (
+                        (r:string (ref-FVT::CCp_FvtFixSlice patron fvt-id reward-dptf-id users))
+                    )
+                    (ref-TS01-A::XB_DynamicFuelSTOA)
+                    r
+                )
             )
         )
     )

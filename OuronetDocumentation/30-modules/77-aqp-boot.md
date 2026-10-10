@@ -36,7 +36,7 @@ A citizen module above the acquisition family.
 
 > **The repository differs from what is deployed.** Everything above describes the CHAIN, which is what a caller actually reaches. The difference is stated rather than resolved:
 >
-> - **functions** in the repository only: `UEV_BootStepState`
+> - **functions** in the repository only: `C_Step12b_AddLateFvtRewardLinks`, `C_Step7b_CreateStoicismPool`, `C_Step8b_IssueLateFvtEntities`, `C_Step9b_AddLateFvtScoreEntities`, `UEV_BootStepState`
 
 **Capabilities** -- 2
 

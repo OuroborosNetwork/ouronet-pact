@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 18 of 24
 ;; This is STEP 18 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-17 must have run first, including the init steps between deploys.
-;; 1 source file(s), 203,548 gas measured in the REPL gas model, 209,860 bytes
+;; 1 source file(s), 203,548 gas measured in the REPL gas model, 253,308 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/05_FVT.pact
@@ -452,6 +452,7 @@
                 (ref-P|SWPLC:module{OuronetPolicyV2} SWPLC)
                 (ref-P|ORBR:module{OuronetPolicyV2} OUROBOROS)
                 (ref-P|ATSU:module{OuronetPolicyV2} ATSU)
+                (ref-P|VST:module{OuronetPolicyV2} VST)
                 ;;
                 (dg:guard (create-capability-guard (SECURE)))
                 (ref-P|IGNIS:module{OuronetPolicyV2} IGNIS)
@@ -473,6 +474,11 @@
             ;; OUROBOROS: FVT normalizes an IGNIS royalty leg to OURO (XB_Compress) before disposal.
             (ref-P|ORBR::P|A_AddIMP mg)
             (ref-P|ATSU::P|A_AddIMP mg)
+            ;; VST: the custodial sleeping release dissolves a MATURED batch the pool holds, through
+            ;; VST::XE_Unsleep. This is AQP's FIRST reach into VST -- no module in the acquisition
+            ;; family had ever called it -- and it exists because `C_Unsleep` refuses SMART executors
+            ;; by design, so a pool holding a sleeping position could otherwise never release it.
+            (ref-P|VST::P|A_AddIMP mg)
             (ref-P|IGNIS::P|A_AddIMP mg)
         )
     )
@@ -594,6 +600,165 @@
     )
     ;;{C2}  Simple
     ;;{C3}  Composed
+    (defcap FVT|C>RELEASE-SPECIAL-CUSTODIAL
+        (patron:string pool-id:string executee:string dpof-id:string nonce:integer staked:decimal)
+        @doc "Release a MATURED custodial sleeping position: dissolve the batch and pay the staker \
+            \ its native counterpart. Patron pays IGNIS; composes SECURE. \
+            \ \
+            \ PERMISSIONLESS, AND THAT IS A GUARANTEE RATHER THAN A CONVENIENCE. A custodial stake \
+            \ records `AQP|SC_NAME` in the tracker's owner column, which is what stops the staker \
+            \ exiting early -- but it also means the staker cannot trigger the exit themselves, \
+            \ because they do not own the pool's account. If release needed the pool owner's \
+            \ signature, an absent owner could hold somebody's matured LP indefinitely. So anyone \
+            \ may call it, and nobody can profit from doing so: the native tokens go to the \
+            \ BENEFICIARY recorded in the tracker, never to the caller. \
+            \ \
+            \ MATURITY IS NOT CHECKED HERE as the authority -- `VST|XE>UNSLEEP` enforces it, by \
+            \ the same `nonce-supply = culled-amount` test a user's own unsleep must pass. \
+            \ Duplicating \
+            \ it would be a second copy free to disagree, and the transaction is atomic, so an \
+            \ early attempt unwinds the score and the tracker and then aborts on the real gate, \
+            \ leaving nothing behind. One gate, in the module that owns the lock. \
+            \ \
+            \ What IS checked here is that there is a custodial position to release at all: a \
+            \ tracker row keyed to the POOL as owner, carrying a positive balance."
+        @event
+        (enforce
+            (> staked 0.0)
+            "No custodial sleeping position for that (pool, dpof, nonce, beneficiary)"
+        )
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (ref-VST:module{VestingV2} VST)
+            )
+            (ref-DALOS::UEV_EnforceAccountExists executee)
+            ;;MATURITY, CHECKED HERE TOO -- AS A FAIL-FAST, NOT AS A SECOND RULE. `VST|XE>UNSLEEP`
+            ;;remains the authoritative gate, and this asks the question using VST'S OWN culling
+            ;;function, so there is one rule with two call sites rather than two rules that could
+            ;;disagree.
+            ;;
+            ;;It is here because the alternative wastes the caller's gas and, worse, made the
+            ;;failure hard to reason about: without it a premature release ran the ENTIRE unwind --
+            ;;draining the tracker and reversing every score -- and only then aborted inside VST.
+            ;;On chain the transaction rolls back so nothing is lost, but it burns the full cost of
+            ;;work that was never going to commit, and in the REPL the caught abort left the
+            ;;partial writes visible, which is how this was noticed.
+            ;;SLEEPING ONLY, and the guard upstream is what makes that total: a custodial row
+            ;;can exist only for a `Z|` leg on an aqp-class-0 pool
+            ;;(`FVT|C>ORTO-FUNGIBLE-STAKE-FLOW` #8), so there is exactly one metadata shape to
+            ;;read here. Asking VST'S OWN culling function keeps one rule with two call sites
+            ;;rather than a local re-derivation free to disagree with the authoritative gate.
+            (let
+                (
+                    (supply:decimal (ref-DPOF::UR_NonceSupply dpof-id nonce))
+                    (culled:decimal (at 0 (ref-VST::URC_CullMetaDataAmountWithObject dpof-id nonce)))
+                )
+                (enforce
+                    (= supply culled)
+                    (format "{} Nonce {} cannot be unsleeped yet" [dpof-id nonce])
+                )
+            )
+        )
+        ;;`P|SECURE-CALLER`, not bare `SECURE`: it composes BOTH, and the `P|FVT|CALLER` half is
+        ;;what satisfies VST's `P|UEV_IMC` when the release calls `VST::XE_Unsleep`. VST has FVT's
+        ;;caller guard registered (see P|A_AddIMPs below) -- a capability guard only passes while
+        ;;the capability is actually held, so acquiring the wrong one here fails several frames
+        ;;down inside `U|G::UEV_Any` with "None of the guards passed".
+        (compose-capability (P|SECURE-CALLER))
+    )
+    (defcap FVT|C>REASSIGN-CUSTODIAL-BENEFICIARY
+        (patron:string pool-id:string executor:string dpof-id:string nonce:integer
+         new-beneficiary:string staked:decimal)
+        @doc "Hand a MATURING custodial sleeping position to someone else: <executor> stops earning \
+            \ from it and <new-beneficiary> starts, keeping the batch where it is. \
+            \ \
+            \ THE PROBLEM IT SOLVES. A custodial stake cannot be withdrawn until its lock matures \
+            \ -- that is the whole mechanism -- so without this the holder has no exit at all, not \
+            \ even a sale. The owner's words: \"i aknoledge i cant take it out, and i must leave it \
+            \ stacked there until the end, but i want to sell it to bob ... i no longer want you to \
+            \ stake it for me, but i want bob to earn from it.\" \
+            \ \
+            \ IT RESPECTS THE TOKEN'S TRANSFER RULES, and that is the condition that makes it safe \
+            \ rather than a loophole. The release pays the NATIVE counterpart to whoever is the \
+            \ beneficiary at maturity, so reassignment is a DEFERRED DELIVERY of the asset to the \
+            \ new party -- not merely the sale of an economic claim. If a direct transfer from \
+            \ <executor> to <new-beneficiary> would be refused right now, this must be refused \
+            \ too, or custody becomes a way to move a restricted token to someone the issuer \
+            \ excluded. And nothing downstream would catch it: the release transfers the native \
+            \ token, whose role list is a different object from the sleeping variant's. \
+            \ \
+            \ ASKED AS THE TOKEN LAYER'S OWN QUESTION (`DPOF::UEV_MoveRoleCheck`) rather than as a \
+            \ local re-derivation, so this path can never be more permissive than a plain \
+            \ transfer. That also keeps it USEFUL: transfer roles are opt-in -- a token with none \
+            \ set is unrestricted and the check passes -- and where they ARE set, a WHITELISTED \
+            \ recipient still qualifies. A blanket \"refuse if any role exists\" would have been \
+            \ both cruder and, on a restricted token, wrong. \
+            \ \
+            \ NOT PERMISSIONLESS, unlike the release: this gives away future earnings, so it \
+            \ requires the CURRENT beneficiary's signature. The release can be permissionless \
+            \ because it can only ever pay the beneficiary; this changes who that is."
+        @event
+        (enforce
+            (> staked 0.0)
+            "No custodial sleeping position for that (pool, dpof, nonce, beneficiary)"
+        )
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (ref-VST:module{VestingV2} VST)
+            )
+            ;;the seller must own the account that is giving up the earnings
+            (ref-DALOS::CAP_EnforceAccountOwnership executor)
+            ;;the buyer must be a real, activated standard account -- it will receive native value
+            (ref-DALOS::UEV_EnforceAccountExists new-beneficiary)
+            (ref-DALOS::UEV_EnforceAccountType new-beneficiary false)
+            (enforce
+                (!= executor new-beneficiary)
+                "Reassignment must name a different beneficiary"
+            )
+            ;;THE TOKEN'S OWN RULE, not a copy of it -- but asked only when the token's roles
+            ;;mean anything.
+            ;;
+            ;;EVERY SPECIAL TOKEN CARRIES A TRANSFER ROLE FROM BIRTH:
+            ;;`VST::XI_CreateSpecialOrtoFungibleLink` grants `VST|SC_NAME` one on creation, because
+            ;;dissolution moves the batch to VST and `UEV_MoveRoleCheck` would otherwise refuse
+            ;;it. So "has roles" is true of every sleeping nonce that has ever existed, and gating
+            ;;on it would refuse every sale forever -- the feature would ship dead. That was the
+            ;;first cut, and the fixture caught it: "Incompatible Transfer Roles from Alice to Bob"
+            ;;on a token nobody had chosen to restrict.
+            ;;
+            ;;`URC_SpecialLegIssuerRestricted` separates the owner's intent from the plumbing: any
+            ;;role-holder BESIDES VST's own account got there through `C_ToggleTransferRole*`,
+            ;;which only the token owner can call. Where there is such a holder, the real check
+            ;;applies in full and a WHITELISTED recipient still qualifies; where there is not, the
+            ;;token is unrestricted in every sense that matters and the sale proceeds.
+            ;;
+            ;;WHY THE CHECK MATTERS AT ALL: the release pays the NATIVE counterpart to whoever is
+            ;;beneficiary at maturity, so this is a DEFERRED DELIVERY of the asset, not the sale of
+            ;;a mere claim -- and nothing downstream would catch it, because the release moves the
+            ;;native token, whose role list is a different object from the sleeping variant's.
+            (if (ref-VST::URC_SpecialLegIssuerRestricted dpof-id)
+                (ref-DPOF::UEV_MoveRoleCheck dpof-id executor new-beneficiary)
+                true
+            )
+            ;;and the recipient must not be frozen for this token, which a transfer would also check
+            (ref-DPOF::UEV_AccountFreezeState dpof-id new-beneficiary false)
+            (compose-capability (P|SECURE-CALLER))
+        )
+    )
+    (defcap FVT|C>CLEAR-POOL-SWEEP
+        (patron:string pool-id:string)
+        @doc "Lift a pool's sweep freeze and return it to trading. Patron pays IGNIS; composes \
+            \ SECURE. The real condition is `UEV_FVT|PoolReleasable`, enforced in the client body \
+            \ because it scans. PERMISSIONLESS: there is no authority to grant -- the pool reopens \
+            \ because the work is provably done, and anybody may be the one to notice, including a \
+            \ holder who wants to exit a frozen pool."
+        @event
+        (compose-capability (SECURE))
+    )
     (defcap FVT|C>ISSUE-FVT
         (fvt-name:string owner-konto:string fvt-class:integer common-denominator:string)
         @doc "Issue one FVT|T row: autostake fvt-name, owner, class 0..2, farm common-denominator or vault/treasury \"|\". Composes SECURE for XI_IssueFvt."
@@ -1045,7 +1210,7 @@
     )
     )
     (defcap FVT|C>ORTO-FUNGIBLE-STAKE-FLOW
-        (pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal] direction:bool)
+        (pool-id:string owner-id:string tracker-owner:string beneficiary-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal] direction:bool)
         @doc "OrtoFungible stake/unstake recipe (direction=true stake, false unstake). \
             \ Whole-nonce DPOF::C_Transfer only — no Transmit / partial segmentation on stake. \
             \ Four phases — no ANK leg (anchors are TF/SF/NF only; DPOF stake does not move anchor balances). \
@@ -1057,6 +1222,42 @@
             (let
             (
                 (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                ;;
+                ;;THE TWO HALVES OF THE CUSTODY RULE.
+                ;;
+                ;;CUSTODY FOLLOWS THE MULTIPLIER, NOT THE PREFIX, and getting that wrong in
+                ;;either direction does real damage.
+                ;;
+                ;;CUSTODY FOLLOWS THE INSTRUMENT: `Z|` sleeping yes, everything else no.
+                ;;
+                ;;A SLEEPING batch is a COMMITMENT. Its multiplier is scaled by the term the lock
+                ;;still has to run, so it prices time the holder has promised -- and nothing but
+                ;;custody makes that promise real. On the ordinary path the tracker names the
+                ;;staker as owner, so they could take a twenty-five-year rate and withdraw in the
+                ;;next block.
+                ;;
+                ;;A HIBERNATING batch is not, and this is an owner ruling (2026-10-10) rather than
+                ;;an inference: `mx-hibernated` is FLAT, the holder may unstake at any moment with
+                ;;no penalty, and leaving hibernation itself already costs a decaying burn fee.
+                ;;There is no promise to enforce and nothing to gamble, so requiring custody would
+                ;;only take away a freedom the design grants on purpose.
+                ;;
+                ;;SCOPED ON THE PREFIX, AND IT WAS BRIEFLY SCOPED ON THE POOL CLASS TOO -- `Z|`
+                ;;AND aqp-class 0 -- because a `Z|` satellite on a class-1 pool used to score
+                ;;ZERO (the `"of-skip"` fallthrough), and locking an asset for a quarter century
+                ;;in exchange for nothing is worse than the gamble this rule closes. That
+                ;;conjunct is gone because the zero is: class-1 satellites now score like the
+                ;;native token times their multiplier. The narrower rule was right for the code as
+                ;;it was, and would have been wrong for the code as it is -- which is why it is
+                ;;written here rather than remembered. See DEFECT-LEDGER 8.39.
+                ;;
+                ;;`custodial` is the tracker owner column naming the pool instead of the staker,
+                ;;which is the whole custody mechanism.
+                (mx-earning:bool
+                    (and (ref-SCR::URC_OrtoDpofIsSpecialLeg dpof-id)
+                         (ref-SCR::URC_OrtoDpofUsesSleepingMultiplier dpof-id)))
+                (custodial:bool (= tracker-owner AQP|SC_NAME))
                 ;;
                 (stake-admission-ok:bool (if direction (ref-AQP::URC_PoolStakeAdmissionOk pool-id) (ref-AQP::URC_PoolUnstakeAdmissionOk pool-id)))
                 (fvt-ready:bool (if direction (ref-RPS::URC_PoolEmployedScoresFvtStakeReady pool-id) true))
@@ -1080,6 +1281,43 @@
             ;;7] FVT reward pipeline — stake direction only
             (if direction
                 (enforce fvt-ready "Invalid FVT reward pipeline: employed score missing enabled FVT ScoreEntityLink or reward DPTF")
+                true
+            )
+            ;;8] CUSTODY IS MANDATORY WHERE A DURATION MULTIPLIER IS EARNED, AND FORBIDDEN ELSEWHERE.
+            ;;   A sleeping or hibernating batch earns a multiplier scaled by the time its lock
+            ;;   still has to run -- up to the score's full ceiling. That rate prices a COMMITMENT,
+            ;;   and on the ordinary path there is none: the tracker names the staker as owner, so
+            ;;   they may unstake in the very next block and keep the batch. They would collect a
+            ;;   25-year rate for one block of real lock-up, which is the exact gamble the duration
+            ;;   curve was built to close -- closing it in the multiplier while leaving this path
+            ;;   open would have MOVED the hole rather than filled it.
+            ;;   Under custody the batch is held to term (`CAP_StakeOwner` refuses the staker,
+            ;;   because the owner column is the pool), so the commitment the rate prices is real.
+            ;;
+            ;;   STAKE DIRECTION ONLY, deliberately. Gating the UNSTAKE too would trap any
+            ;;   user-owned sleeping position that already exists -- the custodial release requires
+            ;;   the pool in the owner column and would refuse it -- turning a pricing rule into an
+            ;;   asset lock. Refusing the ENTRY is sufficient: no new user-owned sleeping position
+            ;;   can be created, and anything prior keeps its ordinary exit.
+            ;;
+            ;;   AND IT IS ALSO WHY CUSTODY IS REFUSED ELSEWHERE rather than merely not required:
+            ;;   the only exit from a custodial row is `CCp_ReleaseSpecialCustodial`, which
+            ;;   dissolves through `VST::XE_Unsleep` and resolves the native counterpart via
+            ;;   `DPOF::UR_Sleeping`. A native or hibernating batch has nothing there, so that
+            ;;   exit would refuse forever while the ordinary unstake could no longer find a row
+            ;;   keyed to the staker -- unreachable from both directions (DEFECT-LEDGER 8.38/8.39).
+            ;;
+            ;;   Two enforces rather than one combined, because a test can only tell two refusals
+            ;;   apart by their MESSAGE -- a single "paths must match" would make the two failures
+            ;;   indistinguishable from outside, which is how a shadowed gate hides.
+            (if direction
+                (enforce (or (not mx-earning) custodial)
+                    "Invalid stake path: a sleeping leg that earns a duration multiplier must be staked under pool custody")
+                true
+            )
+            (if direction
+                (enforce (or mx-earning (not custodial))
+                    "Invalid stake path: pool custody is only for a sleeping leg that earns a duration multiplier")
                 true
             )
             ;;2] owner-id — activated account; signer proof in AQP|XE>ORTO-FUNGIBLE-POOL-CUSTODY
@@ -2567,7 +2805,7 @@
     ;;    · Vault/Treasury: inject divisor = maintained SCR/FVT total-deb-score mirror (stale-able).
     ;;    · Farm: Tier-1 denominator S is fresh (ref-RPS::URC_FarmInjectDenominatorFresh), but the Tier-2 per-member
     ;;      L_i-advance divisor is SCR|ScoreTotalDebScore — stale-able for singular / non-true-triplet members
-    ;;      (e.g. a mosaic farm carrying a singular score). True-triplet members are deb-independent (lane weights)
+    ;;      (e.g. a mosaic farm carrying a singular score). True-triplet members are deb-based too since 2026-10-08
     ;;      and the fix no-ops on them.
     ;;   Inject cost scales with MEMBER count (employed score-entities; a triplet = ONE member): a 4-member farm
     ;;   costs one member-iteration more than a 3-member farm.
@@ -2610,7 +2848,7 @@
             \ fresh (ref-RPS::URC_FarmInjectDenominatorFresh), BUT its Tier-2 per-member L_i-advance divisor is the maintained \
             \ SCR|ScoreTotalDebScore mirror, which goes deb-stale for singular / non-true-triplet members (e.g. a \
             \ mosaic farm carrying a singular score) exactly like a vault — the fix un-stales it (true-triplet members \
-            \ no-op: deb-independent lanes). Same authorization as C_Inject (FVT|C>INJECT). For spike loads that exceed \
+            \ no-op before 2026-10-08; true triplets are deb-based now). Same authorization as C_Inject (FVT|C>INJECT). For spike loads that exceed \
             \ one tx, use the MTX|n|C_Inject defpact (MTX-AQP). UrStoa ≡ C_URV|Inject with a pre-fresh divisor. \
             \ \
             \ Executor: PROVEN INDIRECTLY, and named. FVT|C>INJECT validates the CONTEXT only. \
@@ -2650,6 +2888,75 @@
             )
         )
     )
+    )
+    (defun CCp_FvtFixSlice:string
+        (patron:string fvt-id:string reward-dptf-id:string users:[string])
+        @doc "HYDRA FED SLICE — refresh exactly the LISTED stale members of an FVT, so a stale set \
+            \ can be cleared in PARALLEL instead of one page at a time. \
+            \ \
+            \ WHY THIS EXISTS ALONGSIDE `CCp_InjectFixChunk`. That one takes a chunk SIZE and does \
+            \ `take chunk` of the shared stale list, which makes it a sequential loop: two \
+            \ transactions sent at once both read the same list and both take the same first N \
+            \ users. They would do duplicate work AND record the 2e forced-fix penalty TWICE for \
+            \ those users, which is not merely wasteful -- it overcharges the holder. So the \
+            \ existing recipe is safe only if you never fan it out, and nothing says so. \
+            \ \
+            \ THIS ONE TAKES THE ACCOUNTS. The caller reads `URH_FvtStalePresentUsers`, splits it \
+            \ into DISJOINT slices and sends them together; disjoint slices touch disjoint users \
+            \ and cannot collide. \
+            \ \
+            \ AND IT FILTERS TO CURRENTLY-STALE INSIDE THE TRANSACTION, which is what makes an \
+            \ OVERLAPPING or REPLAYED slice harmless rather than expensive: a user another slice \
+            \ already refreshed reads fresh here and is skipped, so no second penalty is recorded. \
+            \ That filter is the whole difference between 'parallel' and 'parallel and safe'. \
+            \ \
+            \ THE STALENESS ITSELF IS NOT A FREEZE, and deliberately: adding or revoking a score \
+            \ entity makes members stale, but a stale member only mis-states reward SHARES, never \
+            \ the base -- stake and unstake stay exactly correct. The protection is already at the \
+            \ point that matters: `CC_InjectFinalize` enforces that NO stale present user remains \
+            \ before any reward is injected. So holders are never trapped; the work simply has to \
+            \ be done before the next inject. \
+            \ \
+            \ Same capability and same price as `CCp_InjectFixChunk` -- identical work, identical \
+            \ authority, only the slice SHAPE differs. EXECUTORLESS BY DESIGN (canon 2.2): the \
+            \ accounts named are subjects of a refresh, not signatories."
+        (let
+            (
+                (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
+            )
+            (P|UEV_IMC)
+        (with-capability (FVT|C>INJECT-FIX patron fvt-id reward-dptf-id (length users))
+            (let
+                (
+                    ;;hoisted ONCE for the whole slice -- the per-user re-scan is what a 50-user
+                    ;;probe measured at ~2M gas (see URH_FvtStalePresentUsers)
+                    (members:[string] (ref-RPS::URH_FvtEnabledScoreEntityIdsForFvt fvt-id))
+                    (reward-rows:[string] (ref-RPS::URH_FVT-RG|EnabledRewardRows fvt-id))
+                )
+                (let
+                    (
+                        (batch:[string]
+                            (filter
+                                (lambda (u:string)
+                                    (ref-RPS::URC_FvtUserHasStaleMemberIn fvt-id u members))
+                                users))
+                    )
+                    (do
+                        ;;DRIP each reward lane once before the fix loop so every user settles
+                        ;;against the now-current index. No-op when no lane carries a stream.
+                        (map (lambda (d:string) (ref-RPS::XE_XI_ReleaseStream fvt-id d)) reward-rows)
+                        (map
+                            (lambda (u:string)
+                                (ref-RPS::XE_XI_FixUserFvtDebPenalizedIn
+                                    fvt-id reward-dptf-id u members reward-rows))
+                            batch)
+                        (format "Fix slice: refreshed {} of {} listed staker(s) ({} were already fresh). Complete when URH_FvtStalePresentUsers returns []."
+                            [(length batch) (length users) (- (length users) (length batch))])
+                    )
+                )
+            )
+        )
+        )
     )
     (defun CCp_InjectFixChunk:string
         (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
@@ -2867,6 +3174,267 @@
         )
     )
     )
+    (defun URCi_ClearPoolSweep:object{IgnisCollectorV3.OutputCumulator} (output:[string])
+        @doc "Cost of lifting a pool's sweep freeze. Priced as sweep maintenance rather than a \
+            \ settings change: it is the last step of a job anybody may finish."
+        (let
+            (
+                (r:module{IgnisCollectorV3} IGNIS)
+            )
+            (r::UDC_ConstructOutputCumulator
+                (r::UC_IgnisPrice "AQP-FVT|CC_ClearPoolSweep" "backfill")
+                AQP|SC_NAME (r::URC_IsVirtualGasZero) output)
+        ))
+    (defun URCi_ReleaseSpecialCustodial:decimal
+        (pool-id:string beneficiary-id:string dpof-id:string nonce:integer)
+        @doc "Total IGNIS IFP of `CCp_ReleaseSpecialCustodial` — the two legs the release actually \
+            \ runs: the orto phase chain in the UNSTAKE direction over the single nonce, plus \
+            \ `VST::XE_Unsleep` dissolving the batch. \
+            \ \
+            \ IT LIVES HERE RATHER THAN IN AQP-INFO because VST is reached by MODREF from this \
+            \ module. A preview that dot-called `VST.URCi_Unsleep` would PIN VST's body into the \
+            \ reader (`_dotpin.py`), putting AQP-INFO into VST's redeploy cascade forever and \
+            \ quoting a stale price after any VST upgrade. Threading it through the module that \
+            \ already holds the modref costs nothing and keeps the price beside the client that \
+            \ charges it, so the two cannot drift. \
+            \ \
+            \ `AQP|SC_NAME` is the unsleeper and the tracker owner, not the beneficiary: the pool \
+            \ is what holds a custodial position, and the native asset is sent on to the staker."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
+                (ref-VST:module{VestingV2} VST)
+            )
+            (+ (ref-RPS::URCi_OrtoFungibleStakeFlow
+                   pool-id AQP|SC_NAME beneficiary-id dpof-id [nonce] false)
+               (ref-I|OURONET::OI|UC_IfpFromOutputCumulator
+                   (ref-VST::URCi_Unsleep AQP|SC_NAME dpof-id nonce)))
+        ))
+    (defun CCp_StakeSpecialCustodial:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string executor:string executee:string pool-id:string dpof-id:string
+         nonces:[integer] nonce-amounts:[decimal])
+        @doc "Stake SLEEPING batches into a pool under POOL CUSTODY: the batches move from \
+            \ <executor>, but the tracker records `AQP|SC_NAME` as their owner. \
+            \ \
+            \ ONE COLUMN IS THE WHOLE DIFFERENCE from an ordinary orto stake, and it buys the \
+            \ property the owner asked for: \\\"the asset goes to aqp and aqp would stake it ... the \
+            \ writings to the ownership tables are slightly different such that it appears the \
+            \ staker is the aqp itself instead of the user.\\\" Because the tracker's owner column is \
+            \ what `CAP_StakeOwner` checks, naming the pool there makes an early user exit fail \
+            \ with no new guard at all -- the existing ownership check does it. \
+            \ \
+            \ THE STAKER IS NOT DISPOSSESSED, they are time-locked. `executee` is recorded as the \
+            \ beneficiary, so every score, reward and claim accrues to them exactly as on an \
+            \ ordinary stake; and `CCp_ReleaseSpecialCustodial` is PERMISSIONLESS, so once the \
+            \ lock matures anyone can trigger the exit and the native tokens can only go to them. \
+            \ The pool gains the right to hold the position to term, and nothing else. \
+            \ \
+            \ Runs the same phase chain as the ordinary flow (`XI_OrtoStakePhases`), so the score, \
+            \ RPS and presence bookkeeping cannot drift between the two paths."
+        (let
+            (
+                (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
+            )
+            (P|UEV_IMC)
+        (with-capability
+            (FVT|C>ORTO-FUNGIBLE-STAKE-FLOW pool-id executor AQP|SC_NAME executee dpof-id nonces nonce-amounts true)
+            (XI_OrtoStakePhases
+                patron pool-id AQP|SC_NAME executor executee dpof-id nonces nonce-amounts
+                true true executee
+                (ref-RPS::URHC_BuildStakeSettleBundle pool-id executee))
+        )
+        )
+    )
+    (defun CCp_ReleaseSpecialCustodial:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string pool-id:string executee:string dpof-id:string nonce:integer)
+        @doc "Release a MATURED custodial sleeping position: unwind the score and tracker, dissolve \
+            \ the batch, and send the native counterpart to the staker. Permissionless. \
+            \ \
+            \ THE EXIT THE OWNER SPECIFIED: \\\"Unstake in this case where the AQP is staker of the \
+            \ sleeping nonce is only allowed when the nonce sleeping period expired. And in this \
+            \ case the AQP unsleeps it, in which case it gets the native lp, and transfer the user \
+            \ the native lp.\\\" \
+            \ \
+            \ FOUR THINGS HAPPEN, IN THIS ORDER, and the order matters: \
+            \ \
+            \ 1] the SCORE unwind reverses the AWARDED-WEIGHT LEDGER, not a recomputation. A \
+            \    sleeping multiplier shrinks as the lock runs down, so by maturity it has decayed \
+            \    to the plain rate -- recomputing would give back less than was credited and leave \
+            \    the difference as weight for a position nobody holds. `SCR|T|SleepStake` recorded \
+            \    what was awarded; the unwind returns exactly that, and the base nets to zero. \
+            \ 2] the TRACKER row is drained, which is what makes the position gone. \
+            \ 3] `VST::XE_Unsleep` dissolves the batch -- burning the whole supply RETIRES the \
+            \    nonce to supply -1.0, so nothing dangling is left for the ledger row to describe. \
+            \ 4] the native tokens land on <executee>, never on the caller. \
+            \ \
+            \ Phase 1.1 is SKIPPED (`move-asset` false): the batch is owned by the pool and is \
+            \ bound for VST, not back to the owner column's account. \
+            \ \
+            \ MATURITY IS ENFORCED BY VST, in `VST|XE>UNSLEEP`, by the same test a user's own \
+            \ unsleep must pass. An early call unwinds and then aborts on that gate; the \
+            \ transaction is atomic so nothing is left half-done. \
+            \ EXECUTORLESS BY DESIGN (canon 2.2): no authority is exercised -- a matured lock is \
+            \ released on a fact, and the recipient is read from the tracker, not supplied."
+        (let
+            (
+                (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+            )
+            (P|UEV_IMC)
+        (let
+            (
+                (staked:decimal
+                    (ref-AQP::UR_AQP|DPOFTrackerBalance pool-id dpof-id AQP|SC_NAME executee nonce))
+            )
+            (with-capability
+                (FVT|C>RELEASE-SPECIAL-CUSTODIAL patron pool-id executee dpof-id nonce staked)
+                (let
+                    (
+                        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                        (ref-VST:module{VestingV2} VST)
+                    )
+                    (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                        [
+                            ;;1-2] score + RPS unwind and tracker drain, WITHOUT returning the batch
+                            (XI_OrtoStakePhases
+                                patron pool-id AQP|SC_NAME AQP|SC_NAME executee dpof-id
+                                [nonce] [staked] false false executee
+                                (ref-RPS::URHC_BuildStakeSettleBundle pool-id executee))
+                            ;;3-4] dissolve the matured batch; the native counterpart goes to the staker
+                            (ref-VST::XE_Unsleep patron AQP|SC_NAME dpof-id nonce executee)
+                        ]
+                        []
+                    )
+                )
+            )
+        )
+        )
+    )
+    (defun URCi_ReassignCustodialBeneficiary:decimal
+        (pool-id:string executor:string new-beneficiary:string dpof-id:string nonce:integer)
+        @doc "Total IGNIS IFP of `CCp_ReassignCustodialBeneficiary`: the orto phase chain run \
+            \ TWICE over the single nonce -- once in the unstake direction for the seller, once \
+            \ in the stake direction for the buyer. \
+            \ \
+            \ BOTH RUNS ARE PRICED AT FULL RATE and that is not an oversight. The asset does not \
+            \ move (`move-asset` false gates phase 1.1 only), but everything else does: two \
+            \ tracker writes, two settle bundles, two score-delta passes over every employed \
+            \ score, two checkpoint writes. The transfer leg is the one thing the chain charges \
+            \ for that this op does not perform, and `URCi_OrtoFungibleStakeFlow` prices it \
+            \ direction-INDEPENDENTLY from `DPOF::URCi_MoveCumulator` -- so the quote carries a \
+            \ move that will not happen, twice. Deliberately not netted out: a preview that \
+            \ under-quotes leaves the caller short at execution, which is the failure that \
+            \ actually hurts. Over-quoting a leg is visible and harmless. \
+            \ \
+            \ The seller's and buyer's bundles differ (each settles against its own position), so \
+            \ the two halves are read separately rather than doubled."
+        (let
+            (
+                (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
+            )
+            (+ (ref-RPS::URCi_OrtoFungibleStakeFlow
+                   pool-id AQP|SC_NAME executor dpof-id [nonce] false)
+               (ref-RPS::URCi_OrtoFungibleStakeFlow
+                   pool-id AQP|SC_NAME new-beneficiary dpof-id [nonce] true))
+        ))
+    (defun CCp_ReassignCustodialBeneficiary:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string executor:string pool-id:string dpof-id:string nonce:integer
+         new-beneficiary:string)
+        @doc "Move a custodial sleeping position's EARNINGS from <executor> to <new-beneficiary>. \
+            \ The batch does not move -- it stays with the pool, still locked until maturity. \
+            \ \
+            \ TWO PHASE-CHAIN RUNS WITH THE ASSET PINNED, which is the whole implementation. \
+            \ `move-asset` false gates phase 1.1 and nothing else, so an UNSTAKE run for the \
+            \ seller and a STAKE run for the buyer together migrate the tracker row, the score \
+            \ weight on every employed score, the FVT presence flags, the triplet lane weights \
+            \ and both parties' RPS checkpoints -- without a single token leaving `AQP|SC_NAME`. \
+            \ Reusing the chain rather than writing a bespoke mover is the point: a position that \
+            \ changed hands through its own stake/unstake arithmetic cannot be bookkept \
+            \ differently from one that was staked normally. \
+            \ \
+            \ THE SELLER IS SETTLED BEFORE THE WEIGHT LEAVES, because the unstake run carries its \
+            \ own settle bundle: rewards accrued while <executor> held the position are credited \
+            \ to <executor> at the weight they actually held. Running the legs the other way round \
+            \ would hand the seller's unclaimed rewards to the buyer. \
+            \ \
+            \ THE BUYER IS RE-RATED TO THE TERM REMAINING NOW, and that is a decision rather than \
+            \ a side effect. The stake run re-stamps `SCR|T|SleepStake`, so if a 25-year lock has \
+            \ ten years behind it the buyer earns the fifteen-year rate, not the seller's original \
+            \ ceiling. The alternative -- inheriting the seller's multiplier -- would make \
+            \ reassignment strictly better than buying the nonce and staking it fresh, which is \
+            \ the same position by another route; an arbitrage between two routes to one position \
+            \ is the kind of asymmetry this whole duration mechanism exists to remove. The buyer \
+            \ prices that in when they price the position. \
+            \ \
+            \ Talos shell → AQP-FVT::CCp_ReassignCustodialBeneficiary."
+        (let
+            (
+                (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+            )
+            (P|UEV_IMC)
+        (let
+            (
+                (staked:decimal
+                    (ref-AQP::UR_AQP|DPOFTrackerBalance pool-id dpof-id AQP|SC_NAME executor nonce))
+            )
+            (with-capability
+                (FVT|C>REASSIGN-CUSTODIAL-BENEFICIARY
+                    patron pool-id executor dpof-id nonce new-beneficiary staked)
+                (let
+                    (
+                        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    )
+                    (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                        [
+                            ;;1] the SELLER's leg: settle what they earned, then take the weight
+                            ;;   and the tracker row off them. `move-asset` false -- the batch is
+                            ;;   the pool's and is going nowhere.
+                            (XI_OrtoStakePhases
+                                patron pool-id AQP|SC_NAME AQP|SC_NAME executor dpof-id
+                                [nonce] [staked] false false executor
+                                (ref-RPS::URHC_BuildStakeSettleBundle pool-id executor))
+                            ;;2] the BUYER's leg: the same position, credited to them at today's
+                            ;;   remaining term, with their own checkpoint opened.
+                            (XI_OrtoStakePhases
+                                patron pool-id AQP|SC_NAME AQP|SC_NAME new-beneficiary dpof-id
+                                [nonce] [staked] true false new-beneficiary
+                                (ref-RPS::URHC_BuildStakeSettleBundle pool-id new-beneficiary))
+                        ]
+                        []
+                    )
+                )
+            )
+        )
+        )
+    )
+    (defun CC_ClearPoolSweep:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string pool-id:string)
+        @doc "Lift a pool's `sweep-in-progress` freeze and return it to trading. \
+            \ \
+            \ LIVES IN AQP-FVT RATHER THAN AQP-POOL, and that placement is the point. The freeze \
+            \ is ONE boolean with TWO owners -- the re-rate/drain work in AQP-POOL and the anchor \
+            \ member recompute here -- and only this module can see both. Written in AQP-POOL (03) \
+            \ it could not read this sweep cursor (05) at all, so it would have lifted an anchor \
+            \ sweep's freeze mid-run and broken a completeness guarantee that module never knew \
+            \ existed. The first draft of this release did exactly that. \
+            \ \
+            \ PERMISSIONLESS AND EXECUTORLESS BY DESIGN (canon 2.2): nothing is being authorised, \
+            \ only noticed. `UEV_FVT|PoolReleasable` is what proves it."
+        (P|UEV_IMC)
+        (UEV_FVT|PoolReleasable pool-id)
+        (with-capability (FVT|C>CLEAR-POOL-SWEEP patron pool-id)
+            (let
+                (
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                )
+                (ref-AQP::XE_SetSweepInProgress pool-id false)
+            )
+        )
+        (URCi_ClearPoolSweep
+            [(format "Pool {} released: no re-rate, drain or anchor-sweep work remains." [pool-id])])
+    )
     (defun CCp_SweepRecomputeChunk:string
         (patron:string anchor-id:string chunk:integer)
         @doc "PAGE a paginated re-score sweep: recompute the next `chunk` holders over the GLOBAL flattened present \
@@ -3070,8 +3638,8 @@
                         ;; ALL reward streams (the just-collected stream re-settles to 0 — its last-rps is already G;
                         ;; the OTHER streams get settled here, closing the multi-reward-dptf edge), refresh the SCORE
                         ;; deb-score(s) to live (each triplet leg at its OWN pool), and resync the FVT total-deb mirror
-                        ;; by the member delta. Runs AFTER phases 1-4 so settle-before-weight-change holds. No-op when
-                        ;; fresh or a TRUE triplet (deb-independent lanes).
+                        ;; by the member delta. Runs AFTER phases 1-4 so settle-before-weight-change holds. No-op only
+                        ;; when fresh — since 2026-10-08 true triplets are deb-based and DO get fixed here.
                         (ref-RPS::XE_XI_FixUserMemberDeb executor fvt-id score-entity-type score-entity-id)
                         ;;===>PHASE 7=== (M3 #12 2e) inject-forced-fix penalty: `count × RATE` NON-discountable IGNIS,
                         ;; then zero the count. Non-discount via gross-up (price = count×RATE / patron-discount → after
@@ -3219,18 +3787,27 @@
     (defun CC_OrtoFungibleStakeFlow:object{IgnisCollectorV3.OutputCumulator}
         (patron:string executor:string executee:string pool-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal] direction:bool)
         @doc "Core OrtoFungible stake/unstake recipe. Phases 1 → 2 → 3 → 4 → 5 — see canonical map above. \
-            \ OF: phase 1.3 and 3.x are N/A (comment-only in ICO list)."
+            \ OF: phase 1.3 and 3.x are N/A (comment-only in ICO list). \
+            \ \
+            \ EXECUTOR: proven INDIRECTLY, and the route has to be named here because the static \
+            \ trace can no longer see it. `executor` is passed to `XI_OrtoStakePhases` as its \
+            \ `transfer-sender`, which hands it to `AQP::XE_OrtoFungibleTransfer`, whose \
+            \ `AQP|XE>ORTO-FUNGIBLE-POOL-CUSTODY` reaches `CAP_StakeOwner` on it. The proof is \
+            \ unchanged from before the phase chain was extracted -- what changed is that the \
+            \ parameter is RENAMED at the helper boundary, so `_executorenforced.py` loses the \
+            \ name and reported this as unproven. Registered there with this route. (canon 2.2.)"
         (let
             (
                 (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
             )
             (P|UEV_IMC)
-        (with-capability (FVT|C>ORTO-FUNGIBLE-STAKE-FLOW pool-id executor executee dpof-id nonces nonce-amounts direction)
+        (with-capability (FVT|C>ORTO-FUNGIBLE-STAKE-FLOW pool-id executor executor executee dpof-id nonces nonce-amounts direction)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                    ;;IGNIS, AQP-POOL and AQP-SCORE moved WITH the phase chain into
+                    ;;`XI_OrtoStakePhases`; binding them here as well would resolve three module
+                    ;;references for nothing. `_conformance.py`'s dead-modref-binding check caught
+                    ;;them the moment the extraction landed.
                     ;;
                     ;; M5: executee is authoritative BOTH directions (stake and unstake). The caller supplies
                     ;; the real beneficiary on unstake too, so the exact (owner, beneficiary) tracker row is settled —
@@ -3240,15 +3817,72 @@
                         (ref-RPS::URHC_BuildStakeSettleBundle pool-id settle-beneficiary)
                     )
                 )
+                (XI_OrtoStakePhases
+                    patron pool-id executor executor executee dpof-id nonces nonce-amounts
+                    direction true settle-beneficiary settle-bundle)
+            )
+        )
+    )
+    )
+    ;;Protection: Class 2 — SECURE
+    (defun XI_OrtoStakePhases:object{IgnisCollectorV3.OutputCumulator}
+        (
+            patron:string
+            pool-id:string
+            tracker-owner:string
+            transfer-sender:string
+            executee:string
+            dpof-id:string
+            nonces:[integer]
+            nonce-amounts:[decimal]
+            direction:bool
+            move-asset:bool
+            settle-beneficiary:string
+            settle-bundle:object{AcquisitionSchemasV1.FVT|StakeSettleBundle}
+        )
+        @doc "The ORTO stake/unstake phase chain, extracted so the ordinary flow and the CUSTODIAL \
+            \ recipes run the same code instead of three copies of it. \
+            \ \
+            \ TWO PARAMETERS ARE WHAT CUSTODY NEEDED, and they are deliberately separate: \
+            \ \
+            \ `tracker-owner` vs `transfer-sender` -- the ordinary flow passes the SAME account for \
+            \ both, because the staker is the holder. A custodial stake does not: the batch moves \
+            \ from the USER while the tracker records `AQP|SC_NAME` as its owner. That single split \
+            \ IS the custody mechanism -- the tracker key is what `CAP_StakeOwner` checks on an \
+            \ unstake, so naming the pool as owner makes an early user exit fail for free, with no \
+            \ new guard to write and none to forget. \
+            \ \
+            \ `move-asset` -- a custodial RELEASE must not hand the batch back to the account in the \
+            \ owner column, because that account is the pool. It goes to VST to be dissolved and \
+            \ the native counterpart goes to the staker, so phase 1.1 is skipped and the caller \
+            \ does the dissolving through `VST::XE_Unsleep`. \
+            \ \
+            \ EVERY OTHER PHASE IS UNCHANGED, which is the point: the RPS prelude, the SCORE \
+            \ unwind, the deb mirrors, the lane re-snapshot, the presence flip, the unclaimed book \
+            \ and the checkpoint all behave identically whoever holds the asset. A custodial \
+            \ position is an ordinary position with a different name in one column. \
+            \ require SECURE, via the capability each caller already holds."
+        (require-capability (SECURE))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
+            )
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
                     [
                         ;;===>PHASE 1===
                         ;; PHASE 1.1 — Custody transfer · UrStoa ≡ X_UR|Transfer
-                        (ref-AQP::XE_OrtoFungibleTransfer
-                            patron pool-id executor executee dpof-id nonces nonce-amounts direction)
+                        ;; SKIPPED on a custodial release: the batch is owned by the pool and is
+                        ;; bound for VST to be dissolved, not for the owner column's account.
+                        (if move-asset
+                            (ref-AQP::XE_OrtoFungibleTransfer
+                                patron pool-id transfer-sender executee dpof-id nonces nonce-amounts direction)
+                            (ref-IGNIS::UDC_ConstructOutputCumulator 0.0 AQP|SC_NAME false []))
                         ;; PHASE 1.2 — Per-pool DPOFTracker · UrStoa ≡ N/A
                         (ref-AQP::XE_OrtoFungiblePoolTracker
-                            pool-id executor executee dpof-id nonces nonce-amounts direction)
+                            pool-id tracker-owner executee dpof-id nonces nonce-amounts direction)
                         ;; PHASE 1.3 — Beneficiary rollup slot · N/A (OF)
                         ;;
                         ;;===>PHASE 2===
@@ -3281,9 +3915,7 @@
                     ]
                     []
                 )
-            )
         )
-    )
     )
     ;;
     ;; --- DPDC collectable stake/unstake recipe (Talos ×4 → CC_CollectableStakeFlow; son=true DPSF / false DPNF) ---
@@ -3425,6 +4057,63 @@
     (defun URCi_CollectFull:decimal (patron:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
         @doc "Facade: delegates to the RPS reward engine (post-#75 split)."
         (RPS.URCi_CollectFull patron fvt-id score-entity-type score-entity-id reward-dptf-id)
+    )
+    (defun URH_FVT|ActiveSweepCoversPool:bool (pool-id:string)
+        @doc "HEAVY. True when some ANCHOR sweep is still open over a boost class whose scores \
+            \ include one employed by pool-id -- i.e. this pool's freeze is being held by a member \
+            \ recompute that has not finished. \
+            \ \
+            \ WHY THE POOL FREEZE NEEDS BOTH OWNERS TO AGREE BEFORE IT LIFTS. `sweep-in-progress` \
+            \ is ONE boolean on the pool row and TWO unrelated jobs set it: the re-rate/drain work \
+            \ in AQP-POOL, and the anchor member-recompute here -- whose completeness guarantee is \
+            \ precisely that pools cannot unfreeze until `offset` reaches `total`. A release that \
+            \ checked only the re-rate side would lift an anchor sweep's freeze mid-run: stakes \
+            \ would land against half-recomputed member weights, and the recompute set captured at \
+            \ BEGIN would stop being bounded. \
+            \ \
+            \ AQP-POOL CANNOT ASK THIS QUESTION -- it deploys at 03 and this cursor lives at 05. \
+            \ That is the entire reason this reader, and the release that uses it, live here."
+        (let
+            (
+                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+            )
+            (> (length
+                   (filter
+                       (lambda (anchor-id:string)
+                           (and
+                               (UR_FVT|SweepActive anchor-id)
+                               (contains pool-id
+                                   (map (lambda (sid:string) (ref-SCR::UR_SCR|ScoreAqpoolLink sid))
+                                        (ref-ANK::UR_BC|ScoreLinks
+                                            (ref-ANK::UR_ANK|BoostClassId anchor-id))))))
+                       (keys FVT|T|SweepProgress)))
+               0)
+        )
+    )
+    (defun UEV_FVT|PoolReleasable (pool-id:string)
+        @doc "HEAVY. Refuses to lift a pool's sweep freeze unless BOTH owners of that freeze are \
+            \ finished: no outstanding re-rate or drain work in AQP-POOL, and no open anchor sweep \
+            \ covering the pool here. \
+            \ \
+            \ BOTH SCANS ARE BOUND BEFORE THE `enforce`, which is not a style choice -- Pact \
+            \ evaluates an `enforce` CONDITION in read-only mode and refuses a table scan there, \
+            \ with \"Operation disallowed in read-only or sys-only mode\"."
+        (let
+            (
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+            )
+            (let
+                (
+                    (rerate-clear:bool (ref-AQP::URHC_AQP|PoolSweepClear pool-id))
+                    (anchor-busy:bool (URH_FVT|ActiveSweepCoversPool pool-id))
+                )
+                (enforce
+                    (and rerate-clear (not anchor-busy))
+                    "Pool is not releasable: re-rate/drain work or an open anchor sweep remains"
+                )
+            )
+        )
     )
     (defun URH_FvtEnabledScoreEntityIdsForFvt:[string] (fvt-id:string)
         @doc "Facade: delegates to the RPS reward engine (post-#75 split)."

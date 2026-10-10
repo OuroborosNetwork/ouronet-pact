@@ -1,0 +1,10 @@
+{
+  "_comment": "MANIFEST MODE -- the shape to aim for. An Arweave path manifest (what ArDrive / arkb / turbo produce when you upload a DIRECTORY) keeps the folder tree, so the migration is a prefix swap and this file stays three lines however many images there are. CORRECTED 2026-10-08: the two overrides here used to be 'PADDING_ANOMALY' files (E_048.jpg etc). That anomaly was an artefact of this tool's own ported link arithmetic and DOES NOT EXIST on chain -- those keys are not in scope at all, so --check would now reject them as 'names a file not in scope'. The real override case is below.",
+  "mode": "manifest",
+  "manifest": "https://arweave.net/REPLACE_WITH_MANIFEST_TXID/",
+  "_overrides_comment": "THE 34 MALFORMED WONDERCOACH SECONDARIES. On chain these read '<CID>/FULL05_WonderCoach/WC_nn.jpg' -- the separator after FULL is MISSING, and it is missing in the stored row, not here. Manifest mode is a faithful prefix swap, so it would carry the malformation into Arweave. Keep these overrides if the Arweave tree uses the TIDY path (FULL/05_WonderCoach/...); delete them if the upload reproduces the odd name verbatim. All 34 are listed in CHAIN-URIS.json -> malformed; two are shown here as the template. NOTE nonce 34's secondary is .png while its primary is .jpg -- that is real and must be preserved.",
+  "overrides": {
+    "https://ipfs.io/ipfs/QmYjHPWPxCeHGu9vgYUbzjmWo34A2z3CNuYmU6MEzgUSzP/FULL05_WonderCoach/WC_01.jpg": "https://arweave.net/REPLACE_WITH_MANIFEST_TXID/FULL/05_WonderCoach/WC_01.jpg",
+    "https://ipfs.io/ipfs/QmYjHPWPxCeHGu9vgYUbzjmWo34A2z3CNuYmU6MEzgUSzP/FULL05_WonderCoach/WC_34.png": "https://arweave.net/REPLACE_WITH_MANIFEST_TXID/FULL/05_WonderCoach/WC_34.png"
+  }
+}

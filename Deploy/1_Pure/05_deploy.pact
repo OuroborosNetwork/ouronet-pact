@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 5 of 24
 ;; This is STEP 5 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-4 must have run first, including the init steps between deploys.
-;; 3 source file(s), 342,033 gas measured in the REPL gas model, 279,538 bytes
+;; 3 source file(s), 342,033 gas measured in the REPL gas model, 289,971 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/10_ATSU.pact
@@ -2887,6 +2887,55 @@
             (compose-capability (P|TT))
         )
     )
+    (defcap VST|XE>UNSLEEP
+        (holder:string dpof:string nonce:integer recipient:string
+         nonce-supply:decimal culled-amount:decimal)
+        @doc "Dissolve a MATURED sleeping batch held by a CUSTODIAN and send the native tokens to \
+            \ someone else. The forward-module twin of `VST|C>UNSLEEP`, and it differs from it in \
+            \ exactly two ways -- both of which are the reason it has to exist. \
+            \ \
+            \ 1] NO STANDARD-ACCOUNT REQUIREMENT. `VST|C>UNSLEEP` enforces \
+            \    `UEV_EnforceAccountType executor false`, which refuses a SMART account. That is \
+            \    right for a user unsleeping their own batch, and it is exactly what makes the \
+            \    ordinary client unusable by a custodian: `AQP|SC_NAME` is a smart account, so an \
+            \    acquisition pool holding a sleeping position cannot dissolve it. \
+            \ \
+            \ 2] A RECIPIENT DISTINCT FROM THE HOLDER. The custodian holds the batch but does not \
+            \    own the value; the native tokens must land on the staker. `C_Unsleep` sends them \
+            \    to the executor, which for a custodial position would strand them in the pool. \
+            \ \
+            \ MATURITY IS STILL ENFORCED, BY THE SAME TEST, and it is the whole safety of the \
+            \ custodial design: `nonce-supply = culled-amount` says the batch's ENTIRE supply has \
+            \ passed its release date. A custodian cannot dissolve a lock early any more than a \
+            \ holder can -- which is what lets the acquisition pool refuse an early exit without \
+            \ also being able to force one. \
+            \ \
+            \ The caller is gated by `P|UEV_IMC`, so only a module holding a registered \
+            \ inter-module guard reaches this at all."
+        @event
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                ;;
+                (dptf:string (ref-DPOF::UR_Sleeping dpof))
+            )
+            (ref-DPTF::UEV_Sleeping dptf true)
+            ;;the recipient takes real value, so it must be a real, activated standard account
+            (ref-DALOS::UEV_EnforceAccountExists recipient)
+            (ref-DALOS::UEV_EnforceAccountType recipient false)
+            (enforce
+                (> nonce-supply 0.0)
+                (format "{} Nonce {} is empty or retired" [dpof nonce])
+            )
+            (enforce
+                (= nonce-supply culled-amount)
+                (format "{} Nonce {} cannot be unsleeped yet" [dpof nonce])
+            )
+            (compose-capability (P|TT))
+        )
+    )
     (defcap VST|C>UNSLEEP (executor:string dpof:string nonce:integer nonce-supply:decimal culled-amount:decimal)
         @event
         (let
@@ -3321,6 +3370,45 @@
                 )
                 [0.0 []]
                 meta-data-chain
+            )
+        )
+    )
+    ;;MODULE-ONLY, NOT DECLARED IN `VestingV2`, and deliberately so: that interface is already
+    ;;DEPLOYED (`Deploy/1_Pure/05_deploy.pact`) and a deployed interface cannot be changed. Both
+    ;;callers are inside this module, so a declaration would buy nothing while making the repo's
+    ;;interface claim a member the chain does not have -- a divergence the gate cannot see, and
+    ;;the same one that cost a round earlier in this work.
+    (defun URC_HibernationFeePromile:decimal (dpof:string nonce:integer)
+        @doc "The awakening fee a hibernating batch still carries, in PROMILE: 800 at mint, decaying \
+            \ linearly to 0 at its release date. \
+            \ \
+            \ EXTRACTED 2026-10-10 so there is ONE copy. The formula was written out twice -- in \
+            \ `C_Awake` and in `URCi_Awake` -- which is one more than is safe for an expression \
+            \ deciding how much of a holder's principal gets burned: a price reader that \
+            \ disagreed with the op it prices is exactly the drift `URCi_*` exists to prevent. \
+            \ \
+            \ ZERO FEE IS ALSO THE MATURITY TEST -- the two are the same condition -- which is \
+            \ why this is a `URC_` rather than a private expression. Nothing gates on it today; \
+            \ it is here so that anything which needs to ask \"has this batch run its term?\" asks \
+            \ the same expression the fee is computed from. \
+            \ \
+            \ Reads `mint-time` and `release-date` from element 0 of the metadata chain -- the \
+            \ HIBERNATION shape. A sleeping batch writes {release-amount, release-date} and has no \
+            \ `mint-time`, so this ABORTS on one rather than quietly returning 0.0, which for a \
+            \ maturity gate is the right way round. Every caller is a hibernation-only path and \
+            \ the capability checks the link."
+        (let*
+            (
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (meta-data-chain:[object] (ref-DPOF::UR_NonceMetaData dpof nonce))
+                (mint-time:time (at "mint-time" (at 0 meta-data-chain)))
+                (release-time:time (at "release-date" (at 0 meta-data-chain)))
+                (hibernating-period:decimal (diff-time release-time mint-time))
+                (elapsed-time:decimal (diff-time (at "block-time" (chain-data)) mint-time))
+            )
+            (if (>= elapsed-time hibernating-period)
+                0.0
+                (floor (- 800.0 (* 800.0 (/ elapsed-time hibernating-period))) 4)
             )
         )
     )
@@ -3889,21 +3977,10 @@
                 (dptf-id:string (ref-DPOF::UR_Hibernation dpof))
                 (precision:integer (ref-DPOF::UR_Decimals dpof))
                 (nonce-supply:decimal (ref-DPOF::UR_NonceSupply dpof nonce))
-                (meta-data-chain:[object] (ref-DPOF::UR_NonceMetaData dpof nonce))
-                ;;
-                (mint-time:time (at "mint-time" (at 0 meta-data-chain)))
-                (release-time:time (at "release-date" (at 0 meta-data-chain)))
-                (hibernating-period:decimal (diff-time release-time mint-time))
-                ;;
-                (present-time:time (at "block-time" (chain-data)))
-                (elapsed-time:decimal (diff-time present-time mint-time))
-                ;;
-                (hibernating-fee-promile:decimal
-                    (if (>= elapsed-time hibernating-period)
-                        0.0
-                        (floor (- 800.0 (* 800.0 (/ elapsed-time hibernating-period))) 4)
-                    )
-                )
+                ;;ONE COPY OF THE DECAY, in `URC_HibernationFeePromile`. It was written out here and
+                ;;again in the other Awake path -- two copies of the expression that decides how
+                ;;much of a holder's principal gets burned.
+                (hibernating-fee-promile:decimal (URC_HibernationFeePromile dpof nonce))
                 (remainder:decimal
                     (if (= hibernating-fee-promile 0.0)
                         nonce-supply
@@ -4315,6 +4392,48 @@
         )
     )
     ;;{5.7}  User [A/C]
+    ;;MODULE-ONLY, NOT DECLARED IN `VestingV2` -- that interface is deployed and cannot change.
+    ;;AQP-FVT reaches it by modref, which `REPL/tools/_modref.py` records as this repo's
+    ;;convention for members an interface does not name.
+    (defun URC_SpecialLegIssuerRestricted:bool (s-dpof:string)
+        @doc "True when a special DPOF's transfer roles express the TOKEN OWNER'S intent to \
+            \ restrict who may hold it -- as opposed to merely carrying this module's own \
+            \ infrastructure grant. \
+            \ \
+            \ WHY THE DISTINCTION HAS TO EXIST. `XI_CreateSpecialOrtoFungibleLink` grants \
+            \ `VST|SC_NAME` the transfer role on EVERY special token at creation, because \
+            \ dissolution moves the batch to this module and `DPOF::UEV_MoveRoleCheck` would \
+            \ otherwise refuse it. The side effect is that `are-transfer-roles-active` is TRUE \
+            \ for every sleeping, vested and hibernating token that has ever existed -- so \
+            \ \"does this token have transfer roles\" is a question with one answer and no \
+            \ information in it. Used as a policy gate it would refuse everything, forever. \
+            \ \
+            \ WHAT IS ACTUALLY BEING ASKED is whether a HUMAN chose to restrict the token. Every \
+            \ holder other than this module's own account got there through \
+            \ `C_ToggleTransferRole*`, which only the token owner can call -- so any other name \
+            \ present IS the owner's intent, and its absence is the absence of intent. \
+            \ \
+            \ IT LIVES IN VST BECAUSE VST CREATES THE EXCEPTION. A consumer cannot be expected to \
+            \ know that one particular role-holder is an implementation detail of unsleeping; the \
+            \ module that grants it is the one that can say so, and if that grant ever changes \
+            \ this is the single place that has to follow."
+        (let
+            (
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
+            )
+            (let
+                (
+                    (bar:string (ref-U|CT::CT_BAR))
+                )
+                (> (length
+                       (filter
+                           (lambda (a:string) (and (!= a bar) (!= a VST|SC_NAME)))
+                           (ref-DPOF::UR_Verum5 s-dpof)))
+                   0)
+            )
+        )
+    )
     (defun URC_SpecialTransferRoleKonto:string (s-token:string)
         @doc "The account the transfer-role toggle caps require as <executor>, for a special \
             \ token of EITHER family. \
@@ -4647,6 +4766,62 @@
             )
         )
     )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
+    (defun XE_Unsleep:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string holder:string dpof:string nonce:integer recipient:string)
+        @doc "Forward (AQP custodial release): dissolve a MATURED sleeping batch held by <holder> \
+            \ and send the native counterpart to <recipient>. \
+            \ \
+            \ THE FIRST `XE_` IN THIS MODULE, and it is here because a custodial sleeping stake has \
+            \ no other way out. An acquisition pool that holds a sleeping batch is a SMART account, \
+            \ and `C_Unsleep` refuses smart executors by design; it also pays the native tokens to \
+            \ whoever executed, which for a pool would strand them. So the pool could take custody \
+            \ of a lock and then never release it -- the asset would be stuck until the pool itself \
+            \ was dissolved. \
+            \ \
+            \ SAME THREE STEPS AS `C_Unsleep`, deliberately unchanged: the batch moves to \
+            \ `VST|SC_NAME`, is burned in its entirety, and the native amount is transferred out. \
+            \ Only the LAST leg differs -- it pays <recipient> rather than the holder. Burning the \
+            \ whole supply is what RETIRES the nonce: `DPOF::XI_DebitNonces` sets a fully-debited \
+            \ nonce's supply to -1.0 and takes it out of circulation permanently, so there is no \
+            \ dangling batch afterwards and the number is never reissued. \
+            \ \
+            \ MATURITY IS ENFORCED IN THE CAPABILITY, by the same `nonce-supply = culled-amount` \
+            \ test the user-facing client uses. A custodian gets no power to exit early; it gets \
+            \ only the power to exit AT ALL. That asymmetry is the point -- it is what lets the pool \
+            \ hold a position to term while still guaranteeing the staker can always get out once \
+            \ the term is up. P|UEV_IMC + VST|XE>UNSLEEP."
+        (P|UEV_IMC)
+        (let
+            (
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (nonce-supply:decimal (ref-DPOF::UR_NonceSupply dpof nonce))
+                (culled-amount:decimal (at 0 (URC_CullMetaDataAmountWithObject dpof nonce)))
+            )
+            (with-capability
+                (VST|XE>UNSLEEP holder dpof nonce recipient nonce-supply culled-amount)
+                (let
+                    (
+                        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                        (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                        ;;
+                        (dptf-id:string (ref-DPOF::UR_Sleeping dpof))
+                    )
+                    (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                        [
+                            ;;1] the custodian hands the batch to VST
+                            (ref-DPOF::C_Transfer patron holder VST|SC_NAME dpof [nonce] true)
+                            ;;2] burned in its entirety -- which retires the nonce to supply -1.0
+                            (ref-DPOF::C_Burn patron VST|SC_NAME dpof nonce nonce-supply)
+                            ;;3] and the native counterpart goes to the STAKER, not the custodian
+                            (ref-TFT::C_Transfer patron VST|SC_NAME recipient dptf-id nonce-supply true)
+                        ]
+                        []
+                    )
+                )
+            )
+        )
+    )
     (defun C_Unsleep:object{IgnisCollectorV3.OutputCumulator}
         (patron:string executor:string dpof:string nonce:integer)
         (P|UEV_IMC)
@@ -4769,21 +4944,10 @@
                     (dptf-id:string (ref-DPOF::UR_Hibernation dpof))
                     (precision:integer (ref-DPOF::UR_Decimals dpof))
                     (nonce-supply:decimal (ref-DPOF::UR_NonceSupply dpof nonce))
-                    (meta-data-chain:[object] (ref-DPOF::UR_NonceMetaData dpof nonce))
-                    ;;
-                    (mint-time:time (at "mint-time" (at 0 meta-data-chain)))
-                    (release-time:time (at "release-date" (at 0 meta-data-chain)))
-                    (hibernating-period:decimal (diff-time release-time mint-time))
-                    ;;
-                    (present-time:time (at "block-time" (chain-data)))
-                    (elapsed-time:decimal (diff-time present-time mint-time))
-                    ;;
-                    (hibernating-fee-promile:decimal
-                        (if (>= elapsed-time hibernating-period)
-                            0.0
-                            (floor (- 800.0 (* 800.0 (/ elapsed-time hibernating-period))) 4)
-                        )
-                    )
+                    ;;ONE COPY OF THE DECAY, in `URC_HibernationFeePromile`. It was written out here and
+                    ;;again in the other Awake path -- two copies of the expression that decides
+                    ;;how much of a holder's principal gets burned.
+                    (hibernating-fee-promile:decimal (URC_HibernationFeePromile dpof nonce))
                     (remainder:decimal 
                         (if (= hibernating-fee-promile 0.0)
                             nonce-supply

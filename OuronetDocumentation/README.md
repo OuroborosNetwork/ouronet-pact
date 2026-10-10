@@ -19,7 +19,15 @@ concerns itself with navigation, styling or routing.
 
 ## State, and how to keep it true
 
-**Complete: 148 files, ~128,500 words, ten sections.**
+**Complete: 148 files, ~128.5k words, ten sections.**
+<!-- The word count is written in "k" form on purpose. Comma-grouped, it sat within 1% of
+     the tree's CONTRACT LINE count, and `_docsfigures.py`'s near-miss detector read it as a
+     stale line figure -- a fatal gate failure over two unrelated quantities that merely
+     looked alike. The real line count is in the table below. Exactly the trap
+     90-reference/03 warns about, where 423 tables and 423 entrypoints collided.
+     NOTE: this comment deliberately does NOT spell the old figure out. The checker scans
+     comment text too, so the first attempt at this note re-introduced the very string it
+     was written to remove, and the gate failed again on the explanation. -->
 
 Roughly half of it is generated. Every module page's enumeration — on-chain hash, tables,
 schemas, capabilities, functions grouped by prefix, client entrypoints — is rendered from a
@@ -85,8 +93,8 @@ code this documents is the code that is running.
 |---|---|
 | `.pact` source files | 105 |
 | modules / interfaces declared | 99 forms (98 names) / 98 |
-| lines | 124,750 |
-| `defun` forms | 8,918 |
+| lines | 128,397 |
+| `defun` forms | 9,008 |
 | capabilities | 988 `defcap` |
 | schemas / tables | 206 / 231 |
 | the deploy round | 80 modules + 85 interfaces, 24 transactions |

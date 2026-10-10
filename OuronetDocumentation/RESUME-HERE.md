@@ -104,7 +104,7 @@ Material gathered for 01, kept because 02 needs the same sources:
   The figures in the first draft came from a census that collapsed role variants (`UCv_` into
   `UC_`) and scoped forms (`DPTF|C_` into `C_`), and eleven of them were too high. **A count is
   meaningless without its matching rule**, and the rule is what gets lost when a number is quoted
-  onward. These rows do NOT sum to 8,918 — scoped forms match none of them.
+  onward. These rows do NOT sum to 9,008 — scoped forms match none of them.
 - **The `W` family is canon and `CLAUDE.md` omits it.** `WI_` (insert) 20, `WU_` (update) 62, `WW_`
   (upsert) 28 = 110 functions across 8 files (the AQP family plus DPTF and PYTHIA). Documented in
   `StoicSyntax-Prefixes.md` §2 lines 202-208. Worth stating as a gap in the project instructions.

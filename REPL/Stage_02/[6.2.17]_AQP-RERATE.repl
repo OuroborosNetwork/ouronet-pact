@@ -1,0 +1,1621 @@
+;;================================================================================
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_02/[6.2.17]_AQP-RERATE.repl")
+(print "================================================================")
+(print "Legend (terminal observability):")
+(print "  <<…>>     expect doc (format …) — REPL logs pass/fail")
+(print "  <(VST|C_Sleep …)> => \"…\"     Talos sleep client (return value)")
+(print "  <(AQP-SCORE|URC_…)> => \"…\"   ref-SCR weighting read (return value)")
+(print "  <(AQP-POOL|URH_…)> => \"…\"    tracker-driven target read (return value)")
+(print "")
+(print "Requires prior load of modules/AQP-LP.repl — the ONLY chain carrying a class-0 score")
+(print "(LpProbeScore, precision 6, mx-frozen 2.0, mx-sleeping 2.0) and a class-0 pool")
+(print "(LpProbePool, asset P|HG-TE|LP, which has NEITHER a frozen nor a sleeping twin —")
+(print "that absence is itself under test, in TX-RERATE-04).")
+(print "")
+(print "Source: ;;|| NEXT > between txs; ;;==== TX-RERATE-nn · mm · … ==== before each banner.")
+(print "REPL tests: (map print [(expect (format \"<<TX-RERATE-nn>> …\" […]) expected actual) …])")
+(print "")
+(print "===================AQP RE-RATE TX Block=========================")
+(print "")
+
+;;================================================================================
+(begin-tx "TX-RERATE-01 - the duration scale: months remaining, and the curve over them")
+(namespace "ouronet-ns")
+;;==== TX-RERATE-01 · 01 · UC_DecayMonthsRemaining — the shared 0..cap scale ====
+(print "--- [TX-RERATE-01 · 01 · UC_DecayMonthsRemaining — the shared 0..cap scale] ---")
+;;These are the two numbers the whole anti-gambling mechanism rests on, and they are asserted
+;;against the LITERAL chain bounds rather than against each other: `VST|C>SLEEP` caps duration at
+;;788,400,000 seconds and `VST|C>HIBERNATE` caps `dayz` at 36,500. Divided by the month constant
+;;those are EXACTLY 300 and EXACTLY 1200, which is the only reason one month constant can serve
+;;both curves. If either chain bound ever moves, these fail here rather than silently re-scaling
+;;every holder's multiplier.
+(let
+    (
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+    )
+    (map print
+        [
+            (expect "<<TX-RERATE-01>> the 25-year SLEEP bound is exactly 300 months"
+                300 (ref-SCR::UC_DecayMonthsRemaining 788400000.0 300))
+            (expect "<<TX-RERATE-01>> the 100-year HIBERNATE bound (36500 days) is exactly 1200 months"
+                1200 (ref-SCR::UC_DecayMonthsRemaining 3153600000.0 1200))
+            ;;clamped at the cap: a hibernation-length duration on the sleep scale cannot buy
+            ;;more than the sleep ceiling
+            (expect "<<TX-RERATE-01>> a 100-year duration on the 300-month scale CLAMPS to 300"
+                300 (ref-SCR::UC_DecayMonthsRemaining 3153600000.0 300))
+            ;;clamped at zero: a matured nonce earns nothing, and a negative remaining time is
+            ;;what a matured nonce actually produces (release-date minus a LATER block time)
+            (expect "<<TX-RERATE-01>> a MATURED nonce (negative remaining) is 0 months, not negative"
+                0 (ref-SCR::UC_DecayMonthsRemaining -1.0 300))
+            (expect "<<TX-RERATE-01>> exactly-matured is 0 months"
+                0 (ref-SCR::UC_DecayMonthsRemaining 0.0 300))
+            (expect "<<TX-RERATE-01>> one month of lock reads as 1 month"
+                1 (ref-SCR::UC_DecayMonthsRemaining 2628000.0 300))
+            ;;ROUNDS, not floors — the reason is the gap between the sleep tx and the stake tx.
+            ;;An hour short of 36 months must still read 36, or every holder is short-changed by
+            ;;however long they took to stake.
+            (expect "<<TX-RERATE-01>> 36 months MINUS an hour still reads 36 (it rounds, not floors)"
+                36 (ref-SCR::UC_DecayMonthsRemaining (- (* 36.0 2628000.0) 3600.0) 300))
+            (expect "<<TX-RERATE-01>> ...and half a month past 36 rounds up to 37"
+                37 (ref-SCR::UC_DecayMonthsRemaining (+ (* 36.0 2628000.0) 1400000.0) 300))
+        ]
+    )
+    ""
+)
+;;==== TX-RERATE-01 · 02 · UC_MxAtMonths — the curve, exact at both ends ====
+(print "--- [TX-RERATE-01 · 02 · UC_MxAtMonths — the curve, exact at both ends] ---")
+;;THE CEILING MUST BE REACHED EXACTLY, for any ceiling and any cap. That is what lets the owner
+;;pick 1.999 or 2.2 or 3.4 with no divisibility rule, and it is why the function multiplies
+;;before dividing: a per-month step computed first would never land on the ceiling.
+(let
+    (
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+    )
+    (map print
+        [
+            (expect "<<TX-RERATE-01>> full sleep term returns the ceiling EXACTLY (2.2)"
+                2.2 (ref-SCR::UC_MxAtMonths 2.2 300 300))
+            (expect "<<TX-RERATE-01>> ...and for a 3-decimal ceiling too (1.999)"
+                1.999 (ref-SCR::UC_MxAtMonths 1.999 300 300))
+            (expect "<<TX-RERATE-01>> full HIBERNATE term returns the ceiling EXACTLY (3.4 at 1200)"
+                3.4 (ref-SCR::UC_MxAtMonths 3.4 1200 1200))
+            (expect "<<TX-RERATE-01>> zero months earns the PLAIN rate, 1.0 — never the ceiling"
+                1.0 (ref-SCR::UC_MxAtMonths 2.2 0 300))
+            (expect "<<TX-RERATE-01>> half the sleep term earns half the bonus (1.6 of a 2.2 ceiling)"
+                1.6 (ref-SCR::UC_MxAtMonths 2.2 150 300))
+            (expect "<<TX-RERATE-01>> half the HIBERNATE term likewise (2.2 of a 3.4 ceiling)"
+                2.2 (ref-SCR::UC_MxAtMonths 3.4 600 1200))
+            ;;THE GAMBLE, PRICED. One month of a 25-year ceiling is worth a third of one percent.
+            ;;Before this it was worth the whole ceiling.
+            (expect "<<TX-RERATE-01>> ONE month of a 2.0 ceiling is under 1.01x — the gamble is priced out"
+                true (< (ref-SCR::UC_MxAtMonths 2.0 1 300) 1.01))
+            (expect "<<TX-RERATE-01>> ...and one month of a 100-year HIBERNATE ceiling is under 1.003x"
+                true (< (ref-SCR::UC_MxAtMonths 3.4 1 1200) 1.003))
+            ;;MONOTONE: more commitment is never worth less. Asserted rather than assumed because
+            ;;a sign slip in the numerator would invert the whole incentive and still return
+            ;;plausible numbers at both ends.
+            (expect "<<TX-RERATE-01>> the curve is monotone — 299 months is worth less than 300"
+                true (< (ref-SCR::UC_MxAtMonths 2.2 299 300) (ref-SCR::UC_MxAtMonths 2.2 300 300)))
+        ]
+    )
+    ""
+)
+;;==== TX-RERATE-01 · 03 · the sleep-named pair still agrees with the general one ====
+(print "--- [TX-RERATE-01 · 03 · the sleep-named pair still agrees with the general one] ---")
+;;`UC_SleepMonthsRemaining` / `UC_SleepMxAtMonths` keep their own bodies at the 300-month cap and
+;;are pinned by [6.2.2] TX-SCORE-16. These assertions are what make that a CROSS-CHECK rather
+;;than two independent implementations free to drift: same inputs, same answers, both directions.
+(let
+    (
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+    )
+    (map print
+        [
+            (expect "<<TX-RERATE-01>> months: the sleep-named helper equals the general one at cap 300"
+                [300 0 1 36]
+                [(ref-SCR::UC_SleepMonthsRemaining 788400000.0)
+                 (ref-SCR::UC_SleepMonthsRemaining -1.0)
+                 (ref-SCR::UC_SleepMonthsRemaining 2628000.0)
+                 (ref-SCR::UC_SleepMonthsRemaining (- (* 36.0 2628000.0) 3600.0))])
+            (expect "<<TX-RERATE-01>> curve: likewise, including the exact ceiling"
+                [(ref-SCR::UC_MxAtMonths 2.2 300 300)
+                 (ref-SCR::UC_MxAtMonths 2.2 0 300)
+                 (ref-SCR::UC_MxAtMonths 2.2 150 300)]
+                [(ref-SCR::UC_SleepMxAtMonths 2.2 300)
+                 (ref-SCR::UC_SleepMxAtMonths 2.2 0)
+                 (ref-SCR::UC_SleepMxAtMonths 2.2 150)])
+        ]
+    )
+    ""
+)
+(print "===^^^===")
+(commit-tx)
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;================================================================================
+(begin-tx "TX-RERATE-02 - two real sleeping batches, and what each one is actually worth")
+(env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-RERATE-02 · 01 · env-sigs (caps) ====
+(print "--- [TX-RERATE-02 · 01 · env-sigs (caps)] ---")
+(env-sigs
+    [ { "key": "PK_AncientHodler", "caps": [] }
+      { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+      , "caps":
+        [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                         "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+          (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                         "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+          (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                         "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+          (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                         "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
+;;==== TX-RERATE-02 · 02 · sleep 100 OURO for 25 YEARS and 100 for ONE MONTH ====
+(print "--- [TX-RERATE-02 · 02 · sleep 100 OURO for 25 YEARS and 100 for ONE MONTH] ---")
+;;THE DECISIVE FIXTURE. Two batches of the SAME token and the SAME amount, differing only in how
+;;long they are locked. Under the rule this replaces both earned `mx-sleeping` in full, so the
+;;one-month batch was worth exactly as much as the twenty-five-year one — which is the gamble.
+;;Real nonces with real metadata, not synthesised, because what is under test is that the
+;;weighting reads `release-date` off the chain.
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (patron:string KST.ANHD)
+        (ouro-id:string (ref-DALOS::UR_OuroborosID))
+    )
+    (ref-TS01-C2::VST|C_CreateSleepingLink patron (DPTF.UR_Konto ouro-id) ouro-id)
+    (let
+        (
+            (zouro:string (DPTF.UR_Sleeping ouro-id))
+            (before:integer (DPOF.UR_NoncesUsed (DPTF.UR_Sleeping ouro-id)))
+        )
+        ;;nonce `before+1` — the full 25-year term, the most the chain will accept
+        (ref-TS01-C2::VST|C_Sleep patron patron patron ouro-id 100.0 788400000)
+        ;;nonce `before+2` — one month, the shortest commitment worth testing
+        (ref-TS01-C2::VST|C_Sleep patron patron patron ouro-id 100.0 2628000)
+        (map print
+            [
+                (expect (format "<<TX-RERATE-02>> two sleeping nonces minted on {}" [zouro])
+                    (+ before 2) (DPOF.UR_NoncesUsed zouro))
+            ]
+        )
+        ""
+    )
+)
+(print "===^^^===")
+(commit-tx)
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;================================================================================
+(begin-tx "TX-RERATE-03 - what the two batches weigh, and what the old rule would have paid")
+(namespace "ouronet-ns")
+;;==== TX-RERATE-03 · 01 · per-nonce multipliers, read off the chain ====
+(print "--- [TX-RERATE-03 · 01 · per-nonce multipliers, read off the chain] ---")
+(let
+    (
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+    )
+    (let*
+        (
+            (ouro-id:string (ref-DALOS::UR_OuroborosID))
+            (zouro:string (DPTF.UR_Sleeping ouro-id))
+            (used:integer (DPOF.UR_NoncesUsed zouro))
+            (n-long:integer (- used 1))
+            (n-short:integer used)
+            (score:string (ref-U|DALOS::UDC_Makeid "LpProbeScore"))
+        )
+        (map print
+            [
+                ;;the fixture, asserted: a real class-0 score at the CANONICAL default ceiling. 1.999 rather
+                ;;than a round 2.0 because `UC_MxSleepIntervalOk` requires the interval to divide by
+                ;;three exactly, and 1.0 leaves one unit of 0.0001 over.
+                (expect "<<TX-RERATE-03>> LpProbeScore is class 0 with the 1.999 default ceiling at precision 6"
+                    [0 1.999 6]
+                    [(ref-SCR::UR_SCR|ScoreClass score)
+                     (ref-SCR::UR_SCR|ScoreMxSleeping score)
+                     (ref-SCR::UR_SCR|ScorePrecision score)])
+                ;;THE 25-YEAR BATCH EARNS THE CEILING, EXACTLY. Not 1.99899 — exactly 1.999, which is
+                ;;what `UC_MxAtMonths` multiplying before dividing buys.
+                (expect "<<TX-RERATE-03>> the 25-YEAR batch earns the ceiling EXACTLY: 1.999"
+                    1.999 (ref-SCR::URC_SCR|SleepingLegWeight score zouro [n-long] [1.0] 300 false))
+                ;;THE ONE-MONTH BATCH EARNS ALMOST NOTHING. This single assertion is the whole
+                ;;anti-gambling fix: the same 100 tokens, locked for a month instead of 25 years,
+                ;;now weigh a third of one percent more rather than twice as much.
+                (expect "<<TX-RERATE-03>> the ONE-MONTH batch earns under 1.01x — NOT the 2.0 ceiling"
+                    true (< (ref-SCR::URC_SCR|SleepingLegWeight score zouro [n-short] [1.0] 300 false) 1.01))
+                (expect "<<TX-RERATE-03>> ...and strictly more than the plain rate, so the month still counts"
+                    true (> (ref-SCR::URC_SCR|SleepingLegWeight score zouro [n-short] [1.0] 300 false) 1.0))
+                ;;A NONEXISTENT NONCE ABORTS, and the empty-metadata branch does NOT catch it --
+                ;;that branch is for a nonce that exists carrying no metadata. Pinned here because
+                ;;the docstring originally claimed "matured or unknown ... never a refusal", and
+                ;;this assertion is what proved half of that sentence wrong. Not a hazard: every
+                ;;caller takes its nonces from the pool tracker, which cannot hold a nonce nobody
+                ;;staked -- but the boundary is now stated by a test rather than by a comment.
+                (expect-failure "<<TX-RERATE-03>> a nonce that does not exist ABORTS in DPOF's reader — the empty-meta branch does not cover it"
+                    "No value found in table"
+                    (ref-SCR::URC_SCR|SleepingLegWeight score zouro [(+ used 50)] [1.0] 300 false))
+                ;;HIBERNATION DOES NOT DECAY, and these two assertions are the whole of the owner's
+                ;;2026-10-10 ruling: the SAME two batches that differ 2.0 vs ~1.003 on the sleeping
+                ;;scale are IDENTICAL on the hibernating one, because a hibernating position asks no
+                ;;commitment -- it can be unstaked at any moment, and leaving hibernation itself
+                ;;already costs a decaying burn fee, so the term is priced elsewhere.
+                ;;
+                ;;The value is `mx-hibernated` exactly, which for a class-0 score is 1.0 (issuance
+                ;;hard-codes it) -- so this pins the default too: weight it like the native token.
+                (expect "<<TX-RERATE-03>> on the HIBERNATE scale the 25-year batch is flat mx-hibernated, not the sleeping ceiling"
+                    1.0 (ref-SCR::URC_SCR|SleepingLegWeight score zouro [n-long] [1.0] 1200 false))
+                (expect "<<TX-RERATE-03>> ...and the ONE-MONTH batch is the SAME figure — term does not enter it"
+                    (ref-SCR::URC_SCR|SleepingLegWeight score zouro [n-long] [1.0] 1200 false)
+                    (ref-SCR::URC_SCR|SleepingLegWeight score zouro [n-short] [1.0] 1200 false))
+            ]
+        )
+        ""
+    )
+)
+;;==== TX-RERATE-03 · 02 · the LEG delta: Σ(amount × own mx), and the 400.0 it is not ====
+(print "--- [TX-RERATE-03 · 02 · the LEG delta: Σ(amount × own mx), and the 400.0 it is not] ---")
+(let
+    (
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+    )
+    (let*
+        (
+            (ouro-id:string (ref-DALOS::UR_OuroborosID))
+            (zouro:string (DPTF.UR_Sleeping ouro-id))
+            (used:integer (DPOF.UR_NoncesUsed zouro))
+            (n-long:integer (- used 1))
+            (n-short:integer used)
+            (score:string (ref-U|DALOS::UDC_Makeid "LpProbeScore"))
+            (delta:decimal
+                (ref-SCR::URC_SignedBaseDeltaForOrtoLpStake
+                    score zouro [n-long n-short] [100.0 100.0] true))
+        )
+        (map print
+            [
+                ;;UNDER THE OLD FLAT RULE this leg was (100 + 100) × 2.0 = 400.0. The amounts were
+                ;;summed BEFORE the multiplier, which is structurally incapable of giving two
+                ;;batches different rates — it discarded the maturity before the rate was computed.
+                (expect "<<TX-RERATE-03>> the leg is NOT the 400.0 the old flat rule paid"
+                    true (!= delta 400.0))
+                ;;IT IS 200 (the matured-term batch) + a hair over 100 (the one-month batch).
+                (expect "<<TX-RERATE-03>> it is just over 300.0: 200 for the 25-year batch, ~100.33 for the month"
+                    [true true] [(> delta 300.0) (< delta 301.0)])
+                ;;THE BATCHES DO NOT INTERACT: the two-nonce leg is exactly the sum of the two
+                ;;nonces priced one at a time. Worth asserting even though one function computes
+                ;;both, because the thing that could break it is the FLOORING convention -- floor
+                ;;per nonce and the split equals the whole, floor the total and it does not. That
+                ;;is the property the awarded-weight ledger depends on, since it stores one row
+                ;;per nonce and the base must move by the same Σ of floor()s.
+                (expect "<<TX-RERATE-03>> it equals Σ over batches of amount × that batch's OWN multiplier"
+                    (+ (ref-SCR::URC_SCR|SleepingLegWeight score zouro [n-long]  [100.0] 300 false)
+                       (ref-SCR::URC_SCR|SleepingLegWeight score zouro [n-short] [100.0] 300 false))
+                    delta)
+                ;;THE UNSTAKE DIRECTION REVERSES THE LEDGER, NOT A RECOMPUTATION -- asserted as an
+                ;;equality against `URC_SCR|SleepingLegHeldWeight`, which is the single reader the
+                ;;sweep uses too.
+                ;;
+                ;;THIS ASSERTION USED TO READ `nets to exactly 0.0` AND THAT WAS THE WRONG CLAIM,
+                ;;kept here because the correction is the interesting part. When both directions
+                ;;recomputed from the live clock, stake + unstake self-cancelled and the test
+                ;;passed -- while proving a property the system does not rely on. The reversal now
+                ;;reads the STAMP, so on a nonce that was never staked (which these are -- the
+                ;;block is a pure arithmetic probe) there is no stamp, the reversal falls to the
+                ;;plain 1.0 rate, and the two directions correctly DISAGREE.
+                ;;
+                ;;The netting property itself is real and is proven where it actually lives: on a
+                ;;staked position, end to end, in <<TX-RERATE-SAT>> and [6.4] <<TX-AQP-CL06>> --
+                ;;both of which assert the holder's base returns to its exact pre-stake value.
+                ;;Asserting it here against a recomputation would be asserting the old design.
+                (expect "<<TX-RERATE-03>> the unstake direction is EXACTLY minus the ledger weight"
+                    (- 0.0 (ref-SCR::URC_SCR|SleepingLegHeldWeight
+                                score zouro [n-long n-short] [100.0 100.0] 300))
+                    (ref-SCR::URC_SignedBaseDeltaForOrtoLpStake
+                        score zouro [n-long n-short] [100.0 100.0] false))
+            ]
+        )
+        ""
+    )
+)
+(print "===^^^===")
+(commit-tx)
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;================================================================================
+(begin-tx "TX-RERATE-04 - ONE FLOOR PER LEG, and the residue that convention leaves")
+(namespace "ouronet-ns")
+;;==== TX-RERATE-04 · 01 · the leg is floored ONCE over its whole sum ====
+(print "--- [TX-RERATE-04 · 01 · the leg is floored ONCE over its whole sum] ---")
+;;THE TARGET FLOORS ONCE PER LEG, not once per tracker row, and the difference is measurable.
+;;A beneficiary may hold the same sleeping nonce through four different owners -- four tracker
+;;rows, one score row -- so the engine hands all four to ONE call. Four separate calls would
+;;floor four times and land one unit in the last place lower.
+(let
+    (
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+    )
+    (let*
+        (
+            (ouro-id:string (ref-DALOS::UR_OuroborosID))
+            (zouro:string (DPTF.UR_Sleeping ouro-id))
+            (n:integer (DPOF.UR_NoncesUsed zouro))
+            ;;the 25-year batch is the one minted just BEFORE the one-month batch (TX-RERATE-02)
+            (n-long:integer (- n 1))
+            (score:string (ref-U|DALOS::UDC_Makeid "LpProbeScore"))
+            ;;ONE call carrying four rows -- what the engine does
+            (one-call:decimal
+                (ref-SCR::URC_SignedBaseDeltaForOrtoLpStake
+                    score zouro [n n n n] [100.0 100.0 100.0 100.0] true))
+            ;;FOUR calls of one row each -- what a per-row loop would do
+            (four-calls:decimal
+                (fold (+) 0.0
+                    (map (lambda (q:decimal)
+                            (ref-SCR::URC_SignedBaseDeltaForOrtoLpStake score zouro [n] [q] true))
+                         [100.0 100.0 100.0 100.0])))
+        )
+        (map print
+            [
+                ;;ONE FLOOR PER NONCE, so a slice of four rows and four calls of one row agree
+                ;;EXACTLY. That equality is not cosmetic -- it is what lets `SCR|T|SleepStake`
+                ;;record each slot separately and still sum to the base the stake path wrote.
+                ;;Flooring the TOTAL instead would make the base move by floor(Sum) while the
+                ;;ledger stored Sum of floor(), and a base that disagrees with its own ledger is
+                ;;the one thing the ledger exists to prevent.
+                (expect "<<TX-RERATE-04>> four rows in one call: 401.332 — four per-nonce floors"
+                    401.332 one-call)
+                (expect "<<TX-RERATE-04>> four separate calls agree EXACTLY — same convention either way"
+                    401.332 four-calls)
+                (expect "<<TX-RERATE-04>> so slicing a sleeping leg is free of rounding drift"
+                    0.0 (- one-call four-calls))
+                ;;THE PHANTOM-WEIGHT GAP, MEASURED. These two read the SAME formula from DIFFERENT
+                ;;sources: the stake credit uses the multiplier the lock earns RIGHT NOW, while the
+                ;;held weight uses the one it earned WHEN IT WAS STAKED, recorded in
+                ;;`SCR|T|SleepStake`. These nonces were never staked, so the ledger has no row and
+                ;;defaults to 0.0 remaining -- the plain 1.0 rate -- which is exactly the gap:
+                ;;200.0 credited against 100.0 given back, if the two were allowed to disagree.
+                ;;That 100.0 is weight for a position nobody holds, and it is tradeable.
+                (expect "<<TX-RERATE-04>> a 25-year nonce CREDITS 199.9 at the live multiplier"
+                    199.9
+                    (ref-SCR::URC_SignedBaseDeltaForOrtoLpStake score zouro [n-long] [100.0] true))
+                (expect "<<TX-RERATE-04>> ...while the LEDGER holds 100.0 for it — never staked, so no row"
+                    100.0
+                    (ref-SCR::URC_SCR|SleepingLegHeldWeight score zouro [n-long] [100.0] 300))
+                ;;AND THE DEFAULT ERRS THE SAFE WAY. An unrecorded nonce reads 0.0 remaining, which
+                ;;yields 1.0 -- so the worst a missing row can do is UNDER-credit. It can never
+                ;;leave phantom weight behind, which is the only failure that cannot be undone.
+                (expect "<<TX-RERATE-04>> an unrecorded lock reads 0.0 seconds remaining — under-credit, never over"
+                    0.0 (ref-SCR::UR_SCR|SleepRemainingAtStake zouro n-long))
+                ;;SPLIT SHAPES AGREE ON THE REVERSAL SIDE TOO, which per-nonce flooring buys for
+                ;;free: one four-nonce reversal equals four one-nonce reversals, so the SHAPE a
+                ;;caller unstakes in cannot change the figure. That is the drift-freedom this
+                ;;block is about, and it is asserted on the reversal rather than on a round trip.
+                ;;
+                ;;THE ROUND-TRIP ASSERTIONS THAT USED TO SIT HERE WERE REMOVED, not relaxed, and
+                ;;the reason matters: they added the stake direction to the unstake direction and
+                ;;expected 0.0. That held only while both recomputed from the live clock. The
+                ;;reversal now reads the STAMP in `SCR|T|SleepStake`, and these nonces were never
+                ;;staked (this block is a pure arithmetic probe -- see the assertion above, which
+                ;;pins the absent row at 0.0 seconds), so there is nothing to cancel against. The
+                ;;old assertions would have been testing the OLD design while the system ran on
+                ;;the new one.
+                ;;
+                ;;The netting property is real and proven where it lives -- on a staked position,
+                ;;end to end: <<TX-RERATE-SAT>> and [6.4] <<TX-AQP-CL06>> both assert the holder's
+                ;;base returns to its EXACT pre-stake value after a full release.
+                (expect "<<TX-RERATE-04>> one four-nonce reversal equals four one-nonce reversals — shape-free"
+                    (ref-SCR::URC_SignedBaseDeltaForOrtoLpStake
+                        score zouro [n n n n] [100.0 100.0 100.0 100.0] false)
+                    (fold (+) 0.0
+                        (map (lambda (q:decimal)
+                                (ref-SCR::URC_SignedBaseDeltaForOrtoLpStake score zouro [n] [q] false))
+                             [100.0 100.0 100.0 100.0])))
+            ]
+        )
+        ""
+    )
+)
+;;==== TX-RERATE-04 · 02 · the frozen leg, and the native leg that is never multiplied ====
+(print "--- [TX-RERATE-04 · 02 · the frozen leg, and the native leg that is never multiplied] ---")
+(let
+    (
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+    )
+    (let*
+        (
+            (score:string (ref-U|DALOS::UDC_Makeid "LpProbeScore"))
+            ;;`lp-id` is carried for signature stability and never read by the weighting -- the
+            ;;pool's own asset is the honest value to pass, and it needs no table scan.
+            (lp:string (AQP-POOL.UR_AQP|PoolAssetId (ref-U|DALOS::UDC_Makeid "LpProbePool")))
+        )
+        (map print
+            [
+                ;;NATIVE IS NEVER MULTIPLIED. That is why native holders neither block a
+                ;;multiplier change nor are moved by one, and it is asserted rather than assumed
+                ;;because every live holder today is native.
+                (expect "<<TX-RERATE-04>> a NATIVE leg weighs its amount, times nothing"
+                    100.0 (ref-SCR::URC_SignedBaseDeltaForDptfLpStake score lp 100.0 true true))
+                (expect "<<TX-RERATE-04>> a FROZEN leg weighs amount × mx-frozen (2.998 here) — flat, because a freeze is permanent"
+                    299.8 (ref-SCR::URC_SignedBaseDeltaForDptfLpStake score lp 100.0 false true))
+                (expect "<<TX-RERATE-04>> both legs reverse to exactly 0.0"
+                    [0.0 0.0]
+                    [(+ (ref-SCR::URC_SignedBaseDeltaForDptfLpStake score lp 100.0 true true)
+                        (ref-SCR::URC_SignedBaseDeltaForDptfLpStake score lp 100.0 true false))
+                     (+ (ref-SCR::URC_SignedBaseDeltaForDptfLpStake score lp 100.0 false true)
+                        (ref-SCR::URC_SignedBaseDeltaForDptfLpStake score lp 100.0 false false))])
+                ;;class 1 shares the arithmetic exactly -- the engine refuses class 1 for now, but
+                ;;if that scope ever widens this is the assertion that says it may
+                (expect "<<TX-RERATE-04>> the class-1 DPTF leg is the SAME arithmetic as the class-0 LP leg"
+                    [(ref-SCR::URC_SignedBaseDeltaForDptfLpStake score lp 100.0 true true)
+                     (ref-SCR::URC_SignedBaseDeltaForDptfLpStake score lp 100.0 false true)]
+                    [(ref-SCR::URC_SignedBaseDeltaForDptfStake score lp 100.0 true true)
+                     (ref-SCR::URC_SignedBaseDeltaForDptfStake score lp 100.0 false true)])
+            ]
+        )
+        ""
+    )
+)
+(print "===^^^===")
+(commit-tx)
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;================================================================================
+(begin-tx "TX-RERATE-05 - the target: who it sums, and the legs it refuses to invent")
+(namespace "ouronet-ns")
+;;==== TX-RERATE-05 · 01 · the pure aggregation helpers ====
+(print "--- [TX-RERATE-05 · 01 · the pure aggregation helpers] ---")
+;;ONE BENEFICIARY, MANY OWNERS. The tracker is keyed by (pool, asset, owner, beneficiary), so an
+;;account staked for by three different people holds three rows and exactly ONE score row. These
+;;helpers are what collapse the first into the second, and getting the collapse wrong would
+;;produce a target that is a multiple of the truth.
+(let
+    (
+        (rows:[object]
+            [ {"owner-id": "A", "beneficiary-id": "BEN1", "balance": 30.0}
+              {"owner-id": "B", "beneficiary-id": "BEN2", "balance": 11.0}
+              {"owner-id": "C", "beneficiary-id": "BEN1", "balance": 70.0}
+              {"owner-id": "A", "beneficiary-id": "BEN3", "balance": 5.0} ])
+    )
+    (map print
+        [
+            (expect "<<TX-RERATE-05>> beneficiaries dedupe to three, in FIRST-SEEN order"
+                ["BEN1" "BEN2" "BEN3"] (AQP-POOL.UC_AQP|BackfillUniqueBeneficiaries rows))
+            (expect "<<TX-RERATE-05>> BEN1's two rows sum to 100.0 — across two different owners"
+                100.0 (AQP-POOL.UC_AQP|BackfillSumForBeneficiary "BEN1" rows))
+            (expect "<<TX-RERATE-05>> ...and the other beneficiaries are not folded into it"
+                [11.0 5.0]
+                [(AQP-POOL.UC_AQP|BackfillSumForBeneficiary "BEN2" rows)
+                 (AQP-POOL.UC_AQP|BackfillSumForBeneficiary "BEN3" rows)])
+            (expect "<<TX-RERATE-05>> an account with no rows sums to 0.0, not an error"
+                0.0 (AQP-POOL.UC_AQP|BackfillSumForBeneficiary "NOBODY" rows))
+            (expect "<<TX-RERATE-05>> the row filter keeps only that beneficiary's rows"
+                2 (length (AQP-POOL.UC_AQP|BackfillRowsForBeneficiary "BEN1" rows)))
+            (expect "<<TX-RERATE-05>> an empty tracker yields no beneficiaries"
+                [] (AQP-POOL.UC_AQP|BackfillUniqueBeneficiaries []))
+        ]
+    )
+    ""
+)
+;;==== TX-RERATE-05 · 02 · the target sums the legs the ASSET actually has ====
+(print "--- [TX-RERATE-05 · 02 · the target sums the legs the ASSET actually has] ---")
+;;LpProbePool's asset has NEITHER twin, and that is the branch under test. Rows for legs the
+;;asset does not define are handed in DELIBERATELY: a target that counted them would be inventing
+;;weight from a frozen token that cannot exist, and the engine would then "repair" every holder
+;;to a figure no stake could ever have produced.
+(let
+    (
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+    )
+    (let*
+        (
+            (pool:string (ref-U|DALOS::UDC_Makeid "LpProbePool"))
+            (score:string (ref-U|DALOS::UDC_Makeid "LpProbeScore"))
+            (legs:object (AQP-POOL.URC_AQP|PoolLiquidityLegs pool))
+            (nat:[object]
+                [ {"owner-id": "A", "beneficiary-id": "BEN1", "balance": 30.0}
+                  {"owner-id": "C", "beneficiary-id": "BEN1", "balance": 70.0}
+                  {"owner-id": "A", "beneficiary-id": "BEN2", "balance": 999.0} ])
+            (frz:[object] [ {"owner-id": "A", "beneficiary-id": "BEN1", "balance": 1000.0} ])
+            (slp:[object] [ {"owner-id": "A", "beneficiary-id": "BEN1", "nonce": 1, "balance": 1000.0} ])
+        )
+        (map print
+            [
+                (expect "<<TX-RERATE-05>> the pool's asset declares NO frozen and NO sleeping twin"
+                    [true true]
+                    [(= (at "frozen" legs) (U|CT.CT_BAR)) (= (at "sleeping" legs) (U|CT.CT_BAR))])
+                (expect "<<TX-RERATE-05>> ...while the native leg IS the pool asset"
+                    (AQP-POOL.UR_AQP|PoolAssetId pool) (at "native" legs))
+                ;;the native term, aggregated across two owners
+                (expect "<<TX-RERATE-05>> BEN1's target is 100.0 — the native sum of both owners' rows"
+                    100.0
+                    (AQP-POOL.URH_AQP|ScoreTargetBaseForBeneficiary pool score "BEN1" nat [] []))
+                ;;THE REFUSAL TO INVENT. 1000 frozen and 1000 sleeping are handed in and both are
+                ;;ignored, because the asset has no such twin. The target stays 100.0.
+                (expect "<<TX-RERATE-05>> frozen and sleeping rows for legs the asset lacks are IGNORED, not counted"
+                    100.0
+                    (AQP-POOL.URH_AQP|ScoreTargetBaseForBeneficiary pool score "BEN1" nat frz slp))
+                ;;and a different beneficiary's 999 is not swept into BEN1
+                (expect "<<TX-RERATE-05>> BEN2's 999.0 stays BEN2's"
+                    999.0
+                    (AQP-POOL.URH_AQP|ScoreTargetBaseForBeneficiary pool score "BEN2" nat [] []))
+                (expect "<<TX-RERATE-05>> an account with no position targets 0.0 — which is what drives an ORPHANED row back to zero"
+                    0.0
+                    (AQP-POOL.URH_AQP|ScoreTargetBaseForBeneficiary pool score "NOBODY" nat frz slp))
+            ]
+        )
+        ""
+    )
+)
+;;==== TX-RERATE-05 · 03 · what the engine refuses, and why refusing is the safe answer ====
+(print "--- [TX-RERATE-05 · 03 · what the engine refuses, and why refusing is the safe answer] ---")
+;;LpProbeScore is class 0 but is NOT assigned to any pool, so `Σ(amount × mx)` is not a statement
+;;about it at all. The engine reports NO work rather than a wrong amount of work: a delta measured
+;;against the wrong formula does not fail, it writes a plausible wrong number into a maintained
+;;accumulator where nothing can later tell it from a real one.
+(let
+    (
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+    )
+    (let*
+        (
+            (pool:string (ref-U|DALOS::UDC_Makeid "LpProbePool"))
+            (score:string (ref-U|DALOS::UDC_Makeid "LpProbeScore"))
+        )
+        (map print
+            [
+                (expect "<<TX-RERATE-05>> the score is class 0 but unassigned, so the pool does not employ it"
+                    [0 (U|CT.CT_BAR) []]
+                    [(ref-SCR::UR_SCR|ScoreClass score)
+                     (ref-SCR::UR_SCR|ScoreAqpoolLink score)
+                     (AQP-POOL.URC_PoolActiveScoreIds pool)])
+                (expect "<<TX-RERATE-05>> ...so the engine declares it UNSUPPORTED"
+                    false (AQP-POOL.URC_AQP|ScoreBackfillSupported pool score))
+                ;;EMPTY, NEVER A WRONG COUNT -- this is the "is a sweep needed?" read, and for an
+                ;;unsupported score the honest answer is "there is nothing here I can compute".
+                (expect "<<TX-RERATE-05>> the outstanding list is EMPTY for an unsupported score"
+                    [] (AQP-POOL.URHC_AQP|ScoreBackfillOutstanding pool score))
+                (expect "<<TX-RERATE-05>> ...and no sweep is reported as needed"
+                    false (AQP-POOL.URHC_AQP|ScoreBackfillNeeded pool score))
+                ;;and the WRITE path refuses it too -- the read returning [] is a convenience, the
+                ;;capability is the guarantee
+                (expect-failure "<<TX-RERATE-05>> a slice against an unsupported score is REFUSED at the capability"
+                    "Score is not re-ratable"
+                    (ref-TS02-C3::AQP-POOL|CCp_BackfillScoreSlice KST.ANHD pool score ["BEN1"]))
+                ;;an empty slice is refused before anything else: it can only be a caller mistake,
+                ;;and billing a no-op transaction teaches nothing
+                (expect-failure "<<TX-RERATE-05>> an EMPTY slice is refused outright"
+                    "Empty slice"
+                    (ref-TS02-C3::AQP-POOL|CCp_BackfillScoreSlice KST.ANHD pool score []))
+            ]
+        )
+        ""
+    )
+)
+(print "===^^^===")
+(commit-tx)
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;================================================================================
+(begin-tx "TX-RERATE-06 - a SUPPORTED score, and the write path actually executing")
+(env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-RERATE-06 · 01 · env-sigs (caps) ====
+(print "--- [TX-RERATE-06 · 01 · env-sigs (caps)] ---")
+;;score issuance is STOA-priced -- same four coin.TRANSFER caps as AQPLP-G2
+(env-sigs
+    [ { "key": "PK_AncientHodler", "caps": [] }
+      { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+      , "caps":
+        [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                         "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+          (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                         "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+          (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                         "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+          (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                         "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
+;;==== TX-RERATE-06 · 02 · issue a correctly-denominated class-0 score and EMPLOY it ====
+(print "--- [TX-RERATE-06 · 02 · issue a correctly-denominated class-0 score and EMPLOY it] ---")
+;;`LpProbeScore` exists to be REFUSED -- its denominator is OURO, which is not in the pool's pair.
+;;This one is built to be ACCEPTED: the denominator is a real token of the pair, which is the only
+;;thing `UEV_AddScorePoolAndScore`'s third enforce asks about. Without an employed score there is
+;;no supported (pool, score) pair anywhere in the tree, and the engine's whole write path --
+;;`P|UEV_IMC`, the capability, and `SCR|XE>APPLY-RAW-BASE-DELTA`'s employed-score enforce -- would
+;;go untested while every REFUSAL test passed.
+(let
+    (
+        (ref-SWP:module{SwapperV4} SWP)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+    )
+    (let*
+        (
+            (pool:string (ref-U|DALOS::UDC_Makeid "LpProbePool"))
+            (lp:string (AQP-POOL.UR_AQP|PoolAssetId pool))
+            (insider:string (at 0 (ref-SWP::UR_PoolTokens (ref-SWP::UR_GetLpSwpair lp))))
+        )
+        (ref-TS02-C3::AQP-SCR|C_IssueLiquidityScore
+            KST.ANHD KST.ANHD "RerateScore" 6 insider 2.998 1.999)
+        (let
+            (
+                (score:string (ref-U|DALOS::UDC_Makeid "RerateScore"))
+            )
+            (ref-TS02-C3::AQP-POOL|C_AddScore
+                KST.ANHD (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset 0 lp) pool score)
+            (map print
+                [
+                    (expect "<<TX-RERATE-06>> the score's denominator IS a token of the pool's pair"
+                        true (contains insider (ref-SWP::UR_PoolTokens (ref-SWP::UR_GetLpSwpair lp))))
+                    (expect "<<TX-RERATE-06>> the pool now employs it, and the score points back"
+                        [true pool]
+                        [(contains score (AQP-POOL.URC_PoolActiveScoreIds pool))
+                         (AQP-SCORE.UR_SCR|ScoreAqpoolLink score)])
+                    ;;SUPPORTED AT LAST -- all three conditions hold: employed, class 0, not a satellite
+                    (expect "<<TX-RERATE-06>> ...so the engine declares it SUPPORTED"
+                        true (AQP-POOL.URC_AQP|ScoreBackfillSupported pool score))
+                    ;;no stakers yet, so there is genuinely nothing outstanding
+                    (expect "<<TX-RERATE-06>> with no stakers, nothing is outstanding and no sweep is needed"
+                        [[] false]
+                        [(AQP-POOL.URHC_AQP|ScoreBackfillOutstanding pool score)
+                         (AQP-POOL.URHC_AQP|ScoreBackfillNeeded pool score)])
+                ]
+            )
+            ""
+        )
+    )
+)
+(env-sigs [])
+(print "===^^^===")
+(commit-tx)
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;================================================================================
+(begin-tx "TX-RERATE-07 - the slice EXECUTES: IMC, capability, writer, idempotence")
+(env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-RERATE-07 · 00 · env-sigs (the PATRON signature, which is the whole gate) ====
+(print "--- [TX-RERATE-07 · 00 · env-sigs (the PATRON signature)] ---")
+;;The slice is PERMISSIONLESS as to WHO may re-rate, not as to WHO PAYS. `IGNIS::UEV_Patron`
+;;reaches `CAP_EnforceAccountOwnership` on the patron, so the gas payer still has to sign --
+;;which is what stops a stranger from spending somebody else's IGNIS on a sweep.
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+;;==== TX-RERATE-07 · 01 · a zero-delta slice is a real transaction that writes nothing ====
+(print "--- [TX-RERATE-07 · 01 · a zero-delta slice is a real transaction that writes nothing] ---")
+;;THIS IS THE TEST THE REFUSALS COULD NOT BE. Every refusal in TX-RERATE-05 fails inside
+;;`AQP|C>BACKFILL-SCORE-SLICE`, which means the three things BELOW the capability were never
+;;executed once: `P|UEV_IMC` on `SCR::XE_ApplyRawBaseDelta` (which aborts with "None of the guards
+;;passed" from `U|G::UEV_Any` several frames below the mistake -- how the Talos wiring bug was
+;;found earlier in this round), the `SCR|XE>APPLY-RAW-BASE-DELTA` capability, and the writer.
+;;
+;;A holder with no position has target 0.0 and base 0.0, so the delta is 0.0 and NOTHING SHOULD
+;;MOVE -- while every gate on the path is still crossed for real. That is exactly the shape worth
+;;running first: it proves the path is wired without depending on a weight being right.
+(let
+    (
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+    )
+    (let*
+        (
+            (pool:string (ref-U|DALOS::UDC_Makeid "LpProbePool"))
+            (score:string (ref-U|DALOS::UDC_Makeid "RerateScore"))
+            (nzs-before:integer (ref-SCR::UR_SCR|ScoreNzsCount score))
+            (total-before:decimal (ref-SCR::UR_SCR|ScoreTotalBaseScore score))
+            (out:string
+                (ref-TS02-C3::AQP-POOL|CCp_BackfillScoreSlice KST.ANHD pool score [KST.ANHD]))
+        )
+        (map print
+            [
+                (expect "<<TX-RERATE-07>> the slice RUNS — IMC, capability and writer all crossed"
+                    true (> (length out) 0))
+                (expect "<<TX-RERATE-07>> the holder's base is still 0.0 — a zero delta writes no weight"
+                    0.0 (ref-SCR::UR_U-SCR|UserScoreBaseScore KST.ANHD pool score))
+                ;;NZS-COUNT IS THE ONE THAT WOULD HAVE BITTEN. It counts holders with any weight,
+                ;;and it is maintained by the same writer -- a no-op slice that nudged it would
+                ;;corrupt every share computed from it, silently and permanently.
+                (expect "<<TX-RERATE-07>> nzs-count is untouched by a zero-delta write"
+                    nzs-before (ref-SCR::UR_SCR|ScoreNzsCount score))
+                (expect "<<TX-RERATE-07>> ...and so is the score's total base"
+                    total-before (ref-SCR::UR_SCR|ScoreTotalBaseScore score))
+                (expect "<<TX-RERATE-07>> nothing became outstanding by running the sweep"
+                    [] (AQP-POOL.URHC_AQP|ScoreBackfillOutstanding pool score))
+            ]
+        )
+        ""
+    )
+)
+;;==== TX-RERATE-07 · 02 · idempotent, repeat-safe, and indifferent to a duplicated account ====
+(print "--- [TX-RERATE-07 · 02 · idempotent, repeat-safe, and indifferent to a duplicated account] ---")
+;;THE PROPERTY THAT MAKES THE SWEEP PARALLEL. The target is recomputed immediately before each
+;;write, INSIDE the map, so a replayed slice, an overlapping slice and an account named twice in
+;;the same slice are all the same thing: the second visit sees the first visit's result and
+;;computes 0.0. Batching the deltas before the writes would break all three at once.
+(let
+    (
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+    )
+    (let*
+        (
+            (pool:string (ref-U|DALOS::UDC_Makeid "LpProbePool"))
+            (score:string (ref-U|DALOS::UDC_Makeid "RerateScore"))
+            (nzs-before:integer (ref-SCR::UR_SCR|ScoreNzsCount score))
+            (total-before:decimal (ref-SCR::UR_SCR|ScoreTotalBaseScore score))
+        )
+        ;;replay the identical slice
+        (ref-TS02-C3::AQP-POOL|CCp_BackfillScoreSlice KST.ANHD pool score [KST.ANHD])
+        ;;the SAME account listed three times in one slice
+        (ref-TS02-C3::AQP-POOL|CCp_BackfillScoreSlice KST.ANHD pool score [KST.ANHD KST.ANHD KST.ANHD])
+        ;;an account that was never in the outstanding list at all
+        (ref-TS02-C3::AQP-POOL|CCp_BackfillScoreSlice KST.ANHD pool score [KST.EMMA])
+        (map print
+            [
+                (expect "<<TX-RERATE-07>> replay, a thrice-duplicated account and an off-list account all leave the state identical"
+                    [nzs-before total-before 0.0 0.0]
+                    [(ref-SCR::UR_SCR|ScoreNzsCount score)
+                     (ref-SCR::UR_SCR|ScoreTotalBaseScore score)
+                     (ref-SCR::UR_U-SCR|UserScoreBaseScore KST.ANHD pool score)
+                     (ref-SCR::UR_U-SCR|UserScoreBaseScore KST.EMMA pool score)])
+                (expect "<<TX-RERATE-07>> and the sweep still reports itself complete"
+                    [[] false]
+                    [(AQP-POOL.URHC_AQP|ScoreBackfillOutstanding pool score)
+                     (AQP-POOL.URHC_AQP|ScoreBackfillNeeded pool score)])
+            ]
+        )
+        ""
+    )
+)
+(print "===^^^===")
+(commit-tx)
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;================================================================================
+(begin-tx "TX-RERATE-08 - a REAL staked position, and a baseline that agrees with itself")
+(env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-RERATE-08 · 01 · env-sigs (caps) ====
+(print "--- [TX-RERATE-08 · 01 · env-sigs (caps)] ---")
+(env-sigs
+    [ { "key": "PK_AncientHodler", "caps": [] }
+      { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+      , "caps":
+        [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                         "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+          (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                         "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+          (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                         "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+          (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                         "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
+;;==== TX-RERATE-08 · 02 · stand up a vault, stake into it, check the three maintained figures ====
+(print "--- [TX-RERATE-08 · 02 · stand up a vault, stake into it, check the three maintained figures] ---")
+;;THE FIXTURE EVERYTHING BELOW NEEDS, and the reason it is a class-1 VAULT rather than the class-0
+;;LP pool this file already carries. A pool is only stakeable if its employed score sits behind a
+;;live FVT reward pipeline -- an employed score with no enabled ScoreEntityLink and no reward
+;;token aborts every stake (05_FVT.pact:986). For a class-0 LP score that pipeline must be a FARM
+;;(`URC_ScoreClassMatchesFvtClass` admits LP only to fvt-class 0), and a farm's score entity needs
+;;a positive GHOST WEIGHT, which is the LP's value in the farm's denominator -- zero here, because
+;;the issuance-only SWP fixture mints LP supply without ever adding reserves. So a class-0
+;;end-to-end fixture needs real liquidity that this chain does not have.
+;;
+;;`AQP-FVT|C_IssueGenericEarningVault` builds the class-1 equivalent -- score, pool, link, vault,
+;;entity and reward token -- in ONE call and one IGNIS collection. The engine supports class 1 for
+;;the same reason it supports class 0: the per-leg arithmetic is literally the same function body
+;;(pinned equal in TX-RERATE-04), so what is proven here holds for an LP pool too.
+(let
+    (
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+    )
+    (let*
+        (
+            (ouro:string (ref-DALOS::UR_OuroborosID))
+            (pool:string (ref-U|DALOS::UDC_Makeid "RerateVaultPool"))
+            (score:string (ref-U|DALOS::UDC_Makeid "RerateVaultScore"))
+        )
+        (ref-TS02-C3::AQP-FVT|C_IssueGenericEarningVault
+            KST.ANHD KST.ANHD "RerateVault" ouro "AURYN-98c486052a51")
+        (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible KST.ANHD KST.ANHD KST.ANHD pool ouro 1000.0)
+        (map print
+            [
+                ;;the fixture, asserted -- a class-1 score on a class-1 pool, employed
+                (expect "<<TX-RERATE-08>> the vault built a class-1 score employed by a class-1 pool"
+                    [1 1 pool true]
+                    [(ref-SCR::UR_SCR|ScoreClass score)
+                     (AQP-POOL.UR_AQP|PoolAqpClass pool)
+                     (ref-SCR::UR_SCR|ScoreAqpoolLink score)
+                     (contains score (AQP-POOL.URC_PoolActiveScoreIds pool))])
+                (expect "<<TX-RERATE-08>> ...and the engine supports it"
+                    true (AQP-POOL.URC_AQP|ScoreBackfillSupported pool score))
+                ;;native leg, so the weight IS the amount -- times nothing
+                (expect "<<TX-RERATE-08>> the staker's base is 1000.0 — a native leg multiplies by 1.0"
+                    1000.0 (ref-SCR::UR_U-SCR|UserScoreBaseScore KST.ANHD pool score))
+                ;;THE THREE FIGURES ONE WRITER MAINTAINS. If any could disagree, every reward
+                ;;share computed downstream would be wrong in a way nothing reports.
+                (expect "<<TX-RERATE-08>> the score's total base equals the one holder's base"
+                    1000.0 (ref-SCR::UR_SCR|ScoreTotalBaseScore score))
+                (expect "<<TX-RERATE-08>> ...and nzs-count counts exactly that one holder"
+                    1 (ref-SCR::UR_SCR|ScoreNzsCount score))
+                ;;CONSISTENT BY CONSTRUCTION: the stake path and the engine's target are the same
+                ;;arithmetic, so a freshly staked pool has nothing outstanding. A non-empty list
+                ;;here would mean the two already disagree.
+                (expect "<<TX-RERATE-08>> nothing is outstanding — the stake path and the target agree"
+                    [[] false]
+                    [(AQP-POOL.URHC_AQP|ScoreBackfillOutstanding pool score)
+                     (AQP-POOL.URHC_AQP|ScoreBackfillNeeded pool score)])
+                (expect "<<TX-RERATE-08>> ...and the pool is not frozen"
+                    false (AQP-POOL.UR_AQP|PoolSweepInProgress pool))
+            ]
+        )
+        ""
+    )
+)
+(env-sigs [])
+(print "===^^^===")
+(commit-tx)
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;================================================================================
+(begin-tx "TX-RERATE-09 - ADD a score to a pool that already has weight: the freeze")
+(env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-RERATE-09 · 01 · env-sigs (caps) ====
+(print "--- [TX-RERATE-09 · 01 · env-sigs (caps)] ---")
+(env-sigs
+    [ { "key": "PK_AncientHodler", "caps": [] }
+      { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+      , "caps":
+        [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                         "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+          (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                         "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+          (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                         "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+          (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                         "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
+;;==== TX-RERATE-09 · 02 · the gap the owner asked about, measured ====
+(print "--- [TX-RERATE-09 · 02 · the gap the owner asked about, measured] ---")
+;;THE EXACT SCENARIO THE OWNER POSED: "bunnies have a single score ... I decide later to add a new
+;;score in the bunny pool ... People already staked their bunnies. How is this new score suppose
+;;to get updated?" Here: one holder with 1000 staked, and a second score arrives.
+;;
+;;The holder's base for the new score is 0 while their canonical target is 1000 -- so from this
+;;instant the pool is mis-scored, and the pool freezes until a sweep fixes it.
+(let
+    (
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-SWP:module{SwapperV4} SWP)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+    )
+    (let*
+        (
+            (pool:string (ref-U|DALOS::UDC_Makeid "RerateVaultPool"))
+            (ouro:string (DALOS.UR_OuroborosID))
+        )
+        ;;a SECOND class-1 score for the same staked token -- the "I decide later to add a new
+        ;;score" case, with a holder already in the pool
+        (ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore KST.ANHD KST.ANHD "RerateScoreB" 6 2.0)
+        (let
+            (
+                (scoreb:string (ref-U|DALOS::UDC_Makeid "RerateScoreB"))
+            )
+            (ref-TS02-C3::AQP-POOL|C_AddScore
+                KST.ANHD (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset 1 ouro) pool scoreb)
+            (map print
+                [
+                    (expect "<<TX-RERATE-09>> the pool is now FROZEN by the add"
+                        true (AQP-POOL.UR_AQP|PoolSweepInProgress pool))
+                    ;;THE WORK LIST, with the arithmetic spelled out: one holder, target 1000,
+                    ;;stored 0, so a delta of exactly 1000 is owed.
+                    (expect "<<TX-RERATE-09>> exactly one holder is outstanding, owed 1000.0"
+                        [1 KST.ANHD 1000.0 0.0 1000.0]
+                        (let ((row:object (at 0 (AQP-POOL.URHC_AQP|ScoreBackfillOutstanding pool scoreb))))
+                            [(length (AQP-POOL.URHC_AQP|ScoreBackfillOutstanding pool scoreb))
+                             (at "beneficiary-id" row) (at "target" row)
+                             (at "current" row) (at "delta" row)]))
+                    (expect "<<TX-RERATE-09>> ...and a sweep is reported as needed"
+                        true (AQP-POOL.URHC_AQP|ScoreBackfillNeeded pool scoreb))
+                    ;;BOTH DIRECTIONS ARE SHUT. Stake was already gated on the sweep flag (D3);
+                    ;;unstake was NOT until this round, and it is the direction that actually
+                    ;;corrupts -- it reverses a stored figure the chain already knows is wrong,
+                    ;;and once the position is gone no sweep can recompute what it should have been.
+                    (expect "<<TX-RERATE-09>> stake AND unstake are both refused while the pool is frozen"
+                        [false false]
+                        [(AQP-POOL.URC_PoolStakeAdmissionOk pool)
+                         (AQP-POOL.URC_PoolUnstakeAdmissionOk pool)])
+                    ;;the freeze cannot be waved away while the work exists
+                    (expect-failure "<<TX-RERATE-09>> the freeze CANNOT be cleared while work is outstanding"
+                        "Pool is not releasable"
+                        (ref-TS02-C3::AQP-FVT|CC_ClearPoolSweep KST.ANHD pool))
+                ]
+            )
+            ""
+        )
+    )
+)
+(env-sigs [])
+(print "===^^^===")
+(commit-tx)
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;================================================================================
+(begin-tx "TX-RERATE-10 - sweep it: convergence, the global invariant, and the release")
+(env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-RERATE-10 · 01 · env-sigs (caps) ====
+(print "--- [TX-RERATE-10 · 01 · env-sigs (caps)] ---")
+(env-sigs
+    [ { "key": "PK_AncientHodler", "caps": [] }
+      { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+      , "caps":
+        [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                         "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+          (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                         "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+          (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                         "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+          (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                         "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
+;;==== TX-RERATE-10 · 02 · one slice moves a NON-ZERO delta and the pool reopens ====
+(print "--- [TX-RERATE-10 · 02 · one slice moves a NON-ZERO delta and the pool reopens] ---")
+(let
+    (
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+    )
+    (let*
+        (
+            (pool:string (ref-U|DALOS::UDC_Makeid "RerateVaultPool"))
+            (scoreb:string (ref-U|DALOS::UDC_Makeid "RerateScoreB"))
+        )
+        (ref-TS02-C3::AQP-POOL|CCp_BackfillScoreSlice KST.ANHD pool scoreb [KST.ANHD])
+        (map print
+            [
+                ;;THE DELTA ACTUALLY LANDED. Every earlier write-path assertion in this file moved
+                ;;a zero; this is the first that moves 1000.
+                (expect "<<TX-RERATE-10>> the holder's base is now 1000.0 — the target, reached"
+                    1000.0 (ref-SCR::UR_U-SCR|UserScoreBaseScore KST.ANHD pool scoreb))
+                ;;THE MAINTAINED FIGURES MOVED WITH IT. A second writer that set the base directly
+                ;;would have had to reproduce both of these and would be free to disagree.
+                (expect "<<TX-RERATE-10>> the score's total base and nzs-count were maintained by the same write"
+                    [1000.0 1] [(ref-SCR::UR_SCR|ScoreTotalBaseScore scoreb)
+                                (ref-SCR::UR_SCR|ScoreNzsCount scoreb)])
+                (expect "<<TX-RERATE-10>> nothing is outstanding any more"
+                    [[] false]
+                    [(AQP-POOL.URHC_AQP|ScoreBackfillOutstanding pool scoreb)
+                     (AQP-POOL.URHC_AQP|ScoreBackfillNeeded pool scoreb)])
+                (expect "<<TX-RERATE-10>> ...so the pool reports itself CLEAR"
+                    true (AQP-POOL.URHC_AQP|PoolSweepClear pool))
+            ]
+        )
+        ;;IDEMPOTENCE ON A SLICE THAT ALREADY DID ITS WORK -- the second run recomputes the same
+        ;;target, finds the base already there, and writes a delta of exactly 0.
+        (ref-TS02-C3::AQP-POOL|CCp_BackfillScoreSlice KST.ANHD pool scoreb [KST.ANHD KST.ANHD])
+        (ref-TS02-C3::AQP-FVT|CC_ClearPoolSweep KST.ANHD pool)
+        (map print
+            [
+                (expect "<<TX-RERATE-10>> replaying the slice (twice, in one call) changes nothing"
+                    [1000.0 1000.0 1]
+                    [(ref-SCR::UR_U-SCR|UserScoreBaseScore KST.ANHD pool scoreb)
+                     (ref-SCR::UR_SCR|ScoreTotalBaseScore scoreb)
+                     (ref-SCR::UR_SCR|ScoreNzsCount scoreb)])
+                (expect "<<TX-RERATE-10>> the freeze is released and BOTH directions reopen"
+                    [false true true]
+                    [(AQP-POOL.UR_AQP|PoolSweepInProgress pool)
+                     (AQP-POOL.URC_PoolStakeAdmissionOk pool)
+                     (AQP-POOL.URC_PoolUnstakeAdmissionOk pool)])
+                ;;THE GLOBAL INVARIANT, on both scores at once: the score's total base is exactly
+                ;;the sum over its holders. This is the identity every reward share divides by.
+                (expect "<<TX-RERATE-10>> Σ(user base) == total-base, on both employed scores"
+                    [true true]
+                    (map (lambda (sid:string)
+                            (= (ref-SCR::UR_SCR|ScoreTotalBaseScore sid)
+                               (fold (+) 0.0
+                                   (map (lambda (a:string)
+                                           (ref-SCR::UR_U-SCR|UserScoreBaseScore a pool sid))
+                                        (ref-SCR::URH_SCR|ScoreHolderAccounts pool sid)))))
+                         (AQP-POOL.URC_PoolActiveScoreIds pool)))
+            ]
+        )
+        ""
+    )
+)
+(env-sigs [])
+(print "===^^^===")
+(commit-tx)
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;================================================================================
+(begin-tx "TX-RERATE-11 - revoking a score people hold weight in: the three-phase drain")
+(env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-RERATE-11 · 01 · env-sigs (caps) ====
+(print "--- [TX-RERATE-11 · 01 · env-sigs (caps)] ---")
+(env-sigs
+    [ { "key": "PK_AncientHodler", "caps": [] }
+      { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+      , "caps":
+        [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                         "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+          (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                         "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+          (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                         "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+          (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                         "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
+;;==== TX-RERATE-11 · 02 · the one-shot revoke refuses, and why that was a dead end ====
+(print "--- [TX-RERATE-11 · 02 · the one-shot revoke refuses, and why that was a dead end] ---")
+;;`C_RevokeScore` demands ZERO TOTALS, and it is right to: cutting the link over live weight
+;;would strand that weight in the score's totals and `nzs-count` with nothing left able to
+;;reverse it. But it also made revoke UNREACHABLE on any pool somebody had staked into -- an
+;;admin cannot unstake on a holder's behalf, so there was no legitimate way to reach zero.
+;;That is the gap the three phases close: the requirement becomes a GOAL, not a precondition.
+(let
+    (
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+    )
+    (let*
+        (
+            (pool:string (ref-U|DALOS::UDC_Makeid "RerateVaultPool"))
+            (scoreb:string (ref-U|DALOS::UDC_Makeid "RerateScoreB"))
+            (owner:string (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset 1 (DALOS.UR_OuroborosID)))
+        )
+        (map print
+            [
+                ;;the state that makes the one-shot path impossible
+                (expect "<<TX-RERATE-11>> the score carries real weight: 1000.0 across 1 holder"
+                    [1000.0 1] [(ref-SCR::UR_SCR|ScoreTotalBaseScore scoreb)
+                                (ref-SCR::UR_SCR|ScoreNzsCount scoreb)])
+                (expect-failure "<<TX-RERATE-11>> so the ONE-SHOT revoke refuses — zero totals is a precondition it cannot reach"
+                    "Invalid score revoke for pool"
+                    (ref-TS02-C3::AQP-POOL|C_RevokeScore KST.ANHD owner pool scoreb))
+            ]
+        )
+        ""
+    )
+)
+;;==== TX-RERATE-11 · 03 · PHASE 1: unslot, and the marker that needs no new column ====
+(print "--- [TX-RERATE-11 · 03 · PHASE 1: unslot, and the marker that needs no new column] ---")
+(let
+    (
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+    )
+    (let*
+        (
+            (pool:string (ref-U|DALOS::UDC_Makeid "RerateVaultPool"))
+            (scoreb:string (ref-U|DALOS::UDC_Makeid "RerateScoreB"))
+            (owner:string (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset 1 (DALOS.UR_OuroborosID)))
+        )
+        (ref-TS02-C3::AQP-POOL|C_BeginScoreRevoke KST.ANHD owner pool scoreb)
+        (map print
+            [
+                ;;UNSLOTTED BUT STILL LINKED -- the pending-revoke marker, expressed entirely in
+                ;;state that already existed. No new column, no migration transaction.
+                (expect "<<TX-RERATE-11>> the score is OUT of the pool's slots but STILL linked to it"
+                    [false pool]
+                    [(contains scoreb (AQP-POOL.URC_PoolActiveScoreIds pool))
+                     (ref-SCR::UR_SCR|ScoreAqpoolLink scoreb)])
+                ;;...which is exactly what the orphan scan looks for
+                (expect "<<TX-RERATE-11>> so it shows up as an ORPHANED score on the pool"
+                    [scoreb] (AQP-POOL.URHC_AQP|PoolOrphanedScores pool))
+                (expect "<<TX-RERATE-11>> and its holder is on the drain work list"
+                    [KST.ANHD] (AQP-POOL.URHC_AQP|ScoreDrainOutstanding pool scoreb))
+                (expect "<<TX-RERATE-11>> the pool is frozen, both directions shut"
+                    [true false false]
+                    [(AQP-POOL.UR_AQP|PoolSweepInProgress pool)
+                     (AQP-POOL.URC_PoolStakeAdmissionOk pool)
+                     (AQP-POOL.URC_PoolUnstakeAdmissionOk pool)])
+                ;;THE RE-RATE SWEEP WILL NOT TOUCH IT, and the drain is the only thing that can.
+                ;;The two work lists are exact complements: re-rating is for scores the pool
+                ;;employs, draining for ones it has stopped employing.
+                (expect "<<TX-RERATE-11>> the RE-RATE list is empty for it — an unslotted score is not re-ratable"
+                    [false []]
+                    [(AQP-POOL.URC_AQP|ScoreBackfillSupported pool scoreb)
+                     (AQP-POOL.URHC_AQP|ScoreBackfillOutstanding pool scoreb)])
+                ;;phase 3 refuses while the work exists -- measured, not asserted by a flag
+                (expect-failure "<<TX-RERATE-11>> PHASE 3 is refused while a holder still carries weight"
+                    "Drain is not complete"
+                    (ref-TS02-C3::AQP-POOL|CC_FinalizeScoreRevoke KST.ANHD owner pool scoreb))
+            ]
+        )
+        ""
+    )
+)
+;;==== TX-RERATE-11 · 04 · PHASE 2 + 3: drain, finalize, release ====
+(print "--- [TX-RERATE-11 · 04 · PHASE 2 + 3: drain, finalize, release] ---")
+(let
+    (
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+    )
+    (let*
+        (
+            (pool:string (ref-U|DALOS::UDC_Makeid "RerateVaultPool"))
+            (scoreb:string (ref-U|DALOS::UDC_Makeid "RerateScoreB"))
+            (score:string (ref-U|DALOS::UDC_Makeid "RerateVaultScore"))
+            (owner:string (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset 1 (DALOS.UR_OuroborosID)))
+        )
+        ;;the drain slice, then a REPLAY of it -- the second pass must be a no-op
+        (ref-TS02-C3::AQP-POOL|Cp_DrainScoreSlice KST.ANHD pool scoreb [KST.ANHD])
+        (ref-TS02-C3::AQP-POOL|Cp_DrainScoreSlice KST.ANHD pool scoreb [KST.ANHD KST.ANHD])
+        (map print
+            [
+                ;;THE WEIGHT IS GONE, in all three maintained figures at once.
+                (expect "<<TX-RERATE-11>> the holder's base, the score's total and nzs-count are all retired together"
+                    [0.0 0.0 0]
+                    [(ref-SCR::UR_U-SCR|UserScoreBaseScore KST.ANHD pool scoreb)
+                     (ref-SCR::UR_SCR|ScoreTotalBaseScore scoreb)
+                     (ref-SCR::UR_SCR|ScoreNzsCount scoreb)])
+                (expect "<<TX-RERATE-11>> the drain work list is empty — replaying it changed nothing"
+                    [] (AQP-POOL.URHC_AQP|ScoreDrainOutstanding pool scoreb))
+                ;;THE OTHER SCORE IS UNTOUCHED. A drain is aimed at one (pool, score) pair, and
+                ;;this is what proves it did not reach across to the pool's live score.
+                (expect "<<TX-RERATE-11>> the pool's REMAINING score still carries its full weight"
+                    [1000.0 1000.0 1]
+                    [(ref-SCR::UR_U-SCR|UserScoreBaseScore KST.ANHD pool score)
+                     (ref-SCR::UR_SCR|ScoreTotalBaseScore score)
+                     (ref-SCR::UR_SCR|ScoreNzsCount score)])
+            ]
+        )
+        ;;phase 3, then the release
+        (ref-TS02-C3::AQP-POOL|CC_FinalizeScoreRevoke KST.ANHD owner pool scoreb)
+        (ref-TS02-C3::AQP-FVT|CC_ClearPoolSweep KST.ANHD pool)
+        (map print
+            [
+                (expect "<<TX-RERATE-11>> the link is cut, and the orphan list is empty"
+                    [(U|CT.CT_BAR) []]
+                    [(ref-SCR::UR_SCR|ScoreAqpoolLink scoreb)
+                     (AQP-POOL.URHC_AQP|PoolOrphanedScores pool)])
+                (expect "<<TX-RERATE-11>> the pool is released and BOTH directions reopen"
+                    [false true true]
+                    [(AQP-POOL.UR_AQP|PoolSweepInProgress pool)
+                     (AQP-POOL.URC_PoolStakeAdmissionOk pool)
+                     (AQP-POOL.URC_PoolUnstakeAdmissionOk pool)])
+                ;;AND THE SCORE IS RE-USABLE: a BAR aqpool-link is what `UEV_AddScorePoolAndScore`
+                ;;requires to admit a score, so a fully retired score can be employed again --
+                ;;which a half-finished revoke would have blocked forever.
+                (expect "<<TX-RERATE-11>> the retired score is admissible again (link is BAR, totals are zero)"
+                    [true true]
+                    [(= (ref-SCR::UR_SCR|ScoreAqpoolLink scoreb) (U|CT.CT_BAR))
+                     (= (ref-SCR::UR_SCR|ScoreTotalBaseScore scoreb) 0.0)])
+            ]
+        )
+        ""
+    )
+)
+(env-sigs [])
+(print "===^^^===")
+(commit-tx)
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;
+(begin-tx "TX-RERATE-SAT - a class-1 pool scores its sleeping satellite like the native token")
+(print "")
+(print "=== TX-RERATE-SAT — special satellites score, and custody follows the instrument ======")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+;;==== TX-RERATE-SAT · 01 · env-sigs (caps) ====
+(print "--- [TX-RERATE-SAT · 01 · env-sigs (caps)] ---")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+;;==== TX-RERATE-SAT · 02 · stake a Z| satellite into a class-1 pool ====
+(print "--- [TX-RERATE-SAT · 02 · stake a Z| satellite into a class-1 pool] ---")
+;;OWNER RULING 2026-10-10: "special token satelites must behave like the native token plus their
+;;designated multiplier." This block is that rule, end to end, on the only pool shape that can
+;;hold one -- aqp-class 1, the DPTF pool whose satellites are `Z|` and `H|` variants of its asset.
+;;
+;;THIS TEST REPLACES ONE THAT ASSERTED THE OPPOSITE, and the replacement is the evidence. Until
+;;today a satellite staked here MOVED, was TRACKED, and scored NOTHING -- three rules composing
+;;into a silent dead end that none of them stated:
+;;  - `UEV_AddScorePoolAndScore` enforces `score-class == aqp-class`, so a class-1 pool employs
+;;    only class-1 scores;
+;;  - the orto score-delta dispatch handled score-class 0 and 2 ONLY, falling through to an
+;;    `"of-skip"` cumulator of 0.0 for everything else;
+;;  - `URC_StakeOrtoFungibleDpofMatchesPool` admits `Z|`/`H|` satellites on aqp-class 1.
+;;The previous version of this transaction pinned that zero and said in its own comment that it
+;;would go red the day class-1 scoring was wired up. It did, at 1000.0 -> 1025.0, which is how the
+;;fix was confirmed rather than assumed.
+;;
+;;`mx-sleeping` IS 1.0 ON THIS SCORE and that is the interesting case, not a degenerate one. It is
+;;the owner's own example: a sleeping variant minted with a bonus quantity should weigh exactly
+;;like the native token, so its ceiling is set to 1.0 -- and because the multiplier is a CEILING
+;;reached at full term, a ceiling of 1.0 makes the duration curve a no-op. The 25.0 staked is
+;;therefore worth exactly 25.0, with no rounding and no decay to reason about.
+(let*
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        ;;
+        (patron:string KST.ANHD)
+        (owner:string KST.ANHD)
+        (aqp-sc:string (ref-DALOS::GOV|AQP|SC_NAME))
+        (ouro:string (ref-DALOS::UR_OuroborosID))
+        (zouro:string (ref-DPTF::UR_Sleeping ouro))
+        (pool:string (ref-U|DALOS::UDC_Makeid "RerateVaultPool"))
+        (score:string (ref-U|DALOS::UDC_Makeid "RerateVaultScore"))
+    )
+    (ref-TS01-C2::VST|C_Sleep patron owner owner ouro 25.0 86400)
+    (let*
+        (
+            (held:[integer] (ref-DPOF::URH_AccountNonces owner zouro))
+            (n:integer (at (- (length held) 1) held))
+            (base-pre:decimal (ref-SCR::UR_U-SCR|UserScoreBaseScore owner pool score))
+        )
+        (map print
+            [
+                ;;the fixture: an aqp-class-1 pool with a class-1 score whose sleeping ceiling is 1.0
+                (expect "<<TX-RERATE-SAT>> fixture: aqp-class 1, score-class 1, mx-sleeping 1.999, Z| satellite of OURO"
+                    [1 1 1.999 ouro]
+                    [(ref-AQP::UR_AQP|PoolAqpClass pool)
+                     (ref-SCR::UR_SCR|ScoreClass score)
+                     (ref-SCR::UR_SCR|ScoreMxSleeping score)
+                     (ref-DPOF::UR_Sleeping zouro)])
+                ;;CUSTODY IS MANDATORY, because this is a SLEEPING leg and it now earns. The rule
+                ;;follows the instrument, not the pool class -- and it was briefly scoped to
+                ;;aqp-class 0 precisely because this leg used to earn nothing.
+                (expect-failure "<<TX-RERATE-SAT>> the ordinary path refuses it — a sleeping leg that earns must be custodial"
+                    "Invalid stake path: a sleeping leg that earns a duration multiplier must be staked under pool custody"
+                    (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron owner owner pool zouro [n]))
+            ]
+        )
+        (ref-TS02-C3::AQP-POOL|CCp_StakeSpecialCustodial patron owner owner pool zouro [n])
+        (map print
+            [
+                ;;THE SATELLITE SCORES LIKE THE NATIVE TOKEN. 25.0 staked at a 1.0 ceiling is
+                ;;exactly 25.0 of base -- the owner's rule, asserted as an equality rather than as
+                ;;"greater than", because the whole point is that the figure is the AMOUNT and not
+                ;;some fraction of it.
+                (expect "<<TX-RERATE-SAT>> the base rises by EXACTLY the staked amount — satellite weighted as native × 1.0"
+                    (+ base-pre 25.0)
+                    (ref-SCR::UR_U-SCR|UserScoreBaseScore owner pool score))
+                ;;custody shape: the pool owns the row, the staker owns none, the weight is the staker's
+                (expect "<<TX-RERATE-SAT>> the tracker credits the POOL as owner while the WEIGHT accrues to the staker"
+                    [true 0.0]
+                    [(> (ref-AQP::UR_AQP|DPOFTrackerBalance pool zouro aqp-sc owner n) 0.0)
+                     (ref-AQP::UR_AQP|DPOFTrackerBalance pool zouro owner owner n)])
+                ;;and the term was stamped, so the reversal has a figure to read
+                (expect "<<TX-RERATE-SAT>> the sleep-term ledger stamped this nonce"
+                    [true true]
+                    [(> (ref-SCR::UR_SCR|SleepRemainingAtStake zouro n) 0.0)
+                     (<= (ref-SCR::UR_SCR|SleepRemainingAtStake zouro n) 86400.0)])
+                ;;no early exit, by the shape of the data: no row is keyed to the staker
+                (expect-failure "<<TX-RERATE-SAT>> and the staker cannot withdraw it early"
+                    "Invalid OF pool custody"
+                    (ref-TS02-C3::AQP-POOL|CC_UnstakeOrtoFungible patron owner owner pool zouro [n]))
+            ]
+        )
+        ;;--- the lock matures, relative to wherever this chain already is ---
+        (env-chain-data { "block-time": (add-time (at "block-time" (chain-data)) (days 2)) })
+        (ref-TS02-C3::AQP-POOL|CCp_ReleaseSpecialCustodial patron pool owner zouro n)
+        (map print
+            [
+                ;;THE ROUND TRIP NETS TO EXACTLY ZERO. With a 1.0 ceiling there is no decay to
+                ;;hide a discrepancy, so this is the cleanest possible check that the credit and
+                ;;the reversal read the same rule from two different clocks.
+                (expect "<<TX-RERATE-SAT>> after release the base is back to EXACTLY its pre-stake value"
+                    base-pre (ref-SCR::UR_U-SCR|UserScoreBaseScore owner pool score))
+                (expect "<<TX-RERATE-SAT>> the custodial tracker row is drained"
+                    0.0 (ref-AQP::UR_AQP|DPOFTrackerBalance pool zouro aqp-sc owner n))
+                (expect "<<TX-RERATE-SAT>> the batch is dissolved and the nonce RETIRED to supply -1.0"
+                    -1.0 (ref-DPOF::UR_NonceSupply zouro n))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(print "===^^^===")
+(commit-tx)
+(print "")
+(begin-tx "TX-RERATE-SELL - selling a locked custodial position by reassigning the beneficiary")
+(print "")
+(print "=== TX-RERATE-SELL — Alice sells a locked position to Bob without unlocking it =====")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+;;==== TX-RERATE-SELL · 01 · env-sigs (caps) ====
+(print "--- [TX-RERATE-SELL · 01 · env-sigs (caps)] ---")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+;;==== TX-RERATE-SELL · 02 · the reassignment ====
+(print "--- [TX-RERATE-SELL · 02 · the reassignment] ---")
+;;THE OWNER'S CASE, verbatim: "i aknoledge i cant take it out, and i must leave it stacked there
+;;until the end, but i want to sell it to bob ... i no longer want you to stake it for me, but i
+;;want bob to earn from it."
+;;
+;;A custodial stake cannot be withdrawn before its lock matures -- that IS the mechanism -- so
+;;without this the holder has no exit at all, not even a sale. Reassignment moves the EARNINGS and
+;;leaves the asset where it is.
+;;
+;;WHAT MAKES IT SAFE RATHER THAN A LOOPHOLE is the token's own transfer rule. The release pays the
+;;NATIVE counterpart to whoever is beneficiary at maturity, so this is a DEFERRED DELIVERY of the
+;;asset to Bob, not merely the sale of a claim -- and nothing downstream would catch it, because
+;;the release transfers the native token, whose role list is a different object from the sleeping
+;;variant's. So the gate asks `DPOF::UEV_MoveRoleCheck`, the same question a direct transfer asks.
+(let*
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        ;;
+        (patron:string KST.ANHD)
+        (alice:string KST.ANHD)
+        (bob:string KST.EMMA)
+        (aqp-sc:string (ref-DALOS::GOV|AQP|SC_NAME))
+        (ouro:string (ref-DALOS::UR_OuroborosID))
+        (zouro:string (ref-DPTF::UR_Sleeping ouro))
+        (pool:string (ref-U|DALOS::UDC_Makeid "RerateVaultPool"))
+        (score:string (ref-U|DALOS::UDC_Makeid "RerateVaultScore"))
+    )
+    (ref-TS01-C2::VST|C_Sleep patron alice alice ouro 40.0 86400)
+    (let*
+        (
+            (held:[integer] (ref-DPOF::URH_AccountNonces alice zouro))
+            (n:integer (at (- (length held) 1) held))
+        )
+        (ref-TS02-C3::AQP-POOL|CCp_StakeSpecialCustodial patron alice alice pool zouro [n])
+        (let*
+            (
+                (alice-base:decimal (ref-SCR::UR_U-SCR|UserScoreBaseScore alice pool score))
+                (bob-base-pre:decimal (ref-SCR::UR_U-SCR|UserScoreBaseScore bob pool score))
+                ;;Alice's TOTAL Z|OURO holding, which includes batches from earlier blocks in this
+                ;;file. The point of capturing it is to prove the sale does not hand the batch
+                ;;BACK to her, so what matters is that this figure does not move -- not that it is
+                ;;zero, which it is not and should not be.
+                (alice-z-pre:decimal (ref-DPOF::UR_AccountSupply zouro alice))
+            )
+            (map print
+                [
+                    (expect "<<TX-RERATE-SELL>> Alice holds the custodial position and its weight"
+                        [true true]
+                        [(> (ref-AQP::UR_AQP|DPOFTrackerBalance pool zouro aqp-sc alice n) 0.0)
+                         (> alice-base 0.0)])
+                    ;;SHE CANNOT WITHDRAW IT -- which is exactly why a sale has to be possible.
+                    (expect-failure "<<TX-RERATE-SELL>> ...and cannot withdraw it, which is what makes the sale necessary"
+                        "Invalid OF pool custody"
+                        (ref-TS02-C3::AQP-POOL|CC_UnstakeOrtoFungible patron alice alice pool zouro [n]))
+                    ;;A BUYER MUST BE NAMED, not implied: reassigning to yourself is a no-op that
+                    ;;would still run two full phase chains and bill for them.
+                    (expect-failure "<<TX-RERATE-SELL>> reassigning to herself is refused"
+                        "Reassignment must name a different beneficiary"
+                        (ref-TS02-C3::AQP-POOL|CCp_ReassignCustodialBeneficiary
+                            patron alice pool zouro n alice))
+                ]
+            )
+            ;;--- the sale ---
+            (ref-TS02-C3::AQP-POOL|CCp_ReassignCustodialBeneficiary patron alice pool zouro n bob)
+            (map print
+                [
+                    ;;THE POSITION MOVED WHOLE: Alice's row and weight are gone, Bob's exist.
+                    ;;ALICE LOSES THE POSITION AND NOTHING ELSE. Her tracker row for this nonce
+                    ;;goes to zero and her base drops by exactly the 40.0 the position carried --
+                    ;;not to zero, because she also holds a 1000.0 NATIVE stake in this pool from
+                    ;;TX-RERATE-08. Asserting zero here would have been asserting the fixture
+                    ;;away, and the difference is the whole value of the test: it proves the
+                    ;;reassignment touched ONE position rather than her whole standing.
+                    (expect "<<TX-RERATE-SELL>> Alice's row is gone and her base drops by exactly the position's weight"
+                        [0.0 (- alice-base 40.0)]
+                        [(ref-AQP::UR_AQP|DPOFTrackerBalance pool zouro aqp-sc alice n)
+                         (ref-SCR::UR_U-SCR|UserScoreBaseScore alice pool score)])
+                    (expect "<<TX-RERATE-SELL>> Bob now holds the row — still keyed to the POOL as owner, so still locked"
+                        true (> (ref-AQP::UR_AQP|DPOFTrackerBalance pool zouro aqp-sc bob n) 0.0))
+                    ;;AND BOB GOT THE WEIGHT. On this score `mx-sleeping` is 1.0, so the figure is
+                    ;;the staked amount exactly and the re-rate-vs-inherit question cannot hide in
+                    ;;rounding: 40.0 either way.
+                    (expect "<<TX-RERATE-SELL>> Bob earns exactly what the position is worth"
+                        (+ bob-base-pre 40.0)
+                        (ref-SCR::UR_U-SCR|UserScoreBaseScore bob pool score))
+                    ;;THE ASSET NEVER MOVED, which is the whole point: the batch is still the
+                    ;;pool's and still locked. A sale that released it would defeat the time-lock
+                    ;;the multiplier priced. Asserted as "Alice's holding is UNCHANGED and Bob
+                    ;;received nothing" rather than "both are zero", because Alice holds other
+                    ;;sleeping batches from earlier blocks -- the invariant is that this
+                    ;;transaction moved no tokens, not that nobody owns any.
+                    (expect "<<TX-RERATE-SELL>> no tokens moved — Alice's holding is unchanged and Bob received none"
+                        [alice-z-pre 0.0]
+                        [(ref-DPOF::UR_AccountSupply zouro alice)
+                         (ref-DPOF::UR_AccountSupply zouro bob)])
+                    ;;NOR CAN BOB CASH OUT EARLY. He bought the position, not an unlock.
+                    (expect-failure "<<TX-RERATE-SELL>> and Bob cannot release it early either"
+                        "cannot be unsleeped yet"
+                        (ref-TS02-C3::AQP-POOL|CCp_ReleaseSpecialCustodial patron pool bob zouro n))
+                ]
+            )
+            ;;--- and at maturity it pays BOB, not Alice ---
+            (env-chain-data { "block-time": (add-time (at "block-time" (chain-data)) (days 2)) })
+            (let
+                (
+                    (bob-ouro-pre:decimal (ref-DPTF::UR_AccountSupply ouro bob))
+                )
+                (ref-TS02-C3::AQP-POOL|CCp_ReleaseSpecialCustodial patron pool bob zouro n)
+                (map print
+                    [
+                        ;;THE DEFERRED DELIVERY, LANDING. This is why the gate has to ask the
+                        ;;token's transfer rule: the native asset ends up with Bob.
+                        (expect "<<TX-RERATE-SELL>> at maturity the NATIVE asset goes to Bob — the delivery the gate exists to police"
+                            (+ bob-ouro-pre 40.0) (ref-DPTF::UR_AccountSupply ouro bob))
+                        (expect "<<TX-RERATE-SELL>> Bob's weight unwinds to zero and the nonce retires"
+                            [bob-base-pre -1.0]
+                            [(ref-SCR::UR_U-SCR|UserScoreBaseScore bob pool score)
+                             (ref-DPOF::UR_NonceSupply zouro n)])
+                    ]
+                )
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(print "===^^^===")
+(commit-tx)
+(print "")
+(begin-tx "TX-RERATE-WL - a RESTRICTED token: whitelisted buyer passes, stranger does not")
+(print "")
+(print "=== TX-RERATE-WL — the middle case: restricted token, whitelisted recipient ========")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+;;==== TX-RERATE-WL · 01 · env-sigs (caps) ====
+(print "--- [TX-RERATE-WL · 01 · env-sigs (caps)] ---")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+;;==== TX-RERATE-WL · 02 · restrict the token, then sell to the whitelisted party ====
+(print "--- [TX-RERATE-WL · 02 · restrict the token, then sell to the whitelisted party] ---")
+;;THE CASE THE OWNER NAMED: "it may be that a trasnfer token is restricted in movment, but bob may
+;;have a trasnfer role, so he is allowed to move towards. therefore alice can reasign to bob,
+;;because she could have transfered to bob in the first place."
+;;
+;;THAT IS EXACTLY WHAT `DPOF::UEV_MoveRoleCheck` SAYS, and the shape of the check is why: it is an
+;;`enforce-one` over [sender-has-role, receiver-has-role], so EITHER side qualifying is enough. The
+;;gate asks that same question with (Alice, Bob), so the rule is literally "could Alice have
+;;transferred to Bob" -- inherited from the token layer rather than restated.
+;;
+;;THIS IS THE MIDDLE OF A THREE-CASE TRUTH TABLE and it was the untested one. The other two are
+;;pinned elsewhere and are the easy ones:
+;;  - UNRESTRICTED token (only VST's infrastructure grant) -> allowed:  <<TX-RERATE-SELL>> above.
+;;  - RESTRICTED, recipient NOT whitelisted              -> refused:   [6.4] <<TX-AQP-CL06>>.
+;;Without this block the gate could have been coded as "refuse whenever restricted" and both of
+;;those would still pass -- the over-broad rule is indistinguishable from the correct one until
+;;somebody whitelists a counterparty. So this transaction is the one that tells them apart.
+(let*
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-VST:module{VestingV2} VST)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        ;;
+        (patron:string KST.ANHD)
+        (alice:string KST.ANHD)
+        (bob:string KST.EMMA)
+        (stranger:string KST.FLRN)
+        (aqp-sc:string (ref-DALOS::GOV|AQP|SC_NAME))
+        (ouro:string (ref-DALOS::UR_OuroborosID))
+        (zouro:string (ref-DPTF::UR_Sleeping ouro))
+        (pool:string (ref-U|DALOS::UDC_Makeid "RerateVaultPool"))
+        (score:string (ref-U|DALOS::UDC_Makeid "RerateVaultScore"))
+    )
+    (map print
+        [
+            ;;BEFORE: the token carries ONLY VST's automatic grant, so no human has restricted it.
+            ;;Asserted so the state change below is visible rather than assumed.
+            (expect "<<TX-RERATE-WL>> the token starts UNrestricted — VST's infrastructure grant alone does not count"
+                false (ref-VST::URC_SpecialLegIssuerRestricted zouro))
+        ]
+    )
+    ;;the token OWNER whitelists Bob — the only way any name other than VST's reaches that list
+    (ref-TS01-C2::VST|C_ToggleTransferRoleSleepingDPOF
+        patron (ouronet-ns.VST.URC_SpecialTransferRoleKonto zouro) zouro bob true)
+    (ref-TS01-C2::VST|C_Sleep patron alice alice ouro 30.0 86400)
+    (let*
+        (
+            (held:[integer] (ref-DPOF::URH_AccountNonces alice zouro))
+            (n:integer (at (- (length held) 1) held))
+        )
+        (ref-TS02-C3::AQP-POOL|CCp_StakeSpecialCustodial patron alice alice pool zouro [n])
+        (let*
+            (
+                (bob-base-pre:decimal (ref-SCR::UR_U-SCR|UserScoreBaseScore bob pool score))
+            )
+            (map print
+                [
+                    ;;AFTER: a human has named a holder, so the token is now issuer-restricted.
+                    (expect "<<TX-RERATE-WL>> whitelisting Bob makes the token issuer-RESTRICTED"
+                        true (ref-VST::URC_SpecialLegIssuerRestricted zouro))
+                    ;;AND A STRANGER IS REFUSED, which is what the restriction is for. Note the
+                    ;;asymmetry this proves: the SAME token, the SAME seller, two recipients, two
+                    ;;answers. A gate keyed on "is it restricted" could not produce that.
+                    (expect-failure "<<TX-RERATE-WL>> a NON-whitelisted buyer is refused on the restricted token"
+                        "Incompatible Transfer Roles"
+                        (ref-TS02-C3::AQP-POOL|CCp_ReassignCustodialBeneficiary
+                            patron alice pool zouro n stranger))
+                ]
+            )
+            ;;--- and the whitelisted one goes through ---
+            (ref-TS02-C3::AQP-POOL|CCp_ReassignCustodialBeneficiary patron alice pool zouro n bob)
+            (map print
+                [
+                    ;;THE SALE SUCCEEDED BECAUSE BOB COULD HAVE RECEIVED A DIRECT TRANSFER. This is
+                    ;;the assertion that distinguishes the correct gate from the over-broad one.
+                    (expect "<<TX-RERATE-WL>> the whitelisted buyer DOES get the position — Alice could have transferred to him"
+                        [true (+ bob-base-pre 30.0)]
+                        [(> (ref-AQP::UR_AQP|DPOFTrackerBalance pool zouro aqp-sc bob n) 0.0)
+                         (ref-SCR::UR_U-SCR|UserScoreBaseScore bob pool score)])
+                    (expect "<<TX-RERATE-WL>> ...and Alice's row for that nonce is gone"
+                        0.0 (ref-AQP::UR_AQP|DPOFTrackerBalance pool zouro aqp-sc alice n))
+                ]
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(print "===^^^===")
+(commit-tx)
+(print "")
+(print "=== END REPL/Stage_02/[6.2.17]_AQP-RERATE.repl ===")

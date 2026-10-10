@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Ouronet IPFS -> Arweave link map (Deploy/4_Arweave)",
+  "description": "Consumed by REPL/tools/_arweave.py. Two modes, because the shape of an Arweave upload decides which one is even expressible. Run `python3 REPL/tools/_arweave.py --files` for the exact key list.",
+  "type": "object",
+  "required": ["mode"],
+  "properties": {
+    "mode": {
+      "enum": ["manifest", "explicit"],
+      "description": "manifest: the upload is an Arweave PATH MANIFEST, so the folder tree survives and only the gateway prefix changes. Three lines of JSON cover all 5,860 files. explicit: every file got its own independent Arweave transaction id, so every one must be named."
+    },
+    "manifest": {
+      "type": "string",
+      "description": "mode=manifest only. The Arweave base that REPLACES the IPFS gateway prefix, trailing slash included -- e.g. \"https://arweave.net/<manifest-txid>/\". Everything after the prefix (512x512/07_Bloodshed/4_Common/C_001.jpg) is carried across verbatim, so the uploaded tree must keep the same folder and file names.",
+      "pattern": "^https://.+/$"
+    },
+    "explicit": {
+      "type": "object",
+      "description": "mode=explicit only. OLD IPFS URL -> NEW Arweave URL, one entry per DISTINCT FILE. Keyed by old link rather than by nonce ON PURPOSE: Bloodshed's 12,928 rows share 272 images (mod 8/48/72/144), so a per-nonce keying would ask for the same string up to 56 times and offer 56 chances to disagree with itself. Every key must appear in `--files` output and every `--files` entry must appear here.",
+      "additionalProperties": { "type": "string", "pattern": "^https://" }
+    },
+    "overrides": {
+      "type": "object",
+      "description": "Valid in EITHER mode. OLD IPFS URL -> NEW Arweave URL, applied after the mode's own resolution. This is where the PADDING_ANOMALY files go: 132 Bloodshed rows ask for E_048.jpg / R_072.jpg / C_00144.jpg, three- and five-character names in a two- and three-character scheme (see _arweave.py PADDING_ANOMALY). If the Arweave tree names them E_48.jpg / R_72.jpg / C_144.jpg instead, name the three pairs here and manifest mode stays usable for everything else.",
+      "additionalProperties": { "type": "string", "pattern": "^https://" }
+    },
+    "_comment": { "type": "string" }
+  },
+  "allOf": [
+    { "if": { "properties": { "mode": { "const": "manifest" } } },
+      "then": { "required": ["manifest"] } },
+    { "if": { "properties": { "mode": { "const": "explicit" } } },
+      "then": { "required": ["explicit"] } }
+  ]
+}

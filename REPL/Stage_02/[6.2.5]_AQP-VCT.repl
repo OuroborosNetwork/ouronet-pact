@@ -336,6 +336,23 @@
     (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)
     (print (format "<(restake OF nonce {})> => \"{}\"" [stake-nonce
         (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron owner-id beneficiary-id pool-id dpof-id [stake-nonce])]))
+    ;;THE CUSTODIAL PATH IS CLOSED TO A NATIVE LEG, and this is the natural place to prove it:
+    ;;`MVST-98c486052a51` is the tree's native (non-Z|/H|) DPOF, and the ordinary stake directly
+    ;;above is the path it is SUPPOSED to take -- so these two lines together show the rule
+    ;;admitting the right leg and refusing the wrong one.
+    ;;
+    ;;THE REFUSAL PREVENTS AN ASSET FROM BEING STRANDED, not merely a misuse. A custodial row
+    ;;names the pool as owner, and the only exit from one is `CCp_ReleaseSpecialCustodial`,
+    ;;which dissolves the batch through `VST::XE_Unsleep`. A NATIVE batch has nothing to unsleep,
+    ;;so that exit would refuse forever while the ordinary unstake could no longer find a row
+    ;;keyed to the staker -- unreachable from both directions. The same is true of a HIBERNATING
+    ;;(H|) batch, and of any special leg on a pool class that scores it zero, which is why custody
+    ;;admits exactly one case: a `Z|` leg on an aqp-class-0 pool (DEFECT-LEDGER 8.38/8.39).
+    (print (format "<(custodial refuses a native leg)> => \"{}\""
+        [(expect-failure "<<TX-VCT-L01b>> a NATIVE leg cannot be staked under pool custody — it could never be released"
+            "Invalid stake path: pool custody is only for a sleeping leg that earns a duration multiplier"
+            (ref-TS02-C3::AQP-POOL|CCp_StakeSpecialCustodial
+                patron owner-id beneficiary-id pool-id dpof-id [stake-nonce]))]))
     (let ((tracker-pre:decimal (ref-AQP::UR_AQP|DPOFTrackerBalance pool-id dpof-id owner-id beneficiary-id stake-nonce)))
         (enforce (> tracker-pre 0.0) "TX-VCT-L01b: need OF stake inventory")
         (print (format "<(pre OF tracker)> => {}" [tracker-pre]))

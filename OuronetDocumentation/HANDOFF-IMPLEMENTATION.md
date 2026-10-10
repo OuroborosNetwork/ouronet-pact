@@ -147,7 +147,7 @@ utility modules and the 11 read modules, thin is correct; they are small. For ro
 substantial modules it is thinner than the build plan intended.
 
 **The plan asked for per-function explanation — what each function does, how, and why. That is not
-delivered.** 8,918 functions are enumerated and grouped, not individually explained. This is a
+delivered.** 9,008 functions are enumerated and grouped, not individually explained. This is a
 deliberate stop, not an oversight: per-function narrative at that scale is several times the
 volume of everything else here, and much of it would restate what the prefix already promises.
 
@@ -173,7 +173,7 @@ checker enforces that every one resolves; if you rewrite links for the web, keep
 one-to-one or the checker becomes meaningless.
 
 **Figures are load-bearing and checked.** Five cross-cutting numbers — 427 client entrypoints, 409
-sponsored, 414 divergent previews, 124,750 contract lines, 8,918 functions — are re-derived from
+sponsored, 414 divergent previews, 128,397 contract lines, 9,008 functions — are re-derived from
 the tree on every gate run and must appear in the prose. **Do not "round for readability" anywhere
 in your output**: the check looks for the exact figure, and a near-miss is reported as a stale
 copy.

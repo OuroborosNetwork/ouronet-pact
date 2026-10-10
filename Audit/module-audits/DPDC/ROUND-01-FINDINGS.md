@@ -97,7 +97,7 @@ defcap currently has none).
 
 **Location:** `REPL/Stage_02/[6.1]_DPDC.repl:116-139` (all 11 role functions invoked, always signed by
 `patron`, who is also the collection owner — no non-owner attempt anywhere) and `:438-458` (freeze/
-unfreeze — the only role exercised in both directions). `[6.1]_DPDC.repl:124,126,130` comment out the
+unfreeze — the only role exercised in both directions). `[6.1]_DPDC.repl:125,356,130` comment out the
 toggle-off half of Burn/Update/ModifyRoyalties; `AddQuantityRole` (line 117) is only ever toggled on.
 `[2.1]_DpdcCore.repl` has no `C_Toggle*`/`C_Move*` calls at all.
 

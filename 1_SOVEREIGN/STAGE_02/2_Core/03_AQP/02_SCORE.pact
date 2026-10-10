@@ -417,9 +417,67 @@
     ;;{3}  CST
     ;;{3.1}  constants
     (defconst BAR                                       (CT_Bar))
+    ;;SLEEPING-LP DURATION SCALE. `mx-sleeping` is a CEILING reached only by a full-term lock,
+    ;;not a flat factor — a one-day sleep and a 25-year sleep earning the same multiplier is
+    ;;gameable, and that is what these three exist to end.
+    ;;
+    ;;The horizon is the CONTRACT's, quoted not chosen: `VST|C>SLEEP` enforces
+    ;;`UEV_MilestoneWithTime 0 duration 1 788400000` under the comment ";;Limit <Sleep> to 25
+    ;;Years", and `U|VST` repeats the figure. 788,400,000 / 300 = 2,628,000 EXACTLY, so a
+    ;;"month" here is derived from the bound (30.42 days) rather than assumed to be 30 days —
+    ;;300 x 30 days is 24.66 years and would not reach the ceiling.
+    (defconst CT_SLEEP_MAX_SECONDS:decimal               788400000.0)
+    (defconst CT_SLEEP_MONTHS:integer                    300)
+    (defconst CT_SLEEP_MONTH_SECONDS:decimal             2628000.0)
+    ;;HIBERNATION RUNS FOUR TIMES AS LONG AS SLEEP, and both land on the same month.
+    ;;`VST|C>HIBERNATE` bounds `dayz` to [1, 36500] -- 100 years -- while `VST|C>SLEEP` bounds its
+    ;;duration to 788,400,000 seconds, 25 years. Dividing each by CT_SLEEP_MONTH_SECONDS gives
+    ;;300.0 and 1200.0 EXACTLY, which is why one month constant serves both curves and neither
+    ;;needs an epsilon at full term.
+    ;;Scaling hibernation on the 300-month sleep curve instead would make a 25-year hibernation
+    ;;earn the identical ceiling to a 100-year one -- a milder version of the very flattening
+    ;;this whole mechanism exists to remove.
+    (defconst CT_HIBERNATE_MONTHS:integer                1200)
+    (defconst CT_SIGNED_FLOOR_NOTE:string
+        "Every URC_SignedBaseDeltaFor*Stake function floors the MAGNITUDE and applies the \
+        \ direction sign afterwards, never the other way round. The reason is the invariant the \
+        \ whole maintained-delta architecture rests on: A FULL UNSTAKE MUST REVERSE EXACTLY AND \
+        \ NET TO 0. \
+        \ \
+        \ `floor` rounds toward NEGATIVE INFINITY, so flooring after the sign rounds a credit \
+        \ DOWN and a debit AWAY FROM ZERO. For a weight that does not fit the score precision \
+        \ that leaves one unit in the last place behind on every stake/unstake cycle: \
+        \ \
+        \   floor(+300.3333333, 6) = +300.333333 \
+        \   floor(-300.3333333, 6) = -300.333334   -> the pair sums to -0.000001 \
+        \ \
+        \ The residue is SIGNED and always negative, so it accumulates: repeated cycles walk a \
+        \ holder's base below zero and walk the score's `total-base` down with it, and nothing \
+        \ reports it because deb-staleness never compares a base against its own history. \
+        \ \
+        \ IT WAS UNREACHABLE UNTIL DURATION-WEIGHTING ARRIVED, which is why the old form looked \
+        \ correct for so long: every multiplier used to be a flat 2.0 or 1.0, products were exact \
+        \ at score precision, and the floor never bit. A per-month multiplier is 1 + m*(c-1)/300, \
+        \ which for almost every m is a non-terminating decimal -- so the fix had to land in the \
+        \ same change that introduced the division. Pinned by [6.2.17] TX-RERATE-03." 
+    )
     (defconst GAS|ISSUE-SCORE                       (let ((ref-IGNIS:module{IgnisCollectorV3} IGNIS)) (ref-IGNIS::UC_IgnisDeter "issue-score")))
     (defconst GAS|ISSUE-TRIPLET                     (let ((ref-IGNIS:module{IgnisCollectorV3} IGNIS)) (ref-IGNIS::UC_IgnisDeter "issue-triplet")))
     (defconst GAS|ISSUE-SCORE-MODEL                 (let ((ref-IGNIS:module{IgnisCollectorV3} IGNIS)) (ref-IGNIS::UC_IgnisDeter "issue-score-model")))
+    ;;CANONICAL MULTIPLIER DEFAULTS. Owner ruling; named here because until 2026-10-10 they
+    ;;existed ONLY as worked examples inside docstrings while issuance hard-coded 2.0/1.0/1.0.
+    ;;A default that lives in prose is not a default -- every class but 0 shipped values the
+    ;;owner had never chosen, and nothing could detect the divergence because there was no
+    ;;constant to compare against.
+    ;;
+    ;;THE THREE ARE NOT INDEPENDENT. The sleeping interval is 0.999 so that it splits in THREE
+    ;;exactly (0.333), which `UC_MxSleepIntervalOk` enforces; the frozen interval is 1.998,
+    ;;exactly DOUBLE it, which is the floor `UC_MxOrderingOk` enforces. Hibernation is flat at
+    ;;1.0 because it asks no commitment. Change one and the other two stop being the defaults
+    ;;for the same reason -- recompute, do not edit in place.
+    (defconst CT_MX_HIBERNATED_DEFAULT:decimal          1.0)
+    (defconst CT_MX_SLEEPING_DEFAULT:decimal            1.999)
+    (defconst CT_MX_FROZEN_DEFAULT:decimal              2.998)
     (defconst CT_SCORE_MODEL_SINGLE:integer             1)
     (defconst CT_SCORE_MODEL_TRIPLET:integer            3)
     (defconst EOC                                       (CT_EmptyCumulator))
@@ -446,7 +504,50 @@
     ;;{3.3}  tables
     ;;
     (deftable SCR|T|Score:{AcquisitionSchemasV1.SCR|Schema})                         ;;1] Key = <Score-ID>
+    (defschema SCR|SleepStake
+        @doc "THE TIME A SLEEPING OR HIBERNATING LOCK HAD LEFT WHEN IT WAS STAKED, so the unstake \
+            \ can give back exactly what the stake awarded. One row per nonce. \
+            \ \
+            \ WHY THE REMAINING TIME AND NOT THE WEIGHT. The weight is PER SCORE -- the stake maps \
+            \ over every employed score, and each has its own `mx` ceiling and its own precision, \
+            \ so one nonce carries up to seven different awarded weights. The remaining time is a \
+            \ property of the LOCK alone, identical for all of them, so one decimal serves every \
+            \ score and each recomputes its own figure exactly. That is what lets this be keyed \
+            \ `<DPOF-ID> | <Nonce>` -- the same key DPOF itself uses for nonce data -- instead of \
+            \ by (score, pool, account, nonce), which is seven times the rows for the same answer. \
+            \ \
+            \ WHY NOT ON DPOF'S OWN NONCE ROW, which would cost no new rows at all and was the \
+            \ owner's preference. `DPOF|NonceElement` is declared inside `DpofUdcV2`, a DEPLOYED \
+            \ interface (Deploy/1_Pure/03), and a Pact interface cannot be changed -- so adding a \
+            \ field means `DpofUdcV3`, and `DpofUdcV2` is named inside the interface regions of \
+            \ `02_TS01-C1.pact` and `02_INFO-ONE+.pact` too, which makes it an interface-to- \
+            \ interface cascade on a Stage-1 module that RPS and VCT both dot-call. Measured, not \
+            \ assumed. The nonce metadata chain was the other candidate and is ruled out \
+            \ separately: `11_VST.pact:946` reads its LAST element and `:1275` prices off its \
+            \ LENGTH, so appending breaks vesting and overcharges holders. \
+            \ \
+            \ NO AMOUNT FIELD, BECAUSE A NONCE MOVES WHOLE. `AQP::XE_OrtoFungibleTransfer` is \
+            \ `DPOF::C_Transfer whole nonces` -- an ownership move, not a balance split -- so a \
+            \ staked nonce is staked entirely and comes back entirely. There are no tranches to \
+            \ pro-rate between, which is why one timestamp per nonce is exact rather than an \
+            \ approximation. \
+            \ \
+            \ WRITTEN ON STAKE ONLY, NEVER CLEARED ON UNSTAKE, and that is deliberate. Every \
+            \ employed score reverses against this row in the same transaction; if the first one \
+            \ to finish cleared it, the rest would read 0.0 and reverse the wrong amount -- a bug \
+            \ that would only ever surface on a pool with more than one score. \
+            \ \
+            \ AND THE ROW CAN NEVER GO STALE, because the nonce it describes cannot come back. \
+            \ Unsleeping burns the batch in its entirety, and `DPOF::XI_DebitNonces` takes a \
+            \ fully-debited nonce OUT OF CIRCULATION by setting its supply to -1.0 -- there is no \
+            \ separate disable flag, that negative supply IS the retirement, and `nonces-used` \
+            \ only ever counts up so the number is never reissued. So each row is written once, \
+            \ read until the position is released, and then refers to something that cannot exist \
+            \ again. Pact has no row delete; leaving it is both the cheapest and the safest option."
+        remaining-at-stake:decimal          ;;seconds the lock had left at the moment of staking
+    )
     (deftable SCR|T|UserScore:{AcquisitionSchemasV1.SCR|UserSchema})                 ;;2] Key = <Ouronet-Account> | <Pool-ID> | <Score-ID>
+    (deftable SCR|T|SleepStake:{SCR|SleepStake})                                            ;;Key = <DPOF-ID> | <Nonce>
     (deftable SCR|T|SF|Score:{AcquisitionSchemasV1.SCR|SF|Schema})                   ;;3] Key = <Score-ID> | <DPSF-ID> | <Nonce>
     (deftable SCR|T|NF|TraitScore:{AcquisitionSchemasV1.SCR|NF|TraitSchema})         ;;4] Key = <Score-ID> | <DPNF-ID> | <Trait-Key> | <Trait-Value>
     (deftable SCR|T|NF|ClassScore:{AcquisitionSchemasV1.SCR|NF|ClassSchema})         ;;5] Key = <Score-ID> | <DPNF-ID> | <DPNF-Nonce-Class>
@@ -511,13 +612,22 @@
                         (<= score-class 4)
                         (>= precision 3)
                         (<= precision 24)
-                        (> mx-frozen 0.0)
-                        (> mx-sleeping 0.0)
-                        (> mx-hibernated 0.0)
+                        ;;AT LEAST 1.0, NOT MERELY POSITIVE (owner ruling 2026-10-10: "no
+                        ;;multiplier may be set below 1.0"). These were `> 0.0`, which admitted
+                        ;;0.5 -- a multiplier that PENALISES the holder for using the very
+                        ;;instrument the score exists to reward, and silently, since the figure
+                        ;;reads like a weight. It was also INCONSISTENT with the setter:
+                        ;;`SCR|C>UPDATE-MULTIPLIERS` has always enforced `>= 1.0`, so a value
+                        ;;could be ISSUED that could never be UPDATED to. 1.0 means "weight this
+                        ;;exactly like the native token", which is the floor the model needs.
+                        (>= mx-frozen 1.0)
+                        (>= mx-sleeping 1.0)
+                        (>= mx-hibernated 1.0)
+                        (UC_MxSleepIntervalOk mx-sleeping)
                         (fold (or) false [(= nft-score-model -1) (= nft-score-model 0) (= nft-score-model 1)])
                     ]
                 )
-                "Invalid precision, score-class, mx-frozen, mx-sleeping, mx-hibernated or nft-score-model"
+                "Invalid precision, score-class, nft-score-model, or a multiplier below 1.0"
             )
             ;;2]Validate <lp-denominator>: class 0 requires non-BAR native DPTF id; classes 1-4 require BAR
             (enforce
@@ -550,43 +660,50 @@
     )
     (defcap SCR|C>ISSUE-LIQUIDITY-SCORE
         (owner-konto:string score-name:string precision:integer lp-denominator:string mx-frozen:decimal mx-sleeping:decimal)
-        @doc "Issue LP score (score-class 0). Caller supplies lp-denominator, mx-frozen and mx-sleeping; mx-hibernated 1.0, sft-equality true, nft-score-model -1."
+        @doc "Issue LP score (score-class 0). Caller supplies lp-denominator, mx-frozen and mx-sleeping; mx-hibernated CT_MX_HIBERNATED_DEFAULT (1.0), sft-equality true, nft-score-model -1."
         @event
         (compose-capability
-            (SCR|XI>ISSUE-SCORE score-name owner-konto precision 0 lp-denominator mx-frozen mx-sleeping 1.0 -1)
+            (SCR|XI>ISSUE-SCORE score-name owner-konto precision 0 lp-denominator mx-frozen mx-sleeping CT_MX_HIBERNATED_DEFAULT -1)
         )
     )
     (defcap SCR|C>ISSUE-TRUE-FUNGIBLE-SCORE
         (owner-konto:string score-name:string precision:integer mx-frozen:decimal)
-        @doc "Issue DPTF score (score-class 1). Caller supplies mx-frozen; mx-sleeping and mx-hibernated 1.0; sft-equality true; nft-score-model -1."
+        @doc "Issue DPTF score (score-class 1). Caller supplies mx-frozen; mx-sleeping CT_MX_SLEEPING_DEFAULT (1.999), mx-hibernated 1.0. \
+            \ BREAKING vs the 1.0 sleeping default this carried until 2026-10-10: the caller must now \
+            \ supply mx-frozen >= 2.998, because the ordering floor is computed against the sleeping \
+            \ ceiling. The old 1.0 was not a decision -- it meant a class-1 pool's Z|/H| satellites \
+            \ earned NO sleeping bonus, which stopped being right when PureV6 made them score at all."
         @event
         (compose-capability
-            (SCR|XI>ISSUE-SCORE score-name owner-konto precision 1 BAR mx-frozen 1.0 1.0 -1)
+            (SCR|XI>ISSUE-SCORE score-name owner-konto precision 1 BAR mx-frozen CT_MX_SLEEPING_DEFAULT CT_MX_HIBERNATED_DEFAULT -1)
         )
     )
     (defcap SCR|C>ISSUE-ORTO-FUNGIBLE-SCORE
         (owner-konto:string score-name:string precision:integer mx-sleeping:decimal mx-hibernated:decimal)
         @doc "Issue DPOF score (score-class 2), including special-token variants. Caller supplies mx-sleeping and mx-hibernated; \
-            \ mx-frozen defaults 2.0; sft-equality true; nft-score-model -1."
+            \ mx-frozen DERIVED as (UC_MxFrozenFloor mx-sleeping), which is 2.998 at the default \
+            \ sleeping ceiling and can never contradict it; sft-equality true; nft-score-model -1. \
+            \ A DPOF cannot be frozen at all, so the field is inert here -- but a constant 2.0 would \
+            \ have made issuance FAIL for any mx-sleeping above 1.5 by tripping the ordering floor."
         @event
         (compose-capability
-            (SCR|XI>ISSUE-SCORE score-name owner-konto precision 2 BAR 2.0 mx-sleeping mx-hibernated -1)
+            (SCR|XI>ISSUE-SCORE score-name owner-konto precision 2 BAR (UC_MxFrozenFloor mx-sleeping) mx-sleeping mx-hibernated -1)
         )
     )
     (defcap SCR|C>ISSUE-SEMI-FUNGIBLE-SCORE
         (owner-konto:string score-name:string precision:integer sft-equality:bool)
-        @doc "Issue DPSF score (score-class 3). Caller supplies sft-equality; multipliers default 2.0 / 1.0 / 1.0; nft-score-model -1."
+        @doc "Issue DPSF score (score-class 3). Caller supplies sft-equality; multipliers default CT_MX_* (2.998 / 1.999 / 1.0); nft-score-model -1."
         @event
         (compose-capability
-            (SCR|XI>ISSUE-SCORE score-name owner-konto precision 3 BAR 2.0 1.0 1.0 -1)
+            (SCR|XI>ISSUE-SCORE score-name owner-konto precision 3 BAR CT_MX_FROZEN_DEFAULT CT_MX_SLEEPING_DEFAULT CT_MX_HIBERNATED_DEFAULT -1)
         )
     )
     (defcap SCR|C>ISSUE-NON-FUNGIBLE-SCORE
         (owner-konto:string score-name:string precision:integer nft-score-model:integer)
-        @doc "Issue DPNF score (score-class 4). Caller supplies nft-score-model; multipliers default 2.0 / 1.0 / 1.0; sft-equality true."
+        @doc "Issue DPNF score (score-class 4). Caller supplies nft-score-model; multipliers default CT_MX_* (2.998 / 1.999 / 1.0); sft-equality true."
         @event
         (compose-capability
-            (SCR|XI>ISSUE-SCORE score-name owner-konto precision 4 BAR 2.0 1.0 1.0 nft-score-model)
+            (SCR|XI>ISSUE-SCORE score-name owner-konto precision 4 BAR CT_MX_FROZEN_DEFAULT CT_MX_SLEEPING_DEFAULT CT_MX_HIBERNATED_DEFAULT nft-score-model)
         )
     )
     (defcap SCR|C>ROTATE-OWNERSHIP-SCORE (score-id:string new-owner-konto:string)
@@ -621,6 +738,133 @@
             )
             (enforce can-upgrade "Score control requires can-upgrade true")
             (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
+            (compose-capability (SECURE))
+        )
+    )
+    (defcap SCR|XE>DRAIN-BASE
+        (ouronet-account:string pool-id:string score-id:string)
+        @doc "Drive ONE holder's stored base for (pool, score) to EXACTLY 0.0. The reverse of the \
+            \ re-rate: where `SCR|XE>APPLY-RAW-BASE-DELTA` repairs a score the pool still employs, \
+            \ this retires one the pool has STOPPED employing. \
+            \ \
+            \ EACH LAYER ENFORCES WHAT IT CAN SEE, which is why this gate looks weaker than it is. \
+            \ The condition that separates a drain from a re-rate is whether the score still \
+            \ occupies a POOL SLOT -- and the slots are AQP-POOL's columns, in a module that \
+            \ deploys AFTER this one and cannot be read from here at all. So this capability \
+            \ proves the half it owns (the score really is linked to that pool, so the row is not \
+            \ an unrelated pair) and `AQP|C>DRAIN-SCORE-SLICE` proves the half it owns (the score \
+            \ is no longer slotted). Duplicating either check in the other module would mean \
+            \ guessing at state across a deploy boundary. \
+            \ \
+            \ WHY THE ROWS OUTLIVE THE LINK. `C_RevokeScore` clears the pool slot and the score's \
+            \ aqpool-link, but it CANNOT clear the holders -- there is no bound on how many there \
+            \ are, so it would be an unbounded write in one transaction. Every holder therefore \
+            \ keeps a base for a score that no longer scores anything, and that base still counts \
+            \ in the score's totals and its `nzs-count`. Draining is how those rows are retired, \
+            \ in parallel slices, after the fact. \
+            \ \
+            \ NO DELTA ARGUMENT, DELIBERATELY: the target is 0.0 by definition, so the caller has \
+            \ nothing to get wrong and nothing to lie about. Compare the re-rate entrypoint, where \
+            \ the figure has to be supplied and therefore has to be floor-checked."
+        @event
+        (enforce
+            (= (UR_SCR|ScoreAqpoolLink score-id) pool-id)
+            "Score is not linked to that pool"
+        )
+        (compose-capability (SECURE))
+    )
+    (defcap SCR|XE>APPLY-RAW-BASE-DELTA
+        (ouronet-account:string pool-id:string score-id:string signed-base-delta:decimal)
+        @doc "Apply an ARBITRARY signed base delta to one (account, pool, score) row. \
+            \ \
+            \ THIS IS THE MOST POWERFUL WRITE IN THE MODULE and the gate is deliberately narrow. \
+            \ Every other base change is DERIVED from an amount the caller actually moved; this one \
+            \ is the number itself, so a wrong caller rewrites a holder's weight directly. It exists \
+            \ because the back-fill cannot be expressed any other way: the correct new base is a \
+            \ function of the POOL TRACKER, which AQP-SCORE deploys before and cannot read. \
+            \ \
+            \ THE RESULT MAY NOT GO NEGATIVE, and that enforce is the point of this capability. \
+            \ The ordinary stake path deliberately carries no such clamp — its invariant is \
+            \ SYMMETRY ('a full unstake reverses exactly and nets to 0'), and a clamp there would \
+            \ MASK the add-score defect rather than fix it. Here there is no symmetry to appeal to: \
+            \ the caller supplies a figure, so the floor has to be checked rather than argued. \
+            \ \
+            \ The score must be EMPLOYED BY THE POOL it is being written against — a delta applied \
+            \ to a (pool, score) pair the chain does not relate is a row nothing will ever reverse."
+        @event
+        (let
+            (
+                (current:decimal (UR_U-SCR|UserScoreBaseScore ouronet-account pool-id score-id))
+            )
+            (enforce
+                (>= (+ current signed-base-delta) 0.0)
+                (format "Base would go negative: {} + {} on score {}" [current signed-base-delta score-id])
+            )
+        )
+        (enforce
+            (= (UR_SCR|ScoreAqpoolLink score-id) pool-id)
+            "Score is not employed by that pool"
+        )
+        (compose-capability (SECURE))
+    )
+    (defcap SCR|C>UPDATE-MULTIPLIERS
+        (score-id:string mx-frozen:decimal mx-sleeping:decimal mx-hibernated:decimal)
+        @doc "Re-set a score's frozen/sleeping multipliers. Score owner; both values valid fees; the \
+            \ frozen/sleeping ordering invariant; and NO frozen or sleeping position may exist yet. \
+            \ \
+            \ THE EMPTINESS GATE IS TEMPORARY AND IS THE REASON THIS IS SAFE TODAY. The owner's \
+            \ standing decision is that multipliers ARE mutable and a change triggers a parallel \
+            \ re-rate of every affected stake. That sweep is NOT in this round. Until it ships, a \
+            \ change is permitted only where it cannot corrupt anything, and that condition is \
+            \ precise rather than cautious: \
+            \     URC_SignedBaseDeltaForDptfLpStake -> (if native-or-frozen 1.0 (mx-frozen ...)) \
+            \ a NATIVE stake multiplies by 1.0 and never reads `mx`. So while no frozen or sleeping \
+            \ leg exists, no accumulated base delta anywhere used the value being changed, nothing \
+            \ can fail to reverse on unstake, and no holder is grandfathered. Native stakers — of \
+            \ which the live chain has three — are untouched either way. \
+            \ \
+            \ THE GATE ITSELF IS NOT IN THIS CAPABILITY, and that is a deploy-order fact rather than \
+            \ an oversight: the condition is about POOL POSITIONS, and AQP-POOL deploys AFTER \
+            \ AQP-SCORE — this module cannot read that tracker at all. It is enforced one layer up, \
+            \ in `AQP-POOL::C_UpdateScoreMultipliers`, which can see both the tracker and this \
+            \ module. What lives here is what this module can prove: ownership, fee validity and \
+            \ the ordering invariant. \
+            \ WITHOUT THE GATE the danger is NOT stale weights, which is what it looks like. The base is \
+            \ an accumulated SIGNED delta whose own doc promises 'a full unstake reverses exactly \
+            \ and nets to 0'. Stake 100 at x2, change to x3, unstake 100: the row goes to -100 and \
+            \ the global total with it. Deb-staleness does not compare `mx`, so nothing would \
+            \ report it. Lift this gate in the same round that lands the re-rate sweep, not before."
+        @event
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership (UR_SCR|ScoreOwnerKonto score-id))
+            (ref-U|DALOS::UEV_Fee mx-frozen)
+            (ref-U|DALOS::UEV_Fee mx-sleeping)
+            (ref-U|DALOS::UEV_Fee mx-hibernated)
+            ;;`mx-hibernated` IS SETTABLE AS OF 2026-10-10, and before that it was not settable at
+            ;;all -- issuance hard-coded 1.0 for every class but 2 and no setter existed. That was
+            ;;survivable only while special satellites scored nothing; now that they weigh like
+            ;;the native token times their multiplier, an owner who wants to reward a hibernating
+            ;;variant has to be able to say so.
+            ;;
+            ;;IT TAKES NO ORDERING CONSTRAINT, unlike the frozen/sleeping pair. `UC_MxOrderingOk`
+            ;;exists because a freeze out-ranks a sleep: both are commitments and the irreversible
+            ;;one must pay more. Hibernation is not a commitment in that sense -- it can be
+            ;;unstaked freely and exited by paying a fee -- so there is no rank to preserve
+            ;;between it and the other two, and inventing one would forbid configurations the
+            ;;owner is entitled to choose.
+            (enforce
+                (fold (and) true
+                    [ (>= mx-frozen 1.0)
+                      (>= mx-sleeping 1.0)
+                      (>= mx-hibernated 1.0)
+                      (UC_MxSleepIntervalOk mx-sleeping)
+                      (UC_MxOrderingOk mx-frozen mx-sleeping) ])
+                "every multiplier must be >= 1.0, (mx-sleeping - 1) must divide by 3 exactly, and mx-frozen >= 2*mx-sleeping - 1"
+            )
             (compose-capability (SECURE))
         )
     )
@@ -1098,7 +1342,7 @@
             sleeping-or-hibernating:bool
             direction:bool
         )
-        @doc "Forward (AQP-POOL): class-2 special DPOF (sleeping vs hibernating multiplier on summed nonce amounts). sleeping-or-hibernating true → mx-sleeping; false → mx-hibernated. \
+        @doc "Forward (AQP-POOL): SPECIAL DPOF leg (`Z|` sleeping / `H|` hibernating) on a score of class 1 or 2. sleeping-or-hibernating true → `mx-sleeping`, duration-weighted; false → `mx-hibernated`, FLAT. \
             \ Nonce custody validated upstream in AQP|XE>ORTO-FUNGIBLE-POOL-CUSTODY."
         (let
             (
@@ -1118,7 +1362,7 @@
                 )
                 (enumerate 0 (- l1 1))
             )
-            (UEV_DpofStakeScoreContext ouronet-account pool-id score-id)
+            (UEV_DpofSpecialStakeScoreContext ouronet-account pool-id score-id)
         )
         (compose-capability (SECURE))
     )
@@ -1481,6 +1725,121 @@
         @doc "Composite key for SCR|T|Triplet: T | bronze | silver | golden."
         (UC_ComputeTripletId bronze-score-id silver-score-id golden-score-id)
     )
+    (defun UC_MxForRemaining:decimal
+        (mx-ceiling:decimal remaining-seconds:decimal cap-months:integer)
+        @doc "The multiplier a time-locked batch earns, from the time its lock has left. THE one \
+            \ copy of that rule. \
+            \ \
+            \ SLEEPING DECAYS, HIBERNATION DOES NOT, and the asymmetry is what the two \
+            \ instruments promise (owner ruling 2026-10-10). A sleeping batch is held under POOL \
+            \ CUSTODY until it matures and its holder cannot leave, so the rate is scaled by the \
+            \ term committed -- the ceiling only at full term, ~1.0 for a short one. A \
+            \ hibernating batch may be unstaked at any moment with no penalty, and leaving \
+            \ hibernation itself already costs a decaying burn fee, so the impatience is priced \
+            \ elsewhere; weighting it down again would charge twice. Flat `mx-ceiling`, whatever \
+            \ the term. \
+            \ \
+            \ `cap-months` IS THE DISCRIMINATOR, not a separate flag, because it already names \
+            \ the instrument: 300 for sleep, `CT_HIBERNATE_MONTHS` (1200) for hibernation. One \
+            \ argument cannot disagree with itself. \
+            \ \
+            \ PURE, so it can be read from either clock -- the live one at stake time or the \
+            \ stamped one at reversal (see `URC_SCR|SleepingLegWeight`). That is the whole point \
+            \ of factoring it out: the two sides must apply the SAME rule to DIFFERENT times, \
+            \ and before this they applied two rules that merely happened to agree."
+        (if (= cap-months CT_HIBERNATE_MONTHS)
+            mx-ceiling
+            (UC_MxAtMonths
+                mx-ceiling
+                (UC_DecayMonthsRemaining remaining-seconds cap-months)
+                cap-months)
+        )
+    )
+    (defun UC_MxFrozenFloor:decimal (mx-sleeping:decimal)
+        @doc "The SMALLEST frozen multiplier legal beside this sleeping ceiling: the frozen \
+            \ interval must be at least DOUBLE the sleeping one, so (mx-frozen - 1) >= 2*(mx-sleeping - 1), \
+            \ which rearranges to mx-frozen >= 2*mx-sleeping - 1. The default pair sits exactly on \
+            \ it: 1.999 -> 2.998. \
+            \ EXTRACTED so the floor is computed in ONE place. It is both the predicate below and \
+            \ the class-2 frozen DEFAULT, and those two had no way to disagree only by accident."
+        (- (* 2.0 mx-sleeping) 1.0)
+    )
+    (defun UC_MxSleepIntervalOk:bool (mx-sleeping:decimal)
+        @doc "The sleeping interval (mx-sleeping - 1) must divide into THREE exactly at fee \
+            \ precision -- 0.999 -> 0.333, the default. Owner ruling. \
+            \ \
+            \ WORKED IN WHOLE UNITS OF 0.0001, NOT BY DIVIDING. `UEV_Fee` already refuses anything \
+            \ finer than 4 decimals, so the interval times 10000 is an exact integer and `mod` on \
+            \ it is exact. Testing `(= (* 3.0 (/ i 3.0)) i)` instead would ask a float-division \
+            \ round-trip to be exact, which is the kind of check that passes on the values you \
+            \ tried and fails on one you did not. \
+            \ \
+            \ A ZERO INTERVAL PASSES, and must: mx-sleeping 1.0 means 'no sleeping bonus', which \
+            \ is a legitimate configuration and is what every class-3/4 score on chain carries. \
+            \ Refusing it would make eleven live scores permanently un-updatable."
+        (= (mod (round (* (- mx-sleeping 1.0) 10000.0)) 3) 0)
+    )
+    (defun UC_MxOrderingOk:bool (mx-frozen:decimal mx-sleeping:decimal)
+        @doc "Frozen must out-rank sleeping by at least as much as sleeping out-ranks plain staking: \
+            \     mx-frozen >= (2 x mx-sleeping) - 1 \
+            \ so a 2.2 sleeping ceiling forces frozen >= 3.4, and 1.999 forces >= 2.998. \
+            \ WHY THE SPREAD AND NOT MERELY `>`: a freeze is IRREVERSIBLE — there is no unfreeze \
+            \ anywhere in the tree, and `C_RepurposeFrozen` is an admin migration, not a way back. \
+            \ Sleeping is a timed lock that always ends. If frozen merely edged ahead, the \
+            \ permanent surrender of an asset would be worth a rounding error more than a lock \
+            \ that expires, and nobody would ever freeze. The ordering has to be worth something. \
+            \ Owner ruling 2026-10-09."
+        (>= mx-frozen (UC_MxFrozenFloor mx-sleeping))
+    )
+    (defun UC_DecayMonthsRemaining:integer (remaining-seconds:decimal cap-months:integer)
+        @doc "Whole months of lock still to run, 0..cap-months. The shared scale behind every \
+            \ duration-weighted multiplier; `UC_SleepMonthsRemaining` is this at the 300-month \
+            \ sleep cap and hibernation uses it at 1200. See that wrapper for why it ROUNDS."
+        (let
+            (
+                (m:integer (round (/ remaining-seconds CT_SLEEP_MONTH_SECONDS)))
+            )
+            (if (< m 0) 0 (if (> m cap-months) cap-months m))
+        )
+    )
+    (defun UC_MxAtMonths:decimal (mx-ceiling:decimal months:integer cap-months:integer)
+        @doc "The multiplier a lock of `months` earns against `mx-ceiling` on a `cap-months` scale. \
+            \ MULTIPLIES BEFORE DIVIDING so that `months = cap-months` returns `mx-ceiling` \
+            \ EXACTLY for any ceiling and any cap — see `UC_SleepMxAtMonths` for why that matters."
+        (+ 1.0 (/ (* months (- mx-ceiling 1.0)) (dec cap-months)))
+    )
+    (defun UC_SleepMonthsRemaining:integer (remaining-seconds:decimal)
+        @doc "Whole months of lock still to run, 0-300, for the sleeping-LP multiplier scale. \
+            \ ROUNDS rather than floors, and that is the whole reason this is its own function. \
+            \ A holder who sleeps for three years and stakes an hour later has 35.9996 months \
+            \ left; flooring hands them the 35-month rate for a 36-month lock, and every sleep \
+            \ would be quietly short-changed by the delay between the two transactions. Rounding \
+            \ carries half a month of tolerance in both directions and needs no epsilon — the \
+            \ most a boundary can be gamed for is half a month, which at a 1.2 spread is 0.002x. \
+            \ Clamped both ends: a matured nonce is 0 (no bonus, and negative is meaningless), \
+            \ and nothing exceeds the 25-year horizon the chain itself refuses to go past."
+        (let
+            (
+                (m:integer (round (/ remaining-seconds CT_SLEEP_MONTH_SECONDS)))
+            )
+            (if (< m 0) 0 (if (> m CT_SLEEP_MONTHS) CT_SLEEP_MONTHS m))
+        )
+    )
+    ;;NOTE both sleep-named helpers keep their own bodies rather than delegating: they are pinned
+    ;;by 13 assertions in [6.2.2] TX-SCORE-16 and the generalised pair above is the SAME arithmetic
+    ;;at a parameterised cap, so the two forms check each other.
+    (defun UC_SleepMxAtMonths:decimal (mx-ceiling:decimal months:integer)
+        @doc "The multiplier a lock of `months` earns against a ceiling of `mx-ceiling`. \
+            \ MULTIPLIES BEFORE DIVIDING, which is not a style choice: computing a per-month step \
+            \ first and multiplying by the month count accumulates error and would force the \
+            \ ceiling to be divisible by 300 to land exactly. This form cancels the 300 at full \
+            \ term, so `months = 300` returns `mx-ceiling` EXACTLY for any ceiling — verified on \
+            \ chain 2026-10-09 for both 1.999 and 2.2. That is what lets the ceiling be any \
+            \ 4-decimal `UEV_Fee` value with no divisibility rule, and it is why the per-month \
+            \ increment (0.00333 for a 1.999 ceiling) never has to be stored at 5 decimals — it \
+            \ only ever exists inside this expression."
+        (+ 1.0 (/ (* months (- mx-ceiling 1.0)) (dec CT_SLEEP_MONTHS)))
+    )
     (defun UC_ComputeTripletId:string (bronze-score-id:string silver-score-id:string golden-score-id:string)
         @doc "Pure: canonical triplet id T|bronze|silver|golden."
         (concat ["T" BAR bronze-score-id BAR silver-score-id BAR golden-score-id])
@@ -1636,6 +1995,103 @@
         (at "score-id" (read SCR|T|Score score-id ["score-id"]))
     )
     ;;
+    (defun UCk_SleepStake:string (dpof-id:string nonce:integer)
+        @doc "Key for SCR|T|SleepStake: dpof | nonce -- the same pair DPOF keys its own nonce data \
+            \ by, because this records a fact about the LOCK and not about any staker or score."
+        (concat [dpof-id BAR (int-to-str 10 nonce)])
+    )
+    (defun UR_SCR|SleepRemainingAtStake:decimal (dpof-id:string nonce:integer)
+        @doc "The seconds this lock had left when it was staked, or 0.0 when nothing recorded it. \
+            \ \
+            \ ZERO IS THE SAFE DEFAULT, not a failure: it yields a multiplier of 1.0 -- the plain \
+            \ rate -- so a nonce staked before this ledger existed, or one reached by some path \
+            \ that never recorded a stake, gives back exactly what an unweighted stake would have \
+            \ awarded. Erring toward 1.0 can only ever under-credit, never leave phantom weight."
+        (with-default-read SCR|T|SleepStake (UCk_SleepStake dpof-id nonce)
+            {"remaining-at-stake" : 0.0} {"remaining-at-stake" := r} r)
+    )
+    (defun URC_SCR|SleepingLegWeight:decimal
+        (score-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal]
+         cap-months:integer from-ledger:bool)
+        @doc "The weight a set of sleeping/hibernating batches is worth: \
+            \ Σ over nonces of `floor(amount × UC_MxForRemaining(...), precision)`. \
+            \ \
+            \ ONE FUNCTION FOR THREE QUESTIONS, which is the point. The stake asks what to \
+            \ credit, the unstake asks what to give back, and the re-rate sweep asks what the \
+            \ leg should contribute. If those were three expressions they could drift, and a \
+            \ reversal that disagreed with its credit leaves the difference on the holder's base \
+            \ forever as weight for a position nobody holds -- unrecoverably, once the position \
+            \ is gone. \
+            \ \
+            \ `from-ledger` SELECTS THE CLOCK, AND ONLY THE CLOCK. False reads the batch's LIVE \
+            \ remaining term (release-date minus now) and is what the STAKE uses; true reads the \
+            \ term stamped at stake time in `SCR|T|SleepStake` and is what the UNSTAKE and the \
+            \ SWEEP use. Those are genuinely different times and collapsing them would be wrong \
+            \ in both directions -- a stake cannot read a stamp that does not exist yet, and a \
+            \ reversal must not re-read a clock that has moved on. The RULE applied to them is \
+            \ identical, and that is what makes a round trip net to zero. \
+            \ \
+            \ FLOORED PER NONCE, matching the ledger: each batch is a separate award at its own \
+            \ rate, so each is rounded on its own. Flooring the total instead would make the \
+            \ reversal disagree with the credit by up to (nonces - 1) units in the last place. \
+            \ The SIGN is applied by the callers, outside the floor -- CT_SIGNED_FLOOR_NOTE."
+        (let
+            (
+                ;;no DPOF modref here: the live-clock read moved into
+                ;;`URC_SCR|LiveRemainingTerm`, which binds its own.
+                (p:integer (UR_SCR|ScorePrecision score-id))
+                ;;`mx-ceiling`, not `ceiling` -- the latter shadows a Pact native and the
+                ;;loader refuses it outright.
+                (mx-ceiling:decimal
+                    (if (= cap-months CT_HIBERNATE_MONTHS)
+                        (UR_SCR|ScoreMxHibernated score-id)
+                        (UR_SCR|ScoreMxSleeping score-id)))
+            )
+            (fold (+) 0.0
+                (zip
+                    (lambda (n:integer q:decimal)
+                        (floor
+                            (* q (UC_MxForRemaining
+                                     mx-ceiling
+                                     (if from-ledger
+                                         (UR_SCR|SleepRemainingAtStake dpof-id n)
+                                         (URC_SCR|LiveRemainingTerm dpof-id n))
+                                     cap-months))
+                            p))
+                    nonces
+                    nonce-amounts))
+        )
+    )
+    (defun URC_SCR|LiveRemainingTerm:decimal (dpof-id:string nonce:integer)
+        @doc "How much of a batch's lock is left RIGHT NOW: release-date minus block time. The \
+            \ figure the STAKE weighs against, and the figure `XI_SleepStakeRecord` stamps in the \
+            \ same transaction -- so what is credited and what is stored are the same number by \
+            \ construction rather than by coincidence. \
+            \ \
+            \ A batch carrying NO metadata yields 0.0, i.e. the plain 1.0 rate: a weighting input \
+            \ is the wrong place to abort a stake. A nonce that does not EXIST still aborts in \
+            \ DPOF's reader, and that boundary is pinned by `[6.2.17]` <<TX-RERATE-03>> -- the \
+            \ empty-metadata branch is for a nonce that exists carrying none, which is a \
+            \ different thing."
+        (let
+            (
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (meta:[object] (ref-DPOF::UR_NonceMetaData dpof-id nonce))
+            )
+            (if (= (length meta) 0)
+                0.0
+                (diff-time (at "release-date" (at 0 meta)) (at "block-time" (chain-data)))
+            )
+        )
+    )
+    (defun URC_SCR|SleepingLegHeldWeight:decimal
+        (score-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal] cap-months:integer)
+        @doc "`URC_SCR|SleepingLegWeight` from the LEDGER -- what these slots were credited, and \
+            \ therefore what an unstake must give back and what the sweep's target must contain. \
+            \ Kept as a named wrapper because \"what is held\" is the question those two callers \
+            \ are actually asking; the clock choice is an implementation detail of the answer."
+        (URC_SCR|SleepingLegWeight score-id dpof-id nonces nonce-amounts cap-months true)
+    )
     (defun UR_U-SCR|UserScore:object{AcquisitionSchemasV1.SCR|UserSchema} (ouronet-account:string pool-id:string score-id:string)
         @doc "Reads the EFFECTIVE full user score row from SCR|T|UserScore. Vacate-v2 §5 lazy invalidation: if \
             \ the row's stamped-generation is behind the score's current vacate-generation (a fast-vacate has \
@@ -1687,25 +2143,9 @@
         @doc "Reads boosted-deb-score (boost×deb) from user score row (M3)."
         (at "boosted-deb-score" (UR_U-SCR|UserScore ouronet-account pool-id score-id))
     )
-    (defun URC_U-SCR|UserScoreDebStale:bool (ouronet-account:string pool-id:string score-id:string)
-        @doc "M3 deb-staleness (Part 2): true when the stored deb-score no longer equals (base+boost)×live-Elite-DEB \
-            \ — i.e. the account's deb changed since this score was last checkpointed (stake/unstake/collect). Only \
-            \ deb-boost scores can go stale (deb doesn't apply otherwise). Point-read compare, no scan. May \
-            \ over-detect for the rare foreign-boost-link surplus row — harmless, a refresh just recomputes it."
-        (if (not (UR_SCR|ScoreDebBoost score-id))
-            false
-            (let
-                (
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
-                    (p:integer (UR_SCR|ScorePrecision score-id))
-                    (u:object{AcquisitionSchemasV1.SCR|UserSchema} (UR_U-SCR|UserScore ouronet-account pool-id score-id))
-                )
-                (!= (at "deb-score" u)
-                    (floor (* (+ (at "base-score" u) (at "boosted-score" u))
-                              (ref-DALOS::UR_Elite-DEB ouronet-account)) p))
-            )
-        )
-    )
+    ;; URC_U-SCR|UserScoreDebStale MOVED (2026-10-09) to sit directly after
+    ;; URC_SingularUserScoreDeltaFromSignedUserBase, which it now delegates to. It cannot stay here:
+    ;; Pact resolves within a module in definition order, and the function it calls is defined below.
     (defun UR_U-SCR|UserScoreOuronetAccount:string (ouronet-account:string pool-id:string score-id:string)
         @doc "Reads ouronet-account from user score row."
         (at "ouronet-account" (UR_U-SCR|UserScore ouronet-account pool-id score-id))
@@ -1717,6 +2157,78 @@
     (defun UR_U-SCR|UserScoreScoreId:string (ouronet-account:string pool-id:string score-id:string)
         @doc "Reads score-id from user score row."
         (at "score-id" (UR_U-SCR|UserScore ouronet-account pool-id score-id))
+    )
+    (defun URH_SCR|PoolScoreIdsWithHolders:[string] (pool-id:string)
+        @doc "HEAVY (one select over SCR|T|UserScore). Every DISTINCT score-id that some account \
+            \ still carries a NONZERO effective base for in pool-id, first-seen order. \
+            \ \
+            \ THE INPUT TO FINDING ORPHANS. Subtract the pool's EMPLOYED scores from this and what \
+            \ is left are the (pool, score) pairs that still hold weight for a score the pool no \
+            \ longer scores -- the rows `C_RevokeScore` could not clear, because the number of \
+            \ holders is unbounded and clearing them is not one transaction's work. \
+            \ \
+            \ READ FROM THE SCORE TABLE AND NOT THE TRACKER, which is the point: a revoked score \
+            \ has no tracker rows to find it by, and no pool slot either. The user-score ROWS are \
+            \ the only surviving record that the pair ever existed, and they keep their own \
+            \ `pool-id` and `score-id` -- so this is the one read that can still see them. \
+            \ \
+            \ EFFECTIVE, NOT STORED: filtered through `UR_U-SCR|UserScoreBaseScore`, which honours \
+            \ `vacate-generation`, so rows a fast-vacate already retired read 0.0 and do not \
+            \ appear. A drain must not resurrect a vacated row in order to zero it."
+        (fold
+            (lambda (acc:[string] row:object)
+                (let
+                    (
+                        (sid:string (at "score-id" row))
+                    )
+                    (if (or (contains sid acc)
+                            (= (UR_U-SCR|UserScoreBaseScore (at "ouronet-account" row) pool-id sid) 0.0))
+                        acc
+                        (+ acc [sid])
+                    )
+                )
+            )
+            []
+            (select SCR|T|UserScore ["ouronet-account" "score-id"] (where "pool-id" (= pool-id)))
+        )
+    )
+    (defun URH_SCR|ScoreHolderAccounts:[string] (pool-id:string score-id:string)
+        @doc "HEAVY (one select over SCR|T|UserScore). Every account carrying a NONZERO EFFECTIVE \
+            \ base on (pool-id, score-id), first-seen order. \
+            \ \
+            \ THE ONLY WAY TO SEE A ROW THE TRACKER CANNOT. Every sweep in this system enumerates \
+            \ holders from the AQP POOL TRACKER, which means a user-score row whose position has \
+            \ gone to zero while its base did not is invisible to all of them — nothing lists it, \
+            \ so nothing can ever repair it. That state is reachable: `C_AddScore` writes a signed \
+            \ delta against a score the holder never staked into, which is how a base below zero \
+            \ was measured on the deployed chain. The back-fill unions this list with the tracker's \
+            \ so an orphaned row is driven to its true target of 0.0 instead of being skipped. \
+            \ \
+            \ EFFECTIVE, NOT STORED: the filter reads through `UR_U-SCR|UserScoreBaseScore`, which \
+            \ honours `vacate-generation`. A row a fast-vacate has already invalidated reads 0.0 and \
+            \ is therefore NOT returned — a sweep must not resurrect what a vacate retired."
+        (filter
+            (lambda (account:string)
+                (!= (UR_U-SCR|UserScoreBaseScore account pool-id score-id) 0.0)
+            )
+            (fold
+                (lambda (acc:[string] row:object)
+                    (let
+                        (
+                            (a:string (at "ouronet-account" row))
+                        )
+                        (if (contains a acc) acc (+ acc [a]))
+                    )
+                )
+                []
+                (select SCR|T|UserScore ["ouronet-account"]
+                    (and?
+                        (where "pool-id" (= pool-id))
+                        (where "score-id" (= score-id))
+                    )
+                )
+            )
+        )
     )
     ;;
     (defun UR_S-DEF|SFScore:object{AcquisitionSchemasV1.SCR|SF|Schema} (score-id:string dpsf-id:string nonce:integer)
@@ -2109,29 +2621,56 @@
                 (raw-weight:decimal (* lp-amount mxlp))
                 (p:integer (UR_SCR|ScorePrecision score-id))
             )
-            (floor (* raw-weight (if direction 1.0 -1.0)) p)
+            ;;SIGN OUTSIDE THE FLOOR, AND THIS IS NOT COSMETIC -- see CT_SIGNED_FLOOR_NOTE.
+            (* (floor raw-weight p) (if direction 1.0 -1.0))
         )
     )
+    ;;`URC_DecayedMxForNonce` and `URC_SleepingMxForNonce` WERE HERE and are gone (2026-10-10).
+    ;;They were the stake side's private copy of the weighting rule -- derive a batch's multiplier
+    ;;from the LIVE metadata -- while the unstake and the re-rate sweep read
+    ;;`URC_SCR|SleepingLegHeldWeight`, which derives it from the stored term. Two implementations
+    ;;of one rule, agreeing only for as long as nobody changed either, and the owner's ruling that
+    ;;hibernation uses a FLAT multiplier is exactly the change that would have split them.
+    ;;Deleted rather than left unused: an unreferenced weighting function in a sovereign module is
+    ;;an invitation to call it, and calling it is how the two sides drift apart again.
     (defun URC_SignedBaseDeltaForOrtoLpStake:decimal
         (score-id:string lp-id:string nonces:[integer] nonce-amounts:[decimal] direction:bool)
-        @doc "Signed user-base delta for one sleeping-orto LP leg. Level-1 = LP AMOUNT x mx-sleeping (audit H1 / \
-            \ fix #7): stable staked amount, NOT STOA value — full unstake nets to 0. nonce-amounts summed for the \
-            \ staked amount; STOA valuation is Level-2 (FVT inject) only. lp-id kept for signature stability."
-        (let
-            (
-                (sum-amounts:decimal
-                    (fold
-                        (lambda (acc:decimal q:decimal) (+ acc q))
-                        0.0
-                        nonce-amounts
-                    )
-                )
-                (mxlp:decimal (UR_SCR|ScoreMxSleeping score-id))
-                (raw-weight:decimal (* sum-amounts mxlp))
-                (p:integer (UR_SCR|ScorePrecision score-id))
-            )
-            (floor (* raw-weight (if direction 1.0 -1.0)) p)
-        )
+        @doc "Signed user-base delta for one sleeping-orto LP leg. Level-1 = Σ over batches of \
+            \ AMOUNT x that batch's OWN multiplier (audit H1 / fix #7 keeps the stable staked amount, \
+            \ NOT STOA value, so a full unstake nets to 0). STOA valuation is Level-2 only. \
+            \ PER NONCE, AND IT WAS NOT. This summed every nonce-amount FIRST and applied one \
+            \ `mx-sleeping` to the total, which is structurally incapable of expressing what sleeping \
+            \ now means: a position is a set of batches with DIFFERENT maturities, and a nonce is not \
+            \ splittable, so each one earns its own rate. Collapsing them first did not merely lose \
+            \ precision — it discarded the input the rate depends on before the rate was computed. \
+            \ lp-id kept for signature stability."
+        ;;ONE EXPRESSION FOR BOTH DIRECTIONS, and that is what guarantees a round trip nets to
+        ;;zero. This used to compute the credit here from the LIVE multiplier
+        ;;(`URC_SleepingMxForNonce`) while the unstake read `URC_SCR|SleepingLegHeldWeight` --
+        ;;two implementations of one rule, agreeing only while nobody changed either. They were
+        ;;about to stop agreeing: hibernation went FLAT on 2026-10-10, and this side would have
+        ;;carried on decaying it. The difference would have stayed on the holder's base forever
+        ;;as weight for a position nobody holds.
+        ;;
+        ;;THE LEDGER ROW EXISTS BY THE TIME THIS RUNS -- `XI_SleepStakeRecord` is called FIRST by
+        ;;the writers, which is a deliberate reorder. It stamps `diff-time(release-date, now)`,
+        ;;exactly the figure the live reader derived, so the number is unchanged; what changed is
+        ;;that there is now a single place it comes from. Per-nonce flooring and the
+        ;;sign-outside-the-floor rule (CT_SIGNED_FLOOR_NOTE) both live in that function now.
+        ;;THE CLOCK FOLLOWS THE DIRECTION, and getting this wrong is the single most expensive
+        ;;mistake available in this file. A STAKE is priced from the LIVE remaining term -- the
+        ;;commitment being made now -- and `XI_SleepStakeRecord` stamps that same figure. An
+        ;;UNSTAKE must reverse THE STAMP, never the live clock, because by the time a position
+        ;;comes out its lock has run down: reversing at today's rate gives back LESS than was
+        ;;credited and strands the difference on the holder's base forever, as weight for a
+        ;;position nobody holds. Owner's instruction: "no more no less".
+        ;;
+        ;;THIS WAS BRIEFLY COLLAPSED INTO ONE CLOCK and `[6.4]` <<TX-AQP-CL06>> caught it within
+        ;;the hour: a 5.0 batch credited at the 2.0 ceiling reversed at 1.0 and left exactly 5.0
+        ;;behind. The rule is shared (`UC_MxForRemaining`); the clock is not, and must not be.
+        (* (URC_SCR|SleepingLegWeight
+               score-id lp-id nonces nonce-amounts CT_SLEEP_MONTHS (not direction))
+           (if direction 1.0 -1.0))
     )
     (defun URC_SignedBaseDeltaForDptfStake:decimal
         (score-id:string dptf-id:string dptf-amount:decimal native-or-frozen:bool direction:bool)
@@ -2143,7 +2682,8 @@
                 (raw-weight:decimal (* dptf-amount mx))
                 (p:integer (UR_SCR|ScorePrecision score-id))
             )
-            (floor (* raw-weight (if direction 1.0 -1.0)) p)
+            ;;SIGN OUTSIDE THE FLOOR, AND THIS IS NOT COSMETIC -- see CT_SIGNED_FLOOR_NOTE.
+            (* (floor raw-weight p) (if direction 1.0 -1.0))
         )
     )
     (defun URC_SignedBaseDeltaForDpofStake:decimal
@@ -2160,7 +2700,8 @@
                 )
                 (p:integer (UR_SCR|ScorePrecision score-id))
             )
-            (floor (* sum-amounts (if direction 1.0 -1.0)) p)
+            ;;SIGN OUTSIDE THE FLOOR, AND THIS IS NOT COSMETIC -- see CT_SIGNED_FLOOR_NOTE.
+            (* (floor sum-amounts p) (if direction 1.0 -1.0))
         )
     )
     (defun URC_SignedBaseDeltaForSpecialDpofStake:decimal
@@ -2172,26 +2713,62 @@
             sleeping-or-hibernating:bool
             direction:bool
         )
-        @doc "Signed base delta for class-2 special DPOF: sum(nonce-amounts) × mx-sleeping when sleeping-or-hibernating is true, else × mx-hibernated."
+        @doc "Signed base delta for one SPECIAL DPOF leg (sleeping `Z|` or hibernating `H|`), at \
+            \ score precision. \
+            \ \
+            \ SLEEPING is duration-weighted: Σ over batches of AMOUNT × that batch's own rate, \
+            \ `mx-sleeping` as a ceiling reached only at the full 300-month term. The batch is \
+            \ held under POOL CUSTODY until it matures, so the rate prices the term committed. \
+            \ \
+            \ HIBERNATION is FLAT -- `mx-hibernated` exactly, whatever the term (owner ruling \
+            \ 2026-10-10). A hibernating position may be unstaked at any moment with no penalty, \
+            \ and leaving hibernation itself already costs a decaying burn fee, so the holder has \
+            \ paid for that freedom elsewhere; weighting them down for it would charge twice. \
+            \ \
+            \ IT DELEGATES RATHER THAN RE-SPELLING EITHER RULE. `URC_SCR|SleepingLegHeldWeight` \
+            \ is what the unstake and the re-rate sweep read, so the stake must use the same \
+            \ expression or the reversal can disagree with the credit -- unrecoverably, once the \
+            \ position is gone. The split lives there, keyed on `cap-months`."
         (let
             (
-                (sum-amounts:decimal
-                    (fold
-                        (lambda (acc:decimal q:decimal) (+ acc q))
-                        0.0
-                        nonce-amounts
-                    )
+                ;;`p` and the ceiling moved INTO `URC_SCR|SleepingLegHeldWeight` with the rest of
+                ;;the weighting; binding them here as well would resolve two reads for nothing and
+                ;;invite a second, divergent formula to grow around them.
+                (cap-months:integer
+                    (if sleeping-or-hibernating CT_SLEEP_MONTHS CT_HIBERNATE_MONTHS)
                 )
-                (mx:decimal
-                    (if sleeping-or-hibernating
-                        (UR_SCR|ScoreMxSleeping score-id)
-                        (UR_SCR|ScoreMxHibernated score-id)
-                    )
-                )
-                (raw-weight:decimal (* sum-amounts mx))
-                (p:integer (UR_SCR|ScorePrecision score-id))
             )
-            (floor (* raw-weight (if direction 1.0 -1.0)) p)
+            ;;PER NONCE, AND IT WAS NOT -- the identical defect the class-0 sleeping LP leg carried.
+            ;;This read `sum-amounts x mx-ceiling`: every batch collected the FULL ceiling no matter
+            ;;how little time it had left, so a holder could hibernate for one day, stake, and earn
+            ;;the rate a hundred-year commitment pays. The sum is now taken AFTER weighting,
+            ;;because a nonce is not splittable and each batch therefore earns its own rate;
+            ;;collapsing the amounts first discarded the input the rate depends on before the
+            ;;rate was computed. The old `sum-amounts` binding is gone with it.
+            ;;FLOORED PER NONCE, for the same reason as the sleeping LP leg: the awarded-weight
+            ;;ledger records each slot separately, so the base must move by the same Sum of
+            ;;floor() the ledger stores. See URC_SignedBaseDeltaForOrtoLpStake.
+            ;;SIGN OUTSIDE THE FLOOR -- see CT_SIGNED_FLOOR_NOTE.
+            ;;THE STAKE READS THE SAME FUNCTION THE UNSTAKE WILL. It used to compute the weight
+            ;;here with `URC_DecayedMxForNonce`, which was a second copy of the rule and so free
+            ;;to drift from the reversal -- and it DID drift the moment hibernation went flat:
+            ;;this side would still have decayed it while the other side did not, and the
+            ;;difference would have stayed on the holder's base forever as weight for a position
+            ;;nobody holds. One expression, two directions.
+            ;;
+            ;;THE LEDGER ROW IS WRITTEN AFTER THIS, in the same transaction
+            ;;(`XI_SleepStakeRecord`), and that ordering is what makes the delegation exact: the
+            ;;reader defaults a missing row to 0.0 remaining, which for sleeping yields the plain
+            ;;1.0 rate -- the same figure the live metadata gives for a batch with nothing left --
+            ;;and for hibernation the term is not read at all. So the credit computed here and the
+            ;;weight read back later are the same number by construction.
+            ;;CLOCK FOLLOWS DIRECTION -- see the sleeping-LP sibling for why, and for the test
+            ;;that caught it. `cap-months` carries which instrument this is, so the
+            ;;flat-vs-decaying split stays decided in one place.
+            (*
+                (URC_SCR|SleepingLegWeight
+                    score-id dpof-id nonces nonce-amounts cap-months (not direction))
+                (if direction 1.0 -1.0))
         )
     )
     (defun URCx_EquityShareRawWeight:decimal
@@ -2298,7 +2875,8 @@
                 )
                 (p:integer (UR_SCR|ScorePrecision score-id))
             )
-            (floor (* raw-weight (if direction 1.0 -1.0)) p)
+            ;;SIGN OUTSIDE THE FLOOR, AND THIS IS NOT COSMETIC -- see CT_SIGNED_FLOOR_NOTE.
+            (* (floor raw-weight p) (if direction 1.0 -1.0))
         )
     )
     (defun URC_SignedBaseDeltaForDpnfStake:decimal
@@ -2320,22 +2898,38 @@
                 )
                 (p:integer (UR_SCR|ScorePrecision score-id))
             )
-            (floor (* raw-weight (if direction 1.0 -1.0)) p)
+            ;;SIGN OUTSIDE THE FLOOR, AND THIS IS NOT COSMETIC -- see CT_SIGNED_FLOOR_NOTE.
+            (* (floor raw-weight p) (if direction 1.0 -1.0))
         )
     )
     ;; URC_NFClassScoreFromRows / URC_NFTraitScoreFromRows (searched the selected def-row lists) REMOVED (#FP0) —
     ;; the model-1 weight now point-reads class + trait scores directly, so there are no row-lists to search.
+    (defun URC_HubsFirstScoreIds:[string] (score-ids:[string])
+        @doc "Reorders a pool's employed score-ids so every HUB (boost-link = BAR) is applied before any \
+            \ ADDITIVE SATELLITE, preserving relative order within each group. \
+            \ ADDED 2026-10-09, and the defect it closes is an ordering one. A satellite's boost is computed \
+            \ against the HUB's user base, read from the hub's row — so whether that row has already absorbed \
+            \ the stake being processed decides the answer. The order came from `URC_PoolActiveScoreIds`, which \
+            \ is documented as 'primary through septenary order': the pool's SLOT order, chosen by whoever \
+            \ configured the pool and unrelated to which leg is the hub. Hub early meant the satellite saw the \
+            \ post-stake base, hub late meant it saw the pre-stake one, and nothing anywhere stated which. \
+            \ Making hubs strictly first means the hub base a satellite reads is ALWAYS the post-stake base, so \
+            \ `base-for-boost` can be that figure outright instead of trying to anticipate it."
+        (+ (filter (lambda (sid:string) (=  (UR_SCR|ScoreBoostLink sid) BAR)) score-ids)
+           (filter (lambda (sid:string) (!= (UR_SCR|ScoreBoostLink sid) BAR)) score-ids))
+    )
     (defun URC_SingularUserScoreDeltaFromSignedUserBase:object{AcquisitionSchemasV1.SCR|SingularUserScoreDelta}
         (ouronet-account:string pool-id:string score-id:string signed-user-base-delta:decimal)
         @doc "Core singular user-score step: from one signed user-base delta already at score precision (e.g. LP weight × mx after URC_SignedBaseDeltaForDptfLpStake / URC_SignedBaseDeltaForOrtoLpStake / URC_SignedBaseDeltaForDptfStake / DPOF|DPSF|DPNF stake URC_*), \
             \ compute new user base/boosted/deb, nz-delta, and global deltas. When boost-link ≠ BAR and boost-class-link ≠ BAR (foreign anchor + ANK promile), \
-            \ user base-score is always 0: the foreign row owns canonical base; promile input is foreign user base + this signed delta; boosted/deb store surplus \
-            \ over foreign base only (README_SCORE.md). Otherwise user base is ob + signed. deb-boost applies to nominal boosted before foreign subtraction."
+            \ user base-score is always 0: the foreign row owns canonical base, and this row is an ADDITIVE BOOSTING SATELLITE — its boost part is the FOREIGN \
+            \ base × this score's own aggregate promile, and deb multiplies that part (README_SCORE.md). Otherwise user base is ob + signed. \
+            \ OWNER RULING 2026-10-08: no foreign-base subtraction. The pre-M3 'store only the surplus over the foreign base' rule was arithmetically dead \
+            \ — boosted/deb clamped to 0 unless prom x deb > 1000 permille — so every satellite read 0. See DEFECT-LEDGER true-triplet entry."
         (let
             (
                 (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-U|DEC:module{OuronetDecimalsV2} U|DEC)
                 ;;
                 (scr:object{AcquisitionSchemasV1.SCR|Schema} (UR_SCR|Score score-id))
                 (p:integer (at "precision" scr))
@@ -2361,9 +2955,9 @@
                         0.0
                     )
                 )
-                (apply-foreign-boost-surplus:bool (and foreign-boost-base (!= bcl BAR)))
+                (additive-satellite-row:bool (and foreign-boost-base (!= bcl BAR)))
                 (new-user-base-score:decimal
-                    (if apply-foreign-boost-surplus
+                    (if additive-satellite-row
                         0.0
                         local-base-raw
                     )
@@ -2374,31 +2968,30 @@
                         (ref-ANK::UR_UB|AggregatePromile ouronet-account bcl)
                     )
                 )
+                ;; AN ADDITIVE SATELLITE BOOSTS OFF THE HUB'S BASE, FULL STOP.
+                ;; This read `(floor (+ foreign-base-ref signed-user-base-delta) p)` — the hub's stored base
+                ;; plus THIS score's own stake delta — which tried to anticipate a hub row that had not been
+                ;; written yet. Two things were wrong with it. It double-counted whenever the hub was applied
+                ;; FIRST (measured in `[6.4]`: hub base 400, boost base 500, a 50-permille booster paying 25
+                ;; instead of 20), and even hub-LAST it added the SATELLITE's delta, which is the LP weight times
+                ;; the SATELLITE's multiplier — a different scale from the hub's whenever the two multipliers
+                ;; differ. `URC_HubsFirstScoreIds` now guarantees the hub is written first, so the stored
+                ;; figure IS the post-stake base and no anticipation is needed. Owner's arithmetic, 2026-10-08:
+                ;; "10% out of 100 is 10 bronze score times 2x deb means 20 bronze score".
                 (base-for-boost:decimal
                     (if (= bl BAR)
                         local-base-raw
                         (if (= bcl BAR)
                             local-base-raw
-                            (floor (+ foreign-base-ref signed-user-base-delta) p)
+                            foreign-base-ref
                         )
-                    )
-                )
-                (nominal-boosted-score:decimal
-                    (if (= bcl BAR)
-                        local-base-raw
-                        (floor (* base-for-boost (/ prom 1000.0)) p)
-                    )
-                )
-                (nominal-deb-score:decimal
-                    (if db-boost
-                        (floor (* nominal-boosted-score (ref-DALOS::UR_Elite-DEB ouronet-account)) p)
-                        nominal-boosted-score
                     )
                 )
                 ;; M3: boost is ADDITIVE. boosted-score is the boost PART (base×promile/1000), not a replacement
                 ;; of base; deb is the alpha-omega end multiplier on the (base + boost) sum. So the final weight is
-                ;; deb-score = (base + boost)×deb — base is never dropped. (Foreign boost-link surplus branch below
-                ;; is a separate mechanism and keeps the nominal-* surplus math unchanged.)
+                ;; deb-score = (base + boost)×deb — base is never dropped. As of 2026-10-08 this is the ONLY path:
+                ;; the foreign-boost-link branch no longer subtracts the foreign base (it double-subtracted, because
+                ;; boost-part is ALREADY the increment), so an additive satellite stores foreign-base×prom/1000×deb.
                 (boost-part:decimal
                     (if (= bcl BAR)
                         0.0
@@ -2412,24 +3005,11 @@
                         normal-pre-deb
                     )
                 )
-                (new-user-boosted-score:decimal
-                    (if apply-foreign-boost-surplus
-                        (ref-U|DEC::UC_Max
-                            0.0
-                            (floor (- nominal-boosted-score foreign-base-ref) p)
-                        )
-                        boost-part
-                    )
-                )
-                (new-user-deb-score:decimal
-                    (if apply-foreign-boost-surplus
-                        (ref-U|DEC::UC_Max
-                            0.0
-                            (floor (- nominal-deb-score foreign-base-ref) p)
-                        )
-                        normal-deb
-                    )
-                )
+                ;; Additive-satellite rows need NO special case: new-user-base-score is already 0 for them, so
+                ;; normal-pre-deb = boost-part = foreign-base×prom/1000 and normal-deb = that × Elite-DEB. Exactly
+                ;; the owner's model: "staking an LP gives 0 in a satellite without the necessary booster present".
+                (new-user-boosted-score:decimal boost-part)
+                (new-user-deb-score:decimal normal-deb)
                 (was-nz:bool
                     (fold (or) false [(> ob 0.0) (> obb 0.0) (> od 0.0)])
                 )
@@ -2466,11 +3046,11 @@
                 (delta-global-boosted-deb-score:decimal (- new-user-boosted-deb-score od-bbd))
             )
             (UDC_SCR|SingularUserScoreDelta
-                ;; 1 — User base-score after update: 0 when foreign boost-link + boost-class (surplus-only row); else floor(ob + signed, p).
+                ;; 1 — User base-score after update: 0 when foreign boost-link + boost-class (additive satellite); else floor(ob + signed, p).
                 new-user-base-score
-                ;; 2 — User boosted (boost PART) after update, or surplus over foreign base in the foreign-boost case.
+                ;; 2 — User boosted = the boost PART (base-for-boost×prom/1000); for an additive satellite that base is the FOREIGN one.
                 new-user-boosted-score
-                ;; 3 — User deb column (final = (base+boost)×deb), or surplus in the foreign-boost case.
+                ;; 3 — User deb column (final = (base+boost)×deb); for an additive satellite base is 0, so it is boost×deb.
                 new-user-deb-score
                 ;; 3b/3c — M3 decomposition of the deb column: base×deb and boost×deb (sum to deb-score).
                 new-user-base-deb-score
@@ -2489,6 +3069,37 @@
             )
         )
     )
+    (defun URC_U-SCR|UserScoreDebStale:bool (ouronet-account:string pool-id:string score-id:string)
+        @doc "Staleness: true when the stored deb-score is not what the LIVE rates would produce right now. \
+            \ Only deb-boost scores can go stale (deb doesn't apply otherwise). Point reads only, no scan. \
+            \ WIDENED 2026-10-09, AND IT WAS A REAL HOLE. It used to compare the stored deb-score against \
+            \ `(base + STORED boosted) x live-Elite-DEB` — reading the stored boost while recomputing only the \
+            \ tier. So it detected a DEB change and was BLIND to a BOOSTER change: revoke or re-price an anchor \
+            \ and the affected rows kept a boosted-score computed at the old promile, with nothing reporting \
+            \ them stale and `XE_RefreshUserScoreDeb` no-opping on them. \
+            \ That hole was MASKED for true triplets, because their lane weights read the promile live — so the \
+            \ stale row was never the thing being paid from. Making lanes read the stored deb-scores (2026-10-08) \
+            \ removed the mask and `[6.2.7] TX-SWEEP01` failed immediately: total-lane-weight did not refold \
+            \ after a sweep, 220 -> 220. The defect was older than the change that exposed it. \
+            \ It now asks the ONE function that decides what a row should hold, with a zero base delta. Comparing \
+            \ against a reimplementation of that formula is what let the two drift apart in the first place, so \
+            \ there is deliberately no second copy of it here. \
+            \ THE SHORT-CIRCUIT ALSO HAD TO WIDEN, and this is the half that actually bit. It was \
+            \ `(not ScoreDebBoost)` alone — 'only deb-boost scores can go stale' — which is false for any score \
+            \ carrying a BOOSTER CLASS, because its boost part moves when the booster does whether or not a tier \
+            \ multiplies it. `[6.2.7] TX-SWEEP01` is exactly that score: SilverSnakePower has deb-boost FALSE and \
+            \ a booster class, and after the sweep dropped its promile 100 -> 0 it still held boosted 20 against \
+            \ base 200 while reporting FRESH. A row is incapable of drifting only when NEITHER input can move it: \
+            \ no tier AND no booster class, leaving a base that is rewritten by the stake that changes it."
+        (if (and (not (UR_SCR|ScoreDebBoost score-id))
+                 (= (UR_SCR|ScoreBoostClassLink score-id) BAR))
+            false
+            (!= (at "deb-score" (UR_U-SCR|UserScore ouronet-account pool-id score-id))
+                (at "new-user-deb-score"
+                    (URC_SingularUserScoreDeltaFromSignedUserBase ouronet-account pool-id score-id 0.0)))
+        )
+    )
+
     (defun URC_StakeScoreDeltaIgnisUnit:decimal (score-id:string)
         @doc "IGNIS for one score row update in stake phase 2.3]: flat ignis|biggest per score + surcharges: \
             \ +ignis|biggest if deb-boost enabled; +ignis|biggest if boost-class-link ≠ BAR; +ignis|biggest if boost-link ≠ BAR; \
@@ -2862,6 +3473,43 @@
             (ref-DALOS::UEV_EnforceAccountType ouronet-account false)
         )
     )
+    (defun UEV_DpofSpecialStakeScoreContext
+        (ouronet-account:string pool-id:string score-id:string)
+        @doc "SPECIAL DPOF (`Z|` / `H|`) stake paths: account exists and is non-principal; \
+            \ aqpool-link equals pool-id; score-class is 1 OR 2. \
+            \ \
+            \ SEPARATE FROM `UEV_DpofStakeScoreContext`, which pins class 2 exactly and is right \
+            \ to: a NATIVE DPOF can only ever be an aqp-class-2 pool's own asset. A special leg \
+            \ is the other shape -- `URC_StakeOrtoFungibleDpofMatchesPool` admits `Z|`/`H|` \
+            \ satellites on aqp-class 1, and `UEV_AddScorePoolAndScore` forces a pool's scores to \
+            \ share its class, so the score reaching this is class 1. Class 2 stays accepted \
+            \ because the sibling rule has always named it, even though class-2 admission \
+            \ refuses special legs today -- narrowing it to 1 would encode an admission rule in \
+            \ the wrong module. \
+            \ \
+            \ CLASS 0 NEVER ARRIVES HERE: a sleeping LP leg is written by \
+            \ `XI_1|UpdateScoreDataForOrtoFungibleLP`, which has its own context validator. \
+            \ Keeping 0 out is deliberate -- an LP score reaching the special writer would weigh \
+            \ an LP amount against `mx-sleeping` without the LP denominator, which is a different \
+            \ number that nothing would report."
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (sc:integer (UR_SCR|ScoreClass score-id))
+            )
+            (enforce
+                (fold (and) true
+                    [
+                        (= (UR_SCR|ScoreAqpoolLink score-id) pool-id)
+                        (or (= sc 1) (= sc 2))
+                    ]
+                )
+                "special DPOF stake score context: pool-id must match aqpool-link and score-class must be 1 or 2"
+            )
+            (ref-DALOS::UEV_EnforceAccountExists ouronet-account)
+            (ref-DALOS::UEV_EnforceAccountType ouronet-account false)
+        )
+    )
     (defun UEV_DpsfStakeScoreContext
         (ouronet-account:string pool-id:string score-id:string)
         @doc "Class-3 DPSF (semi-fungible) stake paths: account exists and is non-principal; aqpool-link equals pool-id; score-class 3. \
@@ -3131,6 +3779,67 @@
         @doc "Set deb-boost true on SCR|T|Score (irreversible)."
         (require-capability (SECURE))
         (update SCR|T|Score score-id {"deb-boost": true})
+    )
+    (defun WU_Score|SleepStake:string (dpof-id:string nonce:integer remaining-at-stake:decimal)
+        @doc "Record the time a lock had left at the moment it was staked. require SECURE."
+        (require-capability (SECURE))
+        (write SCR|T|SleepStake (UCk_SleepStake dpof-id nonce)
+            {"remaining-at-stake" : remaining-at-stake})
+    )
+    ;;Protection: Class 1 — Innate protection offered by WU_Score|SleepStake
+    (defun XI_SleepStakeRecord:string (dpof-id:string nonces:[integer] direction:bool)
+        @doc "On a STAKE, stamp each nonce with the time its lock has left right now. On an \
+            \ unstake, do nothing at all. \
+            \ \
+            \ THE ASYMMETRY IS THE WHOLE DESIGN. Every employed score reverses against these rows \
+            \ in the same transaction, so clearing them on unstake would leave whichever score ran \
+            \ second reading 0.0 and giving back the wrong amount -- a bug that would only appear \
+            \ on pools with more than one score. Leaving the row costs nothing (Pact cannot delete \
+            \ rows regardless) and a re-stake overwrites it. A stale row is never read, because \
+            \ reading it requires a live position. \
+            \ \
+            \ IDEMPOTENT WITHIN A STAKE: all N scores stamp the same nonce with the same figure in \
+            \ the same transaction, so whichever order they run in the result is identical. \
+            \ require SECURE."
+        (if direction
+            (let
+                (
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                    (now:time (at "block-time" (chain-data)))
+                )
+                (do
+                    (map
+                        (lambda (n:integer)
+                            (let
+                                (
+                                    (meta:[object] (ref-DPOF::UR_NonceMetaData dpof-id n))
+                                )
+                                (WU_Score|SleepStake dpof-id n
+                                    (if (= (length meta) 0)
+                                        0.0
+                                        (diff-time (at "release-date" (at 0 meta)) now)))
+                            )
+                        )
+                        nonces)
+                    "sleep-stake times recorded"
+                )
+            )
+            "unstake: nothing to record"
+        )
+    )
+    (defun WU_Score|Multipliers:string
+        (score-id:string mx-frozen:decimal mx-sleeping:decimal mx-hibernated:decimal)
+        @doc "Set all three stake multipliers on SCR|T|Score. ALL TOGETHER, never one at a time: \
+            \ frozen and sleeping are bound by an ordering invariant, so a lone write could land \
+            \ between two legal states on a value the other one depends on. `mx-hibernated` has \
+            \ no such partner, but it travels with them because one setter means one validation \
+            \ site -- a second entrypoint for the independent value would be a second place for \
+            \ the 1.0 floor to be forgotten."
+        (require-capability (SECURE))
+        (update SCR|T|Score score-id
+            {"mx-frozen"      : mx-frozen
+            ,"mx-sleeping"    : mx-sleeping
+            ,"mx-hibernated"  : mx-hibernated})
     )
     (defun WU_Score|BoostClassLink:string
         (score-id:string boost-class-id:string)
@@ -3615,11 +4324,30 @@
             (SCR|XE>UPDATE-LP-STAKE-ORTO-LP
                 ouronet-account pool-id score-id dpof-id nonces nonce-amounts direction
             )
-            (XI_2|ApplySingularUserScoreDelta
-                ouronet-account
-                pool-id
-                score-id
-                (URC_SignedBaseDeltaForOrtoLpStake score-id dpof-id nonces nonce-amounts direction)
+            ;;THE UNSTAKE REVERSES THE LEDGER, NOT THE LIVE MULTIPLIER, and that asymmetry is the
+            ;;whole point. A sleeping multiplier is a function of the time the lock has LEFT, so by
+            ;;the time a position comes out it is smaller than it was going in -- recomputing the
+            ;;reversal would give back LESS than was taken and leave the difference on the base as
+            ;;weight for a position nobody holds. `SCR|T|SleepStake` records what was awarded;
+            ;;this gives back exactly that. Owner's instruction: "no more no less".
+            ;;
+            ;;THE LEDGER IS STAMPED FIRST, and the comment here used to say the opposite -- "the
+            ;;delta is bound first ... because the unstake delta READS the rows this is about to
+            ;;change. Reversed, it would reverse the wrong amount." That reasoning was already
+            ;;false when it was written: `XI_SleepStakeRecord` does NOTHING on an unstake, by
+            ;;design, so there were never rows for it to change in the direction the comment was
+            ;;worried about.
+            ;;
+            ;;Stamping first is what lets the stake and the unstake read ONE function
+            ;;(`URC_SCR|SleepingLegHeldWeight`) instead of two implementations of one rule. The
+            ;;recorder is idempotent within a transaction and writes the same figure the live
+            ;;metadata would give, so the credited number does not change -- only where it comes
+            ;;from does.
+            (do
+                (XI_SleepStakeRecord dpof-id nonces direction)
+                (XI_2|ApplySingularUserScoreDelta ouronet-account pool-id score-id
+                    (URC_SignedBaseDeltaForOrtoLpStake
+                        score-id dpof-id nonces nonce-amounts direction))
             )
         )
     )
@@ -3664,13 +4392,21 @@
             (SCR|XE>UPDATE-STAKE-DPOF-SPECIAL
                 ouronet-account pool-id score-id dpof-id nonces nonce-amounts sleeping-or-hibernating direction
             )
-            (XI_2|ApplySingularUserScoreDelta
-                ouronet-account
-                pool-id
-                score-id
-                (URC_SignedBaseDeltaForSpecialDpofStake
-                    score-id dpof-id nonces nonce-amounts sleeping-or-hibernating direction
-                )
+            ;;SAME LEDGER AND SAME ORDER as the sleeping LP leg above: stamp the term, then weigh
+            ;;from the stamp, so the credit and its eventual reversal are one expression.
+            ;;
+            ;;IT MATTERS MORE ON THIS LEG, because this one carries BOTH instruments. A sleeping
+            ;;batch decays over 300 months and a hibernating one does not decay at all, so a
+            ;;second copy of the weighting here would have to reproduce that split -- and the
+            ;;moment it got it wrong, the reversal would disagree with the credit and the
+            ;;difference would stay on the base as weight for a position nobody holds.
+            ;;`URC_SCR|SleepingLegHeldWeight` owns the split; this passes it the scale and nothing
+            ;;else.
+            (do
+                (XI_SleepStakeRecord dpof-id nonces direction)
+                (XI_2|ApplySingularUserScoreDelta ouronet-account pool-id score-id
+                    (URC_SignedBaseDeltaForSpecialDpofStake
+                        score-id dpof-id nonces nonce-amounts sleeping-or-hibernating direction))
             )
         )
     )
@@ -3770,8 +4506,10 @@
                     (prec:integer (at "precision" m))
                     (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
                 )
-                (with-capability (SCR|XI>ISSUE-SCORE score-name owner-konto prec 3 BAR 2.0 1.0 1.0 -1)
-                    (XI_Issue score-name owner-konto prec 3 BAR 2.0 1.0 1.0 false -1))
+                (with-capability (SCR|XI>ISSUE-SCORE score-name owner-konto prec 3 BAR
+                                     CT_MX_FROZEN_DEFAULT CT_MX_SLEEPING_DEFAULT CT_MX_HIBERNATED_DEFAULT -1)
+                    (XI_Issue score-name owner-konto prec 3 BAR
+                        CT_MX_FROZEN_DEFAULT CT_MX_SLEEPING_DEFAULT CT_MX_HIBERNATED_DEFAULT false -1))
                 (XI_IssueSemiFungibleScoreDefinition score-id (at "collectable-id" m) (at "nonces" m) (at "nonce-score-values" m))
                 ;;ANCHORS IN DELEGATION VAULTS (2026-09-19). The model's boost class is applied HERE,
                 ;;at issue, so every score minted from it carries the vault's rule. Before this, the
@@ -3824,11 +4562,71 @@
                                 )
                             )
                         )
-                        employed-ids
+                        ;; HUBS FIRST -- see URC_HubsFirstScoreIds. Pool SLOT order decided a
+                        ;; satellite's boost base before this.
+                        (URC_HubsFirstScoreIds employed-ids)
                     )
                 )
             )
             (ref-IGNIS::UDC_ConcatenateOutputCumulators score-ocs [])
+        )
+    )
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          SCR|XE>DRAIN-BASE
+    (defun XE_DrainBase:string
+        (ouronet-account:string pool-id:string score-id:string)
+        @doc "Forward (AQP-POOL drain sweep): retire ONE holder's base for a score the pool has \
+            \ stopped employing, by applying the delta that lands it on exactly 0.0. \
+            \ \
+            \ IDEMPOTENT BY CONSTRUCTION: the delta is `0 - current`, read HERE, so a holder who \
+            \ has already been drained contributes 0.0 and nothing moves. That is what makes a \
+            \ replayed or overlapping slice harmless and the sweep parallel. \
+            \ \
+            \ Goes through `XI_2|ApplySingularUserScoreDelta` like every other base change, so the \
+            \ user row, the score's vault totals and `nzs-count` are retired together by the one \
+            \ writer that knows how. A second writer that zeroed the row directly would leave the \
+            \ totals claiming weight that no holder carries. \
+            \ P|UEV_IMC + SCR|XE>DRAIN-BASE."
+        (P|UEV_IMC)
+        (with-capability (SCR|XE>DRAIN-BASE ouronet-account pool-id score-id)
+            (XI_2|ApplySingularUserScoreDelta ouronet-account pool-id score-id
+                (- 0.0 (UR_U-SCR|UserScoreBaseScore ouronet-account pool-id score-id)))
+        )
+    )
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          SCR|XE>APPLY-RAW-BASE-DELTA
+    (defun XE_ApplyRawBaseDelta:string
+        (ouronet-account:string pool-id:string score-id:string signed-base-delta:decimal)
+        @doc "Forward (AQP-POOL back-fill / re-rate): apply a computed signed base delta to one \
+            \ (account, pool, score) row, through the SAME write path every stake uses. \
+            \ \
+            \ A DELTA, NOT AN ABSOLUTE WRITE, and that is the whole design. `XI_2|ApplySingular…` \
+            \ maintains the user row, the score's vault totals and the nz-score count together; a \
+            \ second writer that set the base directly would have to reproduce all three and would \
+            \ be free to disagree with the first. The caller computes the TARGET from the tracker \
+            \ and passes (target - current), so there is exactly one piece of code that knows how a \
+            \ base is written. \
+            \ \
+            \ IDEMPOTENT BY CONSTRUCTION AT THE CALLER: re-running a slice recomputes the same \
+            \ target, so the second delta is 0 and nothing moves. That is what makes the sweep \
+            \ parallel-safe. P|UEV_IMC + SCR|XE>APPLY-RAW-BASE-DELTA."
+        (P|UEV_IMC)
+        (with-capability (SCR|XE>APPLY-RAW-BASE-DELTA ouronet-account pool-id score-id signed-base-delta)
+            (XI_2|ApplySingularUserScoreDelta ouronet-account pool-id score-id signed-base-delta)
+        )
+    )
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          SCR|C>UPDATE-MULTIPLIERS
+    (defun XE_SetScoreMultipliers:string
+        (score-id:string mx-frozen:decimal mx-sleeping:decimal mx-hibernated:decimal)
+        @doc "Forward (AQP-POOL): re-set this score's frozen/sleeping multipliers. \
+            \ THE CALLER OWNS THE EMPTINESS CHECK and cannot be checked from here — the condition is \
+            \ about pool positions and AQP-POOL deploys after this module. What IS enforced here is \
+            \ everything this module can prove on its own: score ownership, both values valid fees, \
+            \ and `mx-frozen >= 2*mx-sleeping - 1`. P|UEV_IMC + SCR|C>UPDATE-MULTIPLIERS."
+        (P|UEV_IMC)
+        (with-capability (SCR|C>UPDATE-MULTIPLIERS score-id mx-frozen mx-sleeping mx-hibernated)
+            (WU_Score|Multipliers score-id mx-frozen mx-sleeping mx-hibernated)
         )
     )
     ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
@@ -3891,30 +4689,68 @@
                                         )
                                         (URC_StakeScoreDeltaIgnisCumulator score-id)
                                     )
-                                    (if (= sc 2)
-                                        (if (URC_OrtoDpofIsSpecialLeg dpof-id)
-                                            (do
-                                                (XI_1|UpdateScoreDataForSpecialOrtoFungible
-                                                    beneficiary-id pool-id score-id dpof-id nonces nonce-amounts
-                                                    sleeping-or-hibernating direction
-                                                )
-                                                (URC_StakeScoreDeltaIgnisCumulator score-id)
+                                    ;;SPECIAL LEGS SCORE ON EVERY CLASS THAT CAN HOLD THEM, not
+                                    ;;just on score-class 2 -- owner ruling 2026-10-10: "special
+                                    ;;token satelites must behave like the native token plus their
+                                    ;;designated multiplier."
+                                    ;;
+                                    ;;THIS BRANCH USED TO BE `(= sc 2)` AND EVERYTHING ELSE FELL
+                                    ;;THROUGH TO AN `"of-skip"` ZERO, which composed with two
+                                    ;;other rules into a silent dead end:
+                                    ;;  - `UEV_AddScorePoolAndScore` enforces
+                                    ;;    `score-class == aqp-class`, so a class-1 pool employs
+                                    ;;    only class-1 scores;
+                                    ;;  - `URC_StakeOrtoFungibleDpofMatchesPool` lets aqp-class 1
+                                    ;;    ADMIT `Z|`/`H|` satellites while aqp-class 2 admits
+                                    ;;    native DPOF only.
+                                    ;;So every sleeping or hibernating SATELLITE moved, was
+                                    ;;tracked, and earned NOTHING -- and the score-class-2 special
+                                    ;;path that did the weighting was unreachable from any client.
+                                    ;;Neither fact was stated anywhere; they only appear when the
+                                    ;;three rules are read together.
+                                    ;;
+                                    ;;THE LEGITIMATE ZERO IS NOT HERE AND NEVER WAS. An additive
+                                    ;;boosting satellite in a true triplet contributes no base by
+                                    ;;design, and that is enforced downstream in
+                                    ;;`URC_SingularUserScoreDeltaFromSignedUserBase` (boost-link
+                                    ;;and boost-class-link both non-BAR => user base 0). Routing
+                                    ;;these legs through the normal machinery therefore preserves
+                                    ;;that zero exactly, rather than re-deriving it here where it
+                                    ;;could disagree.
+                                    (if (URC_OrtoDpofIsSpecialLeg dpof-id)
+                                        (do
+                                            (XI_1|UpdateScoreDataForSpecialOrtoFungible
+                                                beneficiary-id pool-id score-id dpof-id nonces nonce-amounts
+                                                sleeping-or-hibernating direction
                                             )
+                                            (URC_StakeScoreDeltaIgnisCumulator score-id)
+                                        )
+                                        (if (= sc 2)
                                             (do
                                                 (XI_1|UpdateScoreDataForOrtoFungible
                                                     beneficiary-id pool-id score-id dpof-id nonces nonce-amounts direction
                                                 )
                                                 (URC_StakeScoreDeltaIgnisCumulator score-id)
                                             )
-                                        )
-                                        (ref-IGNIS::UDC_ConstructOutputCumulator
-                                            0.0 AQP|SC_NAME trigger [score-id "of-skip"]
+                                            ;;A NATIVE DPOF ON A NON-CLASS-2 SCORE, which admission
+                                            ;;cannot produce: aqp-class 0 takes `Z|` LP only and
+                                            ;;aqp-class 1 takes `Z|`/`H|` satellites only, so a
+                                            ;;native leg here means the pool is class 2 and so is
+                                            ;;the score. Kept as a zero rather than an abort
+                                            ;;because this is a WRITE leg mid-transaction, and the
+                                            ;;guard that should refuse it lives in the admission
+                                            ;;cap where a refusal costs the caller nothing.
+                                            (ref-IGNIS::UDC_ConstructOutputCumulator
+                                                0.0 AQP|SC_NAME trigger [score-id "of-skip"]
+                                            )
                                         )
                                     )
                                 )
                             )
                         )
-                        employed-ids
+                        ;; HUBS FIRST -- see URC_HubsFirstScoreIds. Pool SLOT order decided a
+                        ;; satellite's boost base before this.
+                        (URC_HubsFirstScoreIds employed-ids)
                     )
                 )
             )
@@ -3964,7 +4800,9 @@
                                 )
                             )
                         )
-                        employed-ids
+                        ;; HUBS FIRST -- see URC_HubsFirstScoreIds. Pool SLOT order decided a
+                        ;; satellite's boost base before this.
+                        (URC_HubsFirstScoreIds employed-ids)
                     )
                 )
             )
@@ -4049,7 +4887,7 @@
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
                 (ref-IGNIS::XE_CollectStoa patron (URCi_IssueScoreStoa))
-                (XI_Issue score-name executor precision 0 lp-denominator mx-frozen mx-sleeping 1.0 true -1)
+                (XI_Issue score-name executor precision 0 lp-denominator mx-frozen mx-sleeping CT_MX_HIBERNATED_DEFAULT true -1)
                 (URCi_IssueScore executor [score-id])
             )
         )
@@ -4068,7 +4906,7 @@
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
                 (ref-IGNIS::XE_CollectStoa patron (URCi_IssueScoreStoa))
-                (XI_Issue score-name executor precision 1 BAR mx-frozen 1.0 1.0 true -1)
+                (XI_Issue score-name executor precision 1 BAR mx-frozen CT_MX_SLEEPING_DEFAULT CT_MX_HIBERNATED_DEFAULT true -1)
                 (URCi_IssueScore executor [score-id])
             )
         )
@@ -4088,7 +4926,7 @@
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
                 (ref-IGNIS::XE_CollectStoa patron (URCi_IssueScoreStoa))
-                (XI_Issue score-name executor precision 2 BAR 2.0 mx-sleeping mx-hibernated true -1)
+                (XI_Issue score-name executor precision 2 BAR (UC_MxFrozenFloor mx-sleeping) mx-sleeping mx-hibernated true -1)
                 (URCi_IssueScore executor [score-id])
             )
         )
@@ -4107,7 +4945,7 @@
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
                 (ref-IGNIS::XE_CollectStoa patron (URCi_IssueScoreStoa))
-                (XI_Issue score-name executor precision 3 BAR 2.0 1.0 1.0 sft-equality -1)
+                (XI_Issue score-name executor precision 3 BAR CT_MX_FROZEN_DEFAULT CT_MX_SLEEPING_DEFAULT CT_MX_HIBERNATED_DEFAULT sft-equality -1)
                 (URCi_IssueScore executor [score-id])
             )
         )
@@ -4126,7 +4964,7 @@
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
                 (ref-IGNIS::XE_CollectStoa patron (URCi_IssueScoreStoa))
-                (XI_Issue score-name executor precision 4 BAR 2.0 1.0 1.0 true nft-score-model)
+                (XI_Issue score-name executor precision 4 BAR CT_MX_FROZEN_DEFAULT CT_MX_SLEEPING_DEFAULT CT_MX_HIBERNATED_DEFAULT true nft-score-model)
                 (URCi_IssueScore executor [score-id])
             )
         )
@@ -4440,6 +5278,7 @@
 ;;
 (create-table SCR|T|Score)
 (create-table SCR|T|UserScore)
+(create-table SCR|T|SleepStake)
 (create-table SCR|T|SF|Score)
 (create-table SCR|T|NF|TraitScore)
 (create-table SCR|T|NF|ClassScore)
