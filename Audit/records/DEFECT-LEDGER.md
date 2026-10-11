@@ -4694,3 +4694,79 @@ entirely from `URC_06|Buttons`. The chain is the authority on what is callable, 
 right design — the defect was in the chain's answer, so the one-word fix is the whole fix.
 
 Shipped in `Deploy/PostV7/01_o-ui-nine.pact` alongside the DPOF/DPTF name fix (8.48).
+
+## 8.50 Custody retired for a maturity lock — the asset was never the thing that needed holding
+
+Owner ruling, 2026-10-11, closing the gap §8.47's handoff had deferred: *"we switch back to the
+original mode, where i am the owner of the staked batch, while specifying a beneficiary ... we
+simply disallow unstaking until the sleeping period expired, while allowing switching directly
+for the beneficiary while the batch is staked... the same thing must exist for every staked nft
+and sft as well."*
+
+### What changed, and why it is smaller than it looks
+
+The PureV6 custody mechanism closed a real hole — *"the tracker names the staker as owner, so
+they may unstake in the very next block and keep the batch... a 25-year rate for one block of
+real lock-up"* — by making the **pool** the tracker owner, so `CAP_StakeOwner` refused the staker
+for free. That fix came with a cost nobody had named until now: the tracker's owner column was
+doing two jobs — *holding the asset to term* and *deciding who may ever touch the position again*
+— and welding the second to the first meant redirecting earnings required redirecting the asset.
+
+`FVT|C>ORTO-FUNGIBLE-STAKE-FLOW`'s two custody enforces are replaced by one `all-matured` check
+on **both directions**: a sleeping leg that earns a duration multiplier may not unstake before
+`URC_SCR|LiveRemainingTerm <= 0` for every nonce in the call. The staker stays the tracker owner
+throughout. The hole is closed at the point that actually needs closing — the early exit — rather
+than by relocating ownership.
+
+### Why this needed no transfer-asset safety net, verified rather than assumed
+
+`XI_OrtoStakePhases`'s own docstring settled it before a line of new code was written: *"the
+batch moves from the USER while the tracker records `AQP|SC_NAME` as its owner. That single
+split IS the custody mechanism."* The asset leaves the staker on the **ordinary** path too —
+`transfer-sender` is the staker in both the old and new model — so a staker reassigning the
+beneficiary was never at risk of losing possession of something they no longer held. Custody was
+never about possession; it was one column, and removing it from the owner's identity costs
+nothing in asset safety.
+
+### The consequence that resolves §8.47's open question
+
+The old `FVT|C>REASSIGN-CUSTODIAL-BENEFICIARY` required `DPOF::UEV_MoveRoleCheck` because its
+release paid the native counterpart to **whoever was beneficiary at maturity** — a deferred
+delivery of the asset, and the gate existed to stop reassignment becoming a way to move a
+restricted token to someone the issuer excluded. Under the new model `XE_OrtoFungibleTransfer`
+always returns the asset to `transfer-sender`, fixed to the real owner on every ordinary unstake
+**regardless of who the beneficiary was**. Reassignment therefore carries no claim on the token
+at all, and the new `FVT|C>REASSIGN-ORTO-BENEFICIARY` drops the transfer-role check entirely —
+not a relaxation, a consequence of the asset no longer being in motion. Proven as a positive
+assertion in `[6.4]` `<<TX-AQP-CL06>>`: reassignment now **succeeds** on a token whose owner
+restricted transfers, where it used to be refused.
+
+### Generalized to collectables, by extraction not duplication
+
+`CC_CollectableStakeFlow`'s body was extracted into `XI_CollectableStakePhases`, mirroring
+`XI_OrtoStakePhases` parameter-for-parameter (`tracker-owner` vs `transfer-sender`, `move-asset`).
+`CCp_ReassignCollectableStakeBeneficiary` runs it twice with the asset pinned, exactly as the
+orto version does. The extraction broke `_executorenforced.py`'s static trace the same way the
+orto extraction had (StoicSyntax §2.2 requires the broken proof route to be re-stated in the
+`@doc`, registered in the tool) — expected, and fixed the same way, not a new defect.
+
+### What a re-rate costs, now stated as policy rather than discovered as a side effect
+
+Reassignment still re-rates the incoming beneficiary to the term remaining **now** — the stake
+run re-stamps `SCR|T|SleepStake`, exactly as it did under the old sale semantics. Under the new
+model this is a **documented trade-off of code reuse**, not an arbitrage guard: a bespoke
+weight-preserving mover was considered and rejected for this round specifically because it would
+have needed new score arithmetic with no proven path through the suite, on a round already
+carrying a material model change. The owner may ask for the weight-preserving version later;
+until then every reassignment — selling a position or merely redirecting a friend's earnings —
+rebases to the current remaining term, and that is now written down rather than implicit.
+
+### What is deliberately NOT done this round
+
+`CCp_StakeSpecialCustodial` / `CCp_ReleaseSpecialCustodial` are unchanged in body and now
+**unreachable** — the stake-flow guard refuses the custodial path unconditionally, so neither can
+ever run again. Left in place rather than removed: deleting a deployed Talos entrypoint is a
+bigger, slower change than this round needed, and the chain holds **zero** custodial positions to
+migrate, confirmed (`URH_AQP|DpofStakesByOwner GOV|AQP|SC_NAME -> []`) before any code was
+touched. `UC_VacateOrtoDestinations`'s custodial-redirect branch (§8.38/8.39) is now dead code by
+the same mechanism — the fix stays correct, the path it defends is simply unreachable.

@@ -1310,15 +1310,15 @@
                      (ref-SCR::UR_SCR|ScoreClass score)
                      (ref-SCR::UR_SCR|ScoreMxSleeping score)
                      (ref-DPOF::UR_Sleeping zouro)])
-                ;;CUSTODY IS MANDATORY, because this is a SLEEPING leg and it now earns. The rule
-                ;;follows the instrument, not the pool class -- and it was briefly scoped to
-                ;;aqp-class 0 precisely because this leg used to earn nothing.
-                (expect-failure "<<TX-RERATE-SAT>> the ordinary path refuses it — a sleeping leg that earns must be custodial"
-                    "Invalid stake path: a sleeping leg that earns a duration multiplier must be staked under pool custody"
-                    (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron owner owner pool zouro [n]))
             ]
         )
-        (ref-TS02-C3::AQP-POOL|CCp_StakeSpecialCustodial patron owner owner pool zouro [n])
+        ;;CUSTODY IS RETIRED (owner ruling 2026-10-11): the staker stays the tracker owner for
+        ;;EVERY sleeping stake, special or not. What holds a leg that earns a duration multiplier
+        ;;to term is the MATURITY LOCK on the unstake side, not a different name in the owner
+        ;;column -- so the ordinary path now SUCCEEDS here, which it never could while custody
+        ;;was mandatory. Proven by its side effects below rather than by its text, which is
+        ;;`UC_ShortAccount`-formatted and not worth re-deriving here.
+        (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron owner owner pool zouro [n])
         (map print
             [
                 ;;THE SATELLITE SCORES LIKE THE NATIVE TOKEN. 25.0 staked at a 1.0 ceiling is
@@ -1328,38 +1328,55 @@
                 (expect "<<TX-RERATE-SAT>> the base rises by EXACTLY the staked amount — satellite weighted as native × 1.0"
                     (+ base-pre 25.0)
                     (ref-SCR::UR_U-SCR|UserScoreBaseScore owner pool score))
-                ;;custody shape: the pool owns the row, the staker owns none, the weight is the staker's
-                (expect "<<TX-RERATE-SAT>> the tracker credits the POOL as owner while the WEIGHT accrues to the staker"
+                ;;the STAKER owns the tracker row now, which is what lets them unstake it
+                ;;themselves once mature — no pool-owned row exists for this position at all.
+                (expect "<<TX-RERATE-SAT>> the tracker credits the STAKER as owner — no pool-owned row exists"
                     [true 0.0]
-                    [(> (ref-AQP::UR_AQP|DPOFTrackerBalance pool zouro aqp-sc owner n) 0.0)
-                     (ref-AQP::UR_AQP|DPOFTrackerBalance pool zouro owner owner n)])
+                    [(> (ref-AQP::UR_AQP|DPOFTrackerBalance pool zouro owner owner n) 0.0)
+                     (ref-AQP::UR_AQP|DPOFTrackerBalance pool zouro aqp-sc owner n)])
                 ;;and the term was stamped, so the reversal has a figure to read
                 (expect "<<TX-RERATE-SAT>> the sleep-term ledger stamped this nonce"
                     [true true]
                     [(> (ref-SCR::UR_SCR|SleepRemainingAtStake zouro n) 0.0)
                      (<= (ref-SCR::UR_SCR|SleepRemainingAtStake zouro n) 86400.0)])
-                ;;no early exit, by the shape of the data: no row is keyed to the staker
-                (expect-failure "<<TX-RERATE-SAT>> and the staker cannot withdraw it early"
-                    "Invalid OF pool custody"
+                ;;the MATURITY LOCK refuses the early exit now, not an ownership mismatch — the
+                ;;staker IS the tracker owner, so `CAP_StakeOwner` passes; `all-matured` does not.
+                (expect-failure "<<TX-RERATE-SAT>> and the staker cannot withdraw it early — the maturity lock, not custody, refuses it"
+                    "A sleeping position that earns a duration multiplier cannot be unstaked before its release date"
                     (ref-TS02-C3::AQP-POOL|CC_UnstakeOrtoFungible patron owner owner pool zouro [n]))
             ]
         )
         ;;--- the lock matures, relative to wherever this chain already is ---
         (env-chain-data { "block-time": (add-time (at "block-time" (chain-data)) (days 2)) })
-        (ref-TS02-C3::AQP-POOL|CCp_ReleaseSpecialCustodial patron pool owner zouro n)
+        ;;ORDINARY UNSTAKE, now that the term has passed — `all-matured` is true, so the same
+        ;;call that was refused above succeeds here with no other change.
+        (ref-TS02-C3::AQP-POOL|CC_UnstakeOrtoFungible patron owner owner pool zouro [n])
         (map print
             [
                 ;;THE ROUND TRIP NETS TO EXACTLY ZERO. With a 1.0 ceiling there is no decay to
                 ;;hide a discrepancy, so this is the cleanest possible check that the credit and
                 ;;the reversal read the same rule from two different clocks.
-                (expect "<<TX-RERATE-SAT>> after release the base is back to EXACTLY its pre-stake value"
+                (expect "<<TX-RERATE-SAT>> after unstake the base is back to EXACTLY its pre-stake value"
                     base-pre (ref-SCR::UR_U-SCR|UserScoreBaseScore owner pool score))
-                (expect "<<TX-RERATE-SAT>> the custodial tracker row is drained"
-                    0.0 (ref-AQP::UR_AQP|DPOFTrackerBalance pool zouro aqp-sc owner n))
-                (expect "<<TX-RERATE-SAT>> the batch is dissolved and the nonce RETIRED to supply -1.0"
-                    -1.0 (ref-DPOF::UR_NonceSupply zouro n))
+                (expect "<<TX-RERATE-SAT>> the tracker row is drained"
+                    0.0 (ref-AQP::UR_AQP|DPOFTrackerBalance pool zouro owner owner n))
+                ;;THE ORDINARY UNSTAKE DOES NOT DISSOLVE THE BATCH. `XE_OrtoFungibleTransfer`
+                ;;moves the Z| nonce back to the STAKER'S WALLET as a whole-nonce DPOF transfer;
+                ;;it is exactly the sleeping nonce they would hold had they never staked it. The
+                ;;asset is UNSTAKED, not UNSLEPT -- those are two different operations now that
+                ;;custody no longer fuses the exit from the pool with the exit from sleep.
+                (expect "<<TX-RERATE-SAT>> the matured nonce is back in the staker's wallet, still a sleeping (Z|) batch"
+                    [25.0 true]
+                    [(ref-DPOF::UR_NonceSupply zouro n)
+                     (contains n (ref-DPOF::URH_AccountNonces owner zouro))])
             ]
         )
+        ;;DISSOLVING IS A SEPARATE, DELIBERATE STEP — the same `VST|C_Unsleep` any sleeping
+        ;;holder uses, staked or not. This is what the batch did before PureV6 ever existed;
+        ;;retiring custody did not reinvent it, it simply stopped SHORT-CIRCUITING it.
+        (ref-TS01-C2::VST|C_Unsleep patron owner zouro n)
+        (expect "<<TX-RERATE-SAT>> and once unslept the nonce is RETIRED to supply -1.0"
+            -1.0 (ref-DPOF::UR_NonceSupply zouro n))
     )
     ""
 )
@@ -1367,29 +1384,36 @@
 (print "===^^^===")
 (commit-tx)
 (print "")
-(begin-tx "TX-RERATE-SELL - selling a locked custodial position by reassigning the beneficiary")
+(begin-tx "TX-RERATE-REASSIGN - redirecting earnings without unstaking, and the asset's real home")
 (print "")
-(print "=== TX-RERATE-SELL — Alice sells a locked position to Bob without unlocking it =====")
+(print "=== TX-RERATE-REASSIGN — Alice redirects earnings to Bob; the lock, and the asset, stay hers ===")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
-;;==== TX-RERATE-SELL · 01 · env-sigs (caps) ====
-(print "--- [TX-RERATE-SELL · 01 · env-sigs (caps)] ---")
+;;==== TX-RERATE-REASSIGN · 01 · env-sigs (caps) ====
+(print "--- [TX-RERATE-REASSIGN · 01 · env-sigs (caps)] ---")
 (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
-;;==== TX-RERATE-SELL · 02 · the reassignment ====
-(print "--- [TX-RERATE-SELL · 02 · the reassignment] ---")
-;;THE OWNER'S CASE, verbatim: "i aknoledge i cant take it out, and i must leave it stacked there
-;;until the end, but i want to sell it to bob ... i no longer want you to stake it for me, but i
-;;want bob to earn from it."
+;;==== TX-RERATE-REASSIGN · 02 · the reassignment, then maturity ====
+(print "--- [TX-RERATE-REASSIGN · 02 · the reassignment, then maturity] ---")
+;;REPLACES TX-RERATE-SELL and TX-RERATE-WL, 2026-10-11 owner ruling: custody is retired, so the
+;;entire premise those two tested -- a position physically owned by the pool, released to
+;;whoever the beneficiary was at maturity, gated by the token's transfer roles because that
+;;release was a deferred delivery of the asset -- no longer exists.
 ;;
-;;A custodial stake cannot be withdrawn before its lock matures -- that IS the mechanism -- so
-;;without this the holder has no exit at all, not even a sale. Reassignment moves the EARNINGS and
-;;leaves the asset where it is.
+;;THE OWNER'S CASE, verbatim, same words as before but a different mechanism now answers them:
+;;"i am the owner of the staked batch, while specifying a beneficiary (me or someone else) ...
+;;allowing switching directly for the beneficiary while the batch is staked."
 ;;
-;;WHAT MAKES IT SAFE RATHER THAN A LOOPHOLE is the token's own transfer rule. The release pays the
-;;NATIVE counterpart to whoever is beneficiary at maturity, so this is a DEFERRED DELIVERY of the
-;;asset to Bob, not merely the sale of a claim -- and nothing downstream would catch it, because
-;;the release transfers the native token, whose role list is a different object from the sleeping
-;;variant's. So the gate asks `DPOF::UEV_MoveRoleCheck`, the same question a direct transfer asks.
+;;ALICE NEVER STOPS OWNING THE POSITION. `CCp_ReassignOrtoStakeBeneficiary` moves only the
+;;BENEFICIARY column; `tracker-owner` is Alice on both phase-chain runs, never the pool. So:
+;;  - she cannot unstake EARLY -- the maturity lock refuses it, same as TX-RERATE-SAT;
+;;  - she CAN reassign who earns at any time, with no transfer-role check at all, because the
+;;    asset never goes to the beneficiary -- it always returns to the OWNER on an ordinary
+;;    unstake, so reassignment carries no claim on it to police;
+;;  - at maturity SHE unstakes it HERSELF and the native asset comes back to HER, not to Bob.
+;;    Bob only ever held the score weight while he was named beneficiary.
+;;This is the point that makes the old transfer-role gate (and TX-RERATE-WL, which tested it)
+;;moot rather than merely simplified: there is no deferred delivery to police, because there is
+;;no delivery.
 (let*
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -1404,7 +1428,6 @@
         (patron:string KST.ANHD)
         (alice:string KST.ANHD)
         (bob:string KST.EMMA)
-        (aqp-sc:string (ref-DALOS::GOV|AQP|SC_NAME))
         (ouro:string (ref-DALOS::UR_OuroborosID))
         (zouro:string (ref-DPTF::UR_Sleeping ouro))
         (pool:string (ref-U|DALOS::UDC_Makeid "RerateVaultPool"))
@@ -1416,200 +1439,91 @@
             (held:[integer] (ref-DPOF::URH_AccountNonces alice zouro))
             (n:integer (at (- (length held) 1) held))
         )
-        (ref-TS02-C3::AQP-POOL|CCp_StakeSpecialCustodial patron alice alice pool zouro [n])
+        ;;THE ORDINARY PATH, because that is the only path now. Alice stays tracker owner.
+        (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron alice alice pool zouro [n])
         (let*
             (
                 (alice-base:decimal (ref-SCR::UR_U-SCR|UserScoreBaseScore alice pool score))
                 (bob-base-pre:decimal (ref-SCR::UR_U-SCR|UserScoreBaseScore bob pool score))
-                ;;Alice's TOTAL Z|OURO holding, which includes batches from earlier blocks in this
-                ;;file. The point of capturing it is to prove the sale does not hand the batch
-                ;;BACK to her, so what matters is that this figure does not move -- not that it is
-                ;;zero, which it is not and should not be.
+                ;;Alice's TOTAL Z|OURO holding, captured to prove reassignment moves no tokens --
+                ;;not that it is zero, which it is not (earlier blocks in this file hold more).
                 (alice-z-pre:decimal (ref-DPOF::UR_AccountSupply zouro alice))
             )
             (map print
                 [
-                    (expect "<<TX-RERATE-SELL>> Alice holds the custodial position and its weight"
+                    (expect "<<TX-RERATE-REASSIGN>> Alice owns the tracker row and its weight"
                         [true true]
-                        [(> (ref-AQP::UR_AQP|DPOFTrackerBalance pool zouro aqp-sc alice n) 0.0)
+                        [(> (ref-AQP::UR_AQP|DPOFTrackerBalance pool zouro alice alice n) 0.0)
                          (> alice-base 0.0)])
-                    ;;SHE CANNOT WITHDRAW IT -- which is exactly why a sale has to be possible.
-                    (expect-failure "<<TX-RERATE-SELL>> ...and cannot withdraw it, which is what makes the sale necessary"
-                        "Invalid OF pool custody"
+                    ;;SHE CANNOT WITHDRAW EARLY -- the maturity lock, not an ownership refusal.
+                    (expect-failure "<<TX-RERATE-REASSIGN>> ...and cannot withdraw it before maturity"
+                        "A sleeping position that earns a duration multiplier cannot be unstaked before its release date"
                         (ref-TS02-C3::AQP-POOL|CC_UnstakeOrtoFungible patron alice alice pool zouro [n]))
-                    ;;A BUYER MUST BE NAMED, not implied: reassigning to yourself is a no-op that
-                    ;;would still run two full phase chains and bill for them.
-                    (expect-failure "<<TX-RERATE-SELL>> reassigning to herself is refused"
+                    ;;A NEW BENEFICIARY MUST BE NAMED, not implied: reassigning to yourself is a
+                    ;;no-op that would still run two full phase chains and bill for them.
+                    (expect-failure "<<TX-RERATE-REASSIGN>> reassigning to herself is refused"
                         "Reassignment must name a different beneficiary"
-                        (ref-TS02-C3::AQP-POOL|CCp_ReassignCustodialBeneficiary
-                            patron alice pool zouro n alice))
+                        (ref-TS02-C3::AQP-POOL|CCp_ReassignOrtoStakeBeneficiary
+                            patron alice pool zouro n alice alice))
                 ]
             )
-            ;;--- the sale ---
-            (ref-TS02-C3::AQP-POOL|CCp_ReassignCustodialBeneficiary patron alice pool zouro n bob)
+            ;;--- the redirect: Bob starts earning, Alice stays the owner ---
+            (ref-TS02-C3::AQP-POOL|CCp_ReassignOrtoStakeBeneficiary patron alice pool zouro n alice bob)
             (map print
                 [
-                    ;;THE POSITION MOVED WHOLE: Alice's row and weight are gone, Bob's exist.
-                    ;;ALICE LOSES THE POSITION AND NOTHING ELSE. Her tracker row for this nonce
-                    ;;goes to zero and her base drops by exactly the 40.0 the position carried --
-                    ;;not to zero, because she also holds a 1000.0 NATIVE stake in this pool from
-                    ;;TX-RERATE-08. Asserting zero here would have been asserting the fixture
-                    ;;away, and the difference is the whole value of the test: it proves the
-                    ;;reassignment touched ONE position rather than her whole standing.
-                    (expect "<<TX-RERATE-SELL>> Alice's row is gone and her base drops by exactly the position's weight"
+                    ;;ALICE'S ROW IS GONE AS A BENEFICIARY (she named Bob), her base drops by
+                    ;;exactly the position's weight -- not to zero, because TX-RERATE-08 left
+                    ;;her a 1000.0 native stake in this same pool.
+                    (expect "<<TX-RERATE-REASSIGN>> Alice's beneficiary row for this nonce is gone; her base drops by exactly the position's weight"
                         [0.0 (- alice-base 40.0)]
-                        [(ref-AQP::UR_AQP|DPOFTrackerBalance pool zouro aqp-sc alice n)
+                        [(ref-AQP::UR_AQP|DPOFTrackerBalance pool zouro alice alice n)
                          (ref-SCR::UR_U-SCR|UserScoreBaseScore alice pool score)])
-                    (expect "<<TX-RERATE-SELL>> Bob now holds the row — still keyed to the POOL as owner, so still locked"
-                        true (> (ref-AQP::UR_AQP|DPOFTrackerBalance pool zouro aqp-sc bob n) 0.0))
-                    ;;AND BOB GOT THE WEIGHT. On this score `mx-sleeping` is 1.0, so the figure is
-                    ;;the staked amount exactly and the re-rate-vs-inherit question cannot hide in
-                    ;;rounding: 40.0 either way.
-                    (expect "<<TX-RERATE-SELL>> Bob earns exactly what the position is worth"
+                    ;;AND THE TRACKER OWNER IS STILL ALICE -- Bob's row names her as owner, not
+                    ;;the pool. This is the whole difference from the retired custodial model.
+                    (expect "<<TX-RERATE-REASSIGN>> Bob now earns — but the tracker OWNER is still Alice, not the pool"
+                        true (> (ref-AQP::UR_AQP|DPOFTrackerBalance pool zouro alice bob n) 0.0))
+                    ;;BOB GOT THE WEIGHT. mx-sleeping is 1.0 on this score, so the figure is the
+                    ;;staked amount exactly: 40.0 either way, re-rate or inherit cannot hide here.
+                    (expect "<<TX-RERATE-REASSIGN>> Bob earns exactly what the position is worth"
                         (+ bob-base-pre 40.0)
                         (ref-SCR::UR_U-SCR|UserScoreBaseScore bob pool score))
-                    ;;THE ASSET NEVER MOVED, which is the whole point: the batch is still the
-                    ;;pool's and still locked. A sale that released it would defeat the time-lock
-                    ;;the multiplier priced. Asserted as "Alice's holding is UNCHANGED and Bob
-                    ;;received nothing" rather than "both are zero", because Alice holds other
-                    ;;sleeping batches from earlier blocks -- the invariant is that this
-                    ;;transaction moved no tokens, not that nobody owns any.
-                    (expect "<<TX-RERATE-SELL>> no tokens moved — Alice's holding is unchanged and Bob received none"
+                    ;;NO TOKENS MOVED. Reassignment is pure bookkeeping: Alice's DPOF holding is
+                    ;;unchanged and Bob received none of the sleeping token at all.
+                    (expect "<<TX-RERATE-REASSIGN>> no tokens moved — Alice's holding is unchanged and Bob received none"
                         [alice-z-pre 0.0]
                         [(ref-DPOF::UR_AccountSupply zouro alice)
                          (ref-DPOF::UR_AccountSupply zouro bob)])
-                    ;;NOR CAN BOB CASH OUT EARLY. He bought the position, not an unlock.
-                    (expect-failure "<<TX-RERATE-SELL>> and Bob cannot release it early either"
-                        "cannot be unsleeped yet"
-                        (ref-TS02-C3::AQP-POOL|CCp_ReleaseSpecialCustodial patron pool bob zouro n))
                 ]
             )
-            ;;--- and at maturity it pays BOB, not Alice ---
+            ;;--- at maturity, ALICE unstakes it — the asset returns to HER, not Bob ---
             (env-chain-data { "block-time": (add-time (at "block-time" (chain-data)) (days 2)) })
             (let
                 (
+                    (alice-ouro-pre:decimal (ref-DPTF::UR_AccountSupply ouro alice))
                     (bob-ouro-pre:decimal (ref-DPTF::UR_AccountSupply ouro bob))
                 )
-                (ref-TS02-C3::AQP-POOL|CCp_ReleaseSpecialCustodial patron pool bob zouro n)
+                (ref-TS02-C3::AQP-POOL|CC_UnstakeOrtoFungible patron alice bob pool zouro [n])
                 (map print
                     [
-                        ;;THE DEFERRED DELIVERY, LANDING. This is why the gate has to ask the
-                        ;;token's transfer rule: the native asset ends up with Bob.
-                        (expect "<<TX-RERATE-SELL>> at maturity the NATIVE asset goes to Bob — the delivery the gate exists to police"
-                            (+ bob-ouro-pre 40.0) (ref-DPTF::UR_AccountSupply ouro bob))
-                        (expect "<<TX-RERATE-SELL>> Bob's weight unwinds to zero and the nonce retires"
-                            [bob-base-pre -1.0]
-                            [(ref-SCR::UR_U-SCR|UserScoreBaseScore bob pool score)
-                             (ref-DPOF::UR_NonceSupply zouro n)])
+                        ;;THE NONCE RETURNS TO ALICE, SLEEPING, NOT YET DISSOLVED. Bob earned
+                        ;;score weight while he was beneficiary; the underlying asset was always
+                        ;;Alice's, and the ordinary unstake proves it by where it lands.
+                        (expect "<<TX-RERATE-REASSIGN>> the matured nonce returns to ALICE, not Bob"
+                            [true true]
+                            [(contains n (ref-DPOF::URH_AccountNonces alice zouro))
+                             (not (contains n (ref-DPOF::URH_AccountNonces bob zouro)))])
+                        (expect "<<TX-RERATE-REASSIGN>> neither account's NATIVE OURO moved — the batch is still sleeping"
+                            [alice-ouro-pre bob-ouro-pre]
+                            [(ref-DPTF::UR_AccountSupply ouro alice) (ref-DPTF::UR_AccountSupply ouro bob)])
+                        (expect "<<TX-RERATE-REASSIGN>> Bob's weight unwinds to zero"
+                            bob-base-pre (ref-SCR::UR_U-SCR|UserScoreBaseScore bob pool score))
                     ]
                 )
             )
-        )
-    )
-    ""
-)
-(env-sigs [])
-(print "===^^^===")
-(commit-tx)
-(print "")
-(begin-tx "TX-RERATE-WL - a RESTRICTED token: whitelisted buyer passes, stranger does not")
-(print "")
-(print "=== TX-RERATE-WL — the middle case: restricted token, whitelisted recipient ========")
-(namespace "ouronet-ns")
-(env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
-;;==== TX-RERATE-WL · 01 · env-sigs (caps) ====
-(print "--- [TX-RERATE-WL · 01 · env-sigs (caps)] ---")
-(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
-;;==== TX-RERATE-WL · 02 · restrict the token, then sell to the whitelisted party ====
-(print "--- [TX-RERATE-WL · 02 · restrict the token, then sell to the whitelisted party] ---")
-;;THE CASE THE OWNER NAMED: "it may be that a trasnfer token is restricted in movment, but bob may
-;;have a trasnfer role, so he is allowed to move towards. therefore alice can reasign to bob,
-;;because she could have transfered to bob in the first place."
-;;
-;;THAT IS EXACTLY WHAT `DPOF::UEV_MoveRoleCheck` SAYS, and the shape of the check is why: it is an
-;;`enforce-one` over [sender-has-role, receiver-has-role], so EITHER side qualifying is enough. The
-;;gate asks that same question with (Alice, Bob), so the rule is literally "could Alice have
-;;transferred to Bob" -- inherited from the token layer rather than restated.
-;;
-;;THIS IS THE MIDDLE OF A THREE-CASE TRUTH TABLE and it was the untested one. The other two are
-;;pinned elsewhere and are the easy ones:
-;;  - UNRESTRICTED token (only VST's infrastructure grant) -> allowed:  <<TX-RERATE-SELL>> above.
-;;  - RESTRICTED, recipient NOT whitelisted              -> refused:   [6.4] <<TX-AQP-CL06>>.
-;;Without this block the gate could have been coded as "refuse whenever restricted" and both of
-;;those would still pass -- the over-broad rule is indistinguishable from the correct one until
-;;somebody whitelists a counterparty. So this transaction is the one that tells them apart.
-(let*
-    (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-        (ref-VST:module{VestingV2} VST)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-        ;;
-        (patron:string KST.ANHD)
-        (alice:string KST.ANHD)
-        (bob:string KST.EMMA)
-        (stranger:string KST.FLRN)
-        (aqp-sc:string (ref-DALOS::GOV|AQP|SC_NAME))
-        (ouro:string (ref-DALOS::UR_OuroborosID))
-        (zouro:string (ref-DPTF::UR_Sleeping ouro))
-        (pool:string (ref-U|DALOS::UDC_Makeid "RerateVaultPool"))
-        (score:string (ref-U|DALOS::UDC_Makeid "RerateVaultScore"))
-    )
-    (map print
-        [
-            ;;BEFORE: the token carries ONLY VST's automatic grant, so no human has restricted it.
-            ;;Asserted so the state change below is visible rather than assumed.
-            (expect "<<TX-RERATE-WL>> the token starts UNrestricted — VST's infrastructure grant alone does not count"
-                false (ref-VST::URC_SpecialLegIssuerRestricted zouro))
-        ]
-    )
-    ;;the token OWNER whitelists Bob — the only way any name other than VST's reaches that list
-    (ref-TS01-C2::VST|C_ToggleTransferRoleSleepingDPOF
-        patron (ouronet-ns.VST.URC_SpecialTransferRoleKonto zouro) zouro bob true)
-    (ref-TS01-C2::VST|C_Sleep patron alice alice ouro 30.0 86400)
-    (let*
-        (
-            (held:[integer] (ref-DPOF::URH_AccountNonces alice zouro))
-            (n:integer (at (- (length held) 1) held))
-        )
-        (ref-TS02-C3::AQP-POOL|CCp_StakeSpecialCustodial patron alice alice pool zouro [n])
-        (let*
-            (
-                (bob-base-pre:decimal (ref-SCR::UR_U-SCR|UserScoreBaseScore bob pool score))
-            )
-            (map print
-                [
-                    ;;AFTER: a human has named a holder, so the token is now issuer-restricted.
-                    (expect "<<TX-RERATE-WL>> whitelisting Bob makes the token issuer-RESTRICTED"
-                        true (ref-VST::URC_SpecialLegIssuerRestricted zouro))
-                    ;;AND A STRANGER IS REFUSED, which is what the restriction is for. Note the
-                    ;;asymmetry this proves: the SAME token, the SAME seller, two recipients, two
-                    ;;answers. A gate keyed on "is it restricted" could not produce that.
-                    (expect-failure "<<TX-RERATE-WL>> a NON-whitelisted buyer is refused on the restricted token"
-                        "Incompatible Transfer Roles"
-                        (ref-TS02-C3::AQP-POOL|CCp_ReassignCustodialBeneficiary
-                            patron alice pool zouro n stranger))
-                ]
-            )
-            ;;--- and the whitelisted one goes through ---
-            (ref-TS02-C3::AQP-POOL|CCp_ReassignCustodialBeneficiary patron alice pool zouro n bob)
-            (map print
-                [
-                    ;;THE SALE SUCCEEDED BECAUSE BOB COULD HAVE RECEIVED A DIRECT TRANSFER. This is
-                    ;;the assertion that distinguishes the correct gate from the over-broad one.
-                    (expect "<<TX-RERATE-WL>> the whitelisted buyer DOES get the position — Alice could have transferred to him"
-                        [true (+ bob-base-pre 30.0)]
-                        [(> (ref-AQP::UR_AQP|DPOFTrackerBalance pool zouro aqp-sc bob n) 0.0)
-                         (ref-SCR::UR_U-SCR|UserScoreBaseScore bob pool score)])
-                    (expect "<<TX-RERATE-WL>> ...and Alice's row for that nonce is gone"
-                        0.0 (ref-AQP::UR_AQP|DPOFTrackerBalance pool zouro aqp-sc alice n))
-                ]
-            )
+            ;;--- Alice dissolves it herself, same as any sleeping holder ---
+            (ref-TS01-C2::VST|C_Unsleep patron alice zouro n)
+            (expect "<<TX-RERATE-REASSIGN>> once Alice unsleeps it, the nonce retires and SHE receives the native OURO"
+                true (> (ref-DPTF::UR_AccountSupply ouro alice) 0.0))
         )
     )
     ""

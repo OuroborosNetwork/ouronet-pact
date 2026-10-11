@@ -8794,13 +8794,47 @@
     "type": "[decimal]"
    }
   ],
-  "TS02-C3.AQP-POOL|CCp_ReassignCustodialBeneficiary": [
+  "TS02-C3.AQP-POOL|CCp_ReassignCollectableStakeBeneficiary": [
    {
     "name": "patron",
     "type": "string"
    },
    {
-    "name": "executor",
+    "name": "owner",
+    "type": "string"
+   },
+   {
+    "name": "pool-id",
+    "type": "string"
+   },
+   {
+    "name": "collectable-id",
+    "type": "string"
+   },
+   {
+    "name": "son",
+    "type": "bool"
+   },
+   {
+    "name": "nonce",
+    "type": "integer"
+   },
+   {
+    "name": "current-beneficiary",
+    "type": "string"
+   },
+   {
+    "name": "new-beneficiary",
+    "type": "string"
+   }
+  ],
+  "TS02-C3.AQP-POOL|CCp_ReassignOrtoStakeBeneficiary": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "owner",
     "type": "string"
    },
    {
@@ -8814,6 +8848,10 @@
    {
     "name": "nonce",
     "type": "integer"
+   },
+   {
+    "name": "current-beneficiary",
+    "type": "string"
    },
    {
     "name": "new-beneficiary",
@@ -10928,7 +10966,7 @@
     "type": "integer"
    }
   ],
-  "AQP-INFO.INFO_AQP-POOL|ReassignCustodialBeneficiary": [
+  "AQP-INFO.INFO_AQP-POOL|ReassignCollectableStakeBeneficiary": [
    {
     "name": "patron",
     "type": "string"
@@ -10938,7 +10976,49 @@
     "type": "string"
    },
    {
-    "name": "executor",
+    "name": "owner",
+    "type": "string"
+   },
+   {
+    "name": "current-beneficiary",
+    "type": "string"
+   },
+   {
+    "name": "new-beneficiary",
+    "type": "string"
+   },
+   {
+    "name": "collectable-id",
+    "type": "string"
+   },
+   {
+    "name": "son",
+    "type": "bool"
+   },
+   {
+    "name": "nonce",
+    "type": "integer"
+   },
+   {
+    "name": "nonce-amount",
+    "type": "integer"
+   }
+  ],
+  "AQP-INFO.INFO_AQP-POOL|ReassignOrtoStakeBeneficiary": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "pool-id",
+    "type": "string"
+   },
+   {
+    "name": "owner",
+    "type": "string"
+   },
+   {
+    "name": "current-beneficiary",
     "type": "string"
    },
    {
@@ -18883,7 +18963,8 @@
   "TS02-C3.AQP-POOL|CCp_BatchVacateCollectables": "AQP-INFO.INFO_AQP-POOL|BatchVacateCollectables",
   "TS02-C3.AQP-POOL|CCp_BatchVacateOrtoFungible": "AQP-INFO.INFO_AQP-POOL|BatchVacateOrtoFungible",
   "TS02-C3.AQP-POOL|CCp_BatchVacateTrueFungible": "AQP-INFO.INFO_AQP-POOL|BatchVacateTrueFungible",
-  "TS02-C3.AQP-POOL|CCp_ReassignCustodialBeneficiary": "AQP-INFO.INFO_AQP-POOL|ReassignCustodialBeneficiary",
+  "TS02-C3.AQP-POOL|CCp_ReassignCollectableStakeBeneficiary": "AQP-INFO.INFO_AQP-POOL|ReassignCollectableStakeBeneficiary",
+  "TS02-C3.AQP-POOL|CCp_ReassignOrtoStakeBeneficiary": "AQP-INFO.INFO_AQP-POOL|ReassignOrtoStakeBeneficiary",
   "TS02-C3.AQP-POOL|CCp_ReleaseSpecialCustodial": "AQP-INFO.INFO_AQP-POOL|ReleaseSpecialCustodial",
   "TS02-C3.AQP-POOL|CCp_StakeSpecialCustodial": "AQP-INFO.INFO_AQP-POOL|StakeSpecialCustodial",
   "TS02-C3.AQP-POOL|C_AbortVacate": "AQP-INFO.INFO_AQP-POOL|AbortVacate",
@@ -18926,5 +19007,5 @@
   "TS02-DPAD.DEMIPAD|C_RetrieveTrueFungible": "INFO-TWO.INFO_DEMIPAD|RetrieveTrueFungible",
   "TS02-DPAD.DEMIPAD|C_Withdraw": "INFO-TWO.INFO_DEMIPAD|Withdraw"
  },
- "surfaceHash": "db8cbd29b5fa3de1"
+ "surfaceHash": "b0897b7773244017"
 }

@@ -108,13 +108,13 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_SyncTrueFungibleAnchors` | `C_SyncTrueFungibleAnchors` | SETUP | **≥ 68** | — | COMPLEX | charge multiplies by an item count; legs: deter:sync-anchors 50 + components:AQP-POOL|C_SyncTrueFungibleAnchors 16 + small 2 |
 | `CC_FinalizeScoreRevoke` | `CC_FinalizeScoreRevoke` | SETUP | **≥ 18** | — | COMPLEX | heavy / parallel-slice op; legs: deter:setup 5 + components:AQP-POOL|CC_FinalizeScoreRevoke 13 |
 | `CC_FullVacate` | `CC_FullVacate` | USAGE | **≥ 6** | — | COMPLEX | heavy / parallel-slice op; legs: small 2 + smallest 1 + medium 3 |
-| `CC_StakeNonFungibleCollectable` | `CC_CollectableStakeFlow` | USAGE | **≥ 18** | — | COMPLEX | heavy / parallel-slice op; legs: biggestx2 10 + biggest 5 + medium 3 |
+| `CC_StakeNonFungibleCollectable` | `CC_CollectableStakeFlow` | USAGE | **≥ 21** | — | COMPLEX | heavy / parallel-slice op; legs: biggestx2 10 + biggest 5 + medium 3 + smallest 1 + small 2 |
 | `CC_StakeOrtoFungible` | `CC_OrtoFungibleStakeFlow` | USAGE | **≥ 21** | — | COMPLEX | heavy / parallel-slice op; legs: biggestx2 10 + small 2 + smallest 1 + biggest 5 + medium 3 |
-| `CC_StakeSemiFungibleCollectable` | `CC_CollectableStakeFlow` | USAGE | **≥ 18** | — | COMPLEX | heavy / parallel-slice op; legs: biggestx2 10 + biggest 5 + medium 3 |
+| `CC_StakeSemiFungibleCollectable` | `CC_CollectableStakeFlow` | USAGE | **≥ 21** | — | COMPLEX | heavy / parallel-slice op; legs: biggestx2 10 + biggest 5 + medium 3 + smallest 1 + small 2 |
 | `CC_StakeTrueFungible` | `CC_TrueFungibleStakeFlow` | USAGE | **≥ 20** | — | COMPLEX | heavy / parallel-slice op; legs: biggestx2 10 + small 2 + biggest 5 + medium 3 |
-| `CC_UnstakeNonFungibleCollectable` | `CC_CollectableStakeFlow` | USAGE | **≥ 18** | — | COMPLEX | heavy / parallel-slice op; legs: biggestx2 10 + biggest 5 + medium 3 |
+| `CC_UnstakeNonFungibleCollectable` | `CC_CollectableStakeFlow` | USAGE | **≥ 21** | — | COMPLEX | heavy / parallel-slice op; legs: biggestx2 10 + biggest 5 + medium 3 + smallest 1 + small 2 |
 | `CC_UnstakeOrtoFungible` | `CC_OrtoFungibleStakeFlow` | USAGE | **≥ 21** | — | COMPLEX | heavy / parallel-slice op; legs: biggestx2 10 + small 2 + smallest 1 + biggest 5 + medium 3 |
-| `CC_UnstakeSemiFungibleCollectable` | `CC_CollectableStakeFlow` | USAGE | **≥ 18** | — | COMPLEX | heavy / parallel-slice op; legs: biggestx2 10 + biggest 5 + medium 3 |
+| `CC_UnstakeSemiFungibleCollectable` | `CC_CollectableStakeFlow` | USAGE | **≥ 21** | — | COMPLEX | heavy / parallel-slice op; legs: biggestx2 10 + biggest 5 + medium 3 + smallest 1 + small 2 |
 | `CC_UnstakeTrueFungible` | `CC_TrueFungibleStakeFlow` | USAGE | **≥ 20** | — | COMPLEX | heavy / parallel-slice op; legs: biggestx2 10 + small 2 + biggest 5 + medium 3 |
 | `CC_UpdateScoreMultipliers` | `CC_UpdateScoreMultipliers` | SETUP | **≥ 18** | — | COMPLEX | heavy / parallel-slice op; legs: deter:setup 5 + components:AQP-POOL|CC_UpdateScoreMultipliers 13 |
 | `CCp_BackfillScoreSlice` | `CCp_BackfillScoreSlice` | SETUP | **≥ 59** | — | COMPLEX | heavy / parallel-slice op; legs: deter:backfill 50 + components:AQP-POOL|CCp_BackfillScoreSlice 9 |
@@ -124,7 +124,8 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `CCp_BatchVacateCollectables` | `CCp_BatchVacateCollectables` | USAGE | **≥ 6** | — | COMPLEX | heavy / parallel-slice op; legs: smallest 1 + small 2 + medium 3 |
 | `CCp_BatchVacateOrtoFungible` | `CCp_BatchVacateOrtoFungible` | USAGE | **≥ 3** | — | COMPLEX | heavy / parallel-slice op; legs: small 2 + smallest 1 |
 | `CCp_BatchVacateTrueFungible` | `CCp_BatchVacateTrueFungible` | USAGE | **≥ 6** | — | COMPLEX | heavy / parallel-slice op; legs: small 2 + smallest 1 + medium 3 |
-| `CCp_ReassignCustodialBeneficiary` | `CCp_ReassignCustodialBeneficiary` | SETUP | **≥ 21** | — | COMPLEX | heavy / parallel-slice op; legs: biggestx2 10 + small 2 + smallest 1 + biggest 5 + medium 3 |
+| `CCp_ReassignCollectableStakeBeneficiary` | `CCp_ReassignCollectableStakeBeneficiary` | USAGE | **≥ 21** | — | COMPLEX | heavy / parallel-slice op; legs: biggestx2 10 + biggest 5 + medium 3 + smallest 1 + small 2 |
+| `CCp_ReassignOrtoStakeBeneficiary` | `CCp_ReassignOrtoStakeBeneficiary` | USAGE | **≥ 21** | — | COMPLEX | heavy / parallel-slice op; legs: biggestx2 10 + small 2 + smallest 1 + biggest 5 + medium 3 |
 | `CCp_ReleaseSpecialCustodial` | `CCp_ReleaseSpecialCustodial` | SETUP | **≥ 53** | — | COMPLEX | heavy / parallel-slice op; legs: deter:setup 5 + components:DPOF|C_Burn 45 + small 2 + smallest 1 |
 | `CCp_StakeSpecialCustodial` | `CCp_StakeSpecialCustodial` | USAGE | **≥ 21** | — | COMPLEX | heavy / parallel-slice op; legs: biggestx2 10 + small 2 + smallest 1 + biggest 5 + medium 3 |
 | `Cp_DrainScoreSlice` | `Cp_DrainScoreSlice` | USAGE | **≥ 59** | — | COMPLEX | heavy / parallel-slice op; legs: deter:backfill 50 + components:AQP-POOL|Cp_DrainScoreSlice 9 |
@@ -651,7 +652,7 @@ another Talos wrapper, not a core op) or admin entrypoints that are exempt by ru
 | P\|A_SetIMP | admin entrypoint -- IGNIS + STOA free by owner rule, nothing to price |
 
 ---
-199 simple (exact price) · 187 complex (floor price) · 2 STOA-only · 57 exempt · 5 unresolved · 15 unpriced · 445 Talos client functions
+199 simple (exact price) · 188 complex (floor price) · 2 STOA-only · 57 exempt · 5 unresolved · 15 unpriced · 446 Talos client functions
 
 `×N` on a core op = the wrapper drives N priced core ops in a FIXED composition (still exactly knowable).
 

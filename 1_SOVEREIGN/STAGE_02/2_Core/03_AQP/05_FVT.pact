@@ -641,84 +641,78 @@
         ;;down inside `U|G::UEV_Any` with "None of the guards passed".
         (compose-capability (P|SECURE-CALLER))
     )
-    (defcap FVT|C>REASSIGN-CUSTODIAL-BENEFICIARY
-        (patron:string pool-id:string executor:string dpof-id:string nonce:integer
-         new-beneficiary:string staked:decimal)
-        @doc "Hand a MATURING custodial sleeping position to someone else: <executor> stops earning \
-            \ from it and <new-beneficiary> starts, keeping the batch where it is. \
+    (defcap FVT|C>REASSIGN-ORTO-BENEFICIARY
+        (patron:string pool-id:string owner:string dpof-id:string nonce:integer
+         current-beneficiary:string new-beneficiary:string staked:decimal)
+        @doc "Redirect who EARNS from an already-staked orto position -- including a sleeping \
+            \ batch still inside its maturity lock -- without unstaking and restaking it. \
+            \ <owner> stays the tracker owner throughout; only the beneficiary column moves. \
             \ \
-            \ THE PROBLEM IT SOLVES. A custodial stake cannot be withdrawn until its lock matures \
-            \ -- that is the whole mechanism -- so without this the holder has no exit at all, not \
-            \ even a sale. The owner's words: \"i aknoledge i cant take it out, and i must leave it \
-            \ stacked there until the end, but i want to sell it to bob ... i no longer want you to \
-            \ stake it for me, but i want bob to earn from it.\" \
+            \ REPLACES `FVT|C>REASSIGN-CUSTODIAL-BENEFICIARY`, 2026-10-11 owner ruling. Custody \
+            \ is retired: the staker never stops being the tracker owner, so a maturing sleeping \
+            \ position already has an exit -- the owner's OWN ordinary unstake, once the lock \
+            \ expires. What this adds is the thing an unstake cannot do: change who earns \
+            \ WITHOUT waiting for maturity and without moving the asset at all. \
             \ \
-            \ IT RESPECTS THE TOKEN'S TRANSFER RULES, and that is the condition that makes it safe \
-            \ rather than a loophole. The release pays the NATIVE counterpart to whoever is the \
-            \ beneficiary at maturity, so reassignment is a DEFERRED DELIVERY of the asset to the \
-            \ new party -- not merely the sale of an economic claim. If a direct transfer from \
-            \ <executor> to <new-beneficiary> would be refused right now, this must be refused \
-            \ too, or custody becomes a way to move a restricted token to someone the issuer \
-            \ excluded. And nothing downstream would catch it: the release transfers the native \
-            \ token, whose role list is a different object from the sleeping variant's. \
+            \ THE OWNER'S WORDS, verbatim: \"i am the owner of the staked batch, while \
+            \ specifying a beneficiary (me or someone else) ... allowing switching directly for \
+            \ the beneficiary while the batch is staked.\" \
             \ \
-            \ ASKED AS THE TOKEN LAYER'S OWN QUESTION (`DPOF::UEV_MoveRoleCheck`) rather than as a \
-            \ local re-derivation, so this path can never be more permissive than a plain \
-            \ transfer. That also keeps it USEFUL: transfer roles are opt-in -- a token with none \
-            \ set is unrestricted and the check passes -- and where they ARE set, a WHITELISTED \
-            \ recipient still qualifies. A blanket \"refuse if any role exists\" would have been \
-            \ both cruder and, on a restricted token, wrong. \
+            \ NO TRANSFER-ROLE CHECK, and that is a consequence of the model rather than an \
+            \ omission. The predecessor needed one because its release paid the NATIVE \
+            \ counterpart to whoever was beneficiary at maturity -- a deferred delivery of the \
+            \ asset. Here the asset NEVER goes to the beneficiary: `XE_OrtoFungibleTransfer` \
+            \ always returns a position to `transfer-sender`, which is fixed to <owner> on every \
+            \ ordinary unstake regardless of who held the beneficiary column. Reassignment is \
+            \ therefore pure score/earnings bookkeeping with no claim on the underlying asset, \
+            \ so the token's transfer rules have nothing to say about it. \
             \ \
-            \ NOT PERMISSIONLESS, unlike the release: this gives away future earnings, so it \
-            \ requires the CURRENT beneficiary's signature. The release can be permissionless \
-            \ because it can only ever pay the beneficiary; this changes who that is."
+            \ SIGNED BY THE OWNER, not the current beneficiary -- the owner is who is entitled to \
+            \ decide who earns, exactly as they decide it at the original stake."
         @event
         (enforce
             (> staked 0.0)
-            "No custodial sleeping position for that (pool, dpof, nonce, beneficiary)"
+            "No position for that (pool, dpof, nonce, owner, current beneficiary)"
         )
         (let
             (
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-                (ref-VST:module{VestingV2} VST)
             )
-            ;;the seller must own the account that is giving up the earnings
-            (ref-DALOS::CAP_EnforceAccountOwnership executor)
-            ;;the buyer must be a real, activated standard account -- it will receive native value
+            ;;the owner is the one entitled to redirect earnings -- not the current beneficiary,
+            ;;who was only ever named a destination, never given the right to re-name one
+            (ref-DALOS::CAP_EnforceAccountOwnership owner)
             (ref-DALOS::UEV_EnforceAccountExists new-beneficiary)
             (ref-DALOS::UEV_EnforceAccountType new-beneficiary false)
             (enforce
-                (!= executor new-beneficiary)
+                (!= current-beneficiary new-beneficiary)
                 "Reassignment must name a different beneficiary"
             )
-            ;;THE TOKEN'S OWN RULE, not a copy of it -- but asked only when the token's roles
-            ;;mean anything.
-            ;;
-            ;;EVERY SPECIAL TOKEN CARRIES A TRANSFER ROLE FROM BIRTH:
-            ;;`VST::XI_CreateSpecialOrtoFungibleLink` grants `VST|SC_NAME` one on creation, because
-            ;;dissolution moves the batch to VST and `UEV_MoveRoleCheck` would otherwise refuse
-            ;;it. So "has roles" is true of every sleeping nonce that has ever existed, and gating
-            ;;on it would refuse every sale forever -- the feature would ship dead. That was the
-            ;;first cut, and the fixture caught it: "Incompatible Transfer Roles from Alice to Bob"
-            ;;on a token nobody had chosen to restrict.
-            ;;
-            ;;`URC_SpecialLegIssuerRestricted` separates the owner's intent from the plumbing: any
-            ;;role-holder BESIDES VST's own account got there through `C_ToggleTransferRole*`,
-            ;;which only the token owner can call. Where there is such a holder, the real check
-            ;;applies in full and a WHITELISTED recipient still qualifies; where there is not, the
-            ;;token is unrestricted in every sense that matters and the sale proceeds.
-            ;;
-            ;;WHY THE CHECK MATTERS AT ALL: the release pays the NATIVE counterpart to whoever is
-            ;;beneficiary at maturity, so this is a DEFERRED DELIVERY of the asset, not the sale of
-            ;;a mere claim -- and nothing downstream would catch it, because the release moves the
-            ;;native token, whose role list is a different object from the sleeping variant's.
-            (if (ref-VST::URC_SpecialLegIssuerRestricted dpof-id)
-                (ref-DPOF::UEV_MoveRoleCheck dpof-id executor new-beneficiary)
-                true
+            (compose-capability (P|SECURE-CALLER))
+        )
+    )
+    (defcap FVT|C>REASSIGN-COLLECTABLE-BENEFICIARY
+        (patron:string pool-id:string owner:string collectable-id:string son:bool nonce:integer
+         current-beneficiary:string new-beneficiary:string staked:integer)
+        @doc "The same in-place switch as `FVT|C>REASSIGN-ORTO-BENEFICIARY`, for a staked NFT \
+            \ (son=false) or SFT (son=true) nonce. Collectables carry no maturity lock at all -- \
+            \ this exists purely because redirecting earnings without an unstake/restake round \
+            \ trip is useful on its own, not because anything here is time-locked."
+        @event
+        (enforce
+            (> staked 0)
+            "No position for that (pool, collectable, nonce, owner, current beneficiary)"
+        )
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
-            ;;and the recipient must not be frozen for this token, which a transfer would also check
-            (ref-DPOF::UEV_AccountFreezeState dpof-id new-beneficiary false)
+            (ref-DALOS::CAP_EnforceAccountOwnership owner)
+            (ref-DALOS::UEV_EnforceAccountExists new-beneficiary)
+            (ref-DALOS::UEV_EnforceAccountType new-beneficiary false)
+            (enforce
+                (!= current-beneficiary new-beneficiary)
+                "Reassignment must name a different beneficiary"
+            )
             (compose-capability (P|SECURE-CALLER))
         )
     )
@@ -1231,6 +1225,21 @@
                     (and (ref-SCR::URC_OrtoDpofIsSpecialLeg dpof-id)
                          (ref-SCR::URC_OrtoDpofUsesSleepingMultiplier dpof-id)))
                 (custodial:bool (= tracker-owner AQP|SC_NAME))
+                ;;THE MATURITY TEST, BOUND RATHER THAN INLINED IN THE `enforce`. Pact evaluates
+                ;;an enforce CONDITION in read-only mode; a single-row read survives that but a
+                ;;scan does not, and binding first is what the rest of this tree already does
+                ;;(`stake-admission-ok` two lines down). Cheap insurance against the reader
+                ;;growing a scan later -- which is exactly how `UEV_AQP|ScoreMxChangeSafe` broke.
+                ;;
+                ;;TRUE WHEN THERE IS NOTHING TO CHECK: a stake, or a leg that earns no duration
+                ;;multiplier, is unconstrained by maturity.
+                (all-matured:bool
+                    (if (and (not direction) mx-earning)
+                        (fold (and) true
+                            (map (lambda (n:integer)
+                                     (<= (ref-SCR::URC_SCR|LiveRemainingTerm dpof-id n) 0.0))
+                                 nonces))
+                        true))
                 ;;
                 (stake-admission-ok:bool (if direction (ref-AQP::URC_PoolStakeAdmissionOk pool-id) (ref-AQP::URC_PoolUnstakeAdmissionOk pool-id)))
                 (fvt-ready:bool (if direction (ref-RPS::URC_PoolEmployedScoresFvtStakeReady pool-id) true))
@@ -1283,16 +1292,34 @@
             ;;   Two enforces rather than one combined, because a test can only tell two refusals
             ;;   apart by their MESSAGE -- a single "paths must match" would make the two failures
             ;;   indistinguishable from outside, which is how a shadowed gate hides.
+            ;;REPLACED 2026-10-11 BY A MATURITY LOCK. Owner ruling: the staker stays in the
+            ;;owner column and names a beneficiary; what holds the position to term is an
+            ;;explicit refusal to unstake early, not a different name in one column.
+            ;;
+            ;;THE HOLE THIS CLOSES IS THE ONE THE OLD COMMENT DESCRIBED, filled where it
+            ;;actually is. "The tracker names the staker as owner, so they may unstake in the
+            ;;very next block and keep the batch -- a 25-year rate for one block of real
+            ;;lock-up." Custody closed that by making the staker not the owner. The lock closes
+            ;;it by making the early exit itself refuse, which is the same guarantee without
+            ;;taking the asset's ownership away, and ownership is what had been welding the
+            ;;BENEFICIARY to the claim on the principal.
+            ;;
+            ;;WHY THIS IS SAFE WITHOUT A TRANSFER LOCK: the batch already leaves the staker on
+            ;;the ORDINARY path too (`transfer-sender` is the user in both flows), so a staker
+            ;;cannot move what they no longer hold. Custody was never possession; it was one
+            ;;column. Verified against `XI_OrtoStakePhases`' own docstring.
+            ;;
+            ;;NOW THE UNSTAKE DIRECTION, WHICH THE OLD RULE DELIBERATELY AVOIDED. It avoided it
+            ;;because gating the unstake would have trapped a user-owned position whose only
+            ;;exit was the custodial release. That reason is gone: the exit is the ORDINARY
+            ;;unstake, the owner column names the staker, and this guard EXPIRES by itself.
             (if direction
-                (enforce (or (not mx-earning) custodial)
-                    "Invalid stake path: a sleeping leg that earns a duration multiplier must be staked under pool custody")
+                (enforce (not custodial)
+                    "Invalid stake path: pool custody is retired -- the staker owns the position and the maturity lock holds it to term")
                 true
             )
-            (if direction
-                (enforce (or mx-earning (not custodial))
-                    "Invalid stake path: pool custody is only for a sleeping leg that earns a duration multiplier")
-                true
-            )
+            (enforce all-matured
+                "A sleeping position that earns a duration multiplier cannot be unstaked before its release date")
             ;;2] owner-id — activated account; signer proof in AQP|XE>ORTO-FUNGIBLE-POOL-CUSTODY
             (ref-RPS::UEV_TrueFungibleStakeOwnerAccount owner-id)
             ;;3a/3b] beneficiary must exist + be a standard account — BOTH directions (mirror TF flow cap).
@@ -3284,63 +3311,60 @@
         )
         )
     )
-    (defun URCi_ReassignCustodialBeneficiary:decimal
-        (pool-id:string executor:string new-beneficiary:string dpof-id:string nonce:integer)
-        @doc "Total IGNIS IFP of `CCp_ReassignCustodialBeneficiary`: the orto phase chain run \
-            \ TWICE over the single nonce -- once in the unstake direction for the seller, once \
-            \ in the stake direction for the buyer. \
+    (defun URCi_ReassignOrtoStakeBeneficiary:decimal
+        (pool-id:string owner:string current-beneficiary:string new-beneficiary:string
+         dpof-id:string nonce:integer)
+        @doc "Total IGNIS IFP of `CCp_ReassignOrtoStakeBeneficiary`: the orto phase chain run \
+            \ TWICE over the single nonce -- once to vacate <current-beneficiary>'s weight, once \
+            \ to credit <new-beneficiary>. \
             \ \
-            \ BOTH RUNS ARE PRICED AT FULL RATE and that is not an oversight. The asset does not \
-            \ move (`move-asset` false gates phase 1.1 only), but everything else does: two \
-            \ tracker writes, two settle bundles, two score-delta passes over every employed \
-            \ score, two checkpoint writes. The transfer leg is the one thing the chain charges \
-            \ for that this op does not perform, and `URCi_OrtoFungibleStakeFlow` prices it \
-            \ direction-INDEPENDENTLY from `DPOF::URCi_MoveCumulator` -- so the quote carries a \
-            \ move that will not happen, twice. Deliberately not netted out: a preview that \
-            \ under-quotes leaves the caller short at execution, which is the failure that \
-            \ actually hurts. Over-quoting a leg is visible and harmless. \
-            \ \
-            \ The seller's and buyer's bundles differ (each settles against its own position), so \
-            \ the two halves are read separately rather than doubled."
+            \ BOTH RUNS ARE PRICED AT FULL RATE. The asset does not move (`move-asset` false \
+            \ gates phase 1.1 only), but everything else does: two tracker writes, two settle \
+            \ bundles, two score-delta passes over every employed score, two checkpoint writes. \
+            \ `URCi_OrtoFungibleStakeFlow` prices the transfer leg direction-INDEPENDENTLY, so \
+            \ the quote carries a move that will not happen, twice -- deliberately not netted \
+            \ out, because an under-quote leaves the caller short at execution."
         (let
             (
                 (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
             )
             (+ (ref-RPS::URCi_OrtoFungibleStakeFlow
-                   pool-id AQP|SC_NAME executor dpof-id [nonce] false)
+                   pool-id owner current-beneficiary dpof-id [nonce] false)
                (ref-RPS::URCi_OrtoFungibleStakeFlow
-                   pool-id AQP|SC_NAME new-beneficiary dpof-id [nonce] true))
+                   pool-id owner new-beneficiary dpof-id [nonce] true))
         ))
-    (defun CCp_ReassignCustodialBeneficiary:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string executor:string pool-id:string dpof-id:string nonce:integer
-         new-beneficiary:string)
-        @doc "Move a custodial sleeping position's EARNINGS from <executor> to <new-beneficiary>. \
-            \ The batch does not move -- it stays with the pool, still locked until maturity. \
+    (defun CCp_ReassignOrtoStakeBeneficiary:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string owner:string pool-id:string dpof-id:string nonce:integer
+         current-beneficiary:string new-beneficiary:string)
+        @doc "Redirect a staked orto position's EARNINGS from <current-beneficiary> to \
+            \ <new-beneficiary>. <owner> stays the tracker owner throughout; the asset does not \
+            \ move; a sleeping leg still inside its maturity lock stays exactly as locked. \
             \ \
             \ TWO PHASE-CHAIN RUNS WITH THE ASSET PINNED, which is the whole implementation. \
-            \ `move-asset` false gates phase 1.1 and nothing else, so an UNSTAKE run for the \
-            \ seller and a STAKE run for the buyer together migrate the tracker row, the score \
-            \ weight on every employed score, the FVT presence flags, the triplet lane weights \
-            \ and both parties' RPS checkpoints -- without a single token leaving `AQP|SC_NAME`. \
-            \ Reusing the chain rather than writing a bespoke mover is the point: a position that \
-            \ changed hands through its own stake/unstake arithmetic cannot be bookkept \
-            \ differently from one that was staked normally. \
+            \ `move-asset` false gates phase 1.1 and nothing else, so an UNSTAKE run vacating \
+            \ <current-beneficiary> and a STAKE run crediting <new-beneficiary> together migrate \
+            \ the tracker row, the score weight on every employed score, the FVT presence flags, \
+            \ the triplet lane weights and both parties' RPS checkpoints -- with `tracker-owner` \
+            \ fixed to <owner> in BOTH runs, never `AQP|SC_NAME`. \
             \ \
-            \ THE SELLER IS SETTLED BEFORE THE WEIGHT LEAVES, because the unstake run carries its \
-            \ own settle bundle: rewards accrued while <executor> held the position are credited \
-            \ to <executor> at the weight they actually held. Running the legs the other way round \
-            \ would hand the seller's unclaimed rewards to the buyer. \
+            \ THE OUTGOING BENEFICIARY IS SETTLED BEFORE THE WEIGHT LEAVES, because the unstake \
+            \ run carries its own settle bundle: rewards accrued while <current-beneficiary> held \
+            \ it are credited to them at the weight they actually held. Running the legs the \
+            \ other way round would hand those unclaimed rewards to the new beneficiary. \
             \ \
-            \ THE BUYER IS RE-RATED TO THE TERM REMAINING NOW, and that is a decision rather than \
-            \ a side effect. The stake run re-stamps `SCR|T|SleepStake`, so if a 25-year lock has \
-            \ ten years behind it the buyer earns the fifteen-year rate, not the seller's original \
-            \ ceiling. The alternative -- inheriting the seller's multiplier -- would make \
-            \ reassignment strictly better than buying the nonce and staking it fresh, which is \
-            \ the same position by another route; an arbitrage between two routes to one position \
-            \ is the kind of asymmetry this whole duration mechanism exists to remove. The buyer \
-            \ prices that in when they price the position. \
+            \ THE NEW BENEFICIARY IS RE-RATED TO THE TERM REMAINING NOW, which is a NAMED, \
+            \ DOCUMENTED CONSEQUENCE of reusing the stake/unstake machinery rather than writing a \
+            \ bespoke weight-preserving mover: the stake run re-stamps `SCR|T|SleepStake`, so a \
+            \ 25-year lock with ten years left re-rates to the fifteen-year rate on EVERY \
+            \ reassignment, exactly as it would if the owner unstaked and restaked it themselves. \
+            \ The owner never loses the position or its maturity date -- only the WEIGHT rebases \
+            \ to the current remaining term, which can only ever move toward 1.0 as the lock runs \
+            \ down, never past the original ceiling. A bespoke mover that preserved the exact \
+            \ original weight would need new score arithmetic with no proven path through this \
+            \ codebase's existing tests -- reuse was chosen because it is PROVEN, not merely \
+            \ convenient, and the trade-off is stated here rather than discovered on chain. \
             \ \
-            \ Talos shell → AQP-FVT::CCp_ReassignCustodialBeneficiary."
+            \ Talos shell → AQP-FVT::CCp_ReassignOrtoStakeBeneficiary."
         (let
             (
                 (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
@@ -3350,28 +3374,91 @@
         (let
             (
                 (staked:decimal
-                    (ref-AQP::UR_AQP|DPOFTrackerBalance pool-id dpof-id AQP|SC_NAME executor nonce))
+                    (ref-AQP::UR_AQP|DPOFTrackerBalance pool-id dpof-id owner current-beneficiary nonce))
             )
             (with-capability
-                (FVT|C>REASSIGN-CUSTODIAL-BENEFICIARY
-                    patron pool-id executor dpof-id nonce new-beneficiary staked)
+                (FVT|C>REASSIGN-ORTO-BENEFICIARY
+                    patron pool-id owner dpof-id nonce current-beneficiary new-beneficiary staked)
                 (let
                     (
                         (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     )
                     (ref-IGNIS::UDC_ConcatenateOutputCumulators
                         [
-                            ;;1] the SELLER's leg: settle what they earned, then take the weight
-                            ;;   and the tracker row off them. `move-asset` false -- the batch is
-                            ;;   the pool's and is going nowhere.
+                            ;;1] vacate the OUTGOING beneficiary: settle what they earned, then
+                            ;;   take the weight and the tracker row off them. `move-asset` false
+                            ;;   and `tracker-owner` is <owner> on BOTH legs -- the position was
+                            ;;   never the pool's, so there is nothing for it to return to.
                             (XI_OrtoStakePhases
-                                patron pool-id AQP|SC_NAME AQP|SC_NAME executor dpof-id
-                                [nonce] [staked] false false executor
-                                (ref-RPS::URHC_BuildStakeSettleBundle pool-id executor))
-                            ;;2] the BUYER's leg: the same position, credited to them at today's
-                            ;;   remaining term, with their own checkpoint opened.
+                                patron pool-id owner owner current-beneficiary dpof-id
+                                [nonce] [staked] false false current-beneficiary
+                                (ref-RPS::URHC_BuildStakeSettleBundle pool-id current-beneficiary))
+                            ;;2] credit the INCOMING beneficiary, at today's remaining term, with
+                            ;;   their own checkpoint opened.
                             (XI_OrtoStakePhases
-                                patron pool-id AQP|SC_NAME AQP|SC_NAME new-beneficiary dpof-id
+                                patron pool-id owner owner new-beneficiary dpof-id
+                                [nonce] [staked] true false new-beneficiary
+                                (ref-RPS::URHC_BuildStakeSettleBundle pool-id new-beneficiary))
+                        ]
+                        []
+                    )
+                )
+            )
+        )
+        )
+    )
+    (defun URCi_ReassignCollectableStakeBeneficiary:decimal
+        (pool-id:string owner:string current-beneficiary:string new-beneficiary:string
+         collectable-id:string son:bool nonce:integer nonce-amount:integer)
+        @doc "Total IGNIS IFP of `CCp_ReassignCollectableStakeBeneficiary` -- the collectable \
+            \ phase chain run twice, same shape as the orto pricer above."
+        (let
+            (
+                (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
+            )
+            (+ (ref-RPS::URCi_CollectableStakeFlow
+                   pool-id owner current-beneficiary collectable-id son [nonce] [nonce-amount] false)
+               (ref-RPS::URCi_CollectableStakeFlow
+                   pool-id owner new-beneficiary collectable-id son [nonce] [nonce-amount] true))
+        ))
+    (defun CCp_ReassignCollectableStakeBeneficiary:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string owner:string pool-id:string collectable-id:string son:bool nonce:integer
+         current-beneficiary:string new-beneficiary:string)
+        @doc "The NFT/SFT counterpart of `CCp_ReassignOrtoStakeBeneficiary` -- same two-run, \
+            \ asset-pinned mechanism, over `XI_CollectableStakePhases` instead of the orto chain. \
+            \ Collectables carry no maturity lock, so this is purely a convenience: redirect \
+            \ earnings without an unstake/restake round trip. son=true DPSF, son=false DPNF. \
+            \ \
+            \ Talos shell → AQP-FVT::CCp_ReassignCollectableStakeBeneficiary."
+        (let
+            (
+                (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+            )
+            (P|UEV_IMC)
+        (let
+            (
+                (staked:integer
+                    (round
+                        (if son
+                            (ref-AQP::UR_AQP|DPSFTrackerBalance pool-id collectable-id owner current-beneficiary nonce)
+                            (ref-AQP::UR_AQP|DPNFTrackerBalance pool-id collectable-id owner current-beneficiary nonce))))
+            )
+            (with-capability
+                (FVT|C>REASSIGN-COLLECTABLE-BENEFICIARY
+                    patron pool-id owner collectable-id son nonce current-beneficiary new-beneficiary staked)
+                (let
+                    (
+                        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    )
+                    (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                        [
+                            (XI_CollectableStakePhases
+                                patron pool-id owner owner current-beneficiary collectable-id son
+                                [nonce] [staked] false false current-beneficiary
+                                (ref-RPS::URHC_BuildStakeSettleBundle pool-id current-beneficiary))
+                            (XI_CollectableStakePhases
+                                patron pool-id owner owner new-beneficiary collectable-id son
                                 [nonce] [staked] true false new-beneficiary
                                 (ref-RPS::URHC_BuildStakeSettleBundle pool-id new-beneficiary))
                         ]
@@ -3905,7 +3992,13 @@
             direction:bool
         )
         @doc "Core DPDC collectable stake/unstake recipe. Phases 1 → 2 → 3 → 4 → 5 — see canonical map above. \
-            \ son=true DPSF (phase 3.2); son=false DPNF (phase 3.3). Phase 1.3 N/A."
+            \ son=true DPSF (phase 3.2); son=false DPNF (phase 3.3). Phase 1.3 N/A. \
+            \ \
+            \ EXECUTOR: proven INDIRECTLY, and the route has to be named here because the static \
+            \ trace can no longer see it, exactly as for `CC_OrtoFungibleStakeFlow` beside it. \
+            \ `executor` is passed to `XI_CollectableStakePhases` as its `transfer-sender`, which \
+            \ hands it to `AQP::XE_CollectableTransfer`, whose `AQP|XE>COLLECTABLE-POOL-CUSTODY` \
+            \ reaches `CAP_StakeOwner` on it. Registered with this route. (canon 2.2.)"
         (let
             (
                 (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
@@ -3917,66 +4010,97 @@
             )
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-                    ;;
-                    ;; M5: executee is authoritative BOTH directions (see CC_OrtoFungibleStakeFlow). The caller
-                    ;; supplies the real beneficiary on unstake, so the exact (owner, beneficiary) tracker + Ben rollup
-                    ;; rows are settled — no self-key derivation. Sufficiency is enforced in the cap.
                     (settle-beneficiary:string executee)
                     (settle-bundle:object{AcquisitionSchemasV1.FVT|StakeSettleBundle}
                         (ref-RPS::URHC_BuildStakeSettleBundle pool-id settle-beneficiary)
                     )
                 )
-                (ref-IGNIS::UDC_ConcatenateOutputCumulators
-                    [
-                        ;;===>PHASE 1===
-                        ;; PHASE 1.1 — Custody transfer · UrStoa ≡ X_UR|Transfer
-                        (ref-AQP::XE_CollectableTransfer
-                            patron pool-id executor executee collectable-id son nonces nonce-amounts direction)
-                        ;; PHASE 1.2 — Per-pool DPSF/DPNF tracker · UrStoa ≡ N/A
-                        (ref-AQP::XE_CollectablePoolTracker
-                            pool-id executor executee collectable-id son nonces nonce-amounts direction)
-                        ;; PHASE 1.3 — BenDpsf* / BenDpnf* cross-pool rollup · UrStoa ≡ N/A
-                        (ref-AQP::XE_CollectableBeneficiaryRollup
-                            pool-id executor executee collectable-id son nonces nonce-amounts direction)
-                        ;;
-                        ;;===>PHASE 2===
-                        ;; PHASE 2 — FVT RPS prelude at OLD deb (2.1→2.2→2.3)
-                        (ref-RPS::XE_XI_RpsPreScore settle-beneficiary pool-id settle-bundle)
-                        ;;
-                        ;;===>PHASE 3===
-                        ;; PHASE 3.1 — DPTF anchor slot · N/A (TF)
-                        ;; PHASE 3.2 — DPSF anchor refresh · AQP-ANK::XE_UpdateSemiFungibleUserAnchorValues (son=true)
-                        ;; PHASE 3.3 — DPNF anchor refresh · AQP-ANK::XE_UpdateNonFungibleUserAnchorValues (son=false)
-                        (XI_RefreshCollectableStakeAnchors
-                            settle-beneficiary collectable-id son nonces nonce-amounts direction)
-                        ;;
-                        ;;===>PHASE 4===
-                        ;; PHASE 4 — SCORE vault + user + nzs
-                        (ref-SCR::XE_ApplyCollectableStakeDelta
-                            pool-id settle-beneficiary collectable-id son nonces nonce-amounts direction
-                            (ref-AQP::URC_PoolActiveScoreIds pool-id)
-                        )
-                        ;; PHASE 4.5 — Sync FVT|T total-deb-score mirror for vault inject denominator
-                        (ref-RPS::XE_XI_SyncFvtTotalDebMirrors (at "pre-member-debs" settle-bundle))
-                        ;; PHASE 4.6 — Re-snapshot farm-triplet Level-1 weights (maintained Σ w-user divisor)
-                        (ref-RPS::XE_XI_SyncTripletLaneWeights settle-beneficiary (at "settle-plans" settle-bundle))
-                        ;; PHASE 4.7 — Presence: stake→add, unstake→recompute (flip false on last withdrawal)
-                        (ref-RPS::XE_XI_SyncFvtPresence settle-beneficiary (at "distinct-fvts" settle-bundle) direction)
-                        ;;
-                        ;;===>PHASE 5===
-                        ;; PHASE 5.1 — RPS unclaimed-count · UrStoa ≡ UpdateUnclaimedCount
-                        (ref-RPS::XE_XI_BookStakeUnclaimedCounts settle-beneficiary pool-id settle-bundle)
-                        ;; PHASE 5.2 — RPS checkpoint last-rps · UrStoa ≡ UpdateUserRPS
-                        (ref-RPS::XE_XI_CheckpointStakeRps settle-beneficiary pool-id settle-bundle)
-                    ]
-                    []
-                )
+                (XI_CollectableStakePhases
+                    patron pool-id executor executor executee collectable-id son nonces
+                    nonce-amounts direction true settle-beneficiary settle-bundle)
             )
         )
     )
+    )
+    ;;Protection: Class 2 — SECURE
+    (defun XI_CollectableStakePhases:object{IgnisCollectorV3.OutputCumulator}
+        (
+            patron:string
+            pool-id:string
+            tracker-owner:string
+            transfer-sender:string
+            executee:string
+            collectable-id:string
+            son:bool
+            nonces:[integer]
+            nonce-amounts:[integer]
+            direction:bool
+            move-asset:bool
+            settle-beneficiary:string
+            settle-bundle:object{AcquisitionSchemasV1.FVT|StakeSettleBundle}
+        )
+        @doc "Extracted from `CC_CollectableStakeFlow`, mirroring `XI_OrtoStakePhases` exactly: \
+            \ the ordinary flow passes `tracker-owner = transfer-sender = executor`; \
+            \ `CCp_ReassignCollectableStakeBeneficiary` passes the real owner for both and runs \
+            \ this twice with `move-asset` false to migrate a position's earnings in place. \
+            \ require SECURE, via the capability each caller already holds."
+        (require-capability (SECURE))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                [
+                    ;;===>PHASE 1===
+                    ;; PHASE 1.1 — Custody transfer · UrStoa ≡ X_UR|Transfer. SKIPPED when the
+                    ;; position does not move (an in-place beneficiary switch).
+                    (if move-asset
+                        (ref-AQP::XE_CollectableTransfer
+                            patron pool-id transfer-sender executee collectable-id son nonces nonce-amounts direction)
+                        (ref-IGNIS::UDC_ConstructOutputCumulator 0.0 AQP|SC_NAME false []))
+                    ;; PHASE 1.2 — Per-pool DPSF/DPNF tracker · UrStoa ≡ N/A
+                    (ref-AQP::XE_CollectablePoolTracker
+                        pool-id tracker-owner executee collectable-id son nonces nonce-amounts direction)
+                    ;; PHASE 1.3 — BenDpsf* / BenDpnf* cross-pool rollup · UrStoa ≡ N/A
+                    (ref-AQP::XE_CollectableBeneficiaryRollup
+                        pool-id tracker-owner executee collectable-id son nonces nonce-amounts direction)
+                    ;;
+                    ;;===>PHASE 2===
+                    ;; PHASE 2 — FVT RPS prelude at OLD deb (2.1→2.2→2.3)
+                    (ref-RPS::XE_XI_RpsPreScore settle-beneficiary pool-id settle-bundle)
+                    ;;
+                    ;;===>PHASE 3===
+                    ;; PHASE 3.1 — DPTF anchor slot · N/A (TF)
+                    ;; PHASE 3.2 — DPSF anchor refresh · AQP-ANK::XE_UpdateSemiFungibleUserAnchorValues (son=true)
+                    ;; PHASE 3.3 — DPNF anchor refresh · AQP-ANK::XE_UpdateNonFungibleUserAnchorValues (son=false)
+                    (XI_RefreshCollectableStakeAnchors
+                        settle-beneficiary collectable-id son nonces nonce-amounts direction)
+                    ;;
+                    ;;===>PHASE 4===
+                    ;; PHASE 4 — SCORE vault + user + nzs
+                    (ref-SCR::XE_ApplyCollectableStakeDelta
+                        pool-id settle-beneficiary collectable-id son nonces nonce-amounts direction
+                        (ref-AQP::URC_PoolActiveScoreIds pool-id)
+                    )
+                    ;; PHASE 4.5 — Sync FVT|T total-deb-score mirror for vault inject denominator
+                    (ref-RPS::XE_XI_SyncFvtTotalDebMirrors (at "pre-member-debs" settle-bundle))
+                    ;; PHASE 4.6 — Re-snapshot farm-triplet Level-1 weights (maintained Σ w-user divisor)
+                    (ref-RPS::XE_XI_SyncTripletLaneWeights settle-beneficiary (at "settle-plans" settle-bundle))
+                    ;; PHASE 4.7 — Presence: stake→add, unstake→recompute (flip false on last withdrawal)
+                    (ref-RPS::XE_XI_SyncFvtPresence settle-beneficiary (at "distinct-fvts" settle-bundle) direction)
+                    ;;
+                    ;;===>PHASE 5===
+                    ;; PHASE 5.1 — RPS unclaimed-count · UrStoa ≡ UpdateUnclaimedCount
+                    (ref-RPS::XE_XI_BookStakeUnclaimedCounts settle-beneficiary pool-id settle-bundle)
+                    ;; PHASE 5.2 — RPS checkpoint last-rps · UrStoa ≡ UpdateUserRPS
+                    (ref-RPS::XE_XI_CheckpointStakeRps settle-beneficiary pool-id settle-bundle)
+                ]
+                []
+            )
+        )
     )
 
 

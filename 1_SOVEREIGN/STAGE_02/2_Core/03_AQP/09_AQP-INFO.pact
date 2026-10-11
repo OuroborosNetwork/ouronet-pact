@@ -707,27 +707,49 @@
                 [nonce])
         )
     )
-    (defun INFO_AQP-POOL|ReassignCustodialBeneficiary:object{OuronetInfoV2.ClientInfo}
-        (patron:string pool-id:string executor:string new-beneficiary:string dpof-id:string nonce:integer)
-        @doc "Cost preview for AQP-POOL|CCp_ReassignCustodialBeneficiary. The orto phase chain \
-            \ priced TWICE over one nonce -- the seller's unstake leg and the buyer's stake leg -- \
-            \ reconstructed from the same reader the execution path uses. No STOA. \
+    (defun INFO_AQP-POOL|ReassignOrtoStakeBeneficiary:object{OuronetInfoV2.ClientInfo}
+        (patron:string pool-id:string owner:string current-beneficiary:string
+         new-beneficiary:string dpof-id:string nonce:integer)
+        @doc "Cost preview for AQP-POOL|CCp_ReassignOrtoStakeBeneficiary. RENAMED from \
+            \ INFO_AQP-POOL|ReassignCustodialBeneficiary, 2026-10-11 -- custody is retired, \
+            \ this covers any staked sleeping position. The orto phase chain priced TWICE over \
+            \ one nonce, reconstructed from the same reader the execution path uses. No STOA. \
             \ \
             \ NO ASSET MOVES, but the quote still carries a transfer leg per run, because \
-            \ `URCi_OrtoFungibleStakeFlow` prices that leg direction-independently. See \
-            \ `AQP-FVT::URCi_ReassignCustodialBeneficiary` for why that is left in rather than \
-            \ netted out."
+            \ `URCi_OrtoFungibleStakeFlow` prices that leg direction-independently."
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Hand a custodial sleeping position's earnings to another account — the batch stays locked with the pool."
-                 "Requires the current beneficiary's signature, and is refused when a direct transfer to the recipient would be."
-                 "Executes via TS02-C3.AQP-POOL|CCp_ReassignCustodialBeneficiary."]
-                [(format "Nonce {} of {} in pool {} now earns for {}." [nonce dpof-id pool-id new-beneficiary])]
+                ["Operation: Redirect who earns from an already-staked sleeping position — the owner and the position are unchanged."
+                 "Requires the OWNER's signature — they decide who earns, as they did at the original stake."
+                 "Executes via TS02-C3.AQP-POOL|CCp_ReassignOrtoStakeBeneficiary."]
+                [(format "Nonce {} of {} in pool {} now earns for {} instead of {}." [nonce dpof-id pool-id new-beneficiary current-beneficiary])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
-                    (AQP-FVT.URCi_ReassignCustodialBeneficiary pool-id executor new-beneficiary dpof-id nonce))
+                    (AQP-FVT.URCi_ReassignOrtoStakeBeneficiary pool-id owner current-beneficiary new-beneficiary dpof-id nonce))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [nonce])
+        )
+    )
+    (defun INFO_AQP-POOL|ReassignCollectableStakeBeneficiary:object{OuronetInfoV2.ClientInfo}
+        (patron:string pool-id:string owner:string current-beneficiary:string
+         new-beneficiary:string collectable-id:string son:bool nonce:integer nonce-amount:integer)
+        @doc "Cost preview for AQP-POOL|CCp_ReassignCollectableStakeBeneficiary -- the NFT/SFT \
+            \ counterpart of INFO_AQP-POOL|ReassignOrtoStakeBeneficiary. No maturity lock applies \
+            \ to a collectable; this previews redirecting earnings on an already-staked nonce. \
+            \ No STOA."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Redirect who earns from an already-staked NFT/SFT — the owner and the position are unchanged."
+                 "Requires the OWNER's signature — they decide who earns, as they did at the original stake."
+                 "Executes via TS02-C3.AQP-POOL|CCp_ReassignCollectableStakeBeneficiary."]
+                [(format "Nonce {} of {} in pool {} now earns for {} instead of {}." [nonce collectable-id pool-id new-beneficiary current-beneficiary])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    (AQP-FVT.URCi_ReassignCollectableStakeBeneficiary pool-id owner current-beneficiary new-beneficiary collectable-id son nonce nonce-amount))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [nonce])
         )

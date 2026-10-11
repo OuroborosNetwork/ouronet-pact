@@ -197,6 +197,13 @@ INDIRECT = {
     # AQP|XE>ORTO-FUNGIBLE-POOL-CUSTODY -- exactly as it was before the extraction. Only the
     # NAME changes at the call, which is all a static trace has to follow.
     "05_FVT.pact::CC_OrtoFungibleStakeFlow": "CAP_StakeOwner",
+    # Same shape, same reason -- XI_CollectableStakePhases is the extraction of
+    # CC_CollectableStakeFlow's body, 2026-10-11, done for the same cause: a generalized
+    # beneficiary-reassignment recipe (CCp_ReassignCollectableStakeBeneficiary) needed to share
+    # the phase chain rather than duplicate it. `executor` crosses as `transfer-sender`, reaches
+    # AQP::XE_CollectableTransfer and is proven by CAP_StakeOwner inside
+    # AQP|XE>COLLECTABLE-POOL-CUSTODY.
+    "05_FVT.pact::CC_CollectableStakeFlow": "CAP_StakeOwner",
     "05_FVT.pact::CC_InjectStream":    "XE_XI_FvtAddStream",
     "05_FVT.pact::CC_Inject":          "XE_XI_FvtInjectCore",
     "05_FVT.pact::CC_InjectFinalize":  "XE_XI_FvtInjectCore",

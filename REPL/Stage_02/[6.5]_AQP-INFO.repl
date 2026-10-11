@@ -552,17 +552,20 @@
                        (at "ignis-full" (at "ignis" (AQP-INFO.INFO_AQP-POOL|StakeOrtoFungible
                            anhd "OfStakePool-98c486052a51" anhd anhd "MVST-98c486052a51" [1])))))
                 ;;THE REASSIGNMENT PREVIEW PRICES *BOTH* LEGS, asserted as an EXACT doubling
-                ;;rather than as "more than one". `CCp_ReassignCustodialBeneficiary` runs the orto
-                ;;phase chain twice -- an unstake for the seller, a stake for the buyer -- and
-                ;;`URCi_OrtoFungibleStakeFlow` is direction-independent in every leg it prices, so
-                ;;naming the SAME account on both sides makes the two halves identical and the
-                ;;total exactly 2x a single orto stake. That is a falsifiable number: drop either
-                ;;leg from the reader and this goes red, where a "> single" assertion would not.
+                ;;rather than as "more than one". RENAMED to `INFO_AQP-POOL|ReassignOrtoStakeBeneficiary`
+                ;;and re-signatured 2026-10-11 (custody retired, owner + current-beneficiary are
+                ;;now both caller-supplied). `CCp_ReassignOrtoStakeBeneficiary` runs the orto
+                ;;phase chain twice -- an unstake vacating the outgoing beneficiary, a stake
+                ;;crediting the incoming one -- and `URCi_OrtoFungibleStakeFlow` is
+                ;;direction-independent in every leg it prices, so naming the SAME account
+                ;;throughout makes the two halves identical and the total exactly 2x a single
+                ;;orto stake. That is a falsifiable number: drop either leg from the reader and
+                ;;this goes red, where a "> single" assertion would not.
                 (expect "<<POOL>> reassignment quotes BOTH phase-chain runs — exactly twice a single orto stake"
                     (* 2.0 (at "ignis-full" (at "ignis" (AQP-INFO.INFO_AQP-POOL|StakeOrtoFungible
                                anhd "OfStakePool-98c486052a51" anhd anhd "MVST-98c486052a51" [1]))))
-                    (at "ignis-full" (at "ignis" (AQP-INFO.INFO_AQP-POOL|ReassignCustodialBeneficiary
-                               anhd "OfStakePool-98c486052a51" anhd anhd "MVST-98c486052a51" 1))))
+                    (at "ignis-full" (at "ignis" (AQP-INFO.INFO_AQP-POOL|ReassignOrtoStakeBeneficiary
+                               anhd "OfStakePool-98c486052a51" anhd anhd anhd "MVST-98c486052a51" 1))))
                 ;;AND THE RELEASE PREVIEW REACHES ITS VST LEG, pinned the way this file already
                 ;;pins `INFO_AQP-MTX|2Inject` -- by the abort an unsatisfiable id produces. The
                 ;;release prices `VST::XE_Unsleep`, which resolves the batch's native counterpart

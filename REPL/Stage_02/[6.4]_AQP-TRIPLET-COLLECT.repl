@@ -643,24 +643,26 @@
                             ]))
                             true
                         )
-                        ;;CUSTODIAL, AND IT HAS TO BE: the ordinary orto path now REFUSES a Z|
-                        ;;leg (FVT|C>ORTO-FUNGIBLE-STAKE-FLOW #8), because a duration-scaled
-                        ;;multiplier prices a commitment that a freely-withdrawable stake does
-                        ;;not make. Switching this fixture over keeps its original subject --
-                        ;;the agnostic dual-lane CC_FullVacate below -- and adds a second one:
-                        ;;the vacated row's owner column is now `AQP|SC_NAME`, so the
-                        ;;"Z| LP returned" assertion at the end of this block is what proves
-                        ;;`UC_VacateOrtoDestinations` sends a CUSTODIAL position to its
-                        ;;beneficiary. Before that helper existed the pool was both sender and
-                        ;;recipient, the batch never left, and the tracker row was unwound
-                        ;;around it -- the position gone and the asset still inside.
-                        (print (format "<(CCp_StakeSpecialCustodial Z|LP nonce {})> => \"{}\"" [stake-nonce
-                            (ref-TS02-C3::AQP-POOL|CCp_StakeSpecialCustodial patron owner owner pool-id z-lp-id [stake-nonce])
+                        ;;ORDINARY PATH, 2026-10-11: custody is retired, so a Z| leg stakes
+                        ;;exactly like any other orto position now -- the tracker names the
+                        ;;STAKER as owner, and the maturity lock (not a different owner column)
+                        ;;is what holds a duration-earning leg to term. This also means the
+                        ;;`UC_VacateOrtoDestinations` custodial-redirect case this fixture used
+                        ;;to exercise (a vacated row owned by `AQP|SC_NAME`, sent to its
+                        ;;beneficiary rather than stranded) is now UNREACHABLE: no code path
+                        ;;creates such a row any more, since `CCp_StakeSpecialCustodial` refuses
+                        ;;unconditionally (DEFECT-LEDGER 8.38/8.39 stays fixed, it is simply dead
+                        ;;code now rather than a live path). What this fixture still proves, and
+                        ;;still needs to: ONE agnostic `CC_FullVacate(pool-id)` drains BOTH the
+                        ;;native LP (DPTF lane) and the Z| sleeping-LP satellite (DPOF lane) of
+                        ;;a class-0 pool.
+                        (print (format "<(CC_StakeOrtoFungible Z|LP nonce {})> => \"{}\"" [stake-nonce
+                            (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron owner owner pool-id z-lp-id [stake-nonce])
                         ]))
                         (let
                             (
-                                ;;KEYED ON THE POOL, not the staker -- that one column IS the custody.
-                                (of-pre:decimal (ref-AQP::UR_AQP|DPOFTrackerBalance pool-id z-lp-id aqp-sc owner stake-nonce))
+                                ;;KEYED ON THE STAKER -- the ordinary path, now the only path.
+                                (of-pre:decimal (ref-AQP::UR_AQP|DPOFTrackerBalance pool-id z-lp-id owner owner stake-nonce))
                                 (tf-both:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id lp-id owner owner))
                             )
                             (map print
@@ -705,7 +707,7 @@
                             (let
                                 (
                                     (tf-post:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id lp-id owner owner))
-                                    (of-post:decimal (ref-AQP::UR_AQP|DPOFTrackerBalance pool-id z-lp-id aqp-sc owner stake-nonce))
+                                    (of-post:decimal (ref-AQP::UR_AQP|DPOFTrackerBalance pool-id z-lp-id owner owner stake-nonce))
                                     (deb-post:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore owner pool-id silver-score))
                                     (z-supply:decimal (ref-DPOF::UR_AccountSupply z-lp-id owner))
                                 )
@@ -739,26 +741,28 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
 ;;
-(begin-tx "TX-AQP-CL06 - CUSTODIAL sleeping LP: stake, early-exit refusals, matured release")
+(begin-tx "TX-AQP-CL06 - sleeping LP under the maturity lock: stake, early-exit refusal, matured unstake")
 (print "")
-(print "=== TX-AQP-CL06 — pool custody of a sleeping LP, end to end =================")
+(print "=== TX-AQP-CL06 — a 25-year sleeping LP lock, end to end ====================")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
 ;;==== TX-AQP-CL06 · 01 · env-sigs (caps) ====
 (print "--- [TX-AQP-CL06 · 01 · env-sigs (caps)] ---")
 (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
-;;==== TX-AQP-CL06 · 02 · the custodial cycle ====
-(print "--- [TX-AQP-CL06 · 02 · the custodial cycle] ---")
-;;THE WHOLE POINT OF CUSTODY, ASSERTED. The owner's design: "the asset goes to aqp and aqp would
-;;stake it ... such that it appears the stalker is the aqp itself instead of the user", and
-;;"Unstake in this case ... is only allowed when the nonce sleeping period expired. And in this
-;;case the AQP unsleeps it ... and transfer the user the native lp."
+;;==== TX-AQP-CL06 · 02 · the lock cycle ====
+(print "--- [TX-AQP-CL06 · 02 · the lock cycle] ---")
+;;REWRITTEN 2026-10-11, owner ruling: custody is retired. The design is now a MATURITY LOCK, not
+;;a different owner column: "we switch back to the original mode, where i am the owner of the
+;;staked batch, while specifying a beneficiary ... we simply disallow unstaking until the
+;;sleeping period expired."
 ;;
-;;Four properties have to hold together, and each one is worthless without the others:
-;;  1] the tracker names the POOL as owner, not the staker
-;;  2] the staker therefore CANNOT withdraw early
-;;  3] nor can anyone release it early -- the pool gains no power the staker lacks
-;;  4] but once matured, ANYONE can release it, and the value can only reach the staker
+;;Three properties have to hold together, and this is the hardest case to prove them in: a
+;;FULL-TERM (25-year) lock, so the multiplier sits at its mx-ceiling and the decay gap between
+;;the awarded-weight ledger and a naive recomputation is at its widest.
+;;  1] the tracker names the STAKER as owner, exactly as any ordinary stake does
+;;  2] the staker CANNOT withdraw before maturity -- the lock, not an ownership refusal
+;;  3] once matured, the staker (and only the staker) unstakes it, and the ledger reverses
+;;     EXACTLY -- not a recomputation at today's decayed rate, which would short them
 (let
     (
         (patron:string KST.ANHD)
@@ -781,7 +785,6 @@
             (silver-score:string (ref-U|DALOS::UDC_Makeid "SilverSnakePower"))
             (lp-id:string (ref-SWP::UR_TokenLP swpair))
             (z-lp-id:string (ref-DPTF::UR_Sleeping lp-id))
-            (aqp:string (ref-DALOS::GOV|AQP|SC_NAME))
             (bar:string (ref-U|CT::CT_BAR))
             (pool-class:integer (try -1 (ref-AQP::UR_AQP|PoolAqpClass pool-id)))
         )
@@ -799,87 +802,60 @@
                 (let*
                     (
                         (n:integer (+ z-pre 1))
-                        (dummy1:string (ref-TS02-C3::AQP-POOL|CCp_StakeSpecialCustodial
+                        (dummy1:string (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible
                                             patron owner owner pool-id z-lp-id [n]))
                         (base-staked:decimal (ref-SCR::UR_U-SCR|UserScoreBaseScore owner pool-id silver-score))
                     )
                     (map print
                         [
-                            ;;1] THE TRACKER NAMES THE POOL. This single column is the custody
-                            ;;mechanism -- `CAP_StakeOwner` checks it, so an early user exit is
-                            ;;refused by the ownership guard that already existed.
-                            (expect "<<TX-AQP-CL06>> the tracker credits the POOL as owner, and the staker holds no row"
-                                [true 0.0]
-                                [(> (ref-AQP::UR_AQP|DPOFTrackerBalance pool-id z-lp-id aqp owner n) 0.0)
-                                 (ref-AQP::UR_AQP|DPOFTrackerBalance pool-id z-lp-id owner owner n)])
-                            ;;the staker still earns -- they are time-locked, not dispossessed
-                            (expect "<<TX-AQP-CL06>> ...while the WEIGHT still accrues to the staker"
-                                true (> base-staked base-pre))
+                            ;;1] THE TRACKER NAMES THE STAKER. No different column, no pool-owned
+                            ;;row -- the maturity lock is what holds this to term now, proven next.
+                            (expect "<<TX-AQP-CL06>> the tracker credits the STAKER as owner, and the WEIGHT accrues to them"
+                                [true true]
+                                [(> (ref-AQP::UR_AQP|DPOFTrackerBalance pool-id z-lp-id owner owner n) 0.0)
+                                 (> base-staked base-pre)])
                             ;;the awarded-weight ledger stamped the full term
                             (expect "<<TX-AQP-CL06>> the ledger recorded the full 25-year term for the batch"
                                 true (> (ref-SCR::UR_SCR|SleepRemainingAtStake z-lp-id n) 788000000.0))
-                            ;;1b] AND THE ORDINARY PATH IS CLOSED TO THIS LEG ALTOGETHER, which
-                            ;;is what makes custody MANDATORY rather than merely available. Pinned
-                            ;;by MESSAGE, and that is the whole point: the duration multiplier and
-                            ;;this refusal are one mechanism. Without it a staker takes the
-                            ;;25-year rate on the ordinary path and withdraws next block, so the
-                            ;;curve would price a commitment nobody made. Delete the guard and
-                            ;;every other assertion in this file still passes -- which is exactly
-                            ;;how a missing gate hides, so it needs an assertion of its own.
-                            (expect-failure "<<TX-AQP-CL06>> a sleeping leg CANNOT be staked on the ordinary path — custody is mandatory"
-                                "Invalid stake path: a sleeping leg that earns a duration multiplier must be staked under pool custody"
-                                (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible
-                                    patron owner owner pool-id z-lp-id [n]))
-                            ;;1c] AND THE SALE IS REFUSED ON *THIS* TOKEN, because CL05 granted the
-                            ;;AQP smart account a transfer role on it -- a deliberate act by the
-                            ;;token owner, which is exactly what `URC_SpecialLegIssuerRestricted`
-                            ;;reads as intent to control who may hold it.
-                            ;;
-                            ;;THIS IS THE OTHER SIDE OF THE GATE, and the pair matters. `[6.2.17]`
-                            ;;<<TX-RERATE-SELL>> sells a position on a token carrying ONLY VST's
-                            ;;automatic infrastructure grant, and it succeeds. Here an owner has
-                            ;;added a holder, and the same operation is refused for a counterparty
-                            ;;who is not whitelisted. One predicate, two answers, decided by
-                            ;;whether a human chose to restrict the token -- which is the only
-                            ;;thing that can distinguish them, since EVERY special token has roles
-                            ;;active from birth.
-                            ;;
-                            ;;It has to be refused: the release pays the NATIVE asset to whoever
-                            ;;is beneficiary at maturity, so a reassignment is a deferred delivery
-                            ;;to the new party, and nothing downstream re-checks it.
-                            (expect-failure "<<TX-AQP-CL06>> the position CANNOT be sold on a token whose owner restricted it"
-                                "Incompatible Transfer Roles"
-                                (ref-TS02-C3::AQP-POOL|CCp_ReassignCustodialBeneficiary
-                                    patron owner pool-id z-lp-id n KST.EMMA))
-                            ;;2] NO EARLY USER EXIT -- refused by the pre-existing ownership guard
-                            ;;THE REFUSAL COMES FROM THE TRACKER ITSELF, which is stronger than an
-                            ;;ownership check: there is no row keyed to the staker at all, so the
-                            ;;ordinary unstake cannot even find a balance to withdraw. Custody is
-                            ;;enforced by the shape of the data, not by a guard that could be
-                            ;;forgotten on some other path.
-                            (expect-failure "<<TX-AQP-CL06>> the staker CANNOT unstake it — no tracker row is keyed to them"
-                                "Invalid OF pool custody"
+                            ;;AND REASSIGNMENT SUCCEEDS EVEN ON A TOKEN WHOSE OWNER RESTRICTED IT
+                            ;;(CL05 granted the AQP smart account a transfer role on this LP, a
+                            ;;deliberate act of the token owner). Under the retired custodial
+                            ;;model this would have been refused -- the release paid the NATIVE
+                            ;;asset to whoever was beneficiary at maturity, so reassignment was a
+                            ;;deferred delivery and had to respect the token's transfer rules.
+                            ;;Under the maturity lock, the asset NEVER goes to the beneficiary --
+                            ;;it always returns to the owner, <owner> here -- so reassignment
+                            ;;carries no claim on the token at all, and the transfer-role question
+                            ;;simply does not apply. Asserted as a SUCCESS, which is the evidence
+                            ;;the old refusal is gone for the right reason, not merely relaxed.
+                            (ref-TS02-C3::AQP-POOL|CCp_ReassignOrtoStakeBeneficiary
+                                patron owner pool-id z-lp-id n owner KST.EMMA)
+                            (expect "<<TX-AQP-CL06>> reassignment on a RESTRICTED token succeeds — no asset claim to police"
+                                [true true]
+                                [(> (ref-AQP::UR_AQP|DPOFTrackerBalance pool-id z-lp-id owner KST.EMMA n) 0.0)
+                                 (= 0.0 (ref-AQP::UR_AQP|DPOFTrackerBalance pool-id z-lp-id owner owner n))])
+                            ;;...and back, so the rest of this transaction tests the owner's own position
+                            (ref-TS02-C3::AQP-POOL|CCp_ReassignOrtoStakeBeneficiary
+                                patron owner pool-id z-lp-id n KST.EMMA owner)
+                            ;;2] NO EARLY USER EXIT -- the MATURITY LOCK refuses it, not an
+                            ;;ownership guard. The tracker row exists and names the staker; the
+                            ;;date does not.
+                            (expect-failure "<<TX-AQP-CL06>> the staker CANNOT unstake it before maturity — the lock, not ownership, refuses it"
+                                "A sleeping position that earns a duration multiplier cannot be unstaked before its release date"
                                 (ref-TS02-C3::AQP-POOL|CC_UnstakeOrtoFungible
                                     patron owner owner pool-id z-lp-id [n]))
-                            ;;3] AND NO EARLY RELEASE EITHER. The pool gains the power to exit AT
-                            ;;ALL, never the power to exit EARLY -- that asymmetry is what makes
-                            ;;custody acceptable to a staker.
-                            (expect-failure "<<TX-AQP-CL06>> nor can ANYONE release it early — VST refuses an immature lock"
-                                "cannot be unsleeped yet"
-                                (ref-TS02-C3::AQP-POOL|CCp_ReleaseSpecialCustodial
-                                    patron pool-id owner z-lp-id n))
                         ]
                     )
                     ;;--- time passes: the lock matures ---
                     (env-chain-data { "block-time": (time "2060-01-01T00:00:00Z") })
                     (let
                         (
-                            (dummy2:string (ref-TS02-C3::AQP-POOL|CCp_ReleaseSpecialCustodial
-                                                patron pool-id owner z-lp-id n))
+                            (dummy2:string (ref-TS02-C3::AQP-POOL|CC_UnstakeOrtoFungible
+                                                patron owner owner pool-id z-lp-id [n]))
                         )
                         (map print
                             [
-                                ;;4a] THE BASE NETS TO EXACTLY ITS PRE-STAKE VALUE. This is the
+                                ;;3a] THE BASE NETS TO EXACTLY ITS PRE-STAKE VALUE. This is the
                                 ;;assertion the awarded-weight ledger exists for: the multiplier
                                 ;;decayed from its mx-ceiling to the plain rate while the position was
                                 ;;held, so a recomputed reversal would have given back LESS than was
@@ -888,19 +864,29 @@
                                 (expect "<<TX-AQP-CL06>> the base is back to EXACTLY its pre-stake value — the ledger reversed in full"
                                     base-pre
                                     (ref-SCR::UR_U-SCR|UserScoreBaseScore owner pool-id silver-score))
-                                ;;4b] the tracker row is gone
-                                (expect "<<TX-AQP-CL06>> the custodial tracker row is drained"
-                                    0.0 (ref-AQP::UR_AQP|DPOFTrackerBalance pool-id z-lp-id aqp owner n))
-                                ;;4c] THE NONCE IS RETIRED. Burning the whole supply sets it to -1.0
-                                ;;and takes it out of circulation permanently -- there is no disable
-                                ;;flag, that negative supply IS the retirement.
-                                (expect "<<TX-AQP-CL06>> the batch is dissolved and the nonce RETIRED to supply -1.0"
-                                    -1.0 (ref-DPOF::UR_NonceSupply z-lp-id n))
-                                ;;4d] and the value reached the STAKER, not the pool or the caller
-                                (expect "<<TX-AQP-CL06>> the staker got the native LP back in full"
-                                    lp-pre (DPTF.UR_AccountSupply lp-id owner))
+                                ;;3b] the tracker row is gone
+                                (expect "<<TX-AQP-CL06>> the tracker row is drained"
+                                    0.0 (ref-AQP::UR_AQP|DPOFTrackerBalance pool-id z-lp-id owner owner n))
+                                ;;3c] THE NONCE IS STILL ALIVE -- an ordinary unstake does not
+                                ;;dissolve it. It returns to the staker as a matured, still-sleeping
+                                ;;batch; dissolving is the owner's own separate VST step, next.
+                                (expect "<<TX-AQP-CL06>> the matured nonce is back with the staker, still sleeping"
+                                    true (contains n (ref-DPOF::URH_AccountNonces owner z-lp-id)))
                             ]
                         )
+                    )
+                    ;;--- the owner dissolves it themselves, same as any sleeping holder ---
+                    (ref-TS01-C2::VST|C_Unsleep patron owner z-lp-id n)
+                    (map print
+                        [
+                            ;;3d] THE NONCE IS NOW RETIRED. Burning the whole supply sets it to
+                            ;;-1.0 and takes it out of circulation permanently.
+                            (expect "<<TX-AQP-CL06>> once unslept, the nonce is RETIRED to supply -1.0"
+                                -1.0 (ref-DPOF::UR_NonceSupply z-lp-id n))
+                            ;;3e] and the value reached the STAKER, not the pool or the caller
+                            (expect "<<TX-AQP-CL06>> the staker got the native LP back in full"
+                                lp-pre (DPTF.UR_AccountSupply lp-id owner))
+                        ]
                     )
                     ""
                 )
@@ -1002,7 +988,7 @@
                                 (base-pre:decimal (ref-SCR::UR_U-SCR|UserScoreBaseScore alice pool-id silver-score))
                                 (total-pre:decimal (ref-SCR::UR_SCR|ScoreTotalBaseScore silver-score))
                             )
-                            (ref-TS02-C3::AQP-POOL|CCp_StakeSpecialCustodial patron alice alice pool-id z-lp-id [n])
+                            (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron alice alice pool-id z-lp-id [n])
                             (let*
                                 (
                                     (alice-weight:decimal
@@ -1021,17 +1007,17 @@
                                 ;;--- half the lock elapses ---
                                 (env-chain-data
                                     { "block-time": (add-time (at "block-time" (chain-data)) half-term) })
-                                ;;the token is transfer-restricted (CL05 whitelisted the pool), so the
-                                ;;buyer must be whitelisted too -- which is the gate working, not a
-                                ;;workaround: `enforce-one` is satisfied by EITHER party holding a role.
-                                (ref-TS01-C2::VST|C_ToggleTransferRoleSleepingDPOF
-                                    patron (ouronet-ns.VST.URC_SpecialTransferRoleKonto z-lp-id) z-lp-id bob true)
+                                ;;NO WHITELISTING STEP NEEDED ANYMORE. CL05 restricted this token's
+                                ;;transfers, but reassignment under the maturity-lock model carries no
+                                ;;claim on the asset -- it never moves to the beneficiary -- so the
+                                ;;token's transfer-role list has nothing to say about it (TX-AQP-CL06
+                                ;;proves the positive case this test used to need a whitelist for).
                                 (let*
                                     (
                                         (bob-pre:decimal (ref-SCR::UR_U-SCR|UserScoreBaseScore bob pool-id silver-score))
                                     )
-                                    (ref-TS02-C3::AQP-POOL|CCp_ReassignCustodialBeneficiary
-                                        patron alice pool-id z-lp-id n bob)
+                                    (ref-TS02-C3::AQP-POOL|CCp_ReassignOrtoStakeBeneficiary
+                                        patron alice pool-id z-lp-id n alice bob)
                                     (let*
                                         (
                                             (bob-weight:decimal
