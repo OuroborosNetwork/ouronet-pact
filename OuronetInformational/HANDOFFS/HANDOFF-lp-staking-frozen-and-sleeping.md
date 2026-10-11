@@ -171,16 +171,68 @@ Check whether anything is staked under the custodial path before changing semant
 is, the model can change freely; if something is, the owner column on those rows says
 `AQP|SC_NAME` and no user could ever unstake them under the new rules.
 
-## 5. Suggested order
+## 4c. STATUS, 2026-10-11 — one item was already done, one is blocked, one remains
 
-1. Settle the ortofungible capture question (§2) and the (a)/(b) ruling (§4) — both are
-   decisions, not code.
-2. Frozen LP staking — the toggle. Smallest, fully supported today.
-3. Sleeping LP staking — second rectangle + nonce view + stake button.
-4. Ortofungible unstake view — shape (b), on the two readers above.
+**FROZEN LP STAKING IS ALREADY SHIPPED.** Found while scoping this handoff's §1, not built new:
+`PoolsTab.tsx` (AQP client, Pools tab -> Stake) already queries BOTH legs --
+`poolChain.ts::stakeableTf` reads `[asset (+ "F|" asset)]` for any class-0/1 pool -- decodes
+`frozen: assetId.startsWith("F|")`, and `TfStakeLeg` renders each as its own panel ("True
+fungible" / "True fungible — frozen leg") with its own amount box and beneficiary field. A user
+holding frozen LP on a stakeable pool sees a second panel today, no code change needed. Not a
+toggle, as originally proposed -- both legs list side by side, which is simpler and already
+built. **Struck from the remaining work.**
 
-## State at handoff
+**THE BENEFICIARY SWITCH IS BLOCKED ON THE V8 DEPLOY, not undesigned.** PureV8
+(2026-10-11) shipped `CCp_ReassignOrtoStakeBeneficiary` and `CCp_ReassignCollectableStakeBeneficiary`
+in Pact, but OuronetUI's stake controls are REGISTRY-DRIVEN by design --
+`aqpConsumerSpecs.tsx`'s own header: *"No Pact strings, no argument order, no arity --
+`@ouronet/talos-registry` supplies all three from the deployed contract"* -- and
+`aqp-consumer-specs.test.ts` asserts every spec's entrypoint `exists in the deployed registry`
+before anything else. Until V8 is on chain and the Scripts pane's steps 1 and 3 have run
+(registry regen, then the `@ouronet/talos-registry` package rebuild), that entrypoint is not a
+registry key and a spec referencing it would fail its own safety test -- the same test that
+exists specifically so a signature mismatch is caught here rather than in a signed transaction.
+Building an ad-hoc bypass of the registry for this one control was considered and rejected: it
+would be the first stake-adjacent control in the app not backed by that safety net, on a
+brand-new entrypoint whose exact argument order I would be trusting from memory rather than
+verified against the chain.
 
-* `v2.18.0` committed on `dev` in both repos; deploying to devwallet and master.
-* Pact gate GREEN, 28,378 assertions. UI 101 files / 1,646 tests.
-* `Deploy/PureV7` (9 tx) and `Deploy/PostV7/01_o-ui-nine.pact` are both ON CHAIN.
+**Next action, concrete and small once unblocked:** after V8 deploys and the registry carries
+`TS02-C3.AQP-POOL|CCp_ReassignOrtoStakeBeneficiary`, add one `OpSpec` entry to
+`aqpConsumerSpecs.tsx` (mirrors `UNSTAKE_TRUE_FUNGIBLE`'s shape: `owner` as `kind: "self"`,
+`current-beneficiary` and `new-beneficiary` as `StringEntryInput` fields) and wire a "Reassign"
+action into `SleepingLpNonceView`'s existing `TokenActionBar` (the one fixed in v2.17.2) via
+`actionOverrides`, exactly as `nonces` was turned into Back. Estimated small -- the view, the
+bar, and the modal pattern all already exist; this is one new spec and one new button.
+
+**THE FULL NONCE-BASED STAKE/UNSTAKE REDESIGN (§1-3) REMAINS UNBUILT**, and PureV8 makes it
+SMALLER than §3 described. Custody retirement means the tracker owner is ALWAYS the staker now
+-- there is no more "owner is AQP|SC_NAME, beneficiary is you" case to display. The unstake
+view's per-nonce fields collapse from three meaningfully different answers to two: which nonces
+are yours (trivial -- all of them, if you are looking at your own stakes) and who currently
+earns each one (the only field that can differ from "you"). §3's "paginated entries, each with
+owner/beneficiary/maturity" shape is still right; "owner" can now be a column header rather than
+a per-row question.
+
+## 5. Suggested order (revised 2026-10-11)
+
+1. ~~Frozen LP staking~~ — DONE, found already shipped in `PoolsTab.tsx` (§4c).
+2. Deploy PureV8, run the Scripts pane (registry regen + package rebuild).
+3. Wire the Reassign-beneficiary action (§4c's concrete next step) — small, mechanical,
+   unblocked the moment step 2 lands.
+4. Settle the ortofungible capture question (§2) — a decision, not code, needed before the
+   sleeping-LP stake view (second rectangle + nonce view + stake button) can be built.
+5. Ortofungible unstake view — now simpler per §4c: owner is always the viewer, so only the
+   beneficiary column varies per row.
+
+## State at handoff (updated 2026-10-11)
+
+* UI `v2.17.2` pushed to both `dev` and `master` (OuronetUI). 101 files / 1,646 tests, typecheck
+  clean, build clean. No UI code changed this round -- PureV8 is Pact-only.
+* Pact `main` pushed through `PureV8` (ouronet-pact). Gate GREEN, 28,370 assertions
+  (23,001 positive / 5,369 negative).
+* `Deploy/PureV7` (9 tx) and `Deploy/PostV7/01_o-ui-nine.pact` are ON CHAIN.
+* `Deploy/PureV8` (3 tx: AQP-FVT, TS02-C3, AQP-INFO+AQP-BOOT) is PACKED, NOT YET DEPLOYED.
+  Sequential, no client transaction needed -- see `Deploy/PureV8/README.md`.
+* After PureV8 deploys: run the Scripts pane (Admin -> Scripts -> Run the full chain). Step 3
+  is what unblocks §4c's reassignment-UI next action.
