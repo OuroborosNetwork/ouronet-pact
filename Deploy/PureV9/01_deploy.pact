@@ -7,12 +7,14 @@
 ;; token's. Reported live against a real frozen LP stake: "Invalid dptf-id: leg does not match
 ;; pool canonical asset".
 ;;
-;; THIS TRANSACTION. `URC_StakeLpTokenToNativeLpDptf` used to recover a "native id" for the F|
-;; (and Z|) legs by stripping the 2-character prefix and comparing the remainder. For F| this
-;; now resolves via `DPTF::UR_Frozen`, which is written bidirectionally and so reverses
-;; correctly in both directions -- the same lookup `URCv_CoreDptf` already used the other way.
-;; Z| (sleeping) is UNCHANGED this round: there is no existing reverse resolver for that
-;; direction to reuse, and building one is out of scope here (see DEFECT-LEDGER 8.53).
+;; THIS TRANSACTION. `URC_StakeLpTokenToNativeLpDptf` used to recover a "native id" for both the
+;; F| and Z| legs by stripping the 2-character prefix and comparing the remainder. Both now
+;; resolve via a real link instead: F| through `DPTF::UR_Frozen` (the same reverse lookup
+;; `URCv_CoreDptf` already used), Z| through `DPOF::UR_Sleeping` -- a DIFFERENT function of the
+;; same name on a DIFFERENT module, written the other direction (`DPOF::XI_UpdateSleeping` sets
+;; the DPOF's own row's reverse pointer in the same transaction `DPTF::XE_UpdateSleeping` sets
+;; the forward one), already relied on by `URC_StakeOrtoFungibleDpofMatchesPool` for exactly
+;; this resolution. See DEFECT-LEDGER 8.53.
 ;;
 ;; SEND IN ORDER. AQP-SCORE owns tables and is dot-called by RPS and AQP-INFO (tx 03, 05 of
 ;; this round) -- sending this out of order risks "hash not blessed" on an unrelated call
@@ -2396,32 +2398,41 @@
         @doc "SWP|LP rows use native LP DPTF ids; S|, W|, P| native LP prefixes pass through \
             \ unchanged. \
             \ \
-            \ F| (FROZEN) RESOLVED VIA THE REAL LINK, NOT A PREFIX STRIP. The frozen leg is a \
-            \ SEPARATELY minted token with its own id suffix, not \"F|\" + the native id -- \
-            \ `drop 2 lp-id` returned a string that matches no real DPTF for any genuine frozen \
-            \ leg (same defect, same fix, as `URC_StakeTrueFungibleDptfMatchesPool`: \
-            \ `frozen-link` is written bidirectionally, so `DPTF::UR_Frozen frozen-id` IS the \
-            \ native parent -- the same lookup `URCv_CoreDptf` already uses). DEFECT-LEDGER. \
+            \ BOTH F| (FROZEN) AND Z| (SLEEPING) ARE RESOLVED VIA THE REAL LINK, NOT A PREFIX \
+            \ STRIP. Neither special leg's id is \"F|\"/\"Z|\" + the native id -- each is a \
+            \ SEPARATELY minted token with its own independently block-hash-derived suffix \
+            \ (confirmed on a live pair: native `...LP-6D_MJJXmhuz3`, frozen \
+            \ `F|...LP-_MYr9VcKUkBx`, sleeping `Z|...LP-jGB01kZvL4bh` -- three different \
+            \ suffixes). `drop 2 lp-id` matches no real DPTF/DPOF for a genuine special leg, for \
+            \ either prefix. Live proof for Z|: staking the frozen leg of a real pool was \
+            \ refused with \"Invalid dptf-id: leg does not match pool canonical asset\" (the \
+            \ F| case, fixed first); fixing only that left the Z| case to abort differently one \
+            \ call later, with \"No value found in table ... SWP|LP for key: Z|...\" -- this \
+            \ function's own `drop 2` output never being a real key in that table either. \
+            \ DEFECT-LEDGER. \
             \ \
-            \ Z| (SLEEPING) IS STILL A PREFIX STRIP, AND IS LIKELY THE SAME CLASS OF DEFECT, \
-            \ NOT YET FIXED. A sleeping DPOF's id carries its own independently-minted suffix \
-            \ too (confirmed on a live pair: native `...LP-6D_MJJXmhuz3` vs sleeping \
-            \ `Z|...LP-jGB01kZvL4bh`), and `DPTF::UR_Sleeping` is a ONE-WAY write \
-            \ (`XE_UpdateSleeping` updates only the native row) -- there is no bidirectional \
-            \ link to reverse through the way `UR_Frozen` has. Fixing this leg needs a REAL \
-            \ reverse resolver that does not exist anywhere in the tree yet (the same shape of \
-            \ gap `URH_14|PoolForAsset` closed for the swpair/pool-id direction), which is out \
-            \ of scope for the frozen-LP fix this round. Left exactly as it was so this change \
-            \ touches only the leg it fixes."
+            \ Both now resolve through a REAL bidirectional link instead: `frozen-link` \
+            \ (`DPTF::UR_Frozen`) is written both ways by `DPTF::XE_UpdateSpecialTrueFungible`'s \
+            \ `XI_UpdateFrozen`, the same lookup `URCv_CoreDptf` already uses in reverse. \
+            \ `sleeping-link` turns out to ALSO be written both ways -- just in two DIFFERENT \
+            \ functions of the SAME name in two DIFFERENT modules, which is what hid it: \
+            \ `DPTF::XE_UpdateSleeping` writes the native row's forward pointer (dptf -> dpof), \
+            \ while `DPOF::XI_UpdateSleeping` separately writes the DPOF's OWN row with the \
+            \ reverse pointer (dpof -> dptf) in the exact same transaction. So `DPOF::UR_Sleeping \
+            \ lp-id` (NOT `DPTF::UR_Sleeping`, a different function on a different module that \
+            \ only goes forward) IS the native parent -- already proven in exactly this role by \
+            \ `URC_StakeOrtoFungibleDpofMatchesPool` (`03_AQP.pact`), which reads the identical \
+            \ link to admit a sleeping leg onto a class-0/1 pool."
         (let
             (
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                 (p2:string (take 2 lp-id))
             )
             (if (= p2 "F|")
                 (ref-DPTF::UR_Frozen lp-id)
                 (if (= p2 "Z|")
-                    (drop 2 lp-id)
+                    (ref-DPOF::UR_Sleeping lp-id)
                     lp-id
                 )
             )

@@ -333,7 +333,9 @@
     (
         (ref-SWP:module{SwapperV4} SWP)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
         (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -373,6 +375,20 @@
             (ref-TS01-C2::VST|C_CreateFrozenLink KST.ANHD (ref-DPTF::UR_Konto lp2) lp2)
             "frozen link already exists")
         (ref-TS01-C2::VST|C_Freeze KST.ANHD KST.ANHD KST.ANHD lp2 (floor (* lp2-balance 0.01) 6))
+        ;;SAME TRICK, A DIFFERENT BLOCK, FOR THE SLEEPING LEG. Reported live immediately after
+        ;;the frozen leg was fixed: staking a real SLEEPING LP batch of this SAME pool aborted
+        ;;one call later, with a DIFFERENT message -- "No value found in table ... SWP|LP for
+        ;;key: Z|...". Same defect, same function (`URC_StakeLpTokenToNativeLpDptf`'s Z| branch
+        ;;was still `drop 2`), and it needed its own differently-hashed block to prove: minting
+        ;;the sleeping counterpart in the SAME block as the frozen one would give it the SAME
+        ;;suffix as the frozen leg (not lp2's), which proves nothing about either real defect.
+        (env-chain-data
+            {"prev-block-hash": (hash "AQPLP-G4-sleeping-leg-real-block"),
+             "block-time": (at "block-time" original-cd)})
+        (if (= (ref-DPTF::UR_Sleeping lp2) (U|CT.CT_BAR))
+            (ref-TS01-C2::VST|C_CreateSleepingLink KST.ANHD (ref-DPTF::UR_Konto lp2) lp2)
+            "sleeping link already exists")
+        (ref-TS01-C2::VST|C_Sleep KST.ANHD KST.ANHD KST.ANHD lp2 (floor (* lp2-balance 0.01) 6) 432000)
         ;;RESTORED IMMEDIATELY, before anything else reads chain-data -- [6.2.17]_AQP-RERATE.repl
         ;;loads right after this transaction commits and must see the suite's one shared hash,
         ;;not a value this test happened to leave behind.
@@ -383,26 +399,42 @@
             (
                 (pool2:string (ref-U|DALOS::UDC_Makeid "FrozenLpProbePool"))
                 (frozen-id:string (ref-DPTF::UR_Frozen lp2))
+                (sleeping-id:string (ref-DPTF::UR_Sleeping lp2))
                 ;;THE EXACT OLD DEFECT, COMPUTED HERE SO IT CAN BE DISPROVEN RATHER THAN DESCRIBED.
-                (old-buggy-core:string (drop 2 frozen-id))
+                (old-buggy-frozen-core:string (drop 2 frozen-id))
+                (old-buggy-sleeping-core:string (drop 2 sleeping-id))
             )
             (map print
                 [
                     (expect "<<AQPLP-G4>> freezing across a DIFFERENT block really did mint a SEPARATE id, not \"F|\" + lp2"
                         true (!= frozen-id (+ "F|" lp2)))
-                    (expect (format "<<AQPLP-G4>> so the OLD prefix-strip logic would NOT have matched: \"{}\" != lp2"
-                                     [old-buggy-core])
-                        false (= old-buggy-core lp2))
+                    (expect "<<AQPLP-G4>> ...and sleeping it, across ANOTHER different block, minted a THIRD id"
+                        true (and (!= sleeping-id (+ "Z|" lp2)) (!= sleeping-id frozen-id)))
+                    (expect (format "<<AQPLP-G4>> so the OLD prefix-strip logic would NOT have matched either: \"{}\" / \"{}\" != lp2"
+                                     [old-buggy-frozen-core old-buggy-sleeping-core])
+                        [false false] [(= old-buggy-frozen-core lp2) (= old-buggy-sleeping-core lp2)])
                     ;;URC_StakeTrueFungibleDptfMatchesPool is AQP-POOL's own function (defined in
                     ;;03_AQP.pact), not AQP-SCORE's -- read through the right module.
                     (expect "<<AQPLP-G4>> FIXED: URC_StakeTrueFungibleDptfMatchesPool now accepts the REAL frozen leg"
-                        true (AQP-POOL.URC_StakeTrueFungibleDptfMatchesPool pool2 frozen-id))
+                        true (ref-AQP::URC_StakeTrueFungibleDptfMatchesPool pool2 frozen-id))
                     (expect "<<AQPLP-G4>> the native leg still matches too -- the fix did not narrow this"
-                        true (AQP-POOL.URC_StakeTrueFungibleDptfMatchesPool pool2 lp2))
+                        true (ref-AQP::URC_StakeTrueFungibleDptfMatchesPool pool2 lp2))
                     (expect "<<AQPLP-G4>> an UNRELATED native leg (G2/G3's own pool's asset) is correctly REFUSED"
-                        false (AQP-POOL.URC_StakeTrueFungibleDptfMatchesPool pool2 (at 0 (keys SWP.SWP|LP))))
+                        false (ref-AQP::URC_StakeTrueFungibleDptfMatchesPool pool2 (at 0 (keys SWP.SWP|LP))))
                     (expect "<<AQPLP-G4>> FIXED: URC_StakeLpTokenToNativeLpDptf resolves the frozen leg back to lp2"
                         lp2 (ref-SCR::URC_StakeLpTokenToNativeLpDptf frozen-id))
+                    ;;THE SLEEPING SIBLING, FIXED THE SAME WAY: not via a new resolver, but via
+                    ;;`DPOF::UR_Sleeping` -- a DIFFERENT function of the same name on a DIFFERENT
+                    ;;module than `DPTF::UR_Sleeping`, already written bidirectionally
+                    ;;(`DPOF::XI_UpdateSleeping` sets the DPOF's own row's reverse pointer in the
+                    ;;SAME transaction `DPTF::XE_UpdateSleeping` sets the forward one) and already
+                    ;;proven in exactly this role by `URC_StakeOrtoFungibleDpofMatchesPool`.
+                    (expect "<<AQPLP-G4>> FIXED: URC_StakeLpTokenToNativeLpDptf resolves the SLEEPING leg back to lp2 too"
+                        lp2 (ref-SCR::URC_StakeLpTokenToNativeLpDptf sleeping-id))
+                    (expect "<<AQPLP-G4>> ...and the reverse link it rides on is DPOF::UR_Sleeping, not DPTF::UR_Sleeping"
+                        lp2 (ref-DPOF::UR_Sleeping sleeping-id))
+                    (expect "<<AQPLP-G4>> URC_StakeOrtoFungibleDpofMatchesPool accepts the REAL sleeping leg (class 0)"
+                        true (ref-AQP::URC_StakeOrtoFungibleDpofMatchesPool pool2 sleeping-id))
                 ]
             )
         )

@@ -4880,33 +4880,47 @@ and given the frozen id it returns the native parent back — the exact mechanis
 it as a style reference rather than re-deriving the same answer twice. Both fixed functions now
 call `DPTF::UR_Frozen` instead of `drop 2 dptf-id`.
 
-**A related, NOT-yet-fixed instance was found while fixing this one.**
-`URC_StakeLpTokenToNativeLpDptf` also prefix-strips `Z|` (sleeping) ids, on the same false
-assumption — and a sleeping DPOF's id is independently minted too (confirmed: native
-`...LP-6D_MJJXmhuz3` vs sleeping `Z|...LP-jGB01kZvL4bh`, different suffixes). Unlike `F|`,
-there is no existing reverse resolver to reuse: `DPTF::UR_Sleeping` is a ONE-WAY write
-(`XE_UpdateSleeping` updates only the native row), so fixing this leg needs a genuine new
-reverse resolver — the same shape of gap `URH_14|PoolForAsset` (§8.52) closed for the
-swpair/pool-id direction. Left unfixed and the `Z|` branch left exactly as it was, so this
-round touches only the leg it fixes; flagged here rather than silently left for a repeat of
-§8.52's own lesson ("fixing where it was reported is not fixing every place the assumption was
-made").
+**A related instance was found while fixing this one, first flagged as a known gap, then
+found to be the SAME fix all along.** `URC_StakeLpTokenToNativeLpDptf` also prefix-strips `Z|`
+(sleeping) ids, on the identical false assumption — a sleeping DPOF's id is independently
+minted too (confirmed: native `...LP-6D_MJJXmhuz3` vs sleeping `Z|...LP-jGB01kZvL4bh`, different
+suffixes). The first pass here reported "no existing reverse resolver for this direction" and
+left it unfixed — **wrong**, and found wrong fast: staking the sleeping leg of the SAME pool was
+reported live immediately after, aborting one call later with a different message (`No value
+found in table ... SWP|LP for key: Z|...`). The reverse resolver exists; it was missed because
+it hides behind a name collision. `DPTF::UR_Sleeping` (native → sleeping, the one checked first)
+really is one-way. But `DPOF::UR_Sleeping` — a **different function of the identical name, on a
+different module** — is written the other way: `DPTF::XE_UpdateSleeping` sets the native row's
+forward pointer, and `DPOF::XI_UpdateSleeping` separately sets the DPOF's OWN row with the
+reverse pointer, in the same transaction. `URC_StakeOrtoFungibleDpofMatchesPool` (`03_AQP.pact`,
+the admission check for an ordinary sleeping stake) already reads exactly this link to resolve a
+`Z|` leg back to its pool's native asset — it was sitting in the same file as the broken
+function, doing the correct thing, the whole time. Both branches of
+`URC_StakeLpTokenToNativeLpDptf` now resolve via a real link: `F|` through `DPTF::UR_Frozen`,
+`Z|` through `DPOF::UR_Sleeping`.
 
-**Why no REPL test caught this across 28,370 prior assertions:** none staked a REAL frozen leg.
-Every existing `CC_StakeTrueFungible` test used a native class-1 asset (`ouro-id` or similar);
-`modules/AQP-LP.repl`'s own earlier note records that until this round, no chain in the suite
-carried both an SWP LP pair AND an AQP score together, let alone a genuinely frozen one.
-**And the obvious regression test would have passed on the OLD buggy code too, in-sandbox**:
-this whole REPL pipeline sets `prev-block-hash` ONCE, to a literal constant every Stage file
-opens with, and never varies it — so freezing an LP within a single REPL session mints a
-frozen id sharing the native token's own suffix, making the buggy `"F|" + native-id` guess
-accidentally correct in test, the opposite of what happens across real, differently-hashed
-mainnet blocks. The new test (`AQPLP-G4` in `modules/AQP-LP.repl`) explicitly varies
-`prev-block-hash` via `env-chain-data` around the freeze call — and restores it immediately
-after, since `[6.2.17]_AQP-RERATE.repl` loads right behind it and depends on the untouched
-suite-wide value — specifically so the test is a faithful reproduction rather than one that
-would have passed before the fix too. Mutation-proven: reverting either function to its old
-`drop 2` form fails two of the seven new assertions.
+**The lesson, on top of §8.52's own:** "no resolver exists" is a claim about the SEARCH, not
+necessarily the codebase — a same-named function on the sibling module (DPOF vs DPTF) was one
+`grep -rn "defun UR_Sleeping"` away and was not checked before the first pass declared the gap
+real. Checking a same-prefix sibling for a DIFFERENT-direction version of a lookup should be
+routine before concluding a lookup does not exist.
+
+**Why no REPL test caught either leg across 28,370 prior assertions:** none staked a REAL frozen
+or sleeping leg. Every existing `CC_StakeTrueFungible`/`CC_StakeOrtoFungible` test used a native
+class-1/2 asset; `modules/AQP-LP.repl`'s own earlier note records that until this round, no
+chain in the suite carried both an SWP LP pair AND an AQP score together, let alone a genuinely
+frozen or sleeping one. **And the obvious regression test would have passed on the OLD buggy
+code too, in-sandbox**: this whole REPL pipeline sets `prev-block-hash` ONCE, to a literal
+constant every Stage file opens with, and never varies it — so minting a special leg within a
+single REPL session gives it the SAME suffix as whatever else was minted in that block, making
+the buggy `"F|"/"Z|" + native-id` guess accidentally correct in test, the opposite of what
+happens across real, differently-hashed mainnet blocks. The test (`AQPLP-G4` in
+`modules/AQP-LP.repl`) explicitly varies `prev-block-hash` via `env-chain-data` around EACH
+special-leg mint (a different block for the freeze, a third different block for the sleep) and
+restores it immediately after each — `[6.2.17]_AQP-RERATE.repl` loads right behind this
+transaction and depends on the untouched suite-wide value. Mutation-proven for both legs
+independently: reverting either branch to its old `drop 2` form fails its own assertions and
+leaves the other leg's passing.
 
 Needs a deploy round: `AQP-POOL` and `AQP-SCORE` both own tables with live dot-callers
 (`python3 REPL/tools/_dotpin.py --upgrade AQP-POOL/AQP-SCORE`), so `RPS`, `AQP-VCT`,

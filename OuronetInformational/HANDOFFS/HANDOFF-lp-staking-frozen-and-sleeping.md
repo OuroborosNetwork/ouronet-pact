@@ -348,16 +348,35 @@ matched a real frozen leg, for any pool; it went uncaught across 28,370 prior as
 none of them staked a genuinely frozen leg (every existing test used a native class-1 asset).
 
 Fixed via a real lookup (`DPTF::UR_Frozen`, which is written bidirectionally and already used
-the other way by `URCv_CoreDptf`) instead of string surgery. Packaged as `Deploy/PureV9`
-(6 transactions: AQP-SCORE, AQP-POOL, then RPS/AQP-VCT/AQP-INFO/AQP-BOOT re-pinning their
-dot-calls into the first two) — **not yet deployed**, awaiting the owner's go-ahead. Gate GREEN,
-28,377 assertions (7 new, mutation-proven). Full writeup: DEFECT-LEDGER §8.53.
+the other way by `URCv_CoreDptf`) instead of string surgery.
 
-A related, independently-broken sibling (`Z|` sleeping-leg resolution in the same
-`URC_StakeLpTokenToNativeLpDptf`) was found but deliberately NOT fixed this round — no reverse
-resolver exists for that direction yet, the same shape of gap `URH_14|PoolForAsset` closed for
-swpair/pool-id. Flagged in both the README and the defect ledger rather than silently left for
-a repeat of §4c's own lesson.
+**A related sibling was found, first wrongly reported as unfixable, then fixed on the same
+round.** `URC_StakeLpTokenToNativeLpDptf` also prefix-stripped `Z|` (sleeping) ids on the
+identical false assumption. First pass concluded no reverse resolver existed for that direction
+and shipped it unfixed — wrong, and found wrong within minutes: the owner tested staking the
+SLEEPING leg of the same pool next (reported, verbatim, after already testing frozen: "stacking
+the sleeping LP also didnt work") and hit the exact same defect class one call later, aborting
+with `No value found in table ... SWP|LP for key: Z|...`. The resolver exists; it hides behind a
+name collision. `DPTF::UR_Sleeping` (native -> sleeping, the one checked) really is one-way. But
+`DPOF::UR_Sleeping` -- a DIFFERENT function of the identical name on a DIFFERENT module -- goes
+the other way: `DPOF::XI_UpdateSleeping` writes the sleeping DPOF's own row with a reverse
+pointer, in the same transaction `DPTF::XE_UpdateSleeping` writes the forward one.
+`URC_StakeOrtoFungibleDpofMatchesPool` (`03_AQP.pact`) already used exactly this link for
+ordinary sleeping-stake admission -- sitting in the same file as the broken function the whole
+time. Both branches now resolve via a real link.
+
+Packaged as `Deploy/PureV9` (6 transactions: AQP-SCORE, AQP-POOL, then
+RPS/AQP-VCT/AQP-INFO/AQP-BOOT re-pinning their dot-calls into the first two) -- **not yet
+deployed**, awaiting the owner's go-ahead. Gate GREEN, 28,381 assertions (11 new,
+mutation-proven independently per leg). Full writeup: DEFECT-LEDGER §8.53.
+
+**Also asked, separately, and worth a straight answer here:** why is staking's entrypoint named
+`CC_StakeOrtoFungible` / `CC_StakeTrueFungible`? Not a naming mistake -- `CC_` (doubled) is this
+repo's own prefix convention for a "heavy" client entrypoint, one that reaches a heavy table
+scan (`URH_`/`URHC_`/`URD_`) somewhere in its execution tree, documented in
+`StoicSyntax-Prefixes.md` and `CLAUDE.md`'s own prefix table. Both stake entrypoints are
+correctly named; the bug was never in which function got called, only in a helper several calls
+deep that computed a wrong intermediate id.
 
 **State at this point:** `Deploy/PostV8/01_o-ui-nine.pact` (merge fix + stake flag) is still the
 only piece of this whole LP-staking arc not yet deployed on the UI-hotfix side; `Deploy/PureV9`
