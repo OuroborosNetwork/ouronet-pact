@@ -4797,3 +4797,51 @@ chain flag, exactly like Unsleep and Merge.
 
 Shipped as `Deploy/PostV8/01_o-ui-nine.pact`. Pinned by 5 new tests in `token-op-specs.test.ts`,
 mutation-proven: reverting `frozen-lp` to `[]` fails the suite.
+
+## 8.52 The swpair/pool-id confusion recurred in the one call site the first fix didn't audit
+
+Found 2026-10-11, reported live against a 10,000-unit frozen LP stake attempt:
+`No value found in table ouronet-ns.AQP-POOL_AQP|T|Pool for key: W|SSTOA-8N...`.
+
+`RemoveLiquidityTab`'s own `poolId` prop has ALWAYS been a SWPAIR — every read inside it
+(`getLPEntries`, `URCv_04|LpEntry`, `SWP.UR_TokenLP`) is keyed on one, because the component
+originates on the SWP-Pairs page where the route param is a swpair. This was discovered and
+fixed once already this session: `PoolsTab.tsx` (which mounts the SAME component from the AQP
+Pools screen, where the native id IS a real AQP pool-id) was wired with a reverse lookup
+(`useLpSwpair`) to resolve the swpair BEFORE mounting the console, closing a "reads return
+nothing" bug.
+
+**What that fix did not do: check every site INSIDE `RemoveLiquidityTab` that also needed the
+OTHER direction.** Two call sites — the `STAKE_TRUE_FUNGIBLE` modal's `poolId` prop and the
+`SleepingLpNonceView` mount's `poolId` prop (which forwards into `STAKE_ORTO_FUNGIBLE`) — were
+wired when the Stake feature was first built, BEFORE the swpair/pool-id split had been named at
+all, and both used `RemoveLiquidityTab`'s own `poolId` (the swpair) directly.
+`CC_StakeTrueFungible` / `CC_StakeOrtoFungible` take a REAL AQP pool-id as their `pool-id`
+argument, not a swpair — a different id space the `AQP|T|Pool` table does not key on, so
+passing one through does not degrade gracefully the way a stale read would; it aborts the
+execution outright.
+
+**No reader existed to go asset-id -> pool-id.** `AQP|Schema` only stores the forward direction
+(`UR_AQP|PoolAssetId`, pool-id -> asset-id). Added `URH_14|PoolForAsset` to `O-UI-FOURTEEN`
+(module-only, interface `OUiFourteenV1` unchanged) — scans `URH_AQP|AllPoolIds` once, filters by
+`UR_AQP|PoolAssetId == asset-id`, returns the match or BAR. Resolved from the NATIVE asset-id
+covers the frozen leg too, since `URC_StakeTrueFungibleDptfMatchesPool` strips a leading `F|`
+before comparing against the pool's own (always-unprefixed) stored asset-id — confirmed by
+reading that function rather than assumed.
+
+On the UI side: `usePoolForAsset` (mirrors `useLpSwpair`'s shape, opposite direction) resolves
+`aqpPoolId` from `nativeFmt?.tokenId`, and both call sites now use it instead of `poolId`. The
+Stake action itself is now gated on `aqpPoolId` being resolved (`nativeActions`/`frozen-lp`'s
+action list, and the modal's own mount condition) rather than offering a button that cannot
+execute — most swpairs wrap no AQP pool at all, and BAR is that genuine answer, not a loading
+state.
+
+**The lesson, stated plainly:** fixing the swpair/pool-id confusion where it was REPORTED is not
+the same as fixing every place the same two variables were conflated. The audit after the first
+fix should have grepped every `poolId` reference inside the one component that carries both
+meanings, not just the specific reads the report pointed at.
+
+Shipped as `Deploy/PostV8/02_o-ui-fourteen.pact` (standalone, no dot-callers, no tables, no
+interface change — same shape as `01_o-ui-nine.pact` beside it). Pinned by 4 new tests in
+`token-op-specs.test.ts`, mutation-proven: reverting either `poolId={aqpPoolId}` /
+`poolId={aqpPoolId ?? ""}` back to `poolId={poolId}` fails the suite.

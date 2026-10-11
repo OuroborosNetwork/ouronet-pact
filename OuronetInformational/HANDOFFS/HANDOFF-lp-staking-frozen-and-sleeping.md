@@ -275,8 +275,58 @@ separate from the wallet-held nonces this Stake wiring uses) remains unbuilt; it
   clean, build clean. No UI code changed this round -- PureV8 is Pact-only.
 * Pact `main` pushed through `PureV8` (ouronet-pact). Gate GREEN, 28,370 assertions
   (23,001 positive / 5,369 negative).
-* `Deploy/PureV7` (9 tx) and `Deploy/PostV7/01_o-ui-nine.pact` are ON CHAIN.
+* `Deploy/PureV7` (9 tx) is ON CHAIN. **`Deploy/PostV7/01_o-ui-nine.pact` is NOT** -- this line
+  previously said it was; a live chain query on `URC_06|Buttons` (1 selected nonce) returned
+  `merge: true` with no `"stake"` key at all, which is the PRE-fix shape. CORRECTED here rather
+  than silently re-stated, because the wrong line had already been carried forward once.
 * `Deploy/PureV8` (3 tx: AQP-FVT, TS02-C3, AQP-INFO+AQP-BOOT) is PACKED, NOT YET DEPLOYED.
   Sequential, no client transaction needed -- see `Deploy/PureV8/README.md`.
+* `Deploy/PostV8/01_o-ui-nine.pact` (merge fix + stake flag) and `02_o-ui-fourteen.pact`
+  (§6b's `URH_14|PoolForAsset`) are PACKED, NOT YET DEPLOYED. Both are standalone leaf-module
+  hotfixes -- no ordering dependency on `PureV8` or on each other.
 * After PureV8 deploys: run the Scripts pane (Admin -> Scripts -> Run the full chain). Step 3
   is what unblocks §4c's reassignment-UI next action.
+* **Nothing in `Deploy/` goes to devwallet or master without the owner's explicit word.** Git
+  commits/pushes to `dev`/`main` continue as normal; chain deploys are separately gated.
+
+## 6b. FOUND AND FIXED, 2026-10-11 — frozen LP staking aborted on-chain: the swpair/pool-id
+confusion recurred in a call site §6's own fix never audited
+
+Reported live against a 10,000-unit frozen LP stake attempt:
+
+```
+No value found in table ouronet-ns.AQP-POOL_AQP|T|Pool for key: W|SSTOA-8N...
+```
+
+`RemoveLiquidityTab`'s `poolId` prop is a SWPAIR (confirmed: `getLPEntries`, `URCv_04|LpEntry`,
+`SWP.UR_TokenLP` are all keyed on it) -- `CC_StakeTrueFungible` / `CC_StakeOrtoFungible` need a
+REAL AQP pool-id for their `pool-id` parameter, a different id space `AQP|T|Pool` is keyed on.
+§6's Stake wiring used `poolId` directly at both its call sites (the `STAKE_TRUE_FUNGIBLE` modal
+and the `SleepingLpNonceView` mount, which forwards into `STAKE_ORTO_FUNGIBLE`) because they were
+built before this split had a name. The `PoolsTab.tsx` fix for the SAME confusion (§4c/earlier
+this session) resolved the opposite direction -- pool-id -> swpair, via `useLpSwpair` -- and
+never touched these two sites, since nothing had reported them broken yet.
+
+**No reader went the direction this needed.** `AQP|Schema` stores only pool-id -> asset-id
+(`UR_AQP|PoolAssetId`). Added `URH_14|PoolForAsset(asset-id)` to `O-UI-FOURTEEN` (module-only,
+`OUiFourteenV1` unchanged) -- one scan over `URH_AQP|AllPoolIds`, filtered by
+`UR_AQP|PoolAssetId == asset-id`, BAR when nothing matches. Resolved from the NATIVE asset-id
+(`nativeFmt?.tokenId`) covers the frozen leg too: `URC_StakeTrueFungibleDptfMatchesPool` strips a
+leading `F|` before comparing against the pool's own unprefixed stored id, read directly rather
+than assumed.
+
+UI: `usePoolForAsset` (new hook, mirrors `useLpSwpair`'s shape in the opposite direction)
+resolves `aqpPoolId`; both call sites now pass it instead of `poolId`, and the Stake action
+(native row, frozen row, and the modal's own mount) is gated on `aqpPoolId` having resolved --
+most swpairs wrap no AQP pool at all, and that is a real BAR, not a loading state.
+
+Not yet verified against mainnet -- the new Pact function is not deployed (see
+`Deploy/PostV8/02_o-ui-fourteen.pact`, packed, awaiting the owner's go-ahead). Gate GREEN
+(28,370 assertions) and the full UI suite (1,675 tests, including 4 new regression tests,
+mutation-proven) both pass against the source, which is as far as this can be checked before
+that deploy lands.
+
+**Lesson recorded in DEFECT-LEDGER §8.52**: fixing a swpair/pool-id confusion where it was
+reported is not the same as fixing every place the same two variables were conflated -- the
+first fix should have grepped every `poolId` reference inside the one component that carries
+both meanings, not just the specific reads the original report pointed at.

@@ -45,7 +45,7 @@ Two different questions, two different numbers — quoting the wrong one oversta
 | &nbsp;&nbsp;positive (`expect`) | 23,001 |
 | &nbsp;&nbsp;negative (`expect-failure`) | 5,369 |
 | gate entrypoints | 93 |
-| per-function rows | 5,710 |
+| per-function rows | 5,711 |
 
 *Executed* exceeds *distinct* because shared files run once per entrypoint that loads them. **Quote the distinct figure for "how many tests exist"**; the executed figure answers "how much ran".
 
@@ -70,11 +70,11 @@ Two denominators, and mixing them is how this gets misreported. **All defined fu
 
 | | all defined | client-reachable |
 |---|---:|---:|
-| functions | **5,710** | **4,852** |
+| functions | **5,711** | **4,853** |
 | named directly by a test | 2,547 | 2,523 |
 | reached only *through* another function | 2,233 | 1,512 |
 | **reached at all** | 4,780 | **4,035 (83%)** |
-| never reached | 930 | 817 |
+| never reached | 931 | 818 |
 
 **Total function invocations across the suite, duplicates included: 19,024.** That is every call site in every `.repl`, so a function called in 20 files counts 20 times — it answers "how much testing happens", not "how much is covered".
 
@@ -106,7 +106,7 @@ Two denominators, and mixing them is how this gets misreported. **All defined fu
 | `UDC_` | 44 / 219 | 2,370 |
 | `CT_` | 9 / 196 | 80 |
 | `XE_` | 9 / 177 | 19 |
-| `URH_` | 61 / 87 | 377 |
+| `URH_` | 61 / 88 | 377 |
 | `WU_` | 0 / 64 | 0 |
 | `CC_` | 37 / 53 | 444 |
 | `SC_` | 22 / 38 | 147 |
@@ -150,7 +150,7 @@ The **live worklist** is the figure to size remaining work by. It is NOT `_cheap
 | `@doc` AUTHORITY claims | 21 | `_docclaims.py` |
 | `@doc` IMMUTABLE claims | 8 | `_docclaims.py` |
 | `@doc` BOUND claims | 9 | `_docclaims.py` |
-| `@doc` INVARIANT claims | 137 | `_docclaims.py` |
+| `@doc` INVARIANT claims | 138 | `_docclaims.py` |
 | conformance violations | 0 | `_conformance.py` |
 | conformance observations | 106 | `_conformance.py` |
 
@@ -158,7 +158,7 @@ The **live worklist** is the figure to size remaining work by. It is NOT `_cheap
 
 ## 5. Every function and how many times it is tested
 
-`calls` = times a `.repl` names it directly. `reach` = **DIRECT** (named by a test), **VIA** (only executed through another function), **-** (never reached). All 5,710 rows, most-tested first.
+`calls` = times a `.repl` names it directly. `reach` = **DIRECT** (named by a test), **VIA** (only executed through another function), **-** (never reached). All 5,711 rows, most-tested first.
 
 | calls | reach | file | module | function |
 |---:|---|---|---|---|
@@ -4753,6 +4753,7 @@ The **live worklist** is the figure to size remaining work by. It is NOT `_cheap
 | 0 | - | `14_O-UI-FOURTEEN.pact` | `O-UI-FOURTEEN` | `GOV|Demiurgoi` |
 | 0 | VIA | `14_O-UI-FOURTEEN.pact` | `O-UI-FOURTEEN` | `URC_14|MyScoreInPool` |
 | 0 | VIA | `14_O-UI-FOURTEEN.pact` | `O-UI-FOURTEEN` | `URC_14|PoolLabel` |
+| 0 | - | `14_O-UI-FOURTEEN.pact` | `O-UI-FOURTEEN` | `URH_14|PoolForAsset` |
 | 0 | - | `09_O-UI-NINE.pact` | `O-UI-NINE` | `GOV|Demiurgoi` |
 | 0 | VIA | `09_O-UI-NINE.pact` | `O-UI-NINE` | `UC_Price` |
 | 0 | VIA | `09_O-UI-NINE.pact` | `O-UI-NINE` | `UDC_ZeroValuation` |

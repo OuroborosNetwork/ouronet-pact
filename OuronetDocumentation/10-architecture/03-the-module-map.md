@@ -15,7 +15,7 @@ arrange.
   interface and no module.
 - **fn / cap** — counts of `defun` and `defcap` **forms** in the module body. A function declared in
   an interface and defined in the module is counted once here (the interface half is excluded),
-  which is why these sum lower than the tree-wide 9,013 on the front page. Different question,
+  which is why these sum lower than the tree-wide 9,014 on the front page. Different question,
   different number, both stated.
 - **sch/tbl** — `defschema` and `deftable` forms in the file.
 - **`@doc`** — the module author's own first clause, truncated. It is orientation, not a
@@ -134,7 +134,7 @@ is*; that section answers *what it does and why*.
 
 ### Reads
 
-16 file(s) · 15 module(s) · 15 interface(s) · 10,750 lines
+16 file(s) · 15 module(s) · 15 interface(s) · 10,777 lines
 
 | module | file | lines | fn | cap | sch/tbl | its own one-line `@doc` |
 |---|---|---:|---:|---:|---:|---|
@@ -152,7 +152,7 @@ is*; that section answers *what it does and why*.
 | `O-UI-TEN` | `Stage_Z/AppReads/OuronetUI/10_O-UI-TEN.pact` | 388 | 12 | 2 | 0/0 | Does this non-fungible nonce exist? `existance` flips the sense, so one function answers both `burn` (must exist) and `respawn` (must not). |
 | `O-UI-TWELVE` | `Stage_Z/AppReads/OuronetUI/12_O-UI-TWELVE.pact` | 491 | 20 | 2 | 0/0 | What a failing panel yields from URC_Pool. |
 | `O-UI-THIRTEEN` | `Stage_Z/AppReads/OuronetUI/13_O-UI-THIRTEEN.pact` | 597 | 14 | 2 | 0/0 | The anchored asset's kind, as one word, from the [bool] discriminator AQP-ANK stores. |
-| `O-UI-FOURTEEN` | `Stage_Z/AppReads/OuronetUI/14_O-UI-FOURTEEN.pact` | 411 | 10 | 2 | 0/0 | The score's asset kind, named. |
+| `O-UI-FOURTEEN` | `Stage_Z/AppReads/OuronetUI/14_O-UI-FOURTEEN.pact` | 438 | 11 | 2 | 0/0 | The score's asset kind, named. |
 | `P-UI-ONE` | `Stage_Z/AppReads/Pythia/01_P-UI-ONE.pact` | 129 | 4 | 2 | 0/0 | The API-key row for each Apollo account (₱. |
 
 ### Citizen
@@ -199,8 +199,8 @@ is*; that section answers *what it does and why*.
 | files | 107 |
 | module forms | 101 |
 | interface forms | 100 |
-| lines | 128,594 |
-| `defun` forms | 5,711 |
+| lines | 128,621 |
+| `defun` forms | 5,712 |
 | `defcap` forms | 1014 |
 | schemas / tables | 207 / 232 |
 <!-- @end:module-map -->
@@ -218,9 +218,9 @@ because two generated numbers disagreeing in the same folder reads as one of the
 
 | figure | front page | this page | why |
 |---|---|---|---|
-| `defun` forms | 9,013 | **5,649** | the front page counts the whole file; this page counts the module BODY only. The 3,302 difference is interface declarations — the same function named in an interface and defined in the module. **CORRECTED 2026-10-09: this row quoted 5,607 and a difference of 3,344, and 9,013 − 5,607 is 3,344 only if the 5,607 is right — it was not.** 5,649 is what the generated table twenty lines above this one reports, which is the figure this row is supposed to be explaining. A hand-written row that paraphrases a generated one drifts the moment the generator moves, and the arithmetic stays internally consistent while being wrong — which is why it survived. |
+| `defun` forms | 9,014 | **5,649** | the front page counts the whole file; this page counts the module BODY only. The 3,302 difference is interface declarations — the same function named in an interface and defined in the module. **CORRECTED 2026-10-09: this row quoted 5,607 and a difference of 3,344, and 9,014 − 5,607 is 3,344 only if the 5,607 is right — it was not.** 5,649 is what the generated table twenty lines above this one reports, which is the figure this row is supposed to be explaining. A hand-written row that paraphrases a generated one drifts the moment the generator moves, and the arithmetic stays internally consistent while being wrong — which is why it survived. |
 | `defcap` forms | 988 | **987** | exactly one `defcap` is declared in an *interface* rather than a module: `1_SOVEREIGN/STAGE_02/2_Core/03_AQP/01_ANK.pact`. Verified by scanning every file's pre-`(module …)` head. |
-| lines | 128,594 | 128,594 | agree, deliberately. Both count newlines — `wc -l` semantics. A file whose last line carries no terminating newline contributes one line `wc -l` does not see, so a LOGICAL line count gives **128,667 — exactly 73 more**, and 73 is precisely the number of such files. **CORRECTED 2026-10-09: this row had been flattened by a blanket figure replace** — all four numbers in it had become identical, leaving the sentence "128,594 against a `wc -l` of 128,594 — 57 more" and the arithmetic "128,594 − 128,594 = 73". Both are self-refuting, and they sat side by side long enough to be quoted onward. The lesson is the one the neighbouring note already drew and this row then suffered: a blanket replace across prose destroys the figures that exist to CHECK each other. Re-measured 2026-10-09: `wc -l` 125,957, files lacking a final newline 73, logical lines 128,667. |
+| lines | 128,621 | 128,621 | agree, deliberately. Both count newlines — `wc -l` semantics. A file whose last line carries no terminating newline contributes one line `wc -l` does not see, so a LOGICAL line count gives **128,694 — exactly 73 more**, and 73 is precisely the number of such files. **CORRECTED 2026-10-09: this row had been flattened by a blanket figure replace** — all four numbers in it had become identical, leaving the sentence "128,621 against a `wc -l` of 128,621 — 57 more" and the arithmetic "128,621 − 128,621 = 73". Both are self-refuting, and they sat side by side long enough to be quoted onward. The lesson is the one the neighbouring note already drew and this row then suffered: a blanket replace across prose destroys the figures that exist to CHECK each other. Re-measured 2026-10-09: `wc -l` 125,957, files lacking a final newline 73, logical lines 128,694. |
 
 The line-count case is the instructive one. Counting a final unterminated line *as a line* is
 arguably more correct, and it was the wrong choice: it put a 73-line discrepancy between two

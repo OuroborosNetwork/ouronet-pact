@@ -26,7 +26,7 @@ Counts are of definitions in the tree, interface declarations included.
 | `UDC_` | 330 | data construction — a named constructor for an object |
 | `CT_` | 279 | a constant, exposed as a function |
 | `GOV|` | 160 | governance — keysets and protocol constants |
-| `URH_` | 158 | **scan** — walks a table. Off the execution path; cost grows with data |
+| `URH_` | 159 | **scan** — walks a table. Off the execution path; cost grows with data |
 | `P|` | 121 | policy — inter-module authorisation |
 | `CC_` | 100 | client entry that reaches a **scan** |
 | `WU_` | 64 | write — update |

@@ -364,6 +364,33 @@
         )
     )
 
+    (defun URH_14|PoolForAsset:string (asset-id:string)
+        @doc "Which AQP pool, if any, carries <asset-id> as its canonical asset -- the REVERSE \
+            \ of `UR_AQP|PoolAssetId`, which AQP-POOL has no index for: a pool row stores its \
+            \ own asset-id keyed BY pool-id, so there is no table that goes the other way. \
+            \ \
+            \ Added 2026-10-11 for the LP console (`RemoveLiquidityTab`), which already resolves \
+            \ the SWPAIR behind an LP token (`SWP::UR_GetLpSwpair`) and needs this to resolve the \
+            \ AQP pool-id too, for `CC_StakeTrueFungible`/`CC_StakeOrtoFungible`'s own `pool-id` \
+            \ parameter. Passing a swpair there instead -- the bug this closes -- aborts with \
+            \ \"No value found in table ... AQP|T|Pool for key: W|...\", because that table is \
+            \ keyed on the AQP pool-id and a swpair string is never one. \
+            \ \
+            \ BAR means no AQP pool wraps this asset -- a real answer, not a missing one: most \
+            \ swapped assets have no AQP pool at all. Scans every pool once; there is no cheaper \
+            \ answer without an index this module does not own."
+        (let*
+            (
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
+                (hit:[string]
+                    (filter (lambda (p:string) (= (ref-AQP::UR_AQP|PoolAssetId p) asset-id))
+                            (ref-AQP::URH_AQP|AllPoolIds)))
+            )
+            (if (= (length hit) 0) (ref-U|CT::CT_BAR) (at 0 hit))
+        )
+    )
+
     (defun URH_14|MyPoolIds:[string] (account:string)
         @doc "Every pool this account is a BENEFICIARY in, across all four asset kinds, deduped. \
             \ Four scans, one per tracker table -- there is no single staking table and a pool \
