@@ -64,7 +64,7 @@ is right to: after the comma-formatted counts were updated it still reported a N
 # defun 8918 · defcap 992 · defschema 206 · deftable 231 · defpact 6
 ```
 
-an UNFORMATTED copy inside a shell-output example that a `128,586`→`128,586` style replace
+an UNFORMATTED copy inside a shell-output example that a `128,594`→`128,594` style replace
 cannot see. "A number within 1% carrying the same label nearby" is exactly what a stale copy of
 a drifting count looks like, and that check earned its place.
 

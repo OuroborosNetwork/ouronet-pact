@@ -375,6 +375,14 @@
                     ,"revert"       : redeem-and-revert
                     ,"transmit"     : (fold (and) true [(not iz-empty) has-segmentation])
                     ,"transfer"     : (not iz-empty)
+                    ;;ANY SELECTION, ANY LEG. `CC_StakeOrtoFungible` accepts a native, sleeping
+                    ;;or hibernating dpof alike -- staking is not restricted to a leg kind, only
+                    ;;to holding the nonce at all, which `selected-nonces` already proves by
+                    ;;construction (ticked from the wallet's own holdings). Mirrors `transfer`,
+                    ;;the other operation with no leg-kind precondition. Added 2026-10-11 so the
+                    ;;sleeping-LP nonce view's Stake button is chain-gated like every button
+                    ;;beside it, rather than locally assumed enabled.
+                    ,"stake"        : (not iz-empty)
                     }
                 )
             )

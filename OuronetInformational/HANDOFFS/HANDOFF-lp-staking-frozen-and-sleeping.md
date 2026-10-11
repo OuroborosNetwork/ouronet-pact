@@ -225,6 +225,50 @@ a per-row question.
 5. Ortofungible unstake view — now simpler per §4c: owner is always the viewer, so only the
    beneficiary column varies per row.
 
+## 6. DONE, 2026-10-11 — staking all three LP variants, via the Remove-Liquidity view
+
+Owner's call, superseding §2's open capture-pattern question: reuse the Remove-Liquidity LP
+view wholesale rather than build a separate staking screen or a two-tab page -- *"we wouldn't
+need to invent anything, showing 3 entries, just like we have there, while having an upper
+button row above... we bring all the inputs in the ZBOM."* This closes §5 step 4/5's "settle
+the capture question" by making it moot: there is no new capture pattern, the existing ZBOM is
+the capture pattern, for all three variants.
+
+* **Native + Frozen LP** -- `"stake"` added to `nativeActions` and to `frozen-lp`'s action list
+  (was hardcoded `[]`, "permanently locked" -- true for transfer/unfreeze, never true for
+  staking). Both open `STAKE_TRUE_FUNGIBLE` with `subject={actionTokenId}` -- whichever row was
+  clicked, native or frozen, since `CC_StakeTrueFungible` accepts an `F|` subject exactly like
+  the native one.
+* **Sleeping LP** -- `"stake"` reachable only from inside the nonce view (same reasoning as
+  Unsleep/Merge: `CC_StakeOrtoFungible` takes a nonce LIST, which only exists once nonces are
+  selected). Opens `STAKE_ORTO_FUNGIBLE` with the selection and `poolId` (new prop on
+  `SleepingLpNonceView`).
+* **Chain-gated, not locally guessed**: added a `"stake": (not iz-empty)` flag to
+  `URC_06|Buttons` (mirrors `transfer`, the only other flag with no leg-kind precondition) so
+  the nonce view's Stake button answers to the same chain authority as Unsleep and Merge.
+  Shipped as `Deploy/PostV8/01_o-ui-nine.pact` (standalone, no dot-callers, no tables).
+* `LP_ACTION_LINE` gained `"stake"`; `ALL_TOKEN_ACTIONS` gained a `stake` catalogue entry
+  (`Coins` icon, matching `STAKE_TRUE_FUNGIBLE`'s own icon).
+* Tested: 5 new source-grep assertions in `token-op-specs.test.ts`, mutation-proven (reverting
+  `frozen-lp` to `[]` fails the suite). 101 files / 1651 tests, typecheck clean, build clean,
+  lint at the unchanged baseline.
+
+**Open, flagged rather than guessed:** the owner separately reported a "resident account"
+address display that stays abbreviated even when page width would fit the full string.
+Traced to `RegistryOpCFMModal`'s `<Modal width={600}>` -- the ZBOM modal is a FIXED 600px
+regardless of viewport, so `ResidentAccountDisplay`'s otherwise-responsive layout never gets
+more room on a wide screen. Not fixed yet: `Modal` is a shared primitive used by many ZBOMs
+across the app, and `ResidentAccountDisplay`'s dimmed middle-fill (`color: #333` on a near-black
+background) may be an intentional "there is more here" visual rather than content meant to
+become legible -- changing either needs the owner's confirmation before touching a
+widely-shared component.
+
+**Still open from the original §1-5 scope:** the REASSIGNMENT UI (orto + collectable),
+unblocked since the owner ran the Scripts pane -- next concrete action per §4c. The
+per-nonce STAKED-POSITIONS view (showing who currently benefits from each staked nonce,
+separate from the wallet-held nonces this Stake wiring uses) remains unbuilt; it needs
+`URH_AQP|DpofStakesByOwner`, a different reader from the one `SleepingLpNonceView` uses today.
+
 ## State at handoff (updated 2026-10-11)
 
 * UI `v2.17.2` pushed to both `dev` and `master` (OuronetUI). 101 files / 1,646 tests, typecheck

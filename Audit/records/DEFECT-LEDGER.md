@@ -4770,3 +4770,30 @@ bigger, slower change than this round needed, and the chain holds **zero** custo
 migrate, confirmed (`URH_AQP|DpofStakesByOwner GOV|AQP|SC_NAME -> []`) before any code was
 touched. `UC_VacateOrtoDestinations`'s custodial-redirect branch (§8.38/8.39) is now dead code by
 the same mechanism — the fix stays correct, the path it defends is simply unreachable.
+
+## 8.51 Frozen LP had zero actions, and staking was never chain-gated for the nonce view
+
+Found/closed together, 2026-10-11, while wiring the owner's "reuse the Remove-Liquidity view"
+design for staking all three LP variants.
+
+**`"frozen-lp": []`, with the comment "frozen LP is permanently locked".** True of transfer and
+unfreeze — there is no unfreeze path in the tree, `C_RepurposeFrozen` is an admin migration, not
+a user one — and false of staking, which `stakeableTf`'s own query already proves by including
+the frozen leg as a first-class candidate (`[asset, "F|"+asset]`). The comment generalised a
+true fact about two operations into a false fact about all of them, and nothing had exercised the
+gap because the frozen row had never offered any action to probe.
+
+**`URC_06|Buttons` had no `"stake"` flag.** Every other nonce action in the sleeping-LP view —
+Unsleep, Merge — answers to this one chain-side reader; staking would have had to be enabled by
+local guesswork (selection non-empty) had it been wired without this. Added
+`"stake": (not iz-empty)`, mirroring `transfer`, the only existing flag with no leg-kind
+precondition — `CC_StakeOrtoFungible` accepts native, sleeping or hibernating legs alike.
+
+Fixed together: `frozen-lp` now offers `["stake"]`; native LP's action list carries `"stake"`
+too; both route to `STAKE_TRUE_FUNGIBLE` keyed on `actionTokenId` (whichever row was clicked,
+not hardcoded to the native id the way Freeze/Sleep are, since those genuinely only ever
+apply to the native leg). Sleeping LP's stake lives inside the nonce view, gated by the new
+chain flag, exactly like Unsleep and Merge.
+
+Shipped as `Deploy/PostV8/01_o-ui-nine.pact`. Pinned by 5 new tests in `token-op-specs.test.ts`,
+mutation-proven: reverting `frozen-lp` to `[]` fails the suite.

@@ -3,17 +3,17 @@
 > **This page is GENERATED.** Edit `REPL/tools/_docsref.py`, never this file — the
 > gate regenerates it and diffs the result. It carries no prose for that reason.
 
-Every client entrypoint Ouronet exposes — **437** of them — with the preview
+Every client entrypoint Ouronet exposes — **438** of them — with the preview
 that prices it and whether the gas station pays for it.
 
 **Bind preview arguments by NAME, never by position.** A preview's parameter list
-differs from its entrypoint's in **421**
+differs from its entrypoint's in **422**
 cases. Positional binding does not fail — the values are mostly strings, so a wrong
 mapping type-checks and returns a confident price for a different question.
 
 | sponsorship | entrypoints |
 |---|---:|
-| fully sponsored | 419 |
+| fully sponsored | 420 |
 | step-0-only | 10 |
 | not sponsored | 8 |
 
@@ -452,7 +452,8 @@ mapping type-checks and returns a confident price for a different question.
 | `AQP-POOL|CCp_BatchVacateCollectables` | `AQP-INFO.INFO_AQP-POOL|BatchVacateCollectables` | yes |
 | `AQP-POOL|CCp_BatchVacateOrtoFungible` | `AQP-INFO.INFO_AQP-POOL|BatchVacateOrtoFungible` | yes |
 | `AQP-POOL|CCp_BatchVacateTrueFungible` | `AQP-INFO.INFO_AQP-POOL|BatchVacateTrueFungible` | yes |
-| `AQP-POOL|CCp_ReassignCustodialBeneficiary` | `AQP-INFO.INFO_AQP-POOL|ReassignCustodialBeneficiary` | yes |
+| `AQP-POOL|CCp_ReassignCollectableStakeBeneficiary` | `AQP-INFO.INFO_AQP-POOL|ReassignCollectableStakeBeneficiary` | yes |
+| `AQP-POOL|CCp_ReassignOrtoStakeBeneficiary` | `AQP-INFO.INFO_AQP-POOL|ReassignOrtoStakeBeneficiary` | yes |
 | `AQP-POOL|CCp_ReleaseSpecialCustodial` | `AQP-INFO.INFO_AQP-POOL|ReleaseSpecialCustodial` | yes |
 | `AQP-POOL|CCp_StakeSpecialCustodial` | `AQP-INFO.INFO_AQP-POOL|StakeSpecialCustodial` | yes |
 | `AQP-POOL|C_AbortVacate` | `AQP-INFO.INFO_AQP-POOL|AbortVacate` | yes |

@@ -240,7 +240,12 @@ LEG_PREFLIGHT = {
     # nonces are order-independent, which is what makes them parallel in the same sense.
     "AQP-POOL|CCp_StakeSpecialCustodial":    ["DPOF.URH_AccountNonces"],
     "AQP-POOL|CCp_ReleaseSpecialCustodial":  ["AQP-POOL.URH_AQP|DpofStakesByBeneficiary"],
-    "AQP-POOL|CCp_ReassignCustodialBeneficiary": ["AQP-POOL.URH_AQP|DpofStakesByOwner"],
+    # RENAMED/GENERALIZED 2026-10-11 (PureV8, custody retired for a maturity lock). Both take
+    # a scalar nonce and migrate a position's earnings in place, so the preflight is the same
+    # shape as the custodial trio above -- enumerate this owner's positions, one tx per nonce.
+    "AQP-POOL|CCp_ReassignOrtoStakeBeneficiary": ["AQP-POOL.URH_AQP|DpofStakesByOwner"],
+    "AQP-POOL|CCp_ReassignCollectableStakeBeneficiary":
+        ["AQP-POOL.URH_AQP|DpsfStakesByOwner", "AQP-POOL.URH_AQP|DpnfStakesByOwner"],
 }
 
 
