@@ -93,6 +93,84 @@ nominating someone else today is equivalent to giving them the asset. There is n
 
 Owner has not ruled between (a) and (b). **Ask before building.**
 
+## 4b. OWNER RULING, 2026-10-11 — the gap is CLOSED by design, and it is smaller than it looked
+
+> *"We switch back to the original mode, where I am the owner of the staked batch, while
+> specifying a beneficiary (me or someone else). We simply disallow unstaking until the sleeping
+> period expires, while allowing switching the beneficiary while the batch is staked — and the
+> same must exist for every staked NFT and SFT. For true fungibles we don't need this; it's
+> complicated to get right, leave it as is."*
+
+**Custody is replaced by a MATURITY LOCK.** Ownership returns to the staker; what guarantees the
+pool holds the asset for the full term is an explicit refusal to unstake before the release date,
+not a different name in the owner column.
+
+### Why this is safe, verified rather than assumed
+
+`XI_OrtoStakePhases`'s docstring is decisive (`05_FVT.pact`, ~3816):
+
+> *"the batch moves from the USER while the tracker records `AQP|SC_NAME` as its owner. That
+> single split IS the custody mechanism — the tracker key is what `CAP_StakeOwner` checks on an
+> unstake, so naming the pool as owner makes an early user exit fail for free."*
+
+So **the asset already leaves the user in the ORDINARY flow too.** Custody was never about
+possession; it was one column. Returning ownership therefore creates **no transfer risk** — a
+staker cannot move a batch they no longer hold — and the only thing lost is the free early-exit
+refusal, which is exactly what the maturity lock replaces.
+
+### The three roles ALREADY EXIST as parameters
+
+`XI_OrtoStakePhases` takes them separately today:
+
+| role | parameter | meaning under the new model |
+|---|---|---|
+| who hands the asset over | `transfer-sender` | the staker |
+| who may unstake, and gets the PRINCIPAL back | `tracker-owner` | the staker (was `AQP\|SC_NAME`) |
+| who EARNS while staked | `settle-beneficiary` | anyone the staker names |
+
+This is the third role the 2026-10-10 note said was missing. It is not missing — it was being
+collapsed by passing the pool as `tracker-owner`. **Switching the beneficiary is therefore not
+giving away the asset**, because the principal follows `tracker-owner`, not the beneficiary.
+
+### What actually has to be built
+
+1. **A maturity guard on the sleeping unstake path.** Refuse while `release-date > now`. The
+   reader exists (`DPOF::UR_NonceMetaData` → `release-date`); `VST::UEV_StillHasSleeping`
+   enforces the OPPOSITE (`dt > 0`, must still be dormant), so this is its mirror and the two
+   should be written as a pair so neither drifts.
+2. **An in-place beneficiary switch**, for sleeping LP **and for every staked NFT and SFT**.
+   `CCp_ReassignCustodialBeneficiary` is the sleeping-LP prototype — it runs the orto flow twice
+   with `move-asset` false. Generalise it; do NOT copy it three times.
+3. **Retire or re-point the custodial path.** `CCp_StakeSpecialCustodial` /
+   `CCp_ReleaseSpecialCustodial` exist only to express custody. Under the new model an ordinary
+   unstake at maturity hands the batch back and the user unsleeps it themselves through the
+   normal `VST` path — so the custodial release may be **removable**, not merely adjusted.
+   Check before deleting: `move-asset=false` exists because a pool-owned batch cannot be handed
+   to the account in the owner column, and that reason disappears here.
+4. **The mandatory-custody guard added in PureV6 must INVERT.** It currently refuses a
+   multiplier-earning sleeping leg that is NOT staked under pool custody
+   (`"Invalid stake path: a sleeping leg that earns a duration multiplier must be staked under
+   pool custody"`). Under the new model that is exactly backwards.
+5. **True fungibles are OUT OF SCOPE** by ruling. No beneficiary switching for TF stakes.
+
+### Open questions for the owner
+
+* Does the beneficiary switch still need the transfer-restriction gate
+  (`URC_SpecialLegIssuerRestricted` → `UEV_MoveRoleCheck`)? It was added because reassignment
+  was a DEFERRED DELIVERY of the asset. Under the new model it redirects *earnings only* and the
+  principal never leaves the owner — so the justification for that gate appears to evaporate.
+  **Do not remove it without a ruling**; it is the difference between "sell a locked position"
+  and "pay someone my yield".
+* Is a beneficiary switch free, or priced? It is cheap (no asset movement), but it is a client
+  op and everything else in the tree is billed.
+* What happens to a position whose beneficiary is a smart account that later vanishes?
+
+### Migration
+
+Check whether anything is staked under the custodial path before changing semantics. If nothing
+is, the model can change freely; if something is, the owner column on those rows says
+`AQP|SC_NAME` and no user could ever unstake them under the new rules.
+
 ## 5. Suggested order
 
 1. Settle the ortofungible capture question (§2) and the (a)/(b) ruling (§4) — both are
