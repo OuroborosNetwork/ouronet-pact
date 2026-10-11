@@ -330,3 +330,37 @@ that deploy lands.
 reported is not the same as fixing every place the same two variables were conflated -- the
 first fix should have grepped every `poolId` reference inside the one component that carries
 both meanings, not just the specific reads the original report pointed at.
+
+## 7. The pool-id fix deployed, and staking a frozen leg still failed — a real Pact defect
+
+Owner deployed `Deploy/PostV8/02_o-ui-fourteen.pact` (`URH_14|PoolForAsset`) directly, without
+waiting on a round-trip through this handoff. Confirmed live: `aqpPoolId` now resolves to the
+real pool-id and the Stake button lights up correctly. Testing then surfaced a SECOND, deeper
+bug on the very next attempt: staking the frozen leg of the same pool was refused on-chain with
+`Invalid dptf-id: leg does not match pool canonical asset`.
+
+**This was not a UI bug and not something this session introduced.** `URC_StakeTrueFungibleDptfMatchesPool`
+(`AQP-POOL`, `03_AQP.pact`) and `URC_StakeLpTokenToNativeLpDptf` (`AQP-SCORE`, `02_SCORE.pact`)
+both assumed a frozen leg's id is `"F|"` + the native id, recovered by string-stripping the
+prefix. It never is — `VST::XI_CreateSpecialTrueFungibleLink` mints the frozen counterpart as
+its own token with an independently block-hash-derived suffix. Neither function could ever have
+matched a real frozen leg, for any pool; it went uncaught across 28,370 prior assertions because
+none of them staked a genuinely frozen leg (every existing test used a native class-1 asset).
+
+Fixed via a real lookup (`DPTF::UR_Frozen`, which is written bidirectionally and already used
+the other way by `URCv_CoreDptf`) instead of string surgery. Packaged as `Deploy/PureV9`
+(6 transactions: AQP-SCORE, AQP-POOL, then RPS/AQP-VCT/AQP-INFO/AQP-BOOT re-pinning their
+dot-calls into the first two) — **not yet deployed**, awaiting the owner's go-ahead. Gate GREEN,
+28,377 assertions (7 new, mutation-proven). Full writeup: DEFECT-LEDGER §8.53.
+
+A related, independently-broken sibling (`Z|` sleeping-leg resolution in the same
+`URC_StakeLpTokenToNativeLpDptf`) was found but deliberately NOT fixed this round — no reverse
+resolver exists for that direction yet, the same shape of gap `URH_14|PoolForAsset` closed for
+swpair/pool-id. Flagged in both the README and the defect ledger rather than silently left for
+a repeat of §4c's own lesson.
+
+**State at this point:** `Deploy/PostV8/01_o-ui-nine.pact` (merge fix + stake flag) is still the
+only piece of this whole LP-staking arc not yet deployed on the UI-hotfix side; `Deploy/PureV9`
+is the new, not-yet-deployed piece on the Pact side. Owner has asked, explicitly, to be told
+up front whenever a fix needs a deploy to actually take effect — noted as a standing rule for
+every future round in this arc, not just this one.

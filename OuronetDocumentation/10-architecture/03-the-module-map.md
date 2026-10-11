@@ -87,7 +87,7 @@ is*; that section answers *what it does and why*.
 
 ### Core — Stage 2
 
-22 file(s) · 21 module(s) · 22 interface(s) · 44,750 lines
+22 file(s) · 21 module(s) · 22 interface(s) · 44,791 lines
 
 | module | file | lines | fn | cap | sch/tbl | its own one-line `@doc` |
 |---|---|---:|---:|---:|---:|---|
@@ -105,8 +105,8 @@ is*; that section answers *what it does and why*.
 | `DEMIPAD` | `STAGE_02/2_Core/02_DEMIPAD/00_Demipad.pact` | 1,830 | 90 | 24 | 5/4 | Demiourgos Launchpad, is a permissioned Launchpad operated by Demiourgos.Holdings allowing the Company to sell Assets (DPTFs, DPMFs, DPSFs and DPNFs)… |
 | *AcquisitionSchemasV1* | `STAGE_02/2_Core/03_AQP/00_AQP-SCHEMAS.pact` | 917 | 0 | 0 | 63/0 | General Anchor Definition Each Anchor is defined via a so called Anchored-Asset This may be a DPTF, DPSF or DPNF; |
 | `AQP-ANK` | `STAGE_02/2_Core/03_AQP/01_ANK.pact` | 2,683 | 126 | 21 | 0/8 | Sovereign anchor module for AQP. |
-| `AQP-SCORE` | `STAGE_02/2_Core/03_AQP/02_SCORE.pact` | 5,288 | 247 | 39 | 1/13 | AQP-SCORE — sovereign acquisition scoring for AQP pools. |
-| `AQP-POOL` | `STAGE_02/2_Core/03_AQP/03_AQP.pact` | 4,547 | 243 | 24 | 0/13 | Sovereign acquisition-pool module. |
+| `AQP-SCORE` | `STAGE_02/2_Core/03_AQP/02_SCORE.pact` | 5,311 | 247 | 39 | 1/13 | AQP-SCORE — sovereign acquisition scoring for AQP pools. |
+| `AQP-POOL` | `STAGE_02/2_Core/03_AQP/03_AQP.pact` | 4,565 | 243 | 24 | 0/13 | Sovereign acquisition-pool module. |
 | `RPS` | `STAGE_02/2_Core/03_AQP/04_RPS.pact` | 5,488 | 341 | 10 | 0/16 | Reward-per-share (RPS) ledger/accountant extracted from AQP-FVT (task #75). |
 | `AQP-FVT` | `STAGE_02/2_Core/03_AQP/05_FVT.pact` | 4,472 | 158 | 34 | 0/5 | Large sovereign reward-accounting module for AQP farms (class 0), vaults (1) and treasuries (2). |
 | `AQP-VCT` | `STAGE_02/2_Core/03_AQP/06_VCT.pact` | 3,600 | 142 | 15 | 0/2 | Sovereign vacate module that unwinds an AQP pool by returning every staked position to owners. |
@@ -199,7 +199,7 @@ is*; that section answers *what it does and why*.
 | files | 107 |
 | module forms | 101 |
 | interface forms | 100 |
-| lines | 128,621 |
+| lines | 128,662 |
 | `defun` forms | 5,712 |
 | `defcap` forms | 1014 |
 | schemas / tables | 207 / 232 |
@@ -220,7 +220,7 @@ because two generated numbers disagreeing in the same folder reads as one of the
 |---|---|---|---|
 | `defun` forms | 9,014 | **5,649** | the front page counts the whole file; this page counts the module BODY only. The 3,302 difference is interface declarations — the same function named in an interface and defined in the module. **CORRECTED 2026-10-09: this row quoted 5,607 and a difference of 3,344, and 9,014 − 5,607 is 3,344 only if the 5,607 is right — it was not.** 5,649 is what the generated table twenty lines above this one reports, which is the figure this row is supposed to be explaining. A hand-written row that paraphrases a generated one drifts the moment the generator moves, and the arithmetic stays internally consistent while being wrong — which is why it survived. |
 | `defcap` forms | 988 | **987** | exactly one `defcap` is declared in an *interface* rather than a module: `1_SOVEREIGN/STAGE_02/2_Core/03_AQP/01_ANK.pact`. Verified by scanning every file's pre-`(module …)` head. |
-| lines | 128,621 | 128,621 | agree, deliberately. Both count newlines — `wc -l` semantics. A file whose last line carries no terminating newline contributes one line `wc -l` does not see, so a LOGICAL line count gives **128,694 — exactly 73 more**, and 73 is precisely the number of such files. **CORRECTED 2026-10-09: this row had been flattened by a blanket figure replace** — all four numbers in it had become identical, leaving the sentence "128,621 against a `wc -l` of 128,621 — 57 more" and the arithmetic "128,621 − 128,621 = 73". Both are self-refuting, and they sat side by side long enough to be quoted onward. The lesson is the one the neighbouring note already drew and this row then suffered: a blanket replace across prose destroys the figures that exist to CHECK each other. Re-measured 2026-10-09: `wc -l` 125,957, files lacking a final newline 73, logical lines 128,694. |
+| lines | 128,662 | 128,662 | agree, deliberately. Both count newlines — `wc -l` semantics. A file whose last line carries no terminating newline contributes one line `wc -l` does not see, so a LOGICAL line count gives **128,735 — exactly 73 more**, and 73 is precisely the number of such files. **CORRECTED 2026-10-09: this row had been flattened by a blanket figure replace** — all four numbers in it had become identical, leaving the sentence "128,662 against a `wc -l` of 128,662 — 57 more" and the arithmetic "128,662 − 128,662 = 73". Both are self-refuting, and they sat side by side long enough to be quoted onward. The lesson is the one the neighbouring note already drew and this row then suffered: a blanket replace across prose destroys the figures that exist to CHECK each other. Re-measured 2026-10-09: `wc -l` 125,957, files lacking a final newline 73, logical lines 128,735. |
 
 The line-count case is the instructive one. Counting a final unterminated line *as a line* is
 arguably more correct, and it was the wrong choice: it put a 73-line discrepancy between two

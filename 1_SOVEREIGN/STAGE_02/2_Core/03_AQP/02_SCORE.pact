@@ -2598,14 +2598,37 @@
         )
     )
     (defun URC_StakeLpTokenToNativeLpDptf:string (lp-id:string)
-        @doc "SWP|LP rows use native LP DPTF ids. Strip leading F| (frozen LP) or Z| (sleeping orto LP); S|, W|, P| native LP prefixes pass through unchanged."
-        (let 
+        @doc "SWP|LP rows use native LP DPTF ids; S|, W|, P| native LP prefixes pass through \
+            \ unchanged. \
+            \ \
+            \ F| (FROZEN) RESOLVED VIA THE REAL LINK, NOT A PREFIX STRIP. The frozen leg is a \
+            \ SEPARATELY minted token with its own id suffix, not \"F|\" + the native id -- \
+            \ `drop 2 lp-id` returned a string that matches no real DPTF for any genuine frozen \
+            \ leg (same defect, same fix, as `URC_StakeTrueFungibleDptfMatchesPool`: \
+            \ `frozen-link` is written bidirectionally, so `DPTF::UR_Frozen frozen-id` IS the \
+            \ native parent -- the same lookup `URCv_CoreDptf` already uses). DEFECT-LEDGER. \
+            \ \
+            \ Z| (SLEEPING) IS STILL A PREFIX STRIP, AND IS LIKELY THE SAME CLASS OF DEFECT, \
+            \ NOT YET FIXED. A sleeping DPOF's id carries its own independently-minted suffix \
+            \ too (confirmed on a live pair: native `...LP-6D_MJJXmhuz3` vs sleeping \
+            \ `Z|...LP-jGB01kZvL4bh`), and `DPTF::UR_Sleeping` is a ONE-WAY write \
+            \ (`XE_UpdateSleeping` updates only the native row) -- there is no bidirectional \
+            \ link to reverse through the way `UR_Frozen` has. Fixing this leg needs a REAL \
+            \ reverse resolver that does not exist anywhere in the tree yet (the same shape of \
+            \ gap `URH_14|PoolForAsset` closed for the swpair/pool-id direction), which is out \
+            \ of scope for the frozen-LP fix this round. Left exactly as it was so this change \
+            \ touches only the leg it fixes."
+        (let
             (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (p2:string (take 2 lp-id))
             )
-            (if (fold (or) false [(= p2 "F|") (= p2 "Z|")])
-                (drop 2 lp-id)
-                lp-id
+            (if (= p2 "F|")
+                (ref-DPTF::UR_Frozen lp-id)
+                (if (= p2 "Z|")
+                    (drop 2 lp-id)
+                    lp-id
+                )
             )
         )
     )

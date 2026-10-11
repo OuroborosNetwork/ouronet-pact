@@ -4845,3 +4845,71 @@ Shipped as `Deploy/PostV8/02_o-ui-fourteen.pact` (standalone, no dot-callers, no
 interface change — same shape as `01_o-ui-nine.pact` beside it). Pinned by 4 new tests in
 `token-op-specs.test.ts`, mutation-proven: reverting either `poolId={aqpPoolId}` /
 `poolId={aqpPoolId ?? ""}` back to `poolId={poolId}` fails the suite.
+
+## 8.53 A frozen leg's id was assumed to be "F|" + the native id — it never is
+
+Reported live, 2026-10-11, immediately after §8.52's pool-id fix deployed and unblocked testing:
+staking a real frozen LP (`F|W|SSTOA-OURO-WSTOA|LP-_MYr9VcKUkBx`, 1250 units) was refused with
+`Invalid dptf-id: leg does not match pool canonical asset`, while staking the native leg of the
+SAME pool worked.
+
+**The frozen counterpart is a SEPARATELY MINTED token, not the native id with "F|" glued on.**
+`VST::XI_CreateSpecialTrueFungibleLink` -> `DPTF::XB_IssueFree` -> `XIv_Issue`'s `UDC_Makeid`
+builds every DPTF id as `ticker + "-" + take(12, prev-block-hash)` — a fresh,
+block-hash-derived suffix, independent of whatever suffix the native token got at ITS own
+mint. Live proof: native `...LP-6D_MJJXmhuz3`, frozen `F|...LP-_MYr9VcKUkBx` — different
+suffixes, confirmed by reading the id construction path rather than inferred from the symptom.
+
+**Two call sites assumed the opposite**, both computing a "native id" by stripping the `F|`
+prefix off a frozen id and comparing the remainder directly:
+
+- `AQP-POOL::URC_StakeTrueFungibleDptfMatchesPool` (`03_AQP.pact`) — the direct cause of the
+  reported refusal, reached from `FVT|C>ORTO-FUNGIBLE-STAKE-FLOW`'s TF leg.
+- `AQP-SCORE::URC_StakeLpTokenToNativeLpDptf` (`02_SCORE.pact`) — the *next* blocker on the
+  same path, reached via `UEV_LpStakeScoreContext` for weighting. Masked by the first bug while
+  it stood; would have refused the same stake with a different message once that one was fixed.
+
+Neither could ever have matched a REAL frozen leg for any pool — this was not specific to this
+one LP, this session, or this pool.
+
+**The fix is a real lookup, not string surgery.** `frozen-link` is written BIDIRECTIONALLY by
+`DPTF::XE_UpdateSpecialTrueFungible` (`XI_UpdateFrozen` runs once in each direction), so
+`DPTF::UR_Frozen` reverses in BOTH directions: given the native id it returns the frozen id,
+and given the frozen id it returns the native parent back — the exact mechanism
+`URCv_CoreDptf` (`01_ANK.pact`) already relied on for the reverse direction, found by reading
+it as a style reference rather than re-deriving the same answer twice. Both fixed functions now
+call `DPTF::UR_Frozen` instead of `drop 2 dptf-id`.
+
+**A related, NOT-yet-fixed instance was found while fixing this one.**
+`URC_StakeLpTokenToNativeLpDptf` also prefix-strips `Z|` (sleeping) ids, on the same false
+assumption — and a sleeping DPOF's id is independently minted too (confirmed: native
+`...LP-6D_MJJXmhuz3` vs sleeping `Z|...LP-jGB01kZvL4bh`, different suffixes). Unlike `F|`,
+there is no existing reverse resolver to reuse: `DPTF::UR_Sleeping` is a ONE-WAY write
+(`XE_UpdateSleeping` updates only the native row), so fixing this leg needs a genuine new
+reverse resolver — the same shape of gap `URH_14|PoolForAsset` (§8.52) closed for the
+swpair/pool-id direction. Left unfixed and the `Z|` branch left exactly as it was, so this
+round touches only the leg it fixes; flagged here rather than silently left for a repeat of
+§8.52's own lesson ("fixing where it was reported is not fixing every place the assumption was
+made").
+
+**Why no REPL test caught this across 28,370 prior assertions:** none staked a REAL frozen leg.
+Every existing `CC_StakeTrueFungible` test used a native class-1 asset (`ouro-id` or similar);
+`modules/AQP-LP.repl`'s own earlier note records that until this round, no chain in the suite
+carried both an SWP LP pair AND an AQP score together, let alone a genuinely frozen one.
+**And the obvious regression test would have passed on the OLD buggy code too, in-sandbox**:
+this whole REPL pipeline sets `prev-block-hash` ONCE, to a literal constant every Stage file
+opens with, and never varies it — so freezing an LP within a single REPL session mints a
+frozen id sharing the native token's own suffix, making the buggy `"F|" + native-id` guess
+accidentally correct in test, the opposite of what happens across real, differently-hashed
+mainnet blocks. The new test (`AQPLP-G4` in `modules/AQP-LP.repl`) explicitly varies
+`prev-block-hash` via `env-chain-data` around the freeze call — and restores it immediately
+after, since `[6.2.17]_AQP-RERATE.repl` loads right behind it and depends on the untouched
+suite-wide value — specifically so the test is a faithful reproduction rather than one that
+would have passed before the fix too. Mutation-proven: reverting either function to its old
+`drop 2` form fails two of the seven new assertions.
+
+Needs a deploy round: `AQP-POOL` and `AQP-SCORE` both own tables with live dot-callers
+(`python3 REPL/tools/_dotpin.py --upgrade AQP-POOL/AQP-SCORE`), so `RPS`, `AQP-VCT`,
+`AQP-INFO` and `AQP-BOOT` all have to re-pin in the same round or abort with "hash not
+blessed" on their next call in. Packaged as `Deploy/PureV9` (see its own README for the
+6-transaction order) — not yet sent; the owner gates every chain deploy explicitly.

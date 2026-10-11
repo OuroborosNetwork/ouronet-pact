@@ -291,6 +291,126 @@
 (env-sigs [])
 ;;the pool is kept, like the score: both are fixtures the next pass builds on
 (commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "AQPLP-G4 — a REAL frozen LP leg stakes: the match is a real link, not a prefix strip")
+(env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;ON A **DIFFERENT** LP PAIR THAN AQPLP-G2/G3's, DELIBERATELY. `LpProbePool`'s own asset is what
+;;[6.2.17]_AQP-RERATE.repl rides on next, and its header states the fixture's invariant in so
+;;many words: "LpProbePool, asset ..., which has NEITHER a frozen nor a sleeping twin". Freezing
+;;IT here would falsify that invariant for every assertion downstream. `(at 1 (keys SWP.SWP|LP))`
+;;is a second, untouched pair from the same AG-AL-AU-BI-CO issuance-only chain, with its own
+;;pool, so this fixture cannot collide with RERATE's.
+;;==== AQPLP-G4 — a REAL frozen LP leg stakes: the match is a real link, not a prefix strip · 01 · env-sigs (caps) ====
+(print "--- [AQPLP-G4 — a REAL frozen LP leg stakes: the match is a real link, not a prefix strip · 01 · env-sigs (caps)] ---")
+(env-sigs
+    [ { "key": "PK_AncientHodler", "caps": [] }
+      { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+      , "caps":
+        [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                         "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000.0)
+          (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                         "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000.0)
+          (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                         "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000.0)
+          (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                         "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000.0) ] } ])
+(print "--- [AQPLP-G4 · 01 · freeze a real native LP, then stake-match it against a pool on that LP] ---")
+;;THE BUG, REPRODUCED AND PINNED. Reported live, 2026-10-11, against a real frozen LP stake:
+;;"Invalid dptf-id: leg does not match pool canonical asset". `URC_StakeTrueFungibleDptfMatchesPool`
+;;used to recover the "native id" by stripping the F| prefix off the frozen leg and comparing the
+;;remainder to the pool's asset-id -- which only works if the frozen id IS "F|" + the native id.
+;;It never is: `VST::XI_CreateSpecialTrueFungibleLink` mints the frozen counterpart as its OWN
+;;token via `XIv_Issue` -> `UDC_Makeid`, which appends a fresh block-hash suffix, not the native
+;;token's. This freezes a REAL native LP for real and proves both fixed call sites against the
+;;REAL frozen id DPTF::UR_Frozen returns -- not a hand-built "F|" + lp string, which is exactly
+;;the shape of id that never existed on chain and so proves nothing about the real bug.
+;;==== AQPLP-G4 — a REAL frozen LP leg stakes: the match is a real link, not a prefix strip · 02 · let / invocation ====
+(print "--- [AQPLP-G4 — a REAL frozen LP leg stakes: the match is a real link, not a prefix strip · 02 · let / invocation] ---")
+(let
+    (
+        (ref-SWP:module{SwapperV4} SWP)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+    )
+    (env-module-admin SWP)
+    (let*
+        (
+            (lp2:string (at 1 (keys SWP.SWP|LP)))
+            (lp2-balance:decimal (ref-DPTF::UR_AccountSupply lp2 KST.ANHD))
+            ;;THE WHOLE SUITE SHARES ONE prev-block-hash. `UDC_Makeid` derives a token's id
+            ;;suffix from `(at "prev-block-hash" (chain-data))` (U_DALOS.pact's own doc:
+            ;;"block-level, identical for every tx in the same block") -- and this entire REPL
+            ;;pipeline sets it ONCE, to the literal "98c486052a51..." every Stage file opens
+            ;;with, and never varies it. So WITHOUT forcing a different value here, freezing
+            ;;lp2 in THIS sandbox would mint a frozen id sharing lp2's own suffix -- making the
+            ;;OLD buggy "F| + native id" string-surgery accidentally correct in-sandbox even
+            ;;though it is provably wrong on live chain (real blocks really do differ: the
+            ;;live defect this closes showed native `...LP-6D_MJJXmhuz3` vs frozen
+            ;;`F|...LP-_MYr9VcKUkBx`). Changing it here for the freeze call, then restoring it,
+            ;;is what makes this test a faithful reproduction instead of one that would have
+            ;;passed on the OLD buggy code too.
+            (original-cd:object (chain-data))
+        )
+        (map print
+            [
+                (expect (format "<<AQPLP-G4>> a second, DIFFERENT LP pair exists and KST.ANHD holds some ({})"
+                                 [lp2])
+                    true (and (!= lp2 (at 0 (keys SWP.SWP|LP))) (> lp2-balance 0.0)))
+            ]
+        )
+        (ref-TS02-C3::AQP-POOL|C_Issue
+            KST.ANHD (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset 0 lp2) "FrozenLpProbePool" lp2 0)
+        (env-chain-data
+            {"prev-block-hash": (hash "AQPLP-G4-frozen-leg-real-block"),
+             "block-time": (at "block-time" original-cd)})
+        (if (= (ref-DPTF::UR_Frozen lp2) (U|CT.CT_BAR))
+            (ref-TS01-C2::VST|C_CreateFrozenLink KST.ANHD (ref-DPTF::UR_Konto lp2) lp2)
+            "frozen link already exists")
+        (ref-TS01-C2::VST|C_Freeze KST.ANHD KST.ANHD KST.ANHD lp2 (floor (* lp2-balance 0.01) 6))
+        ;;RESTORED IMMEDIATELY, before anything else reads chain-data -- [6.2.17]_AQP-RERATE.repl
+        ;;loads right after this transaction commits and must see the suite's one shared hash,
+        ;;not a value this test happened to leave behind.
+        (env-chain-data
+            {"prev-block-hash": (at "prev-block-hash" original-cd),
+             "block-time": (at "block-time" original-cd)})
+        (let*
+            (
+                (pool2:string (ref-U|DALOS::UDC_Makeid "FrozenLpProbePool"))
+                (frozen-id:string (ref-DPTF::UR_Frozen lp2))
+                ;;THE EXACT OLD DEFECT, COMPUTED HERE SO IT CAN BE DISPROVEN RATHER THAN DESCRIBED.
+                (old-buggy-core:string (drop 2 frozen-id))
+            )
+            (map print
+                [
+                    (expect "<<AQPLP-G4>> freezing across a DIFFERENT block really did mint a SEPARATE id, not \"F|\" + lp2"
+                        true (!= frozen-id (+ "F|" lp2)))
+                    (expect (format "<<AQPLP-G4>> so the OLD prefix-strip logic would NOT have matched: \"{}\" != lp2"
+                                     [old-buggy-core])
+                        false (= old-buggy-core lp2))
+                    ;;URC_StakeTrueFungibleDptfMatchesPool is AQP-POOL's own function (defined in
+                    ;;03_AQP.pact), not AQP-SCORE's -- read through the right module.
+                    (expect "<<AQPLP-G4>> FIXED: URC_StakeTrueFungibleDptfMatchesPool now accepts the REAL frozen leg"
+                        true (AQP-POOL.URC_StakeTrueFungibleDptfMatchesPool pool2 frozen-id))
+                    (expect "<<AQPLP-G4>> the native leg still matches too -- the fix did not narrow this"
+                        true (AQP-POOL.URC_StakeTrueFungibleDptfMatchesPool pool2 lp2))
+                    (expect "<<AQPLP-G4>> an UNRELATED native leg (G2/G3's own pool's asset) is correctly REFUSED"
+                        false (AQP-POOL.URC_StakeTrueFungibleDptfMatchesPool pool2 (at 0 (keys SWP.SWP|LP))))
+                    (expect "<<AQPLP-G4>> FIXED: URC_StakeLpTokenToNativeLpDptf resolves the frozen leg back to lp2"
+                        lp2 (ref-SCR::URC_StakeLpTokenToNativeLpDptf frozen-id))
+                ]
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(commit-tx)
 (print "")
 ;;THE RE-RATE SUITE RIDES HERE, and it has to ride somewhere specific: it needs a CLASS-0 score
 ;;and a CLASS-0 pool, and this is the only chain in the tree that builds either. Loaded at the

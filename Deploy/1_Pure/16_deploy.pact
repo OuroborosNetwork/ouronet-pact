@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 16 of 24
 ;; This is STEP 16 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-15 must have run first, including the init steps between deploys.
-;; 1 source file(s), 151,366 gas measured in the REPL gas model, 244,414 bytes
+;; 1 source file(s), 151,366 gas measured in the REPL gas model, 245,741 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/03_AQP.pact
@@ -1664,22 +1664,40 @@
         )
     )
     (defun URC_StakeTrueFungibleDptfMatchesPool:bool (pool-id:string dptf-id:string)
-        @doc "True when dptf-id (native or F| frozen leg) matches pool canonical asset-id for class 0/1 TF stake."
+        @doc "True when dptf-id (native, or its REAL frozen counterpart) matches pool canonical \
+            \ asset-id for class 0/1 TF stake. \
+            \ \
+            \ THE FROZEN COUNTERPART'S ID IS NOT \"F|\" + THE NATIVE ID. It is a SEPARATELY \
+            \ minted token (`VST::XI_CreateSpecialTrueFungibleLink` -> `DPTF::XB_IssueFree` -> \
+            \ `XIv_Issue`'s `UDC_Makeid`), which appends its OWN block-hash-derived suffix, not \
+            \ the native token's. Stripping \"F|\" off a real frozen id and comparing the \
+            \ remainder to asset-id therefore matched almost nothing -- live proof: native \
+            \ `...LP-6D_MJJXmhuz3`, frozen `F|...LP-_MYr9VcKUkBx`, different suffixes; refused \
+            \ with \"Invalid dptf-id: leg does not match pool canonical asset\" on a real \
+            \ frozen-LP stake. The only correct test is the STORED link -- `frozen-link` is \
+            \ written bidirectionally by `XE_UpdateSpecialTrueFungible` (`XI_UpdateFrozen` runs \
+            \ once each direction), so `DPTF::UR_Frozen asset-id` IS the frozen counterpart's \
+            \ real id (BAR if none exists yet), the same lookup `URCv_CoreDptf` already uses \
+            \ for the reverse direction. DEFECT-LEDGER."
         (let
             (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (c:integer (UR_AQP|PoolAqpClass pool-id))
                 (asset-id:string (UR_AQP|PoolAssetId pool-id))
-                (core:string
-                    (if (= (URC_DptfLegPrefix dptf-id) "F|")
-                        (drop 2 dptf-id)
-                        dptf-id
+                (core-ok:bool
+                    (or
+                        (= dptf-id asset-id)
+                        (and
+                            (= (URC_DptfLegPrefix dptf-id) "F|")
+                            (= dptf-id (ref-DPTF::UR_Frozen asset-id))
+                        )
                     )
                 )
             )
             (if (= c 1)
-                (= core asset-id)
+                core-ok
                 (if (= c 0)
-                    (and (URC_DptfIsLpNomenclature dptf-id) (= core asset-id))
+                    (and (URC_DptfIsLpNomenclature dptf-id) core-ok)
                     false
                 )
             )
