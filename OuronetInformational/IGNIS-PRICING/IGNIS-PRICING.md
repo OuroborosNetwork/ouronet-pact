@@ -290,11 +290,23 @@ STOA; the constants-only conversion (65 table reads lifted); the `define-set` / 
 
 ## What is open
 
-**446** Talos client functions carry a price; **15** carry no row, and the sheet now says which:
+**447** Talos client functions carry a price; **15** carry no row, and the sheet now says which:
 
 ```
-199 exact  ·  188 floor  ·  2 STOA-only  ·  57 exempt  ·  5 unresolved  ·  15 unpriced
+199 exact  ·  189 floor  ·  2 STOA-only  ·  57 exempt  ·  5 unresolved  ·  15 unpriced
 ```
+
+**NEW OP, 2026-10-12: `AQP-POOL|CCp_ReassignTrueFungibleStakeBeneficiary`.** TF's counterpart to
+the OF/collectable beneficiary reassigns, published COMPLEX/floor like its siblings — the TF phase
+chain runs twice over the caller's `amount` with the asset pinned, same shape as
+`URCi_ReassignOrtoStakeBeneficiary`. Its core flow (`CC_TrueFungibleStakeFlow`) was extracted into
+`XI_TrueFungibleStakePhases` so the ordinary stake/unstake path and the reassign share one copy of
+the phase chain, mirroring the `XI_OrtoStakePhases` extraction. That extraction moves
+`CC_StakeTrueFungible`/`CC_UnstakeTrueFungible`'s published floor from `>= 20` to `>= 21` and
+their deter-worksheet leg count from 19 to 2 (same shape `CC_CollectableStakeFlow` already shows
+after its own extraction) — a reconstruction-depth artefact of the static sheet generator, not a
+runtime billing change: `move-asset` is `true` on the ordinary path, so the real `OutputCumulator`
+summed at execution is unchanged leg-for-leg from before the extraction.
 
 **MOVED SHARPLY ON 2026-10-06, AND THE OLD NUMBERS WERE WRONG.** `COLLECTS` -- the regex deciding
 whether a Talos wrapper collects anything -- matched `C_Collect`, which is the spelling the IGNIS

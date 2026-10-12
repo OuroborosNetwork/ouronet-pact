@@ -754,6 +754,31 @@
                 [nonce])
         )
     )
+    (defun INFO_AQP-POOL|ReassignTrueFungibleStakeBeneficiary:object{OuronetInfoV2.ClientInfo}
+        (patron:string pool-id:string owner:string current-beneficiary:string
+         new-beneficiary:string dptf-id:string amount:decimal)
+        @doc "Cost preview for AQP-POOL|CCp_ReassignTrueFungibleStakeBeneficiary -- the TF \
+            \ counterpart of INFO_AQP-POOL|ReassignOrtoStakeBeneficiary. The TF phase chain priced \
+            \ TWICE over <amount>, reconstructed from the same reader the execution path uses. \
+            \ No STOA. \
+            \ \
+            \ NO ASSET MOVES, but the quote still carries a transfer leg per run, because \
+            \ `URCi_TrueFungibleStakeFlow` prices that leg direction-independently."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Redirect who earns from an already-staked true-fungible position — the owner and the position are unchanged."
+                 "Requires the OWNER's signature — they decide who earns, as they did at the original stake."
+                 "Executes via TS02-C3.AQP-POOL|CCp_ReassignTrueFungibleStakeBeneficiary."]
+                [(format "{} of {} in pool {} now earns for {} instead of {}." [amount dptf-id pool-id new-beneficiary current-beneficiary])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    (AQP-FVT.URCi_ReassignTrueFungibleStakeBeneficiary pool-id owner current-beneficiary new-beneficiary dptf-id amount))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [amount])
+        )
+    )
     (defun INFO_AQP-POOL|StakeSemiFungibleCollectable:object{OuronetInfoV2.ClientInfo}
         (patron:string pool-id:string owner-id:string beneficiary-id:string collectable-id:string nonces:[integer])
         @doc "Cost preview for AQP-POOL|CC_StakeSemiFungibleCollectable (DPSF, son=true / class-3). Multi-leg IGNIS \

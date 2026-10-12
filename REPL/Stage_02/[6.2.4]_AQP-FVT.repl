@@ -1143,6 +1143,154 @@
 (commit-tx)
 (print "=== END TX-FVT-10 ==========================================================")
 (print "")
+;;|| NEXT >
+;;|| TX-FVT-11 — CCp_ReassignTrueFungibleStakeBeneficiary: partial, then the rest, no tokens move.
+;;|| NEXT >
+(begin-tx "TX-FVT-11 - CCp_ReassignTrueFungibleStakeBeneficiary partial + full, owner ANHD -> EMMA")
+(print "")
+(print "=== TX-FVT-11 — TF beneficiary reassignment: partial amount, then the remainder ======")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-FVT-11 - CCp_ReassignTrueFungibleStakeBeneficiary partial + full, owner ANHD -> EMMA · 01 · env-sigs (caps) ====
+(print "--- [TX-FVT-11 - CCp_ReassignTrueFungibleStakeBeneficiary partial + full, owner ANHD -> EMMA · 01 · env-sigs (caps)] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-FVT-11 - CCp_ReassignTrueFungibleStakeBeneficiary partial + full, owner ANHD -> EMMA · 02 · let / invocation ====
+(print "--- [TX-FVT-11 - CCp_ReassignTrueFungibleStakeBeneficiary partial + full, owner ANHD -> EMMA · 02 · let / invocation] ---")
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-id:string KST.ANHD)
+        (new-ben:string KST.EMMA)
+        (ouro-id:string "OURO-98c486052a51")
+        (score-name:string "TfStakeScore")
+        (pool-name:string "TfStakePool")
+        (stake-amount:decimal 100.0)
+        (move-amount:decimal 40.0)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+        ;; DELTAS THROUGHOUT (robust to FVT-09's ANHD self-stake leftover in TfStakePool, same
+        ;; reason TX-FVT-10 beside this one captures its own pre-values rather than assuming zero).
+        (pre-anhd-self-bal:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id owner-id))
+        (emma-row-bal-pre:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id new-ben))
+        (anhd-deb-pre:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore owner-id pool-id score-id))
+    )
+    ;; a fresh ADDITIONAL self position for ANHD, on top of whatever this pool already holds.
+    (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron owner-id owner-id pool-id ouro-id stake-amount)
+    (let
+        (
+            (anhd-self-bal:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id owner-id))
+            (anhd-deb-after-stake:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore owner-id pool-id score-id))
+            (pre-anhd-supply:decimal (ref-DPTF::UR_AccountSupply ouro-id owner-id))
+            (pre-emma-supply:decimal (ref-DPTF::UR_AccountSupply ouro-id new-ben))
+        )
+        (map print
+            [
+                (expect (format "<<TX-FVT-11>> ANHD's self row gained exactly the fresh stake got={} expected={}"
+                        [anhd-self-bal (+ pre-anhd-self-bal stake-amount)])
+                    (+ pre-anhd-self-bal stake-amount) anhd-self-bal)
+                ;; A NEW BENEFICIARY MUST BE NAMED, not implied -- same rule as the OF/collectable reassigns.
+                (expect-failure "<<TX-FVT-11>> reassigning to herself is refused"
+                    "Reassignment must name a different beneficiary"
+                    (ref-TS02-C3::AQP-POOL|CCp_ReassignTrueFungibleStakeBeneficiary
+                        patron owner-id pool-id ouro-id move-amount owner-id owner-id))
+                ;; PARTIAL BY DESIGN: a TF position carries no nonce, so a request for MORE than the
+                ;; current balance must be refused rather than silently floored.
+                (expect-failure "<<TX-FVT-11>> an amount above the current balance is refused"
+                    "Invalid amount: must be positive and not exceed the current staked/rollup balance"
+                    (ref-TS02-C3::AQP-POOL|CCp_ReassignTrueFungibleStakeBeneficiary
+                        patron owner-id pool-id ouro-id (+ anhd-self-bal 1.0) owner-id new-ben))
+            ]
+        )
+        ;;==== TX-FVT-11 · 01 · partial reassign: 40.0 moves to EMMA, the rest stays ANHD's ====
+        (print "--- [TX-FVT-11 · 01 · partial reassign 40.0, ANHD -> EMMA] ---")
+        (ref-TS02-C3::AQP-POOL|CCp_ReassignTrueFungibleStakeBeneficiary
+            patron owner-id pool-id ouro-id move-amount owner-id new-ben)
+        (let
+            (
+                (anhd-self-bal-1:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id owner-id))
+                (emma-row-bal-1:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id new-ben))
+                (anhd-deb-1:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore owner-id pool-id score-id))
+                (emma-deb-1:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore new-ben pool-id score-id))
+                ;; Per-unit deb rate the fresh stake itself just proved, so the reassign's expected
+                ;; drop does not have to assume a specific multiplier (mx-frozen/deb-boost/booster)
+                ;; -- it only assumes the mapping is LINEAR in amount, which the stake path is.
+                (deb-per-unit:decimal (/ (- anhd-deb-after-stake anhd-deb-pre) stake-amount))
+            )
+            (map print
+                [
+                    (format "<(TX-FVT-11 · 01 ANHD self-bal / EMMA row-bal / ANHD deb Δ)> => {} / {} / {}"
+                        [anhd-self-bal-1 emma-row-bal-1 (- anhd-deb-1 anhd-deb-pre)])
+                    (expect (format "<<TX-FVT-11>> ANHD loses exactly <move-amount> off her self row got={} expected={}"
+                            [anhd-self-bal-1 (- anhd-self-bal move-amount)])
+                        (- anhd-self-bal move-amount) anhd-self-bal-1)
+                    (expect (format "<<TX-FVT-11>> EMMA's row gains exactly <move-amount> got={} expected={}"
+                            [emma-row-bal-1 (+ emma-row-bal-pre move-amount)])
+                        (+ emma-row-bal-pre move-amount) emma-row-bal-1)
+                    (expect (format "<<TX-FVT-11>> ANHD's weight drops by exactly the moved leg's share got={} expected={}"
+                            [anhd-deb-1 (- anhd-deb-after-stake (* move-amount deb-per-unit))])
+                        (- anhd-deb-after-stake (* move-amount deb-per-unit)) anhd-deb-1)
+                    (expect "<<TX-FVT-11>> EMMA now carries weight too (deb > 0)" true (> emma-deb-1 0.0))
+                    ;; NO TOKENS MOVED: reassignment is pure bookkeeping, same invariant as the OF case
+                    ;; pinned by <<TX-RERATE-REASSIGN>>. Baseline captured AFTER the ordinary stake
+                    ;; above (which DOES move real tokens, correctly) so this isolates the reassign.
+                    (expect "<<TX-FVT-11>> no tokens moved on the partial reassign"
+                        [pre-anhd-supply pre-emma-supply]
+                        [(ref-DPTF::UR_AccountSupply ouro-id owner-id) (ref-DPTF::UR_AccountSupply ouro-id new-ben)])
+                ]
+            )
+            ;;==== TX-FVT-11 · 02 · the remainder follows: ONLY <stake-amount>'s own share, never the
+            ;;      pre-existing leftover sitting in ANHD's self row -- that belongs to an earlier
+            ;;      test and must land back EXACTLY where it started (see note below on why). ====
+            (print "--- [TX-FVT-11 · 02 · reassign the remainder of OUR OWN stake, ANHD -> EMMA] ---")
+            (ref-TS02-C3::AQP-POOL|CCp_ReassignTrueFungibleStakeBeneficiary
+                patron owner-id pool-id ouro-id (- stake-amount move-amount) owner-id new-ben)
+            (let
+                (
+                    (anhd-self-bal-2:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id owner-id))
+                    (emma-row-bal-2:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id new-ben))
+                    (anhd-deb-2:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore owner-id pool-id score-id))
+                )
+                (map print
+                    [
+                        ;; NEVER TOUCH A LEFTOVER FROM AN EARLIER TEST: moving it to EMMA's row would
+                        ;; leave a SECOND nonzero (owner, beneficiary) row behind after this tx commits
+                        ;; (unlike TX-FVT-10's own self-contained stake+unstake, which nets to zero in
+                        ;; the SAME tx). A later full-pool vacate collapses every row back to its OWNER
+                        ;; column, so two rows naming the same owner (ANHD's own leftover self-row AND
+                        ;; a surviving ANHD-owned EMMA-beneficiary row) collide as DUPLICATE receivers in
+                        ;; one bulk transfer -- caught exactly this way by [6.2.5]_AQP-VCT.repl's
+                        ;; TX-VCT-TF01b the first time this test moved the WHOLE observed balance instead
+                        ;; of just its own contribution.
+                        (expect (format "<<TX-FVT-11>> ANHD's self row returns to its PRE-TEST baseline (leftover untouched) got={} expected={}"
+                                [anhd-self-bal-2 pre-anhd-self-bal])
+                            pre-anhd-self-bal anhd-self-bal-2)
+                        (expect (format "<<TX-FVT-11>> EMMA's row gained exactly <stake-amount>, nothing of the leftover got={} expected={}"
+                                [emma-row-bal-2 (+ emma-row-bal-pre stake-amount)])
+                            (+ emma-row-bal-pre stake-amount) emma-row-bal-2)
+                        (expect (format "<<TX-FVT-11>> ANHD's weight is back to its pre-test baseline got={} expected={}"
+                                [anhd-deb-2 anhd-deb-pre])
+                            anhd-deb-pre anhd-deb-2)
+                    ]
+                )
+                ;;==== TX-FVT-11 · 03 · cleanup: owner ANHD unstakes -- the asset returns to HER, not EMMA ====
+                (print "--- [TX-FVT-11 · 03 · unstake the full amount back through owner ANHD] ---")
+                (ref-TS02-C3::AQP-POOL|CC_UnstakeTrueFungible patron owner-id new-ben pool-id ouro-id stake-amount)
+                (expect "<<TX-FVT-11>> unstaking a reassigned position still pays the OWNER, not the beneficiary"
+                    [(+ pre-anhd-supply stake-amount) pre-emma-supply]
+                    [(ref-DPTF::UR_AccountSupply ouro-id owner-id) (ref-DPTF::UR_AccountSupply ouro-id new-ben)])
+            )
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-FVT-11 ==========================================================")
+(print "")
 ;;<====================================================================>
 ;; FVT sub-suites — bundled here so [6.2.4] is the SINGLE FVT test entry.
 ;; (Previously loaded separately by [6.2]_AQP.repl; moved in for one-file-per-module.)

@@ -16,12 +16,12 @@ Counts are of definitions in the tree, interface declarations included.
 | `UR_` | 1,470 | reads one row or field by key |
 | `C_` | 1,380 | client entry — builds the bill; reachable only through Talos |
 | `URC_` | 793 | reads and derives; no `enforce` |
-| `INFO_` | 640 | operation preview returning a client-facing cost and description |
-| `URCi_` | 628 | **cost reader** — the single source both billing and the preview call |
+| `INFO_` | 641 | operation preview returning a client-facing cost and description |
+| `URCi_` | 629 | **cost reader** — the single source both billing and the preview call |
 | `UEV_` | 604 | reads and `enforce`s; failure aborts the transaction |
 | `A_` | 555 | admin-key mutation |
 | `UC_` | 452 | pure compute on arguments only — no table reads, no `enforce` |
-| `XI_` | 391 | internal write, this module only, under a capability |
+| `XI_` | 392 | internal write, this module only, under a capability |
 | `XE_` | 332 | entry point for other modules only |
 | `UDC_` | 330 | data construction — a named constructor for an object |
 | `CT_` | 279 | a constant, exposed as a function |
@@ -33,7 +33,7 @@ Counts are of definitions in the tree, interface declarations included.
 | `XB_` | 62 | callable both internally and externally |
 | `UCk_` | 61 | **key builder** — composes a table's composite row key. Pure; returns a string, not a table |
 | `SC_` | 52 | smart-contract account name — a constant, exposed as a function |
-| `CCp_` | 48 | client recipe that reaches a scan |
+| `CCp_` | 50 | client recipe that reaches a scan |
 | `URCv_` | 37 | `URC_` with an intrinsic guard |
 | `UCv_` | 34 | `UC_` whose `enforce` is intrinsic to its own computation |
 | `CAP_` | 33 | account-ownership enforcement |

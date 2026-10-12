@@ -56,8 +56,8 @@ Above the reward engine, which it drives through external entry points.
 
 > **The repository differs from what is deployed.** Everything above describes the CHAIN, which is what a caller actually reaches. The difference is stated rather than resolved:
 >
-> - **capabilities** in the repository only: `FVT|C>CLEAR-POOL-SWEEP`, `FVT|C>REASSIGN-COLLECTABLE-BENEFICIARY`, `FVT|C>REASSIGN-ORTO-BENEFICIARY`, `FVT|C>RELEASE-SPECIAL-CUSTODIAL`
-> - **functions** in the repository only: `CC_ClearPoolSweep`, `CCp_FvtFixSlice`, `CCp_ReassignCollectableStakeBeneficiary`, `CCp_ReassignOrtoStakeBeneficiary`, `CCp_ReleaseSpecialCustodial`, `CCp_StakeSpecialCustodial`, `REPL_BootstrapTreasury`, `REPL_BootstrapVault`
+> - **capabilities** in the repository only: `FVT|C>CLEAR-POOL-SWEEP`, `FVT|C>REASSIGN-COLLECTABLE-BENEFICIARY`, `FVT|C>REASSIGN-ORTO-BENEFICIARY`, `FVT|C>REASSIGN-TRUE-FUNGIBLE-BENEFICIARY`, `FVT|C>RELEASE-SPECIAL-CUSTODIAL`
+> - **functions** in the repository only: `CC_ClearPoolSweep`, `CCp_FvtFixSlice`, `CCp_ReassignCollectableStakeBeneficiary`, `CCp_ReassignOrtoStakeBeneficiary`, `CCp_ReassignTrueFungibleStakeBeneficiary`, `CCp_ReleaseSpecialCustodial`, `CCp_StakeSpecialCustodial`, `REPL_BootstrapTreasury`
 
 **Capabilities** -- 30
 

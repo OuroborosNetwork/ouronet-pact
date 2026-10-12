@@ -8858,6 +8858,36 @@
     "type": "string"
    }
   ],
+  "TS02-C3.AQP-POOL|CCp_ReassignTrueFungibleStakeBeneficiary": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "owner",
+    "type": "string"
+   },
+   {
+    "name": "pool-id",
+    "type": "string"
+   },
+   {
+    "name": "dptf-id",
+    "type": "string"
+   },
+   {
+    "name": "amount",
+    "type": "decimal"
+   },
+   {
+    "name": "current-beneficiary",
+    "type": "string"
+   },
+   {
+    "name": "new-beneficiary",
+    "type": "string"
+   }
+  ],
   "TS02-C3.AQP-POOL|CCp_ReleaseSpecialCustodial": [
    {
     "name": "patron",
@@ -11032,6 +11062,36 @@
    {
     "name": "nonce",
     "type": "integer"
+   }
+  ],
+  "AQP-INFO.INFO_AQP-POOL|ReassignTrueFungibleStakeBeneficiary": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "pool-id",
+    "type": "string"
+   },
+   {
+    "name": "owner",
+    "type": "string"
+   },
+   {
+    "name": "current-beneficiary",
+    "type": "string"
+   },
+   {
+    "name": "new-beneficiary",
+    "type": "string"
+   },
+   {
+    "name": "dptf-id",
+    "type": "string"
+   },
+   {
+    "name": "amount",
+    "type": "decimal"
    }
   ],
   "AQP-INFO.INFO_AQP-POOL|ReleaseSpecialCustodial": [
@@ -18965,6 +19025,7 @@
   "TS02-C3.AQP-POOL|CCp_BatchVacateTrueFungible": "AQP-INFO.INFO_AQP-POOL|BatchVacateTrueFungible",
   "TS02-C3.AQP-POOL|CCp_ReassignCollectableStakeBeneficiary": "AQP-INFO.INFO_AQP-POOL|ReassignCollectableStakeBeneficiary",
   "TS02-C3.AQP-POOL|CCp_ReassignOrtoStakeBeneficiary": "AQP-INFO.INFO_AQP-POOL|ReassignOrtoStakeBeneficiary",
+  "TS02-C3.AQP-POOL|CCp_ReassignTrueFungibleStakeBeneficiary": "AQP-INFO.INFO_AQP-POOL|ReassignTrueFungibleStakeBeneficiary",
   "TS02-C3.AQP-POOL|CCp_ReleaseSpecialCustodial": "AQP-INFO.INFO_AQP-POOL|ReleaseSpecialCustodial",
   "TS02-C3.AQP-POOL|CCp_StakeSpecialCustodial": "AQP-INFO.INFO_AQP-POOL|StakeSpecialCustodial",
   "TS02-C3.AQP-POOL|C_AbortVacate": "AQP-INFO.INFO_AQP-POOL|AbortVacate",
@@ -19007,5 +19068,5 @@
   "TS02-DPAD.DEMIPAD|C_RetrieveTrueFungible": "INFO-TWO.INFO_DEMIPAD|RetrieveTrueFungible",
   "TS02-DPAD.DEMIPAD|C_Withdraw": "INFO-TWO.INFO_DEMIPAD|Withdraw"
  },
- "surfaceHash": "b0897b7773244017"
+ "surfaceHash": "454da4da9a970b00"
 }

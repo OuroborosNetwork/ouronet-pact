@@ -701,6 +701,16 @@
         @event
         (compose-capability (P|TS))
     )
+    (defcap AQP|C>REASSIGN-TRUE-FUNGIBLE-BENEFICIARY
+        (patron:string owner:string pool-id:string dptf-id:string amount:decimal
+         current-beneficiary:string new-beneficiary:string)
+        @doc "AQP client event: the TF counterpart of AQP|C>REASSIGN-ORTO-BENEFICIARY -- redirect \
+            \ who earns from an already-staked true-fungible position, native or frozen, in whole \
+            \ or in part. Composes P|TS only -- the conditions live in AQP-FVT, which can see the \
+            \ tracker row."
+        @event
+        (compose-capability (P|TS))
+    )
     (defcap FVT|C>CLEAR-POOL-SWEEP
         (patron:string pool-id:string)
         @doc "AQP-FVT client event: release a pool's sweep freeze. Composes P|TS only. \
@@ -1910,6 +1920,47 @@
                 )
                 (format "Nonce {} of {} in pool {} now earns for {} instead of {}; owner {} and the position are unchanged."
                     [nonce collectable-id pool-id (UC_ShortAccount new-beneficiary)
+                     (UC_ShortAccount current-beneficiary) (UC_ShortAccount owner)]
+                )
+            )
+        )
+    )
+    (defun AQP-POOL|CCp_ReassignTrueFungibleStakeBeneficiary:string
+        (
+            patron:string
+            owner:string
+            pool-id:string
+            dptf-id:string
+            amount:decimal
+            current-beneficiary:string
+            new-beneficiary:string
+        )
+        @doc "Redirect part or all of who earns from an already-staked true-fungible position -- \
+            \ native or its `F|` frozen counterpart -- without unstaking and restaking it. \
+            \ Unlike the OF/collectable reassigns, a TF position has no nonce, so <amount> may be \
+            \ any value up to the current balance: the owner may split a position across two \
+            \ beneficiaries, or move it whole. \
+            \ \
+            \ NO ASSET EVER MOVES -- the ordinary unstake always returns the position to <owner>, \
+            \ regardless of who the beneficiary was, so this is pure earnings bookkeeping. \
+            \ \
+            \ Requires the OWNER's signature -- they are the one entitled to decide who earns. \
+            \ Talos shell → AQP-FVT::CCp_ReassignTrueFungibleStakeBeneficiary."
+        (with-capability
+            (AQP|C>REASSIGN-TRUE-FUNGIBLE-BENEFICIARY
+                patron owner pool-id dptf-id amount current-beneficiary new-beneficiary)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-FVT::CCp_ReassignTrueFungibleStakeBeneficiary
+                        patron owner pool-id dptf-id amount current-beneficiary new-beneficiary
+                    )
+                )
+                (format "{} of {} in pool {} now earns for {} instead of {}; owner {} and the position are unchanged."
+                    [amount dptf-id pool-id (UC_ShortAccount new-beneficiary)
                      (UC_ShortAccount current-beneficiary) (UC_ShortAccount owner)]
                 )
             )

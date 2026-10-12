@@ -716,6 +716,49 @@
             (compose-capability (P|SECURE-CALLER))
         )
     )
+    (defcap FVT|C>REASSIGN-TRUE-FUNGIBLE-BENEFICIARY
+        (patron:string pool-id:string owner:string dptf-id:string amount:decimal
+         current-beneficiary:string new-beneficiary:string staked:decimal rollup:decimal)
+        @doc "Redirect part or all of who EARNS from an already-staked true-fungible position -- \
+            \ native or its frozen counterpart -- without unstaking and restaking it. <owner> \
+            \ stays the tracker owner throughout; only the beneficiary column moves, and only for \
+            \ <amount> of it. \
+            \ \
+            \ THE TF COUNTERPART OF `FVT|C>REASSIGN-ORTO-BENEFICIARY`, with one real difference: \
+            \ a TF position carries no nonce, so there is no natural all-or-nothing unit to move. \
+            \ <amount> is bounded by the CURRENT tracker balance AND the cross-pool rollup for \
+            \ <current-beneficiary> -- both checked here because `move-asset` false (in \
+            \ `XI_TrueFungibleStakePhases`) skips the transfer leg that would otherwise enforce \
+            \ sufficiency on an ordinary unstake. \
+            \ \
+            \ NO TRANSFER-ROLE CHECK, same reasoning as the OF cap: the asset never goes to the \
+            \ beneficiary on an ordinary TF unstake either -- it always returns to <owner> -- so \
+            \ reassignment is pure score/earnings bookkeeping with no claim on the underlying \
+            \ asset. \
+            \ \
+            \ SIGNED BY THE OWNER, not the current beneficiary -- the owner is who is entitled to \
+            \ decide who earns, exactly as they decide it at the original stake."
+        @event
+        (enforce
+            (fold (and) true [(> amount 0.0) (<= amount staked) (<= amount rollup)])
+            "Invalid amount: must be positive and not exceed the current staked/rollup balance"
+        )
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            ;;the owner is the one entitled to redirect earnings -- not the current beneficiary,
+            ;;who was only ever named a destination, never given the right to re-name one
+            (ref-DALOS::CAP_EnforceAccountOwnership owner)
+            (ref-DALOS::UEV_EnforceAccountExists new-beneficiary)
+            (ref-DALOS::UEV_EnforceAccountType new-beneficiary false)
+            (enforce
+                (!= current-beneficiary new-beneficiary)
+                "Reassignment must name a different beneficiary"
+            )
+            (compose-capability (P|SECURE-CALLER))
+        )
+    )
     (defcap FVT|C>CLEAR-POOL-SWEEP
         (patron:string pool-id:string)
         @doc "Lift a pool's sweep freeze and return it to trading. Patron pays IGNIS; composes \
@@ -3469,6 +3512,99 @@
         )
         )
     )
+    (defun URCi_ReassignTrueFungibleStakeBeneficiary:decimal
+        (pool-id:string owner:string current-beneficiary:string new-beneficiary:string
+         dptf-id:string amount:decimal)
+        @doc "Total IGNIS IFP of `CCp_ReassignTrueFungibleStakeBeneficiary`: the TF phase chain \
+            \ run TWICE over the same <amount> -- once to vacate <current-beneficiary>'s weight, \
+            \ once to credit <new-beneficiary>. \
+            \ \
+            \ BOTH RUNS ARE PRICED AT FULL RATE, same reasoning as \
+            \ `URCi_ReassignOrtoStakeBeneficiary`: the asset does not move, but the tracker write, \
+            \ the rollup bump, the anchor refresh, the settle bundle, the score-delta pass and the \
+            \ checkpoint all run twice, so the quote is not netted against the direction that \
+            \ never happens."
+        (let
+            (
+                (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
+            )
+            (+ (ref-RPS::URCi_TrueFungibleStakeFlow
+                   pool-id owner current-beneficiary dptf-id amount false)
+               (ref-RPS::URCi_TrueFungibleStakeFlow
+                   pool-id owner new-beneficiary dptf-id amount true))
+        ))
+    (defun CCp_ReassignTrueFungibleStakeBeneficiary:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string owner:string pool-id:string dptf-id:string amount:decimal
+         current-beneficiary:string new-beneficiary:string)
+        @doc "Redirect PART OR ALL of a staked true-fungible position's EARNINGS from \
+            \ <current-beneficiary> to <new-beneficiary>. <owner> stays the tracker owner \
+            \ throughout; the asset does not move. Works on either leg of a pool's canonical \
+            \ asset -- native or its `F|` frozen counterpart -- since <dptf-id> is a free \
+            \ parameter, not a native-only assumption. \
+            \ \
+            \ PARTIAL BY DESIGN, unlike the OF/collectable reassigns: a TF position carries no \
+            \ nonce, so <amount> may be any value up to the current (pool, dptf-id, owner, \
+            \ current-beneficiary) balance -- the owner splits a position across two \
+            \ beneficiaries by reassigning less than the full balance, or moves it whole by \
+            \ reassigning all of it. \
+            \ \
+            \ TWO PHASE-CHAIN RUNS WITH THE ASSET PINNED, same mechanism as \
+            \ `CCp_ReassignOrtoStakeBeneficiary`: `move-asset` false gates phase 1.1 and nothing \
+            \ else, so an UNSTAKE-shaped run vacating <current-beneficiary> and a STAKE-shaped run \
+            \ crediting <new-beneficiary> together migrate the tracker row, the cross-pool \
+            \ beneficiary rollup, the ANK anchor promile, the score weight on every employed \
+            \ score and both parties' RPS checkpoints -- with <owner> fixed in BOTH runs. \
+            \ \
+            \ THE OUTGOING BENEFICIARY IS SETTLED BEFORE THE WEIGHT LEAVES: the vacate run carries \
+            \ its own settle bundle, so rewards accrued while <current-beneficiary> held the \
+            \ (possibly partial) weight are credited to them first, at the weight they actually \
+            \ held. \
+            \ \
+            \ Talos shell → AQP-FVT::CCp_ReassignTrueFungibleStakeBeneficiary."
+        (let
+            (
+                (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+            )
+            (P|UEV_IMC)
+        (let
+            (
+                (staked:decimal
+                    (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id dptf-id owner current-beneficiary))
+                (rollup:decimal
+                    (ref-AQP::UR_AQP|BenDptfTotalBalance current-beneficiary dptf-id))
+            )
+            (with-capability
+                (FVT|C>REASSIGN-TRUE-FUNGIBLE-BENEFICIARY
+                    patron pool-id owner dptf-id amount current-beneficiary new-beneficiary staked rollup)
+                (let
+                    (
+                        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    )
+                    (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                        [
+                            ;;1] vacate <amount> of the OUTGOING beneficiary's weight: settle what
+                            ;;   they earned on it, then move exactly <amount> off their tracker
+                            ;;   row and rollup total. `move-asset` false and `owner-id` is <owner>
+                            ;;   on BOTH legs -- the position was never the pool's.
+                            (XI_TrueFungibleStakePhases
+                                patron pool-id owner current-beneficiary dptf-id amount
+                                false false current-beneficiary
+                                (ref-RPS::URHC_BuildStakeSettleBundle pool-id current-beneficiary))
+                            ;;2] credit the INCOMING beneficiary with the same <amount>, their own
+                            ;;   checkpoint opened or extended.
+                            (XI_TrueFungibleStakePhases
+                                patron pool-id owner new-beneficiary dptf-id amount
+                                true false new-beneficiary
+                                (ref-RPS::URHC_BuildStakeSettleBundle pool-id new-beneficiary))
+                        ]
+                        []
+                    )
+                )
+            )
+        )
+        )
+    )
     (defun CC_ClearPoolSweep:object{IgnisCollectorV3.OutputCumulator}
         (patron:string pool-id:string)
         @doc "Lift a pool's `sweep-in-progress` freeze and return it to trading. \
@@ -3771,11 +3907,18 @@
             \ Executor: PROVEN INDIRECTLY, and named. Phase 1 hands <executor> to AQP-POOL's \
             \ custody leg (AQP|XE>*-POOL-CUSTODY), which is where the asset actually moves and \
             \ where the account is proven. <executor> WAS the actor all along; it now says so, \
-            \ and sits where the canon puts it. \
+            \ and sits where the canon puts it. <executor> is passed to `XI_TrueFungibleStakePhases` \
+            \ as its `owner-id`, which hands it to `AQP::XE_TrueFungibleTransfer`, whose \
+            \ `AQP|XE>TRUE-FUNGIBLE-POOL-CUSTODY` reaches `CAP_StakeOwner` on it -- the route the \
+            \ extraction moved the name behind, exactly as for `CC_OrtoFungibleStakeFlow` beside it. \
             \ Executee: the account whose stake POSITION is created or reduced. It is validated \
             \ (UEV_StakeBeneficiaryAccount) and never consulted -- an owner may stake on a \
             \ beneficiary's behalf, which is the whole reason the two are separate parameters. \
-            \ (patron/executor canon 2.2, 2026-09-22.)"
+            \ (patron/executor canon 2.2, 2026-09-22.) \
+            \ \
+            \ EXTRACTED into `XI_TrueFungibleStakePhases`, 2026-10-12, mirroring the OF/collectable \
+            \ extractions: `CCp_ReassignTrueFungibleStakeBeneficiary` runs the same phase chain \
+            \ TWICE with the asset pinned instead of carrying its own copy."
         (let
             (
                 (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
@@ -3784,62 +3927,108 @@
         (with-capability (FVT|C>TRUE-FUNGIBLE-STAKE-FLOW pool-id executor executee dptf-id amount direction)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-                    ;;
+                    ;;IGNIS, AQP-POOL and AQP-SCORE moved WITH the phase chain into
+                    ;;`XI_TrueFungibleStakePhases`; binding them here as well would resolve three
+                    ;;module references for nothing, exactly as for `CC_OrtoFungibleStakeFlow` beside it.
+                    (settle-beneficiary:string executee)
                     (settle-bundle:object{AcquisitionSchemasV1.FVT|StakeSettleBundle}
-                        (ref-RPS::URHC_BuildStakeSettleBundle pool-id executee)
+                        (ref-RPS::URHC_BuildStakeSettleBundle pool-id settle-beneficiary)
                     )
                 )
+                (XI_TrueFungibleStakePhases
+                    patron pool-id executor executee dptf-id amount
+                    direction true settle-beneficiary settle-bundle)
+            )
+        )
+    )
+    )
+    ;;Protection: Class 2 — SECURE
+    (defun XI_TrueFungibleStakePhases:object{IgnisCollectorV3.OutputCumulator}
+        (
+            patron:string
+            pool-id:string
+            owner-id:string
+            beneficiary-id:string
+            dptf-id:string
+            amount:decimal
+            direction:bool
+            move-asset:bool
+            settle-beneficiary:string
+            settle-bundle:object{AcquisitionSchemasV1.FVT|StakeSettleBundle}
+        )
+        @doc "The TF stake/unstake phase chain, extracted so the ordinary flow and \
+            \ `CCp_ReassignTrueFungibleStakeBeneficiary` run the same code instead of two copies \
+            \ of it -- mirroring `XI_OrtoStakePhases` exactly. \
+            \ \
+            \ `move-asset` -- a reassignment never moves the underlying asset (the position stays \
+            \ in <owner-id>'s name throughout), so phase 1.1 is skipped and the caller runs this \
+            \ TWICE with <amount> pinned: once with `direction` false to vacate the OUTGOING \
+            \ beneficiary, once true to credit the INCOMING one. <owner-id> is the same account on \
+            \ BOTH runs, never a pool account -- TF has no custodial variant, so this parameter \
+            \ exists only to keep the shape identical to its OF sibling. \
+            \ \
+            \ EVERY OTHER PHASE IS UNCHANGED: the per-pool tracker, the cross-pool beneficiary \
+            \ rollup, the RPS prelude, the ANK anchor refresh, the SCORE unwind and the checkpoint \
+            \ all behave identically whether the call came from an ordinary stake/unstake or a \
+            \ reassignment. \
+            \ require SECURE, via the capability each caller already holds."
+        (require-capability (SECURE))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
+            )
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
                     [
                         ;;===>PHASE 1===
                         ;; PHASE 1.1 — Custody transfer · UrStoa ≡ X_UR|Transfer
-                        (ref-AQP::XE_TrueFungibleTransfer
-                            patron pool-id executor executee dptf-id amount direction)
+                        ;; SKIPPED on a reassignment: the asset stays in <owner-id>'s name.
+                        (if move-asset
+                            (ref-AQP::XE_TrueFungibleTransfer
+                                patron pool-id owner-id beneficiary-id dptf-id amount direction)
+                            (ref-IGNIS::UDC_ConstructOutputCumulator 0.0 AQP|SC_NAME false []))
                         ;; PHASE 1.2 — Per-pool DPTFTracker · UrStoa ≡ N/A
                         (ref-AQP::XE_TrueFungiblePoolTracker
-                            pool-id executor executee dptf-id amount direction)
-                        ;; PHASE 1.3 — BenDptfTotal rollup · UrStoa ≡ N/A
+                            pool-id owner-id beneficiary-id dptf-id amount direction)
+                        ;; PHASE 1.3 — Cross-pool BenDptfTotal rollup · UrStoa ≡ N/A (TF only)
                         (ref-AQP::XE_TrueFungibleBeneficiaryRollup
-                            pool-id executor executee dptf-id amount direction)
+                            pool-id owner-id beneficiary-id dptf-id amount direction)
                         ;;
                         ;;===>PHASE 2===
                         ;; PHASE 2 — FVT RPS prelude at OLD deb (2.1→2.2→2.3)
-                        (ref-RPS::XE_XI_RpsPreScore executee pool-id settle-bundle)
+                        (ref-RPS::XE_XI_RpsPreScore settle-beneficiary pool-id settle-bundle)
                         ;;
                         ;;===>PHASE 3===
                         ;; PHASE 3.1 — DPTF anchor refresh · UrStoa ≡ N/A (TF only)
-                        (XI_RefreshTrueFungibleStakeAnchors executee dptf-id)
+                        (XI_RefreshTrueFungibleStakeAnchors settle-beneficiary dptf-id)
                         ;; PHASE 3.2 — DPSF anchor slot · N/A (DPDC son=true)
                         ;; PHASE 3.3 — DPNF anchor slot · N/A (DPDC son=false)
                         ;;
                         ;;===>PHASE 4===
                         ;; PHASE 4 — SCORE vault + user + nzs
                         (ref-SCR::XE_ApplyTrueFungibleStakeDelta
-                            pool-id executee dptf-id amount direction
+                            pool-id settle-beneficiary dptf-id amount direction
                             (ref-AQP::URC_PoolActiveScoreIds pool-id)
                             (ref-AQP::URC_DptfStakeIsNativeLeg dptf-id)
                         )
                         ;; PHASE 4.5 — Sync FVT|T total-deb-score mirror for vault inject denominator
                         (ref-RPS::XE_XI_SyncFvtTotalDebMirrors (at "pre-member-debs" settle-bundle))
                         ;; PHASE 4.6 — Re-snapshot farm-triplet Level-1 weights (maintained Σ w-user divisor)
-                        (ref-RPS::XE_XI_SyncTripletLaneWeights executee (at "settle-plans" settle-bundle))
+                        (ref-RPS::XE_XI_SyncTripletLaneWeights settle-beneficiary (at "settle-plans" settle-bundle))
                         ;; PHASE 4.7 — Presence: stake→add, unstake→recompute (flip false on last withdrawal)
-                        (ref-RPS::XE_XI_SyncFvtPresence executee (at "distinct-fvts" settle-bundle) direction)
+                        (ref-RPS::XE_XI_SyncFvtPresence settle-beneficiary (at "distinct-fvts" settle-bundle) direction)
                         ;;
                         ;;===>PHASE 5===
                         ;; PHASE 5.1 — RPS unclaimed-count · UrStoa ≡ UpdateUnclaimedCount
-                        (ref-RPS::XE_XI_BookStakeUnclaimedCounts executee pool-id settle-bundle)
+                        (ref-RPS::XE_XI_BookStakeUnclaimedCounts settle-beneficiary pool-id settle-bundle)
                         ;; PHASE 5.2 — RPS checkpoint last-rps · UrStoa ≡ UpdateUserRPS
-                        (ref-RPS::XE_XI_CheckpointStakeRps executee pool-id settle-bundle)
+                        (ref-RPS::XE_XI_CheckpointStakeRps settle-beneficiary pool-id settle-bundle)
                     ]
                     []
                 )
-            )
         )
-    )
     )
     ;;
     ;; --- OF stake/unstake recipe (Talos ×4 → CC_OrtoFungibleStakeFlow) ---

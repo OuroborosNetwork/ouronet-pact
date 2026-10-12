@@ -204,6 +204,12 @@ INDIRECT = {
     # AQP::XE_CollectableTransfer and is proven by CAP_StakeOwner inside
     # AQP|XE>COLLECTABLE-POOL-CUSTODY.
     "05_FVT.pact::CC_CollectableStakeFlow": "CAP_StakeOwner",
+    # Same shape again, 2026-10-12 -- XI_TrueFungibleStakePhases is the extraction of
+    # CC_TrueFungibleStakeFlow's body, for the same cause as its OF/collectable siblings:
+    # CCp_ReassignTrueFungibleStakeBeneficiary needed to share the phase chain rather than
+    # duplicate it. `executor` crosses as `owner-id`, reaches AQP::XE_TrueFungibleTransfer and
+    # is proven by CAP_StakeOwner inside AQP|XE>TRUE-FUNGIBLE-POOL-CUSTODY.
+    "05_FVT.pact::CC_TrueFungibleStakeFlow": "CAP_StakeOwner",
     "05_FVT.pact::CC_InjectStream":    "XE_XI_FvtAddStream",
     "05_FVT.pact::CC_Inject":          "XE_XI_FvtInjectCore",
     "05_FVT.pact::CC_InjectFinalize":  "XE_XI_FvtInjectCore",
