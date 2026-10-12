@@ -322,7 +322,7 @@ Cross-module **function calls** bind a **module reference typed to an interface*
 |-------|------|
 | **`module{SomeInterface}`** | Caller depends only on the **interface surface** the callee implements |
 | **`::`** | Dereference / call through that typed ref |
-| **Interface members** | Almost the full **public** API peers may call — version bumps when the surface changes |
+| **Interface members** | The full **public** API peers may call (owner ruling, 2026-10-12 — not "almost"; see `StoicSyntax-Prefixes.md` §5) — version bumps when the surface changes |
 
 Only members **used** through that interface matter for typing and coupling. StoicSyntax is **interface-heavy**: peers link a **declared API**, not “the whole module.”
 

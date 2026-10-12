@@ -554,7 +554,7 @@
                 ;;THE REASSIGNMENT PREVIEW PRICES *BOTH* LEGS, asserted as an EXACT doubling
                 ;;rather than as "more than one". RENAMED to `INFO_AQP-POOL|ReassignOrtoStakeBeneficiary`
                 ;;and re-signatured 2026-10-11 (custody retired, owner + current-beneficiary are
-                ;;now both caller-supplied). `CCp_ReassignOrtoStakeBeneficiary` runs the orto
+                ;;now both caller-supplied). `CC_ReassignOrtoStakeBeneficiary` runs the orto
                 ;;phase chain twice -- an unstake vacating the outgoing beneficiary, a stake
                 ;;crediting the incoming one -- and `URCi_OrtoFungibleStakeFlow` is
                 ;;direction-independent in every leg it prices, so naming the SAME account

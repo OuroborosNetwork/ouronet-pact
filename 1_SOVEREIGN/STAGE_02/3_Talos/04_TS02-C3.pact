@@ -1848,7 +1848,7 @@
             )
         )
     )
-    (defun AQP-POOL|CCp_ReassignOrtoStakeBeneficiary:string
+    (defun AQP-POOL|CC_ReassignOrtoStakeBeneficiary:string
         (
             patron:string
             owner:string
@@ -1869,7 +1869,7 @@
             \ earnings bookkeeping and the token's transfer rules have nothing to say about it. \
             \ \
             \ Requires the OWNER's signature -- they are the one entitled to decide who earns. \
-            \ Talos shell → AQP-FVT::CCp_ReassignOrtoStakeBeneficiary."
+            \ Talos shell → AQP-FVT::CC_ReassignOrtoStakeBeneficiary."
         (with-capability
             (AQP|C>REASSIGN-ORTO-BENEFICIARY
                 patron owner pool-id dpof-id nonce current-beneficiary new-beneficiary)
@@ -1879,7 +1879,7 @@
                     (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-FVT::CCp_ReassignOrtoStakeBeneficiary
+                    (ref-FVT::CC_ReassignOrtoStakeBeneficiary
                         patron owner pool-id dpof-id nonce current-beneficiary new-beneficiary
                     )
                 )
@@ -1890,7 +1890,7 @@
             )
         )
     )
-    (defun AQP-POOL|CCp_ReassignCollectableStakeBeneficiary:string
+    (defun AQP-POOL|CC_ReassignCollectableStakeBeneficiary:string
         (
             patron:string
             owner:string
@@ -1901,10 +1901,10 @@
             current-beneficiary:string
             new-beneficiary:string
         )
-        @doc "The NFT/SFT counterpart of AQP-POOL|CCp_ReassignOrtoStakeBeneficiary. Collectables \
+        @doc "The NFT/SFT counterpart of AQP-POOL|CC_ReassignOrtoStakeBeneficiary. Collectables \
             \ carry no maturity lock -- this redirects earnings on an already-staked nonce \
             \ without an unstake/restake round trip. son=true DPSF, son=false DPNF. \
-            \ Talos shell → AQP-FVT::CCp_ReassignCollectableStakeBeneficiary."
+            \ Talos shell → AQP-FVT::CC_ReassignCollectableStakeBeneficiary."
         (with-capability
             (AQP|C>REASSIGN-COLLECTABLE-BENEFICIARY
                 patron owner pool-id collectable-id son nonce current-beneficiary new-beneficiary)
@@ -1914,7 +1914,7 @@
                     (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-FVT::CCp_ReassignCollectableStakeBeneficiary
+                    (ref-FVT::CC_ReassignCollectableStakeBeneficiary
                         patron owner pool-id collectable-id son nonce current-beneficiary new-beneficiary
                     )
                 )
@@ -1925,7 +1925,7 @@
             )
         )
     )
-    (defun AQP-POOL|CCp_ReassignTrueFungibleStakeBeneficiary:string
+    (defun AQP-POOL|CC_ReassignTrueFungibleStakeBeneficiary:string
         (
             patron:string
             owner:string
@@ -1945,7 +1945,7 @@
             \ regardless of who the beneficiary was, so this is pure earnings bookkeeping. \
             \ \
             \ Requires the OWNER's signature -- they are the one entitled to decide who earns. \
-            \ Talos shell → AQP-FVT::CCp_ReassignTrueFungibleStakeBeneficiary."
+            \ Talos shell → AQP-FVT::CC_ReassignTrueFungibleStakeBeneficiary."
         (with-capability
             (AQP|C>REASSIGN-TRUE-FUNGIBLE-BENEFICIARY
                 patron owner pool-id dptf-id amount current-beneficiary new-beneficiary)
@@ -1955,7 +1955,7 @@
                     (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-FVT::CCp_ReassignTrueFungibleStakeBeneficiary
+                    (ref-FVT::CC_ReassignTrueFungibleStakeBeneficiary
                         patron owner pool-id dptf-id amount current-beneficiary new-beneficiary
                     )
                 )

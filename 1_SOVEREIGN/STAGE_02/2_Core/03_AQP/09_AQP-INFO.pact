@@ -710,7 +710,7 @@
     (defun INFO_AQP-POOL|ReassignOrtoStakeBeneficiary:object{OuronetInfoV2.ClientInfo}
         (patron:string pool-id:string owner:string current-beneficiary:string
          new-beneficiary:string dpof-id:string nonce:integer)
-        @doc "Cost preview for AQP-POOL|CCp_ReassignOrtoStakeBeneficiary. RENAMED from \
+        @doc "Cost preview for AQP-POOL|CC_ReassignOrtoStakeBeneficiary. RENAMED from \
             \ INFO_AQP-POOL|ReassignCustodialBeneficiary, 2026-10-11 -- custody is retired, \
             \ this covers any staked sleeping position. The orto phase chain priced TWICE over \
             \ one nonce, reconstructed from the same reader the execution path uses. No STOA. \
@@ -724,7 +724,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Redirect who earns from an already-staked sleeping position — the owner and the position are unchanged."
                  "Requires the OWNER's signature — they decide who earns, as they did at the original stake."
-                 "Executes via TS02-C3.AQP-POOL|CCp_ReassignOrtoStakeBeneficiary."]
+                 "Executes via TS02-C3.AQP-POOL|CC_ReassignOrtoStakeBeneficiary."]
                 [(format "Nonce {} of {} in pool {} now earns for {} instead of {}." [nonce dpof-id pool-id new-beneficiary current-beneficiary])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
                     (AQP-FVT.URCi_ReassignOrtoStakeBeneficiary pool-id owner current-beneficiary new-beneficiary dpof-id nonce))
@@ -735,7 +735,7 @@
     (defun INFO_AQP-POOL|ReassignCollectableStakeBeneficiary:object{OuronetInfoV2.ClientInfo}
         (patron:string pool-id:string owner:string current-beneficiary:string
          new-beneficiary:string collectable-id:string son:bool nonce:integer nonce-amount:integer)
-        @doc "Cost preview for AQP-POOL|CCp_ReassignCollectableStakeBeneficiary -- the NFT/SFT \
+        @doc "Cost preview for AQP-POOL|CC_ReassignCollectableStakeBeneficiary -- the NFT/SFT \
             \ counterpart of INFO_AQP-POOL|ReassignOrtoStakeBeneficiary. No maturity lock applies \
             \ to a collectable; this previews redirecting earnings on an already-staked nonce. \
             \ No STOA."
@@ -746,7 +746,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Redirect who earns from an already-staked NFT/SFT — the owner and the position are unchanged."
                  "Requires the OWNER's signature — they decide who earns, as they did at the original stake."
-                 "Executes via TS02-C3.AQP-POOL|CCp_ReassignCollectableStakeBeneficiary."]
+                 "Executes via TS02-C3.AQP-POOL|CC_ReassignCollectableStakeBeneficiary."]
                 [(format "Nonce {} of {} in pool {} now earns for {} instead of {}." [nonce collectable-id pool-id new-beneficiary current-beneficiary])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
                     (AQP-FVT.URCi_ReassignCollectableStakeBeneficiary pool-id owner current-beneficiary new-beneficiary collectable-id son nonce nonce-amount))
@@ -757,7 +757,7 @@
     (defun INFO_AQP-POOL|ReassignTrueFungibleStakeBeneficiary:object{OuronetInfoV2.ClientInfo}
         (patron:string pool-id:string owner:string current-beneficiary:string
          new-beneficiary:string dptf-id:string amount:decimal)
-        @doc "Cost preview for AQP-POOL|CCp_ReassignTrueFungibleStakeBeneficiary -- the TF \
+        @doc "Cost preview for AQP-POOL|CC_ReassignTrueFungibleStakeBeneficiary -- the TF \
             \ counterpart of INFO_AQP-POOL|ReassignOrtoStakeBeneficiary. The TF phase chain priced \
             \ TWICE over <amount>, reconstructed from the same reader the execution path uses. \
             \ No STOA. \
@@ -771,7 +771,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Redirect who earns from an already-staked true-fungible position — the owner and the position are unchanged."
                  "Requires the OWNER's signature — they decide who earns, as they did at the original stake."
-                 "Executes via TS02-C3.AQP-POOL|CCp_ReassignTrueFungibleStakeBeneficiary."]
+                 "Executes via TS02-C3.AQP-POOL|CC_ReassignTrueFungibleStakeBeneficiary."]
                 [(format "{} of {} in pool {} now earns for {} instead of {}." [amount dptf-id pool-id new-beneficiary current-beneficiary])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
                     (AQP-FVT.URCi_ReassignTrueFungibleStakeBeneficiary pool-id owner current-beneficiary new-beneficiary dptf-id amount))

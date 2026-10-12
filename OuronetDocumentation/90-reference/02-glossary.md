@@ -15,7 +15,7 @@ Counts are of definitions in the tree, interface declarations included.
 |---|---:|---|
 | `UR_` | 1,470 | reads one row or field by key |
 | `C_` | 1,380 | client entry — builds the bill; reachable only through Talos |
-| `URC_` | 793 | reads and derives; no `enforce` |
+| `URC_` | 794 | reads and derives; no `enforce` |
 | `INFO_` | 641 | operation preview returning a client-facing cost and description |
 | `URCi_` | 629 | **cost reader** — the single source both billing and the preview call |
 | `UEV_` | 604 | reads and `enforce`s; failure aborts the transaction |
@@ -28,12 +28,12 @@ Counts are of definitions in the tree, interface declarations included.
 | `GOV|` | 160 | governance — keysets and protocol constants |
 | `URH_` | 159 | **scan** — walks a table. Off the execution path; cost grows with data |
 | `P|` | 121 | policy — inter-module authorisation |
-| `CC_` | 100 | client entry that reaches a **scan** |
+| `CC_` | 106 | client entry that reaches a **scan** |
 | `WU_` | 64 | write — update |
 | `XB_` | 62 | callable both internally and externally |
 | `UCk_` | 61 | **key builder** — composes a table's composite row key. Pure; returns a string, not a table |
 | `SC_` | 52 | smart-contract account name — a constant, exposed as a function |
-| `CCp_` | 50 | client recipe that reaches a scan |
+| `CCp_` | 44 | client recipe that reaches a scan |
 | `URCv_` | 37 | `URC_` with an intrinsic guard |
 | `UCv_` | 34 | `UC_` whose `enforce` is intrinsic to its own computation |
 | `CAP_` | 33 | account-ownership enforcement |

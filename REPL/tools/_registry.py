@@ -243,8 +243,8 @@ LEG_PREFLIGHT = {
     # RENAMED/GENERALIZED 2026-10-11 (PureV8, custody retired for a maturity lock). Both take
     # a scalar nonce and migrate a position's earnings in place, so the preflight is the same
     # shape as the custodial trio above -- enumerate this owner's positions, one tx per nonce.
-    "AQP-POOL|CCp_ReassignOrtoStakeBeneficiary": ["AQP-POOL.URH_AQP|DpofStakesByOwner"],
-    "AQP-POOL|CCp_ReassignCollectableStakeBeneficiary":
+    "AQP-POOL|CC_ReassignOrtoStakeBeneficiary": ["AQP-POOL.URH_AQP|DpofStakesByOwner"],
+    "AQP-POOL|CC_ReassignCollectableStakeBeneficiary":
         ["AQP-POOL.URH_AQP|DpsfStakesByOwner", "AQP-POOL.URH_AQP|DpnfStakesByOwner"],
 }
 

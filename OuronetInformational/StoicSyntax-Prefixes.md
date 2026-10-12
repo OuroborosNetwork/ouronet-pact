@@ -816,6 +816,34 @@ So an `XE_`/`XB_` missing from the interface is a **bug** (it's callable from ou
 a `URH_` reader used by the UI/another module belongs in the interface (subject to #4); a `URH_` reader
 used only inside its own module does not.
 
+**OWNER RULING, 2026-10-12 — this rule is MANDATORY, not a style preference, and the hedging
+language elsewhere in this project's docs ("interfaces carry *nearly*/*almost* the full public
+API") is WRONG and is being corrected wherever it appears (`CLAUDE.md`, `StoicSyntax.md`,
+`MODULE_ARCHITECTURE.md`).** The owner's words, verbatim: *"it was agreed upon that all user
+functions must sit in the module's interface by default, as a glossary of all the user/client
+functions said module employs. So if you added new ones, or modified existing ones, the rule is
+the module's interface must list them all, and that goes for all other such function types that
+appear in the module's interface."*
+
+This SUPERSEDES the conclusion (not the finding) of
+`OuronetInformational/memories/2026-08-29-modref-interface-semantics.md`. That memory's empirical
+result stands and is still true: Pact does not require interface membership for a modref call to
+load or run — `module{Iface}` only enforces that the concrete module implements `Iface`'s
+*declared* members, and calling an undeclared-but-present member works fine. What does NOT stand
+is the policy drawn from it ("declare for enumeration convenience, NOT as a correctness
+requirement" — read, in practice, as "therefore optional"). The reason the rule exists was never
+about what Pact will run; it is that the interface is meant to be **the one place a reader can see
+a module's whole callable surface without reading the module body** — and an undeclared function
+breaks that promise regardless of whether Pact itself notices.
+
+**Practical consequence: `REPL/tools/_modref.py`'s "Class A — implemented, not interface-declared"
+is NOT "convention, not a defect."** It is exactly the gap this ruling closes. Measured
+2026-10-12, before any fix: **30 such gaps**, concentrated in `AQP-FVT` (7), `TS02-C3` (12),
+`AQP-POOL` (5), `AQP-BOOT` (4, citizen), `DSP` (1, citizen) and one pre-existing Stage-1 outlier,
+`SWPI` (1, `A_RebuildGraph`, undeclared since before PureV2 and never caught because no tool
+treated it as fatal). See `OuronetInformational/HANDOFFS/HANDOFF-interface-membership-sweep.md`
+for the full worklist, the cascade each fix implies, and progress.
+
 ---
 
 ## 5.1 Canonical module structure & ORDER (and interface mirror)

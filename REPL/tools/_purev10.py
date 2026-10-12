@@ -1,22 +1,25 @@
 #!/usr/bin/env python3
 """Emit and verify the PureV10 hand-deploy round.
 
-ROUND V10 -- true-fungible beneficiary reassignment, the TF counterpart to the already-live
-OF/collectable reassigns (`CCp_ReassignOrtoStakeBeneficiary` / `...CollectableStakeBeneficiary`).
+ROUND V10 -- three features (true-fungible beneficiary reassignment; the sleeping-leg multiplier
+reader the UI needed; a naming correction on the two already-live OF/collectable reassigns,
+`CCp_Reassign*` -> `CC_Reassign*`, because the `p` claimed a Hydra parallel-slice shape neither
+function has) plus the dot-pin cascade all three together force.
 
 Unlike V9 (and V6-V8 before it), this round does NOT re-derive its transaction bodies from
 module source with a bespoke `create-table`-stripping pass: `_deploybundle.py --write` already
-regenerates `Deploy/1_Pure/18_deploy.pact` (AQP-FVT) and `Deploy/1_Pure/21_deploy.pact`
-(TS02-C3 + AQP-INFO + TS02-DPAD) in upgrade mode as part of the FULL round, and the gate already
+regenerates every stale file in upgrade mode as part of the FULL round, and the gate already
 diffs those byte-for-byte against the sovereign sources (`_deploybundle.py --check`, fatal in
 `_gate.py`). Re-deriving a second time here would be a second implementation of the same
-transformation, free to drift from the first. This tool instead just COPIES the two already-
-correct files out of the full round and watches that they stay copied.
+transformation, free to drift from the first. This tool instead just COPIES the already-correct
+files out of the full round and watches that they stay copied.
 
-No dot-pin cascade this round -- `_deploybundle.py --check` against the full round found exactly
-these two transactions stale and nothing else: no other module `dot`-calls into AQP-FVT, TS02-C3
-or AQP-INFO in a way a hash re-pin would require. See Deploy/PureV10/README.md for the full
-writeup (mechanism, defcap shape, the REPL regression test and what it caught).
+SIX TRANSACTIONS, not three -- the dot-pin cascade from AQP-SCORE's content change alone reaches
+RPS, which in turn is dot-pinned by AQP-VCT/MTX-AQP/AQP-DSA; AQP-FVT and TS02-C3's content
+changes are each dot-pinned by AQP-BOOT. Walked with `_dotpin.py --upgrade <module>` from each
+content change outward until it stopped reporting new modules -- see the SOURCES table below for
+the full dependency chain. See Deploy/PureV10/README.md for the full writeup (mechanism, defcap
+shape, the REPL regression test and what it caught, and the dot-pin cascade in detail).
 
     python3 REPL/tools/_purev10.py --plan / --write / --check / --multipact
 """
@@ -32,10 +35,31 @@ ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 DEPLOY = os.path.join(ROOT, "Deploy", "PureV10")
 PURE = os.path.join(ROOT, "Deploy", "1_Pure")
 
-# deploy file (this round) -> source transaction in the full round it is a verbatim copy of.
+# deploy file (this round) -> source transaction in the full round it is a verbatim copy of, in
+# DEPLOY ORDER -- which, conveniently, is also numeric order in the full round's own sequence
+# (the full round is already topologically sorted by dependency, so lifting a contiguous-by-
+# dependency subset out of it preserves order for free).
+#
+# THREE REAL CONTENT CHANGES (15, 18, 21) and THREE RE-PIN-ONLY SENDS (17, 19, 23), found by
+# walking `_dotpin.py --upgrade <module>` from each content change outward until it stopped
+# reporting new modules:
+#   AQP-SCORE (15, new sleeping-leg multiplier reader) -> dot-pinned by RPS, AQP-INFO
+#   RPS (17, re-pin only)                              -> dot-pinned by AQP-FVT, AQP-VCT,
+#                                                          MTX-AQP, AQP-DSA, AQP-INFO
+#   AQP-FVT (18, TF reassign + Cp_->CC_ rename)          -> dot-pinned by AQP-INFO, AQP-BOOT
+#   AQP-VCT/MTX-AQP/AQP-DSA (19, re-pin only, co-packed) -> dot-pinned by AQP-INFO only (already
+#                                                          covered by 21); MTX-AQP itself is a
+#                                                          dot-pin LEAF (nothing re-pins to it)
+#   TS02-C3 (21, Talos wrapper + Cp_->CC_ rename)        -> dot-pinned by AQP-BOOT
+#   AQP-INFO (co-packed in 21, new INFO preview + rename)-> dot-pin LEAF (nothing re-pins to it)
+#   AQP-BOOT (23, re-pin only)                           -> dot-pin LEAF -- cascade terminates here
 SOURCES = {
-    "01_deploy.pact": "18_deploy.pact",   # AQP-FVT
-    "02_deploy.pact": "21_deploy.pact",   # TS02-C3, AQP-INFO, TS02-DPAD (unchanged, co-packed)
+    "01_deploy.pact": "15_deploy.pact",   # AQP-SCORE
+    "02_deploy.pact": "17_deploy.pact",   # RPS -- re-pin only, no content change
+    "03_deploy.pact": "18_deploy.pact",   # AQP-FVT
+    "04_deploy.pact": "19_deploy.pact",   # AQP-VCT, MTX-AQP, AQP-DSA -- re-pin only, co-packed
+    "05_deploy.pact": "21_deploy.pact",   # TS02-C3, AQP-INFO, TS02-DPAD
+    "06_deploy.pact": "23_deploy.pact",   # AQP-BOOT -- re-pin only
 }
 
 
@@ -99,12 +123,14 @@ def emit_multipact():
         return 1
 
     grp = MP.group(
-        "PureV10 — true-fungible beneficiary reassignment",
+        "PureV10 — TF reassignment, sleeping-leg multiplier, CCp_->CC_ naming correction",
         "sequential",
         txs,
-        note="01 (AQP-FVT) carries the new defcap/function and the XI_TrueFungibleStakePhases "
-             "extraction; 02 (TS02-C3 + AQP-INFO) carries the Talos wrapper and cost preview that "
-             "call into it. Send in order for the same reason every module round does.")
+        note="STRICTLY ORDERED, same reason as every dot-pin round: 01 (AQP-SCORE) must land "
+             "before 02 (RPS, re-pin only) and 05 (AQP-INFO, dot-pins both); 03 (AQP-FVT) and "
+             "05 (TS02-C3) must land before 06 (AQP-BOOT, re-pin only); 02 (RPS) must land before "
+             "04 (AQP-VCT/MTX-AQP/AQP-DSA, re-pin only). Sending out of order leaves a dot-pinned "
+             "caller aborting with 'hash not blessed' until its own re-pin send catches up.")
     doc = MP.manifest(
         name="Ouronet PureV10",
         source="python3 REPL/tools/_purev10.py --multipact",

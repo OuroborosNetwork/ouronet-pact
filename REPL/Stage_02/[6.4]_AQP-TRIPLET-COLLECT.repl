@@ -828,14 +828,14 @@
                             ;;carries no claim on the token at all, and the transfer-role question
                             ;;simply does not apply. Asserted as a SUCCESS, which is the evidence
                             ;;the old refusal is gone for the right reason, not merely relaxed.
-                            (ref-TS02-C3::AQP-POOL|CCp_ReassignOrtoStakeBeneficiary
+                            (ref-TS02-C3::AQP-POOL|CC_ReassignOrtoStakeBeneficiary
                                 patron owner pool-id z-lp-id n owner KST.EMMA)
                             (expect "<<TX-AQP-CL06>> reassignment on a RESTRICTED token succeeds — no asset claim to police"
                                 [true true]
                                 [(> (ref-AQP::UR_AQP|DPOFTrackerBalance pool-id z-lp-id owner KST.EMMA n) 0.0)
                                  (= 0.0 (ref-AQP::UR_AQP|DPOFTrackerBalance pool-id z-lp-id owner owner n))])
                             ;;...and back, so the rest of this transaction tests the owner's own position
-                            (ref-TS02-C3::AQP-POOL|CCp_ReassignOrtoStakeBeneficiary
+                            (ref-TS02-C3::AQP-POOL|CC_ReassignOrtoStakeBeneficiary
                                 patron owner pool-id z-lp-id n KST.EMMA owner)
                             ;;2] NO EARLY USER EXIT -- the MATURITY LOCK refuses it, not an
                             ;;ownership guard. The tracker row exists and names the staker; the
@@ -1016,7 +1016,7 @@
                                     (
                                         (bob-pre:decimal (ref-SCR::UR_U-SCR|UserScoreBaseScore bob pool-id silver-score))
                                     )
-                                    (ref-TS02-C3::AQP-POOL|CCp_ReassignOrtoStakeBeneficiary
+                                    (ref-TS02-C3::AQP-POOL|CC_ReassignOrtoStakeBeneficiary
                                         patron alice pool-id z-lp-id n alice bob)
                                     (let*
                                         (

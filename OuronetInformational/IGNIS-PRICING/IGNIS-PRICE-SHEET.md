@@ -108,6 +108,9 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_SyncTrueFungibleAnchors` | `C_SyncTrueFungibleAnchors` | SETUP | **≥ 68** | — | COMPLEX | charge multiplies by an item count; legs: deter:sync-anchors 50 + components:AQP-POOL|C_SyncTrueFungibleAnchors 16 + small 2 |
 | `CC_FinalizeScoreRevoke` | `CC_FinalizeScoreRevoke` | SETUP | **≥ 18** | — | COMPLEX | heavy / parallel-slice op; legs: deter:setup 5 + components:AQP-POOL|CC_FinalizeScoreRevoke 13 |
 | `CC_FullVacate` | `CC_FullVacate` | USAGE | **≥ 6** | — | COMPLEX | heavy / parallel-slice op; legs: small 2 + smallest 1 + medium 3 |
+| `CC_ReassignCollectableStakeBeneficiary` | `CC_ReassignCollectableStakeBeneficiary` | USAGE | **≥ 21** | — | COMPLEX | heavy / parallel-slice op; legs: biggestx2 10 + biggest 5 + medium 3 + smallest 1 + small 2 |
+| `CC_ReassignOrtoStakeBeneficiary` | `CC_ReassignOrtoStakeBeneficiary` | USAGE | **≥ 21** | — | COMPLEX | heavy / parallel-slice op; legs: biggestx2 10 + small 2 + smallest 1 + biggest 5 + medium 3 |
+| `CC_ReassignTrueFungibleStakeBeneficiary` | `CC_ReassignTrueFungibleStakeBeneficiary` | USAGE | **≥ 21** | — | COMPLEX | heavy / parallel-slice op; legs: biggestx2 10 + small 2 + biggest 5 + medium 3 + smallest 1 |
 | `CC_StakeNonFungibleCollectable` | `CC_CollectableStakeFlow` | USAGE | **≥ 21** | — | COMPLEX | heavy / parallel-slice op; legs: biggestx2 10 + biggest 5 + medium 3 + smallest 1 + small 2 |
 | `CC_StakeOrtoFungible` | `CC_OrtoFungibleStakeFlow` | USAGE | **≥ 21** | — | COMPLEX | heavy / parallel-slice op; legs: biggestx2 10 + small 2 + smallest 1 + biggest 5 + medium 3 |
 | `CC_StakeSemiFungibleCollectable` | `CC_CollectableStakeFlow` | USAGE | **≥ 21** | — | COMPLEX | heavy / parallel-slice op; legs: biggestx2 10 + biggest 5 + medium 3 + smallest 1 + small 2 |
@@ -124,9 +127,6 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `CCp_BatchVacateCollectables` | `CCp_BatchVacateCollectables` | USAGE | **≥ 6** | — | COMPLEX | heavy / parallel-slice op; legs: smallest 1 + small 2 + medium 3 |
 | `CCp_BatchVacateOrtoFungible` | `CCp_BatchVacateOrtoFungible` | USAGE | **≥ 3** | — | COMPLEX | heavy / parallel-slice op; legs: small 2 + smallest 1 |
 | `CCp_BatchVacateTrueFungible` | `CCp_BatchVacateTrueFungible` | USAGE | **≥ 6** | — | COMPLEX | heavy / parallel-slice op; legs: small 2 + smallest 1 + medium 3 |
-| `CCp_ReassignCollectableStakeBeneficiary` | `CCp_ReassignCollectableStakeBeneficiary` | USAGE | **≥ 21** | — | COMPLEX | heavy / parallel-slice op; legs: biggestx2 10 + biggest 5 + medium 3 + smallest 1 + small 2 |
-| `CCp_ReassignOrtoStakeBeneficiary` | `CCp_ReassignOrtoStakeBeneficiary` | USAGE | **≥ 21** | — | COMPLEX | heavy / parallel-slice op; legs: biggestx2 10 + small 2 + smallest 1 + biggest 5 + medium 3 |
-| `CCp_ReassignTrueFungibleStakeBeneficiary` | `CCp_ReassignTrueFungibleStakeBeneficiary` | USAGE | **≥ 21** | — | COMPLEX | heavy / parallel-slice op; legs: biggestx2 10 + small 2 + biggest 5 + medium 3 + smallest 1 |
 | `CCp_ReleaseSpecialCustodial` | `CCp_ReleaseSpecialCustodial` | SETUP | **≥ 53** | — | COMPLEX | heavy / parallel-slice op; legs: deter:setup 5 + components:DPOF|C_Burn 45 + small 2 + smallest 1 |
 | `CCp_StakeSpecialCustodial` | `CCp_StakeSpecialCustodial` | USAGE | **≥ 21** | — | COMPLEX | heavy / parallel-slice op; legs: biggestx2 10 + small 2 + smallest 1 + biggest 5 + medium 3 |
 | `Cp_DrainScoreSlice` | `Cp_DrainScoreSlice` | USAGE | **≥ 59** | — | COMPLEX | heavy / parallel-slice op; legs: deter:backfill 50 + components:AQP-POOL|Cp_DrainScoreSlice 9 |

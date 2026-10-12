@@ -17,7 +17,7 @@ _Last updated: 2026-06-28._
 **Kadena’s ~150k deploy cap** forced a **strict deploy order**: a module may only call code in modules **already deployed** on chain.
 
 - **Cross-module calls** from later modules use a **module reference** and the **`::`** qualifier (e.g. `(ref-M::some-fun ...)`) so only the **used interface members** are relevant to typing and dependency discipline, in contrast to **`module.function`**-style use that conceptually pulls the **whole** module surface into how you think about coupling.
-- **Interfaces** therefore carry almost the full public API. **Adding or changing** a function in the interface **bumps the interface version** (e.g. `SomethingV7`), which drives **repo-wide refactors** of `implements` and `module{...}` types.
+- **Interfaces** therefore carry the full public API — not "almost" (owner ruling, 2026-10-12; see `StoicSyntax-Prefixes.md` §5). **Adding or changing** a function in the interface **bumps the interface version** (e.g. `SomethingV7`), which drives **repo-wide refactors** of `implements` and `module{...}` types.
 
 ## Policies (inter-module guards)
 

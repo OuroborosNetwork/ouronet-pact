@@ -185,6 +185,11 @@ built. **Struck from the remaining work.**
 **THE BENEFICIARY SWITCH IS BLOCKED ON THE V8 DEPLOY, not undesigned.** PureV8
 (2026-10-11) shipped `CCp_ReassignOrtoStakeBeneficiary` and `CCp_ReassignCollectableStakeBeneficiary`
 in Pact, but OuronetUI's stake controls are REGISTRY-DRIVEN by design --
+**RENAMED 2026-10-12 (PureV10): both are now `CC_ReassignOrtoStakeBeneficiary` /
+`CC_ReassignCollectableStakeBeneficiary`** -- the `p` suffix claimed a Hydra parallel-slice shape
+neither function has (no preflight, no slice object, one atomic transaction); see
+`Deploy/PureV10/README.md` for the full correction. The sentence above is left as the historical
+record of what V8 actually shipped; every reference below this point uses the current name.
 `aqpConsumerSpecs.tsx`'s own header: *"No Pact strings, no argument order, no arity --
 `@ouronet/talos-registry` supplies all three from the deployed contract"* -- and
 `aqp-consumer-specs.test.ts` asserts every spec's entrypoint `exists in the deployed registry`
@@ -198,7 +203,7 @@ brand-new entrypoint whose exact argument order I would be trusting from memory 
 verified against the chain.
 
 **Next action, concrete and small once unblocked:** after V8 deploys and the registry carries
-`TS02-C3.AQP-POOL|CCp_ReassignOrtoStakeBeneficiary`, add one `OpSpec` entry to
+`TS02-C3.AQP-POOL|CC_ReassignOrtoStakeBeneficiary`, add one `OpSpec` entry to
 `aqpConsumerSpecs.tsx` (mirrors `UNSTAKE_TRUE_FUNGIBLE`'s shape: `owner` as `kind: "self"`,
 `current-beneficiary` and `new-beneficiary` as `StringEntryInput` fields) and wire a "Reassign"
 action into `SleepingLpNonceView`'s existing `TokenActionBar` (the one fixed in v2.17.2) via

@@ -1144,18 +1144,18 @@
 (print "=== END TX-FVT-10 ==========================================================")
 (print "")
 ;;|| NEXT >
-;;|| TX-FVT-11 — CCp_ReassignTrueFungibleStakeBeneficiary: partial, then the rest, no tokens move.
+;;|| TX-FVT-11 — CC_ReassignTrueFungibleStakeBeneficiary: partial, then the rest, no tokens move.
 ;;|| NEXT >
-(begin-tx "TX-FVT-11 - CCp_ReassignTrueFungibleStakeBeneficiary partial + full, owner ANHD -> EMMA")
+(begin-tx "TX-FVT-11 - CC_ReassignTrueFungibleStakeBeneficiary partial + full, owner ANHD -> EMMA")
 (print "")
 (print "=== TX-FVT-11 — TF beneficiary reassignment: partial amount, then the remainder ======")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
-;;==== TX-FVT-11 - CCp_ReassignTrueFungibleStakeBeneficiary partial + full, owner ANHD -> EMMA · 01 · env-sigs (caps) ====
-(print "--- [TX-FVT-11 - CCp_ReassignTrueFungibleStakeBeneficiary partial + full, owner ANHD -> EMMA · 01 · env-sigs (caps)] ---")
+;;==== TX-FVT-11 - CC_ReassignTrueFungibleStakeBeneficiary partial + full, owner ANHD -> EMMA · 01 · env-sigs (caps) ====
+(print "--- [TX-FVT-11 - CC_ReassignTrueFungibleStakeBeneficiary partial + full, owner ANHD -> EMMA · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-;;==== TX-FVT-11 - CCp_ReassignTrueFungibleStakeBeneficiary partial + full, owner ANHD -> EMMA · 02 · let / invocation ====
-(print "--- [TX-FVT-11 - CCp_ReassignTrueFungibleStakeBeneficiary partial + full, owner ANHD -> EMMA · 02 · let / invocation] ---")
+;;==== TX-FVT-11 - CC_ReassignTrueFungibleStakeBeneficiary partial + full, owner ANHD -> EMMA · 02 · let / invocation ====
+(print "--- [TX-FVT-11 - CC_ReassignTrueFungibleStakeBeneficiary partial + full, owner ANHD -> EMMA · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -1196,19 +1196,19 @@
                 ;; A NEW BENEFICIARY MUST BE NAMED, not implied -- same rule as the OF/collectable reassigns.
                 (expect-failure "<<TX-FVT-11>> reassigning to herself is refused"
                     "Reassignment must name a different beneficiary"
-                    (ref-TS02-C3::AQP-POOL|CCp_ReassignTrueFungibleStakeBeneficiary
+                    (ref-TS02-C3::AQP-POOL|CC_ReassignTrueFungibleStakeBeneficiary
                         patron owner-id pool-id ouro-id move-amount owner-id owner-id))
                 ;; PARTIAL BY DESIGN: a TF position carries no nonce, so a request for MORE than the
                 ;; current balance must be refused rather than silently floored.
                 (expect-failure "<<TX-FVT-11>> an amount above the current balance is refused"
                     "Invalid amount: must be positive and not exceed the current staked/rollup balance"
-                    (ref-TS02-C3::AQP-POOL|CCp_ReassignTrueFungibleStakeBeneficiary
+                    (ref-TS02-C3::AQP-POOL|CC_ReassignTrueFungibleStakeBeneficiary
                         patron owner-id pool-id ouro-id (+ anhd-self-bal 1.0) owner-id new-ben))
             ]
         )
         ;;==== TX-FVT-11 · 01 · partial reassign: 40.0 moves to EMMA, the rest stays ANHD's ====
         (print "--- [TX-FVT-11 · 01 · partial reassign 40.0, ANHD -> EMMA] ---")
-        (ref-TS02-C3::AQP-POOL|CCp_ReassignTrueFungibleStakeBeneficiary
+        (ref-TS02-C3::AQP-POOL|CC_ReassignTrueFungibleStakeBeneficiary
             patron owner-id pool-id ouro-id move-amount owner-id new-ben)
         (let
             (
@@ -1247,7 +1247,7 @@
             ;;      pre-existing leftover sitting in ANHD's self row -- that belongs to an earlier
             ;;      test and must land back EXACTLY where it started (see note below on why). ====
             (print "--- [TX-FVT-11 · 02 · reassign the remainder of OUR OWN stake, ANHD -> EMMA] ---")
-            (ref-TS02-C3::AQP-POOL|CCp_ReassignTrueFungibleStakeBeneficiary
+            (ref-TS02-C3::AQP-POOL|CC_ReassignTrueFungibleStakeBeneficiary
                 patron owner-id pool-id ouro-id (- stake-amount move-amount) owner-id new-ben)
             (let
                 (

@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 15 of 24
 ;; This is STEP 15 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-14 must have run first, including the init steps between deploys.
-;; 1 source file(s), 96,321 gas measured in the REPL gas model, 300,345 bytes
+;; 1 source file(s), 96,321 gas measured in the REPL gas model, 302,018 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/02_SCORE.pact
@@ -2126,6 +2126,31 @@
             \ Kept as a named wrapper because \"what is held\" is the question those two callers \
             \ are actually asking; the clock choice is an implementation detail of the answer."
         (URC_SCR|SleepingLegWeight score-id dpof-id nonces nonce-amounts cap-months true)
+    )
+    (defun URC_SCR|SleepingLegHeldMultiplier:decimal
+        (score-id:string dpof-id:string nonce:integer cap-months:integer)
+        @doc "The multiplier ALONE a single sleeping/hibernating batch earns, from the LEDGER \
+            \ clock -- `UC_MxForRemaining` on its own, no amount folded in and no sum across \
+            \ nonces. \
+            \ \
+            \ EXISTS BECAUSE THE BLENDED WEIGHT IS NOT INVERTIBLE: `URC_SCR|SleepingLegWeight` \
+            \ floors `amount x multiplier` per nonce, and amount is almost never a round number, \
+            \ so a caller that only has the blended figure (e.g. a display wanting to show \"this \
+            \ batch earns 2.4x\" beside its amount) cannot recover the rate from it. A prior \
+            \ private attempt at exactly this (`URC_DecayedMxForNonce`) was deleted 2026-10-10 \
+            \ for being a SECOND implementation of the decay rule, not because the capability \
+            \ wasn't wanted -- this one calls the same `UC_MxForRemaining` every weight reader \
+            \ already calls, so there is still only one rule. \
+            \ \
+            \ HELD, NOT LIVE: matches `URC_SCR|SleepingLegHeldWeight`'s clock on purpose -- the \
+            \ figure this explains IS the held (credited) weight, not some hypothetical live one \
+            \ that would disagree with what the position is actually earning right now."
+        (UC_MxForRemaining
+            (if (= cap-months CT_HIBERNATE_MONTHS)
+                (UR_SCR|ScoreMxHibernated score-id)
+                (UR_SCR|ScoreMxSleeping score-id))
+            (UR_SCR|SleepRemainingAtStake dpof-id nonce)
+            cap-months)
     )
     (defun UR_U-SCR|UserScore:object{AcquisitionSchemasV1.SCR|UserSchema} (ouronet-account:string pool-id:string score-id:string)
         @doc "Reads the EFFECTIVE full user score row from SCR|T|UserScore. Vacate-v2 §5 lazy invalidation: if \

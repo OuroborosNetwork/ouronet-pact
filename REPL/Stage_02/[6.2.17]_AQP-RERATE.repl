@@ -1339,6 +1339,23 @@
                     [true true]
                     [(> (ref-SCR::UR_SCR|SleepRemainingAtStake zouro n) 0.0)
                      (<= (ref-SCR::UR_SCR|SleepRemainingAtStake zouro n) 86400.0)])
+                ;;URC_SCR|SleepingLegHeldMultiplier, new 2026-10-12 for the UI display gap (a
+                ;;sleeping leg showed no multiplier tag at all — frozen's is a flat per-score
+                ;;constant, sleeping's needs the ledger clock too, which only the BLENDED weight
+                ;;reader could reach before). Two independent cross-checks, not one:
+                ;;  1] it agrees with UC_MxForRemaining called directly on the same stamped clock
+                ;;     — proves the wiring (score-id -> mx-sleeping, dpof-id/nonce -> the stamp)
+                ;;     is not a typo'd field or a live-vs-held clock mixup;
+                ;;  2] amount x multiplier, floored at this score's precision, reproduces the
+                ;;     REAL credited delta asserted two lines above (25.0) — proves the new
+                ;;     reader is not merely self-consistent, it matches what actually got scored.
+                (expect "<<TX-RERATE-SAT>> SleepingLegHeldMultiplier agrees with UC_MxForRemaining on the same stamped term"
+                    (ref-SCR::UC_MxForRemaining 1.999 (ref-SCR::UR_SCR|SleepRemainingAtStake zouro n) 300)
+                    (ref-SCR::URC_SCR|SleepingLegHeldMultiplier score zouro n 300))
+                (expect "<<TX-RERATE-SAT>> amount x SleepingLegHeldMultiplier, floored, reproduces the real credited delta (25.0)"
+                    25.0
+                    (floor (* 25.0 (ref-SCR::URC_SCR|SleepingLegHeldMultiplier score zouro n 300))
+                           (ref-SCR::UR_SCR|ScorePrecision score)))
                 ;;the MATURITY LOCK refuses the early exit now, not an ownership mismatch — the
                 ;;staker IS the tracker owner, so `CAP_StakeOwner` passes; `all-matured` does not.
                 (expect-failure "<<TX-RERATE-SAT>> and the staker cannot withdraw it early — the maturity lock, not custody, refuses it"
@@ -1403,7 +1420,7 @@
 ;;"i am the owner of the staked batch, while specifying a beneficiary (me or someone else) ...
 ;;allowing switching directly for the beneficiary while the batch is staked."
 ;;
-;;ALICE NEVER STOPS OWNING THE POSITION. `CCp_ReassignOrtoStakeBeneficiary` moves only the
+;;ALICE NEVER STOPS OWNING THE POSITION. `CC_ReassignOrtoStakeBeneficiary` moves only the
 ;;BENEFICIARY column; `tracker-owner` is Alice on both phase-chain runs, never the pool. So:
 ;;  - she cannot unstake EARLY -- the maturity lock refuses it, same as TX-RERATE-SAT;
 ;;  - she CAN reassign who earns at any time, with no transfer-role check at all, because the
@@ -1463,12 +1480,12 @@
                     ;;no-op that would still run two full phase chains and bill for them.
                     (expect-failure "<<TX-RERATE-REASSIGN>> reassigning to herself is refused"
                         "Reassignment must name a different beneficiary"
-                        (ref-TS02-C3::AQP-POOL|CCp_ReassignOrtoStakeBeneficiary
+                        (ref-TS02-C3::AQP-POOL|CC_ReassignOrtoStakeBeneficiary
                             patron alice pool zouro n alice alice))
                 ]
             )
             ;;--- the redirect: Bob starts earning, Alice stays the owner ---
-            (ref-TS02-C3::AQP-POOL|CCp_ReassignOrtoStakeBeneficiary patron alice pool zouro n alice bob)
+            (ref-TS02-C3::AQP-POOL|CC_ReassignOrtoStakeBeneficiary patron alice pool zouro n alice bob)
             (map print
                 [
                     ;;ALICE'S ROW IS GONE AS A BENEFICIARY (she named Bob), her base drops by

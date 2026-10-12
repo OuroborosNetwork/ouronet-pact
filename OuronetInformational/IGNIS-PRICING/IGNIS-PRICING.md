@@ -296,7 +296,7 @@ STOA; the constants-only conversion (65 table reads lifted); the `define-set` / 
 199 exact  ·  189 floor  ·  2 STOA-only  ·  57 exempt  ·  5 unresolved  ·  15 unpriced
 ```
 
-**NEW OP, 2026-10-12: `AQP-POOL|CCp_ReassignTrueFungibleStakeBeneficiary`.** TF's counterpart to
+**NEW OP, 2026-10-12: `AQP-POOL|CC_ReassignTrueFungibleStakeBeneficiary`.** TF's counterpart to
 the OF/collectable beneficiary reassigns, published COMPLEX/floor like its siblings — the TF phase
 chain runs twice over the caller's `amount` with the asset pinned, same shape as
 `URCi_ReassignOrtoStakeBeneficiary`. Its core flow (`CC_TrueFungibleStakeFlow`) was extracted into

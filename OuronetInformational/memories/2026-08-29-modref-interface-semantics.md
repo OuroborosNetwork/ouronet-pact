@@ -1,5 +1,15 @@
 # Modref ↔ interface semantics — SETTLED empirically (pact 5.4.1, 2026-08-29)
 
+**CORRECTED 2026-10-12 — the EMPIRICAL FINDING below still stands; the POLICY drawn from it
+does not.** Owner ruling: interface membership for every user/client function is MANDATORY, full
+stop — not "declare for enumeration convenience," and not something deferred to a single later
+Phase-7 bump. The technical result (Pact does not require it for a modref call to load or run)
+was correct and remains correct; what was wrong was reading that as license to treat the
+declaration as optional. See `StoicSyntax-Prefixes.md` §5 for the ruling verbatim and the current
+worklist (`HANDOFF-interface-membership-sweep.md`). The "SETTLED POLICY" and "CASCADE LEVER"
+sections below describe the now-superseded deferred-bump strategy; kept for the technical
+findings above them, not as current practice.
+
 ## The question (owner)
 When calling a previous module via a modref (`ref-M::fn`, `ref-M:module{IfaceVn}`), must `fn` be
 declared in the interface `IfaceVn` — i.e., does adding a new cross-module function REQUIRE adding

@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 18 of 24
 ;; This is STEP 18 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-17 must have run first, including the init steps between deploys.
-;; 1 source file(s), 203,548 gas measured in the REPL gas model, 270,985 bytes
+;; 1 source file(s), 203,548 gas measured in the REPL gas model, 271,546 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/05_FVT.pact
@@ -3384,7 +3384,7 @@
     (defun URCi_ReassignOrtoStakeBeneficiary:decimal
         (pool-id:string owner:string current-beneficiary:string new-beneficiary:string
          dpof-id:string nonce:integer)
-        @doc "Total IGNIS IFP of `CCp_ReassignOrtoStakeBeneficiary`: the orto phase chain run \
+        @doc "Total IGNIS IFP of `CC_ReassignOrtoStakeBeneficiary`: the orto phase chain run \
             \ TWICE over the single nonce -- once to vacate <current-beneficiary>'s weight, once \
             \ to credit <new-beneficiary>. \
             \ \
@@ -3403,7 +3403,7 @@
                (ref-RPS::URCi_OrtoFungibleStakeFlow
                    pool-id owner new-beneficiary dpof-id [nonce] true))
         ))
-    (defun CCp_ReassignOrtoStakeBeneficiary:object{IgnisCollectorV3.OutputCumulator}
+    (defun CC_ReassignOrtoStakeBeneficiary:object{IgnisCollectorV3.OutputCumulator}
         (patron:string owner:string pool-id:string dpof-id:string nonce:integer
          current-beneficiary:string new-beneficiary:string)
         @doc "Redirect a staked orto position's EARNINGS from <current-beneficiary> to \
@@ -3434,7 +3434,7 @@
             \ codebase's existing tests -- reuse was chosen because it is PROVEN, not merely \
             \ convenient, and the trade-off is stated here rather than discovered on chain. \
             \ \
-            \ Talos shell → AQP-FVT::CCp_ReassignOrtoStakeBeneficiary."
+            \ Talos shell → AQP-FVT::CC_ReassignOrtoStakeBeneficiary."
         (let
             (
                 (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
@@ -3480,7 +3480,7 @@
     (defun URCi_ReassignCollectableStakeBeneficiary:decimal
         (pool-id:string owner:string current-beneficiary:string new-beneficiary:string
          collectable-id:string son:bool nonce:integer nonce-amount:integer)
-        @doc "Total IGNIS IFP of `CCp_ReassignCollectableStakeBeneficiary` -- the collectable \
+        @doc "Total IGNIS IFP of `CC_ReassignCollectableStakeBeneficiary` -- the collectable \
             \ phase chain run twice, same shape as the orto pricer above."
         (let
             (
@@ -3491,15 +3491,15 @@
                (ref-RPS::URCi_CollectableStakeFlow
                    pool-id owner new-beneficiary collectable-id son [nonce] [nonce-amount] true))
         ))
-    (defun CCp_ReassignCollectableStakeBeneficiary:object{IgnisCollectorV3.OutputCumulator}
+    (defun CC_ReassignCollectableStakeBeneficiary:object{IgnisCollectorV3.OutputCumulator}
         (patron:string owner:string pool-id:string collectable-id:string son:bool nonce:integer
          current-beneficiary:string new-beneficiary:string)
-        @doc "The NFT/SFT counterpart of `CCp_ReassignOrtoStakeBeneficiary` -- same two-run, \
+        @doc "The NFT/SFT counterpart of `CC_ReassignOrtoStakeBeneficiary` -- same two-run, \
             \ asset-pinned mechanism, over `XI_CollectableStakePhases` instead of the orto chain. \
             \ Collectables carry no maturity lock, so this is purely a convenience: redirect \
             \ earnings without an unstake/restake round trip. son=true DPSF, son=false DPNF. \
             \ \
-            \ Talos shell → AQP-FVT::CCp_ReassignCollectableStakeBeneficiary."
+            \ Talos shell → AQP-FVT::CC_ReassignCollectableStakeBeneficiary."
         (let
             (
                 (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
@@ -3542,7 +3542,7 @@
     (defun URCi_ReassignTrueFungibleStakeBeneficiary:decimal
         (pool-id:string owner:string current-beneficiary:string new-beneficiary:string
          dptf-id:string amount:decimal)
-        @doc "Total IGNIS IFP of `CCp_ReassignTrueFungibleStakeBeneficiary`: the TF phase chain \
+        @doc "Total IGNIS IFP of `CC_ReassignTrueFungibleStakeBeneficiary`: the TF phase chain \
             \ run TWICE over the same <amount> -- once to vacate <current-beneficiary>'s weight, \
             \ once to credit <new-beneficiary>. \
             \ \
@@ -3560,7 +3560,7 @@
                (ref-RPS::URCi_TrueFungibleStakeFlow
                    pool-id owner new-beneficiary dptf-id amount true))
         ))
-    (defun CCp_ReassignTrueFungibleStakeBeneficiary:object{IgnisCollectorV3.OutputCumulator}
+    (defun CC_ReassignTrueFungibleStakeBeneficiary:object{IgnisCollectorV3.OutputCumulator}
         (patron:string owner:string pool-id:string dptf-id:string amount:decimal
          current-beneficiary:string new-beneficiary:string)
         @doc "Redirect PART OR ALL of a staked true-fungible position's EARNINGS from \
@@ -3575,8 +3575,15 @@
             \ beneficiaries by reassigning less than the full balance, or moves it whole by \
             \ reassigning all of it. \
             \ \
+            \ NAMED `CC_`, NOT `CCp_` (StoicSyntax-Prefixes.md 2.2 'Recipe axes'), checked \
+            \ deliberately rather than copied from its OF/collectable siblings' names: `p` means a \
+            \ Hydra parallel SLICE of a preflight-partitioned sweep, which this is not -- one \
+            \ (owner, beneficiary, amount) tuple, one atomic transaction, no preflight. `CC` IS \
+            \ earned, by `URHC_BuildStakeSettleBundle` below. \
+            \ \
             \ TWO PHASE-CHAIN RUNS WITH THE ASSET PINNED, same mechanism as \
-            \ `CCp_ReassignOrtoStakeBeneficiary`: `move-asset` false gates phase 1.1 and nothing \
+            \ `CC_ReassignOrtoStakeBeneficiary` (whose own name has the identical `p` question, \
+            \ unresolved -- it is deployed, this is not): `move-asset` false gates phase 1.1 and nothing \
             \ else, so an UNSTAKE-shaped run vacating <current-beneficiary> and a STAKE-shaped run \
             \ crediting <new-beneficiary> together migrate the tracker row, the cross-pool \
             \ beneficiary rollup, the ANK anchor promile, the score weight on every employed \
@@ -3587,7 +3594,7 @@
             \ (possibly partial) weight are credited to them first, at the weight they actually \
             \ held. \
             \ \
-            \ Talos shell → AQP-FVT::CCp_ReassignTrueFungibleStakeBeneficiary."
+            \ Talos shell → AQP-FVT::CC_ReassignTrueFungibleStakeBeneficiary."
         (let
             (
                 (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
@@ -3944,7 +3951,7 @@
             \ (patron/executor canon 2.2, 2026-09-22.) \
             \ \
             \ EXTRACTED into `XI_TrueFungibleStakePhases`, 2026-10-12, mirroring the OF/collectable \
-            \ extractions: `CCp_ReassignTrueFungibleStakeBeneficiary` runs the same phase chain \
+            \ extractions: `CC_ReassignTrueFungibleStakeBeneficiary` runs the same phase chain \
             \ TWICE with the asset pinned instead of carrying its own copy."
         (let
             (
@@ -3984,7 +3991,7 @@
             settle-bundle:object{AcquisitionSchemasV1.FVT|StakeSettleBundle}
         )
         @doc "The TF stake/unstake phase chain, extracted so the ordinary flow and \
-            \ `CCp_ReassignTrueFungibleStakeBeneficiary` run the same code instead of two copies \
+            \ `CC_ReassignTrueFungibleStakeBeneficiary` run the same code instead of two copies \
             \ of it -- mirroring `XI_OrtoStakePhases` exactly. \
             \ \
             \ `move-asset` -- a reassignment never moves the underlying asset (the position stays \
@@ -4257,7 +4264,7 @@
         )
         @doc "Extracted from `CC_CollectableStakeFlow`, mirroring `XI_OrtoStakePhases` exactly: \
             \ the ordinary flow passes `tracker-owner = transfer-sender = executor`; \
-            \ `CCp_ReassignCollectableStakeBeneficiary` passes the real owner for both and runs \
+            \ `CC_ReassignCollectableStakeBeneficiary` passes the real owner for both and runs \
             \ this twice with `move-asset` false to migrate a position's earnings in place. \
             \ require SECURE, via the capability each caller already holds."
         (require-capability (SECURE))

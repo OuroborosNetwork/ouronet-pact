@@ -199,14 +199,14 @@ INDIRECT = {
     "05_FVT.pact::CC_OrtoFungibleStakeFlow": "CAP_StakeOwner",
     # Same shape, same reason -- XI_CollectableStakePhases is the extraction of
     # CC_CollectableStakeFlow's body, 2026-10-11, done for the same cause: a generalized
-    # beneficiary-reassignment recipe (CCp_ReassignCollectableStakeBeneficiary) needed to share
+    # beneficiary-reassignment recipe (CC_ReassignCollectableStakeBeneficiary) needed to share
     # the phase chain rather than duplicate it. `executor` crosses as `transfer-sender`, reaches
     # AQP::XE_CollectableTransfer and is proven by CAP_StakeOwner inside
     # AQP|XE>COLLECTABLE-POOL-CUSTODY.
     "05_FVT.pact::CC_CollectableStakeFlow": "CAP_StakeOwner",
     # Same shape again, 2026-10-12 -- XI_TrueFungibleStakePhases is the extraction of
     # CC_TrueFungibleStakeFlow's body, for the same cause as its OF/collectable siblings:
-    # CCp_ReassignTrueFungibleStakeBeneficiary needed to share the phase chain rather than
+    # CC_ReassignTrueFungibleStakeBeneficiary needed to share the phase chain rather than
     # duplicate it. `executor` crosses as `owner-id`, reaches AQP::XE_TrueFungibleTransfer and
     # is proven by CAP_StakeOwner inside AQP|XE>TRUE-FUNGIBLE-POOL-CUSTODY.
     "05_FVT.pact::CC_TrueFungibleStakeFlow": "CAP_StakeOwner",
