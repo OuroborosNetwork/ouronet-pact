@@ -3,7 +3,7 @@
 ;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact
 ;;
 ;; net: v2   ·   dev: v3   ;; bumped by the StoicSyntax refactor — deploy v3 then set net: v3
-(interface SwapTracerV3
+(interface SwapTracerV4
     @doc "Exposes Tracer Functions, needed to compute Paths between Tokens existing on \
         \ Liquidity Pools. \
         \ \
@@ -184,6 +184,15 @@
     (defun XE_UpdateGraph (swpair:string))
     ;;{5.7}  User [A/C]
 
+
+    ;;<=========================================================================>
+    ;; ADDED 2026-10-12 -- interface-membership sweep (StoicSyntax-Prefixes.md Sec5,
+    ;; owner ruling). Every one of these was already live in the module body; this
+    ;; closes the gap between what the module DOES and what its interface SAYS it does.
+    ;;<=========================================================================>
+    (defun UC_ExcludeEdges:[string] (swpairs:[string] exclude:[string]))
+    (defun UC_FindNeighbourIndex:[integer] (neighbours:[object{NeighbourEdge}] token:string))
+    (defun UR_PathCacheRaw:object{PathCacheRow} (key:string))
 )
 ;;
 (module SWPT GOV
@@ -199,7 +208,7 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements SwapTracerV3)
+    (implements SwapTracerV4)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -215,7 +224,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -238,7 +247,7 @@
     (defun P|Info ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::P|Info)
         )
@@ -391,15 +400,15 @@
     ;;{3.2}  schemas
     ;;
     (defschema SWPT|GraphSchema
-        neighbours:[object{SwapTracerV3.NeighbourEdge}]
+        neighbours:[object{SwapTracerV4.NeighbourEdge}]
     )
     ;;{3.3}  tables
     (deftable SWPT|Graph:{SWPT|GraphSchema})                    ;;Key = <token>
-    (deftable SWPT|PathCache:{SwapTracerV3.PathCacheRow})       ;;Key = <token-a>|<token-b> (insertion-order, reversed-lookup at read time)
+    (deftable SWPT|PathCache:{SwapTracerV4.PathCacheRow})       ;;Key = <token-a>|<token-b> (insertion-order, reversed-lookup at read time)
     ;;#65bL Phase 1: own table per this codebase's storage-pattern rule (never
     ;;co-locate a row read for other reasons — segregated so only the path that
     ;;needs the counter pays to deserialize it).
-    (deftable SWPT|TopologyVersion:{SwapTracerV3.TopologyVersionRow})  ;;Key = TOPOLOGY_VERSION_KEY (singleton)
+    (deftable SWPT|TopologyVersion:{SwapTracerV4.TopologyVersionRow})  ;;Key = TOPOLOGY_VERSION_KEY (singleton)
 
     ;;<=========================================================================>
     ;;{4}  CAPABILITIES
@@ -425,7 +434,7 @@
     )
     ;;{5.2}  Compute [UC]
     ;;
-    (defun UC_FindNeighbourIndex:[integer] (neighbours:[object{SwapTracerV3.NeighbourEdge}] token:string)
+    (defun UC_FindNeighbourIndex:[integer] (neighbours:[object{SwapTracerV4.NeighbourEdge}] token:string)
         @doc "Returns [idx] of the entry in <neighbours> whose token field matches \
             \ <token>, or [] if no such entry exists yet."
         (let
@@ -476,7 +485,7 @@
         (let
             (
                 (ref-U|LST:module{StringProcessorV2} U|LST)
-                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+                (ref-U|SWP:module{UtilitySwpV3} U|SWP)
                 (nodes:[string] (ref-U|SWP::UC_MakeGraphNodes input output swpairs))
             )
             (if (= 0 (length nodes))
@@ -528,14 +537,14 @@
         )
     )
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    (defun UR_Graph:[object{SwapTracerV3.NeighbourEdge}] (token:string)
+    (defun UR_Graph:[object{SwapTracerV4.NeighbourEdge}] (token:string)
         (with-default-read SWPT|Graph token
             {"neighbours" : []}
             {"neighbours" := n}
             n
         )
     )
-    (defun UR_PathCacheRaw:object{SwapTracerV3.PathCacheRow} (key:string)
+    (defun UR_PathCacheRaw:object{SwapTracerV4.PathCacheRow} (key:string)
         @doc "#34 Phase 7: raw keyed read against SWPT|PathCache, [BAR]-sentinel default \
             \ for a missing row. Internal — callers go through <URC_ReadPathCache> for the \
             \ reversed-lookup logic, never this directly. \
@@ -567,7 +576,7 @@
             \ table scan."
         (let*
             (
-                (neighbours:[object{SwapTracerV3.NeighbourEdge}] (UR_Graph t1))
+                (neighbours:[object{SwapTracerV4.NeighbourEdge}] (UR_Graph t1))
                 (idx:[integer] (UC_FindNeighbourIndex neighbours t2))
             )
             (if (= (length idx) 0)
@@ -714,7 +723,7 @@
             \ function directly instead, to skip this self-fetch."
         (let*
             (
-                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+                (ref-U|SWP:module{UtilitySwpV3} U|SWP)
                 (full-nodes:[string] (ref-U|SWP::UC_MakeGraphNodes input output swpairs))
                 (raw-graph:[object{RawGraphNode}] (URC_FetchRawGraph full-nodes))
             )
@@ -884,7 +893,7 @@
         (let
             (
                 (ref-U|LST:module{StringProcessorV2} U|LST)
-                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+                (ref-U|SWP:module{UtilitySwpV3} U|SWP)
                 (nodes:[string] (ref-U|SWP::UC_MakeGraphNodes input output swpairs))
             )
             (if (= 0 (length nodes))
@@ -1097,7 +1106,7 @@
         )
     )
     ;;#34 Phase 7: dirty-read path-cache core functions.
-    (defun URC_ReadPathCache:object{SwapTracerV3.PathCacheRow} (token-a:string token-b:string)
+    (defun URC_ReadPathCache:object{SwapTracerV4.PathCacheRow} (token-a:string token-b:string)
         @doc "Reversed-lookup read: checks <token-a>|<token-b> first, then \
             \ <token-b>|<token-a> reversed (the graph is confirmed bidirectional — \
             \ XI_UpdateGraphForSwpair's symmetric i×j registration), before concluding \
@@ -1112,14 +1121,14 @@
         (let*
             (
                 (key-fwd:string (+ (+ token-a "|") token-b))
-                (row-fwd:object{SwapTracerV3.PathCacheRow} (UR_PathCacheRaw key-fwd))
+                (row-fwd:object{SwapTracerV4.PathCacheRow} (UR_PathCacheRaw key-fwd))
             )
             (if (!= (at "nodes" row-fwd) [BAR])
                 row-fwd
                 (let*
                     (
                         (key-rev:string (+ (+ token-b "|") token-a))
-                        (row-rev:object{SwapTracerV3.PathCacheRow} (UR_PathCacheRaw key-rev))
+                        (row-rev:object{SwapTracerV4.PathCacheRow} (UR_PathCacheRaw key-rev))
                     )
                     (if (!= (at "nodes" row-rev) [BAR])
                         {
@@ -1133,7 +1142,7 @@
             )
         )
     )
-    (defun URC_ReadPathCacheFresh:object{SwapTracerV3.PathCacheRow} (token-a:string token-b:string)
+    (defun URC_ReadPathCacheFresh:object{SwapTracerV4.PathCacheRow} (token-a:string token-b:string)
         @doc "#65bL Phase 1: <URC_ReadPathCache>, additionally collapsing a STALE entry \
             \ (its <topology-version> behind the live counter) to the same [BAR] miss \
             \ sentinel a genuinely-absent entry already returns. Callers never need to \
@@ -1141,7 +1150,7 @@
             \ both mean 'don't trust this, go search live instead'."
         (let*
             (
-                (row:object{SwapTracerV3.PathCacheRow} (URC_ReadPathCache token-a token-b))
+                (row:object{SwapTracerV4.PathCacheRow} (URC_ReadPathCache token-a token-b))
                 (current-version:integer (UR_TopologyVersion))
             )
             (if (< (at "topology-version" row) current-version)
@@ -1218,7 +1227,7 @@
         (require-capability (SECURE))
         (let*
             (
-                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+                (ref-U|SWP:module{UtilitySwpV3} U|SWP)
                 (tokens:[string] (ref-U|SWP::UC_TokensFromSwpairString swpair))
                 (n:integer (length tokens))
             )
@@ -1253,7 +1262,7 @@
         (require-capability (SECURE))
         (let*
             (
-                (existing:[object{SwapTracerV3.NeighbourEdge}] (UR_Graph from))
+                (existing:[object{SwapTracerV4.NeighbourEdge}] (UR_Graph from))
                 (idx:[integer] (UC_FindNeighbourIndex existing to))
                 (is-new-pair:bool (= (length idx) 0))
                 (old-swpairs:[string]
@@ -1264,7 +1273,7 @@
                 )
                 (is-new-swpair:bool (not (contains swpair old-swpairs)))
                 (did-change:bool (or is-new-pair is-new-swpair))
-                (new-neighbours:[object{SwapTracerV3.NeighbourEdge}]
+                (new-neighbours:[object{SwapTracerV4.NeighbourEdge}]
                     (if is-new-pair
                         (+ existing [{"token": to, "swpairs": [swpair]}])
                         (let*
@@ -1317,12 +1326,12 @@
             (
                 (key-fwd:string (+ (+ token-a "|") token-b))
                 (key-rev:string (+ (+ token-b "|") token-a))
-                (row-fwd:object{SwapTracerV3.PathCacheRow} (UR_PathCacheRaw key-fwd))
-                (row-rev:object{SwapTracerV3.PathCacheRow} (UR_PathCacheRaw key-rev))
+                (row-fwd:object{SwapTracerV4.PathCacheRow} (UR_PathCacheRaw key-fwd))
+                (row-rev:object{SwapTracerV4.PathCacheRow} (UR_PathCacheRaw key-rev))
                 (already-fwd:bool (!= (at "nodes" row-fwd) [BAR]))
                 (already-rev:bool (!= (at "nodes" row-rev) [BAR]))
                 (current-version:integer (UR_TopologyVersion))
-                (new-row:object{SwapTracerV3.PathCacheRow}
+                (new-row:object{SwapTracerV4.PathCacheRow}
                     {"nodes": nodes, "edges": edges, "topology-version": current-version}
                 )
             )

@@ -73,6 +73,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_IssueMultipletFamily` | `C_IssueMultipletFamily` | ISSUE | **509** | — | $5.09 | deter:issue-multiplet 500 + components:AQP-FVT|C_IssueMultipletFamily 9 |
 | `C_RotateOwnership` | `C_RotateOwnership` | AUTH | **17** | — | $0.17 | deter:auth 10 + components:AQP-FVT|C_RotateOwnership 7 |
 | `C_SetCommonDenominator` | `C_SetCommonDenominator` | SETUP | **110** | — | $1.10 | deter:fvt-split-setup 100 + components:AQP-FVT|C_SetCommonDenominator 10 |
+| `C_SetMinInjectAmount` | `C_SetMinInjectAmount` | USAGE | **61** | — | $0.61 | deter:fvt-link-toggle 50 + components:AQP-FVT|C_ToggleRewardLink 11 |
 | `C_SetMosaic` | `C_SetMosaic` | SETUP | **111** | — | $1.11 | deter:fvt-split-setup 100 + components:AQP-FVT|C_SetMosaic 11 |
 | `C_SetQualitySplit` | `C_SetQualitySplit` | SETUP | **111** | — | $1.11 | deter:fvt-split-setup 100 + components:AQP-FVT|C_SetQualitySplit 11 |
 | `C_SetSplitMode` | `C_SetSplitMode` | SETUP | **111** | — | $1.11 | deter:fvt-split-setup 100 + components:AQP-FVT|C_SetSplitMode 11 |
@@ -83,6 +84,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `CC_Inject` | `CC_Inject` | USAGE | **≥ 500** | — | COMPLEX | heavy / parallel-slice op; legs: deter:aqp-inject 500 |
 | `CC_InjectFinalize` | `CC_InjectFinalize` | USAGE | **≥ 500** | — | COMPLEX | heavy / parallel-slice op; legs: deter:aqp-inject 500 |
 | `CC_InjectStream` | `CC_InjectStream` | USAGE | **≥ 500** | — | COMPLEX | heavy / parallel-slice op; legs: deter:aqp-inject 500 |
+| `CC_LatchStreamEligible` | `CC_LatchStreamEligible` | SETUP | **≥ 28** | — | COMPLEX | heavy / parallel-slice op; legs: deter:setup 5 + components:AQP-FVT|CC_LatchStreamEligible 23 |
 | `CC_SweepBegin` | `CC_SweepBegin` | USAGE | **0** | — | free | free by design — Talos wrapper collects no IGNIS and no STOA |
 | `CC_SweepRevokeAnchor` | `CC_SweepRevokeAnchor` | USAGE | **0** | — | free | core op returns an empty cumulator — charges nothing |
 | `CC_UnstaleMyScores` | `CC_UnstaleMyScores` | USAGE | **≥ 111** | — | COMPLEX | heavy / parallel-slice op; legs: deter:unstale 100 + components:AQP-FVT|CC_UnstaleMyScores 11 |
@@ -151,6 +153,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_IssueSingleScoreModel` | `C_IssueSingleScoreModel` | ISSUE | **500** | — | $5.00 | deter:issue-score-model 500 |
 | `C_IssueTriplet` | `C_IssueTriplet` | ISSUE | **539** | — | $5.39 | deter:issue-triplet 500 + components:AQP-SCR|C_IssueTriplet 39 |
 | `C_IssueTrueFungibleScore` | `C_IssueTrueFungibleScore` | ISSUE | **1028** | 100 | $10.28 | deter:issue-score 1000 + components:AQP-SCR|C_IssueTrueFungibleScore 28 | STOA: stoa:issue-score 100 |
+| `C_LockScoreDrift` | `C_LockScoreDrift` | SETUP | **18** | — | $0.18 | deter:setup 5 + components:AQP-SCR|C_LockScoreDrift 13 |
 | `C_RotateScoreOwnership` | `C_RotateOwnership` | AUTH | **23** | — | $0.23 | deter:auth 10 + components:AQP-SCR|C_RotateScoreOwnership 13 |
 
 ## ATS
@@ -653,7 +656,7 @@ another Talos wrapper, not a core op) or admin entrypoints that are exempt by ru
 | P\|A_SetIMP | admin entrypoint -- IGNIS + STOA free by owner rule, nothing to price |
 
 ---
-199 simple (exact price) · 189 complex (floor price) · 2 STOA-only · 57 exempt · 5 unresolved · 15 unpriced · 447 Talos client functions
+201 simple (exact price) · 190 complex (floor price) · 2 STOA-only · 57 exempt · 5 unresolved · 15 unpriced · 450 Talos client functions
 
 `×N` on a core op = the wrapper drives N priced core ops in a FIXED composition (still exactly knowable).
 

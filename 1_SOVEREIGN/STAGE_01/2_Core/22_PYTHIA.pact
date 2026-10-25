@@ -21,7 +21,7 @@
 ;; If PYTHIA were already on-chain at V3, only PythDaily + PythTotal are additive create-tables.
 ;;
 ;; net: v4   ·   dev: v5   ;; bumped by the StoicSyntax refactor — deploy v5 then set net: v5
-(interface PythiaV5
+(interface PythiaV6
     @doc "PYTHIA V4 — V3 dual-Apollo + Config UR prices; select-based inventory is URH_."
 
     ;;<=========================================================================>
@@ -141,9 +141,37 @@
             new-name:string
         ))
 
+
+    ;;<=========================================================================>
+    ;; ADDED 2026-10-12 -- interface-membership sweep (StoicSyntax-Prefixes.md Sec5,
+    ;; owner ruling). Every one of these was already live in the module body; this
+    ;; closes the gap between what the module DOES and what its interface SAYS it does.
+    ;;<=========================================================================>
+    (defun UC_AutonomousConsumerLane:string ())
+    (defun UDC_AKY|Unregistered:object ())
+    (defun UDC_DLK|Unregistered:object ())
+    (defun UDC_DualLinkView:object (
+            dual-link-key:string
+            standard-apollo:string
+            smart-apollo:string
+            iz-active:bool
+            standard-owner:string
+            smart-owner:string
+            consumer-lane:string
+        ))
+    (defun UEV_DualPairForLink (
+            standard-apollo:string
+            smart-apollo:string
+        ))
+    (defun UEV_DualPairReadyForActivate (
+            standard-apollo:string
+            smart-apollo:string
+        ))
+    (defun UEV_ExecutorIsHalfOwner (executor:string standard-apollo:string smart-apollo:string))
+    (defun UEV_ValidateCompositeDualLinkKey:bool (dual-link-key:string))
 )
 ;; net: v2   ·   dev: v3   ;; bumped by the StoicSyntax refactor — deploy v3 then set net: v3
-(interface PythiaLedgerV3
+(interface PythiaLedgerV4
     @doc "Pyth ledger V2 — batch flush entries (explicit day, iz-complete); order-independent txs."
 
     ;;<=========================================================================>
@@ -233,6 +261,17 @@
     ;;
     (defun A_Flush:string (patron:string executor:string entries:[object{PYTHIA|S|PythFlushEntry}]))
 
+
+    ;;<=========================================================================>
+    ;; ADDED 2026-10-12 -- interface-membership sweep (StoicSyntax-Prefixes.md Sec5,
+    ;; owner ruling). Every one of these was already live in the module body; this
+    ;; closes the gap between what the module DOES and what its interface SAYS it does.
+    ;;<=========================================================================>
+    (defun UC_MaxDay:integer (a:integer b:integer))
+    (defun UC_PythDayOrdinal:integer (stamp:time))
+    (defun UCk_PythDaily:string (day:integer))
+    (defun UEV_FlushEntries:bool (entries:[object{PYTHIA|S|PythFlushEntry}]))
+    (defun UR_PythDailyExists:bool (day:integer))
 )
 ;;
 (module PYTHIA GOV
@@ -241,8 +280,8 @@
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
-    (implements PythiaV5)
-    (implements PythiaLedgerV3)
+    (implements PythiaV6)
+    (implements PythiaLedgerV4)
     (implements OuronetPolicyV2)
 
     ;;<=========================================================================>
@@ -259,7 +298,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -283,7 +322,7 @@
     (defun P|Info ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::P|Info)
         )
@@ -452,8 +491,8 @@
     (deftable PYTHIA|T|DualLinks:{PYTHIA|S|DualLink})                   ;;Key = <dual-link-key>
     (deftable PYTHIA|T|Config:{PYTHIA|S|Config})                        ;;Key = PYTHIA|INFO
     (deftable PYTHIA|T|Revocation:{PYTHIA|S|Revocation})                ;;Key = PYTHIA|REVOCATION
-    (deftable PYTHIA|T|PythDaily:{PythiaLedgerV3.PYTHIA|S|PythDaily})   ;;Key = <day ordinal string>
-    (deftable PYTHIA|T|PythTotal:{PythiaLedgerV3.PYTHIA|S|PythTotal})   ;;Key = PYTHIA|STOACHAIN
+    (deftable PYTHIA|T|PythDaily:{PythiaLedgerV4.PYTHIA|S|PythDaily})   ;;Key = <day ordinal string>
+    (deftable PYTHIA|T|PythTotal:{PythiaLedgerV4.PYTHIA|S|PythTotal})   ;;Key = PYTHIA|STOACHAIN
 
     ;;<=========================================================================>
     ;;{4}  CAPABILITIES
@@ -582,7 +621,7 @@
         )
     )
     (defcap PYTHIA|A>FLUSH
-        (entries:[object{PythiaLedgerV3.PYTHIA|S|PythFlushEntry}])
+        (entries:[object{PythiaLedgerV4.PYTHIA|S|PythFlushEntry}])
         @doc "Cronoton batch Pyth ledger flush; each entry is one calendar day (order-independent across txs)."
         @event
         (let
@@ -628,7 +667,7 @@
         @doc "Caller controls the Ouronet (DALOS) account."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership owner-account)
         )
@@ -739,7 +778,7 @@
         , "consumer-lane"    : consumer-lane
         }
     )
-    (defun UDC_PythMetrics:object{PythiaLedgerV3.PYTHIA|S|PythMetrics}
+    (defun UDC_PythMetrics:object{PythiaLedgerV4.PYTHIA|S|PythMetrics}
         (
             petitions:integer
             pondus:decimal
@@ -748,7 +787,7 @@
             failed-transactions:integer
             wasted-gas-reserved:integer
         )
-        @doc "Constructor for object{PythiaLedgerV3.PYTHIA|S|PythMetrics}."
+        @doc "Constructor for object{PythiaLedgerV4.PYTHIA|S|PythMetrics}."
         { "petitions": petitions
         , "pondus": pondus
         , "transactions": transactions
@@ -757,39 +796,39 @@
         , "wasted-gas-reserved": wasted-gas-reserved
         }
     )
-    (defun UDC_PythMetrics|Zero:object{PythiaLedgerV3.PYTHIA|S|PythMetrics} ()
+    (defun UDC_PythMetrics|Zero:object{PythiaLedgerV4.PYTHIA|S|PythMetrics} ()
         @doc "Zeroed six-metric blob."
         (UDC_PythMetrics 0 0.0 0 0 0 0)
     )
-    (defun UDC_PythTotal:object{PythiaLedgerV3.PYTHIA|S|PythTotal}
+    (defun UDC_PythTotal:object{PythiaLedgerV4.PYTHIA|S|PythTotal}
         (
-            total-metrics:object{PythiaLedgerV3.PYTHIA|S|PythMetrics}
+            total-metrics:object{PythiaLedgerV4.PYTHIA|S|PythMetrics}
             last-day:integer
         )
-        @doc "Constructor for object{PythiaLedgerV3.PYTHIA|S|PythTotal}."
+        @doc "Constructor for object{PythiaLedgerV4.PYTHIA|S|PythTotal}."
         { "total-metrics": total-metrics
         , "last-day": last-day
         }
     )
-    (defun UDC_PythTotal|Zero:object{PythiaLedgerV3.PYTHIA|S|PythTotal} ()
+    (defun UDC_PythTotal|Zero:object{PythiaLedgerV4.PYTHIA|S|PythTotal} ()
         @doc "Zeroed Pyth running total (default before first flush)."
         (UDC_PythTotal (UDC_PythMetrics|Zero) 0)
     )
-    (defun UDC_PythDaily:object{PythiaLedgerV3.PYTHIA|S|PythDaily}
+    (defun UDC_PythDaily:object{PythiaLedgerV4.PYTHIA|S|PythDaily}
         (
             day:integer
             flushed-at:time
             iz-sealed:bool
-            metrics:object{PythiaLedgerV3.PYTHIA|S|PythMetrics}
+            metrics:object{PythiaLedgerV4.PYTHIA|S|PythMetrics}
         )
-        @doc "Constructor for object{PythiaLedgerV3.PYTHIA|S|PythDaily}."
+        @doc "Constructor for object{PythiaLedgerV4.PYTHIA|S|PythDaily}."
         { "day": day
         , "flushed-at": flushed-at
         , "iz-sealed": iz-sealed
         , "metrics": metrics
         }
     )
-    (defun UDC_PythFlushEntry:object{PythiaLedgerV3.PYTHIA|S|PythFlushEntry}
+    (defun UDC_PythFlushEntry:object{PythiaLedgerV4.PYTHIA|S|PythFlushEntry}
         (
             day:integer
             iz-complete:bool
@@ -800,7 +839,7 @@
             failed-transactions:integer
             wasted-gas-reserved:integer
         )
-        @doc "Constructor for object{PythiaLedgerV3.PYTHIA|S|PythFlushEntry}."
+        @doc "Constructor for object{PythiaLedgerV4.PYTHIA|S|PythFlushEntry}."
         { "day": day
         , "iz-complete": iz-complete
         , "petitions": petitions
@@ -870,10 +909,10 @@
         @doc "Calendar operating day: 1 = PYTHIA|LEDGER-EPOCH-START (UTC midnight boundary)."
         (+ 1 (floor (/ (diff-time stamp PYTHIA|LEDGER-EPOCH-START) PYTHIA|SECONDS-PER-DAY)))
     )
-    (defun UC_AddPythMetrics:object{PythiaLedgerV3.PYTHIA|S|PythMetrics}
+    (defun UC_AddPythMetrics:object{PythiaLedgerV4.PYTHIA|S|PythMetrics}
         (
-            a:object{PythiaLedgerV3.PYTHIA|S|PythMetrics}
-            b:object{PythiaLedgerV3.PYTHIA|S|PythMetrics}
+            a:object{PythiaLedgerV4.PYTHIA|S|PythMetrics}
+            b:object{PythiaLedgerV4.PYTHIA|S|PythMetrics}
         )
         @doc "Element-wise sum — A_Flush ADDs each entry (gateway drain delta) onto day row and grand total."
         { "petitions": (+ (at "petitions" a) (at "petitions" b))
@@ -884,14 +923,14 @@
         , "wasted-gas-reserved": (+ (at "wasted-gas-reserved" a) (at "wasted-gas-reserved" b))
         }
     )
-    (defun UC_FlushAccFromTotal:object{PythiaLedgerV3.PYTHIA|S|PythFlushAcc}
-        (tot:object{PythiaLedgerV3.PYTHIA|S|PythTotal})
+    (defun UC_FlushAccFromTotal:object{PythiaLedgerV4.PYTHIA|S|PythFlushAcc}
+        (tot:object{PythiaLedgerV4.PYTHIA|S|PythTotal})
         @doc "Seed batch fold from current PYTHIA|T|PythTotal row."
         { "total-metrics": (at "total-metrics" tot)
         , "last-day": (at "last-day" tot) }
     )
-    (defun UC_FlushEntryMetrics:object{PythiaLedgerV3.PYTHIA|S|PythMetrics}
-        (entry:object{PythiaLedgerV3.PYTHIA|S|PythFlushEntry})
+    (defun UC_FlushEntryMetrics:object{PythiaLedgerV4.PYTHIA|S|PythMetrics}
+        (entry:object{PythiaLedgerV4.PYTHIA|S|PythFlushEntry})
         @doc "Extract six-metric blob from a flush entry."
         (UDC_PythMetrics
             (at "petitions" entry)
@@ -994,7 +1033,7 @@
             \ the raw constants they replace). Governance may still override either in-table."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (with-default-read PYTHIA|T|Config PYTHIA|INFO
                 {"deploy-price" : (ref-IGNIS::UC_StoaPrice "pythia-deploy")
@@ -1036,7 +1075,7 @@
     )
     ;;
     ;; [5] PYTHIA|T|PythDaily  (PythiaLedgerV3.PYTHIA|S|PythDaily)  Key = <day ordinal string>
-    (defun UR_PythDay:object{PythiaLedgerV3.PYTHIA|S|PythDaily} (day:integer)
+    (defun UR_PythDay:object{PythiaLedgerV4.PYTHIA|S|PythDaily} (day:integer)
         @doc "Full Pyth daily delta row for day ordinal; zeroed row for un-flushed / gap \
             \ days (never aborts, so range reads survive holes in the ledger)."
         (with-default-read PYTHIA|T|PythDaily (UCk_PythDaily day)
@@ -1053,7 +1092,7 @@
     )
     ;;
     ;; [6] PYTHIA|T|PythTotal  (PythiaLedgerV3.PYTHIA|S|PythTotal)  Key = PYTHIA|STOACHAIN
-    (defun UR_PythTotal:object{PythiaLedgerV3.PYTHIA|S|PythTotal} ()
+    (defun UR_PythTotal:object{PythiaLedgerV4.PYTHIA|S|PythTotal} ()
         @doc "Running Pyth ledger totals; zeros when never flushed."
         (with-default-read PYTHIA|T|PythTotal PYTHIA|STOACHAIN
             { "total-metrics":
@@ -1069,7 +1108,7 @@
             (UDC_PythTotal total-metrics last-day)
         )
     )
-    (defun UR_PythTotal|TotalMetrics:object{PythiaLedgerV3.PYTHIA|S|PythMetrics} ()
+    (defun UR_PythTotal|TotalMetrics:object{PythiaLedgerV4.PYTHIA|S|PythMetrics} ()
         @doc "Six-metric running totals blob; zeros when never flushed."
         (at "total-metrics" (UR_PythTotal))
     )
@@ -1218,7 +1257,7 @@
             )
         )
     )
-    (defun URH_ListPythDaily:[object{PythiaLedgerV3.PYTHIA|S|PythDaily}] (from:integer to:integer)
+    (defun URH_ListPythDaily:[object{PythiaLedgerV4.PYTHIA|S|PythDaily}] (from:integer to:integer)
         @doc "Bounded daily delta rows for charting (inclusive range; empty when invalid)."
         (if
             (fold (or) false
@@ -1236,7 +1275,7 @@
         )
     )
     ;;
-    (defun INFO_PYTHIA|DeployApiKey:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_PYTHIA|DeployApiKey:object{OuronetInfoV3.ClientInfo}
         (
             patron:string
             owner-account:string
@@ -1246,7 +1285,7 @@
         @doc "ClientInfo for TS01-C4 PYTHIA|C_DeployApiKey (500 STOA per half)."
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 ;;
                 (deploy-fee:decimal (UR_DeployPrice))
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount owner-account))
@@ -1268,7 +1307,7 @@
             )
         )
     )
-    (defun INFO_PYTHIA|Link:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_PYTHIA|Link:object{OuronetInfoV3.ClientInfo}
         (
             standard-apollo:string
             smart-apollo:string
@@ -1277,7 +1316,7 @@
         @doc "ClientInfo for TS01-C4 PYTHIA|C_Link (inactive dual row; no fee)."
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 ;;
                 (dlk:string (UC_DualLinkKey standard-apollo smart-apollo))
                 (std-owner:string (UR_OwnerAccount standard-apollo))
@@ -1300,7 +1339,7 @@
             )
         )
     )
-    (defun INFO_PYTHIA|RevokeLink:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_PYTHIA|RevokeLink:object{OuronetInfoV3.ClientInfo}
         (
             patron:string
             dual-link-key:string
@@ -1308,8 +1347,8 @@
         @doc "ClientInfo for TS01-C4 PYTHIA|C_RevokeLink / A_RevokeLink (1 IGNIS)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 ;;
                 (revoke-fee:decimal (UC_RevokeIgnisFee))
                 (is-ignis-zero:bool (ref-IGNIS::URC_IsVirtualGasZero))
@@ -1337,7 +1376,7 @@
             )
         )
     )
-    (defun INFO_PYTHIA|UpdateDualConsumerLane:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_PYTHIA|UpdateDualConsumerLane:object{OuronetInfoV3.ClientInfo}
         (
             patron:string
             dual-link-key:string
@@ -1346,7 +1385,7 @@
         @doc "ClientInfo for TS01-C4 PYTHIA|C_UpdateDualConsumerLane."
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 ;;
                 (rename-fee:decimal (UR_RenamePrice))
                 (row:object{PYTHIA|S|DualLink} (UR_DLK|Data dual-link-key))
@@ -1372,10 +1411,10 @@
     )
     ;;{5.4}  Validate [UEV/CAP]
     ;;
-    (defun UEV_FlushEntries:bool (entries:[object{PythiaLedgerV3.PYTHIA|S|PythFlushEntry}])
+    (defun UEV_FlushEntries:bool (entries:[object{PythiaLedgerV4.PYTHIA|S|PythFlushEntry}])
         @doc "Validate flush batch: fold over entries; pure bool (no enforce)."
         (fold
-            (lambda (acc:bool entry:object{PythiaLedgerV3.PYTHIA|S|PythFlushEntry})
+            (lambda (acc:bool entry:object{PythiaLedgerV4.PYTHIA|S|PythFlushEntry})
                 (let
                     (
                         (day:integer (at "day" entry))
@@ -1580,7 +1619,7 @@
     (defun WI_PythDaily:string
         (
             day:integer
-            row:object{PythiaLedgerV3.PYTHIA|S|PythDaily}
+            row:object{PythiaLedgerV4.PYTHIA|S|PythDaily}
         )
         @doc "Insert PYTHIA|T|PythDaily full row (first flush of calendar day only)."
         (require-capability (SECURE))
@@ -1589,7 +1628,7 @@
     (defun WU_PythDaily|Metrics:string
         (
             day:integer
-            metrics:object{PythiaLedgerV3.PYTHIA|S|PythMetrics}
+            metrics:object{PythiaLedgerV4.PYTHIA|S|PythMetrics}
         )
         @doc "Replace same-day metrics snapshot (open day re-flush)."
         (require-capability (SECURE))
@@ -1609,7 +1648,7 @@
     ;;
     ;; [6] PYTHIA|T|PythTotal  (PythiaLedgerV3.PYTHIA|S|PythTotal)  Key = PYTHIA|STOACHAIN
     ;; WI_PythTotal — not used: first row touch is WW_PythTotal (upsert path).
-    (defun WW_PythTotal:string (row:object{PythiaLedgerV3.PYTHIA|S|PythTotal})
+    (defun WW_PythTotal:string (row:object{PythiaLedgerV4.PYTHIA|S|PythTotal})
         @doc "Upsert PYTHIA|T|PythTotal full row (A_Flush total-metrics + last-day)."
         (require-capability (SECURE))
         (write PYTHIA|T|PythTotal PYTHIA|STOACHAIN row)
@@ -1642,20 +1681,20 @@
     )
     ;;Protection: Class 1 — Innate protection offered by WW_PythTotal
     (defun XI_FlushPythLedger:string
-        (entries:[object{PythiaLedgerV3.PYTHIA|S|PythFlushEntry}])
+        (entries:[object{PythiaLedgerV4.PYTHIA|S|PythFlushEntry}])
         @doc "Process batch entries; commit running total once (entries may land in any tx order)."
         ;; SECURE: granted by WW_PythTotal (underlying W_).
         (let
             (
                 (now:time (at "block-time" (chain-data)))
-                (tot:object{PythiaLedgerV3.PYTHIA|S|PythTotal} (UR_PythTotal))
-                (init:object{PythiaLedgerV3.PYTHIA|S|PythFlushAcc} (UC_FlushAccFromTotal tot))
-                (final:object{PythiaLedgerV3.PYTHIA|S|PythFlushAcc}
+                (tot:object{PythiaLedgerV4.PYTHIA|S|PythTotal} (UR_PythTotal))
+                (init:object{PythiaLedgerV4.PYTHIA|S|PythFlushAcc} (UC_FlushAccFromTotal tot))
+                (final:object{PythiaLedgerV4.PYTHIA|S|PythFlushAcc}
                     (fold
                         (lambda
                             (
-                                acc:object{PythiaLedgerV3.PYTHIA|S|PythFlushAcc}
-                                entry:object{PythiaLedgerV3.PYTHIA|S|PythFlushEntry}
+                                acc:object{PythiaLedgerV4.PYTHIA|S|PythFlushAcc}
+                                entry:object{PythiaLedgerV4.PYTHIA|S|PythFlushEntry}
                             )
                             (XI_1|ApplyOneFlushEntry acc entry now)
                         )
@@ -1675,10 +1714,10 @@
     )
     ;;Protection: Class 1 — Innate protection offered by WU_PythDaily|Metrics,
     ;;Protection:          WU_PythDaily|FlushedAt, WU_PythDaily|IzSealed, WI_PythDaily
-    (defun XI_1|ApplyOneFlushEntry:object{PythiaLedgerV3.PYTHIA|S|PythFlushAcc}
+    (defun XI_1|ApplyOneFlushEntry:object{PythiaLedgerV4.PYTHIA|S|PythFlushAcc}
         (
-            acc:object{PythiaLedgerV3.PYTHIA|S|PythFlushAcc}
-            entry:object{PythiaLedgerV3.PYTHIA|S|PythFlushEntry}
+            acc:object{PythiaLedgerV4.PYTHIA|S|PythFlushAcc}
+            entry:object{PythiaLedgerV4.PYTHIA|S|PythFlushEntry}
             now:time
         )
         @doc "Fold step: ADD entry metrics (gateway drain delta) onto day row + grand total; seal flag only."
@@ -1687,23 +1726,23 @@
             (
                 (day:integer (at "day" entry))
                 (iz-complete:bool (at "iz-complete" entry))
-                (delta:object{PythiaLedgerV3.PYTHIA|S|PythMetrics}
+                (delta:object{PythiaLedgerV4.PYTHIA|S|PythMetrics}
                     (UC_FlushEntryMetrics entry)
                 )
-                (total-metrics:object{PythiaLedgerV3.PYTHIA|S|PythMetrics}
+                (total-metrics:object{PythiaLedgerV4.PYTHIA|S|PythMetrics}
                     (at "total-metrics" acc)
                 )
                 (last-day:integer (at "last-day" acc))
                 (next-last:integer (UC_MaxDay last-day day))
-                (next-total:object{PythiaLedgerV3.PYTHIA|S|PythMetrics}
+                (next-total:object{PythiaLedgerV4.PYTHIA|S|PythMetrics}
                     (UC_AddPythMetrics total-metrics delta)
                 )
             )
             (if (UR_PythDailyExists day)
                 (let
                     (
-                        (old-row:object{PythiaLedgerV3.PYTHIA|S|PythDaily} (UR_PythDay day))
-                        (day-metrics:object{PythiaLedgerV3.PYTHIA|S|PythMetrics}
+                        (old-row:object{PythiaLedgerV4.PYTHIA|S|PythDaily} (UR_PythDay day))
+                        (day-metrics:object{PythiaLedgerV4.PYTHIA|S|PythMetrics}
                             (UC_AddPythMetrics (at "metrics" old-row) delta)
                         )
                     )
@@ -1736,7 +1775,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership executor)
         )
@@ -1783,7 +1822,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership executor)
         )
@@ -1804,7 +1843,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership executor)
         )
@@ -1826,7 +1865,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership executor)
         )
@@ -1837,7 +1876,7 @@
         )
         (format "Pythia rename price set to {}" [new-price])
     )
-    (defun A_Flush:string (patron:string executor:string entries:[object{PythiaLedgerV3.PYTHIA|S|PythFlushEntry}])
+    (defun A_Flush:string (patron:string executor:string entries:[object{PythiaLedgerV4.PYTHIA|S|PythFlushEntry}])
         @doc "Cronoton batch flush: each entry is a drain DELTA — ADD onto day row + grand total; iz-complete seals only. \
             \ \
             \ ATTRIBUTION (patron/executor canon 2.2, 2026-09-22). The AUTHORITY is the CRONOTON \
@@ -1848,7 +1887,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership executor)
         )

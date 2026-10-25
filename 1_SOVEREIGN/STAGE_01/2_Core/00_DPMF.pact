@@ -156,7 +156,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -178,7 +178,7 @@
     (defun P|Info ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::P|Info)
         )
@@ -660,8 +660,8 @@
     (defun URC_EliteAurynzSupply (account:string)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (ea-id:string (ref-DALOS::UR_EliteAurynID))
             )
             (if (!= ea-id BAR)
@@ -748,8 +748,8 @@
     (defun URC_IzIdEA:bool (id:string)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (ea-id:string (ref-DALOS::UR_EliteAurynID))
                 (fea:string (ref-DPTF::UR_Frozen ea-id))
                 (rea:string (ref-DPTF::UR_Reservation ea-id))

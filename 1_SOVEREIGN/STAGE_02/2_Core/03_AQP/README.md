@@ -83,6 +83,6 @@ Stateless **Full** (1 tx) or **Legs** (N txs, auto-begin, finalize when asset em
 
 | Resource | Location |
 |----------|----------|
-| Pact conventions | `OuronetInformational/` + `.cursor/skills/ouronet-pact-conventions` |
+| Pact conventions | `OuronetInformational/StoicSyntax.md` + `OuronetInformational/SKILL-INDEX.md` |
 | Stage 02 inventory | `OuronetInformational/ARCHITECTURE/STAGE_02_MODULES.md` |
 | REPL layout | `OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md` |

@@ -40,8 +40,8 @@
 (print "--- [PYTHIA-PRICE — the two admin price setters (previously only in an UNGATED probe) · 02 · let / invocation] ---")
 (let
     (
-        (ref-PYTHIA:module{PythiaV5} PYTHIA)
-        (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
+        (ref-PYTHIA:module{PythiaV6} PYTHIA)
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV9} TS01-C4)
     )
     (let
         (
@@ -142,8 +142,8 @@
 (print "--- [PYTHIA-LINK-ECON — why the FREE link is not a free-work vector · 01 · let / invocation] ---")
 (let
     (
-        (ref-PYTHIA:module{PythiaV5} PYTHIA)
-        (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
+        (ref-PYTHIA:module{PythiaV6} PYTHIA)
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV9} TS01-C4)
         (apollo-std:string (read-string "PYTHIA|APOLLO-STANDARD"))
         (apollo-smt:string (read-string "PYTHIA|APOLLO-SMART"))
     )

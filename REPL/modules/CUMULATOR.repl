@@ -50,8 +50,8 @@
 (print "--- [CUM-G1 - why IGNIS|C>COLLECT's interactor rule cannot fire · 02 · let / invocation] ---")
 (let
     (
-        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
     )
     (let
         (
@@ -115,8 +115,8 @@
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (let
     (
-        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (zero-interactor:string (DALOS.GOV|VST|SC_NAME))
         (real-interactor:string (DALOS.GOV|ATS|SC_NAME))
     )

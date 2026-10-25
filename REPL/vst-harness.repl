@@ -29,10 +29,10 @@
 (print "--- [TX-VSTH-001 - Vest + Reserve on OURO (isolated, funds may lock) · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         (patron:string KST.ANHD)
         (ouro-id:string (ref-DALOS::UR_OuroborosID))
     )
@@ -66,9 +66,9 @@
 (print "--- [TX-VSTH-002 - Unvest the matured OURO vesting (time advanced past duration) · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         (patron:string KST.ANHD)
     )
     ;; dpof = UR_Vesting(OURO) — unvest the first vested nonce (now matured)
@@ -113,8 +113,8 @@
 (print "--- [TX-VSTH-003 - Sleep / Freeze / Hibernate on OURO (self-created links) · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         (patron:string KST.ANHD)
         (ouro-id:string (ref-DALOS::UR_OuroborosID))
     )
@@ -170,9 +170,9 @@
 (print "--- [TX-VSTH-004 - Unsleep + Awake the matured OURO positions (time advanced) · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         (patron:string KST.ANHD)
         (ouro-id:string (ref-DALOS::UR_OuroborosID))
     )
@@ -219,9 +219,9 @@
 (print "--- [TX-VSTH-005 - ToggleTransferRole on frozen / reserved / sleeping special tokens · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         (patron:string KST.ANHD)
         (ouro-id:string (ref-DALOS::UR_OuroborosID))
     )
@@ -269,9 +269,9 @@
 (print "--- [TX-VSTH-006 - RepurposeFrozen (account-recovery): fund EMMA, recover to LUMY · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
         (lumy:string KST.LUMY)
@@ -321,8 +321,8 @@
 (print "--- [TX-VSTH-007 - RepurposeReserved (account-recovery): recover LUMY's OURO to AOZT · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
         (aozt:string KST.AOZT)
@@ -370,10 +370,10 @@
 (print "--- [TX-VSTH-008 - RepurposeVested (nonce account-recovery): vest to AOZT, recover to patron · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         (patron:string KST.ANHD)
         (aozt:string KST.AOZT)
         (ouro-id:string (ref-DALOS::UR_OuroborosID))
@@ -427,10 +427,10 @@
 (print "--- [TX-VSTH-009 - RepurposeSleeping (nonce account-recovery): sleep to AOZT, recover to patron · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         (patron:string KST.ANHD)
         (aozt:string KST.AOZT)
         (ouro-id:string (ref-DALOS::UR_OuroborosID))
@@ -484,10 +484,10 @@
 (print "--- [TX-VSTH-010 - Slumber: merge two of the patron's sleeping OURO nonces · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         (patron:string KST.ANHD)
         (ouro-id:string (ref-DALOS::UR_OuroborosID))
     )
@@ -543,10 +543,10 @@
 (print "--- [TX-VSTH-011 - RepurposeMerge: recover the patron's merged sleeping nonce to LUMY · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
         (ouro-id:string (ref-DALOS::UR_OuroborosID))
@@ -601,10 +601,10 @@
 (print "--- [TX-VSTH-012 - Unreserve: move R|OURO to a non-custodian smart account, then Unreserve · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         (patron:string KST.ANHD)
         (ouro-id:string (ref-DALOS::UR_OuroborosID))
         ;; Reserve custodies via VST|SC_NAME, so pick a DIFFERENT smart account as the unreserver

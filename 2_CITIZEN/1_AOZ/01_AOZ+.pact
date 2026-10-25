@@ -111,7 +111,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -446,7 +446,7 @@
     (defun C_SetupKosonicATS (index-name:string hot-rbt:string decay:integer)
         (let
             (
-                (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+                (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
                 (patron:string AOZ|SC_NAME)
                 (EsothericKosonID:string (UR_PrimalTrueFungible 2))
                 (AncientKosonID:string (UR_PrimalTrueFungible 3))

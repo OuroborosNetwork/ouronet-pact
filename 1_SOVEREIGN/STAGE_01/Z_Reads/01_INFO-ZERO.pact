@@ -12,7 +12,7 @@
 ;;     OI|UDC_*IgnisCosts / *StoaCosts, OI|UC_IfpFromOutputCumulator, …) was
 ;;     RELOCATED into the IGNIS module (02_IGNIS.pact) — the pre-Talos cost hub,
 ;;     so Talos + every cost module + the Z_Reads presentation layer can reach it.
-;;     Callers now bind `module{OuronetInfoV2} IGNIS`.
+;;     Callers now bind `module{OuronetInfoV3} IGNIS`.
 ;;   - Phase 1.2 (INFO consolidation): the 9 DALOS client-op previews that then
 ;;     lived here (DALOS-INFO|URC_ControlSmartAccount / DeploySmartAccount /
 ;;     DeployStandardAccount / RotateGovernor / RotateGuard / RotateStoa /
@@ -44,7 +44,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )

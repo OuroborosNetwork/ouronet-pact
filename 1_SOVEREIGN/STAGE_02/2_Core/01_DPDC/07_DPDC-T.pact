@@ -2,7 +2,7 @@
 ;; History/shared registry: 1_SOVEREIGN/STAGE_02/0_Interfaces/02_Core.pact
 ;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface DpdcTransferV2
+(interface DpdcTransferV3
     @doc "Exposes Collectables Transfer Functions"
 
     ;;<=========================================================================>
@@ -57,9 +57,9 @@
     ;;
     ;;  [UDC]
     ;;
-    (defun URCi_MultiTransferCumulator:object{IgnisCollectorV3.OutputCumulator} (ids:[string] sons:[bool] sender:string receiver:string nonces-array:[[integer]] amounts-array:[[integer]]))
-    (defun URCi_RepurposeCollectable:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool amounts:[integer]))
-    (defun URCi_BulkTransferCumulator:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_MultiTransferCumulator:object{IgnisCollectorV4.OutputCumulator} (ids:[string] sons:[bool] sender:string receiver:string nonces-array:[[integer]] amounts-array:[[integer]]))
+    (defun URCi_RepurposeCollectable:object{IgnisCollectorV4.OutputCumulator} (id:string son:bool amounts:[integer]))
+    (defun URCi_BulkTransferCumulator:object{IgnisCollectorV4.OutputCumulator}
         (id:string son:bool sender:string receiver-lst:[string] nonces-array:[[integer]] amounts-array:[[integer]])
     )
     ;;{5.4}  Validate [UEV/CAP]
@@ -75,19 +75,27 @@
     ;;
     ;;  [C]
     ;;
-    (defun C_RepurposeCollectable:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_RepurposeCollectable:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string executee:string id:string son:bool repurpose-to:string nonces:[integer] amounts:[integer])
     )
-    (defun C_Transfer:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_Transfer:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string executee:string ids:[string] sons:[bool] nonces-array:[[integer]] amounts-array:[[integer]] method:bool)
     )
     (defun C_IgnisRoyaltyCollector:object{AggregatedRoyalties}
         (patron:string executor:string ids:[string] sons:[bool] nonces-array:[[integer]] amounts-array:[[integer]])
     )
-    (defun C_BulkTransfer:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_BulkTransfer:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string executee-lst:[string] id:string son:bool nonces-array:[[integer]] amounts-array:[[integer]] method:bool)
     )
 
+
+    ;;<=========================================================================>
+    ;; ADDED 2026-10-12 -- interface-membership sweep (StoicSyntax-Prefixes.md Sec5,
+    ;; owner ruling). Every one of these was already live in the module body; this
+    ;; closes the gap between what the module DOES and what its interface SAYS it does.
+    ;;<=========================================================================>
+    (defun UC_AggregateRoyalties:object{AggregatedRoyalties} (creators:[string] id-ignis-royalties:[decimal]))
+    (defun UC_CleanseAggregatedRoyalties:object{AggregatedRoyalties} (agg:object{AggregatedRoyalties}))
 )
 ;;
 (module DPDC-T GOV
@@ -103,7 +111,7 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements DpdcTransferV2)
+    (implements DpdcTransferV3)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -119,7 +127,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -146,7 +154,7 @@
     (defun P|Info ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::P|Info)
         )
@@ -299,7 +307,7 @@
         @event
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 ;;
                 (l1:integer (length nonces))
                 (l2:integer (length amounts))
@@ -314,8 +322,8 @@
             \ Standard Ouronet accounts only (no smart accounts in receiver-lst)."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 (ref-U|LST:module{StringProcessorV2} U|LST)
                 ;;
                 (l:integer (length receiver-lst))
@@ -345,8 +353,8 @@
         (let
             (
                 (ref-U|INT:module{OuronetIntegersV2} U|INT)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 (l1:integer (length ids))
                 (l2:integer (length sons))
                 (l3:integer (length nonces-array))
@@ -390,7 +398,7 @@
         @event
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 ;;
                 (l:integer (length receiver-lst))
             )
@@ -424,7 +432,7 @@
         @event
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (enforce (!= sender receiver) "Sender and Receiver must be different")
             ;;`ta` is not a client argument. The ONLY acquirer is C_IgnisRoyaltyCollector, which
@@ -446,7 +454,7 @@
     (defcap IGNIS|C>CREDIT (receiver:string)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::UEV_EnforceAccountExists receiver)
             (compose-capability (P|DPDC-T|CALLER))
@@ -455,7 +463,7 @@
     (defcap IGNIS|C>DEBIT (sender:string ta:decimal)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (read-gas:decimal (ref-DALOS::UR_TF_AccountSupply sender false))
             )
             (enforce (<= ta read-gas) "Insufficient IGNIS for Debiting")
@@ -479,7 +487,7 @@
             (ref-U|CT::CT_BAR)
         )
     )
-    (defun UDCx_AggregatedRoyalties:object{DpdcTransferV2.AggregatedRoyalties}
+    (defun UDCx_AggregatedRoyalties:object{DpdcTransferV3.AggregatedRoyalties}
         (a:[string] b:[decimal])
         {"creators"         : a
         ,"ignis-royalties"  : b}
@@ -489,7 +497,7 @@
     (defun UC_AndTruths:bool (truths:[bool])
         (fold (and) true truths)
     )
-    (defun UC_CleanseAggregatedRoyalties:object{DpdcTransferV2.AggregatedRoyalties} (agg:object{DpdcTransferV2.AggregatedRoyalties})
+    (defun UC_CleanseAggregatedRoyalties:object{DpdcTransferV3.AggregatedRoyalties} (agg:object{DpdcTransferV3.AggregatedRoyalties})
         (let
             (
                 (agg-creators:[string] (at "creators" agg))
@@ -523,7 +531,7 @@
             )
         )
     )
-    (defun UC_AggregateRoyalties:object{DpdcTransferV2.AggregatedRoyalties}
+    (defun UC_AggregateRoyalties:object{DpdcTransferV3.AggregatedRoyalties}
         (creators:[string] id-ignis-royalties:[decimal])
         (let
             (
@@ -562,7 +570,7 @@
     (defun URC_TransferRoleChecker:bool (id:string son:bool sender:string)
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
                 (verum:[string] (ref-DPDC::UR_Verum11 id son))
                 (lv:integer (length verum))
@@ -582,7 +590,7 @@
     (defun URC_SummedIgnisRoyalty:decimal (sender:string id:string son:bool nonces:[integer] amounts:[integer])
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 (creator:string (ref-DPDC::UR_CreatorKonto id son))
             )
             (if (= sender creator)
@@ -608,7 +616,7 @@
         (id:string son:bool nonces:[integer] amounts:[integer])
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 (ft:string (take 2 id))
                 (sh:string "E|")
                 (sl:decimal (ref-IGNIS::UC_IgnisLeg "tier-smallest"))
@@ -648,11 +656,11 @@
             )
         )
     )
-    (defun URCi_MultiTransferCumulator:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_MultiTransferCumulator:object{IgnisCollectorV4.OutputCumulator}
         (ids:[string] sons:[bool] sender:string receiver:string nonces-array:[[integer]] amounts-array:[[integer]])
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (fold
@@ -668,12 +676,12 @@
             )
         )
     )
-    (defun URCi_BulkTransferCumulator:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_BulkTransferCumulator:object{IgnisCollectorV4.OutputCumulator}
         (id:string son:bool sender:string receiver-lst:[string] nonces-array:[[integer]] amounts-array:[[integer]])
         @doc "Single IGNIS output for bulk transfer — sum URC_TotalTransferPrice per receiver leg once."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 ;;
                 (l:integer (length receiver-lst))
                 ;;FIXED 2026-09-12: the fold is guarded on l=0.
@@ -727,14 +735,14 @@
     )
     ;;
     ;;  (URCi_MultiTransferCumulator / URCi_BulkTransferCumulator, below, cover the transfers.)
-    (defun URCi_RepurposeCollectable:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_RepurposeCollectable:object{IgnisCollectorV4.OutputCumulator}
         (id:string son:bool amounts:[integer])
         @doc "Cost preview for C_RepurposeCollectable: per-nonce construct priced \
             \ (if son small else medium) * (1 + sum amounts) on owner-konto, empty output."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 (owner:string (ref-DPDC::UR_OwnerKonto id son))
                 (p:decimal (if son (ref-IGNIS::UC_IgnisLeg "tier-small") (ref-IGNIS::UC_IgnisLeg "tier-medium")))
                 (sum-amounts:decimal (dec (fold (+) 1 amounts)))
@@ -747,7 +755,7 @@
     (defun UEV_TransferRoles (id:string son:bool sender:string receiver:string)
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 (trc:bool (URC_TransferRoleChecker id son sender))
                 (s:bool (ref-DPDC::UR_CA|R-Transfer id son sender))
                 ;; DPDC Audit #16H: was reading <sender> twice (copy-paste) — the receiver-side check
@@ -774,7 +782,7 @@
     (defun UEV_AmountsForTransfer (id:string son:bool nonces:[integer] amounts:[integer])
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 (l1:integer (length nonces))
                 (l2:integer (length amounts))
             )
@@ -814,7 +822,7 @@
         (let
             (
                 (ref-U|INT:module{OuronetIntegersV2} U|INT)
-                (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
+                (ref-DPDC-C:module{DpdcCreateV3} DPDC-C)
                 ;;
                 (split:object{OuronetIntegersV2.NonceSplitter} (ref-U|INT::UC_NonceSplitter nonces amounts))
                 (negative-nonces:[integer] (at "negative-nonces" split))
@@ -918,7 +926,7 @@
         (require-capability (IGNIS|C>CREDIT receiver))
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::XB_UpdateBalance receiver false (+ (ref-DALOS::UR_TF_AccountSupply receiver false) ta))
         )
@@ -928,13 +936,13 @@
         (require-capability (IGNIS|C>DEBIT sender ta))
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::XB_UpdateBalance sender false (- (ref-DALOS::UR_TF_AccountSupply sender false) ta))
         )
     )
     ;;{5.7}  User [A/C]
-    (defun C_RepurposeCollectable:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_RepurposeCollectable:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string executee:string id:string son:bool repurpose-to:string nonces:[integer] amounts:[integer])
         @doc "Forcibly moves <id> nonces from <executee> to <repurpose-to>, on the collection \
             \ owner's authority. \
@@ -962,7 +970,7 @@
             ;;out, not a second one -- deleting it drops two table reads and changes no price.
             (let
                 (
-                    (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
+                    (ref-DPDC-C:module{DpdcCreateV3} DPDC-C)
                     ;;
                     (l:integer (length nonces))
                 )
@@ -1003,7 +1011,7 @@
             )
         )
     )
-    (defun C_Transfer:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_Transfer:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string executee:string ids:[string] sons:[bool] nonces-array:[[integer]] amounts-array:[[integer]] method:bool)
         @doc "Moves nonce slices of several collectables from <executor> to <executee> in one \
             \ call. \
@@ -1027,7 +1035,7 @@
             (URCi_MultiTransferCumulator ids sons executor executee nonces-array amounts-array)
         )
     )
-    (defun C_BulkTransfer:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_BulkTransfer:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string executee-lst:[string] id:string son:bool nonces-array:[[integer]] amounts-array:[[integer]] method:bool)
         @doc "Bulk collectable transfer: one id/son, one executor, many standard-account \
             \ executees (DpdcTransferV2). \
@@ -1061,7 +1069,7 @@
             )
         )
     )
-    (defun C_IgnisRoyaltyCollector:object{DpdcTransferV2.AggregatedRoyalties}
+    (defun C_IgnisRoyaltyCollector:object{DpdcTransferV3.AggregatedRoyalties}
         (patron:string executor:string ids:[string] sons:[bool] nonces-array:[[integer]] amounts-array:[[integer]])
         @doc "Pays each collectable creator their IGNIS royalty for a move <executor> is making, \
             \ OUT OF THE PATRON, and returns the aggregate for the caller's result string. \
@@ -1079,9 +1087,9 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 ;;
                 (ivgz:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 ;;
@@ -1114,8 +1122,8 @@
                 )
                 (let
                     (
-                        (agg:object{DpdcTransferV2.AggregatedRoyalties} (UC_AggregateRoyalties creators ids-ignis-royalties))
-                        (cleansed-agg:object{DpdcTransferV2.AggregatedRoyalties} (UC_CleanseAggregatedRoyalties agg))
+                        (agg:object{DpdcTransferV3.AggregatedRoyalties} (UC_AggregateRoyalties creators ids-ignis-royalties))
+                        (cleansed-agg:object{DpdcTransferV3.AggregatedRoyalties} (UC_CleanseAggregatedRoyalties agg))
                         (agg-creators:[string] (at "creators" cleansed-agg))
                         (agg-royalties:[decimal] (at "ignis-royalties" cleansed-agg))
                     )

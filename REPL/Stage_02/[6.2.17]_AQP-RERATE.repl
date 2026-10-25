@@ -33,7 +33,7 @@
 ;;every holder's multiplier.
 (let
     (
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
     )
     (map print
         [
@@ -71,7 +71,7 @@
 ;;before dividing: a per-month step computed first would never land on the ceiling.
 (let
     (
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
     )
     (map print
         [
@@ -109,7 +109,7 @@
 ;;than two independent implementations free to drift: same inputs, same answers, both directions.
 (let
     (
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
     )
     (map print
         [
@@ -164,9 +164,9 @@
 ;;weighting reads `release-date` off the chain.
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
         (patron:string KST.ANHD)
         (ouro-id:string (ref-DALOS::UR_OuroborosID))
     )
@@ -203,8 +203,8 @@
 (print "--- [TX-RERATE-03 · 01 · per-nonce multipliers, read off the chain] ---")
 (let
     (
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
     )
     (let*
@@ -268,8 +268,8 @@
 (print "--- [TX-RERATE-03 · 02 · the LEG delta: Σ(amount × own mx), and the 400.0 it is not] ---")
 (let
     (
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
     )
     (let*
@@ -348,8 +348,8 @@
 ;;floor four times and land one unit in the last place lower.
 (let
     (
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
     )
     (let*
@@ -436,7 +436,7 @@
 (print "--- [TX-RERATE-04 · 02 · the frozen leg, and the native leg that is never multiplied] ---")
 (let
     (
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
     )
     (let*
@@ -575,8 +575,8 @@
 ;;accumulator where nothing can later tell it from a real one.
 (let
     (
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
     )
     (let*
@@ -650,8 +650,8 @@
 ;;go untested while every REFUSAL test passed.
 (let
     (
-        (ref-SWP:module{SwapperV4} SWP)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-SWP:module{SwapperV5} SWP)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
     )
     (let*
@@ -721,8 +721,8 @@
 ;;running first: it proves the path is wired without depending on a weight being right.
 (let
     (
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
     )
     (let*
@@ -762,8 +762,8 @@
 ;;computes 0.0. Batching the deltas before the writes would break all three at once.
 (let
     (
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
     )
     (let*
@@ -838,10 +838,10 @@
 ;;(pinned equal in TX-RERATE-04), so what is proven here holds for an LP pool too.
 (let
     (
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
     )
     (let*
         (
@@ -922,9 +922,9 @@
 ;;instant the pool is mis-scored, and the pool freezes until a sweep fixes it.
 (let
     (
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-SWP:module{SwapperV4} SWP)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-SWP:module{SwapperV5} SWP)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
     )
     (let*
@@ -1003,8 +1003,8 @@
 (print "--- [TX-RERATE-10 · 02 · one slice moves a NON-ZERO delta and the pool reopens] ---")
 (let
     (
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
     )
     (let*
@@ -1099,8 +1099,8 @@
 ;;That is the gap the three phases close: the requirement becomes a GOAL, not a precondition.
 (let
     (
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
     )
     (let*
@@ -1127,8 +1127,8 @@
 (print "--- [TX-RERATE-11 · 03 · PHASE 1: unslot, and the marker that needs no new column] ---")
 (let
     (
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
     )
     (let*
@@ -1176,8 +1176,8 @@
 (print "--- [TX-RERATE-11 · 04 · PHASE 2 + 3: drain, finalize, release] ---")
 (let
     (
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
     )
     (let*
@@ -1277,14 +1277,14 @@
 ;;therefore worth exactly 25.0, with no rounding and no decay to reason about.
 (let*
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         ;;
         (patron:string KST.ANHD)
         (owner:string KST.ANHD)
@@ -1433,14 +1433,14 @@
 ;;no delivery.
 (let*
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         ;;
         (patron:string KST.ANHD)
         (alice:string KST.ANHD)

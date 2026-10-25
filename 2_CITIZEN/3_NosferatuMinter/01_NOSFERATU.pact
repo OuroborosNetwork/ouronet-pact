@@ -24,7 +24,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -464,7 +464,7 @@
     (defun C_Spawn (patron:string dhn-id:string rarity:string starting-position:integer number-of-positions:integer mdm:[[string]])
         (let
             (
-                (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+                (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
                 (l:integer (length mdm))
             )
             (enforce (= l number-of-positions) "Invalid Number of Positions")
@@ -476,7 +476,7 @@
     (defun C_Fix (patron:string dhn-id:string account:string rarity:string starting-position:integer number-of-positions:integer mdm:[[string]])
         (let
             (
-                (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+                (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
                 (l:integer (length mdm))
                 (nonces:[integer] (UC_Nonces rarity starting-position number-of-positions))
             )

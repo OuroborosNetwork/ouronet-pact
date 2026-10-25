@@ -1,4 +1,4 @@
-(interface DispenserV2
+(interface DispenserV3
 
 
 
@@ -79,7 +79,7 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements DispenserV2)
+    (implements DispenserV3)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -105,7 +105,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -152,7 +152,7 @@
     (defun P|Info ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::P|Info)
         )
@@ -433,7 +433,7 @@
     (defun URC_Gassless ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|DALOS|SC_NAME)
         )
@@ -441,8 +441,8 @@
     (defun URC_DailyOURO ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (ouro:string (ref-DALOS::UR_OuroborosID))
                 (current-ouro-supply:decimal (ref-DPTF::UR_Supply ouro))
                 (op:integer (ref-DPTF::UR_Decimals ouro))
@@ -483,10 +483,10 @@
         (let
             (
                 (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-ATS:module{AutostakeV3} ATS)
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-ATS:module{AutostakeV4} ATS)
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
                 ;;
                 (ouro:string (ref-DALOS::UR_OuroborosID))
                 (auryn:string (ref-DALOS::UR_AurynID))
@@ -544,8 +544,8 @@
             \ A dispenser that is not empty after a completed run is the alarm."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (ouro:string (ref-DALOS::UR_OuroborosID))
                 (auryn:string (ref-DALOS::UR_AurynID))
                 (dispenser:string S2-BUCKET|SC_NAME)
@@ -575,7 +575,7 @@
     (defun URC_DailyKOSON (iz-game-live:bool)
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (ref-AOZ:module{AgeOfZalmoxis} AOZ)
                 ;;
                 (PrimordialKosonID:string       (ref-AOZ::UR_PrimalTrueFungible 1))
@@ -619,7 +619,7 @@
             (let
                 (
                     (stoicism-id:string "STOICISM-hCNmIIxczuBs")
-                    (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+                    (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
                     (dispenser:string DSP1|SC_NAME)
                     (total-stoicism-amount:decimal (fold (+) 0.0 stoicism-amounts))
                     (l1:integer (length stoicism-amounts))
@@ -645,11 +645,11 @@
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                    (ref-ATS:module{AutostakeV3} ATS)
-                    (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-                    (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                    (ref-ATS:module{AutostakeV4} ATS)
+                    (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+                    (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
                     (ouro:string (ref-DALOS::UR_OuroborosID))
                     (op:integer (ref-DPTF::UR_Decimals ouro))
                     (daily:decimal (URC_DailyOURO))
@@ -763,12 +763,12 @@
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                    (ref-ATS:module{AutostakeV3} ATS)
-                    (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-                    (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                    (ref-ATS:module{AutostakeV4} ATS)
+                    (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+                    (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
                     (ouro:string (ref-DALOS::UR_OuroborosID))
                     (op:integer (ref-DPTF::UR_Decimals ouro))
                     (daily:decimal (URC_DailyOURO))
@@ -850,11 +850,11 @@
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                    (ref-ATS:module{AutostakeV3} ATS)
-                    (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-                    (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                    (ref-ATS:module{AutostakeV4} ATS)
+                    (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+                    (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
                     (ouro:string (ref-DALOS::UR_OuroborosID))
                     (op:integer (ref-DPTF::UR_Decimals ouro))
                     (daily:decimal (URC_DailyOURO))
@@ -914,7 +914,7 @@
         (with-capability (DSP|STAGE-TWO-INJECT fvt-id reward-dptf-id amount)
             (let
                 (
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
                 )
                 (ref-TS02-C3::AQP-FVT|CC_Inject
                     GASLESS-PATRON S2-BUCKET|SC_NAME fvt-id reward-dptf-id amount)
@@ -939,7 +939,7 @@
         (with-capability (DSP|STAGE-TWO-INJECT-FINALIZE fvt-id reward-dptf-id amount)
             (let
                 (
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
                 )
                 (ref-TS02-C3::AQP-FVT|CC_InjectFinalize
                     GASLESS-PATRON S2-BUCKET|SC_NAME fvt-id reward-dptf-id amount)
@@ -953,9 +953,9 @@
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                    (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                    (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
                     (ref-AOZ:module{AgeOfZalmoxis} AOZ)
                     ;;
                     (PrimordialKosonID:string      (ref-AOZ::UR_PrimalTrueFungible 1))
@@ -1004,7 +1004,7 @@
                 (ref-TS01-C1::DPTF|C_Transfer GASLESS-PATRON dispenser smart-treasury PrimordialKosonID ps20 true)
                 (let
                     (
-                        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+                        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
                         (PlebeicStrengthID:string       (ref-AOZ::UR_AutostakePair 1))
                         (ComatiCommandID:string         (ref-AOZ::UR_AutostakePair 2))
                         (PileatiPowerID:string          (ref-AOZ::UR_AutostakePair 3))
@@ -1042,9 +1042,9 @@
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                    (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                    (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
                     (ref-AOZ:module{AgeOfZalmoxis} AOZ)
                     ;;
                     (PrimordialKosonID:string      (ref-AOZ::UR_PrimalTrueFungible 1))
@@ -1077,8 +1077,8 @@
         (with-capability (DSP|STAGE-ONE-MINTER)
             (let
                 (
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                    (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                    (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
                     (ref-AOZ:module{AgeOfZalmoxis} AOZ)
                     ;;
                     (PrimordialKosonID:string       (ref-AOZ::UR_PrimalTrueFungible 1))
@@ -1110,8 +1110,8 @@
         (with-capability (DSP|STAGE-ONE-MINTER)
             (let
                 (
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                    (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                    (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
                     (ref-AOZ:module{AgeOfZalmoxis} AOZ)
                     ;;
                     (EsothericKosonID:string        (ref-AOZ::UR_PrimalTrueFungible 2))

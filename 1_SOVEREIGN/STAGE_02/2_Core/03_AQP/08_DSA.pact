@@ -7,7 +7,7 @@
 ;;   agency open (Phase 2); capture recompute + delegated oracle (Phase 3); royalty disposal + collect (later).
 ;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface DsaV1
+(interface DsaV3
     @doc "Delegated Staking Agencies — client/reader surface (v1; grows as the module is built)."
 
     ;;<=========================================================================>
@@ -52,42 +52,53 @@
     (defun UR_DSA-AGN|Uptime:integer (fvt-id:string score-entity-id:string))
     ;;
     ;; [URCi]   cost readers — single source for exec billing + INFO preview
-    (defun URCi_DefineDelegationVault:object{IgnisCollectorV3.OutputCumulator} (patron:string output:[string]))
-    (defun URCi_OpenAgency:object{IgnisCollectorV3.OutputCumulator} (patron:string output:[string]))
-    (defun URCi_RecomputeCapture:object{IgnisCollectorV3.OutputCumulator} (patron:string output:[string]))
-    (defun URCi_SetOracleAuth:object{IgnisCollectorV3.OutputCumulator} (patron:string output:[string]))
-    (defun URCi_OracleWrite:object{IgnisCollectorV3.OutputCumulator} (patron:string output:[string]))
-    (defun URCi_WithdrawRoyalty:object{IgnisCollectorV3.OutputCumulator} (patron:string output:[string]))
-    (defun URCi_BurnRoyalty:object{IgnisCollectorV3.OutputCumulator} (patron:string output:[string]))
-    (defun URCi_FuelRoyalty:object{IgnisCollectorV3.OutputCumulator} (patron:string output:[string]))
-    (defun URCi_SetAgencyFee:object{IgnisCollectorV3.OutputCumulator} (patron:string output:[string]))
+    (defun URCi_DefineDelegationVault:object{IgnisCollectorV4.OutputCumulator} (patron:string output:[string]))
+    (defun URCi_OpenAgency:object{IgnisCollectorV4.OutputCumulator} (patron:string output:[string]))
+    (defun URCi_RecomputeCapture:object{IgnisCollectorV4.OutputCumulator} (patron:string output:[string]))
+    (defun URCi_SetOracleAuth:object{IgnisCollectorV4.OutputCumulator} (patron:string output:[string]))
+    (defun URCi_OracleWrite:object{IgnisCollectorV4.OutputCumulator} (patron:string output:[string]))
+    (defun URCi_WithdrawRoyalty:object{IgnisCollectorV4.OutputCumulator} (patron:string output:[string]))
+    (defun URCi_BurnRoyalty:object{IgnisCollectorV4.OutputCumulator} (patron:string output:[string]))
+    (defun URCi_FuelRoyalty:object{IgnisCollectorV4.OutputCumulator} (patron:string output:[string]))
+    (defun URCi_SetAgencyFee:object{IgnisCollectorV4.OutputCumulator} (patron:string output:[string]))
     ;;{5.4}  Validate [UEV/CAP]
     (defun UEV_OpenGate:bool (fvt-id:string score-entity-id:string))
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
     ;;{5.7}  User [A/C]
     ;;
-    (defun C_DefineDelegationVault:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_DefineDelegationVault:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string fvt-id:string model-id:string unit-score:integer))
-    (defun C_AdmitAgency:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_AdmitAgency:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string fvt-id:string score-entity-id:string fee-per-mille:integer))
-    (defun C_RecomputeCapture:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_RecomputeCapture:object{IgnisCollectorV4.OutputCumulator}
         (patron:string fvt-id:string score-entity-id:string))
-    (defun C_SetOracleAuth:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_SetOracleAuth:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string fvt-id:string oracle-guard:guard))
-    (defun C_OracleWrite:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_OracleWrite:object{IgnisCollectorV4.OutputCumulator}
         (patron:string fvt-id:string score-entity-id:string nodes:integer uptime:integer))
-    (defun C_WithdrawRoyalty:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_WithdrawRoyalty:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string fvt-id:string reward-dptf-id:string))
-    (defun C_BurnRoyalty:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_BurnRoyalty:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string fvt-id:string reward-dptf-id:string))
-    (defun C_FuelRoyalty:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_FuelRoyalty:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string fvt-id:string reward-dptf-id:string swpair:string))
-    (defun C_SetAgencyFee:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_SetAgencyFee:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string fvt-id:string score-entity-id:string fee-per-mille:integer))
     (defun A_ToggleExternalOracle:string (patron:string executor:string on:bool))
     (defun A_SetOracleValidity:string (patron:string executor:string seconds:integer))
 
+
+    ;;<=========================================================================>
+    ;; ADDED 2026-10-12 -- interface-membership sweep (StoicSyntax-Prefixes.md Sec5,
+    ;; owner ruling). Every one of these was already live in the module body; this
+    ;; closes the gap between what the module DOES and what its interface SAYS it does.
+    ;;<=========================================================================>
+    (defun UC_CaptureWeight:decimal (capture-units:decimal uptime:integer))
+    (defun UCk_Agency:string (fvt-id:string score-entity-id:string))
+    (defun UR_DSA-AGN|FeePerMille:integer (fvt-id:string score-entity-id:string))
+    (defun UR_DSA-ORA|Guard:guard (fvt-id:string))
+    (defun UR_DSA-TMP|ModelId:string (fvt-id:string))
 )
 ;;
 (module AQP-DSA GOV
@@ -103,7 +114,7 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements DsaV1)
+    (implements DsaV3)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -117,7 +128,7 @@
     (defcap GOV|DSA_ADMIN ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (master:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
                 (g1:guard GOV|MD_DSA)
                 (g2:guard (ref-DALOS::UR_AccountGuard master))
@@ -135,7 +146,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -169,7 +180,7 @@
     (defun P|Info ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::P|Info)
         )
@@ -300,22 +311,22 @@
     (defconst DSA_FEE_MAX:integer 500)
     ;; Full-uptime promile (the oracle scale; capture-weight = capture-units × uptime / DSA_UPTIME_FULL).
     (defconst DSA_UPTIME_FULL:integer 1000)
-    (defconst GAS|DEFINE-VAULT:decimal                      (let ((ref-IGNIS:module{IgnisCollectorV3} IGNIS)) (ref-IGNIS::UC_IgnisDeter "issue-dsa-vault")))
-    (defconst GAS|OPEN-AGENCY:decimal                       (let ((ref-IGNIS:module{IgnisCollectorV3} IGNIS)) (ref-IGNIS::UC_IgnisDeter "issue-dsa-agency")))
-    (defconst GAS|RECOMPUTE-CAPTURE:decimal                 (let ((ref-IGNIS:module{IgnisCollectorV3} IGNIS)) (ref-IGNIS::UC_IgnisDeter "recompute-capture")))
-    (defconst GAS|SET-ORACLE-AUTH:decimal                   (let ((ref-IGNIS:module{IgnisCollectorV3} IGNIS)) (ref-IGNIS::UC_IgnisDeter "set-oracle-auth")))
-    (defconst GAS|ORACLE-WRITE:decimal                      (let ((ref-IGNIS:module{IgnisCollectorV3} IGNIS)) (ref-IGNIS::UC_IgnisDeter "oracle-write")))
-    (defconst GAS|WITHDRAW-ROYALTY:decimal                  (let ((ref-IGNIS:module{IgnisCollectorV3} IGNIS)) (ref-IGNIS::UC_IgnisDeter "royalty-dispose")))
-    (defconst GAS|BURN-ROYALTY:decimal                      (let ((ref-IGNIS:module{IgnisCollectorV3} IGNIS)) (ref-IGNIS::UC_IgnisDeter "royalty-dispose")))
-    (defconst GAS|FUEL-ROYALTY:decimal                      (let ((ref-IGNIS:module{IgnisCollectorV3} IGNIS)) (ref-IGNIS::UC_IgnisDeter "royalty-fuel")))
-    (defconst GAS|SET-AGENCY-FEE:decimal                    (let ((ref-IGNIS:module{IgnisCollectorV3} IGNIS)) (ref-IGNIS::UC_IgnisDeter "set-agency-fee")))
+    (defconst GAS|DEFINE-VAULT:decimal                      (let ((ref-IGNIS:module{IgnisCollectorV4} IGNIS)) (ref-IGNIS::UC_IgnisDeter "issue-dsa-vault")))
+    (defconst GAS|OPEN-AGENCY:decimal                       (let ((ref-IGNIS:module{IgnisCollectorV4} IGNIS)) (ref-IGNIS::UC_IgnisDeter "issue-dsa-agency")))
+    (defconst GAS|RECOMPUTE-CAPTURE:decimal                 (let ((ref-IGNIS:module{IgnisCollectorV4} IGNIS)) (ref-IGNIS::UC_IgnisDeter "recompute-capture")))
+    (defconst GAS|SET-ORACLE-AUTH:decimal                   (let ((ref-IGNIS:module{IgnisCollectorV4} IGNIS)) (ref-IGNIS::UC_IgnisDeter "set-oracle-auth")))
+    (defconst GAS|ORACLE-WRITE:decimal                      (let ((ref-IGNIS:module{IgnisCollectorV4} IGNIS)) (ref-IGNIS::UC_IgnisDeter "oracle-write")))
+    (defconst GAS|WITHDRAW-ROYALTY:decimal                  (let ((ref-IGNIS:module{IgnisCollectorV4} IGNIS)) (ref-IGNIS::UC_IgnisDeter "royalty-dispose")))
+    (defconst GAS|BURN-ROYALTY:decimal                      (let ((ref-IGNIS:module{IgnisCollectorV4} IGNIS)) (ref-IGNIS::UC_IgnisDeter "royalty-dispose")))
+    (defconst GAS|FUEL-ROYALTY:decimal                      (let ((ref-IGNIS:module{IgnisCollectorV4} IGNIS)) (ref-IGNIS::UC_IgnisDeter "royalty-fuel")))
+    (defconst GAS|SET-AGENCY-FEE:decimal                    (let ((ref-IGNIS:module{IgnisCollectorV4} IGNIS)) (ref-IGNIS::UC_IgnisDeter "set-agency-fee")))
     (defconst DSA_UPTIME_MIN:integer 0)
     ;;{3.2}  schemas
     ;;
     ;;{3.3}  tables
-    (deftable DSA|T|Template:{AcquisitionSchemasV1.DSA|Template})                    ;; Key = <FVT-ID>
-    (deftable DSA|T|Agency:{AcquisitionSchemasV1.DSA|Agency})                        ;; Key = <FVT-ID> | <Score-Entity-ID>
-    (deftable DSA|T|OracleAuth:{AcquisitionSchemasV1.DSA|OracleAuth})                ;; Key = <FVT-ID>
+    (deftable DSA|T|Template:{AcquisitionSchemasV3.DSA|Template})                    ;; Key = <FVT-ID>
+    (deftable DSA|T|Agency:{AcquisitionSchemasV3.DSA|Agency})                        ;; Key = <FVT-ID> | <Score-Entity-ID>
+    (deftable DSA|T|OracleAuth:{AcquisitionSchemasV3.DSA|OracleAuth})                ;; Key = <FVT-ID>
 
     ;;<=========================================================================>
     ;;{4}  CAPABILITIES
@@ -333,7 +344,7 @@
         @event
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (fvt-owner:string (RPS.UR_FVT|OwnerKonto fvt-id))
             )
             (enforce (= (RPS.UR_FVT|FvtClass fvt-id) 0) "DSA vault must be a class-0 FVT")
@@ -373,7 +384,7 @@
         @event
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (fvt-owner:string (RPS.UR_FVT|OwnerKonto fvt-id))
             )
             (enforce (URC_DsaTemplateActive fvt-id) "DSA vault not defined or inactive")
@@ -389,7 +400,7 @@
         @event
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (fvt-owner:string (RPS.UR_FVT|OwnerKonto fvt-id))
             )
             (enforce (URC_DsaTemplateActive fvt-id) "DSA vault not defined or inactive")
@@ -405,7 +416,7 @@
         @event
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (fvt-owner:string (RPS.UR_FVT|OwnerKonto fvt-id))
             )
             (enforce (URC_DsaTemplateActive fvt-id) "DSA vault not defined or inactive")
@@ -421,7 +432,7 @@
         @event
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (fvt-owner:string (RPS.UR_FVT|OwnerKonto fvt-id))
             )
             (enforce (URC_DsaTemplateActive fvt-id) "DSA vault not defined or inactive")
@@ -437,7 +448,7 @@
         @event
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (fvt-owner:string (RPS.UR_FVT|OwnerKonto fvt-id))
             )
             (enforce (URC_DsaTemplateActive fvt-id) "DSA vault not defined or inactive")
@@ -476,24 +487,24 @@
     (defun CT_EmptyCumulator ()
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (ref-IGNIS::UDC_EmptyOutputCumulatorV2)
         )
     )
     ;;
     ;; [UDC] construct
-    (defun UDC_DSA|Template:object{AcquisitionSchemasV1.DSA|Template}
+    (defun UDC_DSA|Template:object{AcquisitionSchemasV3.DSA|Template}
         (model-id:string unit-score:integer active:bool fvt-id:string)
-        @doc "Core constructor for object{AcquisitionSchemasV1.DSA|Template}."
+        @doc "Core constructor for object{AcquisitionSchemasV3.DSA|Template}."
         {"model-id"            : model-id
         ,"unit-score"          : unit-score
         ,"active"              : active
         ,"fvt-id"              : fvt-id}
     )
-    (defun UDC_DSA|Agency:object{AcquisitionSchemasV1.DSA|Agency}
+    (defun UDC_DSA|Agency:object{AcquisitionSchemasV3.DSA|Agency}
         (operator-konto:string fee-per-mille:integer nodes:integer uptime:integer fvt-id:string score-entity-id:string)
-        @doc "Core constructor for object{AcquisitionSchemasV1.DSA|Agency}."
+        @doc "Core constructor for object{AcquisitionSchemasV3.DSA|Agency}."
         {"operator-konto" : operator-konto
         ,"fee-per-mille"  : fee-per-mille
         ,"nodes"          : nodes
@@ -501,9 +512,9 @@
         ,"fvt-id"         : fvt-id
         ,"score-entity-id": score-entity-id}
     )
-    (defun UDC_DSA|OracleAuth:object{AcquisitionSchemasV1.DSA|OracleAuth}
+    (defun UDC_DSA|OracleAuth:object{AcquisitionSchemasV3.DSA|OracleAuth}
         (oracle-guard:guard fvt-id:string)
-        @doc "Core constructor for object{AcquisitionSchemasV1.DSA|OracleAuth}."
+        @doc "Core constructor for object{AcquisitionSchemasV3.DSA|OracleAuth}."
         {"oracle-guard" : oracle-guard
         ,"fvt-id"       : fvt-id}
     )
@@ -520,7 +531,7 @@
     )
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;; [UR]  read
-    (defun UR_DSA-TMP|Template:object{AcquisitionSchemasV1.DSA|Template} (fvt-id:string)
+    (defun UR_DSA-TMP|Template:object{AcquisitionSchemasV3.DSA|Template} (fvt-id:string)
         @doc "Reads the full DSA template row for a vault."
         (read DSA|T|Template fvt-id)
     )
@@ -536,7 +547,7 @@
         @doc "Reads whether a DSA vault template is active."
         (at "active" (read DSA|T|Template fvt-id ["active"]))
     )
-    (defun UR_DSA-AGN|Agency:object{AcquisitionSchemasV1.DSA|Agency} (fvt-id:string score-entity-id:string)
+    (defun UR_DSA-AGN|Agency:object{AcquisitionSchemasV3.DSA|Agency} (fvt-id:string score-entity-id:string)
         @doc "Reads the full agency row (absent ⇒ defaults: no operator, min fee, no nodes, full uptime)."
         (with-default-read DSA|T|Agency (UCk_Agency fvt-id score-entity-id)
             {"operator-konto": "", "fee-per-mille": DSA_FEE_MIN, "nodes": 0, "uptime": DSA_UPTIME_FULL
@@ -578,7 +589,7 @@
             \ the model's nonce values). The open gate + the capture divisor read this."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
             )
             (+ (ref-SCR::UR_SCR|ScoreTotalBaseScore (ref-SCR::UR_SCR|TripletBronzeScoreId score-entity-id))
                (+ (ref-SCR::UR_SCR|ScoreTotalBaseScore (ref-SCR::UR_SCR|TripletSilverScoreId score-entity-id))
@@ -598,77 +609,77 @@
     )
     ;; [URCi]   cost readers — single source for exec billing + INFO preview
     ;;   (flat GAS legs; the 3 royalty readers return the GAS leg the exec concats with the custody-move XE_)
-    (defun URCi_DefineDelegationVault:object{IgnisCollectorV3.OutputCumulator} (patron:string output:[string])
+    (defun URCi_DefineDelegationVault:object{IgnisCollectorV4.OutputCumulator} (patron:string output:[string])
         (let
             (
-                (r:module{IgnisCollectorV3} IGNIS)
+                (r:module{IgnisCollectorV4} IGNIS)
             )
             (r::UDC_ConstructOutputCumulator
                 (r::UC_IgnisPrice "AQP-DSA|C_DefineDelegationVault" "issue-dsa-vault")
                 patron (r::URC_IsVirtualGasZero) output)
         ))
-    (defun URCi_OpenAgency:object{IgnisCollectorV3.OutputCumulator} (patron:string output:[string])
+    (defun URCi_OpenAgency:object{IgnisCollectorV4.OutputCumulator} (patron:string output:[string])
         @doc "GAS leg for the core admit (C_AdmitAgency); the Talos open flow additionally stakes operator collateral."
         (let
             (
-                (r:module{IgnisCollectorV3} IGNIS)
+                (r:module{IgnisCollectorV4} IGNIS)
             )
             (r::UDC_ConstructOutputCumulator
                 (r::UC_IgnisPrice "AQP-DSA|CC_OpenAgency" "issue-dsa-agency")
                 patron (r::URC_IsVirtualGasZero) output)
         ))
-    (defun URCi_RecomputeCapture:object{IgnisCollectorV3.OutputCumulator} (patron:string output:[string])
+    (defun URCi_RecomputeCapture:object{IgnisCollectorV4.OutputCumulator} (patron:string output:[string])
         (let
             (
-                (r:module{IgnisCollectorV3} IGNIS)
+                (r:module{IgnisCollectorV4} IGNIS)
             )
             (r::UDC_ConstructOutputCumulator
                 (r::UC_IgnisPrice "AQP-DSA|C_RecomputeCapture" "recompute-capture")
                 patron (r::URC_IsVirtualGasZero) output)
         ))
-    (defun URCi_SetOracleAuth:object{IgnisCollectorV3.OutputCumulator} (patron:string output:[string])
+    (defun URCi_SetOracleAuth:object{IgnisCollectorV4.OutputCumulator} (patron:string output:[string])
         (let
             (
-                (r:module{IgnisCollectorV3} IGNIS)
+                (r:module{IgnisCollectorV4} IGNIS)
             )
             (r::UDC_ConstructOutputCumulator
                 (r::UC_IgnisPrice "AQP-DSA|C_SetOracleAuth" "set-oracle-auth")
                 patron (r::URC_IsVirtualGasZero) output)
         ))
-    (defun URCi_OracleWrite:object{IgnisCollectorV3.OutputCumulator} (patron:string output:[string])
+    (defun URCi_OracleWrite:object{IgnisCollectorV4.OutputCumulator} (patron:string output:[string])
         (let
             (
-                (r:module{IgnisCollectorV3} IGNIS)
+                (r:module{IgnisCollectorV4} IGNIS)
             )
             (r::UDC_ConstructOutputCumulator
                 (r::UC_IgnisPrice "AQP-DSA|C_OracleWrite" "oracle-write")
                 patron (r::URC_IsVirtualGasZero) output)
         ))
-    (defun URCi_WithdrawRoyalty:object{IgnisCollectorV3.OutputCumulator} (patron:string output:[string])
+    (defun URCi_WithdrawRoyalty:object{IgnisCollectorV4.OutputCumulator} (patron:string output:[string])
         @doc "GAS leg only; exec concats this with the custody-move IGNIS (FVT::XE_WithdrawRoyalty, state-dependent)."
         (let
             (
-                (r:module{IgnisCollectorV3} IGNIS)
+                (r:module{IgnisCollectorV4} IGNIS)
             )
             (r::UDC_ConstructOutputCumulator
                 (r::UC_IgnisPrice "AQP-DSA|C_WithdrawRoyalty" "royalty-dispose")
                 patron (r::URC_IsVirtualGasZero) output)
         ))
-    (defun URCi_BurnRoyalty:object{IgnisCollectorV3.OutputCumulator} (patron:string output:[string])
+    (defun URCi_BurnRoyalty:object{IgnisCollectorV4.OutputCumulator} (patron:string output:[string])
         @doc "GAS leg only; exec concats this with the burn's IGNIS (FVT::XE_BurnRoyalty, state-dependent)."
         (let
             (
-                (r:module{IgnisCollectorV3} IGNIS)
+                (r:module{IgnisCollectorV4} IGNIS)
             )
             (r::UDC_ConstructOutputCumulator
                 (r::UC_IgnisPrice "AQP-DSA|C_BurnRoyalty" "royalty-dispose")
                 patron (r::URC_IsVirtualGasZero) output)
         ))
-    (defun URCi_FuelRoyalty:object{IgnisCollectorV3.OutputCumulator} (patron:string output:[string])
+    (defun URCi_FuelRoyalty:object{IgnisCollectorV4.OutputCumulator} (patron:string output:[string])
         @doc "GAS leg only; exec concats this with the fuel's IGNIS (FVT::XE_FuelRoyalty, state-dependent)."
         (let
             (
-                (r:module{IgnisCollectorV3} IGNIS)
+                (r:module{IgnisCollectorV4} IGNIS)
             )
             (r::UDC_ConstructOutputCumulator
                 (r::UC_IgnisPrice "AQP-DSA|C_FuelRoyalty" "royalty-fuel")
@@ -680,7 +691,7 @@
             \ of the exec's UDC_ConcatenateOutputCumulators [gas custody]."
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
             )
             (+ (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (URCi_WithdrawRoyalty patron [fvt-id]))
                (RPS.URCi_WithdrawRoyaltyCustody fvt-id reward-dptf-id (RPS.UR_FVT|OwnerKonto fvt-id)))
@@ -690,7 +701,7 @@
             \ (FVT::URCi_BurnRoyaltyCustody mirroring XE_BurnRoyalty). Read-only mirror of the exec's concat."
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
             )
             (+ (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (URCi_BurnRoyalty patron [fvt-id]))
                (RPS.URCi_BurnRoyaltyCustody fvt-id reward-dptf-id))
@@ -700,15 +711,15 @@
             \ (FVT::URCi_FuelRoyaltyCustody mirroring XE_FuelRoyalty into <swpair>). Read-only mirror of the exec's concat."
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
             )
             (+ (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (URCi_FuelRoyalty patron [fvt-id]))
                (RPS.URCi_FuelRoyaltyCustody fvt-id reward-dptf-id swpair))
         ))
-    (defun URCi_SetAgencyFee:object{IgnisCollectorV3.OutputCumulator} (patron:string output:[string])
+    (defun URCi_SetAgencyFee:object{IgnisCollectorV4.OutputCumulator} (patron:string output:[string])
         (let
             (
-                (r:module{IgnisCollectorV3} IGNIS)
+                (r:module{IgnisCollectorV4} IGNIS)
             )
             (r::UDC_ConstructOutputCumulator
                 (r::UC_IgnisPrice "AQP-DSA|C_SetAgencyFee" "set-agency-fee")
@@ -732,12 +743,12 @@
     )
     ;;{5.5}  Write [W]
     ;; [W]   write
-    (defun WI_Template:string (fvt-id:string row:object{AcquisitionSchemasV1.DSA|Template})
+    (defun WI_Template:string (fvt-id:string row:object{AcquisitionSchemasV3.DSA|Template})
         @doc "Insert a DSA vault template row. require SECURE."
         (require-capability (SECURE))
         (insert DSA|T|Template fvt-id row)
     )
-    (defun WI_Agency:string (fvt-id:string score-entity-id:string row:object{AcquisitionSchemasV1.DSA|Agency})
+    (defun WI_Agency:string (fvt-id:string score-entity-id:string row:object{AcquisitionSchemasV3.DSA|Agency})
         @doc "Insert a DSA agency row. require SECURE."
         (require-capability (SECURE))
         (insert DSA|T|Agency (UCk_Agency fvt-id score-entity-id) row)
@@ -752,7 +763,7 @@
         (require-capability (SECURE))
         (update DSA|T|Agency (UCk_Agency fvt-id score-entity-id) {"fee-per-mille" : fee-per-mille})
     )
-    (defun WI_OracleAuth:string (fvt-id:string row:object{AcquisitionSchemasV1.DSA|OracleAuth})
+    (defun WI_OracleAuth:string (fvt-id:string row:object{AcquisitionSchemasV3.DSA|OracleAuth})
         @doc "Write (set / rotate) a DSA vault's oracle authority row. require SECURE."
         (require-capability (SECURE))
         (write DSA|T|OracleAuth fvt-id row)
@@ -777,7 +788,7 @@
     ;;{5.7}  User [A/C]
     ;;
     ;; [A]   admin
-    (defun C_DefineDelegationVault:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_DefineDelegationVault:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string fvt-id:string model-id:string unit-score:integer)
         @doc "Bind a class-0 FVT as a DSA delegation vault: record the score-entity model + unit-score (active). \
             \ Only the FVT owner may define it. P|UEV_IMC + DSA|C>DEFINE-VAULT. Bills GAS|DEFINE-VAULT. \
@@ -793,7 +804,7 @@
         (with-capability (DSA|C>DEFINE-VAULT patron executor fvt-id model-id unit-score)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
                 (WI_Template fvt-id (UDC_DSA|Template model-id unit-score true fvt-id))
@@ -801,7 +812,7 @@
             )
         )
     )
-    (defun C_SetOracleAuth:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_SetOracleAuth:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string fvt-id:string oracle-guard:guard)
         @doc "Owner-only: authorize the delegated oracle key for this DSA vault (DSA|OracleAuth) and ARM the FVT \
             \ oracle-on expiry, so stale oracle data (>25h) captures nothing. P|UEV_IMC + DSA|C>SET-ORACLE-AUTH. \
@@ -818,8 +829,8 @@
         (with-capability (DSA|C>SET-ORACLE-AUTH patron executor fvt-id)
             (let
                 (
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
                 (WI_OracleAuth fvt-id (UDC_DSA|OracleAuth oracle-guard fvt-id))
@@ -828,7 +839,7 @@
             )
         )
     )
-    (defun C_OracleWrite:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_OracleWrite:object{IgnisCollectorV4.OutputCumulator}
         (patron:string fvt-id:string score-entity-id:string nodes:integer uptime:integer)
         @doc "Delegated-oracle-only: write an agency's daily {nodes, uptime}, then recompute its capture stamped \
             \ \
@@ -847,7 +858,7 @@
         (with-capability (DSA|A>ORACLE-WRITE fvt-id score-entity-id nodes uptime)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
                 (WU_Agency-Oracle fvt-id score-entity-id nodes uptime)
@@ -871,7 +882,7 @@
             \ four admin ops and LIQUID::A_MigrateLiquidFunds."
         (let
             (
-                (ref-DALOS-X:module{OuronetDalosV2} DALOS)
+                (ref-DALOS-X:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS-X::CAP_EnforceAccountOwnership executor)
         )
@@ -895,7 +906,7 @@
             \ four admin ops and LIQUID::A_MigrateLiquidFunds."
         (let
             (
-                (ref-DALOS-X:module{OuronetDalosV2} DALOS)
+                (ref-DALOS-X:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS-X::CAP_EnforceAccountOwnership executor)
         )
@@ -906,7 +917,7 @@
             )
         )
     )
-    (defun C_WithdrawRoyalty:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_WithdrawRoyalty:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string fvt-id:string reward-dptf-id:string)
         @doc "Owner-only: dispose the whole royalty pool (uptime-shortfall custody) of <reward-dptf-id> on a DSA \
             \ vault by WITHDRAWING it to the FVT owner (delegates the AQP-custody move + zero to the FVT primitive \
@@ -924,7 +935,7 @@
         (with-capability (DSA|C>WITHDRAW-ROYALTY patron executor fvt-id)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 )
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
                     [ (URCi_WithdrawRoyalty patron [fvt-id])
@@ -933,7 +944,7 @@
             )
         )
     )
-    (defun C_BurnRoyalty:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_BurnRoyalty:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string fvt-id:string reward-dptf-id:string)
         @doc "Owner-only: dispose the whole royalty pool of <reward-dptf-id> on a DSA vault by BURNING it (delegates \
             \ the AQP-custody burn + zero to FVT::XE_BurnRoyalty; AQP|SC_NAME holds the autonomic burn role). \
@@ -950,7 +961,7 @@
         (with-capability (DSA|C>BURN-ROYALTY patron executor fvt-id)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 )
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
                     [ (URCi_BurnRoyalty patron [fvt-id])
@@ -959,7 +970,7 @@
             )
         )
     )
-    (defun C_FuelRoyalty:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_FuelRoyalty:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string fvt-id:string reward-dptf-id:string swpair:string)
         @doc "Owner-only: dispose the whole royalty pool of <reward-dptf-id> on a DSA vault by FUELING <swpair> \
             \ (add liquidity WITHOUT minting LP — delegates to FVT::XE_FuelRoyalty; the reward-dptf must be a token \
@@ -976,7 +987,7 @@
         (with-capability (DSA|C>FUEL-ROYALTY patron executor fvt-id swpair)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 )
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
                     [ (URCi_FuelRoyalty patron [fvt-id])
@@ -985,7 +996,7 @@
             )
         )
     )
-    (defun C_SetAgencyFee:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_SetAgencyFee:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string fvt-id:string score-entity-id:string fee-per-mille:integer)
         @doc "Owner-only: change a delegation agency's operator fee-per-mille. Updates DSA|Agency + mirrors it onto \
             \ the FVT member (FVT::XE_SetAgencyFee) so the next inject uses the new split. Safe + O(1) — the fee is \
@@ -1003,7 +1014,7 @@
         (with-capability (DSA|C>SET-AGENCY-FEE patron executor fvt-id score-entity-id fee-per-mille)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
                 (WU_Agency-Fee fvt-id score-entity-id fee-per-mille)
@@ -1013,7 +1024,7 @@
         )
     )
     ;; [C]   client
-    (defun C_AdmitAgency:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_AdmitAgency:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string fvt-id:string score-entity-id:string fee-per-mille:integer)
         @doc "Core admit of the ATOMIC open (the Talos AQP-DSA|CC_OpenAgency flow drives the full sequence): admit \
             \ the operator's BLANK triplet as a delegation member of the class-0 vault FVT (XE_AdmitDelegationMember \
@@ -1032,7 +1043,7 @@
         (with-capability (DSA|C>OPEN-AGENCY patron executor fvt-id score-entity-id fee-per-mille)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
                 (RPS.XE_AdmitDelegationMember fvt-id score-entity-id executor)
@@ -1044,7 +1055,7 @@
             )
         )
     )
-    (defun C_RecomputeCapture:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_RecomputeCapture:object{IgnisCollectorV4.OutputCumulator}
         (patron:string fvt-id:string score-entity-id:string)
         @doc "EXECUTORLESS BY DESIGN (canon 2.2, 2026-09-22): DSA|C>RECOMPUTE-CAPTURE validates \
             \ that the template is active and the score entity is a delegation member, and \
@@ -1061,7 +1072,7 @@
         (with-capability (DSA|C>RECOMPUTE-CAPTURE patron fvt-id score-entity-id)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
                 (XI_ApplyCapture fvt-id score-entity-id (RPS.UR_FVT-SEL|OracleTs fvt-id score-entity-id))

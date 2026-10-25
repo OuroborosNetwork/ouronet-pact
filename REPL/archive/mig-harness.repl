@@ -42,7 +42,7 @@
 (print "--- [TX-MIG-001 - migrate the DALOS SC Stoa balance to a target Stoa account · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
         (sp:string "stoa-foundation")
         (target:string "k:1111111111111111111111111111111111111111111111111111111111111111")

@@ -46,9 +46,9 @@
 (print "--- [TX-CNS-001 - enable hibernation on Auryndex, then Constrict OURO · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         (patron:string KST.ANHD)
         (auryndex:string "Auryndex-98c486052a51")
         (ouro-id:string (ref-DALOS::UR_OuroborosID))

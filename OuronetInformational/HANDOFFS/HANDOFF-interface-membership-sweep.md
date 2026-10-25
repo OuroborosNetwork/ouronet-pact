@@ -1,5 +1,18 @@
 # HANDOFF — interface-membership sweep
 
+**STATUS 2026-10-12: DONE.** Owner instruction, same day, after reading the numbers below:
+*"do the sweep now, and lets fix this gap with the interfaces, i want to do a single deploy. yes
+widen pure V10, for the whole pact code stage 1 and stage 2 modules."* That is path 2 below,
+taken to its full extent — not just AQP-FVT/TS02-C3, but **all 36 sovereign modules, 38
+interfaces, 307 stubs**. `REPL/tools/_ifacebump.py` did the mechanical work; `Deploy/PureV10` was
+rebuilt from 6 transactions to 22 to carry it (see that directory's `README.md` for the full
+writeup, the dot-pin cascade, and four tool bugs found and fixed along the way before the gate
+would stay green). Citizen scope remains OUT per the 2026-09-26 ruling this file already flagged
+as an open question — it is no longer open: `_ifacemembership.py` now prints citizen gaps under
+an explicit "OUT OF SCOPE" banner naming that ruling, same convention as `_executorplan.py`. The
+rest of this file is kept as the record of what was measured BEFORE the decision, including the
+two-paths framing that the owner resolved.
+
 **Owner ruling, 2026-10-12.** Verbatim: *"it was agreed upon that all user functions must sit in
 the module's interface by default, as a glossary of all the user/client functions said module
 employs. So if you added new ones, or modified existing ones, the rule is the module's interface
@@ -78,19 +91,21 @@ exhaustively here because the honest answer at this point is "large enough that 
 scoped measurement before anyone commits to a round around it," not a number guessed under time
 pressure.
 
-## Recommendation (not a ruling — the owner's call)
+## Recommendation (historical — overtaken by the owner's actual ruling)
 
-This is comparable in shape and size to the patron/executor canon sweep (`HANDOFF-executor-canon-
-sweep.md`, a 46-module worklist) — a genuine multi-session initiative, not a same-day addition to
-an already-scoped round. Two honest paths, not pre-decided here:
+At the time this was written, the choice looked like two honest paths: ship the narrow PureV10
+and open this as its own multi-session initiative (comparable to the 46-module executor-canon
+sweep), OR fold just AQP-FVT + TS02-C3's gaps into PureV10 and accept a 5-module cascade.
 
-1. **Ship PureV10 as currently scoped** (TF reassign + the `Cp_`→`CC_` rename + the sleeping
-   multiplier reader — 3 transactions, already built and gate-green) and open this sweep as its
-   own tracked initiative afterward, module by module, same cadence as the executor-canon sweep.
-2. **Fold `AQP-FVT` + `TS02-C3`'s interface bumps into PureV10 now**, accepting the cascade (5
-   more modules, documented above) and the round roughly doubling — the two modules whose gap
-   includes the brand-new `CC_ReassignTrueFungibleStakeBeneficiary` this round already adds, so at
-   least that one new function would be interface-complete from the moment it ships rather than
-   joining the backlog immediately.
+**The owner picked neither — they picked the full sweep, same day, same round.** *"do the sweep
+now... i want to do a single deploy... widen pure V10, for the whole pact code stage 1 and stage
+2 modules."* `AQP-POOL`'s own bump did cascade as far as this doc warned it might (referenced
+throughout the AQP family) — measuring it exhaustively, rather than estimating, is exactly what
+`_ifacebump.py --all --write` plus `_dotpin.py --upgrade <module>` for all 36 directly-bumped
+modules did. Final shape: 36 sovereign modules, 38 interfaces, 307 stubs, 12 of those 36
+dot-pinning a further 4 modules (AQP-INFO, AQP-BOOT, MTX-AQP, AOZ) into the same round. PureV10
+went from 3 transactions to 22. See `Deploy/PureV10/README.md` for the complete, final
+accounting — cascade table, what shipped, what was deliberately excluded (DPMF, CADUCEUS,
+BLOODSHED, NOSFERATU, the held-back AppReads pages) and why.
 
-Neither path is started. Status: **documented and measured, nothing bumped yet.**
+Status: **done.** `python3 REPL/tools/_ifacemembership.py` reports 0 sovereign gaps.

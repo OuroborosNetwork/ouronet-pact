@@ -34,7 +34,7 @@
 (print "--- [EQUITY-G1 — the share-tier guard family · 02 · let / invocation] ---")
 (let
     (
-        (ref-EQ:module{EquityV3} EQUITY)
+        (ref-EQ:module{EquityV4} EQUITY)
         (eq:string "E|TSEQ-98c486052a51")
     )
     (map print
@@ -78,7 +78,7 @@
 ;;delegated guard and prove nothing about these functions at all.
 (let
     (
-        (ref-EQ:module{EquityV3} EQUITY)
+        (ref-EQ:module{EquityV4} EQUITY)
         (eq:string "E|TSEQ-98c486052a51")
     )
     (let
@@ -165,7 +165,7 @@
 (print "--- [EQ-G1 - C_IssueShareholderCollection rejects a wrong ipfs-links count · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
         (owner:string KST.ANHD)
     )
     (map print
@@ -244,7 +244,7 @@
 (print "--- [EQ-G2 - C_IssueShareholderCollection refuses an executor the caller cannot sign for · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
         (anhd:string KST.ANHD)
         (emma:string KST.EMMA)
         (links:[string] (make-list 24 "ipfs://EquityTestLink"))
@@ -292,10 +292,10 @@
 (print "--- [EQ-D1 - URCi_IssueShareholderCollection: the documented three-leg decomposition · 02 · let / invocation] ---")
 (let
     (
-        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-DPDC-I:module{DpdcIssueV2} DPDC-I)
-        (ref-EQUITY:module{EquityV3} EQUITY)
+        (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-DPDC-I:module{DpdcIssueV3} DPDC-I)
+        (ref-EQUITY:module{EquityV4} EQUITY)
         (ref-U|VST:module{UtilityVstV2} U|VST)
     )
     (let
@@ -391,8 +391,8 @@
 (print "--- [EQ-D1b - the doc's OWN caveat about why this cannot be ground-truthed · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-DPDC-C:module{DpdcCreateV3} DPDC-C)
         (eq:string "E|TSEQ-98c486052a51")
         (smallest:decimal (IGNIS.UC_IgnisLeg "tier-smallest"))
     )
@@ -452,14 +452,14 @@
         (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (patron:string KST.ANHD)
         (links:[string] (make-list 24 "ipfs://EquityCostProbe"))
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo}
+            (predicted:object{OuronetInfoV3.ClientInfo}
                 (INFO-TWO.INFO_EQUITY|IssueCompany patron patron "EqCostProbe"))
             (stoa-acct:string (ref-DALOS::UR_AccountStoa patron))
         )
@@ -541,16 +541,16 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (eq:string "E|TSEQ-98c486052a51")
         (patron:string KST.ANHD)
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo}
+            (predicted:object{OuronetInfoV3.ClientInfo}
                 (INFO-TWO.INFO_EQUITY|MorphEquity patron patron eq 1 20000 6))
-            (aliased:object{OuronetInfoV2.ClientInfo}
+            (aliased:object{OuronetInfoV3.ClientInfo}
                 (INFO-TWO.INFO_DPSF|MorphEquity patron patron eq 1 20000 6))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_MorphEquity patron patron eq 1 20000 6))

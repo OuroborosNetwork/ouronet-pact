@@ -117,8 +117,8 @@
     (
         (anhd:string KST.ANHD)
         (dhoc:string "DHOC-98c486052a51")
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
     )
     (ref-TS02-C1::DPSF|C_MakeFragments anhd anhd dhoc 1 50)   ; bronze whole 1 -> -1  (50000 frags -> q 50)
     (ref-TS02-C1::DPSF|C_MakeFragments anhd anhd dhoc 2 50)   ; silver whole 2 -> -2  (50000 frags -> q 500)
@@ -158,7 +158,7 @@
         (ouro:string "OURO-98c486052a51")
         (ref-U|CT:module{OuronetConstantsV2} U|CT)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
     )
     (let
         (
@@ -224,8 +224,8 @@
         (anhd:string KST.ANHD)
         (dhoc:string "DHOC-98c486052a51")
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
     )
     (let
         (
@@ -278,8 +278,8 @@
     (
         (anhd:string KST.ANHD)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
     )
     (let
         (
@@ -329,10 +329,10 @@
         (anhd:string KST.ANHD)
         (dhoc:string "DHOC-98c486052a51")
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
     )
     (let
         (
@@ -392,9 +392,9 @@
     (
         (anhd:string KST.ANHD)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
     )
     (let
         (
@@ -438,8 +438,8 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
     )
     (let
         (
@@ -472,8 +472,8 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
     )
     (let
         (
@@ -517,8 +517,8 @@
     (
         (anhd:string KST.ANHD)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
     )
     (let
         (
@@ -568,10 +568,10 @@
     (
         (anhd:string KST.ANHD)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
     )
     (let
         (
@@ -618,9 +618,9 @@
         (anhd:string KST.ANHD)
         (ouro:string "OURO-98c486052a51")
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
     )
     (let
         (
@@ -682,10 +682,10 @@
         (anhd:string KST.ANHD)
         (ouro:string "OURO-98c486052a51")
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
     )
     (let
         (
@@ -738,9 +738,9 @@
         (anhd:string KST.ANHD)
         (ouro:string "OURO-98c486052a51")
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
     )
     (let
         (
@@ -794,9 +794,9 @@
         (anhd:string KST.ANHD)
         (ouro:string "OURO-98c486052a51")
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
     )
     (let
         (
@@ -848,9 +848,9 @@
         (anhd:string KST.ANHD)
         (ouro:string "OURO-98c486052a51")
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
     )
     (let
         (
@@ -901,7 +901,7 @@
     (
         (ouro:string "OURO-98c486052a51")
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
     )
     (let ((fvt-id:string (ref-U|DALOS::UDC_Makeid "P3DelegationVault")))
         (map print
@@ -941,9 +941,9 @@
         (anhd:string KST.ANHD)
         (ouro:string "OURO-98c486052a51")
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
     )
     (let
         (
@@ -991,9 +991,9 @@
         (anhd:string KST.ANHD)
         (ouro:string "OURO-98c486052a51")
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
     )
     (let ((fvt-id:string (ref-U|DALOS::UDC_Makeid "P3DelegationVault")))
         (let
@@ -1058,9 +1058,9 @@
         (anhd:string KST.ANHD)
         (ouro:string "OURO-98c486052a51")
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
     )
     (let
         (
@@ -1106,10 +1106,10 @@
         (ouro:string "OURO-98c486052a51")
         (swpair:string "W|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-        (ref-SWP:module{SwapperV4} SWP)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-SWP:module{SwapperV5} SWP)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
     )
     (let ((fvt-id:string (ref-U|DALOS::UDC_Makeid "P3DelegationVault")))
         (let
@@ -1155,10 +1155,10 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
     )
     (let
         (
@@ -1183,7 +1183,7 @@
             ;;the signer is who would pay. (`KST.ANHD` directly: this block binds no `anhd` local.)
             (let
                 (
-                    (quote-obj:object{OuronetInfoV2.ClientInfo}
+                    (quote-obj:object{OuronetInfoV3.ClientInfo}
                         (AQP-INFO.INFO_AQP-DSA|SetOracleValidity 3600))
                     (gas-pre:decimal (ref-DPTF::UR_AccountSupply "GAS-98c486052a51" KST.ANHD))
                 )
@@ -1228,9 +1228,9 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
     )
     (let
         (
@@ -1272,9 +1272,9 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
     )
     (let
         (
@@ -1326,9 +1326,9 @@
         (gas:string "GAS-98c486052a51")
         (ref-U|CT:module{OuronetConstantsV2} U|CT)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
     )
     (let
         (
@@ -1378,9 +1378,9 @@
         (gas:string "GAS-98c486052a51")
         (ouro:string "OURO-98c486052a51")
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
     )
     (let ((fvt-id:string (ref-U|DALOS::UDC_Makeid "P3DelegationVault")))
         (let ((ouro-before:decimal (ref-DPTF::UR_AccountSupply ouro anhd)))

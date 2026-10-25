@@ -1,5 +1,5 @@
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface AcquisitionAnchorsV1
+(interface AcquisitionAnchorsV3
     @doc "Interface for the AQP anchor layer. Declares the public surface for \
         \ issuing/revoking anchors (per-user boost multipliers on DPTF/DPSF/DPNF holdings) \
         \ and heterogeneous BoostClasses that group up to 7 anchors for score boosting. \
@@ -103,10 +103,10 @@
     (defun URH_BC|AllBoostClassIds:[string] ())
     ;;
     ;; [URCi]   cost readers — single source for exec billing + INFO preview
-    (defun URCi_IssueAnchor:object{IgnisCollectorV3.OutputCumulator} (op-key:string output:[string]))
+    (defun URCi_IssueAnchor:object{IgnisCollectorV4.OutputCumulator} (op-key:string output:[string]))
     (defun URCi_IssueAnchorStoa:decimal (acnoi:bool))
-    (defun URCi_RevokeAnchor:object{IgnisCollectorV3.OutputCumulator} ())
-    (defun URCi_RevokeBoostClass:object{IgnisCollectorV3.OutputCumulator} ())
+    (defun URCi_RevokeAnchor:object{IgnisCollectorV4.OutputCumulator} ())
+    (defun URCi_RevokeBoostClass:object{IgnisCollectorV4.OutputCumulator} ())
     (defun URC_AnchorableAssetOwner:string (ank-asset:string asset-fungibility:[bool]))
     (defun URCv_CoreDptf:string (dptf-id:string))
     ;;{5.4}  Validate [UEV/CAP]
@@ -123,7 +123,7 @@
     ;;{5.6}  Aux/X
     ;; [XE]
     ;;
-    (defun XE_UpdateTrueFungibleUserAnchorValues:object{IgnisCollectorV3.OutputCumulator}
+    (defun XE_UpdateTrueFungibleUserAnchorValues:object{IgnisCollectorV4.OutputCumulator}
         (account:string dptf-id:string total-dptf-amount:decimal)
     )
     (defun XE_UpdateSemiFungibleUserAnchorValues
@@ -136,32 +136,41 @@
     (defun XE_UnbumpBoostClassScoreLinks:string (boost-class-id:string score-id:string))
     (defun XE_RecomputeUserBoostAggregates:string (account:string boost-class-ids:[string]))
     (defun XE_SweepRevokeAnchor:string (anchor-id:string))
-    (defun XE_ResyncSemiFungibleUserAnchorValues:object{IgnisCollectorV3.OutputCumulator}
+    (defun XE_ResyncSemiFungibleUserAnchorValues:object{IgnisCollectorV4.OutputCumulator}
         (account:string dpsf-id:string nonces:[integer] nonce-amounts:[integer])
     )
-    (defun XE_ResyncNonFungibleUserAnchorValues:object{IgnisCollectorV3.OutputCumulator}
+    (defun XE_ResyncNonFungibleUserAnchorValues:object{IgnisCollectorV4.OutputCumulator}
         (account:string dpnf-id:string nonces:[integer])
     )
     ;;{5.7}  User [A/C]
     ;; [C]   client
     ;;
-    (defun C_RevokeBoostClass:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_RevokeBoostClass:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string boost-class-id:string)
     )
-    (defun C_IssueTrueFungibleAnchor:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_IssueTrueFungibleAnchor:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string anchor-name:string dptf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dptf-amount:decimal)
     )
-    (defun C_IssueSemiFungibleAnchor:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_IssueSemiFungibleAnchor:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string anchor-name:string dpsf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpsf-nonce:integer)
     )
-    (defun C_IssueNonFungibleAnchor:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_IssueNonFungibleAnchor:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-trait-key:string dpnf-trait-value:string)
     )
-    (defun C_IssueNonFungibleSetAnchor:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_IssueNonFungibleSetAnchor:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-nonce-class:integer)
     )
-    (defun C_RevokeAnchor:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string anchor-id:string))
+    (defun C_RevokeAnchor:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string anchor-id:string))
 
+
+    ;;<=========================================================================>
+    ;; ADDED 2026-10-12 -- interface-membership sweep (StoicSyntax-Prefixes.md Sec5,
+    ;; owner ruling). Every one of these was already live in the module body; this
+    ;; closes the gap between what the module DOES and what its interface SAYS it does.
+    ;;<=========================================================================>
+    (defun CAP_Owner (anchor-id:string))
+    (defun CAP_TF|Owner (dptf-id:string))
+    (defun UEV_ExecutorNotCustodial (executor:string))
 )
 (module AQP-ANK GOV
     @doc "Sovereign anchor module for AQP. Stores anchor definitions, BoostClasses (7-slot \
@@ -176,7 +185,7 @@
     ;; REPL observability: REPL/Stage_02/[6.2.1]_AQP-ANK.repl tags each intra-tx group as TXnnn · mm · <slug> in ;;==== … ==== and (print "--- [TXnnn · mm · …] ---"); mm is 01.. within each begin-tx.
     ;;
     (implements OuronetPolicyV2)
-    (implements AcquisitionAnchorsV1)
+    (implements AcquisitionAnchorsV3)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -193,7 +202,7 @@
         @doc "Resolves the governance keyset from DALOS."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -233,7 +242,7 @@
         @doc "Returns policy metadata key from DALOS policy module."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::P|Info)
         )
@@ -395,13 +404,13 @@
     ;;5]Per-User Per-BoostClass Aggregate
     ;;{3.3}  tables
     ;;
-    (deftable ANK|T|Anchor:{AcquisitionSchemasV1.ANK|Schema})                        ;;Key = <Anchor-ID>
-    (deftable ANK|T|BoostClass:{AcquisitionSchemasV1.ANK|BoostClass})                ;;Key = <Boost-Class-ID>
-    (deftable ANK|T|AssetAnchors:{AcquisitionSchemasV1.ANK|AssetAnchors})            ;;Key = <Asset-ID>
-    (deftable ANK|T|BoostClassScoreLinks:{AcquisitionSchemasV1.ANK|BoostClassScoreLinks}) ;;Key = <Boost-Class-ID>
+    (deftable ANK|T|Anchor:{AcquisitionSchemasV3.ANK|Schema})                        ;;Key = <Anchor-ID>
+    (deftable ANK|T|BoostClass:{AcquisitionSchemasV3.ANK|BoostClass})                ;;Key = <Boost-Class-ID>
+    (deftable ANK|T|AssetAnchors:{AcquisitionSchemasV3.ANK|AssetAnchors})            ;;Key = <Asset-ID>
+    (deftable ANK|T|BoostClassScoreLinks:{AcquisitionSchemasV3.ANK|BoostClassScoreLinks}) ;;Key = <Boost-Class-ID>
     ;;
-    (deftable ANK|T|Anchors:{AcquisitionSchemasV1.ANK|UserSchema})                   ;;Key = <Ouronet-Account> | <Anchor-ID>
-    (deftable ANK|T|UserBoost:{AcquisitionSchemasV1.ANK|UserBoostSchema})            ;;Key = <Ouronet-Account> | <Boost-Class-ID>
+    (deftable ANK|T|Anchors:{AcquisitionSchemasV3.ANK|UserSchema})                   ;;Key = <Ouronet-Account> | <Anchor-ID>
+    (deftable ANK|T|UserBoost:{AcquisitionSchemasV3.ANK|UserBoostSchema})            ;;Key = <Ouronet-Account> | <Boost-Class-ID>
 
     ;;<=========================================================================>
     ;;{4}  CAPABILITIES
@@ -431,8 +440,8 @@
         @event
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
             )
             ;;1]<total-dptf-amount> must be non-negative (0.0 allowed — vacate/unstake refresh)
             ;;
@@ -478,8 +487,8 @@
             \ account exists and the nonces exist for the target DPDC asset; composes SECURE for the write."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             ;;1]<account> must exist
             (ref-DALOS::UEV_EnforceAccountExists account)
@@ -493,7 +502,7 @@
         @event
         (let
             (
-                (bc:object{AcquisitionSchemasV1.ANK|BoostClass} (UR_BC|Data boost-class-id))
+                (bc:object{AcquisitionSchemasV3.ANK|BoostClass} (UR_BC|Data boost-class-id))
             )
             (enforce (= (at "anchors" bc) 0) (format "{} BoostClass {} not empty" [E-ANK boost-class-id]))
             (enforce (at "class-active" bc) (format "{} BoostClass {} already inactive" [E-ANK boost-class-id]))
@@ -507,7 +516,7 @@
         (let
             (
                 (ref-U|ATS:module{UtilityAtsV3} U|ATS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
             )
             ;;LIQUIDITY-POOL TOKENS ARE ANCHORABLE AS OF 2026-10-03. The enforce that used to
             ;;stand here blocked them, in two clauses that together implemented lines 4] and 5]
@@ -566,7 +575,7 @@
         (let
             (
                 (ref-U|ATS:module{UtilityAtsV3} U|ATS)
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (ref-U|ATS::UEV_AutostakeIndex anchor-name)
             (ref-DPDC::UEV_id dpsf-id true)
@@ -591,7 +600,7 @@
         @event
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 ;;
                 (meta-data:object
                     (ref-DPDC::UR_N|RawMetaData
@@ -621,7 +630,7 @@
         @event
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 ;;
                 (classes-used:integer (ref-DPDC::UR_SetClassesUsed dpnf-id false))
             )
@@ -638,7 +647,7 @@
         (let
             (
                 (ref-U|ATS:module{UtilityAtsV3} U|ATS)
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             ;;AUTHORISATION FIRST (2026-09-14 ruling), and it is NEW here. Until 2026-09-20 the two
             ;;DPNF anchor paths reached NO ownership enforce at all, while their DPTF sibling ran
@@ -733,7 +742,7 @@
     )
     ;;
     ;; [UDC] construct
-    (defun UDC_ANK|Schema:object{AcquisitionSchemasV1.ANK|Schema}
+    (defun UDC_ANK|Schema:object{AcquisitionSchemasV3.ANK|Schema}
         (a:string b:[bool] c:string d:integer e:bool f:decimal g:decimal h:integer i:string j:string k:integer l:string)
         @doc "Constructs anchor definition row for ANK|T|Anchor."
         {"ank-asset"            : a
@@ -749,7 +758,7 @@
         ,"dpnf-nonce-class"     : k
         ,"anchor-id"            : l}
     )
-    (defun UDC_BoostClass:object{AcquisitionSchemasV1.ANK|BoostClass}
+    (defun UDC_BoostClass:object{AcquisitionSchemasV3.ANK|BoostClass}
         (a:string b:string c:string d:string e:string f:string g:string h:integer i:bool j:string k:string)
         @doc "Constructs BoostClass object. `k` is the class-owner (creator); only it may attach anchors."
         {"anchor-primary"       : a
@@ -764,7 +773,7 @@
         ,"boost-class-id"       : j
         ,"class-owner"          : k}
     )
-    (defun UDC_EmptyInternalGroup:object{AcquisitionSchemasV1.ANK|InternalGroup} ()
+    (defun UDC_EmptyInternalGroup:object{AcquisitionSchemasV3.ANK|InternalGroup} ()
         @doc "Constructs empty InternalGroup (all BAR, anchors=0)."
         {"anchor-primary"       : BAR
         ,"anchor-secondary"     : BAR
@@ -775,8 +784,8 @@
         ,"anchor-septenary"     : BAR
         ,"anchors"              : 0}
     )
-    (defun UDC_IG|WithAddedAnchor:object{AcquisitionSchemasV1.ANK|InternalGroup}
-        (ig:object{AcquisitionSchemasV1.ANK|InternalGroup} new-anchor-id:string)
+    (defun UDC_IG|WithAddedAnchor:object{AcquisitionSchemasV3.ANK|InternalGroup}
+        (ig:object{AcquisitionSchemasV3.ANK|InternalGroup} new-anchor-id:string)
         @doc "Adds anchor-id to first free slot in an InternalGroup."
         (let
             (
@@ -801,8 +810,8 @@
             )
         )
     )
-    (defun UDC_IG|WithRemovedAnchor:object{AcquisitionSchemasV1.ANK|InternalGroup}
-        (ig:object{AcquisitionSchemasV1.ANK|InternalGroup} revoked-anchor-id:string)
+    (defun UDC_IG|WithRemovedAnchor:object{AcquisitionSchemasV3.ANK|InternalGroup}
+        (ig:object{AcquisitionSchemasV3.ANK|InternalGroup} revoked-anchor-id:string)
         @doc "Removes anchor-id from group, compacts slots."
         (let
             (
@@ -843,8 +852,8 @@
             ,"anchors"          : (- n 1)}
         )
     )
-    (defun UDC_BC|WithAddedAnchor:object{AcquisitionSchemasV1.ANK|BoostClass}
-        (bc:object{AcquisitionSchemasV1.ANK|BoostClass} new-anchor-id:string)
+    (defun UDC_BC|WithAddedAnchor:object{AcquisitionSchemasV3.ANK|BoostClass}
+        (bc:object{AcquisitionSchemasV3.ANK|BoostClass} new-anchor-id:string)
         @doc "Adds anchor-id to first free slot in a BoostClass."
         (let
             (
@@ -873,8 +882,8 @@
             )
         )
     )
-    (defun UDC_BC|WithRemovedAnchor:object{AcquisitionSchemasV1.ANK|BoostClass}
-        (bc:object{AcquisitionSchemasV1.ANK|BoostClass} revoked-anchor-id:string)
+    (defun UDC_BC|WithRemovedAnchor:object{AcquisitionSchemasV3.ANK|BoostClass}
+        (bc:object{AcquisitionSchemasV3.ANK|BoostClass} revoked-anchor-id:string)
         @doc "Removes anchor-id from BoostClass, compacts slots."
         (let
             (
@@ -913,8 +922,8 @@
             )
         )
     )
-    (defun UDC_AA|PlaceAnchor:object{AcquisitionSchemasV1.ANK|AssetAnchors}
-        (aa:object{AcquisitionSchemasV1.ANK|AssetAnchors} new-anchor-id:string)
+    (defun UDC_AA|PlaceAnchor:object{AcquisitionSchemasV3.ANK|AssetAnchors}
+        (aa:object{AcquisitionSchemasV3.ANK|AssetAnchors} new-anchor-id:string)
         @doc "Places anchor in first group with a free slot; creates new group if needed. \
             \ Pure constructor — no enforce. Caller (issue caps via UEV_*) must ensure \
             \ anchors-active < 49 (implies a free group slot exists under 7×7)."
@@ -933,7 +942,7 @@
                                     acc
                                     (let
                                         (
-                                            (grp:object{AcquisitionSchemasV1.ANK|InternalGroup} (URC_AA|GroupAtSlot aa gi))
+                                            (grp:object{AcquisitionSchemasV3.ANK|InternalGroup} (URC_AA|GroupAtSlot aa gi))
                                             (gn:integer (at "anchors" grp))
                                         )
                                         (if (< gn 7)
@@ -952,9 +961,9 @@
                 (if (= placed 1)
                     (let
                         (
-                            (updated-grp:object{AcquisitionSchemasV1.ANK|InternalGroup} (at 0 result))
+                            (updated-grp:object{AcquisitionSchemasV3.ANK|InternalGroup} (at 0 result))
                             (slot:integer (at 2 result))
-                            (prev-grp:object{AcquisitionSchemasV1.ANK|InternalGroup} (URC_AA|GroupAtSlot aa slot))
+                            (prev-grp:object{AcquisitionSchemasV3.ANK|InternalGroup} (URC_AA|GroupAtSlot aa slot))
                             (new-ga:integer
                                 (if (and (= (at "anchors" prev-grp) 0) (> (at "anchors" updated-grp) 0))
                                     (if (> ga (+ slot 1)) ga (+ slot 1))
@@ -966,7 +975,7 @@
                     )
                     (let
                         (
-                            (new-grp:object{AcquisitionSchemasV1.ANK|InternalGroup} (UDC_IG|WithAddedAnchor (UDC_EmptyInternalGroup) new-anchor-id))
+                            (new-grp:object{AcquisitionSchemasV3.ANK|InternalGroup} (UDC_IG|WithAddedAnchor (UDC_EmptyInternalGroup) new-anchor-id))
                         )
                         (URC_AA|SetGroupAtSlot aa new-grp ga (+ ta 1) ga true)
                     )
@@ -974,8 +983,8 @@
             )
         )
     )
-    (defun UDC_AA|RemoveAnchor:object{AcquisitionSchemasV1.ANK|AssetAnchors}
-        (aa:object{AcquisitionSchemasV1.ANK|AssetAnchors} revoked-anchor-id:string)
+    (defun UDC_AA|RemoveAnchor:object{AcquisitionSchemasV3.ANK|AssetAnchors}
+        (aa:object{AcquisitionSchemasV3.ANK|AssetAnchors} revoked-anchor-id:string)
         @doc "Removes anchor from its group in AssetAnchors."
         (let
             (
@@ -984,15 +993,15 @@
                 (aid:string (at "asset-id" aa))
             )
             (fold
-                (lambda (acc:object{AcquisitionSchemasV1.ANK|AssetAnchors} gi:integer)
+                (lambda (acc:object{AcquisitionSchemasV3.ANK|AssetAnchors} gi:integer)
                     (let
                         (
-                            (grp:object{AcquisitionSchemasV1.ANK|InternalGroup} (URC_AA|GroupAtSlot acc gi))
+                            (grp:object{AcquisitionSchemasV3.ANK|InternalGroup} (URC_AA|GroupAtSlot acc gi))
                         )
                         (if (URC_IG|ContainsAnchor grp revoked-anchor-id)
                             (let
                                 (
-                                    (updated-grp:object{AcquisitionSchemasV1.ANK|InternalGroup} (UDC_IG|WithRemovedAnchor grp revoked-anchor-id))
+                                    (updated-grp:object{AcquisitionSchemasV3.ANK|InternalGroup} (UDC_IG|WithRemovedAnchor grp revoked-anchor-id))
                                     (was-ga:integer (at "groups-active" acc))
                                     (was-ta:integer (at "anchors-active" acc))
                                     (grp-now-empty:bool (= (at "anchors" updated-grp) 0))
@@ -1008,14 +1017,14 @@
             )
         )
     )
-    (defun UDC_AccountAnchor:object{AcquisitionSchemasV1.ANK|UserSchema}
+    (defun UDC_AccountAnchor:object{AcquisitionSchemasV3.ANK|UserSchema}
         (a:decimal b:string c:string)
         @doc "Constructs user-anchor contribution object."
         {"promile"              : a
         ,"ouronet-account"      : b
         ,"anchor-id"            : c}
     )
-    (defun UDC_UserBoost:object{AcquisitionSchemasV1.ANK|UserBoostSchema}
+    (defun UDC_UserBoost:object{AcquisitionSchemasV3.ANK|UserBoostSchema}
         (aggregate-promile:decimal ouronet-account:string boost-class-id:string)
         @doc "Constructs user-boost aggregate row for ANK|T|UserBoost."
         {"aggregate-promile"   : aggregate-promile
@@ -1040,7 +1049,7 @@
     ;; Policy P|T, P|MT — not ANK rows; use P|Info, P|UR, P|UR_IMP above.
     ;;
     ;; Core row: UR_ANK|Data
-    (defun UR_ANK|Data:object{AcquisitionSchemasV1.ANK|Schema} (anchor-id:string)
+    (defun UR_ANK|Data:object{AcquisitionSchemasV3.ANK|Schema} (anchor-id:string)
         @doc "Reads full anchor definition row from ANK|T|Anchor."
         (read ANK|T|Anchor anchor-id)
     )
@@ -1107,7 +1116,7 @@
         (at "anchor-id" (UR_ANK|Data anchor-id))
     )
     ;;
-    (defun UR_BC|Data:object{AcquisitionSchemasV1.ANK|BoostClass} (boost-class-id:string)
+    (defun UR_BC|Data:object{AcquisitionSchemasV3.ANK|BoostClass} (boost-class-id:string)
         @doc "Reads full BoostClass row."
         (read ANK|T|BoostClass boost-class-id)
     )
@@ -1138,11 +1147,11 @@
         (at "boost-class-id" (read ANK|T|BoostClass boost-class-id ["boost-class-id"]))
     )
     ;;
-    (defun UR_AA|Data:object{AcquisitionSchemasV1.ANK|AssetAnchors} (asset-id:string)
+    (defun UR_AA|Data:object{AcquisitionSchemasV3.ANK|AssetAnchors} (asset-id:string)
         @doc "Reads full per-asset bookkeeping row (with-default-read when absent)."
         (let
             (
-                (eg:object{AcquisitionSchemasV1.ANK|InternalGroup} (UDC_EmptyInternalGroup))
+                (eg:object{AcquisitionSchemasV3.ANK|InternalGroup} (UDC_EmptyInternalGroup))
             )
             (with-default-read ANK|T|AssetAnchors asset-id
                 {"group-primary"     : eg
@@ -1191,7 +1200,7 @@
             \ iterates all groups and slots, collects non-BAR active anchors."
         (let
             (
-                (aa:object{AcquisitionSchemasV1.ANK|AssetAnchors} (UR_AA|Data asset-id))
+                (aa:object{AcquisitionSchemasV3.ANK|AssetAnchors} (UR_AA|Data asset-id))
                 (ga:integer (at "groups-active" aa))
             )
             (if (<= ga 0)
@@ -1200,7 +1209,7 @@
                     (lambda (acc:[string] gi:integer)
                         (let
                             (
-                                (grp:object{AcquisitionSchemasV1.ANK|InternalGroup} (URC_AA|GroupAtSlot aa gi))
+                                (grp:object{AcquisitionSchemasV3.ANK|InternalGroup} (URC_AA|GroupAtSlot aa gi))
                                 (q:integer (at "anchors" grp))
                             )
                             (if (<= q 0)
@@ -1231,7 +1240,7 @@
     )
     ;;
     ;; Core row: UR_ANK-U|Data
-    (defun UR_ANK-U|Data:object{AcquisitionSchemasV1.ANK|UserSchema} (account:string anchor-id:string)
+    (defun UR_ANK-U|Data:object{AcquisitionSchemasV3.ANK|UserSchema} (account:string anchor-id:string)
         @doc "Core read: user cumulative promile row for account x anchor."
         (with-default-read ANK|T|Anchors (UCk_Anchors account anchor-id)
             (UDC_AccountAnchor 0.0 account anchor-id)
@@ -1254,7 +1263,7 @@
         (at "anchor-id" (UR_ANK-U|Data account anchor-id))
     )
     ;;
-    (defun UR_UB|Data:object{AcquisitionSchemasV1.ANK|UserBoostSchema} (account:string boost-class-id:string)
+    (defun UR_UB|Data:object{AcquisitionSchemasV3.ANK|UserBoostSchema} (account:string boost-class-id:string)
         @doc "Reads user-boost aggregate row (with-default-read when absent)."
         (with-default-read ANK|T|UserBoost (UCk_UserBoost account boost-class-id)
             (UDC_UserBoost 0.0 account boost-class-id)
@@ -1395,7 +1404,7 @@
         @doc "Outputs how many nonces from <nonces> have the proper MetaData Trait"
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (fold
                 (lambda
@@ -1431,7 +1440,7 @@
         @doc "Outputs how many nonces from <nonces> conform to nonce-class mode."
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (fold
                 (lambda
@@ -1466,7 +1475,7 @@
             0.0
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     ;;
                     (unit:decimal (ref-IGNIS::UC_IgnisLeg "tier-small"))
                 )
@@ -1475,7 +1484,7 @@
         )
     )
     ;; --- AssetAnchors / BoostClass slot helpers (in-memory; UDC_AA|* and XI_2|Recompute*) ---
-    (defun URC_BC|AnchorIdAtSlot:string (bc:object{AcquisitionSchemasV1.ANK|BoostClass} idx:integer)
+    (defun URC_BC|AnchorIdAtSlot:string (bc:object{AcquisitionSchemasV3.ANK|BoostClass} idx:integer)
         @doc "URC: reads anchor-id at slot idx (0..6) from a BoostClass object (in-memory)."
         (cond
             ((= idx 0) (at "anchor-primary" bc))
@@ -1488,7 +1497,7 @@
             BAR
         )
     )
-    (defun URC_AA|GroupAtSlot:object{AcquisitionSchemasV1.ANK|InternalGroup} (aa:object{AcquisitionSchemasV1.ANK|AssetAnchors} idx:integer)
+    (defun URC_AA|GroupAtSlot:object{AcquisitionSchemasV3.ANK|InternalGroup} (aa:object{AcquisitionSchemasV3.ANK|AssetAnchors} idx:integer)
         @doc "URC: reads internal group at slot idx (0..6) from an AssetAnchors object (in-memory)."
         (cond
             ((= idx 0) (at "group-primary" aa))
@@ -1501,7 +1510,7 @@
             (UDC_EmptyInternalGroup)
         )
     )
-    (defun URC_IG|AnchorIdAtSlot:string (ig:object{AcquisitionSchemasV1.ANK|InternalGroup} idx:integer)
+    (defun URC_IG|AnchorIdAtSlot:string (ig:object{AcquisitionSchemasV3.ANK|InternalGroup} idx:integer)
         @doc "URC: reads anchor-id at slot idx (0..6) from an InternalGroup object (in-memory)."
         (cond
             ((= idx 0) (at "anchor-primary" ig))
@@ -1514,7 +1523,7 @@
             BAR
         )
     )
-    (defun URC_IG|ContainsAnchor:bool (ig:object{AcquisitionSchemasV1.ANK|InternalGroup} anchor-id:string)
+    (defun URC_IG|ContainsAnchor:bool (ig:object{AcquisitionSchemasV3.ANK|InternalGroup} anchor-id:string)
         @doc "URC: true when InternalGroup contains anchor-id (in-memory scan of seven slots)."
         (or (= anchor-id (at "anchor-primary" ig))
         (or (= anchor-id (at "anchor-secondary" ig))
@@ -1524,18 +1533,18 @@
         (or (= anchor-id (at "anchor-senary" ig))
             (= anchor-id (at "anchor-septenary" ig))))))))
     )
-    (defun URC_AA|SetGroupAtSlot:object{AcquisitionSchemasV1.ANK|AssetAnchors}
-        (aa:object{AcquisitionSchemasV1.ANK|AssetAnchors} grp:object{AcquisitionSchemasV1.ANK|InternalGroup} slot:integer ta:integer ga:integer adjust-ga:bool)
+    (defun URC_AA|SetGroupAtSlot:object{AcquisitionSchemasV3.ANK|AssetAnchors}
+        (aa:object{AcquisitionSchemasV3.ANK|AssetAnchors} grp:object{AcquisitionSchemasV3.ANK|InternalGroup} slot:integer ta:integer ga:integer adjust-ga:bool)
         @doc "URC: returns updated AssetAnchors with group replaced at slot (in-memory; used by UDC_AA|PlaceAnchor / RemoveAnchor)."
         (let
             (
-                (g1:object{AcquisitionSchemasV1.ANK|InternalGroup} (if (= slot 0) grp (at "group-primary" aa)))
-                (g2:object{AcquisitionSchemasV1.ANK|InternalGroup} (if (= slot 1) grp (at "group-secondary" aa)))
-                (g3:object{AcquisitionSchemasV1.ANK|InternalGroup} (if (= slot 2) grp (at "group-tertiary" aa)))
-                (g4:object{AcquisitionSchemasV1.ANK|InternalGroup} (if (= slot 3) grp (at "group-quaternary" aa)))
-                (g5:object{AcquisitionSchemasV1.ANK|InternalGroup} (if (= slot 4) grp (at "group-quinary" aa)))
-                (g6:object{AcquisitionSchemasV1.ANK|InternalGroup} (if (= slot 5) grp (at "group-senary" aa)))
-                (g7:object{AcquisitionSchemasV1.ANK|InternalGroup} (if (= slot 6) grp (at "group-septenary" aa)))
+                (g1:object{AcquisitionSchemasV3.ANK|InternalGroup} (if (= slot 0) grp (at "group-primary" aa)))
+                (g2:object{AcquisitionSchemasV3.ANK|InternalGroup} (if (= slot 1) grp (at "group-secondary" aa)))
+                (g3:object{AcquisitionSchemasV3.ANK|InternalGroup} (if (= slot 2) grp (at "group-tertiary" aa)))
+                (g4:object{AcquisitionSchemasV3.ANK|InternalGroup} (if (= slot 3) grp (at "group-quaternary" aa)))
+                (g5:object{AcquisitionSchemasV3.ANK|InternalGroup} (if (= slot 4) grp (at "group-quinary" aa)))
+                (g6:object{AcquisitionSchemasV3.ANK|InternalGroup} (if (= slot 5) grp (at "group-senary" aa)))
+                (g7:object{AcquisitionSchemasV3.ANK|InternalGroup} (if (= slot 6) grp (at "group-septenary" aa)))
                 (new-ta:integer ta)
                 (new-ga:integer
                     (if adjust-ga
@@ -1569,7 +1578,7 @@
         (keys ANK|T|BoostClass)
     )
     ;; [URCi]   cost readers — single source for exec billing + INFO preview
-    (defun URCi_IssueAnchor:object{IgnisCollectorV3.OutputCumulator} (op-key:string output:[string])
+    (defun URCi_IssueAnchor:object{IgnisCollectorV4.OutputCumulator} (op-key:string output:[string])
         @doc "IGNIS cost for the 4 anchor-issue ops: a FLAT 500 deterrence for every anchor type \
             \ plus that op's own component cost (owner 2026-09-06). This supersedes the \
             \ 2026-09-05 rule of half the anchored asset's issuance price, which is why the \
@@ -1578,7 +1587,7 @@
             \ anchor-id[+boost-class-id]. Shared by exec and the INFO_* previews."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator (ref-IGNIS::UC_IgnisPrice op-key "anchor") AQP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) output)
         ))
@@ -1589,25 +1598,25 @@
             \ dollar-denominated and so ignored the peg entirely. Doubled when <acnoi>."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (* (ref-IGNIS::UC_StoaPrice "anchor") (if acnoi 2.0 1.0))
         ))
-    (defun URCi_RevokeAnchor:object{IgnisCollectorV3.OutputCumulator} ()
+    (defun URCi_RevokeAnchor:object{IgnisCollectorV4.OutputCumulator} ()
         @doc "IGNIS cost for C_RevokeAnchor — owner-priced 100 deterrence + its component cost, via the central IG|DETER/IG|COMPONENTS \
             \ map. Shared by exec and the INFO_* preview."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator (ref-IGNIS::UC_IgnisPrice "AQP-ANK|C_RevokeAnchor" "revoke-anchor") AQP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
         ))
-    (defun URCi_RevokeBoostClass:object{IgnisCollectorV3.OutputCumulator} ()
+    (defun URCi_RevokeBoostClass:object{IgnisCollectorV4.OutputCumulator} ()
         @doc "IGNIS cost for C_RevokeBoostClass — owner-priced 500 deterrence + its component cost, via the central IG|DETER/IG|COMPONENTS \
             \ map. Shared by exec and the INFO_* preview."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator (ref-IGNIS::UC_IgnisPrice "AQP-ANK|C_RevokeBoostClass" "revoke-boost") AQP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
         ))
@@ -1621,7 +1630,7 @@
             \ the executor was named, that distinction was invisible at every call site."
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (if (= asset-fungibility [true true])
                 (URCv_AnchorableDptfAuthority ank-asset)
@@ -1637,7 +1646,7 @@
             \ tooling was built to prevent."
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (first-two:string (take 2 dptf-id))
             )
             (cond
@@ -1672,8 +1681,8 @@
             \ account. Anchoring now draws the same distinction every other LP operation does."
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-SWP:module{SwapperV4} SWP)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-SWP:module{SwapperV5} SWP)
                 ;;
                 ;;Specials first. An `F|`/`R|` id resolves through the back-link that
                 ;;XE_UpdateSpecialTrueFungible writes in BOTH directions. A frozen LP lands here
@@ -1725,9 +1734,9 @@
         ;;CAP_EnforceAccountOwnership checks the transaction is signed by that account's guard.
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (bc:object{AcquisitionSchemasV1.ANK|BoostClass} (UR_BC|Data boost-class-id))
-                (aa:object{AcquisitionSchemasV1.ANK|AssetAnchors} (UR_AA|Data ank-asset))
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (bc:object{AcquisitionSchemasV3.ANK|BoostClass} (UR_BC|Data boost-class-id))
+                (aa:object{AcquisitionSchemasV3.ANK|AssetAnchors} (UR_AA|Data ank-asset))
             )
             (ref-DALOS::CAP_EnforceAccountOwnership (at "class-owner" bc))
             (enforce (at "class-active" bc) (format "{} BoostClass {} must be active" [E-ANK boost-class-id]))
@@ -1759,7 +1768,7 @@
             \ custodial account must not be able to revoke an anchor either."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (enforce
                 (not (contains executor
@@ -1785,7 +1794,7 @@
         (UEV_ExecutorNotCustodial executor)
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (enforce
                 (if (= asset-fungibility [true true])
@@ -1834,7 +1843,7 @@
             \ (patron/executor canon 2.2, 2026-09-22.)"
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (co:string (at "class-owner" (UR_BC|Data boost-class-id)))
             )
             (enforce (= executor co)
@@ -1854,7 +1863,7 @@
         @doc "Validates asset 49-anchor cap. Used when acnoi=true (BoostClass is new)."
         (let
             (
-                (aa:object{AcquisitionSchemasV1.ANK|AssetAnchors} (UR_AA|Data ank-asset))
+                (aa:object{AcquisitionSchemasV3.ANK|AssetAnchors} (UR_AA|Data ank-asset))
             )
             (enforce (< (at "anchors-active" aa) 49) (format "{} Asset {} at 49-anchor cap" [E-ANK ank-asset]))
         )
@@ -1877,7 +1886,7 @@
         \ 2] For DPSFs and DPNFs can be either its Owner or Creator"
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 ;;
                 (ank-asset:string (UR_ANK|AnchoredAsset anchor-id))
                 (ank-fungibility:[bool] (UR_ANK|Fungibility anchor-id))
@@ -1913,7 +1922,7 @@
         \ pins the new acceptance."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 ;;
                 (owner:string (URCv_AnchorableDptfAuthority dptf-id))
             )
@@ -1926,7 +1935,7 @@
     ;; WU lists every schema field: defun when used; comment when [.], select key, or mutates via WW_*.
     ;;
     (defun WI_Anchor:string
-        (anchor-id:string row:object{AcquisitionSchemasV1.ANK|Schema})
+        (anchor-id:string row:object{AcquisitionSchemasV3.ANK|Schema})
         @doc "Insert ANK|T|Anchor full row (issue only)."
         (require-capability (SECURE))
         (insert ANK|T|Anchor anchor-id row)
@@ -1974,13 +1983,13 @@
     ;; WU_Anchor|ID — select key; WU not needed.
     ;;
     (defun WI_BoostClass:string
-        (boost-class-id:string row:object{AcquisitionSchemasV1.ANK|BoostClass})
+        (boost-class-id:string row:object{AcquisitionSchemasV3.ANK|BoostClass})
         @doc "Insert ANK|T|BoostClass full row (inline issue when acnoi)."
         (require-capability (SECURE))
         (insert ANK|T|BoostClass boost-class-id row)
     )
     (defun WW_BoostClass:string
-        (boost-class-id:string row:object{AcquisitionSchemasV1.ANK|BoostClass})
+        (boost-class-id:string row:object{AcquisitionSchemasV3.ANK|BoostClass})
         @doc "Upsert full ANK|T|BoostClass row (bookkeeping add/remove anchor slots)."
         (require-capability (SECURE))
         (write ANK|T|BoostClass boost-class-id row)
@@ -2003,7 +2012,7 @@
     ;;
     ;; WI_AssetAnchors — not used: first row touch is WW_AssetAnchors (upsert path).
     (defun WW_AssetAnchors:string
-        (asset-id:string row:object{AcquisitionSchemasV1.ANK|AssetAnchors})
+        (asset-id:string row:object{AcquisitionSchemasV3.ANK|AssetAnchors})
         @doc "Upsert full ANK|T|AssetAnchors row (place/remove anchor in groups)."
         (require-capability (SECURE))
         (write ANK|T|AssetAnchors asset-id row)
@@ -2119,8 +2128,8 @@
         ;; SECURE: granted by WW_BoostClass and WW_AssetAnchors (underlying W_).
         (let
             (
-                (bc:object{AcquisitionSchemasV1.ANK|BoostClass} (UR_BC|Data boost-class-id))
-                (aa:object{AcquisitionSchemasV1.ANK|AssetAnchors} (UR_AA|Data asset-id))
+                (bc:object{AcquisitionSchemasV3.ANK|BoostClass} (UR_BC|Data boost-class-id))
+                (aa:object{AcquisitionSchemasV3.ANK|AssetAnchors} (UR_AA|Data asset-id))
             )
             (WW_BoostClass boost-class-id (UDC_BC|WithAddedAnchor bc anchor-id))
             (WW_AssetAnchors asset-id (UDC_AA|PlaceAnchor aa anchor-id))
@@ -2137,8 +2146,8 @@
             (
                 (ank-asset:string (UR_ANK|AnchoredAsset anchor-id))
                 (boost-class-id:string (UR_ANK|BoostClassId anchor-id))
-                (bc:object{AcquisitionSchemasV1.ANK|BoostClass} (UR_BC|Data boost-class-id))
-                (aa:object{AcquisitionSchemasV1.ANK|AssetAnchors} (UR_AA|Data ank-asset))
+                (bc:object{AcquisitionSchemasV3.ANK|BoostClass} (UR_BC|Data boost-class-id))
+                (aa:object{AcquisitionSchemasV3.ANK|AssetAnchors} (UR_AA|Data ank-asset))
             )
             (WW_BoostClass boost-class-id (UDC_BC|WithRemovedAnchor bc anchor-id))
             (WW_AssetAnchors ank-asset (UDC_AA|RemoveAnchor aa anchor-id))
@@ -2327,7 +2336,7 @@
             (lambda (bcid:string)
                 (let
                     (
-                        (bc:object{AcquisitionSchemasV1.ANK|BoostClass} (UR_BC|Data bcid))
+                        (bc:object{AcquisitionSchemasV3.ANK|BoostClass} (UR_BC|Data bcid))
                         (n:integer (at "anchors" bc))
                     )
                     (if (<= n 0)
@@ -2423,7 +2432,7 @@
     ;;
     ;; --- Block C · TF user promile ---
     ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
-    (defun XE_UpdateTrueFungibleUserAnchorValues:object{IgnisCollectorV3.OutputCumulator}
+    (defun XE_UpdateTrueFungibleUserAnchorValues:object{IgnisCollectorV4.OutputCumulator}
         (account:string dptf-id:string total-dptf-amount:decimal)
         @doc "Backward (FVT::XI_RefreshTrueFungibleStakeAnchors / C_Sync*): P|UEV_IMC + XI_1|UpdateTrueFungibleUserAnchorValues \
             \ when n_live > 0; IGNIS = ignis|small × n_live (live anchors on dptf-id). \
@@ -2431,7 +2440,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 ;;
                 (aids:[string] (UR_ANK|AnchorsForAsset dptf-id))
                 (n-live:integer (length aids))
@@ -2478,13 +2487,13 @@
     ;;
     ;; --- Block D′ · SF resync (C_SyncCollectableAnchors · son=true) ---
     ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
-    (defun XE_ResyncSemiFungibleUserAnchorValues:object{IgnisCollectorV3.OutputCumulator}
+    (defun XE_ResyncSemiFungibleUserAnchorValues:object{IgnisCollectorV4.OutputCumulator}
         (account:string dpsf-id:string nonces:[integer] nonce-amounts:[integer])
         @doc "Backward (AQP::C_SyncCollectableAnchors): rewrite SF promile from full rollup inventory; IGNIS per live anchor."
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 ;;
                 (aids:[string] (UR_ANK|AnchorsForAsset dpsf-id))
                 (n-live:integer (length aids))
@@ -2507,13 +2516,13 @@
     ;;
     ;; --- Block E′ · NF resync (C_SyncCollectableAnchors · son=false) ---
     ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
-    (defun XE_ResyncNonFungibleUserAnchorValues:object{IgnisCollectorV3.OutputCumulator}
+    (defun XE_ResyncNonFungibleUserAnchorValues:object{IgnisCollectorV4.OutputCumulator}
         (account:string dpnf-id:string nonces:[integer])
         @doc "Backward (AQP::C_SyncCollectableAnchors): rewrite NF promile from full rollup inventory; IGNIS per live anchor."
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 ;;
                 (aids:[string] (UR_ANK|AnchorsForAsset dpnf-id))
                 (n-live:integer (length aids))
@@ -2537,7 +2546,7 @@
     ;;
     ;; [C]   client
     ;;
-    (defun C_RevokeBoostClass:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_RevokeBoostClass:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string boost-class-id:string)
         @doc "Revokes an empty BoostClass. \
             \ \
@@ -2552,7 +2561,7 @@
             (URCi_RevokeBoostClass)
         )
     )
-    (defun C_IssueTrueFungibleAnchor:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_IssueTrueFungibleAnchor:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string anchor-name:string dptf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dptf-amount:decimal)
         @doc "Issues a DPTF anchor. When acnoi=true creates a new BoostClass inline (2x STOA); when false links to existing (1x STOA). \
             \ IGNIS output list: [anchor-id] or [anchor-id boost-class-id] when acnoi."
@@ -2560,7 +2569,7 @@
         (with-capability (ANK|C>ISSUE-DPTF executor anchor-name dptf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dptf-amount)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     ;;
                     (boost-class-id:string (if acnoi (XI_IssueBoostClass boost-class-name-or-id executor) boost-class-name-or-id))
                     (fungibility:[bool] [true true])
@@ -2577,7 +2586,7 @@
             )
         )
     )
-    (defun C_IssueSemiFungibleAnchor:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_IssueSemiFungibleAnchor:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string anchor-name:string dpsf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpsf-nonce:integer)
         @doc "Issues a DPSF anchor. When acnoi=true creates a new BoostClass inline (2x STOA); when false links to existing (1x STOA). \
             \ IGNIS output list: [anchor-id] or [anchor-id boost-class-id] when acnoi."
@@ -2585,7 +2594,7 @@
         (with-capability (ANK|C>ISSUE-DPSF executor anchor-name dpsf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dpsf-nonce)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     ;;
                     (boost-class-id:string (if acnoi (XI_IssueBoostClass boost-class-name-or-id executor) boost-class-name-or-id))
                     (fungibility:[bool] [false true])
@@ -2602,7 +2611,7 @@
             )
         )
     )
-    (defun C_IssueNonFungibleAnchor:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_IssueNonFungibleAnchor:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-trait-key:string dpnf-trait-value:string)
         @doc "Issues a DPNF trait-anchor. When acnoi=true creates a new BoostClass inline (2x STOA); when false links to existing (1x STOA). \
             \ IGNIS output list: [anchor-id] or [anchor-id boost-class-id] when acnoi."
@@ -2610,7 +2619,7 @@
         (with-capability (ANK|C>ISSUE-DPNF executor anchor-name dpnf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dpnf-trait-key dpnf-trait-value)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     ;;
                     (boost-class-id:string (if acnoi (XI_IssueBoostClass boost-class-name-or-id executor) boost-class-name-or-id))
                     (fungibility:[bool] [false false])
@@ -2627,7 +2636,7 @@
             )
         )
     )
-    (defun C_IssueNonFungibleSetAnchor:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_IssueNonFungibleSetAnchor:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-nonce-class:integer)
         @doc "Issues a DPNF set-anchor. When acnoi=true creates a new BoostClass inline (2x STOA); when false links to existing (1x STOA). \
             \ IGNIS output list: [anchor-id] or [anchor-id boost-class-id] when acnoi."
@@ -2635,7 +2644,7 @@
         (with-capability (ANK|C>ISSUE-DPNF-SET executor anchor-name dpnf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dpnf-nonce-class)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     ;;
                     (boost-class-id:string (if acnoi (XI_IssueBoostClass boost-class-name-or-id executor) boost-class-name-or-id))
                     (fungibility:[bool] [false false])
@@ -2652,7 +2661,7 @@
             )
         )
     )
-    (defun C_RevokeAnchor:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_RevokeAnchor:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string anchor-id:string)
         @doc "Revokes an anchor and updates BoostClass and AssetAnchors bookkeeping. \
             \ \

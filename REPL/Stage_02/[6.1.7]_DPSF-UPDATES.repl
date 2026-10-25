@@ -25,7 +25,7 @@
 (let
     (
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
         (id:string "TSFS-98c486052a51")
         (patron:string KST.ANHD)
         (sc:integer 1)
@@ -88,7 +88,7 @@
 (let
     (
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
         (id:string "TSFS-98c486052a51")
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)

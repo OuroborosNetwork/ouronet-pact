@@ -1,0 +1,5977 @@
+;; ---------------------------------------------------------------------------
+;; OURONET DEPLOY -- file 12 of 22
+;; This is STEP 12 of 22 in the full sequence (see Deploy/MANIFEST.md).
+;; Steps 1-11 must have run first, including the init steps between deploys.
+;; 6 source file(s), 315,762 gas measured in the REPL gas model, 282,651 bytes
+;;
+;; Source files in this transaction, IN ORDER (do not reorder):
+;;   1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/07_DPDC-T.pact
+;;   1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/08_DPDC-S.pact
+;;   1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/09_DPDC-F.pact
+;;   2_CITIZEN/Stage_Z/AppReads/OuronetUI/10_O-UI-TEN.pact
+;;   1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/10_DPDC-N.pact
+;;   1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/11_EQUITY+.pact
+;;
+;; TOTAL: 5 interface(s), 6 module(s), 12 table(s)
+;; What it DEPLOYS, in load order:
+;;   -- 1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/07_DPDC-T.pact
+;;      interface  DpdcTransferV3
+;;      module     DPDC-T
+;;      table      P|T
+;;      table      P|MT
+;;   -- 1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/08_DPDC-S.pact
+;;      interface  DpdcSetsV3
+;;      module     DPDC-S
+;;      table      P|T
+;;      table      P|MT
+;;      table      DPSF|SetsTable
+;;      table      DPNF|SetsTable
+;;   -- 1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/09_DPDC-F.pact
+;;      interface  DpdcFragmentsV3
+;;      module     DPDC-F
+;;      table      P|T
+;;      table      P|MT
+;;   -- 2_CITIZEN/Stage_Z/AppReads/OuronetUI/10_O-UI-TEN.pact
+;;      module     O-UI-TEN
+;;   -- 1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/10_DPDC-N.pact
+;;      interface  DpdcNonceV3
+;;      module     DPDC-N
+;;      table      P|T
+;;      table      P|MT
+;;   -- 1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/11_EQUITY+.pact
+;;      interface  EquityV4
+;;      module     EQUITY
+;;      table      P|T
+;;      table      P|MT
+;;
+;; Paste this whole file as ONE transaction. It needs the Ouronet admin signature
+;; and the `ouronet-ns` namespace, which the first line sets.
+;; ---------------------------------------------------------------------------
+
+(namespace "ouronet-ns")
+
+;; ===== 1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/07_DPDC-T.pact ==========
+;; Deploy: load THIS file — interface(s) + module ship together.
+;; History/shared registry: 1_SOVEREIGN/STAGE_02/0_Interfaces/02_Core.pact
+;;
+;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
+(interface DpdcTransferV3
+    @doc "Exposes Collectables Transfer Functions"
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables  ⟨cannot exist in an interface⟩
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables  ⟨cannot exist in an interface⟩
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;
+    ;;  [Schemas]
+    ;;
+    (defschema AggregatedRoyalties
+        creators:[string]
+        ignis-royalties:[decimal]
+    )
+    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
+    ;;
+    (defun UC_AndTruths:bool (truths:[bool]))
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;
+    ;;  [URC]
+    ;;
+    (defun URC_TransferRoleChecker:bool (id:string son:bool sender:string))
+    (defun URC_SummedIgnisRoyalty:decimal (sender:string id:string son:bool nonces:[integer] amounts:[integer]))
+    (defun URC_TotalTransferPrice:decimal (id:string son:bool nonces:[integer] amounts:[integer]))
+    ;;
+    ;;  [UDC]
+    ;;
+    (defun URCi_MultiTransferCumulator:object{IgnisCollectorV4.OutputCumulator} (ids:[string] sons:[bool] sender:string receiver:string nonces-array:[[integer]] amounts-array:[[integer]]))
+    (defun URCi_RepurposeCollectable:object{IgnisCollectorV4.OutputCumulator} (id:string son:bool amounts:[integer]))
+    (defun URCi_BulkTransferCumulator:object{IgnisCollectorV4.OutputCumulator}
+        (id:string son:bool sender:string receiver-lst:[string] nonces-array:[[integer]] amounts-array:[[integer]])
+    )
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;
+    ;;  [UEV]
+    ;;
+    (defun UEV_TransferRoles (id:string son:bool sender:string receiver:string))
+    (defun UEV_TransferRoleChecker (trc:bool s:bool r:bool))
+    (defun UEV_AmountsForTransfer (id:string son:bool nonces:[integer] amounts:[integer]))
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+    ;;
+    ;;  [C]
+    ;;
+    (defun C_RepurposeCollectable:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string executee:string id:string son:bool repurpose-to:string nonces:[integer] amounts:[integer])
+    )
+    (defun C_Transfer:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string executee:string ids:[string] sons:[bool] nonces-array:[[integer]] amounts-array:[[integer]] method:bool)
+    )
+    (defun C_IgnisRoyaltyCollector:object{AggregatedRoyalties}
+        (patron:string executor:string ids:[string] sons:[bool] nonces-array:[[integer]] amounts-array:[[integer]])
+    )
+    (defun C_BulkTransfer:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string executee-lst:[string] id:string son:bool nonces-array:[[integer]] amounts-array:[[integer]] method:bool)
+    )
+
+
+    ;;<=========================================================================>
+    ;; ADDED 2026-10-12 -- interface-membership sweep (StoicSyntax-Prefixes.md Sec5,
+    ;; owner ruling). Every one of these was already live in the module body; this
+    ;; closes the gap between what the module DOES and what its interface SAYS it does.
+    ;;<=========================================================================>
+    (defun UC_AggregateRoyalties:object{AggregatedRoyalties} (creators:[string] id-ignis-royalties:[decimal]))
+    (defun UC_CleanseAggregatedRoyalties:object{AggregatedRoyalties} (agg:object{AggregatedRoyalties}))
+)
+;;
+(module DPDC-T GOV
+    @doc "Transfer module for the DPDC collectables (NFT/SFT) family, implementing \
+        \ DpdcTransferV2 and OuronetPolicyV2. Client entrypoints move native and fragment \
+        \ nonces between accounts: C_Transfer (multi id/son, single receiver), \
+        \ C_BulkTransfer (one id/son, many receivers), and C_RepurposeCollectable. It \
+        \ enforces transfer roles, pause/freeze states, transferability and account \
+        \ ownership, computes and collects IGNIS creator royalties \
+        \ (C_IgnisRoyaltyCollector), and returns IGNIS gas cumulators."
+
+    ;;<=========================================================================>
+    ;;{0}  IMPLEMENTERS
+    ;;
+    (implements OuronetPolicyV2)
+    (implements DpdcTransferV3)
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;
+    (defconst GOV|MD_DPDC-T                             (keyset-ref-guard (GOV|Demiurgoi)))
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    (defcap GOV ()                                      (compose-capability (GOV|DPDC-T_ADMIN)))
+    (defcap GOV|DPDC-T_ADMIN ()                         (enforce-guard GOV|MD_DPDC-T))
+    ;;{G5}  functions
+    (defun GOV|Demiurgoi ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+            )
+            (ref-DALOS::GOV|Demiurgoi)
+        )
+    )
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    (defconst P|I                                       (P|Info))
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;
+    (deftable P|T:{OuronetPolicyV2.P|S})
+    (deftable P|MT:{OuronetPolicyV2.P|MS})
+    ;;{P4}  capabilities
+    (defcap P|DPDC-T|CALLER ()
+        true
+    )
+    (defcap P|SECURE-CALLER ()
+        (compose-capability (P|DPDC-T|CALLER))
+        (compose-capability (SECURE))
+    )
+    ;;{P5}  functions
+    (defun P|Info ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+            )
+            (ref-DALOS::P|Info)
+        )
+    )
+    (defun P|UR:guard (policy-name:string)
+        (at "policy" (read P|T policy-name ["policy"]))
+    )
+    (defun P|UR_IMP:[guard] ()
+        ;;DEFAULT ADDED 2026-09-14 (owner ruling). This was a bare `read`, which RAISES
+        ;;`No value found in table <M>_P|MT for key: InterModulePolicies` when the row does not
+        ;;exist -- i.e. before ANY module has registered. P|UEV_IMC is built on this, so in that
+        ;;window the inter-module gate answered with a raw table error naming a row key instead of
+        ;;refusing cleanly. Surfaced by the X-01 repair, which removed the harness registration
+        ;;that had been creating the row as a side effect.
+        ;;
+        ;;The default is the module's OWN SECURE capability guard, which is exactly what
+        ;;P|A_AddIMP already seeds the row with. So reader and writer now agree on what an
+        ;;unregistered policy list contains, and the gate's answer is the same before and after
+        ;;the first registration: satisfiable only from inside this module.
+        (with-default-read P|MT P|I
+            {"m-policies" : [(create-capability-guard (SECURE))]}
+            {"m-policies" := mp}
+            mp
+        )
+    )
+    (defun P|UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV2} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|DPDC-T_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        @doc "Registers <policy-guard> as a trusted inter-module caller of this module. \
+            \ IDEMPOTENT: a guard already in the chain is left alone rather than appended \
+            \ a second time. See OuronetPolicyV2 for why that is load-bearing."
+        (with-capability (GOV|DPDC-T_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
+                    ;;
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" :
+                            (if (contains policy-guard mp)
+                                mp
+                                (ref-U|LST::UC_AppL mp policy-guard)
+                            )
+                        }
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_RemoveIMP (policy-guard:guard)
+        @doc "Revokes <policy-guard> from this module's guard chain. Removes EVERY occurrence, so \
+            \ it doubles as the cleanup for duplicates left behind by the pre-idempotence append. \
+            \ Refuses to drop this module's own SECURE seed -- see OuronetPolicyV2."
+        (with-capability (GOV|DPDC-T_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
+                    ;;
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (enforce (!= policy-guard dg) "The module's own SECURE seed cannot be revoked")
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_RemoveItem mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_SetIMP (policy-guards:[guard])
+        @doc "Replaces this module's whole guard chain in one write -- the recovery hatch. \
+            \ Deduplicates, and enforces that the module's own SECURE seed survives: without it \
+            \ the module can no longer reach its own P|UEV_IMC-gated functions."
+        (with-capability (GOV|DPDC-T_ADMIN)
+            (let
+                (
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (enforce (contains dg policy-guards) "The module's own SECURE seed must be present")
+                (write P|MT P|I
+                    {"m-policies" : (distinct policy-guards)}
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        (let
+            (
+                (ref-P|DALOS:module{OuronetPolicyV2} DALOS)
+                (ref-P|DPDC-C:module{OuronetPolicyV2} DPDC-C)
+                (mg:guard (create-capability-guard (P|DPDC-T|CALLER)))
+            )
+            (ref-P|DALOS::P|A_AddIMP mg)
+            (ref-P|DPDC-C::P|A_AddIMP mg)
+        )
+    )
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    (defconst BAR                                       (CT_Bar))
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;
+    (defcap SECURE ()
+        true
+    )
+    (defcap IGNIS|C>NO-ROYALTY ()
+        true
+    )
+    ;;{C2}  Simple
+    (defcap DPDC-T|C>REPURPOSE
+        (executor:string id:string son:bool repurpose-from:string repurpose-to:string nonces:[integer] amounts:[integer])
+        @doc "Forced move of <id> nonces from <repurpose-from> to <repurpose-to>. \
+            \ \
+            \ HANDOFF 4g. This capability proves no account and never did: the authority is the \
+            \ COLLECTION OWNER, enforced three hops downstream in DPDC-C's DPDC|CX>MULTI-DEBIT, \
+            \ (if wipe-mode (CAP_Owner id son) (CAP_EnforceAccountOwnership account)) -- and \
+            \ C_RepurposeCollectable reaches it with wipe-mode TRUE. CAP_Owner enforces on the \
+            \ DERIVED (UR_OwnerKonto id son) and so names no actor; the binder below supplies \
+            \ the other half, that the executor the caller DECLARED is that owner. \
+            \ \
+            \ <repurpose-from> is the EXECUTEE: it is debited without being consulted. That is \
+            \ the whole point of a repurpose and the reason it cannot be the executor. Mirrors \
+            \ VST|C>REPURPOSE-TRUE-FUNGIBLE, which resolved the identical shape. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
+        @event
+        (let
+            (
+                (ref-DPDC:module{DpdcV3} DPDC)
+                ;;
+                (l1:integer (length nonces))
+                (l2:integer (length amounts))
+            )
+            (ref-DPDC::UEV_ExecutorIsOwnerKonto executor id son)
+            (enforce (= l1 l2) "Invalid Repurpose data")
+        )
+    )
+    (defcap DPDC-T|S>BULK-TRANSFER
+        (id:string son:bool sender:string receiver-lst:[string] method:bool)
+        @doc "Bulk transfer guards — same family as DPDC-T|C>TRANSFER over receiver-lst. \
+            \ Standard Ouronet accounts only (no smart accounts in receiver-lst)."
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                ;;
+                (l:integer (length receiver-lst))
+            )
+            (ref-U|LST::UEV_IzUnique receiver-lst)
+            (ref-DPDC::UEV_PauseState id son false)
+            (ref-DPDC::UEV_AccountFreezeState id son sender false)
+            (map
+                (lambda (idx:integer)
+                    (let
+                        (
+                            (receiver:string (at idx receiver-lst))
+                        )
+                        (ref-DALOS::UEV_EnforceAccountType receiver false)
+                        (ref-DALOS::UEV_EnforceTransferability sender receiver method)
+                        (ref-DPDC::UEV_AccountFreezeState id son receiver false)
+                        (UEV_TransferRoles id son sender receiver)
+                    )
+                )
+                (enumerate 0 (- l 1))
+            )
+        )
+    )
+    ;;{C3}  Composed
+    (defcap DPDC-T|C>TRANSFER (ids:[string] sons:[bool] sender:string receiver:string nonces-array:[[integer]] amounts-array:[[integer]] method:bool)
+        @event
+        (let
+            (
+                (ref-U|INT:module{OuronetIntegersV2} U|INT)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (l1:integer (length ids))
+                (l2:integer (length sons))
+                (l3:integer (length nonces-array))
+                (l4:integer (length amounts-array))
+            )
+            ;;Single
+            (ref-U|INT::UEV_UniformList [l1 l2 l3 l4])
+            (if (and method (ref-DALOS::UR_AccountType receiver))
+                (ref-DALOS::CAP_EnforceAccountOwnership receiver)
+                true
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership sender)
+            (ref-DALOS::UEV_EnforceTransferability sender receiver method)
+            ;;Multi
+            (map
+                (lambda
+                    (idx:integer)
+                    (let
+                        (
+                            (id:string (at idx ids))
+                            (son:bool (at idx sons))
+                            (nonces:[integer] (at idx nonces-array))
+                            (amounts:[integer] (at idx amounts-array))
+                        )
+                        (ref-DPDC::UEV_PauseState id son false)
+                        (ref-DPDC::UEV_AccountFreezeState id son sender false)
+                        (ref-DPDC::UEV_AccountFreezeState id son receiver false)
+                        (UEV_TransferRoles id son sender receiver)
+                        (UEV_AmountsForTransfer id son nonces amounts)
+                    )
+                )
+                (enumerate 0 (- l1 1))
+            )
+            ;;Capabilities
+            (compose-capability (P|SECURE-CALLER))
+        )
+    )
+    (defcap DPDC-T|C>BULK-TRANSFER
+        (id:string son:bool nonces-array:[[integer]] amounts-array:[[integer]] sender:string receiver-lst:[string] method:bool)
+        @doc "Bulk collectable transfer (one id/son, many receivers). Composes DPDC-T|S>BULK-TRANSFER like C>TRANSFER."
+        @event
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                ;;
+                (l:integer (length receiver-lst))
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership sender)
+            (enforce
+                (fold (and) true
+                    [
+                        (> l 0)
+                        (= l (length nonces-array))
+                        (= l (length amounts-array))
+                    ]
+                )
+                "Invalid DPDC bulk transfer: receiver/nonces/amounts legs"
+            )
+            (map
+                (lambda (idx:integer)
+                    (UEV_AmountsForTransfer
+                        id
+                        son
+                        (at idx nonces-array)
+                        (at idx amounts-array)
+                    )
+                )
+                (enumerate 0 (- l 1))
+            )
+            (compose-capability (DPDC-T|S>BULK-TRANSFER id son sender receiver-lst method))
+            (compose-capability (P|SECURE-CALLER))
+        )
+    )
+    (defcap IGNIS|C>ROYALTY (sender:string receiver:string ta:decimal)
+        @event
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+            )
+            (enforce (!= sender receiver) "Sender and Receiver must be different")
+            ;;`ta` is not a client argument. The ONLY acquirer is C_IgnisRoyaltyCollector, which
+            ;;reaches this cap through two filters that together make a non-positive `ta` impossible:
+            ;;  1. `(if (or ivgz (= sum 0.0)) <NO-ROYALTY branch> ...)` -- a zero TOTAL never gets here;
+            ;;  2. `UC_CleanseAggregatedRoyalties` drops every entry whose royalty is 0.0, so the
+            ;;     per-creator amounts this cap is handed are all non-zero by construction.
+            ;;Royalties are summed from unsigned per-nonce prices, so non-zero means positive.
+            ;;Kept as defence-in-depth for a future acquirer that does not cleanse first.
+            ;;Pinned by REPL/modules/DPDC.repl <<DPDC-G16>>, which drives the cleanse directly -- pure
+            ;;compute, no fixture -- so this annotation cannot rot if the filter is ever weakened.
+            ;;UNREACHABLE via its only caller.
+            (enforce (> ta 0.0) "Cannot debit|credit 0.0 or negative IGNIS amounts")
+            (ref-IGNIS::UEV_TwentyFourPrecision ta)
+            (compose-capability (IGNIS|C>DEBIT sender ta))
+            (compose-capability (IGNIS|C>CREDIT receiver))
+        )
+    )
+    (defcap IGNIS|C>CREDIT (receiver:string)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+            )
+            (ref-DALOS::UEV_EnforceAccountExists receiver)
+            (compose-capability (P|DPDC-T|CALLER))
+        )
+    )
+    (defcap IGNIS|C>DEBIT (sender:string ta:decimal)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (read-gas:decimal (ref-DALOS::UR_TF_AccountSupply sender false))
+            )
+            (enforce (<= ta read-gas) "Insufficient IGNIS for Debiting")
+            (ref-DALOS::UEV_EnforceAccountExists sender)
+            (ref-DALOS::UEV_EnforceAccountType sender false)
+            (ref-DALOS::CAP_EnforceAccountOwnership sender)
+            (compose-capability (P|DPDC-T|CALLER))
+        )
+    )
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;
+    (defun CT_Bar ()
+        (let
+            (
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
+            )
+            (ref-U|CT::CT_BAR)
+        )
+    )
+    (defun UDCx_AggregatedRoyalties:object{DpdcTransferV3.AggregatedRoyalties}
+        (a:[string] b:[decimal])
+        {"creators"         : a
+        ,"ignis-royalties"  : b}
+    )
+    ;;{5.2}  Compute [UC]
+    ;;
+    (defun UC_AndTruths:bool (truths:[bool])
+        (fold (and) true truths)
+    )
+    (defun UC_CleanseAggregatedRoyalties:object{DpdcTransferV3.AggregatedRoyalties} (agg:object{DpdcTransferV3.AggregatedRoyalties})
+        (let
+            (
+                (agg-creators:[string] (at "creators" agg))
+                (agg-royalties:[decimal] (at "ignis-royalties" agg))
+                (non-zero-indices:[integer]
+                    (filter
+                        (lambda 
+                            (idx:integer) 
+                            (!= (at idx agg-royalties) 0.0)
+                        )
+                        (enumerate 0 (- (length agg-royalties) 1))
+                    )
+                )
+                (how-many-non-zeroes:integer (length non-zero-indices))
+                (how-many-zeroes:integer (- (length agg-royalties) how-many-non-zeroes))
+            )
+            (if (= how-many-zeroes 0)
+                agg
+                (UDCx_AggregatedRoyalties
+                    ;;Creators
+                    (map
+                        (lambda (idx:integer) (at idx agg-creators))
+                        non-zero-indices
+                    )
+                    ;;Royalties
+                    (map
+                        (lambda (idx:integer) (at idx agg-royalties))
+                        non-zero-indices
+                    )
+                )
+            )
+        )
+    )
+    (defun UC_AggregateRoyalties:object{DpdcTransferV3.AggregatedRoyalties}
+        (creators:[string] id-ignis-royalties:[decimal])
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                (d-creators:[string] (distinct creators))
+            )
+            (UDCx_AggregatedRoyalties
+                d-creators
+                (fold
+                    (lambda
+                        (acc:[decimal] idx:integer)
+                        (let
+                            (
+                                (creator:string (at idx d-creators))
+                                (c-idxes:[integer] (ref-U|LST::UC_Search creators creator))
+                            )
+                            (ref-U|LST::UC_AppL acc
+                                (fold
+                                    (lambda
+                                        (accc:decimal idx:integer)
+                                        (+ accc (at (at idx c-idxes) id-ignis-royalties))
+                                    )
+                                    0.0
+                                    (enumerate 0 (- (length c-idxes) 1))
+                                )
+                            )
+                        )
+                    )
+                    []
+                    (enumerate 0 (- (length d-creators) 1))
+                )
+            )
+        )
+    )
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    (defun URC_TransferRoleChecker:bool (id:string son:bool sender:string)
+        (let
+            (
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
+                (verum:[string] (ref-DPDC::UR_Verum11 id son))
+                (lv:integer (length verum))
+                (tra:integer
+                    (if (and (= lv 1) (= verum [BAR]))
+                        0
+                        lv
+                    )
+                )
+            )
+            (and
+                (> tra 0)
+                (not (= sender dpdc))
+            )
+        )
+    )
+    (defun URC_SummedIgnisRoyalty:decimal (sender:string id:string son:bool nonces:[integer] amounts:[integer])
+        (let
+            (
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (creator:string (ref-DPDC::UR_CreatorKonto id son))
+            )
+            (if (= sender creator)
+                0.0
+                (fold
+                    (lambda
+                        (acc:decimal idx:integer)
+                        (+ 
+                            acc 
+                            (* 
+                                (dec (at idx amounts)) 
+                                (ref-DPDC::UR_N|IgnisRoyalty (ref-DPDC::UR_NonceData id son (at idx nonces)))
+                            )
+                        )
+                    )
+                    0.0
+                    (enumerate 0 (- (length nonces) 1))
+                )
+            )
+        )
+    )
+    (defun URC_TotalTransferPrice:decimal
+        (id:string son:bool nonces:[integer] amounts:[integer])
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ft:string (take 2 id))
+                (sh:string "E|")
+                (sl:decimal (ref-IGNIS::UC_IgnisLeg "tier-smallest"))
+                (s:decimal (ref-IGNIS::UC_IgnisLeg "tier-small"))
+                (m:decimal (ref-IGNIS::UC_IgnisLeg "tier-medium"))
+                (th:decimal (/ sl 1000.0))
+            )
+            (fold
+                (lambda
+                    (acc:decimal idx:integer)
+                    (let
+                        (
+                            (nonce:integer (at idx nonces))
+                            (amount:integer (at idx amounts))
+                            (price-per-nonce:decimal
+                                (if (or (< nonce 0) (fold (and) true [(= ft sh) son (= nonce 1)]))
+                                    th
+                                    (if son s m)
+                                )
+                            )
+                            (total-price-per-nonce:decimal (* price-per-nonce (dec amount)))
+                            (flat-price-per-nonce:decimal
+                                (if (> nonce 0)
+                                    0.0
+                                    (if (= (mod amount 1000) 0)
+                                        (dec (/ amount 1000))
+                                        (dec (+ (/ amount 1000) 1))
+                                    )
+                                )
+                            )
+                        )
+                        (fold (+) 0.0 [acc total-price-per-nonce flat-price-per-nonce])
+                    )
+                )
+                0.0
+                (enumerate 0 (- (length nonces) 1))
+            )
+        )
+    )
+    (defun URCi_MultiTransferCumulator:object{IgnisCollectorV4.OutputCumulator}
+        (ids:[string] sons:[bool] sender:string receiver:string nonces-array:[[integer]] amounts-array:[[integer]])
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (fold
+                    (lambda
+                        (acc:decimal idx:integer)
+                        (+ acc (URC_TotalTransferPrice (at idx ids) (at idx sons) (at idx nonces-array) (at idx amounts-array)))
+                    )
+                    0.0
+                    (enumerate 0 (- (length ids) 1))
+                )
+                sender
+                (ref-IGNIS::URC_ZeroEliteGAZ sender receiver) []
+            )
+        )
+    )
+    (defun URCi_BulkTransferCumulator:object{IgnisCollectorV4.OutputCumulator}
+        (id:string son:bool sender:string receiver-lst:[string] nonces-array:[[integer]] amounts-array:[[integer]])
+        @doc "Single IGNIS output for bulk transfer — sum URC_TotalTransferPrice per receiver leg once."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                ;;
+                (l:integer (length receiver-lst))
+                ;;FIXED 2026-09-12: the fold is guarded on l=0.
+                ;;`(enumerate 0 (- l 1))` for l=0 is `[0, -1]` -- a DESCENDING PAIR, not an empty
+                ;;list -- so an empty receiver list indexed `(at 0 nonces-array)` on empty arrays and
+                ;;raised `Array index out of bounds. Length (0), Index (0)` out of a COST PREVIEW.
+                ;;This is a `URCi_` reader, so it must stay a pure derivation and cannot `enforce`
+                ;;(StoicSyntax: validation belongs in the defcap). Making it TOTAL is the correct
+                ;;shape: an empty bulk transfer has no legs, so it has no cost. The CLIENT still
+                ;;refuses the input -- DPDC-T|C>BULK-TRANSFER's shape guard now answers, since
+                ;;TS02-C1 calls the core before deriving anything (both fixed in the same pass).
+                (total:decimal
+                    (if (= l 0)
+                        0.0
+                        (fold
+                            (lambda (acc:decimal idx:integer)
+                                (+ acc
+                                    (URC_TotalTransferPrice
+                                        id
+                                        son
+                                        (at idx nonces-array)
+                                        (at idx amounts-array)
+                                    )
+                                )
+                            )
+                            0.0
+                            (enumerate 0 (- l 1))
+                        )
+                    )
+                )
+                ;;FIXED 2026-09-12, same cause as `total` above: this mapped over
+                ;;`(enumerate 0 (- l 1))` purely to index back into `receiver-lst`, so an empty list
+                ;;became `[0, -1]` and `(at 0 receiver-lst)` faulted. There is nothing to zip here --
+                ;;only one list is read -- so mapping over `receiver-lst` ITSELF is both simpler and
+                ;;total. `(fold (or) false [])` is correctly `false`: no receivers, no zero-elite leg.
+                (zero-elite:bool
+                    (fold
+                        (or)
+                        false
+                        (map
+                            (lambda (rcv:string)
+                                (ref-IGNIS::URC_ZeroEliteGAZ sender rcv)
+                            )
+                            receiver-lst
+                        )
+                    )
+                )
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator total sender zero-elite [])
+        )
+    )
+    ;;
+    ;;  (URCi_MultiTransferCumulator / URCi_BulkTransferCumulator, below, cover the transfers.)
+    (defun URCi_RepurposeCollectable:object{IgnisCollectorV4.OutputCumulator}
+        (id:string son:bool amounts:[integer])
+        @doc "Cost preview for C_RepurposeCollectable: per-nonce construct priced \
+            \ (if son small else medium) * (1 + sum amounts) on owner-konto, empty output."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (owner:string (ref-DPDC::UR_OwnerKonto id son))
+                (p:decimal (if son (ref-IGNIS::UC_IgnisLeg "tier-small") (ref-IGNIS::UC_IgnisLeg "tier-medium")))
+                (sum-amounts:decimal (dec (fold (+) 1 amounts)))
+                (price:decimal (* p sum-amounts))
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator price owner (ref-IGNIS::URC_IsVirtualGasZero) [])
+        )
+    )
+    ;;{5.4}  Validate [UEV/CAP]
+    (defun UEV_TransferRoles (id:string son:bool sender:string receiver:string)
+        (let
+            (
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (trc:bool (URC_TransferRoleChecker id son sender))
+                (s:bool (ref-DPDC::UR_CA|R-Transfer id son sender))
+                ;; DPDC Audit #16H: was reading <sender> twice (copy-paste) — the receiver-side check
+                ;; needs the receiver's own role, matching DPOF's correct sibling pattern
+                ;; (UEV_MoveRoleCheck, 06_DPOF.pact:1618-1619).
+                (r:bool (ref-DPDC::UR_CA|R-Transfer id son receiver))
+            )
+            (UEV_TransferRoleChecker trc s r)
+        )
+    )
+    (defun UEV_TransferRoleChecker (trc:bool s:bool r:bool)
+        (if
+            trc
+            (enforce-one
+                "Invalid TR"
+                [
+                    (enforce s "Invalid TR Sender")
+                    (enforce r "Invalid TR Receiver")
+                ]
+            )
+            true
+        )
+    )
+    (defun UEV_AmountsForTransfer (id:string son:bool nonces:[integer] amounts:[integer])
+        (let
+            (
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (l1:integer (length nonces))
+                (l2:integer (length amounts))
+            )
+            (enforce (= l1 l2) "Invalid Nonces|Amounts Pair for Collectable Transfer")
+            (map
+                (lambda
+                    (idx:integer)
+                    (let
+                        (
+                            (nonce:integer (at idx nonces))
+                            (amount:integer (at idx amounts))
+                            (nonce-supply:integer (ref-DPDC::UR_NonceSupply id son nonce))
+                        )
+                        (if (and (not son) (> nonce 0))
+                            (enforce (= amount 1) "When transfering Native NFT Nonces, their amount must be 1")
+                            true
+                        )
+                    )
+                )
+                (enumerate 0 (- (length nonces) 1))
+            )
+        )
+    )
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;Protection: Class 1 — Innate protection offered by XE_DebitSFT-Nonce,
+    ;;Protection:          XB_CreditSFT-Nonce, XE_DebitNFT-Nonce, XB_CreditNFT-Nonce,
+    ;;Protection:          XE_DebitSFT-FragmentNonce, XE_CreditSFT-FragmentNonce,
+    ;;Protection:          XE_DebitNFT-FragmentNonce, XE_CreditNFT-FragmentNonce,
+    ;;Protection:          XE_DebitSFT-Nonces, XB_CreditSFT-Nonces, XE_DebitNFT-Nonces,
+    ;;Protection:          XB_CreditNFT-Nonces, XE_DebitSFT-FragmentNonces,
+    ;;Protection:          XE_CreditSFT-FragmentNonces, XE_DebitNFT-FragmentNonces,
+    ;;Protection:          XE_CreditNFT-FragmentNonces, XE_DebitSFT-HybridNonces,
+    ;;Protection:          XE_CreditSFT-HybridNonces, XE_DebitNFT-HybridNonces,
+    ;;Protection:          XE_CreditNFT-HybridNonces
+    (defun XI_TransferNonces (id:string son:bool sender:string receiver:string nonces:[integer] amounts:[integer])
+        (let
+            (
+                (ref-U|INT:module{OuronetIntegersV2} U|INT)
+                (ref-DPDC-C:module{DpdcCreateV3} DPDC-C)
+                ;;
+                (split:object{OuronetIntegersV2.NonceSplitter} (ref-U|INT::UC_NonceSplitter nonces amounts))
+                (negative-nonces:[integer] (at "negative-nonces" split))
+                (positive-nonces:[integer] (at "positive-nonces" split))
+                (negative-counterparts:[integer] (at "negative-counterparts" split))
+                (positive-counterparts:[integer] (at "positive-counterparts" split))
+                ;;
+                (n0:integer (at 0 nonces))
+                (a0:integer (at 0 amounts))
+                (l1:integer (length nonces))
+                (l2:integer (length amounts))
+                (negatives:integer (length negative-nonces))
+                (positives:integer (length positive-nonces))
+                ;;
+                (isg:bool (and (= l1 1) (= l2 1)))                  ;;iz-single
+                (inn:bool (< n0 0))                                 ;;iz-nonce-negative
+                (ong:bool (and (> negatives 0) (= positives 0)))    ;;only-negatives
+                (onp:bool (and (> positives 0) (= negatives 0)))    ;;only-positives
+            )
+            (cond
+                ;;SINGLE
+                ;;Transfer Native Nonce
+                ((UC_AndTruths [isg (not inn) son])
+                    (do
+                        (ref-DPDC-C::XE_DebitSFT-Nonce sender id n0 a0 false)
+                        (ref-DPDC-C::XB_CreditSFT-Nonce receiver id n0 a0)
+                    )
+                )
+                ((UC_AndTruths [isg (not inn) (not son)])
+                    (do
+                        (ref-DPDC-C::XE_DebitNFT-Nonce sender id n0 a0 false)
+                        (ref-DPDC-C::XB_CreditNFT-Nonce receiver id n0 a0)
+                    )
+                )
+                ;;Trasnfer Fragment Nonce
+                ((UC_AndTruths [isg inn son])
+                    (do
+                        (ref-DPDC-C::XE_DebitSFT-FragmentNonce sender id n0 a0 false)
+                        (ref-DPDC-C::XE_CreditSFT-FragmentNonce receiver id n0 a0)
+                    )
+                )
+                ((UC_AndTruths [isg inn (not son)])
+                    (do
+                        (ref-DPDC-C::XE_DebitNFT-FragmentNonce sender id n0 a0 false)
+                        (ref-DPDC-C::XE_CreditNFT-FragmentNonce receiver id n0 a0)
+                    )
+                )
+                ;;
+                ;;MULTI
+                ;;Transfer Native Nonces
+                ((UC_AndTruths [(not isg) (not ong) onp son])
+                    (do
+                        (ref-DPDC-C::XE_DebitSFT-Nonces sender id nonces amounts false)
+                        (ref-DPDC-C::XB_CreditSFT-Nonces receiver id nonces amounts)
+                    )
+                )
+                ((UC_AndTruths [(not isg) (not ong) onp (not son)])
+                    (do
+                        (ref-DPDC-C::XE_DebitNFT-Nonces sender id nonces amounts false)
+                        (ref-DPDC-C::XB_CreditNFT-Nonces receiver id nonces amounts)
+                    )
+                )
+                ;;Transfer Fragment Nonces
+                ((UC_AndTruths [(not isg) ong son])
+                    (do
+                        (ref-DPDC-C::XE_DebitSFT-FragmentNonces sender id nonces amounts false)
+                        (ref-DPDC-C::XE_CreditSFT-FragmentNonces receiver id nonces amounts)
+                    )
+                )
+                ((UC_AndTruths [(not isg) ong (not son)])
+                    (do
+                        (ref-DPDC-C::XE_DebitNFT-FragmentNonces sender id nonces amounts false)
+                        (ref-DPDC-C::XE_CreditNFT-FragmentNonces receiver id nonces amounts)
+                    )
+                )
+                ;;Transfer Hybrid (Native and Fragment) Nonces
+                ((UC_AndTruths [(not isg) (not ong) (not onp) son])
+                    (do
+                        (ref-DPDC-C::XE_DebitSFT-HybridNonces sender id nonces amounts)
+                        (ref-DPDC-C::XE_CreditSFT-HybridNonces receiver id nonces amounts)
+                    )
+                )
+                ((UC_AndTruths [(not isg) (not ong) (not onp) (not son)])
+                    (do
+                        (ref-DPDC-C::XE_DebitNFT-HybridNonces sender id nonces amounts)
+                        (ref-DPDC-C::XE_CreditNFT-HybridNonces receiver id nonces amounts)
+                    )
+                )
+            )
+        )
+    )
+    ;;
+    ;;Protection: Class 3 — Custom: IGNIS|C>ROYALTY
+    (defun XI_IgnisTransfer (sender:string receiver:string ta:decimal)
+        (require-capability (IGNIS|C>ROYALTY sender receiver ta))
+        (XI_IgnisDebit sender ta)
+        (XI_IgnisCredit receiver ta)
+    )
+    ;;Protection: Class 3 — Custom: IGNIS|C>CREDIT
+    (defun XI_IgnisCredit (receiver:string ta:decimal)
+        (require-capability (IGNIS|C>CREDIT receiver))
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+            )
+            (ref-DALOS::XB_UpdateBalance receiver false (+ (ref-DALOS::UR_TF_AccountSupply receiver false) ta))
+        )
+    )
+    ;;Protection: Class 3 — Custom: IGNIS|C>DEBIT
+    (defun XI_IgnisDebit (sender:string ta:decimal)
+        (require-capability (IGNIS|C>DEBIT sender ta))
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+            )
+            (ref-DALOS::XB_UpdateBalance sender false (- (ref-DALOS::UR_TF_AccountSupply sender false) ta))
+        )
+    )
+    ;;{5.7}  User [A/C]
+    (defun C_RepurposeCollectable:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string executee:string id:string son:bool repurpose-to:string nonces:[integer] amounts:[integer])
+        @doc "Forcibly moves <id> nonces from <executee> to <repurpose-to>, on the collection \
+            \ owner's authority. \
+            \ \
+            \ Executor: PROVEN INDIRECTLY, and named. The debit legs below pass wipe-mode TRUE \
+            \ to DPDC-C::XE_Debit*-Nonce(s), which selects (CAP_Owner id son) in \
+            \ DPDC|CX>MULTI-DEBIT -- ownership of the DERIVED collection owner, HANDOFF 4g. \
+            \ DPDC-T|C>REPURPOSE binds <executor> to that same (UR_OwnerKonto id son). \
+            \ Executee: NOT consulted, by design -- <executee> is debited whether or not it \
+            \ agrees, which is what makes this a repurpose rather than a transfer. Its \
+            \ consent gate is the collection's, not its own. \
+            \ \
+            \ The three-argument shape it replaces read (id son repurpose-from repurpose-to ...) \
+            \ and recorded no actor at all; the account that LOOKED like one was the target. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
+        (P|UEV_IMC)
+        (with-capability (DPDC-T|C>REPURPOSE executor id son executee repurpose-to nonces amounts)
+            ;;DEAD PRE-COMPUTATION REMOVED (2026-09-22). This `let` also bound
+            ;;<owner>/<s>/<m>/<p>/<sum-amounts>/<price>/<trigger> and read NONE of them --
+            ;;_deadbind reported <price> and <trigger>, and <owner> fell out with them once the
+            ;;4g binder replaced it. Every one is recomputed, identically, inside the
+            ;;URCi_RepurposeCollectable call that ends this function: it derives the same owner
+            ;;konto, the same tier leg, the same (1 + Sum amounts) and the same virtual-gas
+            ;;trigger. So this was the cost model left behind when the cumulator was factored
+            ;;out, not a second one -- deleting it drops two table reads and changes no price.
+            (let
+                (
+                    (ref-DPDC-C:module{DpdcCreateV3} DPDC-C)
+                    ;;
+                    (l:integer (length nonces))
+                )
+                (if (= l 1)
+                    ;;Single Mode
+                    (let
+                        (
+                            (nonce:integer (at 0 nonces))
+                            (amount:integer (at 0 amounts))
+                        )
+                        ;;1]Debit from <repurpose-from>
+                        (if son
+                            (ref-DPDC-C::XE_DebitSFT-Nonce executee id nonce amount true)
+                            (ref-DPDC-C::XE_DebitNFT-Nonce executee id nonce amount true)
+                        )
+                        ;;2]Credit to <repurpose-to>
+                        (if son
+                            (ref-DPDC-C::XB_CreditSFT-Nonce repurpose-to id nonce amount)
+                            (ref-DPDC-C::XB_CreditNFT-Nonce repurpose-to id nonce amount)
+                        )
+                    )
+                    ;;Multi Mode
+                    (do
+                        (if son
+                            ;;1]Debit from <repurpose-from>
+                            (ref-DPDC-C::XE_DebitSFT-Nonces executee id nonces amounts true)
+                            (ref-DPDC-C::XE_DebitNFT-Nonces executee id nonces amounts true)
+                        )
+                        (if son
+                            ;;2]Credit to <repurpose-to>
+                            (ref-DPDC-C::XB_CreditSFT-Nonces repurpose-to id nonces amounts)
+                            (ref-DPDC-C::XB_CreditNFT-Nonces repurpose-to id nonces amounts)
+                        )
+                    )
+                )
+                ;;3]Output Cumulator
+                (URCi_RepurposeCollectable id son amounts)
+            )
+        )
+    )
+    (defun C_Transfer:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string executee:string ids:[string] sons:[bool] nonces-array:[[integer]] amounts-array:[[integer]] method:bool)
+        @doc "Moves nonce slices of several collectables from <executor> to <executee> in one \
+            \ call. \
+            \ \
+            \ Executor: ENFORCED DIRECTLY -- DPDC-T|C>TRANSFER opens on \
+            \ (CAP_EnforceAccountOwnership sender) unconditionally, on the parameter itself. \
+            \ Executee: ENFORCED CONDITIONALLY, in the same capability -- only when <method> is \
+            \ true AND the executee is a SMART account, because crediting a contract-owned \
+            \ account is an act upon that contract. A standard executee is merely credited. \
+            \ Same rule, same shape, as TFT::C_Transfer on the true-fungible side. \
+            \ (patron/executor canon 2.2, conditional executee named, 2026-09-22.)"
+        (P|UEV_IMC)
+        (with-capability (DPDC-T|C>TRANSFER ids sons executor executee nonces-array amounts-array method)
+            (map
+                (lambda
+                    (idx:integer)
+                    (XI_TransferNonces (at idx ids) (at idx sons) executor executee (at idx nonces-array) (at idx amounts-array))
+                )
+                (enumerate 0 (- (length ids) 1))
+            )
+            (URCi_MultiTransferCumulator ids sons executor executee nonces-array amounts-array)
+        )
+    )
+    (defun C_BulkTransfer:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string executee-lst:[string] id:string son:bool nonces-array:[[integer]] amounts-array:[[integer]] method:bool)
+        @doc "Bulk collectable transfer: one id/son, one executor, many standard-account \
+            \ executees (DpdcTransferV2). \
+            \ \
+            \ Executor: ENFORCED DIRECTLY -- DPDC-T|C>BULK-TRANSFER opens on \
+            \ (CAP_EnforceAccountOwnership sender), on the parameter itself. \
+            \ Executees: NOT enforced, and unlike C_Transfer they cannot be: \
+            \ DPDC-T|S>BULK-TRANSFER runs (UEV_EnforceAccountType receiver false) over the \
+            \ whole list, so every executee here is by construction a STANDARD account, which \
+            \ is the exact case C_Transfer's conditional arm also declines to check. A plural \
+            \ executee slot takes the plural name, as DPTF|C_BulkTransfer does. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
+        (P|UEV_IMC)
+        (with-capability
+            (DPDC-T|C>BULK-TRANSFER id son nonces-array amounts-array executor executee-lst method)
+            (do
+                (map
+                    (lambda (idx:integer)
+                        (XI_TransferNonces
+                            id
+                            son
+                            executor
+                            (at idx executee-lst)
+                            (at idx nonces-array)
+                            (at idx amounts-array)
+                        )
+                    )
+                    (enumerate 0 (- (length executee-lst) 1))
+                )
+                (URCi_BulkTransferCumulator id son executor executee-lst nonces-array amounts-array)
+            )
+        )
+    )
+    (defun C_IgnisRoyaltyCollector:object{DpdcTransferV3.AggregatedRoyalties}
+        (patron:string executor:string ids:[string] sons:[bool] nonces-array:[[integer]] amounts-array:[[integer]])
+        @doc "Pays each collectable creator their IGNIS royalty for a move <executor> is making, \
+            \ OUT OF THE PATRON, and returns the aggregate for the caller's result string. \
+            \ \
+            \ Executor: ENFORCED DIRECTLY, and the enforce is NEW (2026-09-22). The old <sender> \
+            \ was read and never proven, and it is not decoration: URC_SummedIgnisRoyalty \
+            \ short-circuits to 0.0 when the sender IS the creator, so a caller free to name \
+            \ any sender is a caller free to name the creator and pay no royalty at all. \
+            \ Unreachable from a client today -- P|UEV_IMC admits only registered modules, and \
+            \ all five call sites pass an account a sibling call in the same transaction \
+            \ proves -- but 'proven by my caller's other call' is not a property this function \
+            \ holds, and §4f is explicit that an unenforced executor is worse than none. \
+            \ The check is a no-op at every existing site by construction. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
+        (P|UEV_IMC)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC:module{DpdcV3} DPDC)
+                ;;
+                (ivgz:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                ;;
+                (creators:[string]
+                    (map
+                        (lambda
+                            (idx:integer)
+                            (ref-DPDC::UR_CreatorKonto (at idx ids) (at idx sons))
+                        )
+                        (enumerate 0 (- (length ids) 1))
+                    )
+                )
+                (ids-ignis-royalties:[decimal]
+                    (map
+                        (lambda
+                            (idx:integer)
+                            (URC_SummedIgnisRoyalty executor (at idx ids) (at idx sons) (at idx nonces-array) (at idx amounts-array))
+                        )
+                        (enumerate 0 (- (length ids) 1))
+                    )
+                )
+                (sum:decimal (fold (+) 0.0 ids-ignis-royalties))
+            )
+            ;;ATTRIBUTION (canon 2.2): the royalty is computed FROM the executor, so the
+            ;;executor has to be real. See the @doc.
+            (ref-DALOS::CAP_EnforceAccountOwnership executor)
+            (if (or ivgz (= sum 0.0))
+                (with-capability (IGNIS|C>NO-ROYALTY )
+                    (UDCx_AggregatedRoyalties [""] [0.0])
+                )
+                (let
+                    (
+                        (agg:object{DpdcTransferV3.AggregatedRoyalties} (UC_AggregateRoyalties creators ids-ignis-royalties))
+                        (cleansed-agg:object{DpdcTransferV3.AggregatedRoyalties} (UC_CleanseAggregatedRoyalties agg))
+                        (agg-creators:[string] (at "creators" cleansed-agg))
+                        (agg-royalties:[decimal] (at "ignis-royalties" cleansed-agg))
+                    )
+                    (map
+                        (lambda
+                            (idx:integer)
+                            (with-capability (IGNIS|C>ROYALTY patron (at idx agg-creators) (at idx agg-royalties))
+                                (XI_IgnisTransfer patron (at idx agg-creators) (at idx agg-royalties))
+                            )
+                        )
+                        (enumerate 0 (- (length agg-creators) 1))
+                    )
+                    (UDCx_AggregatedRoyalties agg-creators agg-royalties)
+                )
+            )
+        )
+    )
+
+)
+
+;; --- tables for 07_DPDC-T.pact (2 defined) ---
+;; UPGRADE MODE: this module is assumed already deployed, so its
+;; tables already exist and (create-table) would ABORT the whole
+;; transaction. They are listed here, commented, for reference.
+;; If any of these is NEW since the last deploy, uncomment JUST it.
+;; (create-table P|T)
+;; (create-table P|MT)
+
+;; ===== 1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/08_DPDC-S.pact ==========
+;; Deploy: load THIS file — interface(s) + module ship together.
+;; History/shared registry: 1_SOVEREIGN/STAGE_02/0_Interfaces/02_Core.pact
+;;
+;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
+(interface DpdcSetsV3
+    @doc "Exposes Collectables Set related Functions"
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables  ⟨cannot exist in an interface⟩
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables  ⟨cannot exist in an interface⟩
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;
+    ;;  [UR]
+    ;;
+    (defun UR_Set:object{DpdcUdcV2.DPDC|Set} (id:string son:bool set-class:integer))
+    (defun URC_SetExists:bool (id:string son:bool set-class:integer))
+    (defun UR_SetClass:integer (id:string son:bool set-class:integer))
+    (defun UR_SetName:string (id:string son:bool set-class:integer))
+    (defun UR_SetMultiplier:decimal (id:string son:bool set-class:integer))
+    (defun UR_NonceOfSet:integer (id:string set-class:integer))
+    (defun UR_IzSetActive:bool (id:string son:bool set-class:integer))
+    (defun UR_IzSetPrimordial:bool (id:string son:bool set-class:integer))
+    (defun UR_IzSetComposite:bool (id:string son:bool set-class:integer))
+    (defun UR_PSD:[object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition}] (id:string son:bool set-class:integer))
+    (defun UR_CSD:[object{DpdcUdcV2.DPDC|AllowedClassForSetPosition}] (id:string son:bool set-class:integer))
+    (defun UR_SetNonceData:object{DpdcUdcV2.DPDC|NonceData} (id:string son:bool set-class:integer))
+    (defun UR_SetSplitData:object{DpdcUdcV2.DPDC|NonceData} (id:string son:bool set-class:integer))
+    ;;
+    ;;  [URC]
+    ;;
+    ;; URC_N|Score renamed from UR_N|Score — DPDC Audit #19H follow-up: it reads UR_NonceClass/
+    ;; UR_N|RawScore/UR_SetMultiplier and derives a computed "cooked" value from them (sentinel
+    ;; check, multiply, fragment-divide), which is the URC_* ("read + derive") contract, not a
+    ;; plain UR_* table read. Zero callers anywhere, so the rename touches no call site.
+    (defun URC_N|Score:decimal (id:string son:bool nonce:integer))
+    (defun URC_PrimordialOrComposite:[bool] (id:string son:bool set-class:integer))
+    (defun URC_NoncesSummedScore:decimal (id:string son:bool nonces:[integer]))
+    (defun URC_SemiFungibleConstituents:[integer] (id:string set-class:integer))
+    (defun URCv_NonFungibleConstituents:[integer] (id:string nonce:integer))
+        ;;  [URCi] cost readers — single source per op
+    (defun URCi_MakeSemiFungibleSet:object{IgnisCollectorV4.OutputCumulator} (account:string id:string nonces:[integer] how-many-sets:integer))
+    (defun URCi_BreakSemiFungibleSet:object{IgnisCollectorV4.OutputCumulator} (account:string id:string nonce:integer how-many-sets:integer))
+    (defun URCi_MakeNonFungibleSet:object{IgnisCollectorV4.OutputCumulator} (account:string id:string nonces:[integer]))
+    (defun URCi_BreakNonFungibleSet:object{IgnisCollectorV4.OutputCumulator} (account:string id:string nonce:integer))
+    (defun URCi_DefinePrimordialSet:object{IgnisCollectorV4.OutputCumulator} (id:string son:bool))
+    (defun URCi_DefineCompositeSet:object{IgnisCollectorV4.OutputCumulator} (id:string son:bool))
+    (defun URCi_DefineHybridSet:object{IgnisCollectorV4.OutputCumulator} (id:string son:bool))
+    (defun URCi_EnableSetClassFragmentation:object{IgnisCollectorV4.OutputCumulator} (id:string son:bool))
+    (defun URCi_ToggleSet:object{IgnisCollectorV4.OutputCumulator} (id:string son:bool))
+    (defun URCi_RenameSet:object{IgnisCollectorV4.OutputCumulator} (id:string son:bool))
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;
+    ;;  [UEV]
+    ;;
+        ;;
+    (defun UEV_PrimordialSetDefinition (id:string son:bool set-definition:[object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition}]))
+    (defun UEV_PrimordialSetElement (son:bool element:object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition}))
+    (defun UEV_CompositeSetDefinition (id:string son:bool set-definition:[object{DpdcUdcV2.DPDC|AllowedClassForSetPosition}]))
+    (defun UEV_SetClass (id:string son:bool set-class:integer))
+    (defun UEV_IzSetClassFragmented:bool (id:string son:bool set-class:integer))
+    (defun UEV_Fragmentation (id:string son:bool set-class:integer))
+    (defun UEV_SetActiveState (id:string son:bool set-class:integer state:bool))
+        ;;
+    (defun UEV_NoncesForSetClass (id:string son:bool nonces:[integer] set-class:integer))
+    (defun UEV_Primordial (nonces:[integer] psd:[object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition}]))
+    (defun UEV_Composite (id:string son:bool nonces:[integer] csd:[object{DpdcUdcV2.DPDC|AllowedClassForSetPosition}]))
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;; C_UpdateSetMultiplier removed — DPDC Audit #15H: score-multiplier is now immutable after Define,
+    ;; matching the Set-Class recipe's own immutability. A wrong multiplier means disabling that
+    ;; Set-Class and defining a new one, same recovery path as a wrong recipe.
+    ;;
+    (defun XB_U|NonceOrSplitData (id:string son:bool set-class:integer nos:bool nd:object{DpdcUdcV2.DPDC|NonceData}))
+    ;;{5.7}  User [A/C]
+    ;;
+    ;;  [C]
+    ;;
+    (defun C_MakeSemiFungibleSet:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string id:string nonces:[integer] set-class:integer how-many-sets:integer))
+    (defun CC_BreakSemiFungibleSet:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string id:string nonce:integer how-many-sets:integer))
+    (defun C_MakeNonFungibleSet:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string id:string nonces:[integer] set-class:integer))
+    (defun C_BreakNonFungibleSet:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string id:string nonce:integer))
+        ;;
+    (defun C_DefinePrimordialSet:object{IgnisCollectorV4.OutputCumulator}
+        (
+            patron:string executor:string id:string son:bool set-name:string score-multiplier:decimal
+            set-definition:[object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition}]
+            ind:object{DpdcUdcV2.DPDC|NonceData}
+        )
+    )
+    (defun C_DefineCompositeSet:object{IgnisCollectorV4.OutputCumulator}
+        (
+            patron:string executor:string id:string son:bool set-name:string score-multiplier:decimal
+            set-definition:[object{DpdcUdcV2.DPDC|AllowedClassForSetPosition}]
+            ind:object{DpdcUdcV2.DPDC|NonceData}
+        )
+    )
+    (defun C_DefineHybridSet:object{IgnisCollectorV4.OutputCumulator}
+        (
+            patron:string executor:string id:string son:bool set-name:string score-multiplier:decimal
+            primordial-sd:[object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition}]
+            composite-sd:[object{DpdcUdcV2.DPDC|AllowedClassForSetPosition}]
+            ind:object{DpdcUdcV2.DPDC|NonceData}
+        )
+    )
+    (defun C_EnableSetClassFragmentation:object{IgnisCollectorV4.OutputCumulator}
+        (
+            patron:string executor:string id:string son:bool set-class:integer
+            fragmentation-ind:object{DpdcUdcV2.DPDC|NonceData}
+        )
+    )
+    (defun C_ToggleSet:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string id:string son:bool set-class:integer toggle:bool))
+    (defun C_RenameSet:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string id:string son:bool set-class:integer new-name:string))
+
+
+    ;;<=========================================================================>
+    ;; ADDED 2026-10-12 -- interface-membership sweep (StoicSyntax-Prefixes.md Sec5,
+    ;; owner ruling). Every one of these was already live in the module body; this
+    ;; closes the gap between what the module DOES and what its interface SAYS it does.
+    ;;<=========================================================================>
+    (defun UC_FirstNoncesFromPSD:[integer] (psd:[object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition}]))
+    (defun UEV_ExecutorIsCollectionOwner (executor:string id:string son:bool))
+    (defun UEV_ScoreMultiplier (new-multiplier:decimal))
+    (defun URH_NonceListFromCSD:[integer] (id:string csd:[object{DpdcUdcV2.DPDC|AllowedClassForSetPosition}]))
+)
+;;
+(module DPDC-S GOV
+    @doc "DPDC-S is the Sets module of the DPDC collectables family, managing groups of \
+        \ nonces composed into higher-order set-classes. It stores set definitions in \
+        \ DPSF/DPNF SetsTables (Primordial, Composite, or Hybrid, each with a \
+        \ score-multiplier). Owners define set-classes via \
+        \ C_DefinePrimordialSet/C_DefineCompositeSet/C_DefineHybridSet and can enable \
+        \ fragmentation, toggle and rename them. Users compose and decompose via \
+        \ C_MakeSemiFungibleSet/CC_BreakSemiFungibleSet (SFT, quantity) and \
+        \ C_MakeNonFungibleSet/C_BreakNonFungibleSet (NFT, minting/burning a set nonce whose \
+        \ score sums its constituents)."
+
+    ;;<=========================================================================>
+    ;;{0}  IMPLEMENTERS
+    ;;
+    (implements OuronetPolicyV2)
+    (implements DpdcSetsV3)
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;
+    (defconst GOV|MD_DPDC-S                             (keyset-ref-guard (GOV|Demiurgoi)))
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    (defcap GOV ()                                      (compose-capability (GOV|DPDC-S_ADMIN)))
+    (defcap GOV|DPDC-S_ADMIN ()                         (enforce-guard GOV|MD_DPDC-S))
+    ;;{G5}  functions
+    (defun GOV|Demiurgoi ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+            )
+            (ref-DALOS::GOV|Demiurgoi)
+        )
+    )
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    (defconst P|I                                       (P|Info))
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;
+    (deftable P|T:{OuronetPolicyV2.P|S})
+    (deftable P|MT:{OuronetPolicyV2.P|MS})
+    ;;{P4}  capabilities
+    (defcap P|DPDC-S|CALLER ()
+        true
+    )
+    (defcap P|SECURE-CALLER ()
+        (compose-capability (P|DPDC-S|CALLER))
+        (compose-capability (SECURE))
+    )
+    (defcap P|DPDC-S|REMOTE-GOV ()
+        @doc "DPDC Remote Governor Capability"
+        true
+    )
+    ;;{P5}  functions
+    (defun P|Info ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+            )
+            (ref-DALOS::P|Info)
+        )
+    )
+    (defun P|UR:guard (policy-name:string)
+        (at "policy" (read P|T policy-name ["policy"]))
+    )
+    (defun P|UR_IMP:[guard] ()
+        ;;DEFAULT ADDED 2026-09-14 (owner ruling). This was a bare `read`, which RAISES
+        ;;`No value found in table <M>_P|MT for key: InterModulePolicies` when the row does not
+        ;;exist -- i.e. before ANY module has registered. P|UEV_IMC is built on this, so in that
+        ;;window the inter-module gate answered with a raw table error naming a row key instead of
+        ;;refusing cleanly. Surfaced by the X-01 repair, which removed the harness registration
+        ;;that had been creating the row as a side effect.
+        ;;
+        ;;The default is the module's OWN SECURE capability guard, which is exactly what
+        ;;P|A_AddIMP already seeds the row with. So reader and writer now agree on what an
+        ;;unregistered policy list contains, and the gate's answer is the same before and after
+        ;;the first registration: satisfiable only from inside this module.
+        (with-default-read P|MT P|I
+            {"m-policies" : [(create-capability-guard (SECURE))]}
+            {"m-policies" := mp}
+            mp
+        )
+    )
+    (defun P|UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV2} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|DPDC-S_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        @doc "Registers <policy-guard> as a trusted inter-module caller of this module. \
+            \ IDEMPOTENT: a guard already in the chain is left alone rather than appended \
+            \ a second time. See OuronetPolicyV2 for why that is load-bearing."
+        (with-capability (GOV|DPDC-S_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
+                    ;;
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" :
+                            (if (contains policy-guard mp)
+                                mp
+                                (ref-U|LST::UC_AppL mp policy-guard)
+                            )
+                        }
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_RemoveIMP (policy-guard:guard)
+        @doc "Revokes <policy-guard> from this module's guard chain. Removes EVERY occurrence, so \
+            \ it doubles as the cleanup for duplicates left behind by the pre-idempotence append. \
+            \ Refuses to drop this module's own SECURE seed -- see OuronetPolicyV2."
+        (with-capability (GOV|DPDC-S_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
+                    ;;
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (enforce (!= policy-guard dg) "The module's own SECURE seed cannot be revoked")
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_RemoveItem mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_SetIMP (policy-guards:[guard])
+        @doc "Replaces this module's whole guard chain in one write -- the recovery hatch. \
+            \ Deduplicates, and enforces that the module's own SECURE seed survives: without it \
+            \ the module can no longer reach its own P|UEV_IMC-gated functions."
+        (with-capability (GOV|DPDC-S_ADMIN)
+            (let
+                (
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (enforce (contains dg policy-guards) "The module's own SECURE seed must be present")
+                (write P|MT P|I
+                    {"m-policies" : (distinct policy-guards)}
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        (let
+            (
+                (ref-P|DPDC:module{OuronetPolicyV2} DPDC)
+                (ref-P|DPDC-C:module{OuronetPolicyV2} DPDC-C)
+                (ref-P|DPDC-T:module{OuronetPolicyV2} DPDC-T)
+                (mg:guard (create-capability-guard (P|DPDC-S|CALLER)))
+            )
+            (ref-P|DPDC::P|A_Add
+                "DPDC-S|RemoteDpdcGov"
+                (create-capability-guard (P|DPDC-S|REMOTE-GOV))
+            )
+            (ref-P|DPDC::P|A_AddIMP mg)
+            (ref-P|DPDC-C::P|A_AddIMP mg)
+            (ref-P|DPDC-T::P|A_AddIMP mg)
+        )
+    )
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    (defconst BAR                                       (CT_Bar))
+    (defconst EOC                                       (CT_EmptyCumulator))
+    ;;list previously crashed with an opaque out-of-bounds error, since (enumerate 0 -1) returns [0 -1],
+    ;;not [] -- see UEV_PrimordialSetDefinition/UEV_CompositeSetDefinition) and at most this many, so an
+    ;;unreasonably large definition can't push Make/Break gas past the practical ceiling and permanently
+    ;;brick that set-class for its owner.
+    (defconst MAX_SET_DEFINITION_SIZE 20)
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+    ;;
+    (deftable DPSF|SetsTable:{DpdcUdcV2.DPDC|Set})                ;;Key = <DPSF-id> + BAR + <set-class>
+    ;;
+    (deftable DPNF|SetsTable:{DpdcUdcV2.DPDC|Set})                ;;Key = <DPNF-id> + BAR + <set-class>
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;
+    (defcap SECURE ()
+        true
+    )
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    (defcap DPDC-S|C>MAKE (id:string son:bool nonces:[integer] set-class:integer how-many-sets:integer)
+        @event
+        ;;G-44 FIX (2026-09-17). This guard is ABOVE the let deliberately. <iz-active> binds
+        ;;UR_IzSetActive, which funnels to UR_Set's bare <read>, and Pact evaluates let bindings
+        ;;before the body -- so a set-class that does not exist aborted on the raw table key and the
+        ;;"is not active" enforce below could never speak for it. Measured at 0 and at 99.
+        (enforce (URC_SetExists id son set-class)
+            (format "Set-Class {} does not exist for this DPDC" [set-class]))
+        (let
+            (
+                (iz-active:bool (UR_IzSetActive id son set-class))
+            )
+            (enforce iz-active (format "Set-Class {} is not active for Set Composition" [set-class]))
+            (enforce (> how-many-sets 0) "How-Many-Sets must be a positive, non-zero integer")
+            (UEV_NoncesForSetClass id son nonces set-class)
+            (compose-capability (P|DPDC-S|CALLER))
+            (compose-capability (P|DPDC-S|REMOTE-GOV))
+        )
+    )
+    (defcap DPDC-S|C>BREAK (id:string son:bool nonce:integer how-many-sets:integer)
+        @event
+        (let
+            (
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (nonce-class:integer (ref-DPDC::UR_NonceClass id son nonce))
+            )
+            ;;Nonces of Inactive Sets can still be broken down.
+            (enforce (!= nonce-class 0) "Only Class Non-0 Nonces can be broken Down")
+            (enforce (> how-many-sets 0) "How-Many-Sets must be a positive, non-zero integer")
+            (compose-capability (P|DPDC-S|CALLER))
+            (compose-capability (P|DPDC-S|REMOTE-GOV))
+        )
+    )
+    (defcap DPDC-S|C>DEFINE-PRIMORDIAL
+        (
+            id:string son:bool score-multiplier:decimal
+            set-definition:[object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition}]
+            ind:object{DpdcUdcV2.DPDC|NonceData}
+        )
+        @event
+        (UEV_PrimordialSetDefinition id son set-definition)
+        (UEV_ScoreMultiplier score-multiplier)     ;; DPDC Audit #15H
+        (compose-capability (DPDC-S|CX>DEFINE id son ind))
+    )
+    (defcap DPDC-S|C>DEFINE-COMPOSITE
+        (
+            id:string son:bool score-multiplier:decimal
+            set-definition:[object{DpdcUdcV2.DPDC|AllowedClassForSetPosition}]
+            ind:object{DpdcUdcV2.DPDC|NonceData}
+        )
+        @event
+        (UEV_CompositeSetDefinition id son set-definition)
+        (UEV_ScoreMultiplier score-multiplier)     ;; DPDC Audit #15H
+        (compose-capability (DPDC-S|CX>DEFINE id son ind))
+    )
+    (defcap DPDC-S|C>DEFINE-HYBRID
+        (
+            id:string son:bool score-multiplier:decimal
+            primordial-sd:[object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition}]
+            composite-sd:[object{DpdcUdcV2.DPDC|AllowedClassForSetPosition}]
+            ind:object{DpdcUdcV2.DPDC|NonceData}
+        )
+        @event
+        (UEV_PrimordialSetDefinition id son primordial-sd)
+        (UEV_CompositeSetDefinition id son composite-sd)
+        (UEV_ScoreMultiplier score-multiplier)     ;; DPDC Audit #15H
+        (compose-capability (DPDC-S|CX>DEFINE id son ind))
+    )
+    (defcap DPDC-S|CX>DEFINE (id:string son:bool ind:object{DpdcUdcV2.DPDC|NonceData})
+        (let
+            (
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (ref-DPDC-C:module{DpdcCreateV3} DPDC-C)
+            )
+            (ref-DPDC::CAP_Owner id son)
+            (ref-DPDC-C::UEV_NonceDataForCreation ind)
+            (compose-capability (P|SECURE-CALLER))
+        )
+    )
+    (defcap DPDC-S|C>ENABLE-FRAGMENTATION
+        (
+            id:string son:bool set-class:integer
+            fragmentation-ind:object{DpdcUdcV2.DPDC|NonceData}
+        )
+        @event
+        (let
+            (
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (ref-DPDC-C:module{DpdcCreateV3} DPDC-C)
+                (iz-fragmented:bool (UEV_IzSetClassFragmented id son set-class))
+            )
+            (enforce (not iz-fragmented) "Set Class must not be fragmented in order to enable fragmentation for it !")
+            (UEV_SetClass id son set-class)
+            ;;DPDC Audit #30M: require the set-class be active, consistent with its C>TOGGLE/C>RENAME
+            ;;siblings — this was the only one of the owner-gated set mutations that skipped the check.
+            (UEV_SetActiveState id son set-class true)
+            (ref-DPDC::CAP_Owner id son)
+            (ref-DPDC-C::UEV_NonceDataForCreation fragmentation-ind)
+            (compose-capability (SECURE))
+        )
+    )
+    (defcap DPDC-S|C>TOGGLE (id:string son:bool set-class:integer toggle:bool)
+        @event
+        (let
+            (
+                (ref-DPDC:module{DpdcV3} DPDC)
+            )
+            (UEV_SetActiveState id son set-class (not toggle))
+            (ref-DPDC::CAP_Owner id son)
+            (compose-capability (SECURE))
+        )
+    )
+    (defcap DPDC-S|C>RENAME (id:string son:bool set-class:integer new-name:string)
+        @event
+        ;;G-45 FIX (2026-09-17). RENAME had NO set-class domain guard: <current-name> binds
+        ;;UR_SetName, the same bare read, so both a nonexistent class and the 1-based off-by-one 0
+        ;;surfaced a raw table key rather than any sentence this module contains.
+        (enforce (URC_SetExists id son set-class)
+            (format "Set-Class {} does not exist for this DPDC" [set-class]))
+        (let
+            (
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (current-name:string (UR_SetName id son set-class))
+            )
+            (enforce (!= new-name current-name) (format "The Set Name of <{}> must be different from the current name of <{}> for operation" [new-name current-name]))
+            (UEV_SetActiveState id son set-class true)
+            (ref-DPDC::CAP_Owner id son)
+            (compose-capability (SECURE))
+        )
+    )
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    (defun CT_Bar ()
+        (let
+            (
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
+            )
+            (ref-U|CT::CT_BAR)
+        )
+    )
+    (defun CT_EmptyCumulator ()
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+            )
+            (ref-IGNIS::UDC_EmptyOutputCumulatorV2)
+        )
+    )
+    ;;{5.2}  Compute [UC]
+    ;; DPDC-S|C>MULTIPLIER removed — DPDC Audit #15H: score-multiplier is immutable after Define.
+    ;;
+    (defun UC_FirstNoncesFromPSD:[integer] (psd:[object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition}])
+        @doc "Returns a list of Nonces that composed the PSD, only works for SFTs, \
+            \ since the 1st Nonce of the <allowed-nonces> is used"
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+            )
+            (fold
+                (lambda
+                    (acc:[integer] idx:integer)
+                    (let
+                        (
+                            (element:object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition} (at idx psd))
+                            (allowed-nonces:[integer] (at "allowed-nonces" element))
+                            (first-allowed-nonce:integer (at 0 allowed-nonces))
+                        )
+                        (ref-U|LST::UC_AppL acc first-allowed-nonce)
+                    )
+                )
+                []
+                (enumerate 0 (- (length psd) 1))
+            )
+        )
+    )
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;  [6] - [Set]
+    (defun UR_Set:object{DpdcUdcV2.DPDC|Set} (id:string son:bool set-class:integer)
+        (if son
+            (read DPSF|SetsTable (concat [id BAR (format "{}" [set-class])]))
+            (read DPNF|SetsTable (concat [id BAR (format "{}" [set-class])]))
+        )
+    )
+
+    (defun URC_SetExists:bool (id:string son:bool set-class:integer)
+        @doc "True when the <set-class> row exists for <id>. TOTAL: answers FALSE for a missing \
+            \ row instead of aborting. UR_Set cannot do this -- it is a bare <read>, and every \
+            \ set reader funnels through it, so a set-class that does not exist dies in the \
+            \ reader before any guard written for it can speak. Set classes are 1-BASED, which \
+            \ makes 0 the likeliest caller error and puts it squarely in that mute case. \
+            \ Added 2026-09-17 for DEFECT-LEDGER G-44/G-45; URC_TripletExists is the precedent."
+        (let
+            (
+                (k:string (concat [id BAR (format "{}" [set-class])]))
+            )
+            (if son
+                (with-default-read DPSF|SetsTable k
+                    { "set-name" : BAR } { "set-name" := sn } (!= sn BAR))
+                (with-default-read DPNF|SetsTable k
+                    { "set-name" : BAR } { "set-name" := sn } (!= sn BAR))
+            )
+        )
+    )
+    (defun UR_SetClass:integer (id:string son:bool set-class:integer)
+        (at "set-class" (UR_Set id son set-class))
+    )
+    (defun UR_SetName:string (id:string son:bool set-class:integer)
+        (at "set-name" (UR_Set id son set-class))
+    )
+    (defun UR_SetMultiplier:decimal (id:string son:bool set-class:integer)
+        (at "set-score-multiplier" (UR_Set id son set-class))
+    )
+    (defun UR_NonceOfSet:integer (id:string set-class:integer)
+        (at "nonce-of-set" (UR_Set id true set-class))
+    )
+    (defun UR_IzSetActive:bool (id:string son:bool set-class:integer)
+        (at "iz-active" (UR_Set id son set-class))
+    )
+    (defun UR_IzSetPrimordial:bool (id:string son:bool set-class:integer)
+        (at "iz-primordial" (UR_Set id son set-class))
+    )
+    (defun UR_IzSetComposite:bool (id:string son:bool set-class:integer)
+        (at "iz-composite" (UR_Set id son set-class))
+    )
+    (defun UR_PSD:[object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition}]
+        (id:string son:bool set-class:integer)
+        (at "primordial-set-definition" (UR_Set id son set-class))
+    )
+    (defun UR_CSD:[object{DpdcUdcV2.DPDC|AllowedClassForSetPosition}] 
+        (id:string son:bool set-class:integer)
+        (at "composite-set-definition" (UR_Set id son set-class))
+    )
+    (defun UR_SetNonceData:object{DpdcUdcV2.DPDC|NonceData} (id:string son:bool set-class:integer)
+        (at "nonce-data" (UR_Set id son set-class))
+    )
+    (defun UR_SetSplitData:object{DpdcUdcV2.DPDC|NonceData} (id:string son:bool set-class:integer)
+        (at "split-data" (UR_Set id son set-class))
+    )
+    ;;Score Read for Nonce — renamed from UR_N|Score, DPDC Audit #19H follow-up: reads
+    ;;UR_NonceClass/UR_N|RawScore/UR_SetMultiplier and derives a computed value from them
+    ;;(sentinel check, multiply, fragment-divide) — the URC_* contract, not a plain UR_* read.
+    (defun URC_N|Score:decimal (id:string son:bool nonce:integer)
+        @doc "Cooked score reader: applies the Set-Class multiplier (for Set-member nonces) and the \
+            \ 1/1000 fragment split (for negative/fragment nonces) to a nonce's raw stored score. \
+            \ DPDC Audit #19H: the -1.0 <unscored> sentinel is now checked once, on the untouched raw \
+            \ value, before any multiply/divide — the previous per-branch checks either omitted the \
+            \ check entirely (fragment arms) or compared against the wrong constant (-1000.0 instead \
+            \ of -1.0, a copy-paste leftover), letting the sentinel leak through as a real negative \
+            \ score in 3 of the 4 branches."
+        (let
+            (
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (nonce-class:integer (ref-DPDC::UR_NonceClass id son nonce))
+                (raw-nonce-score:decimal (ref-DPDC::UR_N|RawScore (ref-DPDC::UR_NativeNonceData id son (abs nonce))))
+            )
+            (if (= raw-nonce-score -1.0)
+                0.0
+                (if (= nonce-class 0)
+                    (if (< nonce 0)
+                        (/ raw-nonce-score 1000.0)
+                        raw-nonce-score
+                    )
+                    (let
+                        (
+                            (multiplier:decimal (UR_SetMultiplier id son nonce-class))
+                            (multiplied-score:decimal (* raw-nonce-score multiplier))
+                        )
+                        (if (< nonce 0)
+                            (/ multiplied-score 1000.0)
+                            multiplied-score
+                        )
+                    )
+                )
+            )
+        )
+    )
+    ;:Requires rethinking
+    (defun URC_PrimordialOrComposite:[bool] (id:string son:bool set-class:integer)
+        (UEV_SetClass id son set-class)
+        [
+            (UR_IzSetPrimordial id son set-class)
+            (UR_IzSetComposite id son set-class)
+        ]
+    )
+    (defun URC_NoncesSummedScore:decimal (id:string son:bool nonces:[integer])
+        @doc "Bakes a new NFT set instance's own raw score from the RAW (unmultiplied) scores of its \
+            \ constituent nonces -- deliberately via UR_N|RawScore, not the multiplier-applying \
+            \ URC_N|Score. DPDC Audit #52L: confirmed intentional design, owner-verified against real \
+            \ mainnet Bloodshed set-NFT scores. A set-class's own score-multiplier is meant to apply \
+            \ exactly once, at that set's own level, when ITS score is later read (via URC_N|Score) -- \
+            \ not per-constituent here at Make-time. For a Composite/Hybrid set whose constituent is \
+            \ itself a previously-Made, already-multiplied set instance from another set-class, this \
+            \ correctly sums that constituent's pre-multiplier raw value, so multipliers don't compound \
+            \ across nested sets."
+        (let
+            (
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (summed-score:decimal
+                    (fold
+                        (lambda
+                            (acc:decimal idx:integer)
+                            (+ acc (ref-DPDC::UR_N|RawScore (ref-DPDC::UR_NativeNonceData id son (at idx nonces))))
+                        )
+                        0.0
+                        (enumerate 0 (- (length nonces) 1))
+                    )
+                )
+            )
+            (if (< summed-score 0.0)
+                0.0
+                summed-score
+            )
+        )
+    )
+    ;;
+    (defun URC_SemiFungibleConstituents:[integer] (id:string set-class:integer)
+        (let
+            (
+                (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+                (psd:[object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition}] (UR_PSD id true set-class))
+                (csd:[object{DpdcUdcV2.DPDC|AllowedClassForSetPosition}] (UR_CSD id true set-class))
+                (npsd:[object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition}] (ref-DPDC-UDC::UDC_NoPrimordialSet))
+                (ncsd:[object{DpdcUdcV2.DPDC|AllowedClassForSetPosition}] (ref-DPDC-UDC::UDC_NoCompositeSet))
+                (l-psd:integer
+                    (if (= psd npsd)
+                        0
+                        (length psd)
+                    )
+                )
+                (l-csd:integer
+                    (if (= csd ncsd)
+                        0
+                        (length csd)
+                    )
+                )
+            )
+            (if (= l-psd 0)
+                ;;Composite Set
+                (URH_NonceListFromCSD id csd)
+                (if (= l-csd 0)
+                    ;;Primordial Set
+                    (UC_FirstNoncesFromPSD psd)
+                    ;;Hybrid Set — DPDC Audit #32M: order must be [primordial..., composite...], matching
+                    ;;the Make-time convention in UEV_NoncesForSetClass's hybrid branch below (which does
+                    ;;(take l-psd nonces) for primordial, (drop l-psd nonces) for composite). The two were
+                    ;;previously reversed relative to each other — harmless today only because every leg
+                    ;;gets the same uniform <how-many-sets> scalar, but a future non-uniform per-position
+                    ;;quantity would silently misattribute between legs. Keep both in this same order.
+                    (+ (UC_FirstNoncesFromPSD psd) (URH_NonceListFromCSD id csd))
+                )
+            )
+        )
+    )
+    (defun URH_NonceListFromCSD:[integer] (id:string csd:[object{DpdcUdcV2.DPDC|AllowedClassForSetPosition}])
+        @doc "Returns a list of Nonces that composed the CSD, only works for SFTs \
+            \ since SFTs save the Nonce of the Set Class"
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+            )
+            (fold
+                (lambda
+                    (acc:[integer] idx:integer)
+                    (let
+                        (
+                            (element:object{DpdcUdcV2.DPDC|AllowedClassForSetPosition} (at idx csd))
+                            (allowed-sclass:integer (at "allowed-sclass" element))
+                            (nonce-of-set:integer (UR_NonceOfSet id allowed-sclass))
+                        )
+                        (ref-U|LST::UC_AppL acc nonce-of-set)
+                    )
+                )
+                []
+                (enumerate 0 (- (length csd) 1))
+            )
+        )
+    )
+    (defun URCv_NonFungibleConstituents:[integer] (id:string nonce:integer)
+        (let
+            (
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (nonce-class:integer (ref-DPDC::UR_NonceClass id false nonce))
+            )
+            (enforce (!= nonce-class 0) "Invalid NFT Nonce to Read Constituents")
+            (ref-DPDC::UR_N|Composition (ref-DPDC::UR_NativeNonceData id false nonce))
+        )
+    )
+    ;;
+    ;;
+    (defun URCi_MakeSemiFungibleSet:object{IgnisCollectorV4.OutputCumulator}
+        (account:string id:string nonces:[integer] how-many-sets:integer)
+        @doc "Cost preview for C_MakeSemiFungibleSet: only the account->DPDC set-element transfer \
+            \ is billed (the XB_CreditSFT-Nonce write's cumulator is discarded). Purely derived."
+        (let
+            (
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (ref-DPDC-T:module{DpdcTransferV3} DPDC-T)
+                (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
+            )
+            (ref-DPDC-T::URCi_MultiTransferCumulator
+                [id] [true] account dpdc [nonces] [(make-list (length nonces) how-many-sets)])
+        )
+    )
+    (defun URCi_BreakSemiFungibleSet:object{IgnisCollectorV4.OutputCumulator}
+        (account:string id:string nonce:integer how-many-sets:integer)
+        @doc "Cost preview for CC_BreakSemiFungibleSet: account->DPDC set transfer + DPDC->account \
+            \ constituents release (the XE_DebitSFT-Nonce burn is discarded). Purely derived."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (ref-DPDC-T:module{DpdcTransferV3} DPDC-T)
+                (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
+                (constituents:[integer]
+                    (URC_SemiFungibleConstituents id (ref-DPDC::UR_NonceClass id true nonce)))
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                [
+                    (ref-DPDC-T::URCi_MultiTransferCumulator [id] [true] account dpdc [[nonce]] [[how-many-sets]])
+                    (ref-DPDC-T::URCi_MultiTransferCumulator [id] [true] dpdc account [constituents] [(make-list (length constituents) how-many-sets)])
+                ]
+                []
+            )
+        )
+    )
+    (defun URCi_MakeNonFungibleSet:object{IgnisCollectorV4.OutputCumulator}
+        (account:string id:string nonces:[integer])
+        @doc "Cost preview for C_MakeNonFungibleSet: account->DPDC transfer + creation of the new \
+            \ set nonce + DPDC->account transfer of that new nonce. Purely derived."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (ref-DPDC-C:module{DpdcCreateV3} DPDC-C)
+                (ref-DPDC-T:module{DpdcTransferV3} DPDC-T)
+                (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                [
+                    (ref-DPDC-T::URCi_MultiTransferCumulator [id] [false] account dpdc [nonces] [(make-list (length nonces) 1)])
+                    (ref-DPDC-C::URCi_CreateNewNonces id false [1])
+                    (ref-DPDC-T::URCi_MultiTransferCumulator [id] [false] dpdc account [[(+ 1 (ref-DPDC::UR_NoncesUsed id false))]] [[1]])
+                ]
+                []
+            )
+        )
+    )
+    (defun URCi_BreakNonFungibleSet:object{IgnisCollectorV4.OutputCumulator}
+        (account:string id:string nonce:integer)
+        @doc "Cost preview for C_BreakNonFungibleSet: account->DPDC transfer + DPDC->account \
+            \ constituents release (the XE_DebitNFT-Nonce burn is discarded). Purely derived."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (ref-DPDC-T:module{DpdcTransferV3} DPDC-T)
+                (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
+                (constituents:[integer] (URCv_NonFungibleConstituents id nonce))
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                [
+                    (ref-DPDC-T::URCi_MultiTransferCumulator [id] [false] account dpdc [[nonce]] [[1]])
+                    (ref-DPDC-T::URCi_MultiTransferCumulator [id] [false] dpdc account [constituents] [(make-list (length constituents) 1)])
+                ]
+                []
+            )
+        )
+    )
+    ;;
+    (defun URCi_DefinePrimordialSet:object{IgnisCollectorV4.OutputCumulator}
+        (id:string son:bool)
+        @doc "Cost preview for C_DefinePrimordialSet (same shape for Composite/Hybrid): the base \
+            \ token-issue IGNIS price on the creator + (for SFT sets) the zero-supply set-nonce \
+            \ creation; NFT sets add no nonce cost (EOC). Purely derived."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (ref-DPDC-C:module{DpdcCreateV3} DPDC-C)
+                (creator:string (ref-DPDC::UR_CreatorKonto id son))
+                (price:decimal (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_DefinePrimordialSet" "define-set")
+                                (ref-IGNIS::UC_IgnisPrice "DPNF|C_DefinePrimordialSet" "define-set")))
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                [
+                    (ref-IGNIS::UDC_ConstructOutputCumulator price creator false [])
+                    (if son
+                        (ref-DPDC-C::URCi_CreateNewNonces id son [0])
+                        EOC
+                    )
+                ]
+                []
+            )
+        )
+    )
+    (defun URCi_DefineCompositeSet:object{IgnisCollectorV4.OutputCumulator}
+        (id:string son:bool)
+        @doc "Cost preview for C_DefineCompositeSet: identical cost shape to \
+            \ URCi_DefinePrimordialSet."
+        (URCi_DefinePrimordialSet id son)
+    )
+    (defun URCi_DefineHybridSet:object{IgnisCollectorV4.OutputCumulator}
+        (id:string son:bool)
+        @doc "Cost preview for C_DefineHybridSet: the same SHAPE as URCi_DefinePrimordialSet -- base \
+            \ token-issue price on the creator + (SFT only) the zero-supply set-nonce creation, the NFT \
+            \ XE_DeployAccountWNE leg being a free write -- but NOT the same PRICE. \
+            \ PRICE-KEY FIX (2026-09-14): this delegated to URCi_DefinePrimordialSet, which reads the \
+            \ <DP*|C_DefinePrimordialSet> key at 43.0, while C_DefineHybridSet bills its own \
+            \ <DP*|C_DefineHybridSet> key at 45.0 (02_IGNIS.pact:682/764). The preview therefore \
+            \ under-quoted a hybrid set-class definition by 2.0 raw IGNIS on BOTH fungibility sides. \
+            \ Composite really is 43.0, so that sibling's delegation stays correct -- which is exactly \
+            \ why only this one drifted and why the old @doc's claim of an identical cost read as true. \
+            \ Measured against a real charge by modules/DPDC-S.repl <<DPDC-S-I27>> and <<DPDC-S-I33>>."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (ref-DPDC-C:module{DpdcCreateV3} DPDC-C)
+                (creator:string (ref-DPDC::UR_CreatorKonto id son))
+                (price:decimal (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_DefineHybridSet" "define-set")
+                                (ref-IGNIS::UC_IgnisPrice "DPNF|C_DefineHybridSet" "define-set")))
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                [
+                    (ref-IGNIS::UDC_ConstructOutputCumulator price creator false [])
+                    (if son
+                        (ref-DPDC-C::URCi_CreateNewNonces id son [0])
+                        EOC
+                    )
+                ]
+                []
+            )
+        )
+    )
+    (defun URCi_EnableSetClassFragmentation:object{IgnisCollectorV4.OutputCumulator}
+        (id:string son:bool)
+        @doc "Cost preview for C_EnableSetClassFragmentation: the biggest IGNIS cumulator on the \
+            \ set creator."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC:module{DpdcV3} DPDC)
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_EnableSetClassFragmentation" "setup")
+                       (ref-IGNIS::UC_IgnisPrice "DPNF|C_EnableSetClassFragmentation" "setup"))
+                (ref-DPDC::UR_CreatorKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
+        )
+    )
+    (defun URCi_ToggleSet:object{IgnisCollectorV4.OutputCumulator}
+        (id:string son:bool)
+        @doc "Cost preview for C_ToggleSet: the biggest IGNIS cumulator on the set creator."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC:module{DpdcV3} DPDC)
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_ToggleSet" "setup")
+                       (ref-IGNIS::UC_IgnisPrice "DPNF|C_ToggleSet" "setup"))
+                (ref-DPDC::UR_CreatorKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
+        )
+    )
+    (defun URCi_RenameSet:object{IgnisCollectorV4.OutputCumulator}
+        (id:string son:bool)
+        @doc "Cost preview for C_RenameSet: the small IGNIS cumulator on the set creator."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC:module{DpdcV3} DPDC)
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_RenameSet" "setup")
+                       (ref-IGNIS::UC_IgnisPrice "DPNF|C_RenameSet" "setup"))
+                (ref-DPDC::UR_CreatorKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
+        )
+    )
+    ;;{5.4}  Validate [UEV/CAP]
+    (defun UEV_PrimordialSetDefinition (id:string son:bool set-definition:[object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition}])
+        ;;DPDC Audit #51L: reject empty/oversized definitions with a clear message before any
+        ;;enumerate-based fold runs (an empty list would otherwise crash with an opaque
+        ;;out-of-bounds error several lines below).
+        (enforce
+            (and (> (length set-definition) 0) (<= (length set-definition) MAX_SET_DEFINITION_SIZE))
+            (format "Set-Definition length must be between 1 and {} positions" [MAX_SET_DEFINITION_SIZE])
+        )
+        (let
+            (
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (nonces-used-in-set-definition:[integer]
+                    (fold
+                        (lambda
+                            (acc:[integer] idx:integer)
+                            (+ acc (at "allowed-nonces" (at idx set-definition)))
+                        )
+                        []
+                        (enumerate 0 (- (length set-definition) 1))
+                    )
+                )
+                (nu:integer (ref-DPDC::UR_NoncesUsed id son))
+            )
+            ;;DPDC Audit #31M: check every individual allowed-nonce value, not just the running max of
+            ;;the whole list (the old (<= max nu) check let an out-of-range negative "fragment" value
+            ;;hide behind any legitimately-small value elsewhere in the same definition, since a large
+            ;;negative number is always <= a small positive max). A value is only plausible if it
+            ;;references an existing native nonce (positive, 1..nu) or a fragment encoding of one
+            ;;(negative, magnitude 1..nu) -- 0 is never valid either way.
+            (enforce
+                (fold (and) true
+                    (map
+                        (lambda (n:integer) (and (> (abs n) 0) (<= (abs n) nu)))
+                        nonces-used-in-set-definition
+                    )
+                )
+                (format "Invalid Set-Definition for a Primordial Set: every allowed-nonce must reference \
+                    \ an existing native nonce (magnitude 1-{}) or its fragment encoding" [nu])
+            )
+            (map
+                (lambda
+                    (idx:integer)
+                    (UEV_PrimordialSetElement son (at idx set-definition))
+                )
+                (enumerate 0 (- (length set-definition) 1))
+            )
+        )
+    )
+    (defun UEV_PrimordialSetElement (son:bool element:object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition})
+        (let
+            (
+                (allowed-nonces:[integer] (at "allowed-nonces" element))
+                (size:integer (length allowed-nonces))
+            )
+            (if son
+                (enforce (= size 1) "SFT Set Elements must have only 1 allowed element")
+                (enforce (> size 1) "NFT Set Elements must have more than 1 allowed element")
+            )
+        )
+    )
+    (defun UEV_CompositeSetDefinition (id:string son:bool set-definition:[object{DpdcUdcV2.DPDC|AllowedClassForSetPosition}])
+        ;;DPDC Audit #51L: same empty/oversized-definition guard as UEV_PrimordialSetDefinition above.
+        (enforce
+            (and (> (length set-definition) 0) (<= (length set-definition) MAX_SET_DEFINITION_SIZE))
+            (format "Set-Definition length must be between 1 and {} positions" [MAX_SET_DEFINITION_SIZE])
+        )
+        (let
+            (
+                (ref-U|INT:module{OuronetIntegersV2} U|INT)
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (set-classes-used-in-set-definition:[integer]
+                    (fold
+                        (lambda
+                            (acc:[integer] idx:integer)
+                            (+ acc [(at "allowed-sclass" (at idx set-definition))])
+                        )
+                        []
+                        (enumerate 0 (- (length set-definition) 1))
+                    )
+                )
+                (max:integer (ref-U|INT::UEV_MaxInteger (distinct set-classes-used-in-set-definition)))
+                (scu:integer (ref-DPDC::UR_SetClassesUsed id son))
+            )
+            (enforce
+                (fold (and) true (map (lambda (sc:integer) (> sc 0)) set-classes-used-in-set-definition))
+                "Invalid Set-Definition: allowed-sclass must be greater than 0 for every position (0 is reserved)"
+            )
+            (enforce (<= max scu) "Invalid Set-Definition for a Composite Set with non existent Set-Classes")
+        )
+    )
+    (defun UEV_SetClass (id:string son:bool set-class:integer)
+        @doc "Validates <set-class> for the given DPDC id. \
+            \ SHADOWED-GUARD FIX: the domain guard used to sit INSIDE the let, below the \
+            \ <UR_SetClass> binding. Pact evaluates let bindings before the body, and \
+            \ UR_Set does a HARD read keyed by <set-class> - so any out-of-domain value \
+            \ aborted on 'row not found' and this enforce was unreachable for every input. \
+            \ Hoisted above the let, matching UEV_IzSetClassFragmented directly below."
+        (enforce (> set-class 0) "Invalid Set-Class Value")
+        (let
+            (
+                (sc:integer (UR_SetClass id son set-class))
+            )
+            ;;Data-integrity assertion, not an input guard: <sc> is the set-class FIELD of the row
+            ;;keyed BY set-class, so this can only fire on a corrupt row. Fail-closed by design.
+            ;;UNREACHABLE: no argument can trip it. For any EXISTING row the two values are equal
+            ;;by construction (the row is keyed by the field it is compared against), and for a
+            ;;non-existent row UR_SetClass hard-reads and aborts on "row not found" before this
+            ;;enforce runs. The only way to fire it is to corrupt the table, which no caller can
+            ;;do. Worth keeping — it fails closed if a migration ever writes a mismatched row —
+            ;;but it is not coverage.
+            (enforce (= set-class sc) "Invalid DPDC Set Data")
+        )
+    )
+    (defun UEV_IzSetClassFragmented:bool (id:string son:bool set-class:integer)
+        (enforce (> set-class 0) "Only greater than 0 set-classes can be checked for fragmentation")
+        (let
+            (
+                (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+                (sd:object{DpdcUdcV2.DPDC|NonceData} (UR_SetSplitData id son set-class))
+                (zd:object{DpdcUdcV2.DPDC|NonceData} (ref-DPDC-UDC::UDC_ZeroNonceData))
+            )
+            (if (!= sd zd) true false)
+        )
+    )
+    (defun UEV_Fragmentation (id:string son:bool set-class:integer)
+        (let
+            (
+                (iz-fragmented:bool (UEV_IzSetClassFragmented id son set-class))
+            )
+            (enforce iz-fragmented "Set-Class must be fragmented for operation")
+        )
+    )
+    (defun UEV_SetActiveState (id:string son:bool set-class:integer state:bool)
+        (let
+            (
+                (x:bool (UR_IzSetActive id son set-class))
+            )
+            (enforce (= x state) (format "Set Class {} of {} ID {} must be set to {} for operation" [set-class (if son "SFT" "NFT") id state]))
+        )
+    )
+    (defun UEV_ScoreMultiplier (new-multiplier:decimal)
+        @doc "Bounds a Set-Class score-multiplier: max 3 decimals precision (unchanged from the \
+            \ original Update-time check), and a [1.0, 100.0] magnitude range — a multiplier can \
+            \ boost a score (up to 100x) or leave it unchanged (1.0, the neutral no-op value), but \
+            \ never reduce it below the raw score — to prevent an unbounded, instantly-retroactive \
+            \ re-pricing of every outstanding member of the Set-Class. Enforced only at Define \
+            \ (Primordial/Composite/Hybrid) — score-multiplier is immutable thereafter, see #15H \
+            \ follow-up (Fix #14). See DPDC Audit #15H."
+        (enforce
+            (= (floor new-multiplier 3) new-multiplier)
+            (format "Input Set-Multiplier of {} is not conform with its designed precision of only 3 decimals" [new-multiplier])
+        )
+        (enforce
+            (and (>= new-multiplier 1.0) (<= new-multiplier 100.0))
+            (format "Set-Multiplier of {} must be between 1.0 and 100.0 inclusive" [new-multiplier])
+        )
+    )
+    ;;
+    (defun UEV_NoncesForSetClass (id:string son:bool nonces:[integer] set-class:integer)
+        (let
+            (
+                (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+                (psd:[object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition}] (UR_PSD id son set-class))
+                (csd:[object{DpdcUdcV2.DPDC|AllowedClassForSetPosition}] (UR_CSD id son set-class))
+                (npsd:[object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition}] (ref-DPDC-UDC::UDC_NoPrimordialSet))
+                (ncsd:[object{DpdcUdcV2.DPDC|AllowedClassForSetPosition}] (ref-DPDC-UDC::UDC_NoCompositeSet))
+                (l-psd:integer
+                    (if (= psd npsd)
+                        0
+                        (length psd)
+                    )
+                )
+                (l-csd:integer
+                    (if (= csd ncsd)
+                        0
+                        (length csd)
+                    )
+                )
+                (tl:integer (+ l-psd l-csd))
+                (nl:integer (length nonces))
+            )
+            (enforce (= tl nl) (format "Nonces list {} are invalid for making a Set of Class {}" [nonces set-class]))
+            (if (= l-psd 0)
+                ;;Composite Set
+                (UEV_Composite id son nonces csd)
+                (if (= l-csd 0)
+                    ;;Primordial Set
+                    (UEV_Primordial nonces psd)
+                    ;;Hybrid Set — expects <nonces> ordered [primordial..., composite...]. DPDC Audit
+                    ;;#32M: URC_SemiFungibleConstituents's hybrid branch (Break-time reconstruction,
+                    ;;above in [F1]) must keep the same ordering convention if either function's order
+                    ;;ever changes.
+                    (do
+                        (UEV_Primordial (take l-psd nonces) psd)
+                        (UEV_Composite id son (drop l-psd nonces) csd)
+                    )
+                )
+            )
+        )
+    )
+    (defun UEV_Primordial (nonces:[integer] psd:[object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition}])
+        (let
+            (
+                (l1:integer (length nonces))
+                (l2:integer (length psd))
+            )
+            (enforce (= l1 l2) "Incompatible Input for <UEV_Composite> Validation")
+            (map
+                (lambda
+                    (idx:integer)
+                    (let
+                        (
+                            (set-element:object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition} (at idx psd))
+                            (allowed-nonces:[integer] (at "allowed-nonces" set-element))
+                            (nonce:integer (at idx nonces))
+                            (iz-nonce-allowed:bool (contains nonce allowed-nonces))
+                        )
+                        (enforce iz-nonce-allowed (format "Nonce {} not compatible with Set-Element {} for Set Definition" [nonce set-element]))
+                    )
+                )
+                (enumerate 0 (- (length psd) 1))
+            )
+        )
+    )
+    (defun UEV_Composite (id:string son:bool nonces:[integer] csd:[object{DpdcUdcV2.DPDC|AllowedClassForSetPosition}])
+        (let
+            (
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (l1:integer (length nonces))
+                (l2:integer (length csd))
+            )
+            (enforce (= l1 l2) "Incompatible Input for <UEV_Composite> Validation")
+            (map
+                (lambda
+                    (idx:integer)
+                    (let
+                        (
+                            (set-element:object{DpdcUdcV2.DPDC|AllowedClassForSetPosition} (at idx csd))
+                            (allowed-sclass:integer (at "allowed-sclass" set-element))
+                            (nonce:integer (at idx nonces))
+                            (nonce-class:integer (ref-DPDC::UR_NonceClass id son nonce))
+                            (iz-nonce-allowed:bool (= nonce-class allowed-sclass))
+                        )
+                        (enforce iz-nonce-allowed (format "Nonce {} not compatible with Set-Element {} for Set Definition" [nonce set-element]))
+                    )
+                )
+                (enumerate 0 (- (length csd) 1))
+            )
+        )
+    )
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;; C_UpdateSetMultiplier removed — DPDC Audit #15H.
+    ;;Protection: Class 3 — Custom: DPDC-S|C>DEFINE-PRIMORDIAL
+    (defun XI_PrimordialSet:integer
+        (
+            id:string son:bool set-name:string score-multiplier:decimal
+            set-definition:[object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition}]
+            ind:object{DpdcUdcV2.DPDC|NonceData}
+        )
+        (require-capability (DPDC-S|C>DEFINE-PRIMORDIAL id son score-multiplier set-definition ind))
+        (let
+            (
+                (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (set-classes-used:integer (ref-DPDC::UR_SetClassesUsed id son))
+                (set-class:integer (+ set-classes-used 1))
+                (nonces-used:integer (ref-DPDC::UR_NoncesUsed id son))
+                (nonce-of-set:integer
+                    (if son
+                        (+ nonces-used 1)
+                        0
+                    )
+                )
+            )
+            (XI_I|CollectionSet id son set-class
+                (ref-DPDC-UDC::UDC_DPDC|Set
+                    set-class
+                    set-name
+                    score-multiplier
+                    nonce-of-set
+                    true
+                    true
+                    false
+                    set-definition
+                    (ref-DPDC-UDC::UDC_NoCompositeSet)
+                    ind
+                    (ref-DPDC-UDC::UDC_ZeroNonceData)
+                )
+            )
+            (ref-DPDC::XE_U|SetClassesUsed id son set-class)
+            set-class
+        )
+    )
+    ;;Protection: Class 3 — Custom: DPDC-S|C>DEFINE-COMPOSITE
+    (defun XI_CompositeSet:integer
+        (
+            id:string son:bool set-name:string score-multiplier:decimal
+            set-definition:[object{DpdcUdcV2.DPDC|AllowedClassForSetPosition}]
+            ind:object{DpdcUdcV2.DPDC|NonceData}
+        )
+        (require-capability (DPDC-S|C>DEFINE-COMPOSITE id son score-multiplier set-definition ind))
+        (let
+            (
+                (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (set-classes-used:integer (ref-DPDC::UR_SetClassesUsed id son))
+                (set-class:integer (+ set-classes-used 1))
+                (nonces-used:integer (ref-DPDC::UR_NoncesUsed id son))
+                (nonce-of-set:integer
+                    (if son
+                        (+ nonces-used 1)
+                        0
+                    )
+                )
+            )
+            (XI_I|CollectionSet id son set-class
+                (ref-DPDC-UDC::UDC_DPDC|Set
+                    set-class
+                    set-name
+                    score-multiplier
+                    nonce-of-set
+                    true
+                    false
+                    true
+                    (ref-DPDC-UDC::UDC_NoPrimordialSet)
+                    set-definition
+                    ind
+                    (ref-DPDC-UDC::UDC_ZeroNonceData)
+                )
+            )
+            (ref-DPDC::XE_U|SetClassesUsed id son set-class)
+            set-class
+        )
+    )
+    ;;Protection: Class 3 — Custom: DPDC-S|C>DEFINE-HYBRID
+    (defun XI_HybridSet:integer
+        (
+            id:string son:bool set-name:string score-multiplier:decimal
+            primordial-sd:[object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition}]
+            composite-sd:[object{DpdcUdcV2.DPDC|AllowedClassForSetPosition}]
+            ind:object{DpdcUdcV2.DPDC|NonceData}
+        )
+        (require-capability (DPDC-S|C>DEFINE-HYBRID id son score-multiplier primordial-sd composite-sd ind))
+        (let
+            (
+                (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (set-classes-used:integer (ref-DPDC::UR_SetClassesUsed id son))
+                (set-class:integer (+ set-classes-used 1))
+                (nonces-used:integer (ref-DPDC::UR_NoncesUsed id son))
+                (nonce-of-set:integer
+                    (if son
+                        (+ nonces-used 1)
+                        0
+                    )
+                )
+            )
+            (XI_I|CollectionSet id son set-class
+                (ref-DPDC-UDC::UDC_DPDC|Set
+                    set-class
+                    set-name
+                    score-multiplier
+                    nonce-of-set
+                    true
+                    true
+                    true
+                    primordial-sd
+                    composite-sd
+                    ind
+                    (ref-DPDC-UDC::UDC_ZeroNonceData)
+                )
+            )
+            (ref-DPDC::XE_U|SetClassesUsed id son set-class)
+            set-class
+        )
+    )
+    ;;Protection: Class 3 — Custom: DPDC-S|C>ENABLE-FRAGMENTATION
+    (defun XI_FragmentSetClass
+        (id:string son:bool set-class:integer fragmentation-ind:object{DpdcUdcV2.DPDC|NonceData})
+        (require-capability (DPDC-S|C>ENABLE-FRAGMENTATION id son set-class fragmentation-ind))
+        (XB_U|NonceOrSplitData id son set-class false fragmentation-ind)
+    )
+    ;;Protection: Class 3 — Custom: DPDC-S|C>TOGGLE
+    (defun XI_ToggleSetClass (id:string son:bool set-class:integer toggle:bool)
+        (require-capability (DPDC-S|C>TOGGLE id son set-class toggle))
+        (XI_U|IzActive id son set-class toggle)
+    )
+    ;;Protection: Class 3 — Custom: DPDC-S|C>RENAME
+    (defun XI_RenameSet (id:string son:bool set-class:integer new-name:string)
+        (require-capability (DPDC-S|C>RENAME id son set-class new-name))
+        (XI_U|SetName id son set-class new-name)
+    )
+    ;; XI_Multiplier removed — DPDC Audit #15H.
+    ;;
+    ;; [<SetsTable> Writings] [3]
+    ;;Protection: Class 2 — SECURE
+    (defun XI_I|CollectionSet (id:string son:bool set-class:integer set:object{DpdcUdcV2.DPDC|Set})
+        (require-capability (SECURE))
+        (if son
+            (insert DPSF|SetsTable (concat [id BAR (format "{}" [set-class])]) set)
+            (insert DPNF|SetsTable (concat [id BAR (format "{}" [set-class])]) set)
+        )
+    )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
+    (defun XB_U|NonceOrSplitData (id:string son:bool set-class:integer nos:bool nd:object{DpdcUdcV2.DPDC|NonceData})
+        ;;(require-capability (SECURE))
+        (P|UEV_IMC)
+        (if nos
+            (if son
+                (update DPSF|SetsTable (concat [id BAR (format "{}" [set-class])]) {"nonce-data" : nd})
+                (update DPNF|SetsTable (concat [id BAR (format "{}" [set-class])]) {"nonce-data" : nd})
+            )
+            (if son
+                (update DPSF|SetsTable (concat [id BAR (format "{}" [set-class])]) {"split-data" : nd})
+                (update DPNF|SetsTable (concat [id BAR (format "{}" [set-class])]) {"split-data" : nd})
+            )
+        )  
+    )
+    ;;Protection: Class 2 — SECURE
+    (defun XI_U|IzActive (id:string son:bool set-class:integer toggle:bool)
+        (require-capability (SECURE))
+        (if son
+            (update DPSF|SetsTable (concat [id BAR (format "{}" [set-class])]) {"iz-active" : toggle})
+            (update DPNF|SetsTable (concat [id BAR (format "{}" [set-class])]) {"iz-active" : toggle})
+        )
+    )
+    ;;Protection: Class 2 — SECURE
+    (defun XI_U|SetName (id:string son:bool set-class:integer new-name:string)
+        (require-capability (SECURE))
+        (if son
+            (update DPSF|SetsTable (concat [id BAR (format "{}" [set-class])]) {"set-name" : new-name})
+            (update DPNF|SetsTable (concat [id BAR (format "{}" [set-class])]) {"set-name" : new-name})
+        )
+    )
+    ;;{5.7}  User [A/C]
+    (defun C_MakeSemiFungibleSet:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string id:string nonces:[integer] set-class:integer how-many-sets:integer)
+        @doc "Assembles <how-many-sets> Class-<set-class> SFT sets for <executor> out of its own <nonces>. \
+            \ \
+            \ Executor: PROVEN FORWARDED. Nothing in DPDC-S proves an account -- DPDC-S|C>MAKE \
+            \ runs shape and state checks only -- but the first leg below hands <executor> to \
+            \ DPDC-T::C_Transfer in the executor slot, and DPDC-T|C>TRANSFER opens on \
+            \ (CAP_EnforceAccountOwnership sender) unconditionally. The custodial <dpdc> \
+            \ smart account on the other side of that transfer is DERIVED, not a parameter, \
+            \ so it is not an executee: it is where the pieces are parked while the set is \
+            \ assembled, and it is the same account in every call. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
+        (P|UEV_IMC)
+        (let
+            (
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (ref-DPDC-C:module{DpdcCreateV3} DPDC-C)
+                (ref-DPDC-T:module{DpdcTransferV3} DPDC-T)
+                (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
+                (son:bool true)
+            )
+            (with-capability (DPDC-S|C>MAKE id son nonces set-class how-many-sets)
+                ;;1]SFT Set Nonce is already created with the Set Definition,
+                ;;it only needs a quantity of <how-many-sets> to be added to target <account>
+                (ref-DPDC-C::XB_CreditSFT-Nonce executor id (UR_NonceOfSet id set-class) how-many-sets)
+                ;;2]Transfer <nonces> to <dpdc> last to return the cumulator.
+                (ref-DPDC-T::C_Transfer patron executor dpdc [id] [son] [nonces] [(make-list (length nonces) how-many-sets)] true)
+            )
+        )
+    )
+    (defun CC_BreakSemiFungibleSet:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string id:string nonce:integer how-many-sets:integer)
+        @doc "Dissolves <how-many-sets> of <executor>'s Class-non-0 SFT set nonces back into their constituents. \
+            \ \
+            \ Executor: PROVEN FORWARDED. Nothing in DPDC-S proves an account -- DPDC-S|C>BREAK \
+            \ runs shape and state checks only -- but the first leg below hands <executor> to \
+            \ DPDC-T::C_Transfer in the executor slot, and DPDC-T|C>TRANSFER opens on \
+            \ (CAP_EnforceAccountOwnership sender) unconditionally. The custodial <dpdc> \
+            \ smart account on the other side of that transfer is DERIVED, not a parameter, \
+            \ so it is not an executee: it is where the pieces are parked while the set is \
+            \ assembled, and it is the same account in every call. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
+        (P|UEV_IMC)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (ref-DPDC-C:module{DpdcCreateV3} DPDC-C)
+                (ref-DPDC-T:module{DpdcTransferV3} DPDC-T)
+                (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
+                (son:bool true)
+            )
+            (with-capability (DPDC-S|C>BREAK id son nonce how-many-sets)
+                (let
+                    (
+                        (ico1:object{IgnisCollectorV4.OutputCumulator}
+                            ;;1]Transfer the SFT Sets from <account> to <dpdc>
+                            (ref-DPDC-T::C_Transfer patron executor dpdc [id] [son] [[nonce]] [[how-many-sets]] true)
+                        )
+                        (constituents:[integer]
+                            (URC_SemiFungibleConstituents id (ref-DPDC::UR_NonceClass id son nonce))
+                        )
+                        (ico2:object{IgnisCollectorV4.OutputCumulator}
+                            ;;2]Release the Set Elements from <dpdc> to <account>
+                            (ref-DPDC-T::C_Transfer patron dpdc executor [id] [son] [constituents] [(make-list (length constituents) how-many-sets)] true)
+                        )
+                    )
+                    ;;3]Burn the Input SFT Set Nonces
+                    (ref-DPDC-C::XE_DebitSFT-Nonce dpdc id nonce how-many-sets false)
+                    (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2] [])
+                )
+            )
+        )
+    )
+    (defun C_MakeNonFungibleSet:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string id:string nonces:[integer] set-class:integer)
+        @doc "Assembles one Class-<set-class> NFT set for <executor> out of its own <nonces>, minting the set nonce. \
+            \ \
+            \ Executor: PROVEN FORWARDED. Nothing in DPDC-S proves an account -- DPDC-S|C>MAKE \
+            \ runs shape and state checks only -- but the first leg below hands <executor> to \
+            \ DPDC-T::C_Transfer in the executor slot, and DPDC-T|C>TRANSFER opens on \
+            \ (CAP_EnforceAccountOwnership sender) unconditionally. The custodial <dpdc> \
+            \ smart account on the other side of that transfer is DERIVED, not a parameter, \
+            \ so it is not an executee: it is where the pieces are parked while the set is \
+            \ assembled, and it is the same account in every call. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
+        (P|UEV_IMC)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (ref-DPDC-C:module{DpdcCreateV3} DPDC-C)
+                (ref-DPDC-T:module{DpdcTransferV3} DPDC-T)
+                (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
+                (son:bool false)
+            )
+            (with-capability (DPDC-S|C>MAKE id son nonces set-class 1)
+                (let
+                    (
+                        (ico1:object{IgnisCollectorV4.OutputCumulator}
+                            ;;1]Transfer <nonces> to <dpdc>
+                            (ref-DPDC-T::C_Transfer patron executor dpdc [id] [son] [nonces] [(make-list (length nonces) 1)] true)
+                        )
+                        ;;
+                        (set-nd:object{DpdcUdcV2.DPDC|NonceData} (UR_SetNonceData id son set-class))
+                        (summed-score:decimal (URC_NoncesSummedScore id son nonces))
+                        (spawned-nonce-md:object{DpdcUdcV2.NonceMetaData}
+                            (ref-DPDC-UDC::UDC_NonceMetaData
+                                summed-score
+                                nonces
+                                {}
+                                )
+                        )
+                        (spawned-nd:object{DpdcUdcV2.DPDC|NonceData}
+                            (+
+                                {"meta-data" : spawned-nonce-md}
+                                (remove "meta-data" set-nd)
+                            )
+                        )
+                        (ico2:object{IgnisCollectorV4.OutputCumulator}
+                            ;;2]When one nonce of class non-0 is created, is automatically created on <dpdc> account
+                            ;;PROVISIONAL PATRON SLOT CLEARED (HANDOFF 4e) at this module's own
+                            ;;turn, 2026-09-22. It read `account` because no patron existed here
+                            ;;-- and the attempt to write `patron` anyway is what taught this
+                            ;;programme that Pact reports an unbound name as "Cannot find module:
+                            ;;ouronet-ns.patron". There is a real one now, so the payer is the
+                            ;;payer. The EXECUTOR stays READ rather than threaded, and that is not
+                            ;;a leftover: C_CreateNewNonce binds its executor to (UR_Verum5 id son),
+                            ;;the create-role holder, and this is the branch where the SIGNATURE
+                            ;;check is deliberately bypassed -- the module is minting the set
+                            ;;nonce, not the role holder -- so naming that account is the only
+                            ;;attribution available and it is exact.
+                            (ref-DPDC-C::C_CreateNewNonce patron (ref-DPDC::UR_Verum5 id son) id son set-class 1 spawned-nd true)
+                        )
+                        (ico3:object{IgnisCollectorV4.OutputCumulator}
+                            ;;3]Transfer new set nonce to <account>
+                            (ref-DPDC-T::C_Transfer patron dpdc executor [id] [son] [[(ref-DPDC::UR_NoncesUsed id son)]] [[1]] true)
+                        )
+                    )
+                    (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3] [])
+                )
+            )
+        )
+    )
+    (defun C_BreakNonFungibleSet:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string id:string nonce:integer)
+        @doc "Dissolves one of <executor>'s Class-non-0 NFT set nonces back into its constituents. \
+            \ \
+            \ Executor: PROVEN FORWARDED. Nothing in DPDC-S proves an account -- DPDC-S|C>BREAK \
+            \ runs shape and state checks only -- but the first leg below hands <executor> to \
+            \ DPDC-T::C_Transfer in the executor slot, and DPDC-T|C>TRANSFER opens on \
+            \ (CAP_EnforceAccountOwnership sender) unconditionally. The custodial <dpdc> \
+            \ smart account on the other side of that transfer is DERIVED, not a parameter, \
+            \ so it is not an executee: it is where the pieces are parked while the set is \
+            \ assembled, and it is the same account in every call. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
+        (P|UEV_IMC)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (ref-DPDC-C:module{DpdcCreateV3} DPDC-C)
+                (ref-DPDC-T:module{DpdcTransferV3} DPDC-T)
+                (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
+                (son:bool false)
+            )
+            (with-capability (DPDC-S|C>BREAK id son nonce 1)
+                (let
+                    (
+                        (ico1:object{IgnisCollectorV4.OutputCumulator}
+                            ;;1]Transfer the SFT|NFT from <account> to <dpdc>
+                            (ref-DPDC-T::C_Transfer patron executor dpdc [id] [son] [[nonce]] [[1]] true)
+                        )
+                        (constituents:[integer]
+                            (URCv_NonFungibleConstituents id nonce)
+                        )
+                        (ico2:object{IgnisCollectorV4.OutputCumulator}
+                            ;;2]Release the Set Elements from <dpdc> to <account>
+                            (ref-DPDC-T::C_Transfer patron dpdc executor [id] [son] [constituents] [(make-list (length constituents) 1)] true)
+                        )
+                    )
+                    ;;3]Burn the Input SFT Set Nonces
+                    (ref-DPDC-C::XE_DebitNFT-Nonce dpdc id nonce 1 false)
+                    (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2] [])
+                )
+            )
+        )
+    )
+    (defun UEV_ExecutorIsCollectionOwner (executor:string id:string son:bool)
+        @doc "BINDS <executor> to the collection owner, (UR_OwnerKonto id son), via DPDC. \
+            \ \
+            \ Used by the SIX owner-gated entrypoints of this module -- the three C_Define*Set \
+            \ variants, C_EnableSetClassFragmentation, C_ToggleSet and C_RenameSet -- and by \
+            \ nothing else here. All six reach (ref-DPDC::CAP_Owner id son), which enforces on \
+            \ the DERIVED (UR_OwnerKonto id son) and names no actor: HANDOFF 4g. This supplies \
+            \ the other half, that the account the caller NAMED is that owner. \
+            \ \
+            \ The FOUR set make/break entrypoints deliberately do NOT call it. Their authority \
+            \ is the acting account's own signature, proven downstream by DPDC-T|C>TRANSFER, \
+            \ and the collection owner has no say in whether a holder assembles a set. Same \
+            \ module, two different authorities, and which one applies is decided by whether \
+            \ the op touches the set DEFINITION or a holding of it. \
+            \ \
+            \ Named to match 06_DPDC-MNG's identical helper. 05_DPDC-R's was called \
+            \ UEV_ExecutorIsOwnerKontoLocal and has been renamed to this, so one grep finds \
+            \ every site in the DPDC family that makes this binding. \
+            \ (patron/executor canon 2.2, indirect route named, 2026-09-22.)"
+        (let
+            (
+                (ref-DPDC:module{DpdcV3} DPDC)
+            )
+            (ref-DPDC::UEV_ExecutorIsOwnerKonto executor id son)
+        )
+    )
+    (defun C_DefinePrimordialSet:object{IgnisCollectorV4.OutputCumulator}
+        (
+            patron:string executor:string id:string son:bool set-name:string score-multiplier:decimal
+            set-definition:[object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition}]
+            ind:object{DpdcUdcV2.DPDC|NonceData}
+        )
+        @doc "Defines a new PRIMORDIAL set-class on <id> -- one composed of Class-0 nonces. \
+            \ \
+            \ Executor: PROVEN INDIRECTLY, and named. DPDC-S|CX>DEFINE reaches \
+            \ (ref-DPDC::CAP_Owner id son), ownership of the DERIVED collection owner and not \
+            \ of any parameter -- HANDOFF 4g -- so UEV_ExecutorIsCollectionOwner binds the \
+            \ declared executor to that same (UR_OwnerKonto id son). \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
+        (P|UEV_IMC)
+        (UEV_ExecutorIsCollectionOwner executor id son)
+        (with-capability (DPDC-S|C>DEFINE-PRIMORDIAL id son score-multiplier set-definition ind)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC:module{DpdcV3} DPDC)
+                    (ref-DPDC-C:module{DpdcCreateV3} DPDC-C)
+                    ;;
+                    (creator:string (ref-DPDC::UR_CreatorKonto id son))
+                    (price:decimal (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_DefinePrimordialSet" "define-set")
+                                (ref-IGNIS::UC_IgnisPrice "DPNF|C_DefinePrimordialSet" "define-set")))
+                    (set-class:integer (XI_PrimordialSet id son set-name score-multiplier set-definition ind))
+                    (ico0:object{IgnisCollectorV4.OutputCumulator}
+                        (ref-IGNIS::UDC_ConstructOutputCumulator price creator false [])
+                    )
+                    (ico1:object{IgnisCollectorV4.OutputCumulator}
+                        (if son
+                            (ref-DPDC-C::C_CreateNewNonce patron (ref-DPDC::UR_Verum5 id son) id son set-class 0 ind true)
+                            EOC
+                        )
+                    )
+                )
+                ;;THE SET-CLASS IS THE THING THIS CALL CREATED, so it rides out in `output`.
+                ;;It used to be computed, used, and dropped into an empty output list -- and
+                ;;`UDC_ConcatenateOutputCumulators` REPLACES output rather than merging it, so
+                ;;`[]` actively discarded it. The Talos wrapper could then only report the
+                ;;caller-typed set-name, leaving the owner with no way to address the set they
+                ;;had just defined: set-class is an auto-increment integer, so unlike a
+                ;;name-derived id it cannot be reconstructed after the fact.
+                ;;StoicSyntax 2.16.2.
+                (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico0 ico1] [set-class])
+            )
+        )
+    )
+    (defun C_DefineCompositeSet:object{IgnisCollectorV4.OutputCumulator}
+        (
+            patron:string executor:string id:string son:bool set-name:string score-multiplier:decimal
+            set-definition:[object{DpdcUdcV2.DPDC|AllowedClassForSetPosition}]
+            ind:object{DpdcUdcV2.DPDC|NonceData}
+        )
+        @doc "Defines a new COMPOSITE set-class on <id> -- one composed of other set-classes. \
+            \ Executor: PROVEN INDIRECTLY via DPDC-S|CX>DEFINE's (CAP_Owner id son), a derived \
+            \ account (HANDOFF 4g), bound by UEV_ExecutorIsCollectionOwner. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
+        (P|UEV_IMC)
+        (UEV_ExecutorIsCollectionOwner executor id son)
+        (with-capability (DPDC-S|C>DEFINE-COMPOSITE id son score-multiplier set-definition ind)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC:module{DpdcV3} DPDC)
+                    (ref-DPDC-C:module{DpdcCreateV3} DPDC-C)
+                    ;;
+                    (creator:string (ref-DPDC::UR_CreatorKonto id son))
+                    (price:decimal (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_DefineCompositeSet" "define-set")
+                                (ref-IGNIS::UC_IgnisPrice "DPNF|C_DefineCompositeSet" "define-set")))
+                    (set-class:integer (XI_CompositeSet id son set-name score-multiplier set-definition ind))
+                    (ico0:object{IgnisCollectorV4.OutputCumulator}
+                        (ref-IGNIS::UDC_ConstructOutputCumulator price creator false [])
+                    )
+                    (ico1:object{IgnisCollectorV4.OutputCumulator}
+                        (if son
+                            (ref-DPDC-C::C_CreateNewNonce patron (ref-DPDC::UR_Verum5 id son) id son set-class 0 ind true)
+                            EOC
+                        )
+                    )
+                )
+                ;;THE SET-CLASS IS THE THING THIS CALL CREATED, so it rides out in `output`.
+                ;;It used to be computed, used, and dropped into an empty output list -- and
+                ;;`UDC_ConcatenateOutputCumulators` REPLACES output rather than merging it, so
+                ;;`[]` actively discarded it. The Talos wrapper could then only report the
+                ;;caller-typed set-name, leaving the owner with no way to address the set they
+                ;;had just defined: set-class is an auto-increment integer, so unlike a
+                ;;name-derived id it cannot be reconstructed after the fact.
+                ;;StoicSyntax 2.16.2.
+                (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico0 ico1] [set-class])
+            )
+        )
+    )
+    (defun C_DefineHybridSet:object{IgnisCollectorV4.OutputCumulator}
+        (
+            patron:string executor:string id:string son:bool set-name:string score-multiplier:decimal
+            primordial-sd:[object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition}]
+            composite-sd:[object{DpdcUdcV2.DPDC|AllowedClassForSetPosition}]
+            ind:object{DpdcUdcV2.DPDC|NonceData}
+        )
+        @doc "Defines a new HYBRID set-class on <id> -- Class-0 nonces AND other set-classes. \
+            \ Executor: PROVEN INDIRECTLY via DPDC-S|CX>DEFINE's (CAP_Owner id son), a derived \
+            \ account (HANDOFF 4g), bound by UEV_ExecutorIsCollectionOwner. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
+        (P|UEV_IMC)
+        (UEV_ExecutorIsCollectionOwner executor id son)
+        (with-capability (DPDC-S|C>DEFINE-HYBRID id son score-multiplier primordial-sd composite-sd ind)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC:module{DpdcV3} DPDC)
+                    (ref-DPDC-C:module{DpdcCreateV3} DPDC-C)
+                    (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
+                    ;;
+                    (creator:string (ref-DPDC::UR_CreatorKonto id son))
+                    (price:decimal (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_DefineHybridSet" "define-set")
+                                (ref-IGNIS::UC_IgnisPrice "DPNF|C_DefineHybridSet" "define-set")))
+                    (set-class:integer (XI_HybridSet id son set-name score-multiplier primordial-sd composite-sd ind))
+                    (ico0:object{IgnisCollectorV4.OutputCumulator}
+                        (ref-IGNIS::UDC_ConstructOutputCumulator price creator false [])
+                    )
+                    (ico1:object{IgnisCollectorV4.OutputCumulator}
+                        (if son
+                            (ref-DPDC-C::C_CreateNewNonce patron (ref-DPDC::UR_Verum5 id son) id son set-class 0 ind true)
+                            (do
+                                (ref-DPDC::XE_DeployAccountWNE dpdc id false)
+                                EOC
+                            )
+                        )
+                    )
+                )
+                ;;THE SET-CLASS IS THE THING THIS CALL CREATED, so it rides out in `output`.
+                ;;It used to be computed, used, and dropped into an empty output list -- and
+                ;;`UDC_ConcatenateOutputCumulators` REPLACES output rather than merging it, so
+                ;;`[]` actively discarded it. The Talos wrapper could then only report the
+                ;;caller-typed set-name, leaving the owner with no way to address the set they
+                ;;had just defined: set-class is an auto-increment integer, so unlike a
+                ;;name-derived id it cannot be reconstructed after the fact.
+                ;;StoicSyntax 2.16.2.
+                (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico0 ico1] [set-class])
+            )
+        )
+    )
+    (defun C_EnableSetClassFragmentation:object{IgnisCollectorV4.OutputCumulator}
+        (
+            patron:string executor:string id:string son:bool set-class:integer
+            fragmentation-ind:object{DpdcUdcV2.DPDC|NonceData}
+        )
+        @doc "Turns fragmentation ON for one set-class -- a ONE-WAY switch. \
+            \ Executor: PROVEN INDIRECTLY via the capability's (CAP_Owner id son), a derived \
+            \ account (HANDOFF 4g), bound by UEV_ExecutorIsCollectionOwner. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
+        (P|UEV_IMC)
+        (UEV_ExecutorIsCollectionOwner executor id son)
+        (with-capability (DPDC-S|C>ENABLE-FRAGMENTATION id son set-class fragmentation-ind)
+            (XI_FragmentSetClass id son set-class fragmentation-ind)
+            (URCi_EnableSetClassFragmentation id son)
+        )
+    )
+    (defun C_ToggleSet:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string id:string son:bool set-class:integer toggle:bool)
+        @doc "Activates or deactivates a set-class for further composition. \
+            \ Executor: PROVEN INDIRECTLY via the capability's (CAP_Owner id son), a derived \
+            \ account (HANDOFF 4g), bound by UEV_ExecutorIsCollectionOwner. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
+        (P|UEV_IMC)
+        (UEV_ExecutorIsCollectionOwner executor id son)
+        (with-capability (DPDC-S|C>TOGGLE id son set-class toggle)
+            (XI_ToggleSetClass id son set-class toggle)
+            (URCi_ToggleSet id son)
+        )
+    )
+    (defun C_RenameSet:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string id:string son:bool set-class:integer new-name:string)
+        @doc "Renames a set-class. \
+            \ Executor: PROVEN INDIRECTLY via the capability's (CAP_Owner id son), a derived \
+            \ account (HANDOFF 4g), bound by UEV_ExecutorIsCollectionOwner. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
+        (P|UEV_IMC)
+        (UEV_ExecutorIsCollectionOwner executor id son)
+        (with-capability (DPDC-S|C>RENAME id son set-class new-name)
+            (XI_RenameSet id son set-class new-name)
+            (URCi_RenameSet id son)
+        )
+    )
+
+)
+
+
+
+;;DPSF
+
+;;DPNF
+
+;; --- tables for 08_DPDC-S.pact (4 defined) ---
+;; UPGRADE MODE: this module is assumed already deployed, so its
+;; tables already exist and (create-table) would ABORT the whole
+;; transaction. They are listed here, commented, for reference.
+;; If any of these is NEW since the last deploy, uncomment JUST it.
+;; (create-table P|T)
+;; (create-table P|MT)
+;; (create-table DPSF|SetsTable)
+;; (create-table DPNF|SetsTable)
+
+;; ===== 1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/09_DPDC-F.pact ==========
+;; Deploy: load THIS file — interface(s) + module ship together.
+;; History/shared registry: 1_SOVEREIGN/STAGE_02/0_Interfaces/02_Core.pact
+;;
+;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
+(interface DpdcFragmentsV3
+    @doc "Exposes Collectables Fragmentation related Functions"
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables  ⟨cannot exist in an interface⟩
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables  ⟨cannot exist in an interface⟩
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;
+    ;;  [URCi]
+    ;;
+    (defun URCi_RepurposeCollectableFragments:object{IgnisCollectorV4.OutputCumulator} (id:string son:bool fragment-amounts:[integer]))
+    (defun URCi_MakeFragments:object{IgnisCollectorV4.OutputCumulator} (id:string son:bool))
+    (defun URCi_MergeFragments:object{IgnisCollectorV4.OutputCumulator} (id:string son:bool))
+    (defun URCi_EnableNonceFragmentation:object{IgnisCollectorV4.OutputCumulator} (id:string son:bool))
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;
+    ;; [UEV]
+    ;;
+    (defun UEV_IzNonceFragmented:bool (id:string son:bool nonce:integer))
+    (defun UEV_Fragmentation (id:string son:bool nonce:integer))
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+    ;;
+    ;; [C]
+    ;;
+    (defun C_RepurposeCollectableFragments:object{IgnisCollectorV4.OutputCumulator}
+        (
+            patron:string executor:string executee:string id:string son:bool repurpose-to:string
+            fragment-nonces:[integer] fragment-amounts:[integer]
+        )
+    )
+    (defun C_MakeFragments:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string id:string son:bool nonce:integer amount:integer))
+    (defun C_MergeFragments:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string id:string son:bool nonce:integer amount:integer))
+    (defun C_EnableNonceFragmentation:object{IgnisCollectorV4.OutputCumulator}
+        (
+            patron:string executor:string id:string son:bool nonce:integer
+            fragmentation-ind:object{DpdcUdcV2.DPDC|NonceData}
+        )
+    )
+
+)
+;;
+(module DPDC-F GOV
+    @doc "DPDC-F is the Fragments module of the DPDC collectables family, handling \
+        \ fractionalization of class-0 collectable nonces into fragment pieces in units of \
+        \ 1000. Owners first enable per-nonce fragmentation via C_EnableNonceFragmentation. \
+        \ Users then fractionalize and defractionalize with C_MakeFragments (locks a native \
+        \ nonce, credits 1000x negative fragment nonces) and C_MergeFragments (burns \
+        \ multiples of 1000 to reclaim whole nonces), plus C_RepurposeCollectableFragments \
+        \ to move fragment balances. It carries no persistent set state, delegating \
+        \ reads/writes to the core DPDC modules."
+
+    ;;<=========================================================================>
+    ;;{0}  IMPLEMENTERS
+    ;;
+    (implements OuronetPolicyV2)
+    (implements DpdcFragmentsV3)
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;
+    (defconst GOV|MD_DPDC-F                             (keyset-ref-guard (GOV|Demiurgoi)))
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    (defcap GOV ()                                      (compose-capability (GOV|DPDC-F_ADMIN)))
+    (defcap GOV|DPDC-F_ADMIN ()                         (enforce-guard GOV|MD_DPDC-F))
+    ;;{G5}  functions
+    (defun GOV|Demiurgoi ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+            )
+            (ref-DALOS::GOV|Demiurgoi)
+        )
+    )
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    (defconst P|I                                       (P|Info))
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;
+    (deftable P|T:{OuronetPolicyV2.P|S})
+    (deftable P|MT:{OuronetPolicyV2.P|MS})
+    ;;{P4}  capabilities
+    (defcap P|DPDC-F|CALLER ()
+        true
+    )
+    (defcap P|SECURE-CALLER ()
+        (compose-capability (P|DPDC-F|CALLER))
+        (compose-capability (SECURE))
+    )
+    (defcap P|DPDC-F|REMOTE-GOV ()
+        @doc "DPDC Remote Governor Capability"
+        true
+    )
+    ;;{P5}  functions
+    (defun P|Info ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+            )
+            (ref-DALOS::P|Info)
+        )
+    )
+    (defun P|UR:guard (policy-name:string)
+        (at "policy" (read P|T policy-name ["policy"]))
+    )
+    (defun P|UR_IMP:[guard] ()
+        ;;DEFAULT ADDED 2026-09-14 (owner ruling). This was a bare `read`, which RAISES
+        ;;`No value found in table <M>_P|MT for key: InterModulePolicies` when the row does not
+        ;;exist -- i.e. before ANY module has registered. P|UEV_IMC is built on this, so in that
+        ;;window the inter-module gate answered with a raw table error naming a row key instead of
+        ;;refusing cleanly. Surfaced by the X-01 repair, which removed the harness registration
+        ;;that had been creating the row as a side effect.
+        ;;
+        ;;The default is the module's OWN SECURE capability guard, which is exactly what
+        ;;P|A_AddIMP already seeds the row with. So reader and writer now agree on what an
+        ;;unregistered policy list contains, and the gate's answer is the same before and after
+        ;;the first registration: satisfiable only from inside this module.
+        (with-default-read P|MT P|I
+            {"m-policies" : [(create-capability-guard (SECURE))]}
+            {"m-policies" := mp}
+            mp
+        )
+    )
+    (defun P|UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV2} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|DPDC-F_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        @doc "Registers <policy-guard> as a trusted inter-module caller of this module. \
+            \ IDEMPOTENT: a guard already in the chain is left alone rather than appended \
+            \ a second time. See OuronetPolicyV2 for why that is load-bearing."
+        (with-capability (GOV|DPDC-F_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
+                    ;;
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" :
+                            (if (contains policy-guard mp)
+                                mp
+                                (ref-U|LST::UC_AppL mp policy-guard)
+                            )
+                        }
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_RemoveIMP (policy-guard:guard)
+        @doc "Revokes <policy-guard> from this module's guard chain. Removes EVERY occurrence, so \
+            \ it doubles as the cleanup for duplicates left behind by the pre-idempotence append. \
+            \ Refuses to drop this module's own SECURE seed -- see OuronetPolicyV2."
+        (with-capability (GOV|DPDC-F_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
+                    ;;
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (enforce (!= policy-guard dg) "The module's own SECURE seed cannot be revoked")
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_RemoveItem mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_SetIMP (policy-guards:[guard])
+        @doc "Replaces this module's whole guard chain in one write -- the recovery hatch. \
+            \ Deduplicates, and enforces that the module's own SECURE seed survives: without it \
+            \ the module can no longer reach its own P|UEV_IMC-gated functions."
+        (with-capability (GOV|DPDC-F_ADMIN)
+            (let
+                (
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (enforce (contains dg policy-guards) "The module's own SECURE seed must be present")
+                (write P|MT P|I
+                    {"m-policies" : (distinct policy-guards)}
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        (let
+            (
+                (ref-P|DPDC:module{OuronetPolicyV2} DPDC)
+                (ref-P|DPDC-C:module{OuronetPolicyV2} DPDC-C)
+                (ref-P|DPDC-T:module{OuronetPolicyV2} DPDC-T)
+                (mg:guard (create-capability-guard (P|DPDC-F|CALLER)))
+            )
+            (ref-P|DPDC::P|A_Add
+                "DPDC-F|RemoteDpdcGov"
+                (create-capability-guard (P|DPDC-F|REMOTE-GOV))
+            )
+            (ref-P|DPDC::P|A_AddIMP mg)
+            (ref-P|DPDC-C::P|A_AddIMP mg)
+            (ref-P|DPDC-T::P|A_AddIMP mg)
+        )
+    )
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    (defconst BAR                                       (CT_Bar))
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;
+    (defcap SECURE ()
+        true
+    )
+    ;;{C2}  Simple
+    (defcap DPDC-F|C>REPURPOSE
+        (
+            executor:string id:string son:bool repurpose-from:string repurpose-to:string
+            fragment-nonces:[integer] fragment-amounts:[integer]
+        )
+        @doc "Forced move of <id> FRAGMENT nonces from <repurpose-from> to <repurpose-to>. \
+            \ \
+            \ HANDOFF 4g, and the exact twin of DPDC-T|C>REPURPOSE. This capability proves no \
+            \ account: the authority is the COLLECTION OWNER, enforced three hops down in \
+            \ DPDC-C's DPDC|CX>MULTI-DEBIT by (if wipe-mode (CAP_Owner id son) ...), which \
+            \ C_RepurposeCollectableFragments reaches with wipe-mode TRUE at every debit leg. \
+            \ CAP_Owner enforces on the DERIVED (UR_OwnerKonto id son) and names no actor; the \
+            \ binder below supplies the other half. <repurpose-from> is the EXECUTEE -- it is \
+            \ debited without being consulted. \
+            \ \
+            \ [6.1.2]_DPDC-FRAGMENTS.repl TX-FRAG-003 documented this gap in prose two weeks \
+            \ before the binder existed: \"DPDC-F|C>REPURPOSE's own defcap only checks \
+            \ list-length; the real gate is CAP_Owner, downstream in the wipe-mode debit leg\". \
+            \ It is still downstream; what is new is that the actor is now named and checked \
+            \ against it. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
+        @event
+        (let
+            (
+                (ref-DPDC:module{DpdcV3} DPDC)
+                ;;
+                (l1:integer (length fragment-nonces))
+                (l2:integer (length fragment-amounts))
+            )
+            (ref-DPDC::UEV_ExecutorIsOwnerKonto executor id son)
+            ;;DPDC Audit #47L: reject an empty repurpose here, with a clear message, instead of letting
+            ;;it fall through to an unfriendly out-of-bounds error several call-hops downstream.
+            (enforce (and (= l1 l2) (> l1 0)) "Invalid Repurpose data")
+        )
+    )
+    ;;{C3}  Composed
+    (defcap DPDC-F|C>ENABLE-FRAGMENTATION
+        (
+            id:string son:bool nonce:integer
+            fragmentation-ind:object{DpdcUdcV2.DPDC|NonceData}
+        )
+        @event
+        (let
+            (
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (ref-DPDC-C:module{DpdcCreateV3} DPDC-C)
+                (nonce-class:integer (ref-DPDC::UR_NonceClass id son nonce))
+                (iz-fragmented:bool (UEV_IzNonceFragmented id son nonce))
+            )
+            (enforce (= nonce-class 0) "Only Class 0 Nonces can be fragmented")
+            (enforce (not iz-fragmented) "Nonce must not be fragmented in order to enable fragmentation for it !")
+            (ref-DPDC::UEV_Nonce id son nonce)
+            (ref-DPDC::CAP_Owner id son)
+            (ref-DPDC-C::UEV_NonceDataForCreation fragmentation-ind)
+            (compose-capability (P|DPDC-F|CALLER))
+        )
+    )
+    (defcap DPDC-F|C>NONCE
+        (id:string son:bool nonce:integer)
+        @event
+        (UEV_Fragmentation id son nonce)
+        (compose-capability (P|DPDC-F|CALLER))
+        (compose-capability (P|DPDC-F|REMOTE-GOV))
+    )
+    (defcap DPDC-F|C>MERGE
+        ;;DPDC Audit #48L: added id/son (were missing, inconsistent with every sibling cap in this file)
+        ;;and @event, so this capability carries the same audit-trail visibility as C>NONCE/C>REPURPOSE.
+        (id:string son:bool nonce:integer amount:integer)
+        @event
+        (let
+            (
+                (divided:integer (mod amount 1000))
+            )
+            (enforce (< nonce 0) "Only negative nonces can be used for merging")
+            (enforce (= divided 0) "Only multiple of 1000 can be used for Merging")
+            (compose-capability (P|DPDC-F|CALLER))
+            (compose-capability (P|DPDC-F|REMOTE-GOV))
+        )
+    )
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;
+    (defun CT_Bar ()
+        (let
+            (
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
+            )
+            (ref-U|CT::CT_BAR)
+        )
+    )
+    ;;{5.2}  Compute [UC]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;
+    ;;
+    (defun URCi_RepurposeCollectableFragments:object{IgnisCollectorV4.OutputCumulator}
+        (id:string son:bool fragment-amounts:[integer])
+        @doc "Cost preview for C_RepurposeCollectableFragments: per-fragment construct \
+            \ priced ((if son small else medium)/1000) * (1 + sum fragment-amounts), \
+            \ empty output list."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (owner:string (ref-DPDC::UR_OwnerKonto id son))
+                (s:decimal (ref-IGNIS::UC_IgnisLeg "tier-small"))
+                (m:decimal (ref-IGNIS::UC_IgnisLeg "tier-medium"))
+                (p:decimal (/ (if son s m) 1000.0))
+                (sum-amounts:decimal (dec (fold (+) 1 fragment-amounts)))
+                (price:decimal (* p sum-amounts))
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator price owner (ref-IGNIS::URC_IsVirtualGasZero) [])
+        )
+    )
+    (defun URCi_MakeFragments:object{IgnisCollectorV4.OutputCumulator}
+        (id:string son:bool)
+        @doc "Cost preview for C_MakeFragments (Biggest on creator-konto; the internal \
+            \ transfers are not separately billed)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC:module{DpdcV3} DPDC)
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                ;;minting-type op: NO special issuance price (owner 2026-09-06) — generic tier
+                (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_MakeFragments" "usage")
+                       (ref-IGNIS::UC_IgnisPrice "DPNF|C_MakeFragments" "usage"))
+                (ref-DPDC::UR_CreatorKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
+        )
+    )
+    (defun URCi_MergeFragments:object{IgnisCollectorV4.OutputCumulator}
+        (id:string son:bool)
+        @doc "Cost preview for C_MergeFragments (Biggest on creator-konto; the internal \
+            \ transfers are not separately billed)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC:module{DpdcV3} DPDC)
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                ;;USAGE, not setup — pairs with C_MakeFragments; the issue gate of the
+                ;;fragmentation family is C_EnableNonceFragmentation (owner directive, recorded
+                ;;in REPL/_ignis_deter_worksheet.py OWNER_DECISIONS)
+                (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_MergeFragments" "usage")
+                       (ref-IGNIS::UC_IgnisPrice "DPNF|C_MergeFragments" "usage"))
+                (ref-DPDC::UR_CreatorKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
+        )
+    )
+    (defun URCi_EnableNonceFragmentation:object{IgnisCollectorV4.OutputCumulator}
+        (id:string son:bool)
+        @doc "Cost preview for C_EnableNonceFragmentation — the ISSUE gate of the fragmentation \
+            \ family (owner 2026-09-05: MakeFragments/MergeFragments are USAGE; THIS is the issue \
+            \ op). 100x deterrence = $1 in IGNIS per nonce defined as fragmented; this entrypoint \
+            \ enables exactly ONE nonce per call, so the charge is one unit of the central \
+            \ IG|DETER frag-enable tier. Shared by exec and the INFO_* preview."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC:module{DpdcV3} DPDC)
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_EnableNonceFragmentation" "frag-enable")
+                        (ref-IGNIS::UC_IgnisPrice "DPNF|C_EnableNonceFragmentation" "frag-enable"))
+                (ref-DPDC::UR_CreatorKonto id son)
+                (ref-IGNIS::URC_IsVirtualGasZero)
+                []
+            )
+        )
+    )
+    ;;{5.4}  Validate [UEV/CAP]
+    (defun UEV_IzNonceFragmented:bool (id:string son:bool nonce:integer)
+        @doc "Checks if a nonce is fragmented. For non 0 nonce-classes, the set class is checked instead for fragmentation"
+        (enforce (> nonce 0) "Only greater than 0 nonces can be checked for fragmentation")
+        (let
+            (
+                (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (sd:object{DpdcUdcV2.DPDC|NonceData} (ref-DPDC::UR_SplitNonceData id son nonce))
+                (zd:object{DpdcUdcV2.DPDC|NonceData} (ref-DPDC-UDC::UDC_ZeroNonceData))
+                (nonce-class:integer (ref-DPDC::UR_NonceClass id son nonce))
+            )
+            (if (!= sd zd) 
+                true
+                (if (!= nonce-class 0)
+                    (let
+                        (
+                            (ref-DPDC-S:module{DpdcSetsV3} DPDC-S)
+                        )
+                        (ref-DPDC-S::UEV_IzSetClassFragmented id son nonce-class)
+                    )
+                    false
+                )
+            )
+        )
+    )
+    (defun UEV_Fragmentation (id:string son:bool nonce:integer)
+        (let
+            (
+                (iz-fragmented:bool (UEV_IzNonceFragmented id son nonce))
+            )
+            (enforce iz-fragmented "Nonce must be fragmented for operation")
+        )
+    )
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;Protection: Class 3 — Custom: DPDC-F|C>ENABLE-FRAGMENTATION
+    (defun XI_EnableNonceFragmentation 
+        (
+            id:string son:bool nonce:integer
+            fragmentation-ind:object{DpdcUdcV2.DPDC|NonceData}
+        )
+        (require-capability (DPDC-F|C>ENABLE-FRAGMENTATION id son nonce fragmentation-ind))
+        (let
+            (
+                (ref-DPDC:module{DpdcV3} DPDC)
+            )
+            (ref-DPDC::XE_U|NonceOrSplitData id son nonce false fragmentation-ind)
+        )
+    )
+    ;;{5.7}  User [A/C]
+    (defun C_RepurposeCollectableFragments:object{IgnisCollectorV4.OutputCumulator}
+        (
+            patron:string executor:string executee:string id:string son:bool repurpose-to:string
+            fragment-nonces:[integer] fragment-amounts:[integer]
+        )
+        @doc "Forcibly moves <id> FRAGMENT nonces from <executee> to <repurpose-to>, on the \
+            \ collection owner's authority. \
+            \ \
+            \ Executor: PROVEN INDIRECTLY, and named. Every debit leg passes wipe-mode TRUE to \
+            \ DPDC-C::XE_Debit*-FragmentNonce(s), selecting (CAP_Owner id son) -- ownership of \
+            \ the DERIVED collection owner, HANDOFF 4g -- and DPDC-F|C>REPURPOSE binds \
+            \ <executor> to that same (UR_OwnerKonto id son). \
+            \ Executee: NOT consulted, by design. That is what makes it a repurpose. \
+            \ Same shape, same rationale, as DPDC-T::C_RepurposeCollectable. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
+        (P|UEV_IMC)
+        (with-capability (DPDC-F|C>REPURPOSE executor id son executee repurpose-to fragment-nonces fragment-amounts)
+            ;;DEAD PRE-COMPUTATION REMOVED (2026-09-22), the twin of the one in
+            ;;DPDC-T::C_RepurposeCollectable and found by the same run of _deadbind
+            ;;(<owner>, <price>, <trigger> all bound and never read). Every value here is
+            ;;recomputed identically inside the URCi_RepurposeCollectableFragments call that
+            ;;ends this function.
+            ;;
+            ;;IT WAS NOT ONLY WASTE: IT WAS PUBLISHING A WRONG PRICE. _pricesync derives the
+            ;;IGNIS-PRICE-SHEET leg breakdown from the UC_IgnisLeg calls it can see in a
+            ;;function body, and <s> and <m> bound BOTH tiers unconditionally while
+            ;;(if son s m) only ever charges ONE. So the sheet read "small 2 + medium 3" and
+            ;;quoted a floor of 5 for an op whose floor is 2 (SFT) or 3 (NFT). Deleting the
+            ;;dead bindings corrected the published figure as a side effect -- which is the
+            ;;strongest argument yet that _deadbind's findings are not cosmetic.
+            (let
+                (
+                    (ref-DPDC-C:module{DpdcCreateV3} DPDC-C)
+                    ;;
+                    (l:integer (length fragment-nonces))
+                )
+                (if (= l 1)
+                    ;;Single Mode
+                    (let
+                        (
+                            (fragment-nonce:integer (at 0 fragment-nonces))
+                            (fragment-amount:integer (at 0 fragment-amounts))
+                        )
+                        ;;1]Debit from <repurpose-from>
+                        (if son
+                            (ref-DPDC-C::XE_DebitSFT-FragmentNonce executee id fragment-nonce fragment-amount true)
+                            (ref-DPDC-C::XE_DebitNFT-FragmentNonce executee id fragment-nonce fragment-amount true)
+                        )
+                        ;;2]Credit to <repurpose-to>
+                        (if son
+                            (ref-DPDC-C::XE_CreditSFT-FragmentNonce repurpose-to id fragment-nonce fragment-amount)
+                            (ref-DPDC-C::XE_CreditNFT-FragmentNonce repurpose-to id fragment-nonce fragment-amount)
+                        )
+                    )
+                    ;;Multi Mode
+                    (do
+                        (if son
+                            ;;1]Debit from <repurpose-from>
+                            (ref-DPDC-C::XE_DebitSFT-FragmentNonces executee id fragment-nonces fragment-amounts true)
+                            (ref-DPDC-C::XE_DebitNFT-FragmentNonces executee id fragment-nonces fragment-amounts true)
+                        )
+                        (if son
+                            ;;2]Credit to <repurpose-to>
+                            (ref-DPDC-C::XE_CreditSFT-FragmentNonces repurpose-to id fragment-nonces fragment-amounts)
+                            (ref-DPDC-C::XE_CreditNFT-FragmentNonces repurpose-to id fragment-nonces fragment-amounts)
+                        )
+                    )
+                )
+                ;;3]Output Cumulator
+                (URCi_RepurposeCollectableFragments id son fragment-amounts)
+            )
+        )
+    )
+    (defun C_MakeFragments:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string id:string son:bool nonce:integer amount:integer)
+        @doc "Splits <amount> of <executor>'s whole nonce <nonce> into 1000 fragments each. \
+            \ \
+            \ Executor: PROVEN FORWARDED. DPDC-F|C>NONCE proves no account -- it checks the \
+            \ nonce shape only -- but each leg below hands <executor> to DPDC-T::C_Transfer \
+            \ in the executor slot, and DPDC-T|C>TRANSFER opens on \
+            \ (CAP_EnforceAccountOwnership sender) unconditionally. The <dpdc> smart account \
+            \ on the other side is DERIVED, not a parameter, and is a workbench rather than \
+            \ an executee: the nonce goes there so it can be split or rejoined and comes \
+            \ straight back in the same transaction. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
+        (P|UEV_IMC)
+        (with-capability (DPDC-F|C>NONCE id son nonce)
+            (let
+                (
+                    (ref-DPDC:module{DpdcV3} DPDC)
+                    (ref-DPDC-C:module{DpdcCreateV3} DPDC-C)
+                    (ref-DPDC-T:module{DpdcTransferV3} DPDC-T)
+                    (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
+                    (neg-nonce:integer (- 0 nonce))
+                    (f-amount:integer (* 1000 amount))
+                )
+                ;;1]Transfer <nonce> <amount> from <account> to <DPDC|SC_NAME>
+                (ref-DPDC-T::C_Transfer patron executor dpdc [id] [son] [[nonce]] [[amount]] true)
+                ;;2]Fragment Nonces are credited to the <DPDC|SC_NAME>
+                (if son
+                    (ref-DPDC-C::XE_CreditSFT-FragmentNonce dpdc id neg-nonce f-amount)
+                    (ref-DPDC-C::XE_CreditNFT-FragmentNonce dpdc id neg-nonce f-amount)
+                )
+                ;;3]They are then transfered to the <executor>
+                (ref-DPDC-T::C_Transfer patron dpdc executor [id] [son] [[neg-nonce]] [[f-amount]] true)
+                ;;4]Output Cumulator
+                (URCi_MakeFragments id son)
+            )
+        )
+    )
+    (defun C_MergeFragments:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string id:string son:bool nonce:integer amount:integer)
+        @doc "Rejoins <amount> of <executor>'s fragment nonces (a multiple of 1000) back into whole nonces. \
+            \ \
+            \ Executor: PROVEN FORWARDED. DPDC-F|C>MERGE proves no account -- it checks the \
+            \ nonce shape only -- but each leg below hands <executor> to DPDC-T::C_Transfer \
+            \ in the executor slot, and DPDC-T|C>TRANSFER opens on \
+            \ (CAP_EnforceAccountOwnership sender) unconditionally. The <dpdc> smart account \
+            \ on the other side is DERIVED, not a parameter, and is a workbench rather than \
+            \ an executee: the nonce goes there so it can be split or rejoined and comes \
+            \ straight back in the same transaction. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
+        (P|UEV_IMC)
+        (with-capability (DPDC-F|C>MERGE id son nonce amount)
+            (let
+                (
+                    (ref-DPDC:module{DpdcV3} DPDC)
+                    (ref-DPDC-C:module{DpdcCreateV3} DPDC-C)
+                    (ref-DPDC-T:module{DpdcTransferV3} DPDC-T)
+                    (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
+                    (pos-nonce:integer (abs nonce))
+                    (merged-amount:integer (/ amount 1000))
+                )
+                ;;1]Transfer <nonce> <amount> from <account> to <DPDC|SC_NAME>
+                (ref-DPDC-T::C_Transfer patron executor dpdc [id] [son] [[nonce]] [[amount]] true)
+                ;;2]Fragment Nonces are debited from the <DPDC|SC_NAME>
+                (if son
+                    (ref-DPDC-C::XE_DebitSFT-FragmentNonce dpdc id nonce amount false)
+                    (ref-DPDC-C::XE_DebitNFT-FragmentNonce dpdc id nonce amount false)
+                )
+                ;;3]Native <nonces> are transfered from <DPDC|SC_NAME> to <executor>
+                (ref-DPDC-T::C_Transfer patron dpdc executor [id] [son] [[pos-nonce]] [[merged-amount]] true)
+                ;;4]Output Cumulator
+                (URCi_MergeFragments id son)
+            )
+        )
+    )
+    (defun C_EnableNonceFragmentation:object{IgnisCollectorV4.OutputCumulator}
+        (
+            patron:string executor:string id:string son:bool nonce:integer
+            fragmentation-ind:object{DpdcUdcV2.DPDC|NonceData}
+        )
+        @doc "Turns fragmentation ON for one Class-0 nonce -- a ONE-WAY switch. \
+            \ \
+            \ Executor: PROVEN INDIRECTLY, and named. DPDC-F|C>ENABLE-FRAGMENTATION reaches \
+            \ (ref-DPDC::CAP_Owner id son), ownership of the DERIVED collection owner and not \
+            \ of any parameter -- HANDOFF 4g -- so the binder below ties the declared executor \
+            \ to that same (UR_OwnerKonto id son). Sibling of 08_DPDC-S's \
+            \ C_EnableSetClassFragmentation, which does the same thing one level up, for a \
+            \ whole set-class. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
+        (P|UEV_IMC)
+        (with-capability (DPDC-F|C>ENABLE-FRAGMENTATION id son nonce fragmentation-ind)
+            (let
+                (
+                    (ref-DPDC:module{DpdcV3} DPDC)
+                    (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
+                )
+                (ref-DPDC::UEV_ExecutorIsOwnerKonto executor id son)
+                (XI_EnableNonceFragmentation id son nonce fragmentation-ind)
+                (ref-DPDC::XE_DeployAccountWNE dpdc id son)
+                (URCi_EnableNonceFragmentation id son)
+            )
+        )
+    )
+
+)
+
+;; --- tables for 09_DPDC-F.pact (2 defined) ---
+;; UPGRADE MODE: this module is assumed already deployed, so its
+;; tables already exist and (create-table) would ABORT the whole
+;; transaction. They are listed here, commented, for reference.
+;; If any of these is NEW since the last deploy, uncomment JUST it.
+;; (create-table P|T)
+;; (create-table P|MT)
+
+;; ===== 2_CITIZEN/Stage_Z/AppReads/OuronetUI/10_O-UI-TEN.pact =======
+;; ===========================================================================================
+;; O-UI-TEN -- the Collectables page: semi- and non-fungible entries, nonce data, sets,
+;; class filters, and the button map.
+;; ===========================================================================================
+;; OuronetUI entity 10. Template: 01_O-UI-ONE.pact. Rules: ../RULES.md.
+;;
+;; REPLACES DPL-UR::URC_0021 / _0022_CollectableEntry / _0022a_SemifungibleEntryMapper /
+;; _0022a_NonfungibleEntryMapper / _0023 / _0024 / _0025 / _0025a / _0026 and the helper
+;; UCx_NonFungibleNonceExistance -- nine reads and a predicate, the second-largest group.
+;;
+;; ------------------------------------------------------------------------------------------
+;; A DEFECT FOUND WHILE PORTING, AND FIXED HERE -- the unreachable Wipe button
+;; ------------------------------------------------------------------------------------------
+;; URC_0026 opens its `let` with
+;;
+;;     (fn:integer (at 0 selected-nonces))
+;;
+;; and Pact evaluates `let` bindings EAGERLY. So calling it with an empty selection does not
+;; return a map of mostly-false flags -- it THROWS, at the first binding, before any flag is
+;; computed.
+;;
+;; Now read what `wipe` requires:
+;;
+;;     "wipe" : (fold (and) true [iz-empty can-wipe iz-owner])
+;;
+;; `iz-empty` is `(= (length selected-nonces) 0)`. The ONLY input that can make `wipe` true is
+;; the exact input that crashes the function. The Wipe button is therefore UNREACHABLE -- not
+;; mis-computed, not sometimes wrong: it has never once been returned as true, and an owner
+;; who may wipe their collection has never been shown the button. The same crash takes `mint`'s
+;; sibling flags down with it, so the whole action bar goes blank on an empty selection, which
+;; is the page's INITIAL state.
+;;
+;; FIXED by binding `fn` defensively: `(if iz-empty 0 (at 0 selected-nonces))`. The value is
+;; irrelevant when nothing is selected -- every flag that consults `fn` is already gated behind
+;; `iz-single` or `(> fn 0)` -- so the fix changes no non-empty result. Pinned by the fixture,
+;; which calls the read with `[]` and asserts it answers.
+;;
+;; ------------------------------------------------------------------------------------------
+;; THE HEADER IS `URH_` AND UNCOMPOSABLE
+;; ------------------------------------------------------------------------------------------
+;; URC_0021 holds FOUR cross-module `keys` scans. Same quarantine as O-UI-EIGHT and O-UI-NINE:
+;; nothing here calls URH_01|Header. A scan cannot sit inside `try` (read-only mode), and
+;; `_conformance.py` tolerates a cross-module scan only in a function with zero Pact callers.
+;;
+;; ------------------------------------------------------------------------------------------
+;; WHY THE ENTRY LISTS ARE NOT `try`-GUARDED
+;; ------------------------------------------------------------------------------------------
+;; URC_02|Entry reads DPDC::URH_AccountNoncesWithSupplies, a `select`. `try` runs its body in
+;; read-only mode where `select` is disallowed (../RULES.md rule 5), so the per-row guard used
+;; in O-UI-EIGHT is unavailable, and unlike O-UI-NINE there is no priced half to split out --
+;; the entry is the nonce list plus a name. The residual risk is one unnamed collection
+;; blanking the list, which is what DPL-UR does today; it is recorded here rather than papered
+;; over.
+;; ===========================================================================================
+
+(namespace "ouronet-ns")
+
+;; OUiTenV1: already deployed and unchanged -- see LIVE_INTERFACES
+
+
+(module O-UI-TEN GOV
+
+    ;;{0}  IMPLEMENTERS
+    (implements OUiTenV1)
+
+    ;;{1}  GOVERNANCE
+    (defconst GOV|MD_O-UI-TEN               (keyset-ref-guard (GOV|Demiurgoi)))
+    (defcap GOV ()                          (compose-capability (GOV|O_UI_TEN_ADMIN)))
+    (defcap GOV|O_UI_TEN_ADMIN ()           (enforce-guard GOV|MD_O-UI-TEN))
+    (defun GOV|Demiurgoi ()
+        (let ((ref-DALOS:module{OuronetDalosV3} DALOS)) (ref-DALOS::GOV|Demiurgoi))
+    )
+
+    ;;{5}  FUNCTIONS
+    ;;{5.3}  Read [UR/URC/URH]
+    (defun URC_IzNonceTaken:bool (dpdc-id:string nonce:integer existance:bool)
+        @doc "Does this non-fungible nonce exist? `existance` flips the sense, so one function \
+            \ answers both `burn` (must exist) and `respawn` (must not). \
+            \ \
+            \ A POSITIVE nonce is answered by its holder: an unheld nonce reads back as the \
+            \ BAR sentinel. A nonce at or below zero is a FRAGMENT, which has no holder, so it \
+            \ is answered by comparing its split-data against the zero object. \
+            \ \
+            \ Replaces DPL-UR::UCx_NonFungibleNonceExistance. RENAMED, and the rename is the \
+            \ point: `UCx_` claims pure compute, and this reads two tables. The prefix is the \
+            \ contract (StoicSyntax-Prefixes.md), so a table-reading predicate is `URC_`."
+        (let
+            (
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
+                (ref-DPDC:module{DpdcV3} DPDC)
+            )
+            (if (> nonce 0)
+                (let
+                    (
+                        (held:bool
+                            (!= (ref-U|CT::CT_BAR)
+                                (ref-DPDC::UR_NonceHolder dpdc-id false nonce)))
+                    )
+                    (if existance held (not held))
+                )
+                (let
+                    (
+                        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+                        ;;
+                        (defined:bool
+                            (!= (ref-DPDC::UR_SplitNonceData dpdc-id false nonce)
+                                (ref-DPDC-UDC::UDC_ZeroNonceData)))
+                    )
+                    (if existance defined (not defined))
+                )
+            )
+        )
+    )
+    ;; ---------------------------------------------------------------------------------------
+    ;; CLIENT READS -- everything below is called BY NAME from OuronetUI. The `NN|` designator
+    ;; is the pin: argument list and key shape are a wire contract.
+    ;; ---------------------------------------------------------------------------------------
+    (defun URH_01|Header:object (account:string)
+        @doc "Page header, both fungibility classes. HEAVY and UNCOMPOSABLE -- holds four \
+            \ cross-module `keys` scans; see the module header. \
+            \ \
+            \ Replaces DPL-UR::URC_0021_CollectablesHeader, key-for-key -- including the two \
+            \ inconsistent key names it ships with (`held-sf-number` but `mngd-sf-no`). Those \
+            \ are WIRE FORMAT: the UI indexes them by string, so tidying them here would break \
+            \ the page while looking like a cleanup."
+        (let
+            (
+                (ref-DPDC:module{DpdcV3} DPDC)
+                ;;
+                (held-sf:[string] (ref-DPDC::URH_HeldCollectables account true))
+                (mngd-sf:[string] (ref-DPDC::URH_OwnedCollectables account true))
+                (held-nf:[string] (ref-DPDC::URH_HeldCollectables account false))
+                (mngd-nf:[string] (ref-DPDC::URH_OwnedCollectables account false))
+            )
+            {"total-semi-fungible-number"       : (length (keys DPDC.DPSF|T|Properties))
+            ,"total-semi-fungible-nonces"       : (length (keys DPDC.DPSF|T|Nonces))
+            ,"held-sf"                          : held-sf
+            ,"held-sf-number"                   : (length held-sf)
+            ,"mngd-sf"                          : mngd-sf
+            ,"mngd-sf-no"                       : (length mngd-sf)
+            ;;
+            ,"total-non-fungible-number"        : (length (keys DPDC.DPNF|T|Properties))
+            ,"total-non-fungible-nonces"        : (length (keys DPDC.DPNF|T|Nonces))
+            ,"held-nf"                          : held-nf
+            ,"held-nf-number"                   : (length held-nf)
+            ,"mngd-nf"                          : mngd-nf
+            ,"mngd-nf-no"                       : (length mngd-nf)
+            }
+        )
+    )
+    (defun URC_02|Entry:object (account:string dpdc-id:string son:bool)
+        @doc "One collection row: its name and every nonce this account holds of it, with \
+            \ supplies. \
+            \ \
+            \ Replaces DPL-UR::URC_0022_CollectableEntry, key-for-key."
+        (let
+            (
+                (ref-DPDC:module{DpdcV3} DPDC)
+                ;;
+                (wallet-nonces:[object]
+                    (ref-DPDC::URH_AccountNoncesWithSupplies account dpdc-id son))
+            )
+            {"t1"               : (ref-DPDC::UR_Name dpdc-id son)
+            ,"t2"               : dpdc-id
+            ,"wallet-nonces"    : wallet-nonces
+            ,"wallet-nonces-no" : (length wallet-nonces)
+            }
+        )
+    )
+    (defun URC_03|SemiFungibleList:[object] (account:string dpdc-ids:[string])
+        @doc "URC_02|Entry across the semi-fungible collections. \
+            \ \
+            \ Replaces DPL-UR::URC_0022a_SemifungibleEntryMapper."
+        (map (lambda (dpdc-id:string) (URC_02|Entry account dpdc-id true)) dpdc-ids)
+    )
+    (defun URC_04|NonFungibleList:[object] (account:string dpdc-ids:[string])
+        @doc "URC_02|Entry across the non-fungible collections. \
+            \ \
+            \ Replaces DPL-UR::URC_0022a_NonfungibleEntryMapper."
+        (map (lambda (dpdc-id:string) (URC_02|Entry account dpdc-id false)) dpdc-ids)
+    )
+    (defun URC_05|NonceData:[object] (dpdc-id:string son:bool nonces:[integer])
+        @doc "Metadata for a list of nonces. A NEGATIVE nonce asks for a FRAGMENT and yields \
+            \ its split-data; a positive one yields ordinary nonce-data. The sign is the \
+            \ discriminator, which is why the two never mix in one list read. \
+            \ \
+            \ Replaces DPL-UR::URC_0023_CollectablesNonceData. The fold-with-UC_AppL is now a \
+            \ `map` -- same result, one pass, no per-element list rebuild."
+        (let
+            (
+                (ref-DPDC:module{DpdcV3} DPDC)
+            )
+            (map
+                (lambda (nonce:integer)
+                    (if (< nonce 0)
+                        (at "split-data" (ref-DPDC::UR_NonceElement dpdc-id son (abs nonce)))
+                        (at "nonce-data"  (ref-DPDC::UR_NonceElement dpdc-id son nonce))
+                    )
+                )
+                nonces
+            )
+        )
+    )
+    (defun URC_06|Sets:[object{DpdcUdcV2.DPDC|Set}] (dpdc-id:string son:bool)
+        @doc "Every set class defined on a collection, in class order. \
+            \ \
+            \ Replaces DPL-UR::URC_0024_SetReader."
+        (let
+            (
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (ref-DPDC-S:module{DpdcSetsV3} DPDC-S)
+            )
+            (map
+                (lambda (set-class:integer) (ref-DPDC-S::UR_Set dpdc-id son set-class))
+                (enumerate 1 (ref-DPDC::UR_SetClassesUsed dpdc-id son))
+            )
+        )
+    )
+    (defun URC_07|FilterByClass:[integer]
+        (dpdc-id:string son:bool nonces:[integer] nonce-class:integer)
+        @doc "Keeps only the nonces belonging to one set class. Returns [] when none match. \
+            \ \
+            \ Replaces DPL-UR::URC_0025_FilterNoncesByClass."
+        (let
+            (
+                (ref-DPDC:module{DpdcV3} DPDC)
+            )
+            (filter
+                (lambda (nonce:integer)
+                    (= (ref-DPDC::UR_NonceClass dpdc-id son nonce) nonce-class))
+                nonces
+            )
+        )
+    )
+    (defun URC_08|FilterByClasses:[[integer]]
+        (dpdc-id:string son:bool nonces:[integer] nonce-classes:[integer])
+        @doc "URC_07|FilterByClass for several classes at once; result[i] belongs to \
+            \ nonce-classes[i]. One round trip instead of one per class, which is the whole \
+            \ reason it exists alongside the singular form. \
+            \ \
+            \ Replaces DPL-UR::URC_0025a_FilterNoncesByClasses."
+        (let
+            (
+                (ref-DPDC:module{DpdcV3} DPDC)
+            )
+            (map
+                (lambda (nonce-class:integer)
+                    (filter
+                        (lambda (nonce:integer)
+                            (= (ref-DPDC::UR_NonceClass dpdc-id son nonce) nonce-class))
+                        nonces
+                    )
+                )
+                nonce-classes
+            )
+        )
+    )
+    (defun URC_09|Buttons:object
+        (account:string dpdc-id:string son:bool selected-nonces:[integer])
+        @doc "Which collectable actions the chain will accept, given the account, the \
+            \ collection and the nonces the user has ticked. \
+            \ \
+            \ Replaces DPL-UR::URC_0026_CollectablesButtons, key-for-key, and FIXES its \
+            \ eager-binding crash on an empty selection -- see the module header for why that \
+            \ made the Wipe button unreachable."
+        (let
+            (
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (ref-DPDC-F:module{DpdcFragmentsV3} DPDC-F)
+                ;;
+                (l:integer (length selected-nonces))
+                (first-two:string (take 2 dpdc-id))
+                (can-wipe:bool (ref-DPDC::UR_CanWipe dpdc-id son))
+                (iz-owner:bool (= account (ref-DPDC::UR_OwnerKonto dpdc-id son)))
+                (burn-role:bool (ref-DPDC::UR_CA|R-Burn dpdc-id son account))
+            )
+            (let
+                (
+                    (iz-empty:bool (= l 0))
+                    (iz-single:bool (= l 1))
+                    (iz-multiple:bool (> l 1))
+                    (iz-equity:bool (= first-two "E|"))
+                )
+                (let
+                    (
+                        ;;THE FIX. `(at 0 [])` throws, and Pact binds eagerly, so the original
+                        ;;could not survive the page's own initial state. Guarded here; every
+                        ;;consumer of `fn` below is gated behind `iz-single` or `(> fn 0)`, so
+                        ;;no non-empty answer changes.
+                        (fn:integer (if iz-empty 0 (at 0 selected-nonces)))
+                    )
+                    {"morph"        : (fold (and) true [iz-equity iz-single son])
+                    ,"add-quantity" :
+                        (if (or (not iz-single) (not son))
+                            false
+                            (fold (and) true
+                                [(> fn 0)
+                                 (= (ref-DPDC::UR_NonceClass dpdc-id true fn) 0)
+                                 (ref-DPDC::UR_CA|R-AddQuantity dpdc-id account)])
+                        )
+                    ,"burn"         :
+                        (if (not iz-single)
+                            false
+                            (if son
+                                burn-role
+                                (and burn-role (URC_IzNonceTaken dpdc-id fn true))
+                            )
+                        )
+                    ,"respawn"      :
+                        (if (or (not iz-single) son)
+                            false
+                            (and (ref-DPDC::UR_CA|R-Create dpdc-id son account)
+                                 (URC_IzNonceTaken dpdc-id fn false))
+                        )
+                    ,"wipe"         : (fold (and) true [iz-empty can-wipe iz-owner])
+                    ,"fuse"         :
+                        (if (not iz-single)
+                            false
+                            (and (< fn 0)
+                                 (>= (ref-DPDC::UR_AccountNonceSupply account dpdc-id son fn)
+                                     1000))
+                        )
+                    ,"split"        :
+                        (if (or (not iz-single) (< fn 0))
+                            false
+                            (ref-DPDC-F::UEV_IzNonceFragmented dpdc-id son fn)
+                        )
+                    ,"break-set"    :
+                        (if (not iz-single)
+                            false
+                            (> (ref-DPDC::UR_NonceClass dpdc-id son fn) 0)
+                        )
+                    ,"transfer"     : (fold (or) false [iz-single iz-multiple])
+                    }
+                )
+            )
+        )
+    )
+    (defun URC_10|Wallet:object (account:string)
+        @doc "THE ONE READ FOR THE PAGE. Held and managed collections of both fungibility \
+            \ classes, their counts, and the populated rows for every held collection -- what \
+            \ today costs three round trips. \
+            \ \
+            \ It does NOT carry the four `total-*` counts, which are the only header fields \
+            \ needing the cross-module `keys` scans; fetch those from URH_01|Header."
+        (let
+            (
+                (ref-DPDC:module{DpdcV3} DPDC)
+                ;;
+                (held-sf:[string] (ref-DPDC::URH_HeldCollectables account true))
+                (mngd-sf:[string] (ref-DPDC::URH_OwnedCollectables account true))
+                (held-nf:[string] (ref-DPDC::URH_HeldCollectables account false))
+                (mngd-nf:[string] (ref-DPDC::URH_OwnedCollectables account false))
+            )
+            {"held-sf"          : held-sf
+            ,"held-sf-number"   : (length held-sf)
+            ,"mngd-sf"          : mngd-sf
+            ,"mngd-sf-no"       : (length mngd-sf)
+            ,"sf-entries"       : (URC_03|SemiFungibleList account held-sf)
+            ;;
+            ,"held-nf"          : held-nf
+            ,"held-nf-number"   : (length held-nf)
+            ,"mngd-nf"          : mngd-nf
+            ,"mngd-nf-no"       : (length mngd-nf)
+            ,"nf-entries"       : (URC_04|NonFungibleList account held-nf)
+            ,"list-ok"          : true}
+        )
+    )
+)
+
+;; ===== 1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/10_DPDC-N.pact ==========
+;; Deploy: load THIS file — interface(s) + module ship together.
+;; History/shared registry: 1_SOVEREIGN/STAGE_02/0_Interfaces/02_Core.pact
+;;
+;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
+(interface DpdcNonceV3
+    @doc "Exposes Collectables Nonce Management related Functions"
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables  ⟨cannot exist in an interface⟩
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables  ⟨cannot exist in an interface⟩
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;
+    ;; [UR]
+    ;;
+    (defun UR_Nonce:object{DpdcUdcV2.DPDC|NonceData} (id:string son:bool nosc:integer nos:bool nost:bool))
+    ;;
+    ;;  [URCi]
+    ;;
+    (defun URCi_UpdateNonces:object{IgnisCollectorV4.OutputCumulator} (account:string count:integer))
+    (defun URCi_UpdateNonceField:object{IgnisCollectorV4.OutputCumulator} (account:string))
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;
+    ;; [UEV]
+    ;;
+    (defun UEV_NonceDataUpdater (id:string son:bool account:string nosc:integer nos:bool nost:bool))
+    (defun UEV_RoleNftRecreateON (id:string son:bool account:string))
+    (defun UEV_RoleNftUpdateON (id:string son:bool account:string))
+    (defun UEV_RoleModifyRoyaltiesON (id:string son:bool account:string))
+    (defun UEV_RoleSetNewUriON (id:string son:bool account:string))
+    (defun UEV_Score (score:decimal))
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+    ;;
+    ;; [C]
+    ;;
+    (defun C_UpdateNonces                               (patron:string executor:string id:string son:bool nosc:[integer] nos:bool nost:bool new-nonces-data:[object{DpdcUdcV2.DPDC|NonceData}]))
+    (defun C_UpdateNonceRoyalty                         (patron:string executor:string id:string son:bool nosc:integer nos:bool nost:bool royalty-value:decimal))
+    (defun C_UpdateNonceIgnisRoyalty                    (patron:string executor:string id:string son:bool nosc:integer nos:bool nost:bool royalty-value:decimal))
+    (defun C_UpdateNonceName                            (patron:string executor:string id:string son:bool nosc:integer nos:bool nost:bool name:string))
+    (defun C_UpdateNonceDescription                     (patron:string executor:string id:string son:bool nosc:integer nos:bool nost:bool description:string))
+    (defun C_UpdateNonceScore                           (patron:string executor:string id:string son:bool nosc:integer nos:bool nost:bool score:decimal))
+    (defun C_UpdateNonceMetaData                        (patron:string executor:string id:string son:bool nosc:integer nos:bool nost:bool meta-data:object))
+    (defun C_UpdateNonceURI                             (patron:string executor:string id:string son:bool nosc:integer nos:bool nost:bool ay:object{DpdcUdcV2.URI|Type} u1:object{DpdcUdcV2.URI|Data} u2:object{DpdcUdcV2.URI|Data} u3:object{DpdcUdcV2.URI|Data}))
+
+
+    ;;<=========================================================================>
+    ;; ADDED 2026-10-12 -- interface-membership sweep (StoicSyntax-Prefixes.md Sec5,
+    ;; owner ruling). Every one of these was already live in the module body; this
+    ;; closes the gap between what the module DOES and what its interface SAYS it does.
+    ;;<=========================================================================>
+    (defun UEV_NotSetInstance (id:string son:bool nosc:integer nost:bool))
+)
+;;
+(module DPDC-N GOV
+    @doc "DPDC-N is the DPDC-family module for updating the mutable metadata of existing \
+        \ NFT/SFT nonces (and set-classes). It exposes C_ entrypoints to update full nonce \
+        \ data in bulk plus single fields — native/ignis royalty, name, description, score, \
+        \ meta-data and URIs — each gated by role checks \
+        \ (Recreate/Update/ModifyRoyalties/SetUri), account-ownership enforcement, and a \
+        \ guard blocking edits to already-minted NFT Set instances. It implements \
+        \ OuronetPolicyV2 and DpdcNonceV2, owns policy tables, routes writes through SECURE \
+        \ XI_ helpers into DPDC/DPDC-S/DPDC-F, and computes IGNIS cost previews via URCi_."
+
+    ;;<=========================================================================>
+    ;;{0}  IMPLEMENTERS
+    ;;
+    (implements OuronetPolicyV2)
+    (implements DpdcNonceV3)
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;
+    (defconst GOV|MD_DPDC-N                             (keyset-ref-guard (GOV|Demiurgoi)))
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    (defcap GOV ()                                      (compose-capability (GOV|DPDC-N_ADMIN)))
+    (defcap GOV|DPDC-N_ADMIN ()                         (enforce-guard GOV|MD_DPDC-N))
+    ;;{G5}  functions
+    (defun GOV|Demiurgoi ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+            )
+            (ref-DALOS::GOV|Demiurgoi)
+        )
+    )
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    (defconst P|I                                       (P|Info))
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;
+    (deftable P|T:{OuronetPolicyV2.P|S})
+    (deftable P|MT:{OuronetPolicyV2.P|MS})
+    ;;{P4}  capabilities
+    (defcap P|DPDC-N|CALLER ()
+        true
+    )
+    (defcap P|SECURE-CALLER ()
+        (compose-capability (P|DPDC-N|CALLER))
+        (compose-capability (SECURE))
+    )
+    ;;{P5}  functions
+    (defun P|Info ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+            )
+            (ref-DALOS::P|Info)
+        )
+    )
+    (defun P|UR:guard (policy-name:string)
+        (at "policy" (read P|T policy-name ["policy"]))
+    )
+    (defun P|UR_IMP:[guard] ()
+        ;;DEFAULT ADDED 2026-09-14 (owner ruling). This was a bare `read`, which RAISES
+        ;;`No value found in table <M>_P|MT for key: InterModulePolicies` when the row does not
+        ;;exist -- i.e. before ANY module has registered. P|UEV_IMC is built on this, so in that
+        ;;window the inter-module gate answered with a raw table error naming a row key instead of
+        ;;refusing cleanly. Surfaced by the X-01 repair, which removed the harness registration
+        ;;that had been creating the row as a side effect.
+        ;;
+        ;;The default is the module's OWN SECURE capability guard, which is exactly what
+        ;;P|A_AddIMP already seeds the row with. So reader and writer now agree on what an
+        ;;unregistered policy list contains, and the gate's answer is the same before and after
+        ;;the first registration: satisfiable only from inside this module.
+        (with-default-read P|MT P|I
+            {"m-policies" : [(create-capability-guard (SECURE))]}
+            {"m-policies" := mp}
+            mp
+        )
+    )
+    (defun P|UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV2} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|DPDC-N_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        @doc "Registers <policy-guard> as a trusted inter-module caller of this module. \
+            \ IDEMPOTENT: a guard already in the chain is left alone rather than appended \
+            \ a second time. See OuronetPolicyV2 for why that is load-bearing."
+        (with-capability (GOV|DPDC-N_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
+                    ;;
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" :
+                            (if (contains policy-guard mp)
+                                mp
+                                (ref-U|LST::UC_AppL mp policy-guard)
+                            )
+                        }
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_RemoveIMP (policy-guard:guard)
+        @doc "Revokes <policy-guard> from this module's guard chain. Removes EVERY occurrence, so \
+            \ it doubles as the cleanup for duplicates left behind by the pre-idempotence append. \
+            \ Refuses to drop this module's own SECURE seed -- see OuronetPolicyV2."
+        (with-capability (GOV|DPDC-N_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
+                    ;;
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (enforce (!= policy-guard dg) "The module's own SECURE seed cannot be revoked")
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_RemoveItem mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_SetIMP (policy-guards:[guard])
+        @doc "Replaces this module's whole guard chain in one write -- the recovery hatch. \
+            \ Deduplicates, and enforces that the module's own SECURE seed survives: without it \
+            \ the module can no longer reach its own P|UEV_IMC-gated functions."
+        (with-capability (GOV|DPDC-N_ADMIN)
+            (let
+                (
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (enforce (contains dg policy-guards) "The module's own SECURE seed must be present")
+                (write P|MT P|I
+                    {"m-policies" : (distinct policy-guards)}
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        (let
+            (
+                (ref-P|DPDC:module{OuronetPolicyV2} DPDC)
+                (ref-P|DPDC-S:module{OuronetPolicyV2} DPDC-S)
+                (mg:guard (create-capability-guard (P|DPDC-N|CALLER)))
+            )
+            (ref-P|DPDC::P|A_AddIMP mg)
+            (ref-P|DPDC-S::P|A_AddIMP mg)
+        )
+    )
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    (defconst BAR                                       (CT_Bar))
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;
+    (defcap SECURE ()
+        true
+    )
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    (defcap DPDC-N|C>SET-DATA
+        (id:string son:bool account:string nosc:[integer] nos:bool nost:bool new-nonces-data:[object{DpdcUdcV2.DPDC|NonceData}])
+        @doc "[0] Controls Full Noce Updating, for multiple Nonces at a time"
+        @event
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPDC-C:module{DpdcCreateV3} DPDC-C)
+                (l1:integer (length nosc))
+                (l2:integer (length new-nonces-data))
+            )
+            (enforce (= l1 l2) "Invalid Inputs for Updating Nonces")
+            (UEV_RoleNftRecreateON id son account)
+            (ref-DALOS::CAP_EnforceAccountOwnership account)
+            (map
+                (lambda
+                    (idx:integer)
+                    (do
+                        (ref-DPDC-C::UEV_NonceDataForCreation (at idx new-nonces-data))
+                        (UEV_NonceDataUpdater id son account (at idx nosc) nos nost)
+                        (UEV_NotSetInstance id son (at idx nosc) nost)     ;; DPDC Audit #12Hc
+                    )
+                )
+                (enumerate 0 (- l1 1))
+            )
+            (compose-capability (P|SECURE-CALLER))
+        )
+    )
+    (defcap DPDC-N|C>SET-ROYALTY
+        (id:string son:bool account:string nosc:integer nos:bool nost:bool royalty-value:decimal)
+        @doc "[1] Controls Nonce Native Royalty Updating"
+        @event
+        (let
+            (
+                (ref-DPDC:module{DpdcV3} DPDC)
+            )
+            (UEV_RoleModifyRoyaltiesON id son account)
+            (ref-DPDC::UEV_Royalty royalty-value)
+            (compose-capability (DPDC-N|C>DATA id son account nosc nos nost))
+        )
+    )
+    (defcap DPDC-N|C>SET-IGNIS-ROYALTY
+        (id:string son:bool account:string nosc:integer nos:bool nost:bool royalty-value:decimal)
+        @doc "[2] Controls Nonce Native Ignis Royalty Updating"
+        @event
+        (let
+            (
+                (ref-DPDC:module{DpdcV3} DPDC)
+            )
+            (UEV_RoleModifyRoyaltiesON id son account)
+            (ref-DPDC::UEV_IgnisRoyalty royalty-value)
+            (compose-capability (DPDC-N|C>DATA id son account nosc nos nost))
+        )
+    )
+    (defcap DPDC-N|C>SET-NAME
+        (id:string son:bool account:string nosc:integer nos:bool nost:bool name:string)
+        @doc "[3] Controls Nonce Name Updating"
+        @event
+        (let
+            (
+                (ref-DPDC:module{DpdcV3} DPDC)
+            )
+            (ref-DPDC::UEV_Name name)     ;; DPDC Audit #12Hb
+            (compose-capability (DPDC-N|C>UPDATE id son account nosc nos nost))
+        )
+    )
+    (defcap DPDC-N|C>SET-DESCRIPTION
+        (id:string son:bool account:string nosc:integer nos:bool nost:bool description:string)
+        @doc "[4] Controls Nonce Description Updating"
+        @event
+        (let
+            (
+                (ref-DPDC:module{DpdcV3} DPDC)
+            )
+            (ref-DPDC::UEV_Description description)     ;; DPDC Audit #12Hb
+            (compose-capability (DPDC-N|C>UPDATE id son account nosc nos nost))
+        )
+    )
+    (defcap DPDC-N|C>SET-SCORE
+        (id:string son:bool account:string nosc:integer nos:bool nost:bool score:decimal)
+        @doc "[5] Controls Nonce Score Updating"
+        @event
+        (UEV_Score score)
+        (compose-capability (DPDC-N|C>UPDATE id son account nosc nos nost))
+    )
+    (defcap DPDC-N|C>SET-META-DATA
+        (id:string son:bool account:string nosc:integer nos:bool nost:bool meta-data:object)
+        @doc "[6] Controls Nonce Meta-Data Updating"
+        @event
+        (let
+            (
+                (ref-DPDC:module{DpdcV3} DPDC)
+            )
+            (ref-DPDC::UEV_MetaDataBag meta-data)     ;; DPDC Audit #12Hb
+            (compose-capability (DPDC-N|C>UPDATE id son account nosc nos nost))
+        )
+    )
+    (defcap DPDC-N|C>SET-URI
+        (
+            id:string son:bool account:string nosc:integer nos:bool nost:bool
+            ay:object{DpdcUdcV2.URI|Type} u1:object{DpdcUdcV2.URI|Data}
+            u2:object{DpdcUdcV2.URI|Data} u3:object{DpdcUdcV2.URI|Data}
+        )
+        @doc "[7] Controls Nonce Uri Updating"
+        @event
+        (let
+            (
+                (ref-DPDC:module{DpdcV3} DPDC)
+            )
+            (UEV_RoleSetNewUriON id son account)
+            ;; DPDC Audit #12Hb
+            (ref-DPDC::UEV_AssetType ay)
+            (ref-DPDC::UEV_UriData u1)
+            (ref-DPDC::UEV_UriData u2)
+            (ref-DPDC::UEV_UriData u3)
+            (compose-capability (DPDC-N|C>DATA id son account nosc nos nost))
+        )
+    )
+    ;;
+    (defcap DPDC-N|C>UPDATE 
+        (id:string son:bool account:string nosc:integer nos:bool nost:bool)
+        (UEV_RoleNftUpdateON id son account)
+        (compose-capability (DPDC-N|C>DATA id son account nosc nos nost))
+    )
+    (defcap DPDC-N|C>DATA
+        (id:string son:bool account:string nosc:integer nos:bool nost:bool)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+            )
+            (UEV_NonceDataUpdater id son account nosc nos nost)
+            (UEV_NotSetInstance id son nosc nost)     ;; DPDC Audit #12Hc
+            (ref-DALOS::CAP_EnforceAccountOwnership account)
+            (compose-capability (P|SECURE-CALLER))
+        )
+    )
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;
+    (defun CT_Bar ()
+        (let
+            (
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
+            )
+            (ref-U|CT::CT_BAR)
+        )
+    )
+    ;;{5.2}  Compute [UC]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;
+    (defun UR_Nonce:object{DpdcUdcV2.DPDC|NonceData}
+        (id:string son:bool nosc:integer nos:bool nost:bool)
+        @doc "nosc = <Nonce-Or-Set-Class> ; value of either a Nonce or Set-Class \
+            \ nos  = <Native-Or-Split>    ; designates either native or split for Nonce-Data \
+            \ nost = <NoNCe-Or-SET>       ; designates if <nosc> is either a <nonce> or <set-class> value"
+        (let
+            (
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (ref-DPDC-S:module{DpdcSetsV3} DPDC-S)
+            )
+            (if nost
+                (if nos
+                    (ref-DPDC::UR_NativeNonceData id son nosc)
+                    (ref-DPDC::UR_SplitNonceData id son nosc)
+                )
+                (if nos
+                    (ref-DPDC-S::UR_SetNonceData id son nosc)
+                    (ref-DPDC-S::UR_SetSplitData id son nosc)
+                )
+            )
+        )
+    )
+    ;;
+    (defun URCi_UpdateNonces:object{IgnisCollectorV4.OutputCumulator}
+        (account:string count:integer)
+        @doc "Cost preview for C_UpdateNonces (count * UsagePrice ignis|smallest; \
+            \ construct with empty output list)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (price:decimal (* (dec count) (ref-IGNIS::UC_IgnisLeg "tier-smallest")))
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator price account (ref-IGNIS::URC_IsVirtualGasZero) [])
+        )
+    )
+    (defun URCi_UpdateNonceField:object{IgnisCollectorV4.OutputCumulator}
+        (account:string)
+        @doc "Cost preview for the single-field nonce updates (Royalty, IgnisRoyalty, Name, \
+            \ Description, Score, MetaData, URI) — ONE uniform price for all ~20 C_UpdateNonce* \
+            \ wrappers (owner 2026-09-06). A single component key is EXACT here because every \
+            \ DPSF|/DPNF| UpdateNonce* entry in IG|COMPONENTS is 17.0; if those ever diverge \
+            \ this reader must take <son> and branch. Tier is setup, not usage: a nonce field \
+            \ update is a config/property change per the IG|DETER rubric."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "DPNF|C_UpdateNonce" "setup")
+                account (ref-IGNIS::URC_IsVirtualGasZero) [])
+        )
+    )
+    ;;{5.4}  Validate [UEV/CAP]
+    (defun UEV_NonceDataUpdater
+        (id:string son:bool account:string nosc:integer nos:bool nost:bool)
+        (enforce (> nosc 0) "Operation requires greater than zero <nonce-or-set-class>")
+        (if nost
+            ;;Nonce
+            (let
+                (
+                    (ref-DPDC:module{DpdcV3} DPDC)
+                    (ref-DPDC-F:module{DpdcFragmentsV3} DPDC-F)
+                )
+                (ref-DPDC::UEV_Nonce id son nosc)
+                (if (not nos)
+                    (ref-DPDC-F::UEV_Fragmentation id son nosc)
+                    true
+                )
+            )
+            ;;Sets
+            (let
+                (
+                    (ref-DPDC-S:module{DpdcSetsV3} DPDC-S)
+                )
+                (ref-DPDC-S::UEV_SetClass id son nosc)
+                (if (not nos)
+                    (ref-DPDC-S::UEV_Fragmentation id son nosc)
+                    true
+                )
+            )
+        )
+    )
+    (defun UEV_NotSetInstance (id:string son:bool nosc:integer nost:bool)
+        @doc "Blocks direct edits to an already-minted NFT Set instance's own NonceData. NFT Set \
+            \ instances are individually unique combinations — each Make can combine different \
+            \ constituent nonces, so each instance carries its own composition record that must \
+            \ stay fixed once minted; only the Set-Class definition/template (the <nost=false> \
+            \ Sets path) may be touched afterward. SFT Sets are unaffected: an SFT set-class has \
+            \ exactly one shared nonce, never re-derived per Make, so its data legitimately stays \
+            \ editable. See DPDC Audit #12Hc."
+        (if (and nost (not son))
+            (let
+                (
+                    (ref-DPDC:module{DpdcV3} DPDC)
+                )
+                (enforce
+                    (= (ref-DPDC::UR_NonceClass id son nosc) 0)
+                    "NFT Set instance nonces cannot have their data directly modified — edit the \
+                        \ Set-Class definition instead"
+                )
+            )
+            true
+        )
+    )
+    (defun UEV_RoleNftRecreateON (id:string son:bool account:string)
+        (let
+            (
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (x:bool (ref-DPDC::UR_CA|R-Recreate id son account))
+            )
+            (enforce x (format "{} Collection {} Element Data cannot be Updated while using the {} Ouronet Account" [(if son "SFT" "NFT") id account]))
+        )
+    )
+    (defun UEV_RoleNftUpdateON (id:string son:bool account:string)
+        (let
+            (
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (x:bool (ref-DPDC::UR_CA|R-Update id son account))
+            )
+            (enforce x (format "{} Collection {} Element Data cannot be Updated while using the {} Ouronet Account" [(if son "SFT" "NFT") id account]))
+        )
+    )
+    (defun UEV_RoleModifyRoyaltiesON (id:string son:bool account:string)
+        (let
+            (
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (x:bool (ref-DPDC::UR_CA|R-ModifyRoyalties id son account))
+            )
+            (enforce x (format "{} Collection {} Element Data Royalties cannot be Updated while using the {} Ouronet Account" [(if son "SFT" "NFT") id account]))
+        )
+    )
+    (defun UEV_RoleSetNewUriON (id:string son:bool account:string)
+        (let
+            (
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (x:bool (ref-DPDC::UR_CA|R-SetUri id son account))
+            )
+            (enforce x (format "{} Collection {} Element Data URIs cannot be Updated while using the {} Ouronet Account" [(if son "SFT" "NFT") id account]))
+        )
+    )
+    ;;
+    (defun UEV_Score (score:decimal)
+        (enforce
+            (= (floor score 24) score)
+            (format "The score {} can have up to 24 decimals precision" [score])
+        )
+        (enforce
+            ;; L7 #19: exactly -1.0 is the "unscored" sentinel; otherwise the score must be NON-negative and
+            ;; below 100 billion. (Was `>= -1.0`, which wrongly admitted the whole [-1.0, 0) range of real
+            ;; negatives — negative nonce scores mangle AQP reward weighting.)
+            (and
+                (or (= score -1.0) (>= score 0.0))
+                (<= score 100000000000.0)
+            )
+            "Score must be the -1.0 unscored sentinel or a non-negative value below 100 billion"
+        )
+    )
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;Protection: Class 2 — SECURE
+    (defun XI_U|NoncesData
+        (id:string son:bool account:string nosc:[integer] nos:bool nost:bool new-nonce-data:[object{DpdcUdcV2.DPDC|NonceData}])
+        (require-capability (SECURE))
+        (let
+            (
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (ref-DPDC-S:module{DpdcSetsV3} DPDC-S)
+            )
+            (map
+                (lambda
+                    (idx:integer)
+                    (if nost
+                        ;;Nonce
+                        (ref-DPDC::XE_U|NonceOrSplitData id son (at idx nosc) nos (at idx new-nonce-data))
+                        ;;Sets
+                        (ref-DPDC-S::XB_U|NonceOrSplitData id son (at idx nosc) nos (at idx new-nonce-data))
+                    )
+                )
+                (enumerate 0 (- (length nosc) 1))
+            )
+        )
+    )
+    ;;Protection: Class 2 — SECURE
+    (defun XI_U|NonceRoyalty
+        (id:string son:bool account:string nosc:integer nos:bool nost:bool r-or-ir:bool royalty-value:decimal)
+        (require-capability (SECURE))
+        (let
+            (
+                (read-nonce-data:object{DpdcUdcV2.DPDC|NonceData} (UR_Nonce id son nosc nos nost))
+                (new-nonce-data:object{DpdcUdcV2.DPDC|NonceData}
+                    (if r-or-ir
+                        (+
+                            {"royalty" : royalty-value}
+                            (remove "royalty" read-nonce-data)
+                        )
+                        (+
+                            {"ignis" : royalty-value}
+                            (remove "ignis" read-nonce-data)
+                        )
+                    ) 
+                )
+            )
+            (XI_U|NoncesData id son account [nosc] nos nost [new-nonce-data])
+        )
+    )
+    ;;Protection: Class 2 — SECURE
+    (defun XI_U|NonceNoD 
+        (id:string son:bool account:string nosc:integer nos:bool nost:bool name-or-description:bool name-description:string)
+        (require-capability (SECURE))
+        (let
+            (
+                (read-nonce-data:object{DpdcUdcV2.DPDC|NonceData} (UR_Nonce id son nosc nos nost))
+                (new-nonce-data:object{DpdcUdcV2.DPDC|NonceData}
+                    (if name-or-description
+                        (+
+                            {"name" : name-description}
+                            (remove "name" read-nonce-data)
+                        )
+                        (+
+                            {"description" : name-description}
+                            (remove "description" read-nonce-data)
+                        )
+                    ) 
+                )
+            )
+            (XI_U|NoncesData id son account [nosc] nos nost [new-nonce-data])
+        )
+    )
+    ;;Protection: Class 2 — SECURE
+    (defun XI_U|NonceScore
+        (id:string son:bool account:string nosc:integer nos:bool nost:bool score:decimal)
+        (require-capability (SECURE))
+        (let
+            (
+                (read-nonce-data:object{DpdcUdcV2.DPDC|NonceData} (UR_Nonce id son nosc nos nost))
+                (read-md:object{DpdcUdcV2.NonceMetaData} (at "meta-data" read-nonce-data))
+                ;;
+                (updated-md:object{DpdcUdcV2.NonceMetaData}
+                    (+
+                        {"score" : score}
+                        (remove "score" read-md)
+                    )
+                )
+                (new-nonce-data:object{DpdcUdcV2.DPDC|NonceData}
+                    (+
+                        {"meta-data" : updated-md}
+                        (remove "meta-data" read-nonce-data)
+                    )
+                )
+            )
+            (XI_U|NoncesData id son account [nosc] nos nost [new-nonce-data])
+        )
+    )
+    ;;Protection: Class 2 — SECURE
+    (defun XI_NonceMetaData 
+        (id:string son:bool account:string nosc:integer nos:bool nost:bool meta-data:object)
+        (require-capability (SECURE))
+        (let
+            (
+                (read-nonce-data:object{DpdcUdcV2.DPDC|NonceData} (UR_Nonce id son nosc nos nost))
+                (read-md:object{DpdcUdcV2.NonceMetaData} (at "meta-data" read-nonce-data))
+                ;;
+                (updated-md:object{DpdcUdcV2.NonceMetaData}
+                    (+
+                        {"meta-data" : meta-data}
+                        (remove "meta-data" read-md)
+                    )
+                )
+                (new-nonce-data:object{DpdcUdcV2.DPDC|NonceData}
+                    (+
+                        {"meta-data" : updated-md}
+                        (remove "meta-data" read-nonce-data)
+                    )
+                )
+            )
+            (XI_U|NoncesData id son account [nosc] nos nost [new-nonce-data])
+        )
+    )
+    ;;Protection: Class 2 — SECURE
+    (defun XI_U|NonceUri
+        (
+            id:string son:bool account:string nosc:integer nos:bool nost:bool
+            ay:object{DpdcUdcV2.URI|Type} u1:object{DpdcUdcV2.URI|Data} u2:object{DpdcUdcV2.URI|Data} u3:object{DpdcUdcV2.URI|Data}
+        )
+        (require-capability (SECURE))
+        (let
+            (
+                (read-nonce-data:object{DpdcUdcV2.DPDC|NonceData} (UR_Nonce id son nosc nos nost))
+                (new-nonce-data:object{DpdcUdcV2.DPDC|NonceData}
+                    (+
+                        {"uri-tertiary" : u3}
+                        (+
+                            {"uri-secondary" : u2}
+                            (+
+                                {"uri-primary" : u1}
+                                (+
+                                    {"asset-type" : ay}
+                                    (remove "asset-type" read-nonce-data)
+                                )
+                            )
+                        )
+                    ) 
+                )
+            )
+            (XI_U|NoncesData id son account [nosc] nos nost [new-nonce-data])
+        )
+    )
+    ;;{5.7}  User [A/C]
+    (defun C_UpdateNonces
+        (patron:string executor:string id:string son:bool nosc:[integer] nos:bool nost:bool new-nonces-data:[object{DpdcUdcV2.DPDC|NonceData}])
+        @doc "Replaces the full NonceData of several nonces (or set-classes) at once. \
+            \ \
+            \ Executor: ENFORCED DIRECTLY. Every one of this module's eight entrypoints \
+            \ funnels into DPDC-N|C>DATA, which runs CAP_EnforceAccountOwnership on the \
+            \ parameter itself, and the surrounding capability first checks that the SAME \
+            \ account holds the relevant role (UEV_RoleNftUpdateON / \
+            \ UEV_RoleModifyRoyaltiesON / UEV_RoleSetNewUriON). Role AND signature, both on \
+            \ the named account: a rename, not an addition. \
+            \ \
+            \ Note the contrast with its DPDC siblings, which is the whole reason this \
+            \ module was quick. 05_DPDC-R, 06_DPDC-MNG (wipes), 08_DPDC-S (definitions) and \
+            \ 09_DPDC-F (fragmentation) all bottom out in DPDC::CAP_Owner, an enforce on a \
+            \ DERIVED account that names no actor -- HANDOFF 4g -- and every one needed a \
+            \ binder. Nonce METADATA is delegated by ROLE instead, so the actor is a \
+            \ parameter and was there all along under the wrong name. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
+        (P|UEV_IMC)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (smallest:decimal (ref-IGNIS::UC_IgnisLeg "tier-smallest"))
+                (how-many:decimal (dec (length nosc)))
+                (price:decimal (* how-many smallest))
+                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+            )
+            (with-capability (DPDC-N|C>SET-DATA id son executor nosc nos nost new-nonces-data)
+                (XI_U|NoncesData id son executor nosc nos nost new-nonces-data)
+                ;;Cumulator
+                (URCi_UpdateNonces executor (length nosc))
+            )
+        )
+    )
+    (defun C_UpdateNonceRoyalty
+        (patron:string executor:string id:string son:bool nosc:integer nos:bool nost:bool royalty-value:decimal)
+        @doc "Sets one nonce's native royalty value. \
+            \ \
+            \ Executor: ENFORCED DIRECTLY. Every one of this module's eight entrypoints \
+            \ funnels into DPDC-N|C>DATA, which runs CAP_EnforceAccountOwnership on the \
+            \ parameter itself, and the surrounding capability first checks that the SAME \
+            \ account holds the relevant role (UEV_RoleNftUpdateON / \
+            \ UEV_RoleModifyRoyaltiesON / UEV_RoleSetNewUriON). Role AND signature, both on \
+            \ the named account: a rename, not an addition. \
+            \ \
+            \ Note the contrast with its DPDC siblings, which is the whole reason this \
+            \ module was quick. 05_DPDC-R, 06_DPDC-MNG (wipes), 08_DPDC-S (definitions) and \
+            \ 09_DPDC-F (fragmentation) all bottom out in DPDC::CAP_Owner, an enforce on a \
+            \ DERIVED account that names no actor -- HANDOFF 4g -- and every one needed a \
+            \ binder. Nonce METADATA is delegated by ROLE instead, so the actor is a \
+            \ parameter and was there all along under the wrong name. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
+        (P|UEV_IMC)
+        (with-capability (DPDC-N|C>SET-ROYALTY id son executor nosc nos nost royalty-value)
+            (XI_U|NonceRoyalty id son executor nosc nos nost true royalty-value)
+            (URCi_UpdateNonceField executor)
+        )
+    )
+    (defun C_UpdateNonceIgnisRoyalty
+        (patron:string executor:string id:string son:bool nosc:integer nos:bool nost:bool royalty-value:decimal)
+        @doc "Sets one nonce's IGNIS royalty value. \
+            \ \
+            \ Executor: ENFORCED DIRECTLY. Every one of this module's eight entrypoints \
+            \ funnels into DPDC-N|C>DATA, which runs CAP_EnforceAccountOwnership on the \
+            \ parameter itself, and the surrounding capability first checks that the SAME \
+            \ account holds the relevant role (UEV_RoleNftUpdateON / \
+            \ UEV_RoleModifyRoyaltiesON / UEV_RoleSetNewUriON). Role AND signature, both on \
+            \ the named account: a rename, not an addition. \
+            \ \
+            \ Note the contrast with its DPDC siblings, which is the whole reason this \
+            \ module was quick. 05_DPDC-R, 06_DPDC-MNG (wipes), 08_DPDC-S (definitions) and \
+            \ 09_DPDC-F (fragmentation) all bottom out in DPDC::CAP_Owner, an enforce on a \
+            \ DERIVED account that names no actor -- HANDOFF 4g -- and every one needed a \
+            \ binder. Nonce METADATA is delegated by ROLE instead, so the actor is a \
+            \ parameter and was there all along under the wrong name. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
+        (P|UEV_IMC)
+        (with-capability (DPDC-N|C>SET-IGNIS-ROYALTY id son executor nosc nos nost royalty-value)
+            (XI_U|NonceRoyalty id son executor nosc nos nost false royalty-value)
+            (URCi_UpdateNonceField executor)
+        )
+    )
+    (defun C_UpdateNonceName
+        (patron:string executor:string id:string son:bool nosc:integer nos:bool nost:bool name:string)
+        @doc "Sets one nonce's name. \
+            \ \
+            \ Executor: ENFORCED DIRECTLY. Every one of this module's eight entrypoints \
+            \ funnels into DPDC-N|C>DATA, which runs CAP_EnforceAccountOwnership on the \
+            \ parameter itself, and the surrounding capability first checks that the SAME \
+            \ account holds the relevant role (UEV_RoleNftUpdateON / \
+            \ UEV_RoleModifyRoyaltiesON / UEV_RoleSetNewUriON). Role AND signature, both on \
+            \ the named account: a rename, not an addition. \
+            \ \
+            \ Note the contrast with its DPDC siblings, which is the whole reason this \
+            \ module was quick. 05_DPDC-R, 06_DPDC-MNG (wipes), 08_DPDC-S (definitions) and \
+            \ 09_DPDC-F (fragmentation) all bottom out in DPDC::CAP_Owner, an enforce on a \
+            \ DERIVED account that names no actor -- HANDOFF 4g -- and every one needed a \
+            \ binder. Nonce METADATA is delegated by ROLE instead, so the actor is a \
+            \ parameter and was there all along under the wrong name. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
+        (P|UEV_IMC)
+        (with-capability (DPDC-N|C>SET-NAME id son executor nosc nos nost name)
+            (XI_U|NonceNoD id son executor nosc nos nost true name)
+            (URCi_UpdateNonceField executor)
+        )
+    )
+    (defun C_UpdateNonceDescription
+        (patron:string executor:string id:string son:bool nosc:integer nos:bool nost:bool description:string)
+        @doc "Sets one nonce's description. \
+            \ \
+            \ Executor: ENFORCED DIRECTLY. Every one of this module's eight entrypoints \
+            \ funnels into DPDC-N|C>DATA, which runs CAP_EnforceAccountOwnership on the \
+            \ parameter itself, and the surrounding capability first checks that the SAME \
+            \ account holds the relevant role (UEV_RoleNftUpdateON / \
+            \ UEV_RoleModifyRoyaltiesON / UEV_RoleSetNewUriON). Role AND signature, both on \
+            \ the named account: a rename, not an addition. \
+            \ \
+            \ Note the contrast with its DPDC siblings, which is the whole reason this \
+            \ module was quick. 05_DPDC-R, 06_DPDC-MNG (wipes), 08_DPDC-S (definitions) and \
+            \ 09_DPDC-F (fragmentation) all bottom out in DPDC::CAP_Owner, an enforce on a \
+            \ DERIVED account that names no actor -- HANDOFF 4g -- and every one needed a \
+            \ binder. Nonce METADATA is delegated by ROLE instead, so the actor is a \
+            \ parameter and was there all along under the wrong name. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
+        (P|UEV_IMC)
+        (with-capability (DPDC-N|C>SET-DESCRIPTION id son executor nosc nos nost description)
+            (XI_U|NonceNoD id son executor nosc nos nost false description)
+            (URCi_UpdateNonceField executor)
+        )
+    )
+    (defun C_UpdateNonceScore
+        (patron:string executor:string id:string son:bool nosc:integer nos:bool nost:bool score:decimal)
+        @doc "Sets one nonce's score. \
+            \ \
+            \ Executor: ENFORCED DIRECTLY. Every one of this module's eight entrypoints \
+            \ funnels into DPDC-N|C>DATA, which runs CAP_EnforceAccountOwnership on the \
+            \ parameter itself, and the surrounding capability first checks that the SAME \
+            \ account holds the relevant role (UEV_RoleNftUpdateON / \
+            \ UEV_RoleModifyRoyaltiesON / UEV_RoleSetNewUriON). Role AND signature, both on \
+            \ the named account: a rename, not an addition. \
+            \ \
+            \ Note the contrast with its DPDC siblings, which is the whole reason this \
+            \ module was quick. 05_DPDC-R, 06_DPDC-MNG (wipes), 08_DPDC-S (definitions) and \
+            \ 09_DPDC-F (fragmentation) all bottom out in DPDC::CAP_Owner, an enforce on a \
+            \ DERIVED account that names no actor -- HANDOFF 4g -- and every one needed a \
+            \ binder. Nonce METADATA is delegated by ROLE instead, so the actor is a \
+            \ parameter and was there all along under the wrong name. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
+        (P|UEV_IMC)
+        (with-capability (DPDC-N|C>SET-SCORE id son executor nosc nos nost score)
+            (XI_U|NonceScore id son executor nosc nos nost score)
+            (URCi_UpdateNonceField executor)
+        )
+    )
+    (defun C_UpdateNonceMetaData
+        (patron:string executor:string id:string son:bool nosc:integer nos:bool nost:bool meta-data:object)
+        @doc "Sets one nonce's metadata bag. \
+            \ \
+            \ Executor: ENFORCED DIRECTLY. Every one of this module's eight entrypoints \
+            \ funnels into DPDC-N|C>DATA, which runs CAP_EnforceAccountOwnership on the \
+            \ parameter itself, and the surrounding capability first checks that the SAME \
+            \ account holds the relevant role (UEV_RoleNftUpdateON / \
+            \ UEV_RoleModifyRoyaltiesON / UEV_RoleSetNewUriON). Role AND signature, both on \
+            \ the named account: a rename, not an addition. \
+            \ \
+            \ Note the contrast with its DPDC siblings, which is the whole reason this \
+            \ module was quick. 05_DPDC-R, 06_DPDC-MNG (wipes), 08_DPDC-S (definitions) and \
+            \ 09_DPDC-F (fragmentation) all bottom out in DPDC::CAP_Owner, an enforce on a \
+            \ DERIVED account that names no actor -- HANDOFF 4g -- and every one needed a \
+            \ binder. Nonce METADATA is delegated by ROLE instead, so the actor is a \
+            \ parameter and was there all along under the wrong name. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
+        (P|UEV_IMC)
+        (with-capability (DPDC-N|C>SET-META-DATA id son executor nosc nos nost meta-data)
+            (XI_NonceMetaData id son executor nosc nos nost meta-data)
+            (URCi_UpdateNonceField executor)
+        )
+    )
+    (defun C_UpdateNonceURI
+        (
+            patron:string executor:string id:string son:bool nosc:integer nos:bool nost:bool
+            ay:object{DpdcUdcV2.URI|Type} u1:object{DpdcUdcV2.URI|Data} u2:object{DpdcUdcV2.URI|Data} u3:object{DpdcUdcV2.URI|Data}
+        )
+        @doc "Sets one nonce's asset type and up to three URI records. \
+            \ \
+            \ Executor: ENFORCED DIRECTLY. Every one of this module's eight entrypoints \
+            \ funnels into DPDC-N|C>DATA, which runs CAP_EnforceAccountOwnership on the \
+            \ parameter itself, and the surrounding capability first checks that the SAME \
+            \ account holds the relevant role (UEV_RoleNftUpdateON / \
+            \ UEV_RoleModifyRoyaltiesON / UEV_RoleSetNewUriON). Role AND signature, both on \
+            \ the named account: a rename, not an addition. \
+            \ \
+            \ Note the contrast with its DPDC siblings, which is the whole reason this \
+            \ module was quick. 05_DPDC-R, 06_DPDC-MNG (wipes), 08_DPDC-S (definitions) and \
+            \ 09_DPDC-F (fragmentation) all bottom out in DPDC::CAP_Owner, an enforce on a \
+            \ DERIVED account that names no actor -- HANDOFF 4g -- and every one needed a \
+            \ binder. Nonce METADATA is delegated by ROLE instead, so the actor is a \
+            \ parameter and was there all along under the wrong name. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
+        (P|UEV_IMC)
+        (with-capability (DPDC-N|C>SET-URI id son executor nosc nos nost ay u1 u2 u3)
+            (XI_U|NonceUri id son executor nosc nos nost ay u1 u2 u3)
+            (URCi_UpdateNonceField executor)
+        )
+    )
+
+)
+
+;; --- tables for 10_DPDC-N.pact (2 defined) ---
+;; UPGRADE MODE: this module is assumed already deployed, so its
+;; tables already exist and (create-table) would ABORT the whole
+;; transaction. They are listed here, commented, for reference.
+;; If any of these is NEW since the last deploy, uncomment JUST it.
+;; (create-table P|T)
+;; (create-table P|MT)
+
+;; ===== 1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/11_EQUITY+.pact =========
+;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
+(interface EquityV4
+    @doc "EquityV4 is the interface contract for the EQUITY shareholder/equity-collection \
+        \ policy, declaring the signatures every implementer must provide. It specifies \
+        \ compute helpers, read/cost-preview functions (tier supplies, share \
+        \ package/per-million math, combine capacity, URCi_ cost readers), validators (share \
+        \ package tier, share amounts, equity SF id, convert, morph), and the two user \
+        \ entrypoints C_IssueShareholderCollection and C_MorphPackageShares. It defines no \
+        \ tables or state, only the equity API surface."
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables  ⟨cannot exist in an interface⟩
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables  ⟨cannot exist in an interface⟩
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
+    ;;
+    ;;  [UC]
+    ;;
+    (defun UC_Name:[string] (collection-name:string))
+    (defun UC_Description:[string] (collection-name:string))
+    (defun UC_Convert:integer (id:string input-tier:integer input-tier-amount:integer output-tier:integer))
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;
+    ;;  [UR]
+    ;;
+    (defun UR_TierSupplies:[integer] (id:string))
+    ;;
+    ;;  [URC]
+    ;;
+    ;; THE ONE PLACE THE "E|" RULE LIVES, from 2026-10-07. The prefix test was written out by hand
+    ;; in three separate modules (DPDC-C and DPDC-T for pricing, and this module's own
+    ;; UEV_EquitySemiFungibleID), and AQP-SCORE was about to be a fourth. A rule copied four times
+    ;; is a rule that will be changed in three places.
+    (defun URC_IzEquitySemiFungible:bool (id:string))
+    (defun URC_MakeSharePackage:integer (id:string shares-amount:integer package-share-tier:integer))
+    (defun URC_SharesPerMillion:[integer] (id:string))
+    (defun URC_SingleSharePerMillions:integer (id:string package-share-tier:integer))
+    (defun URC_CombineCapacity:integer (id:string))
+    (defun URCi_MorphPackageShares:object{IgnisCollectorV4.OutputCumulator} (account:string id:string input-nonce:integer input-amount:integer output-nonce:integer))
+    (defun URCi_IssueShareholderCollection:object{IgnisCollectorV4.OutputCumulator} ())
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;
+    ;;  [UEV]
+    ;;
+    (defun UEV_SharePackageTier (package-share-tier:integer))
+    (defun UEV_ShareAmountsForMaking (id:string shares-amount:integer package-share-tier:integer))
+    (defun UEV_EquitySemiFungibleID (id:string))
+    (defun UEV_Convert (id:string input-tier:integer input-tier-amount:integer output-tier:integer))
+    (defun UEV_Morph (input-nonce:integer output-nonce:integer))
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+    ;;
+    ;;  [C]
+    ;;
+    (defun C_IssueShareholderCollection:object{IgnisCollectorV4.OutputCumulator}
+        (
+            patron:string executor:string collection-name:string collection-ticker:string
+            royalty:decimal ignis-royalty:decimal ipfs-links:[string]
+        )
+    )
+    (defun C_MorphPackageShares:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string id:string input-nonce:integer input-amount:integer output-nonce:integer))
+
+)
+(module EQUITY GOV
+    @doc "EQUITY implements OuronetPolicyV2 and EquityV4 to create and manage Shareholder \
+        \ DPSF (SFT) collections representing company equity, where nonce 1 is the barebone \
+        \ share and nonces 2-8 are packaged share tiers. Its main entrypoints are \
+        \ C_IssueShareholderCollection (issues an Elite equity SFT collection via \
+        \ DPDC-I/DPDC-C, populating 8 nonces with tiered royalties) and C_MorphPackageShares \
+        \ (Make/Break/Convert between share tiers via SECURE-gated XI_ helpers over \
+        \ DPDC-MNG/DPDC-T). It enforces packaging caps, tier/divisibility validators, owns \
+        \ policy tables, acts as a remote DPDC governor, and returns IGNIS cost cumulators."
+
+    ;;<=========================================================================>
+    ;;{0}  IMPLEMENTERS
+    ;;
+    (implements OuronetPolicyV2)
+    (implements EquityV4)
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;
+    (defconst GOV|MD_EQUITY                             (keyset-ref-guard (GOV|Demiurgoi)))
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    (defcap GOV ()                                      (compose-capability (GOV|EQUITY_ADMIN)))
+    (defcap GOV|EQUITY_ADMIN ()                         (enforce-guard GOV|MD_EQUITY))
+    ;;{G5}  functions
+    (defun GOV|Demiurgoi ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+            )
+            (ref-DALOS::GOV|Demiurgoi)
+        )
+    )
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    (defconst P|I                                       (P|Info))
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;
+    (deftable P|T:{OuronetPolicyV2.P|S})
+    (deftable P|MT:{OuronetPolicyV2.P|MS})
+    ;;{P4}  capabilities
+    (defcap P|EQUITY|CALLER ()
+        true
+    )
+    (defcap P|SECURE-CALLER ()
+        (compose-capability (P|EQUITY|CALLER))
+        (compose-capability (SECURE))
+    )
+    (defcap P|EQUITY|REMOTE-GOV ()
+        @doc "DPDC Remote Governor Capability"
+        true
+    )
+    (defcap P|GOV-CALLER ()
+        (compose-capability (P|EQUITY|CALLER))
+        (compose-capability (P|EQUITY|REMOTE-GOV))
+    )
+    ;;{P5}  functions
+    (defun P|Info ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+            )
+            (ref-DALOS::P|Info)
+        )
+    )
+    (defun P|UR:guard (policy-name:string)
+        (at "policy" (read P|T policy-name ["policy"]))
+    )
+    (defun P|UR_IMP:[guard] ()
+        ;;DEFAULT ADDED 2026-09-14 (owner ruling). This was a bare `read`, which RAISES
+        ;;`No value found in table <M>_P|MT for key: InterModulePolicies` when the row does not
+        ;;exist -- i.e. before ANY module has registered. P|UEV_IMC is built on this, so in that
+        ;;window the inter-module gate answered with a raw table error naming a row key instead of
+        ;;refusing cleanly. Surfaced by the X-01 repair, which removed the harness registration
+        ;;that had been creating the row as a side effect.
+        ;;
+        ;;The default is the module's OWN SECURE capability guard, which is exactly what
+        ;;P|A_AddIMP already seeds the row with. So reader and writer now agree on what an
+        ;;unregistered policy list contains, and the gate's answer is the same before and after
+        ;;the first registration: satisfiable only from inside this module.
+        (with-default-read P|MT P|I
+            {"m-policies" : [(create-capability-guard (SECURE))]}
+            {"m-policies" := mp}
+            mp
+        )
+    )
+    (defun P|UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV2} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|EQUITY_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        @doc "Registers <policy-guard> as a trusted inter-module caller of this module. \
+            \ IDEMPOTENT: a guard already in the chain is left alone rather than appended \
+            \ a second time. See OuronetPolicyV2 for why that is load-bearing."
+        (with-capability (GOV|EQUITY_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
+                    ;;
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" :
+                            (if (contains policy-guard mp)
+                                mp
+                                (ref-U|LST::UC_AppL mp policy-guard)
+                            )
+                        }
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_RemoveIMP (policy-guard:guard)
+        @doc "Revokes <policy-guard> from this module's guard chain. Removes EVERY occurrence, so \
+            \ it doubles as the cleanup for duplicates left behind by the pre-idempotence append. \
+            \ Refuses to drop this module's own SECURE seed -- see OuronetPolicyV2."
+        (with-capability (GOV|EQUITY_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
+                    ;;
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (enforce (!= policy-guard dg) "The module's own SECURE seed cannot be revoked")
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_RemoveItem mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_SetIMP (policy-guards:[guard])
+        @doc "Replaces this module's whole guard chain in one write -- the recovery hatch. \
+            \ Deduplicates, and enforces that the module's own SECURE seed survives: without it \
+            \ the module can no longer reach its own P|UEV_IMC-gated functions."
+        (with-capability (GOV|EQUITY_ADMIN)
+            (let
+                (
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (enforce (contains dg policy-guards) "The module's own SECURE seed must be present")
+                (write P|MT P|I
+                    {"m-policies" : (distinct policy-guards)}
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        (let
+            (
+                (ref-P|DPDC:module{OuronetPolicyV2} DPDC)
+                (ref-P|DPDC-C:module{OuronetPolicyV2} DPDC-C)
+                (ref-P|DPDC-I:module{OuronetPolicyV2} DPDC-I)
+                (ref-P|DPDC-T:module{OuronetPolicyV2} DPDC-T)
+                (mg:guard (create-capability-guard (P|EQUITY|CALLER)))
+            )
+            (ref-P|DPDC::P|A_Add
+                "EQUITY|RemoteDpdcGov"
+                (create-capability-guard (P|EQUITY|REMOTE-GOV))
+            )
+            (ref-P|DPDC::P|A_AddIMP mg)
+            (ref-P|DPDC-C::P|A_AddIMP mg)
+            (ref-P|DPDC-I::P|A_AddIMP mg)
+            (ref-P|DPDC-T::P|A_AddIMP mg)
+        )
+    )
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    (defconst BAR                                       (CT_Bar))
+    (defconst P                                         ["0.1‰" "0.2‰" "0.5‰" "1‰" "2‰" "5‰" "1%"])
+    (defconst S                                         [100 200 500 1000 2000 5000 10000])
+    ;;ever be packaged into tradeable tier-units (nonces 2-8) at once; the remainder must stay as loose,
+    ;;unpackaged barebone shares. See URC_CombineCapacity below, the sole consumer of this constant.
+    (defconst PACKAGING_CAP_DIVISOR 2)
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;
+    (defcap SECURE ()
+        true
+    )
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    (defcap EQUITY|C>MAKE (id:string shares-amount:integer package-share-tier:integer)
+        @event
+        (UEV_EquitySemiFungibleID id)
+        (UEV_ShareAmountsForMaking id shares-amount package-share-tier)
+        (compose-capability (P|GOV-CALLER))
+    )
+    (defcap EQUITY|C>BREAK (id:string package-share-tier:integer)
+        @event
+        (UEV_EquitySemiFungibleID id)
+        (UEV_SharePackageTier package-share-tier)
+        (compose-capability (P|GOV-CALLER))
+    )
+    (defcap EQUITY|C>CONVERT (id:string input-package-share-tier:integer input-package-share-tier-amount:integer output-package-share-tier:integer)
+        @event
+        (UEV_EquitySemiFungibleID id)
+        (UEV_Convert id input-package-share-tier input-package-share-tier-amount output-package-share-tier)
+        (compose-capability (P|GOV-CALLER))
+    )
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;
+    (defun CT_Bar ()
+        (let
+            (
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
+            )
+            (ref-U|CT::CT_BAR)
+        )
+    )
+    ;;{5.2}  Compute [UC]
+    ;;
+    (defun UC_Name:[string] (collection-name:string)
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+            )
+            (fold
+                (lambda
+                    (acc:[string] idx:integer)
+                    (ref-U|LST::UC_AppL acc
+                        (if (= idx 0)
+                            (format "{} Share" [collection-name])
+                            (format "{} {} Share Package" [collection-name (at (- idx 1) P)] )
+                        )
+                    )
+                )
+                []
+                (enumerate 0 7 1)
+            )
+        )
+    )
+    (defun UC_Description:[string] (collection-name:string)
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+            )
+            (fold
+                (lambda
+                    (acc:[string] idx:integer)
+                    (ref-U|LST::UC_AppL acc
+                        (if (= idx 0)
+                            (format "An SFT representing 1 Share of {}" [collection-name])
+                            (format "An SFT representing {} of all {} Shares" [(at (- idx 1) P) collection-name])
+                        )
+                    )
+                )
+                []
+                (enumerate 0 7 1)
+            )
+        )
+    )
+    (defun UC_Convert:integer (id:string input-tier:integer input-tier-amount:integer output-tier:integer)
+        (let
+            (
+                (spm:[integer] (URC_SharesPerMillion id))
+            )
+            (/
+                (* (at (- input-tier 1) spm) input-tier-amount)
+                (at (- output-tier 1) spm)
+            )
+        )
+    )
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    (defun UR_TierSupplies:[integer] (id:string)
+        @doc "Total outstanding supply of each package tier (nonces 2-8, in tier-unit counts, not \
+            \ share-equivalents), in tier order."
+        (let
+            (
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+            )
+            (fold
+                (lambda
+                    (acc:[string] idx:integer)
+                    (ref-U|LST::UC_AppL acc
+                        (ref-DPDC::UR_NonceSupply id true idx)
+                    )
+                )
+                []
+                (enumerate 2 8)
+            )
+        )
+    )
+    (defun URC_MakeSharePackage:integer (id:string shares-amount:integer package-share-tier:integer)
+        @doc "Converts a raw <shares-amount> into the equivalent whole number of <package-share-tier> \
+            \ units. Assumes even divisibility -- UEV_ShareAmountsForMaking enforces that before this \
+            \ result is trusted."
+        (/ shares-amount (URC_SingleSharePerMillions id package-share-tier))
+    )
+    (defun URC_SharesPerMillion:[integer] (id:string)
+        @doc "Computes Tier Shares; Example for 5 mil Company Shares it would output 5*[100 200 500 1000 2000 5000 10000]"
+        (let
+            (
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (tcs-in-millions:integer (/ (ref-DPDC::UR_NonceSupply id true 1) 1000000))
+            )
+            (map (* tcs-in-millions) S)
+        )
+    )
+    (defun URC_SingleSharePerMillions:integer (id:string package-share-tier:integer)
+        @doc "Share-per-unit value for a single <package-share-tier> (1-7), scaled to this collection's \
+            \ total share count. See URC_SharesPerMillion."
+        (at (- package-share-tier 1) (URC_SharesPerMillion id))
+
+    )
+    (defun URC_IzEquitySemiFungible:bool (id:string)
+        @doc "True when <id> names an EQUITY (shareholder) SFT collection. \
+            \ \
+            \ PREDICATE, NOT AN ENFORCE -- which is why it is not UEV_EquitySemiFungibleID. A caller \
+            \ that must DISPATCH on the answer (AQP-SCORE weights an equity collection by live share \
+            \ value and everything else by its own tables) needs a boolean; an enforce can only \
+            \ abort, and wrapping one in `try` to recover the boolean would make an ordinary branch \
+            \ look like an error path. \
+            \ \
+            \ Identity is the NAME PREFIX, which is the same test the three existing sites use; \
+            \ there is no flag on the collection row to consult."
+        (= (take 2 id) "E|")
+    )
+    (defun URC_CombineCapacity:integer (id:string)
+        @doc "Remaining share-equivalent headroom that may still be packaged into tier-units (nonces \
+            \ 2-8) before hitting the 1/PACKAGING_CAP_DIVISOR (50%) packaging cap on total shares \
+            \ (nonce 1). DPDC Audit #29M."
+        (let
+            (
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (shares:integer (ref-DPDC::UR_NonceSupply id true 1))
+                (half-shares:integer (/ shares PACKAGING_CAP_DIVISOR))
+                (spm:[integer] (URC_SharesPerMillion id))
+                (supplies:[integer] (UR_TierSupplies id))
+                (supplies-as-shares:[integer] (zip (*) supplies spm))
+                (shares-in-package-nonces:integer (fold (+) 0 supplies-as-shares))
+            )
+            (- half-shares shares-in-package-nonces)
+        )
+    )
+    ;;
+    (defun URCi_IssueShareholderCollection:object{IgnisCollectorV4.OutputCumulator} ()
+        @doc "Cost preview for C_IssueShareholderCollection's IGNIS cumulator (the collection- \
+            \ issue STOA price previews separately via DPDC-I::URCi_IssueCollectionStoa). Three legs, \
+            \ ARG-INDEPENDENT: \
+            \ ico1 = the digital-collection issue (URCi_IssueDigitalCollection son=true on the DPDC \
+            \ SC, which owns every Equity collection — owner-account is C_IssueDigitalCollection's \
+            \ 3rd arg = dpdc); \
+            \ ico2 = the $100 equity premium (central IG|DETER key issue-shareholder, owner 2026-09-05); \
+            \ ico3 = the 8-nonce populate at the DISCOUNTED first-Elite-SFT price. \
+            \ The discount is CODE-PROVEN to fire at exec time: XI_IssueDigitalCollection inits the \
+            \ collection with nonces-used=0 and creates NO nonce, so the immediately-following \
+            \ C_CreateNewNonces runs while nonces-used is still 0; the id is Elite (UC_EquityID forces \
+            \ an 'E|' ticker and UDC_Makeid=concat[ticker '-' hash] so take-2 of the id is 'E|'); and \
+            \ son=true. So URCi_RegisterCollectablesPrice's [ft='E|' & son & nu=0] branch applies the \
+            \ /1000 discount: populate = smallest * 1,000,000 / 1000 = smallest * 1000 (only Nonce 1 \
+            \ carries supply; Nonces 2-8 are 0). Output ([equity-id]) is empty here (write product). \
+            \ NOTE: the SWPI-style ground-truth (compare vs the real reader post-issue) does NOT apply \
+            \ — post-populate nonces-used=8, so a live URCi_CreateNewNonces reads the UNdiscounted \
+            \ price; the equality is code-proven, not test-arbitrated. A GAS-delta harness on the \
+            \ real DPSF|C_IssueCompany would confirm empirically. The discount itself (equity always \
+            \ Elite) is intended-behavior to confirm under task #76 (IGNIS re-pricing)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (ref-DPDC-I:module{DpdcIssueV3} DPDC-I)
+                ;;
+                (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
+                (populate-price:decimal (/ (* (ref-IGNIS::UC_IgnisLeg "tier-smallest") 1000000.0) 1000.0))
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                [
+                    (ref-DPDC-I::URCi_IssueDigitalCollection true dpdc)
+                    (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "DPSF|C_IssueCompany" "issue-shareholder")
+                dpdc (ref-IGNIS::URC_IsVirtualGasZero) [])
+                    (ref-IGNIS::UDC_ConstructOutputCumulator populate-price dpdc (ref-IGNIS::URC_IsVirtualGasZero) [])
+                ]
+                []
+            )
+        )
+    )
+    (defun URCi_MorphPackageShares:object{IgnisCollectorV4.OutputCumulator}
+        (account:string id:string input-nonce:integer input-amount:integer output-nonce:integer)
+        @doc "Cost preview for C_MorphPackageShares, mirroring its three branches: Make \
+            \ (input-nonce=1: transfer-in + add-quantity + transfer-out), Break (output-nonce=1: \
+            \ transfer-in + burn + transfer-out) and Convert (transfer-in + burn + add-quantity + \
+            \ transfer-out). Output matches exec ([[in-nonce out-nonce][in-amt out-amt]]). Purely derived."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (ref-DPDC-MNG:module{DpdcManagementV3} DPDC-MNG)
+                (ref-DPDC-T:module{DpdcTransferV3} DPDC-T)
+                (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
+            )
+            (if (= input-nonce 1)
+                ;;Make: shares (nonce 1) -> package-share-tier (output-nonce)
+                (let
+                    (
+                        (output-amount:integer (URC_MakeSharePackage id input-amount (- output-nonce 1)))
+                    )
+                    (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                        [
+                            (ref-DPDC-T::URCi_MultiTransferCumulator [id] [true] account dpdc [[1]] [[input-amount]])
+                            (ref-DPDC-MNG::URCi_AddQuantity id)
+                            (ref-DPDC-T::URCi_MultiTransferCumulator [id] [true] dpdc account [[output-nonce]] [[output-amount]])
+                        ]
+                        [[1 output-nonce] [input-amount output-amount]]
+                    )
+                )
+                (if (= output-nonce 1)
+                    ;;Break: package-share-tier (input-nonce) -> shares (nonce 1)
+                    (let
+                        (
+                            (output-shares:integer (* (URC_SingleSharePerMillions id (- input-nonce 1)) input-amount))
+                        )
+                        (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                            [
+                                (ref-DPDC-T::URCi_MultiTransferCumulator [id] [true] account dpdc [[input-nonce]] [[input-amount]])
+                                (ref-DPDC-MNG::URCi_BurnSFT id)
+                                (ref-DPDC-T::URCi_MultiTransferCumulator [id] [true] dpdc account [[1]] [[output-shares]])
+                            ]
+                            [[input-nonce 1] [input-amount output-shares]]
+                        )
+                    )
+                    ;;Convert: package-share-tier (input-nonce) -> package-share-tier (output-nonce)
+                    (let
+                        (
+                            (output-amount:integer (UC_Convert id (- input-nonce 1) input-amount (- output-nonce 1)))
+                        )
+                        (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                            [
+                                (ref-DPDC-T::URCi_MultiTransferCumulator [id] [true] account dpdc [[input-nonce]] [[input-amount]])
+                                (ref-DPDC-MNG::URCi_BurnSFT id)
+                                (ref-DPDC-MNG::URCi_AddQuantity id)
+                                (ref-DPDC-T::URCi_MultiTransferCumulator [id] [true] dpdc account [[output-nonce]] [[output-amount]])
+                            ]
+                            [[input-nonce output-nonce] [input-amount output-amount]]
+                        )
+                    )
+                )
+            )
+        )
+    )
+    ;;{5.4}  Validate [UEV/CAP]
+    (defun UEV_SharePackageTier (package-share-tier:integer)
+        (let
+            (
+                (share-tiers:[integer] (enumerate 1 7))
+                (iz-contained:bool (contains package-share-tier share-tiers))
+            )
+            (enforce iz-contained "Invalid Package Share Tier")
+        )
+    )
+    (defun UEV_ShareAmountsForMaking (id:string shares-amount:integer package-share-tier:integer)
+        (UEV_SharePackageTier package-share-tier)
+        (let
+            (
+                (sspm:integer (URC_SingleSharePerMillions id package-share-tier))
+                (mod-check:integer (mod shares-amount sspm))
+                (capacity:integer (URC_CombineCapacity id))
+            )
+            (enforce 
+                (<= shares-amount capacity) 
+                (format "Insufficient Capacity Left ({}) to combine {} Individual Shares" [capacity shares-amount])
+            )
+            (enforce 
+                (= mod-check 0) 
+                (format "{} Shares is an invalid amount for making a Tier {} Share Packge for EQUITY-SFT Collection {}" [shares-amount package-share-tier id])
+            )
+        )
+    )
+    (defun UEV_EquitySemiFungibleID (id:string)
+        (let
+            (
+                (ft:string (take 2 id))
+                (sh:string "E|")
+            )
+            (enforce (= ft sh) "Only EQUITY SFT Collections allowed")
+        )
+    )
+    (defun UEV_Convert (id:string input-tier:integer input-tier-amount:integer output-tier:integer)
+        (UEV_SharePackageTier input-tier)
+        (UEV_SharePackageTier output-tier)
+        (let
+            (
+                (spm:[integer] (URC_SharesPerMillion id))
+                (input-share-value:integer (at (- input-tier 1) spm))
+                (output-share-value:integer (at (- output-tier 1) spm))
+                (total-input-shares:integer (* input-share-value input-tier-amount))
+                (mod-check (mod total-input-shares output-share-value))
+            )
+            (enforce (!= input-tier output-tier) "Input Tier and Output Tier must be different for Conversion")
+            (enforce 
+                (= mod-check 0) 
+                (format "{} Tier {} Shares cannot be completly Converted to Tier {} Shares For Equity ID {}" [input-tier input-tier-amount output-tier id])
+            )
+        )
+    )
+    (defun UEV_Morph (input-nonce:integer output-nonce:integer)
+        (let
+            (
+                (allowed-nonces:[integer] (enumerate 1 8))
+                (iz-input:bool (contains input-nonce allowed-nonces))
+                (iz-output:bool (contains output-nonce allowed-nonces))
+            )
+            (enforce (and iz-input iz-output) "Invalid Input or Output Nonces for Morphing")
+            (enforce (!= input-nonce output-nonce) "Input and Output Nonces must be different for Morphing")
+        )
+    )
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;Protection: Class 2 — SECURE
+    (defun XI_ConvertPackageShares:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string id:string input-package-share-tier:integer input-package-share-tier-amount:integer output-package-share-tier:integer)
+        @doc "Converts any Nonce to [2 3 4 5 6 7 8] to any Nonce [2 3 4 5 6 7 8]"
+        (require-capability (SECURE))
+        (with-capability (EQUITY|C>CONVERT id input-package-share-tier input-package-share-tier-amount output-package-share-tier)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC:module{DpdcV3} DPDC)
+                    (ref-DPDC-MNG:module{DpdcManagementV3} DPDC-MNG) 
+                    (ref-DPDC-T:module{DpdcTransferV3} DPDC-T)
+                    (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
+                    ;;
+                    (input-nonce:integer (+ 1 input-package-share-tier))
+                    (output-nonce:integer (+ 1 output-package-share-tier))
+                    (output-amount:integer (UC_Convert id input-package-share-tier input-package-share-tier-amount output-package-share-tier))
+                    ;;
+                    (ico1:object{IgnisCollectorV4.OutputCumulator}
+                        ;;1]Transfer <input-package-share-tier> with <input-package-share-tier-amount> to <dpdc>
+                        (ref-DPDC-T::C_Transfer patron executor dpdc [id] [true] [[input-nonce]] [[input-package-share-tier-amount]] true)
+                    )
+                    (ico2:object{IgnisCollectorV4.OutputCumulator}
+                        ;;2]Burn it These three XI_
+                        ;;helpers have NO <patron> -- I assumed one and the module stopped
+                        ;;loading with "Cannot find module: ouronet-ns.patron", the second time
+                        ;;that assumption has cost a load in this sweep. They do have <executor>,
+                        ;;the user whose shares are being converted, which is the executor that
+                        ;;actually initiates. It becomes this module's own <patron> at its turn.
+                        (ref-DPDC-MNG::C_BurnSFT patron dpdc id input-nonce input-package-share-tier-amount)
+                    )
+                    (ico3:object{IgnisCollectorV4.OutputCumulator}
+                        ;;3]Add Quantity <output-quantity> for the <output-nonce> on <dpdc> Account
+                        (ref-DPDC-MNG::C_AddQuantity patron dpdc id output-nonce output-amount)
+                    )
+                    (ico4:object{IgnisCollectorV4.OutputCumulator}
+                        ;;4]Transfer it to <executor>
+                        (ref-DPDC-T::C_Transfer patron dpdc executor [id] [true] [[output-nonce]] [[output-amount]] true)
+                    )
+                )
+                (ref-IGNIS::UDC_ConcatenateOutputCumulators 
+                    [ico1 ico2 ico3 ico4] 
+                    [[input-nonce output-nonce][input-package-share-tier-amount output-amount]]
+                )
+            )
+        )
+    )
+    ;;Protection: Class 2 — SECURE
+    (defun XI_MakePackageShares:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string id:string shares-amount:integer package-share-tier:integer)
+        @doc "Combines Nonce 1 to Nonce 2,3,4,5,6,7,8. \
+            \ DPDC Audit #49L: this is an intentionally separate, bespoke implementation of the \
+            \ same conceptual pattern as DPDC-S::C_MakeSemiFungibleSet/CC_BreakSemiFungibleSet -- EQUITY \
+            \ wants freely-transferable tier tokens, not opaque set-bundles, so it shares no code with \
+            \ DPDC-S. A future DPDC-S invariant fix will NOT automatically propagate here; cross-link \
+            \ any such change to this pair of functions for manual review."
+        (require-capability (SECURE))
+        (with-capability (EQUITY|C>MAKE id shares-amount package-share-tier)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC:module{DpdcV3} DPDC)
+                    (ref-DPDC-MNG:module{DpdcManagementV3} DPDC-MNG) 
+                    (ref-DPDC-T:module{DpdcTransferV3} DPDC-T)
+                    (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
+                    ;;
+                    (output-nonce:integer (+ 1 package-share-tier))
+                    (output-amount:integer (URC_MakeSharePackage id shares-amount package-share-tier))
+                    ;;
+                    (ico1:object{IgnisCollectorV4.OutputCumulator}
+                        ;;1]Transfer Shares to <dpdc>
+                        (ref-DPDC-T::C_Transfer patron executor dpdc [id] [true] [[1]] [[shares-amount]] true)
+                    )
+                    (ico2:object{IgnisCollectorV4.OutputCumulator}
+                        ;;2]Add Quantity for the Package-Share on <dpdc> Account
+                        (ref-DPDC-MNG::C_AddQuantity patron dpdc id output-nonce output-amount)
+                    )
+                    (ico3:object{IgnisCollectorV4.OutputCumulator}
+                        ;;3]Transfer it to <executor>
+                        (ref-DPDC-T::C_Transfer patron dpdc executor [id] [true] [[output-nonce]] [[output-amount]] true)
+                    )
+                )
+                (ref-IGNIS::UDC_ConcatenateOutputCumulators 
+                    [ico1 ico2 ico3] 
+                    [[1 output-nonce][shares-amount output-amount]]
+                )
+            )
+        )
+    )
+    ;;Protection: Class 2 — SECURE
+    (defun XI_BreakPackageShares:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string id:string package-share-tier:integer amount:integer)
+        @doc "Brakes Nonce 2,3,4,5,6,7,8 to Nonce 1. \
+            \ DPDC Audit #49L: see XI_MakePackageShares's @doc -- intentionally bespoke vs. DPDC-S, \
+            \ cross-link any DPDC-S Make/Break invariant change here for manual review."
+        (require-capability (SECURE))
+        (with-capability (EQUITY|C>BREAK id package-share-tier)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC:module{DpdcV3} DPDC)
+                    (ref-DPDC-MNG:module{DpdcManagementV3} DPDC-MNG) 
+                    (ref-DPDC-T:module{DpdcTransferV3} DPDC-T)
+                    (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
+                    ;;
+                    (sspm:integer (URC_SingleSharePerMillions id package-share-tier))
+                    (nonce-to-break:integer (+ package-share-tier 1))
+                    (output-shares:integer (* sspm amount))
+                    ;;
+                    (ico1:object{IgnisCollectorV4.OutputCumulator}
+                        ;;1]Transfer Package-Share-Tier nonce to dpdc
+                        (ref-DPDC-T::C_Transfer patron executor dpdc [id] [true] [[nonce-to-break]] [[amount]] true)
+                    )
+                    (ico2:object{IgnisCollectorV4.OutputCumulator}
+                        ;;2]Burn it
+                        (ref-DPDC-MNG::C_BurnSFT patron dpdc id nonce-to-break amount)
+                    )
+                    (ico3:object{IgnisCollectorV4.OutputCumulator}
+                        ;;3]Release Shares to <executor>
+                        (ref-DPDC-T::C_Transfer patron dpdc executor [id] [true] [[1]] [[output-shares]] true)
+                    )
+                )
+                (ref-IGNIS::UDC_ConcatenateOutputCumulators 
+                    [ico1 ico2 ico3] 
+                    [[nonce-to-break 1][amount output-shares]]
+                )
+            )
+        )
+    )
+    ;;{5.7}  User [A/C]
+    (defun C_IssueShareholderCollection:object{IgnisCollectorV4.OutputCumulator}
+        (
+            patron:string executor:string collection-name:string collection-ticker:string
+            royalty:decimal ignis-royalty:decimal ipfs-links:[string]
+        )
+        @doc "Issues an eight-element Equity SFT collection -- a tokenised company. Royalty is \
+            \ the standard royalty for the whole collection, <ignis-royalty> the IGNIS royalty \
+            \ for 1% of company shares. \
+            \ \
+            \ Executor: ENFORCED DIRECTLY, and THE ENFORCE IS NEW (2026-09-22). It changes \
+            \ WHEN and WITH WHAT MESSAGE the wrong caller is refused, NOT WHETHER -- and that \
+            \ distinction is measured, not assumed. See EQUITY.repl <<EQ-G2>>. \
+            \ \
+            \ WHAT WAS ALREADY TRUE. This module contains no ownership check of any kind -- not \
+            \ one CAP_EnforceAccountOwnership, not one CAP_Owner -- and DPDC-I|C>ISSUE runs its \
+            \ on the collection OWNER, which for an equity collection is <dpdc>, the DPDC smart \
+            \ account, because the collection is automanaged. So that check proves a MODULE. But \
+            \ the named creator was reached anyway, three modules later: the ico3 leg calls \
+            \ DPDC-C::C_CreateNewNonces, whose authority is CAP_EnforceAccountOwnership on the \
+            \ DERIVED (UR_Verum5 id son) -- the create-role account -- and on a freshly issued \
+            \ collection that resolves to the creator. Disabling this enforce and re-running \
+            \ <<EQ-G2>> still produced a keys-all keyset failure naming EMMA's own key. \
+            \ \
+            \ WHY IT IS STILL WORTH HAVING. That proof is incidental and late. It is incidental \
+            \ because it holds only while the create-role account IS the named creator -- an \
+            \ invariant of issuance, not of this function -- and late because it fires after the \
+            \ collection has been issued and its branding written. The new enforce makes the \
+            \ refusal direct, first, and by name, which is what the canon asks for: the account \
+            \ this function NAMES is the account it proves. It also runs ahead of the \
+            \ ipfs-links shape check, per the 2026-09-14 ruling that authorisation precedes \
+            \ validation; <<EQ-G1>> signs as the account it names, so that fixture still \
+            \ exercises the shape guard rather than being shadowed by this one. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
+        (P|UEV_IMC)
+        ;;1]AUTHORISATION, before every validation below (owner ruling 2026-09-14). See the @doc:
+        ;;this is the only account-ownership check on the entire equity-issuance path.
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership executor)
+        )
+        ;;MUTE-GUARD FIX: this check used to live BELOW the let, and the let's <ico> binding ISSUES
+        ;;the collection (DPDC-I::C_IssueDigitalCollection). Pact evaluates let bindings eagerly, so a
+        ;;caller who passed the wrong number of links paid for a full collection issuance before the
+        ;;link count was ever looked at -- and whenever that issuance failed first for its own reasons
+        ;;(a duplicate collection name being the common one) this message could never be the one the
+        ;;caller saw. It is a pure argument-shape check on a parameter, so it belongs here, ahead of
+        ;;every read and every write. Pinned by REPL/modules/DPDC.repl <<DPDC-G20>>.
+        (enforce (= (length ipfs-links) 24)
+            "24 IPFS links must be provided for an Equity Collection")
+        (let
+            (
+                (ref-U|VST:module{UtilityVstV2} U|VST)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (ref-DPDC-C:module{DpdcCreateV3} DPDC-C)
+                (ref-DPDC-I:module{DpdcIssueV3} DPDC-I)
+                ;;
+                (special-sft:[string] (ref-U|VST::UC_EquityID collection-name collection-ticker))
+                (name:string (at 0 special-sft))
+                (ticker:string (at 1 special-sft))
+                (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
+                ;;
+                (b:string BAR)
+                (zd:object{DpdcUdcV2.URI|Data} (ref-DPDC-UDC::UDC_ZeroURI|Data))
+                (md:object{DpdcUdcV2.NonceMetaData} (ref-DPDC-UDC::UDC_NoMetaData))
+                (n:[string] (UC_Name collection-name))
+                (d:[string] (UC_Description collection-name))
+                (type:object{DpdcUdcV2.URI|Type} (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+                ;;
+                (ico:object{IgnisCollectorV4.OutputCumulator}
+                    ;;1]Issue Equity SFT Collection; <dpdc> automatically gets <role-nft-add-quantity> and <role-nft-burn>
+                    (ref-DPDC-I::C_IssueDigitalCollection
+                        patron dpdc executor true
+                        name ticker
+                        false false true true
+                        true true true false
+                        true
+                    )
+                )
+                (equity-id:string (at 0 (at "output" ico)))
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators 
+                [
+                    ico
+                    ;;2]Equity premium: $100 flat in IGNIS (owner 2026-09-05), central IG|DETER
+                    (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "DPSF|C_IssueCompany" "issue-shareholder")
+                dpdc (ref-IGNIS::URC_IsVirtualGasZero) [])
+                    ;;3]Populate Equity SFT Collection
+                    ;;PROVISIONAL PATRON/EXECUTOR SLOTS (HANDOFF 4e, 2026-09-22). 03_DPDC-C's
+                    ;;turn gave C_CreateNewNonces a <patron> and an <executor> bound to
+                    ;;(UR_Verum5 id son). This module's own turn has not come, so <patron> stands
+                    ;;in and the executor is READ -- the same expression the binder evaluates, on
+                    ;;a collection this function has just issued, so it is exact rather than a
+                    ;;placeholder. Both become real parameters at 11_EQUITY+'s turn.
+                    (ref-DPDC-C::C_CreateNewNonces
+                        patron (ref-DPDC::UR_Verum5 equity-id true)
+                        equity-id true [1000000 0 0 0 0 0 0 0]
+                        [
+                            ;;Barebone Share, Nonce 1
+                            (ref-DPDC-UDC::UDC_NonceData royalty 0.001 (at 0 n) (at 0 d) md type
+                                (ref-DPDC-UDC::UDC_URI|Data (at 0 ipfs-links) b b b b b b)
+                                (ref-DPDC-UDC::UDC_URI|Data (at 8 ipfs-links) b b b b b b)
+                                (ref-DPDC-UDC::UDC_URI|Data (at 16 ipfs-links) b b b b b b)
+                            )
+                            ;;0.1 Promille representing 100 Shares per Million, Nonce 2
+                            (ref-DPDC-UDC::UDC_NonceData royalty (/ ignis-royalty 100.0) (at 1 n) (at 1 d) md type
+                                (ref-DPDC-UDC::UDC_URI|Data (at 1 ipfs-links) b b b b b b)
+                                (ref-DPDC-UDC::UDC_URI|Data (at 9 ipfs-links) b b b b b b)
+                                (ref-DPDC-UDC::UDC_URI|Data (at 17 ipfs-links) b b b b b b)
+                            )
+                            ;;0.2 Promille representing 200 Shares per Million, Nonce 3
+                            (ref-DPDC-UDC::UDC_NonceData royalty (/ ignis-royalty 50.0) (at 2 n) (at 2 d) md type
+                                (ref-DPDC-UDC::UDC_URI|Data (at 2 ipfs-links) b b b b b b)
+                                (ref-DPDC-UDC::UDC_URI|Data (at 10 ipfs-links) b b b b b b)
+                                (ref-DPDC-UDC::UDC_URI|Data (at 18 ipfs-links) b b b b b b)
+                            )
+                            ;;0.5 Promille representing 500 Shares per Million, Nonce 4
+                            (ref-DPDC-UDC::UDC_NonceData royalty (/ ignis-royalty 20.0) (at 3 n) (at 3 d) md type
+                                (ref-DPDC-UDC::UDC_URI|Data (at 3 ipfs-links) b b b b b b)
+                                (ref-DPDC-UDC::UDC_URI|Data (at 11 ipfs-links) b b b b b b)
+                                (ref-DPDC-UDC::UDC_URI|Data (at 19 ipfs-links) b b b b b b)
+                            )
+                            ;;1 Promille representing 1000 Shares per Million, Nonce 5
+                            (ref-DPDC-UDC::UDC_NonceData royalty (/ ignis-royalty 10.0) (at 4 n) (at 4 d) md type
+                                (ref-DPDC-UDC::UDC_URI|Data (at 4 ipfs-links) b b b b b b)
+                                (ref-DPDC-UDC::UDC_URI|Data (at 12 ipfs-links) b b b b b b)
+                                (ref-DPDC-UDC::UDC_URI|Data (at 20 ipfs-links) b b b b b b)
+                            )
+                            ;;2 Promille representing 2000 Shares per Million, Nonce 6
+                            (ref-DPDC-UDC::UDC_NonceData royalty (/ ignis-royalty 5.0) (at 5 n) (at 5 d) md type
+                                (ref-DPDC-UDC::UDC_URI|Data (at 5 ipfs-links) b b b b b b)
+                                (ref-DPDC-UDC::UDC_URI|Data (at 13 ipfs-links) b b b b b b)
+                                (ref-DPDC-UDC::UDC_URI|Data (at 21 ipfs-links) b b b b b b)
+                            )
+                            ;;5 Promille representing 5000 Shares per Million, Nonce 7
+                            (ref-DPDC-UDC::UDC_NonceData royalty (/ ignis-royalty 2.0) (at 6 n) (at 6 d) md type
+                                (ref-DPDC-UDC::UDC_URI|Data (at 6 ipfs-links) b b b b b b)
+                                (ref-DPDC-UDC::UDC_URI|Data (at 14 ipfs-links) b b b b b b)
+                                (ref-DPDC-UDC::UDC_URI|Data (at 22 ipfs-links) b b b b b b)
+                            )
+                            ;;1 Percent representing 10000 Shares per Million, Nonce 8
+                            (ref-DPDC-UDC::UDC_NonceData royalty ignis-royalty (at 7 n) (at 7 d) md type
+                                (ref-DPDC-UDC::UDC_URI|Data (at 7 ipfs-links) b b b b b b)
+                                (ref-DPDC-UDC::UDC_URI|Data (at 15 ipfs-links) b b b b b b)
+                                (ref-DPDC-UDC::UDC_URI|Data (at 23 ipfs-links) b b b b b b)
+                            )
+                        ]
+                    )
+                ]
+                [equity-id]
+            )
+        )
+    )
+    (defun C_MorphPackageShares:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string id:string input-nonce:integer input-amount:integer output-nonce:integer)
+        @doc "Combines, breaks or converts <executor>'s equity share tiers. \
+            \ \
+            \ Executor: PROVEN FORWARDED. Nothing here or in the three XI_ helpers proves an \
+            \ account; each helper moves the shares through the <dpdc> custodial account with \
+            \ DPDC-T::C_Transfer, whose capability opens on \
+            \ (CAP_EnforceAccountOwnership sender) unconditionally, and <executor> occupies \
+            \ that slot on the outbound leg of every branch. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
+        (P|UEV_IMC)
+        (UEV_Morph input-nonce output-nonce)
+        (with-capability (SECURE)
+            (if (= input-nonce 1)
+                ;;Make Package Shares
+                (XI_MakePackageShares patron executor id input-amount (- output-nonce 1))
+                (if (= output-nonce 1)
+                    ;;Brake Package Shares
+                    (XI_BreakPackageShares patron executor id (- input-nonce 1) input-amount)
+                    ;;Convert Package Shares
+                    (XI_ConvertPackageShares patron executor id (- input-nonce 1) input-amount (- output-nonce 1))
+                )
+            )
+        )
+    )
+
+)
+
+;; --- tables for 11_EQUITY+.pact (2 defined) ---
+;; UPGRADE MODE: this module is assumed already deployed, so its
+;; tables already exist and (create-table) would ABORT the whole
+;; transaction. They are listed here, commented, for reference.
+;; If any of these is NEW since the last deploy, uncomment JUST it.
+;; (create-table P|T)
+;; (create-table P|MT)
+

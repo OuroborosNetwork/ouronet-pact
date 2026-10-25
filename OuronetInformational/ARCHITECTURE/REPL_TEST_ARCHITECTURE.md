@@ -1,5 +1,7 @@
 # REPL Test Architecture — the canonical model
 
+<!-- purpose: THE testing standard and best-practice reference for any module written from here on. -->
+
 **This is the standard for how Ouronet is tested, and the best-practice reference for any module
 written from here on.** Rewritten 2026-09-09 after measuring the real state of the suite.
 

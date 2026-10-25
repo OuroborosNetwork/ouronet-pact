@@ -58,9 +58,9 @@
         (public-std:string (read-string "PYTHIA|PUBLIC-STANDARD"))
         (owner-acct:string (if (= (read-string "PYTHIA|OWNER-ACCOUNT") "") KST.ANHD (read-string "PYTHIA|OWNER-ACCOUNT")))
         (patron:string KST.ANHD)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
-        (ref-PYTHIA:module{PythiaV5} PYTHIA)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV9} TS01-C4)
+        (ref-PYTHIA:module{PythiaV6} PYTHIA)
         (deploy-fee:decimal (ref-PYTHIA::UC_DeployPrice))
         (patron-stoa:string (ref-DALOS::UR_AccountStoa patron))
         (demiurgoi:[string] (ref-DALOS::UR_DemiurgoiID))
@@ -99,7 +99,7 @@
     ;;is the same property that causes the mute-guard bug class elsewhere in this codebase; here it is
     ;;exactly what the measurement needs.
     (let (
-            (predicted:object{OuronetInfoV2.ClientInfo}
+            (predicted:object{OuronetInfoV3.ClientInfo}
                 (PYTHIA.INFO_PYTHIA|DeployApiKey patron owner-acct apollo-std public-std))
             (stoa-before:decimal (coin.get-balance patron-stoa))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
@@ -149,9 +149,9 @@
         (public-smt:string (read-string "PYTHIA|PUBLIC-SMART"))
         (owner-acct:string (if (= (read-string "PYTHIA|OWNER-ACCOUNT") "") KST.ANHD (read-string "PYTHIA|OWNER-ACCOUNT")))
         (patron:string KST.ANHD)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
-        (ref-PYTHIA:module{PythiaV5} PYTHIA)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV9} TS01-C4)
+        (ref-PYTHIA:module{PythiaV6} PYTHIA)
         (deploy-fee:decimal (ref-PYTHIA::UC_DeployPrice))
         (patron-stoa:string (ref-DALOS::UR_AccountStoa patron))
         (demiurgoi:[string] (ref-DALOS::UR_DemiurgoiID))
@@ -200,8 +200,8 @@
         (apollo-smt:string (read-string "PYTHIA|APOLLO-SMART"))
         (lane-dual:string (read-string "PYTHIA|LANE-DUAL"))
         (owner-acct:string (if (= (read-string "PYTHIA|OWNER-ACCOUNT") "") KST.ANHD (read-string "PYTHIA|OWNER-ACCOUNT")))
-        (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
-        (ref-PYTHIA:module{PythiaV5} PYTHIA)
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV9} TS01-C4)
+        (ref-PYTHIA:module{PythiaV6} PYTHIA)
         (dlk:string (ref-PYTHIA::UC_DualLinkKey apollo-std apollo-smt))
     )
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
@@ -211,7 +211,7 @@
     ;;the zero is measured, not taken on trust. Note the preview takes no patron (linking is not
     ;;billed to anyone), so "free" is checked against the account that would pay if it ever were.
     (let (
-            (predicted:object{OuronetInfoV2.ClientInfo}
+            (predicted:object{OuronetInfoV3.ClientInfo}
                 (PYTHIA.INFO_PYTHIA|Link apollo-std apollo-smt lane-dual))
             (stoa-before:decimal (coin.get-balance (DALOS.UR_AccountStoa KST.ANHD)))
             (ignis-before:decimal (DALOS.UR_TF_AccountSupply KST.ANHD false))
@@ -261,8 +261,8 @@
     (
         (apollo-std:string (read-string "PYTHIA|APOLLO-STANDARD"))
         (apollo-smt:string (read-string "PYTHIA|APOLLO-SMART"))
-        (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
-        (ref-PYTHIA:module{PythiaV5} PYTHIA)
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV9} TS01-C4)
+        (ref-PYTHIA:module{PythiaV6} PYTHIA)
         (dlk:string (ref-PYTHIA::UC_DualLinkKey apollo-std apollo-smt))
     )
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
@@ -314,8 +314,8 @@
         (apollo-smt:string (read-string "PYTHIA|APOLLO-SMART"))
         (owner-acct:string (if (= (read-string "PYTHIA|OWNER-ACCOUNT") "") KST.ANHD (read-string "PYTHIA|OWNER-ACCOUNT")))
         (patron:string KST.ANHD)
-        (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
-        (ref-PYTHIA:module{PythiaV5} PYTHIA)
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV9} TS01-C4)
+        (ref-PYTHIA:module{PythiaV6} PYTHIA)
         (dlk:string (ref-PYTHIA::UC_DualLinkKey apollo-std apollo-smt))
         (revoke-fee:decimal (ref-PYTHIA::UC_RevokeIgnisFee))
         (height-before:integer (ref-PYTHIA::UR_RevocationAtHeight))
@@ -325,7 +325,7 @@
     ;;Revoke is the IGNIS-charging member of this family (deploy and rename charge STOA, link is free),
     ;;so all three billing shapes in PYTHIA now have a measured preview.
     (let (
-            (predicted:object{OuronetInfoV2.ClientInfo} (PYTHIA.INFO_PYTHIA|RevokeLink patron dlk))
+            (predicted:object{OuronetInfoV3.ClientInfo} (PYTHIA.INFO_PYTHIA|RevokeLink patron dlk))
             (ignis-before:decimal (DALOS.UR_TF_AccountSupply patron false))
             (rev-msg:string (ref-TS01-C4::PYTHIA|C_RevokeLink patron owner-acct dlk))
          )
@@ -371,9 +371,9 @@
         (lane-renamed:string (read-string "PYTHIA|LANE-RENAMED"))
         (owner-acct:string (if (= (read-string "PYTHIA|OWNER-ACCOUNT") "") KST.ANHD (read-string "PYTHIA|OWNER-ACCOUNT")))
         (patron:string KST.ANHD)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
-        (ref-PYTHIA:module{PythiaV5} PYTHIA)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV9} TS01-C4)
+        (ref-PYTHIA:module{PythiaV6} PYTHIA)
         (dlk:string (ref-PYTHIA::UC_DualLinkKey apollo-std apollo-smt))
         (rename-fee:decimal (ref-PYTHIA::UC_RenamePrice))
         (patron-stoa:string (ref-DALOS::UR_AccountStoa patron))
@@ -405,7 +405,7 @@
     ;;PYTHIA's four client ops now has its quote measured against the charge, and all three billing
     ;;shapes the module uses are covered.
     (let (
-            (predicted:object{OuronetInfoV2.ClientInfo}
+            (predicted:object{OuronetInfoV3.ClientInfo}
                 (PYTHIA.INFO_PYTHIA|UpdateDualConsumerLane patron dlk lane-renamed))
             (stoa-before:decimal (coin.get-balance patron-stoa))
             (ren-msg:string (ref-TS01-C4::PYTHIA|C_UpdateDualConsumerLane patron owner-acct dlk lane-renamed))
@@ -450,7 +450,7 @@
     (
         (apollo-std:string (read-string "PYTHIA|APOLLO-STANDARD"))
         (apollo-smt:string (read-string "PYTHIA|APOLLO-SMART"))
-        (ref-PYTHIA:module{PythiaV5} PYTHIA)
+        (ref-PYTHIA:module{PythiaV6} PYTHIA)
         (dlk:string (ref-PYTHIA::UC_DualLinkKey apollo-std apollo-smt))
     )
     (map print
@@ -482,9 +482,9 @@
         (public-std:string (read-string "PYTHIA|PUBLIC-STANDARD-2"))
         (owner-acct:string (if (= (read-string "PYTHIA|OWNER-ACCOUNT") "") KST.ANHD (read-string "PYTHIA|OWNER-ACCOUNT")))
         (patron:string KST.ANHD)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
-        (ref-PYTHIA:module{PythiaV5} PYTHIA)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV9} TS01-C4)
+        (ref-PYTHIA:module{PythiaV6} PYTHIA)
         (deploy-fee:decimal (ref-PYTHIA::UC_DeployPrice))
         (patron-stoa:string (ref-DALOS::UR_AccountStoa patron))
         (demiurgoi:[string] (ref-DALOS::UR_DemiurgoiID))
@@ -533,9 +533,9 @@
         (public-smt:string (read-string "PYTHIA|PUBLIC-SMART-2"))
         (owner-acct:string (if (= (read-string "PYTHIA|OWNER-ACCOUNT") "") KST.ANHD (read-string "PYTHIA|OWNER-ACCOUNT")))
         (patron:string KST.ANHD)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
-        (ref-PYTHIA:module{PythiaV5} PYTHIA)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV9} TS01-C4)
+        (ref-PYTHIA:module{PythiaV6} PYTHIA)
         (deploy-fee:decimal (ref-PYTHIA::UC_DeployPrice))
         (patron-stoa:string (ref-DALOS::UR_AccountStoa patron))
         (demiurgoi:[string] (ref-DALOS::UR_DemiurgoiID))
@@ -590,8 +590,8 @@
     (
         (apollo-std:string (read-string "PYTHIA|APOLLO-STANDARD-2"))
         (apollo-smt:string (read-string "PYTHIA|APOLLO-SMART-2"))
-        (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
-        (ref-PYTHIA:module{PythiaV5} PYTHIA)
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV9} TS01-C4)
+        (ref-PYTHIA:module{PythiaV6} PYTHIA)
         (dlk:string (ref-PYTHIA::UC_DualLinkKey apollo-std apollo-smt))
         (expected-lane:string (+ "PYTHIA-" (take 12 "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006")))
     )
@@ -642,8 +642,8 @@
 (print "--- [TX007d - A_RevokeLink Cronoton patronless + adversarial · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
-        (ref-PYTHIA:module{PythiaV5} PYTHIA)
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV9} TS01-C4)
+        (ref-PYTHIA:module{PythiaV6} PYTHIA)
         (apollo-std:string (read-string "PYTHIA|APOLLO-STANDARD-2"))
         (apollo-smt:string (read-string "PYTHIA|APOLLO-SMART-2"))
     )
@@ -725,8 +725,8 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
-        (ref-PYTHIA:module{PythiaV5} PYTHIA)
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV9} TS01-C4)
+        (ref-PYTHIA:module{PythiaV6} PYTHIA)
     )
     (print
         (expect-failure "<<TX007d-02a>> re-revoking an already-inactive link is rejected"
@@ -741,8 +741,8 @@
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (let
     (
-        (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
-        (ref-PYTHIA:module{PythiaV5} PYTHIA)
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV9} TS01-C4)
+        (ref-PYTHIA:module{PythiaV6} PYTHIA)
     )
     ;;The message pins the keyset MEMBERS (keys-any over the two Sith Masters), which is
     ;;as specific as Pact gets -- it never names the keyset REF. Note dh_master-keyset,
@@ -773,8 +773,8 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
-        (ref-PYTHIA:module{PythiaV5} PYTHIA)
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV9} TS01-C4)
+        (ref-PYTHIA:module{PythiaV6} PYTHIA)
     )
     (map print
         [
@@ -803,9 +803,9 @@
 (print "--- [TX008 - Pyth ledger empty reads · 02 · let / invocation] ---")
 (let
     (
-        (ref-LEDGER:module{PythiaLedgerV3} PYTHIA)
-        (tot:object{PythiaLedgerV3.PYTHIA|S|PythTotal} (ref-LEDGER::UR_PythTotal))
-        (tm:object{PythiaLedgerV3.PYTHIA|S|PythMetrics} (ref-LEDGER::UR_PythTotal|TotalMetrics))
+        (ref-LEDGER:module{PythiaLedgerV4} PYTHIA)
+        (tot:object{PythiaLedgerV4.PYTHIA|S|PythTotal} (ref-LEDGER::UR_PythTotal))
+        (tm:object{PythiaLedgerV4.PYTHIA|S|PythMetrics} (ref-LEDGER::UR_PythTotal|TotalMetrics))
     )
     (map print
         [
@@ -848,7 +848,7 @@
 (print "--- [TX007e - the dual-link validators, as mirror images · 02 · let / invocation] ---")
 (let
     (
-        (ref-PYTHIA:module{PythiaV5} PYTHIA)
+        (ref-PYTHIA:module{PythiaV6} PYTHIA)
         (apollo-std:string (read-string "PYTHIA|APOLLO-STANDARD"))
         (apollo-smt:string (read-string "PYTHIA|APOLLO-SMART"))
     )
@@ -895,7 +895,7 @@
 ;;failing for some unrelated reason.
 (let
     (
-        (ref-PYTHIA:module{PythiaV5} PYTHIA)
+        (ref-PYTHIA:module{PythiaV6} PYTHIA)
         (apollo-std:string (read-string "PYTHIA|APOLLO-STANDARD"))
         (apollo-smt:string (read-string "PYTHIA|APOLLO-SMART"))
     )
@@ -926,7 +926,7 @@
 ;;A_Link flip it back on) and still fails ForLink (its halves are not free).
 (let
     (
-        (ref-PYTHIA:module{PythiaV5} PYTHIA)
+        (ref-PYTHIA:module{PythiaV6} PYTHIA)
         (apollo-std:string (read-string "PYTHIA|APOLLO-STANDARD-2"))
         (apollo-smt:string (read-string "PYTHIA|APOLLO-SMART-2"))
     )
@@ -984,9 +984,9 @@
         (apollo-std3:string (read-string "PYTHIA|APOLLO-STANDARD-3"))
         (public-std:string (read-string "PYTHIA|PUBLIC-STANDARD"))
         (patron:string KST.ANHD)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
-        (ref-PYTHIA:module{PythiaV5} PYTHIA)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV9} TS01-C4)
+        (ref-PYTHIA:module{PythiaV6} PYTHIA)
         (deploy-fee:decimal (ref-PYTHIA::UC_DeployPrice))
         (patron-stoa:string (DALOS.UR_AccountStoa KST.ANHD))
         (demiurgoi:[string] (ref-DALOS::UR_DemiurgoiID))
@@ -1032,7 +1032,7 @@
 (print "--- [TX007g - the smart-half guard, and three siblings that CANNOT be reached · 02 · let / invocation] ---")
 (let
     (
-        (ref-PYTHIA:module{PythiaV5} PYTHIA)
+        (ref-PYTHIA:module{PythiaV6} PYTHIA)
         (apollo-std3:string (read-string "PYTHIA|APOLLO-STANDARD-3"))
         (apollo-smt:string (read-string "PYTHIA|APOLLO-SMART"))
     )
@@ -1086,7 +1086,7 @@
 ;;symmetric, which is what makes the mismatch unconstructible.
 (let
     (
-        (ref-PYTHIA:module{PythiaV5} PYTHIA)
+        (ref-PYTHIA:module{PythiaV6} PYTHIA)
         (apollo-std:string (read-string "PYTHIA|APOLLO-STANDARD"))
         (apollo-smt:string (read-string "PYTHIA|APOLLO-SMART"))
     )

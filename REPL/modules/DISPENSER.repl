@@ -43,8 +43,8 @@
 (print "--- [DISPENSER-01 — the sovereign token ids resolve and are distinct · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
     )
     (let
         (
@@ -82,8 +82,8 @@
 (print "--- [DISPENSER-02 — the dispenser vault account exists and prices OURO · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
     )
     (let
         (

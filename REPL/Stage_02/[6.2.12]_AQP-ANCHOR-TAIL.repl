@@ -27,9 +27,9 @@
         (emma:string KST.EMMA)
         (ouro-id:string "OURO-98c486052a51")
         (auryn-id:string "AURYN-98c486052a51")
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (fvt-name:string "TailFarm")
         (fvt-class:integer 0)
         (split-stoa:[decimal]

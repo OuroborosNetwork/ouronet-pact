@@ -54,7 +54,7 @@
 (print "--- [TX-01b · 01 · load the emitted deploy file] ---")
 ;;Same check as 23 and for the same two reasons: an interface shipped a second time, or a
 ;;create-table left in an upgrade. It matters MORE here: 24 carries TWO modules and BOTH
-;;implement a live interface (IgnisCollectorV3, AcquisitionPoolBootV1), so module-only is
+;;implement a live interface (IgnisCollectorV3, AcquisitionPoolBootV2), so module-only is
 ;;load-bearing rather than tidy -- shipping either verbatim would re-send its interface and be
 ;;refused. Loading the file is the only thing that proves the emitted form is deployable.
 (load "../Deploy/PureV2/24_deploy.pact")
@@ -101,8 +101,8 @@
         ;;AQP-BOOT, unlike KBN, DOES implement an interface -- so this asserts the live one is
         ;;still satisfied after a module-only upgrade, which is the thing module-only risks.
         (expect
-            "<<DEPLOY24>> AQP-BOOT still implements AcquisitionPoolBootV1 after the upgrade"
-            ["ouronet-ns.AcquisitionPoolBootV1"]
+            "<<DEPLOY24>> AQP-BOOT still implements AcquisitionPoolBootV2 after the upgrade"
+            ["ouronet-ns.AcquisitionPoolBootV2"]
             (at "interfaces" (describe-module "ouronet-ns.AQP-BOOT")))
         (expect
             "<<DEPLOY24>> the new guard helper is present on the upgraded module"

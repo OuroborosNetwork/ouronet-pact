@@ -178,7 +178,7 @@
 (let*
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (bridge:string "Σ.XéødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
         (fake-kda:string "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263")
         (fake-pbl:string "9G.CgcAjiI89ICnk45mxx63hwkBe5G71sIqfEta0ugkzF7EB6cy55BtzlFa27jDGE7Kn7ChljCmkcIsrDw9JwzJECieGLB5Jlkz9Blo6iJct6uxIA1u64Hr7HKa93EAiCwJJBBKAojJtwupEsvspH1jjGxKyFsb8fbfnJm1rAKxcIzcFILmmdHFaICfFpnbJG6tJu0HM9JCJ7MBCE7C2LiqvE6Fc1hqCeAdGHxDp7sGquI0wl2l08aa6wlKvwu44jgqF8mqDnCyjpxHuttEqjs4h9IJ28kmB53ppwoznt16rjzeMl21n3rwfI2es56rp5xavCabDacyCuonniz72L5d7dq3ptIEiuggEyLIIGe9sadH6eaMyitcmKaH7orgFz6d9kL9FKorBr06owFg328wFhCIlCFpwIzokmo47xKKt5kBzhyodBAjhCqayuHBue4oDhoA21A2H9ut9gApMuxokcmsi7Bd1kitrfJAy1GkrGiBK5dvlhgshcnGaG3vhkCm6dI5idCGjDEodivvDbgyI6zaajHvIMdBtrGvuKnxvsBulkbaDbk2wIdKwrK")
@@ -331,10 +331,10 @@
 (let*
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TFT:module{TrueFungibleTransferV2} TFT)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TFT:module{TrueFungibleTransferV3} TFT)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
         (mocka:string (ref-U|DALOS::UDC_Makeid "MOCKA"))
         (bridge:string (CADUCEUS.UR_BridgeAccount))
     )

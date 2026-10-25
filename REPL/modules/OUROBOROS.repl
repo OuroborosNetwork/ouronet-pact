@@ -56,7 +56,7 @@
 (print "--- [ORBR-G1 — the conversion domain: gas is INTEGRAL, and neither direction runs on dust · 02 · let / invocation] ---")
 (let
     (
-        (ref-ORBR:module{OuroborosV2} OUROBOROS)
+        (ref-ORBR:module{OuroborosV3} OUROBOROS)
     )
     (map print
         [
@@ -243,8 +243,8 @@
 (print "--- [ORB-G1 - the autonomic-roles short-circuit, asserted so the annotation cannot rot · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
     )
     (let
         (
@@ -302,16 +302,16 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
     )
     (let
         (
             (ouro-id:string (ref-DALOS::UR_OuroborosID))
-            (q-compress:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_ORBR|Compress patron 100.0))
+            (q-compress:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_ORBR|Compress patron 100.0))
             (ignis0:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
         )
         (let
@@ -360,17 +360,17 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
     )
     (let
         (
             (ouro-id:string (ref-DALOS::UR_OuroborosID))
-            (q1:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_ORBR|Sublimate patron emma 1.0))
-            (q2:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_ORBR|SublimateV2 patron emma 1.0))
+            (q1:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_ORBR|Sublimate patron emma 1.0))
+            (q2:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_ORBR|SublimateV2 patron emma 1.0))
         )
         (let
             (
@@ -441,9 +441,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
 (let
     (
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
     )
@@ -451,7 +451,7 @@
         (
             ;;the precondition the preview itself enforces, asserted rather than assumed
             (ouro-before:decimal (ref-DPTF::UR_AccountSupply "OURO-98c486052a51" emma))
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|ClearDispo patron emma))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_DPTF|ClearDispo patron emma))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C1::DPTF|C_ClearDispo patron emma))
         )
@@ -502,16 +502,16 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
         (patron:string KST.ANHD)
         (auryn:string "ELITEAURYN-98c486052a51")
     )
     (let
         (
             (held:decimal (ref-DPTF::UR_AccountSupply auryn patron))
-            (predicted:object{OuronetInfoV2.ClientInfo}
+            (predicted:object{OuronetInfoV3.ClientInfo}
                 (INFO-ONE.INFO_DPTF|Transmute patron auryn patron 1.0))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C1::DPTF|C_Transmute patron patron auryn 1.0))

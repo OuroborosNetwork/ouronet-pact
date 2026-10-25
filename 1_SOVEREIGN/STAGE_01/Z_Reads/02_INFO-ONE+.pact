@@ -1,5 +1,5 @@
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface InfoOneV2
+(interface InfoOneV3
     @doc "Exposes Functions from Information One Module"
 
     ;;<=========================================================================>
@@ -53,196 +53,204 @@
     ;;
     ;;  [INFO] Functions
     ;;
-    (defun INFO_DPTF|UpdatePendingBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string))
-    (defun INFO_DPTF|UpgradeBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string months:integer))
-    (defun INFO_DPTF|Burn:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string amount:decimal))
-    (defun INFO_DPTF|Control:object{OuronetInfoV2.ClientInfo} (patron:string id:string))
-    (defun INFO_DPTF|DeployAccount:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string))
-    (defun INFO_DPTF|DonateFees:object{OuronetInfoV2.ClientInfo} (patron:string id:string))
-    (defun INFO_DPTF|Issue:object{OuronetInfoV2.ClientInfo} (patron:string account:string name:[string]))
-    (defun INFO_DPTF|Mint:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string amount:decimal origin:bool))
-    (defun INFO_DPTF|ResetFeeTarget:object{OuronetInfoV2.ClientInfo} (patron:string id:string))
-    (defun INFO_DPTF|RotateOwnership:object{OuronetInfoV2.ClientInfo} (patron:string id:string new-owner:string))
-    (defun INFO_DPTF|SetFee:object{OuronetInfoV2.ClientInfo} (patron:string id:string fee:decimal))
-    (defun INFO_DPTF|SetFeeTarget:object{OuronetInfoV2.ClientInfo} (patron:string id:string target:string))
-    (defun INFO_DPTF|SetMinMove:object{OuronetInfoV2.ClientInfo} (patron:string id:string min-move-value:decimal))
-    (defun INFO_DPTF|ToggleFee:object{OuronetInfoV2.ClientInfo} (patron:string id:string toggle:bool))
-    (defun INFO_DPTF|ToggleFeeLock:object{OuronetInfoV2.ClientInfo} (patron:string id:string toggle:bool fee-unlocks:integer))
-    (defun INFO_DPTF|ToggleFreezeAccount:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string toggle:bool))
-    (defun INFO_DPTF|TogglePause:object{OuronetInfoV2.ClientInfo} (patron:string id:string toggle:bool))
-    (defun INFO_DPTF|ToggleReservation:object{OuronetInfoV2.ClientInfo} (patron:string id:string toggle:bool))
-    (defun INFO_DPTF|ToggleTransferRole:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string toggle:bool))
-    (defun INFO_DPTF|Wipe:object{OuronetInfoV2.ClientInfo} (patron:string id:string atbw:string))
-    (defun INFO_DPTF|WipeSlim:object{OuronetInfoV2.ClientInfo} (patron:string id:string atbw:string amtbw:decimal))
-    (defun INFO_DPTF|ToggleBurnRole:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string toggle:bool))
-    (defun INFO_DPTF|ToggleMintRole:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string toggle:bool))
-    (defun INFO_DPTF|ToggleFeeExemptionRole:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string toggle:bool))
-    (defun INFO_DPTF|Transmute:object{OuronetInfoV2.ClientInfo} (patron:string id:string transmuter:string transmute-amount:decimal))
-    (defun INFO_DPTF|ClearDispo:object{OuronetInfoV2.ClientInfo} (patron:string account:string))
-    (defun INFO_DPTF|Transfer:object{OuronetInfoV2.ClientInfo} (patron:string id:string sender:string receiver:string transfer-amount:decimal))
-    (defun INFO_DPTF|MultiTransfer:object{OuronetInfoV2.ClientInfo} (patron:string id-lst:[string] sender:string receiver:string transfer-amount-lst:[decimal]))
-    (defun INFO_DPTF|BulkTransfer:object{OuronetInfoV2.ClientInfo} (patron:string id:string sender:string receiver-lst:[string] transfer-amount-lst:[decimal]))
-    (defun INFO_DPTF|MultiBulkTransfer:object{OuronetInfoV2.ClientInfo} (patron:string id-lst:[string] sender:string receiver-array:[[string]] transfer-amount-array:[[decimal]]))
+    (defun INFO_DPTF|UpdatePendingBranding:object{OuronetInfoV3.ClientInfo} (patron:string entity-id:string))
+    (defun INFO_DPTF|UpgradeBranding:object{OuronetInfoV3.ClientInfo} (patron:string entity-id:string months:integer))
+    (defun INFO_DPTF|Burn:object{OuronetInfoV3.ClientInfo} (patron:string id:string account:string amount:decimal))
+    (defun INFO_DPTF|Control:object{OuronetInfoV3.ClientInfo} (patron:string id:string))
+    (defun INFO_DPTF|DeployAccount:object{OuronetInfoV3.ClientInfo} (patron:string id:string account:string))
+    (defun INFO_DPTF|DonateFees:object{OuronetInfoV3.ClientInfo} (patron:string id:string))
+    (defun INFO_DPTF|Issue:object{OuronetInfoV3.ClientInfo} (patron:string account:string name:[string]))
+    (defun INFO_DPTF|Mint:object{OuronetInfoV3.ClientInfo} (patron:string id:string account:string amount:decimal origin:bool))
+    (defun INFO_DPTF|ResetFeeTarget:object{OuronetInfoV3.ClientInfo} (patron:string id:string))
+    (defun INFO_DPTF|RotateOwnership:object{OuronetInfoV3.ClientInfo} (patron:string id:string new-owner:string))
+    (defun INFO_DPTF|SetFee:object{OuronetInfoV3.ClientInfo} (patron:string id:string fee:decimal))
+    (defun INFO_DPTF|SetFeeTarget:object{OuronetInfoV3.ClientInfo} (patron:string id:string target:string))
+    (defun INFO_DPTF|SetMinMove:object{OuronetInfoV3.ClientInfo} (patron:string id:string min-move-value:decimal))
+    (defun INFO_DPTF|ToggleFee:object{OuronetInfoV3.ClientInfo} (patron:string id:string toggle:bool))
+    (defun INFO_DPTF|ToggleFeeLock:object{OuronetInfoV3.ClientInfo} (patron:string id:string toggle:bool fee-unlocks:integer))
+    (defun INFO_DPTF|ToggleFreezeAccount:object{OuronetInfoV3.ClientInfo} (patron:string id:string account:string toggle:bool))
+    (defun INFO_DPTF|TogglePause:object{OuronetInfoV3.ClientInfo} (patron:string id:string toggle:bool))
+    (defun INFO_DPTF|ToggleReservation:object{OuronetInfoV3.ClientInfo} (patron:string id:string toggle:bool))
+    (defun INFO_DPTF|ToggleTransferRole:object{OuronetInfoV3.ClientInfo} (patron:string id:string account:string toggle:bool))
+    (defun INFO_DPTF|Wipe:object{OuronetInfoV3.ClientInfo} (patron:string id:string atbw:string))
+    (defun INFO_DPTF|WipeSlim:object{OuronetInfoV3.ClientInfo} (patron:string id:string atbw:string amtbw:decimal))
+    (defun INFO_DPTF|ToggleBurnRole:object{OuronetInfoV3.ClientInfo} (patron:string id:string account:string toggle:bool))
+    (defun INFO_DPTF|ToggleMintRole:object{OuronetInfoV3.ClientInfo} (patron:string id:string account:string toggle:bool))
+    (defun INFO_DPTF|ToggleFeeExemptionRole:object{OuronetInfoV3.ClientInfo} (patron:string id:string account:string toggle:bool))
+    (defun INFO_DPTF|Transmute:object{OuronetInfoV3.ClientInfo} (patron:string id:string transmuter:string transmute-amount:decimal))
+    (defun INFO_DPTF|ClearDispo:object{OuronetInfoV3.ClientInfo} (patron:string account:string))
+    (defun INFO_DPTF|Transfer:object{OuronetInfoV3.ClientInfo} (patron:string id:string sender:string receiver:string transfer-amount:decimal))
+    (defun INFO_DPTF|MultiTransfer:object{OuronetInfoV3.ClientInfo} (patron:string id-lst:[string] sender:string receiver:string transfer-amount-lst:[decimal]))
+    (defun INFO_DPTF|BulkTransfer:object{OuronetInfoV3.ClientInfo} (patron:string id:string sender:string receiver-lst:[string] transfer-amount-lst:[decimal]))
+    (defun INFO_DPTF|MultiBulkTransfer:object{OuronetInfoV3.ClientInfo} (patron:string id-lst:[string] sender:string receiver-array:[[string]] transfer-amount-array:[[decimal]]))
     ;;
-    (defun INFO_DPOF|UpdatePendingBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string))
-    (defun INFO_DPOF|UpgradeBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string months:integer))
-    (defun INFO_DPOF|AddQuantity:object{OuronetInfoV2.ClientInfo} (patron:string id:string nonce:integer account:string amount:decimal))
-    (defun INFO_DPOF|Burn:object{OuronetInfoV2.ClientInfo} (patron:string id:string nonce:integer account:string amount:decimal))
-    (defun INFO_DPOF|Control:object{OuronetInfoV2.ClientInfo} (patron:string id:string))
-    (defun INFO_DPOF|DeployAccount:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string))
-    (defun INFO_DPOF|Issue:object{OuronetInfoV2.ClientInfo} (patron:string account:string name:[string]))
-    (defun INFO_DPOF|Mint:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string amount:decimal))
-    (defun INFO_DPOF|RotateOwnership:object{OuronetInfoV2.ClientInfo} (patron:string id:string new-owner:string))
-    (defun INFO_DPOF|MoveCreateRole:object{OuronetInfoV2.ClientInfo} (patron:string id:string receiver:string))
-    (defun INFO_DPOF|ToggleAddQuantityRole:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string toggle:bool))
-    (defun INFO_DPOF|ToggleBurnRole:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string toggle:bool))
-    (defun INFO_DPOF|ToggleFreezeAccount:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string toggle:bool))
-    (defun INFO_DPOF|TogglePause:object{OuronetInfoV2.ClientInfo} (patron:string id:string toggle:bool))
-    (defun INFO_DPOF|ToggleTransferRole:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string toggle:bool))
-    (defun INFO_DPOF|Transfer:object{OuronetInfoV2.ClientInfo} (patron:string id:string nonces:[integer] sender:string receiver:string method:bool))
-    (defun INFO_DPOF|Transmit:object{OuronetInfoV2.ClientInfo} (patron:string id:string nonces:[integer] amounts:[decimal] sender:string receiver:string method:bool))
-    (defun INFO_DPOF|BulkTransfer:object{OuronetInfoV2.ClientInfo} (patron:string id:string nonces-array:[[integer]] sender:string receiver-lst:[string] method:bool))
-    (defun INFO_DPOF|WipeSlim:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string nonce:integer amount:decimal))
-    (defun INFO_DPOF|WipePure:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string removable-nonces-obj:object{DpofUdcV2.RemovableNonces}))
-    (defun INFO_DPOF|WipeHeavy:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string))
-    (defun INFO_DPOF|WipeClean:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string nonces:[integer]))
-    (defun INFO_DPOF|WipeSlice:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string removable-nonces-obj:object{DpofUdcV2.RemovableNonces}))
-    (defun INFO_DPOF|WipeFull:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string plan:object{DpofUdcV2.DPOF|WipeSlicePlan}))
+    (defun INFO_DPOF|UpdatePendingBranding:object{OuronetInfoV3.ClientInfo} (patron:string entity-id:string))
+    (defun INFO_DPOF|UpgradeBranding:object{OuronetInfoV3.ClientInfo} (patron:string entity-id:string months:integer))
+    (defun INFO_DPOF|AddQuantity:object{OuronetInfoV3.ClientInfo} (patron:string id:string nonce:integer account:string amount:decimal))
+    (defun INFO_DPOF|Burn:object{OuronetInfoV3.ClientInfo} (patron:string id:string nonce:integer account:string amount:decimal))
+    (defun INFO_DPOF|Control:object{OuronetInfoV3.ClientInfo} (patron:string id:string))
+    (defun INFO_DPOF|DeployAccount:object{OuronetInfoV3.ClientInfo} (patron:string id:string account:string))
+    (defun INFO_DPOF|Issue:object{OuronetInfoV3.ClientInfo} (patron:string account:string name:[string]))
+    (defun INFO_DPOF|Mint:object{OuronetInfoV3.ClientInfo} (patron:string id:string account:string amount:decimal))
+    (defun INFO_DPOF|RotateOwnership:object{OuronetInfoV3.ClientInfo} (patron:string id:string new-owner:string))
+    (defun INFO_DPOF|MoveCreateRole:object{OuronetInfoV3.ClientInfo} (patron:string id:string receiver:string))
+    (defun INFO_DPOF|ToggleAddQuantityRole:object{OuronetInfoV3.ClientInfo} (patron:string id:string account:string toggle:bool))
+    (defun INFO_DPOF|ToggleBurnRole:object{OuronetInfoV3.ClientInfo} (patron:string id:string account:string toggle:bool))
+    (defun INFO_DPOF|ToggleFreezeAccount:object{OuronetInfoV3.ClientInfo} (patron:string id:string account:string toggle:bool))
+    (defun INFO_DPOF|TogglePause:object{OuronetInfoV3.ClientInfo} (patron:string id:string toggle:bool))
+    (defun INFO_DPOF|ToggleTransferRole:object{OuronetInfoV3.ClientInfo} (patron:string id:string account:string toggle:bool))
+    (defun INFO_DPOF|Transfer:object{OuronetInfoV3.ClientInfo} (patron:string id:string nonces:[integer] sender:string receiver:string method:bool))
+    (defun INFO_DPOF|Transmit:object{OuronetInfoV3.ClientInfo} (patron:string id:string nonces:[integer] amounts:[decimal] sender:string receiver:string method:bool))
+    (defun INFO_DPOF|BulkTransfer:object{OuronetInfoV3.ClientInfo} (patron:string id:string nonces-array:[[integer]] sender:string receiver-lst:[string] method:bool))
+    (defun INFO_DPOF|WipeSlim:object{OuronetInfoV3.ClientInfo} (patron:string id:string account:string nonce:integer amount:decimal))
+    (defun INFO_DPOF|WipePure:object{OuronetInfoV3.ClientInfo} (patron:string id:string account:string removable-nonces-obj:object{DpofUdcV2.RemovableNonces}))
+    (defun INFO_DPOF|WipeHeavy:object{OuronetInfoV3.ClientInfo} (patron:string id:string account:string))
+    (defun INFO_DPOF|WipeClean:object{OuronetInfoV3.ClientInfo} (patron:string id:string account:string nonces:[integer]))
+    (defun INFO_DPOF|WipeSlice:object{OuronetInfoV3.ClientInfo} (patron:string id:string account:string removable-nonces-obj:object{DpofUdcV2.RemovableNonces}))
+    (defun INFO_DPOF|WipeFull:object{OuronetInfoV3.ClientInfo} (patron:string id:string account:string plan:object{DpofUdcV2.DPOF|WipeSlicePlan}))
     ;;
-    (defun INFO_VST|CreateFrozenLink:object{OuronetInfoV2.ClientInfo} (patron:string dptf:string))
-    (defun INFO_VST|CreateReservationLink:object{OuronetInfoV2.ClientInfo} (patron:string dptf:string))
-    (defun INFO_VST|CreateVestingLink:object{OuronetInfoV2.ClientInfo} (patron:string dptf:string))
-    (defun INFO_VST|CreateSleepingLink:object{OuronetInfoV2.ClientInfo} (patron:string dptf:string))
-    (defun INFO_VST|CreateHibernatingLink:object{OuronetInfoV2.ClientInfo} (patron:string dptf:string))
-    (defun INFO_VST|Freeze:object{OuronetInfoV2.ClientInfo} (patron:string freezer:string freeze-output:string dptf:string amount:decimal))
-    (defun INFO_VST|RepurposeFrozen:object{OuronetInfoV2.ClientInfo} (patron:string dptf-to-repurpose:string repurpose-from:string repurpose-to:string))
-    (defun INFO_VST|ToggleTransferRoleFrozenDPTF:object{OuronetInfoV2.ClientInfo} (patron:string s-dptf:string target:string toggle:bool))
-    (defun INFO_VST|Reserve:object{OuronetInfoV2.ClientInfo} (patron:string reserver:string dptf:string amount:decimal))
-    (defun INFO_VST|Unreserve:object{OuronetInfoV2.ClientInfo} (patron:string unreserver:string r-dptf:string amount:decimal))
-    (defun INFO_VST|RepurposeReserved:object{OuronetInfoV2.ClientInfo} (patron:string dptf-to-repurpose:string repurpose-from:string repurpose-to:string))
-    (defun INFO_VST|ToggleTransferRoleReservedDPTF:object{OuronetInfoV2.ClientInfo} (patron:string s-dptf:string target:string toggle:bool))
-    (defun INFO_VST|Vest:object{OuronetInfoV2.ClientInfo} (patron:string vester:string target-account:string dptf:string amount:decimal offset:integer seconds:integer milestones:integer))
-    (defun INFO_VST|Unvest:object{OuronetInfoV2.ClientInfo} (patron:string unvester:string dpof:string nonce:integer))
-    (defun INFO_VST|RepurposeVested:object{OuronetInfoV2.ClientInfo} (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string))
-    (defun INFO_VST|Sleep:object{OuronetInfoV2.ClientInfo} (patron:string sleeper:string target-account:string dptf:string amount:decimal seconds:integer))
-    (defun INFO_VST|Unsleep:object{OuronetInfoV2.ClientInfo} (patron:string unsleeper:string dpof:string nonce:integer))
-    (defun INFO_VST|Merge:object{OuronetInfoV2.ClientInfo} (patron:string merger:string dpof:string nonces:[integer]))
-    (defun INFO_VST|RepurposeMerge:object{OuronetInfoV2.ClientInfo} (patron:string dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string))
-    (defun INFO_VST|RepurposeSleeping:object{OuronetInfoV2.ClientInfo} (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string))
-    (defun INFO_VST|ToggleTransferRoleSleepingDPOF:object{OuronetInfoV2.ClientInfo} (patron:string s-dpof:string target:string toggle:bool))
-    (defun INFO_VST|Hibernate:object{OuronetInfoV2.ClientInfo} (patron:string hibernator:string target-account:string dptf:string amount:decimal dayz:integer))
-    (defun INFO_VST|Awake:object{OuronetInfoV2.ClientInfo} (patron:string awaker:string dpof:string nonce:integer))
-    (defun INFO_VST|Slumber:object{OuronetInfoV2.ClientInfo} (patron:string merger:string dpof:string nonces:[integer]))
-    (defun INFO_VST|RepurposeSlumber:object{OuronetInfoV2.ClientInfo} (patron:string dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string))
-    (defun INFO_VST|RepurposeHibernating:object{OuronetInfoV2.ClientInfo} (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string))
-    (defun INFO_VST|ToggleTransferRoleHibernatingDPOF:object{OuronetInfoV2.ClientInfo} (patron:string s-dpof:string target:string toggle:bool))
+    (defun INFO_VST|CreateFrozenLink:object{OuronetInfoV3.ClientInfo} (patron:string dptf:string))
+    (defun INFO_VST|CreateReservationLink:object{OuronetInfoV3.ClientInfo} (patron:string dptf:string))
+    (defun INFO_VST|CreateVestingLink:object{OuronetInfoV3.ClientInfo} (patron:string dptf:string))
+    (defun INFO_VST|CreateSleepingLink:object{OuronetInfoV3.ClientInfo} (patron:string dptf:string))
+    (defun INFO_VST|CreateHibernatingLink:object{OuronetInfoV3.ClientInfo} (patron:string dptf:string))
+    (defun INFO_VST|Freeze:object{OuronetInfoV3.ClientInfo} (patron:string freezer:string freeze-output:string dptf:string amount:decimal))
+    (defun INFO_VST|RepurposeFrozen:object{OuronetInfoV3.ClientInfo} (patron:string dptf-to-repurpose:string repurpose-from:string repurpose-to:string))
+    (defun INFO_VST|ToggleTransferRoleFrozenDPTF:object{OuronetInfoV3.ClientInfo} (patron:string s-dptf:string target:string toggle:bool))
+    (defun INFO_VST|Reserve:object{OuronetInfoV3.ClientInfo} (patron:string reserver:string dptf:string amount:decimal))
+    (defun INFO_VST|Unreserve:object{OuronetInfoV3.ClientInfo} (patron:string unreserver:string r-dptf:string amount:decimal))
+    (defun INFO_VST|RepurposeReserved:object{OuronetInfoV3.ClientInfo} (patron:string dptf-to-repurpose:string repurpose-from:string repurpose-to:string))
+    (defun INFO_VST|ToggleTransferRoleReservedDPTF:object{OuronetInfoV3.ClientInfo} (patron:string s-dptf:string target:string toggle:bool))
+    (defun INFO_VST|Vest:object{OuronetInfoV3.ClientInfo} (patron:string vester:string target-account:string dptf:string amount:decimal offset:integer seconds:integer milestones:integer))
+    (defun INFO_VST|Unvest:object{OuronetInfoV3.ClientInfo} (patron:string unvester:string dpof:string nonce:integer))
+    (defun INFO_VST|RepurposeVested:object{OuronetInfoV3.ClientInfo} (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string))
+    (defun INFO_VST|Sleep:object{OuronetInfoV3.ClientInfo} (patron:string sleeper:string target-account:string dptf:string amount:decimal seconds:integer))
+    (defun INFO_VST|Unsleep:object{OuronetInfoV3.ClientInfo} (patron:string unsleeper:string dpof:string nonce:integer))
+    (defun INFO_VST|Merge:object{OuronetInfoV3.ClientInfo} (patron:string merger:string dpof:string nonces:[integer]))
+    (defun INFO_VST|RepurposeMerge:object{OuronetInfoV3.ClientInfo} (patron:string dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string))
+    (defun INFO_VST|RepurposeSleeping:object{OuronetInfoV3.ClientInfo} (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string))
+    (defun INFO_VST|ToggleTransferRoleSleepingDPOF:object{OuronetInfoV3.ClientInfo} (patron:string s-dpof:string target:string toggle:bool))
+    (defun INFO_VST|Hibernate:object{OuronetInfoV3.ClientInfo} (patron:string hibernator:string target-account:string dptf:string amount:decimal dayz:integer))
+    (defun INFO_VST|Awake:object{OuronetInfoV3.ClientInfo} (patron:string awaker:string dpof:string nonce:integer))
+    (defun INFO_VST|Slumber:object{OuronetInfoV3.ClientInfo} (patron:string merger:string dpof:string nonces:[integer]))
+    (defun INFO_VST|RepurposeSlumber:object{OuronetInfoV3.ClientInfo} (patron:string dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string))
+    (defun INFO_VST|RepurposeHibernating:object{OuronetInfoV3.ClientInfo} (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string))
+    (defun INFO_VST|ToggleTransferRoleHibernatingDPOF:object{OuronetInfoV3.ClientInfo} (patron:string s-dpof:string target:string toggle:bool))
     ;;
-    (defun INFO_ATS|Coil:object{OuronetInfoV2.ClientInfo} (patron:string coiler:string ats:string rt:string amount:decimal))
-    (defun INFO_ATS|Constrict:object{OuronetInfoV2.ClientInfo} (patron:string constricter:string ats:string rt:string amount:decimal dayz:integer))
-    (defun INFO_ATS|Curl:object{OuronetInfoV2.ClientInfo} (patron:string curler:string ats1:string ats2:string rt:string amount:decimal))
-    (defun INFO_ATS|Brumate:object{OuronetInfoV2.ClientInfo} (patron:string brumator:string ats1:string ats2:string rt:string amount:decimal dayz:integer))
-    (defun INFO_ATS|ColdRecovery:object{OuronetInfoV2.ClientInfo} (patron:string recoverer:string ats:string ra:decimal))
-    (defun INFO_ATS|Cull:object{OuronetInfoV2.ClientInfo} (patron:string culler:string ats:string))
-    (defun INFO_ATS|DirectRecovery:object{OuronetInfoV2.ClientInfo} (patron:string recoverer:string ats:string ra:decimal))
-    (defun INFO_ATS|RotateOwnership:object{OuronetInfoV2.ClientInfo} (patron:string ats:string new-owner:string))
-    (defun INFO_ATS|Control:object{OuronetInfoV2.ClientInfo} (patron:string ats:string can-change-owner:bool syphoning:bool hibernate:bool))
-    (defun INFO_ATS|UpdateRoyalty:object{OuronetInfoV2.ClientInfo} (patron:string ats:string royalty:decimal))
-    (defun INFO_ATS|UpdateSyphon:object{OuronetInfoV2.ClientInfo} (patron:string ats:string syphon:decimal))
-    (defun INFO_ATS|SetHibernationFees:object{OuronetInfoV2.ClientInfo} (patron:string ats:string peak:decimal decay:decimal))
-    (defun INFO_ATS|ToggleParameterLock:object{OuronetInfoV2.ClientInfo} (patron:string ats:string toggle:bool))
-    (defun INFO_ATS|AddSecondary:object{OuronetInfoV2.ClientInfo} (patron:string ats:string reward-token:string rt-nfr:bool))
-    (defun INFO_ATS|ControlColdRecoveryFees:object{OuronetInfoV2.ClientInfo} (patron:string ats:string c-nfr:bool c-fr:bool))
-    (defun INFO_ATS|SetColdRecoveryFees:object{OuronetInfoV2.ClientInfo} (patron:string ats:string fee-positions:integer fee-thresholds:[decimal] fee-array:[[decimal]]))
-    (defun INFO_ATS|SetColdRecoveryDuration:object{OuronetInfoV2.ClientInfo} (patron:string ats:string soft-or-hard:bool base:integer growth:integer))
-    (defun INFO_ATS|ToggleElite:object{OuronetInfoV2.ClientInfo} (patron:string ats:string toggle:bool))
-    (defun INFO_ATS|ToggleUpgrade:object{OuronetInfoV2.ClientInfo} (patron:string ats:string toggle:bool))
-    (defun INFO_ATS|SwitchColdRecovery:object{OuronetInfoV2.ClientInfo} (patron:string ats:string toggle:bool))
-    (defun INFO_ATS|ControlHotRecoveryFee:object{OuronetInfoV2.ClientInfo} (patron:string ats:string h-fr:bool))
-    (defun INFO_ATS|SetHotRecoveryFee:object{OuronetInfoV2.ClientInfo} (patron:string ats:string promile:decimal decay:integer))
-    (defun INFO_ATS|SwitchHotRecovery:object{OuronetInfoV2.ClientInfo} (patron:string ats:string toggle:bool))
-    (defun INFO_ATS|SetDirectRecoveryFee:object{OuronetInfoV2.ClientInfo} (patron:string ats:string promile:decimal))
-    (defun INFO_ATS|SwitchDirectRecovery:object{OuronetInfoV2.ClientInfo} (patron:string ats:string toggle:bool))
-    (defun INFO_ATS|UpdatePendingBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string))
-    (defun INFO_ATS|UpgradeBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string months:integer))
-    (defun INFO_ATS|Issue:object{OuronetInfoV2.ClientInfo} (patron:string account:string ats:[string]))
-    (defun INFO_ATS|Fuel:object{OuronetInfoV2.ClientInfo} (patron:string fueler:string ats:string reward-token:string amount:decimal))
-    (defun INFO_ATS|HotRecovery:object{OuronetInfoV2.ClientInfo} (patron:string recoverer:string ats:string ra:decimal))
-    (defun INFO_ATS|KickStart:object{OuronetInfoV2.ClientInfo} (patron:string kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal))
-    (defun INFO_ATS|Redeem:object{OuronetInfoV2.ClientInfo} (patron:string redeemer:string id:string nonce:integer))
-    (defun INFO_ATS|Reverse:object{OuronetInfoV2.ClientInfo} (patron:string recoverer:string id:string nonce:integer))
-    (defun INFO_ATS|Syphon:object{OuronetInfoV2.ClientInfo} (patron:string syphon-target:string ats:string syphon-amounts:[decimal]))
-    (defun INFO_ATS|WithdrawRoyalties:object{OuronetInfoV2.ClientInfo} (patron:string ats:string target:string))
-    (defun INFO_ATS|VestedCoil:object{OuronetInfoV2.ClientInfo} (patron:string coiler-vester:string ats:string coil-token:string amount:decimal target-account:string offset:integer duration:integer milestones:integer))
-    (defun INFO_ATS|VestedCurl:object{OuronetInfoV2.ClientInfo} (patron:string curler-vester:string ats1:string ats2:string curl-token:string amount:decimal target-account:string offset:integer duration:integer milestones:integer))
-    (defun INFO_ATS|HOT-RBT|UpdatePendingBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string))
-    (defun INFO_ATS|HOT-RBT|UpgradeBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string months:integer))
-    (defun INFO_ATS|HOT-RBT|Repurpose:object{OuronetInfoV2.ClientInfo} (patron:string hot-rbt:string nonce:integer repurpose-to:string))
-    (defun INFO_ATS|AddHotRBT:object{OuronetInfoV2.ClientInfo} (patron:string ats:string hot-rbt:string))
-    (defun INFO_ATS|RemoveSecondary:object{OuronetInfoV2.ClientInfo} (patron:string remover:string ats:string reward-token:string))
+    (defun INFO_ATS|Coil:object{OuronetInfoV3.ClientInfo} (patron:string coiler:string ats:string rt:string amount:decimal))
+    (defun INFO_ATS|Constrict:object{OuronetInfoV3.ClientInfo} (patron:string constricter:string ats:string rt:string amount:decimal dayz:integer))
+    (defun INFO_ATS|Curl:object{OuronetInfoV3.ClientInfo} (patron:string curler:string ats1:string ats2:string rt:string amount:decimal))
+    (defun INFO_ATS|Brumate:object{OuronetInfoV3.ClientInfo} (patron:string brumator:string ats1:string ats2:string rt:string amount:decimal dayz:integer))
+    (defun INFO_ATS|ColdRecovery:object{OuronetInfoV3.ClientInfo} (patron:string recoverer:string ats:string ra:decimal))
+    (defun INFO_ATS|Cull:object{OuronetInfoV3.ClientInfo} (patron:string culler:string ats:string))
+    (defun INFO_ATS|DirectRecovery:object{OuronetInfoV3.ClientInfo} (patron:string recoverer:string ats:string ra:decimal))
+    (defun INFO_ATS|RotateOwnership:object{OuronetInfoV3.ClientInfo} (patron:string ats:string new-owner:string))
+    (defun INFO_ATS|Control:object{OuronetInfoV3.ClientInfo} (patron:string ats:string can-change-owner:bool syphoning:bool hibernate:bool))
+    (defun INFO_ATS|UpdateRoyalty:object{OuronetInfoV3.ClientInfo} (patron:string ats:string royalty:decimal))
+    (defun INFO_ATS|UpdateSyphon:object{OuronetInfoV3.ClientInfo} (patron:string ats:string syphon:decimal))
+    (defun INFO_ATS|SetHibernationFees:object{OuronetInfoV3.ClientInfo} (patron:string ats:string peak:decimal decay:decimal))
+    (defun INFO_ATS|ToggleParameterLock:object{OuronetInfoV3.ClientInfo} (patron:string ats:string toggle:bool))
+    (defun INFO_ATS|AddSecondary:object{OuronetInfoV3.ClientInfo} (patron:string ats:string reward-token:string rt-nfr:bool))
+    (defun INFO_ATS|ControlColdRecoveryFees:object{OuronetInfoV3.ClientInfo} (patron:string ats:string c-nfr:bool c-fr:bool))
+    (defun INFO_ATS|SetColdRecoveryFees:object{OuronetInfoV3.ClientInfo} (patron:string ats:string fee-positions:integer fee-thresholds:[decimal] fee-array:[[decimal]]))
+    (defun INFO_ATS|SetColdRecoveryDuration:object{OuronetInfoV3.ClientInfo} (patron:string ats:string soft-or-hard:bool base:integer growth:integer))
+    (defun INFO_ATS|ToggleElite:object{OuronetInfoV3.ClientInfo} (patron:string ats:string toggle:bool))
+    (defun INFO_ATS|ToggleUpgrade:object{OuronetInfoV3.ClientInfo} (patron:string ats:string toggle:bool))
+    (defun INFO_ATS|SwitchColdRecovery:object{OuronetInfoV3.ClientInfo} (patron:string ats:string toggle:bool))
+    (defun INFO_ATS|ControlHotRecoveryFee:object{OuronetInfoV3.ClientInfo} (patron:string ats:string h-fr:bool))
+    (defun INFO_ATS|SetHotRecoveryFee:object{OuronetInfoV3.ClientInfo} (patron:string ats:string promile:decimal decay:integer))
+    (defun INFO_ATS|SwitchHotRecovery:object{OuronetInfoV3.ClientInfo} (patron:string ats:string toggle:bool))
+    (defun INFO_ATS|SetDirectRecoveryFee:object{OuronetInfoV3.ClientInfo} (patron:string ats:string promile:decimal))
+    (defun INFO_ATS|SwitchDirectRecovery:object{OuronetInfoV3.ClientInfo} (patron:string ats:string toggle:bool))
+    (defun INFO_ATS|UpdatePendingBranding:object{OuronetInfoV3.ClientInfo} (patron:string entity-id:string))
+    (defun INFO_ATS|UpgradeBranding:object{OuronetInfoV3.ClientInfo} (patron:string entity-id:string months:integer))
+    (defun INFO_ATS|Issue:object{OuronetInfoV3.ClientInfo} (patron:string account:string ats:[string]))
+    (defun INFO_ATS|Fuel:object{OuronetInfoV3.ClientInfo} (patron:string fueler:string ats:string reward-token:string amount:decimal))
+    (defun INFO_ATS|HotRecovery:object{OuronetInfoV3.ClientInfo} (patron:string recoverer:string ats:string ra:decimal))
+    (defun INFO_ATS|KickStart:object{OuronetInfoV3.ClientInfo} (patron:string kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal))
+    (defun INFO_ATS|Redeem:object{OuronetInfoV3.ClientInfo} (patron:string redeemer:string id:string nonce:integer))
+    (defun INFO_ATS|Reverse:object{OuronetInfoV3.ClientInfo} (patron:string recoverer:string id:string nonce:integer))
+    (defun INFO_ATS|Syphon:object{OuronetInfoV3.ClientInfo} (patron:string syphon-target:string ats:string syphon-amounts:[decimal]))
+    (defun INFO_ATS|WithdrawRoyalties:object{OuronetInfoV3.ClientInfo} (patron:string ats:string target:string))
+    (defun INFO_ATS|VestedCoil:object{OuronetInfoV3.ClientInfo} (patron:string coiler-vester:string ats:string coil-token:string amount:decimal target-account:string offset:integer duration:integer milestones:integer))
+    (defun INFO_ATS|VestedCurl:object{OuronetInfoV3.ClientInfo} (patron:string curler-vester:string ats1:string ats2:string curl-token:string amount:decimal target-account:string offset:integer duration:integer milestones:integer))
+    (defun INFO_ATS|HOT-RBT|UpdatePendingBranding:object{OuronetInfoV3.ClientInfo} (patron:string entity-id:string))
+    (defun INFO_ATS|HOT-RBT|UpgradeBranding:object{OuronetInfoV3.ClientInfo} (patron:string entity-id:string months:integer))
+    (defun INFO_ATS|HOT-RBT|Repurpose:object{OuronetInfoV3.ClientInfo} (patron:string hot-rbt:string nonce:integer repurpose-to:string))
+    (defun INFO_ATS|AddHotRBT:object{OuronetInfoV3.ClientInfo} (patron:string ats:string hot-rbt:string))
+    (defun INFO_ATS|RemoveSecondary:object{OuronetInfoV3.ClientInfo} (patron:string remover:string ats:string reward-token:string))
     ;;
-    (defun INFO_SWP|ChangeOwnership:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string new-owner:string))
-    (defun INFO_SWP|ModifyCanChangeOwner:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string new-boolean:bool))
-    (defun INFO_SWP|ModifyWeights:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string new-weights:[decimal]))
-    (defun INFO_SWP|ToggleAddLiquidity:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string toggle:bool))
-    (defun INFO_SWP|ToggleSwapCapability:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string toggle:bool))
-    (defun INFO_SWP|EnableFrozenLP:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string))
-    (defun INFO_SWP|EnableSleepingLP:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string))
-    (defun INFO_SWP|UpdateAmplifier:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string amp:decimal))
-    (defun INFO_SWP|UpdateFee:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string new-fee:decimal lp-or-special:bool))
-    (defun INFO_SWP|UpdateSpecialFeeTargets:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string targets:[string]))
-    (defun INFO_SWP|ToggleFeeLock:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string toggle:bool))
-    (defun INFO_SWP|UpdatePendingBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string))
-    (defun INFO_SWP|UpgradeBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string months:integer))
-    (defun INFO_SWP|UpdatePendingBrandingLPs:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string entity-pos:integer))
-    (defun INFO_SWP|UpgradeBrandingLPs:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string entity-pos:integer months:integer))
-    (defun INFO_SWP|AddLiquidity:object{OuronetInfoV2.ClientInfo} (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
-    (defun INFO_SWP|AddStandardLiquidity:object{OuronetInfoV2.ClientInfo} (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
-    (defun INFO_SWP|AddIcedLiquidity:object{OuronetInfoV2.ClientInfo} (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
-    (defun INFO_SWP|AddGlacialLiquidity:object{OuronetInfoV2.ClientInfo} (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
-    (defun INFO_SWP|AddFrozenLiquidity:object{OuronetInfoV2.ClientInfo} (patron:string account:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal))
-    (defun INFO_SWP|AddSleepingLiquidity:object{OuronetInfoV2.ClientInfo} (patron:string account:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal))
-    (defun INFO_SWP|RemoveLiquidity:object{OuronetInfoV2.ClientInfo} (patron:string account:string swpair:string lp-amount:decimal))
-    (defun INFO_SWP|Fuel:object{OuronetInfoV2.ClientInfo} (patron:string account:string swpair:string input-amounts:[decimal]))
-    (defun INFO_SWP|Firestarter:object{OuronetInfoV2.ClientInfo} (firestarter:string))
-    (defun INFO_SWP|IssueStable:object{OuronetInfoV2.ClientInfo} (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal amp:decimal p:bool))
-    (defun INFO_SWP|IssueStandard:object{OuronetInfoV2.ClientInfo} (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal p:bool))
-    (defun INFO_SWP|IssueWeighted:object{OuronetInfoV2.ClientInfo} (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool))
-    (defun INFO_SWP|IssueStablePool:object{OuronetInfoV2.ClientInfo} (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal amp:decimal p:bool))
-    (defun INFO_SWP|IssueStandardPool:object{OuronetInfoV2.ClientInfo} (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal p:bool))
-    (defun INFO_SWP|IssueWeightedPool:object{OuronetInfoV2.ClientInfo} (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool))
-    (defun INFO_SWP|SingleSwapNoSlippage:object{OuronetInfoV2.ClientInfo} (patron:string account:string swpair:string input-id:string input-amount:decimal output-id:string))
-    (defun INFO_SWP|SingleSwapWithSlippage:object{OuronetInfoV2.ClientInfo} (patron:string account:string swpair:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV3.Slippage}))
-    (defun INFO_SWP|MultiSwapNoSlippage:object{OuronetInfoV2.ClientInfo} (patron:string account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string))
-    (defun INFO_SWP|MultiSwapWithSlippage:object{OuronetInfoV2.ClientInfo} (patron:string account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage-bounds:object{SwapperUsageV3.Slippage}))
-    (defun INFO_SWP|SmartSwapNoSlippage:object{OuronetInfoV2.ClientInfo} (patron:string account:string input-id:string input-amount:decimal output-id:string))
-    (defun INFO_SWP|SmartSwapWithSlippage:object{OuronetInfoV2.ClientInfo} (patron:string account:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV3.Slippage}))
-    (defun INFO_SWP|SmartSwapNoSlippageBundle:object{OuronetInfoV2.ClientInfo} (patron:string account:string input-id:string input-amount:decimal output-id:string bundle:object{SwapperUsageV3.SmartSwapPathBundle}))
-    (defun INFO_SWP|SmartSwapWithSlippageBundle:object{OuronetInfoV2.ClientInfo} (patron:string account:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV3.Slippage} bundle:object{SwapperUsageV3.SmartSwapPathBundle}))
-    (defun INFO_LIQUID|WrapStoa:object{OuronetInfoV2.ClientInfo} (patron:string wrapper:string amount:decimal))
-    (defun INFO_LIQUID|UnwrapStoa:object{OuronetInfoV2.ClientInfo} (patron:string unwrapper:string amount:decimal))
-    (defun INFO_LIQUID|WrapUrStoa:object{OuronetInfoV2.ClientInfo} (patron:string wrapper:string amount:decimal))
-    (defun INFO_LIQUID|UnwrapUrStoa:object{OuronetInfoV2.ClientInfo} (patron:string unwrapper:string amount:decimal))
-    (defun INFO_ORBR|Compress:object{OuronetInfoV2.ClientInfo} (client:string ignis-amount:decimal))
-    (defun INFO_ORBR|Sublimate:object{OuronetInfoV2.ClientInfo} (client:string target:string ouro-amount:decimal))
-    (defun INFO_ORBR|SublimateV2:object{OuronetInfoV2.ClientInfo} (client:string target:string ouro-amount:decimal))
-    (defun INFO_ORBR|WithdrawFees:object{OuronetInfoV2.ClientInfo} (patron:string id:string target:string))
+    (defun INFO_SWP|ChangeOwnership:object{OuronetInfoV3.ClientInfo} (patron:string swpair:string new-owner:string))
+    (defun INFO_SWP|ModifyCanChangeOwner:object{OuronetInfoV3.ClientInfo} (patron:string swpair:string new-boolean:bool))
+    (defun INFO_SWP|ModifyWeights:object{OuronetInfoV3.ClientInfo} (patron:string swpair:string new-weights:[decimal]))
+    (defun INFO_SWP|ToggleAddLiquidity:object{OuronetInfoV3.ClientInfo} (patron:string swpair:string toggle:bool))
+    (defun INFO_SWP|ToggleSwapCapability:object{OuronetInfoV3.ClientInfo} (patron:string swpair:string toggle:bool))
+    (defun INFO_SWP|EnableFrozenLP:object{OuronetInfoV3.ClientInfo} (patron:string swpair:string))
+    (defun INFO_SWP|EnableSleepingLP:object{OuronetInfoV3.ClientInfo} (patron:string swpair:string))
+    (defun INFO_SWP|UpdateAmplifier:object{OuronetInfoV3.ClientInfo} (patron:string swpair:string amp:decimal))
+    (defun INFO_SWP|UpdateFee:object{OuronetInfoV3.ClientInfo} (patron:string swpair:string new-fee:decimal lp-or-special:bool))
+    (defun INFO_SWP|UpdateSpecialFeeTargets:object{OuronetInfoV3.ClientInfo} (patron:string swpair:string targets:[string]))
+    (defun INFO_SWP|ToggleFeeLock:object{OuronetInfoV3.ClientInfo} (patron:string swpair:string toggle:bool))
+    (defun INFO_SWP|UpdatePendingBranding:object{OuronetInfoV3.ClientInfo} (patron:string entity-id:string))
+    (defun INFO_SWP|UpgradeBranding:object{OuronetInfoV3.ClientInfo} (patron:string entity-id:string months:integer))
+    (defun INFO_SWP|UpdatePendingBrandingLPs:object{OuronetInfoV3.ClientInfo} (patron:string swpair:string entity-pos:integer))
+    (defun INFO_SWP|UpgradeBrandingLPs:object{OuronetInfoV3.ClientInfo} (patron:string swpair:string entity-pos:integer months:integer))
+    (defun INFO_SWP|AddLiquidity:object{OuronetInfoV3.ClientInfo} (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
+    (defun INFO_SWP|AddStandardLiquidity:object{OuronetInfoV3.ClientInfo} (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
+    (defun INFO_SWP|AddIcedLiquidity:object{OuronetInfoV3.ClientInfo} (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
+    (defun INFO_SWP|AddGlacialLiquidity:object{OuronetInfoV3.ClientInfo} (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
+    (defun INFO_SWP|AddFrozenLiquidity:object{OuronetInfoV3.ClientInfo} (patron:string account:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal))
+    (defun INFO_SWP|AddSleepingLiquidity:object{OuronetInfoV3.ClientInfo} (patron:string account:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal))
+    (defun INFO_SWP|RemoveLiquidity:object{OuronetInfoV3.ClientInfo} (patron:string account:string swpair:string lp-amount:decimal))
+    (defun INFO_SWP|Fuel:object{OuronetInfoV3.ClientInfo} (patron:string account:string swpair:string input-amounts:[decimal]))
+    (defun INFO_SWP|Firestarter:object{OuronetInfoV3.ClientInfo} (firestarter:string))
+    (defun INFO_SWP|IssueStable:object{OuronetInfoV3.ClientInfo} (patron:string account:string pool-tokens:[object{SwapperV5.PoolTokens}] fee-lp:decimal amp:decimal p:bool))
+    (defun INFO_SWP|IssueStandard:object{OuronetInfoV3.ClientInfo} (patron:string account:string pool-tokens:[object{SwapperV5.PoolTokens}] fee-lp:decimal p:bool))
+    (defun INFO_SWP|IssueWeighted:object{OuronetInfoV3.ClientInfo} (patron:string account:string pool-tokens:[object{SwapperV5.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool))
+    (defun INFO_SWP|IssueStablePool:object{OuronetInfoV3.ClientInfo} (patron:string account:string pool-tokens:[object{SwapperV5.PoolTokens}] fee-lp:decimal amp:decimal p:bool))
+    (defun INFO_SWP|IssueStandardPool:object{OuronetInfoV3.ClientInfo} (patron:string account:string pool-tokens:[object{SwapperV5.PoolTokens}] fee-lp:decimal p:bool))
+    (defun INFO_SWP|IssueWeightedPool:object{OuronetInfoV3.ClientInfo} (patron:string account:string pool-tokens:[object{SwapperV5.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool))
+    (defun INFO_SWP|SingleSwapNoSlippage:object{OuronetInfoV3.ClientInfo} (patron:string account:string swpair:string input-id:string input-amount:decimal output-id:string))
+    (defun INFO_SWP|SingleSwapWithSlippage:object{OuronetInfoV3.ClientInfo} (patron:string account:string swpair:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV4.Slippage}))
+    (defun INFO_SWP|MultiSwapNoSlippage:object{OuronetInfoV3.ClientInfo} (patron:string account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string))
+    (defun INFO_SWP|MultiSwapWithSlippage:object{OuronetInfoV3.ClientInfo} (patron:string account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage-bounds:object{SwapperUsageV4.Slippage}))
+    (defun INFO_SWP|SmartSwapNoSlippage:object{OuronetInfoV3.ClientInfo} (patron:string account:string input-id:string input-amount:decimal output-id:string))
+    (defun INFO_SWP|SmartSwapWithSlippage:object{OuronetInfoV3.ClientInfo} (patron:string account:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV4.Slippage}))
+    (defun INFO_SWP|SmartSwapNoSlippageBundle:object{OuronetInfoV3.ClientInfo} (patron:string account:string input-id:string input-amount:decimal output-id:string bundle:object{SwapperUsageV4.SmartSwapPathBundle}))
+    (defun INFO_SWP|SmartSwapWithSlippageBundle:object{OuronetInfoV3.ClientInfo} (patron:string account:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV4.Slippage} bundle:object{SwapperUsageV4.SmartSwapPathBundle}))
+    (defun INFO_LIQUID|WrapStoa:object{OuronetInfoV3.ClientInfo} (patron:string wrapper:string amount:decimal))
+    (defun INFO_LIQUID|UnwrapStoa:object{OuronetInfoV3.ClientInfo} (patron:string unwrapper:string amount:decimal))
+    (defun INFO_LIQUID|WrapUrStoa:object{OuronetInfoV3.ClientInfo} (patron:string wrapper:string amount:decimal))
+    (defun INFO_LIQUID|UnwrapUrStoa:object{OuronetInfoV3.ClientInfo} (patron:string unwrapper:string amount:decimal))
+    (defun INFO_ORBR|Compress:object{OuronetInfoV3.ClientInfo} (client:string ignis-amount:decimal))
+    (defun INFO_ORBR|Sublimate:object{OuronetInfoV3.ClientInfo} (client:string target:string ouro-amount:decimal))
+    (defun INFO_ORBR|SublimateV2:object{OuronetInfoV3.ClientInfo} (client:string target:string ouro-amount:decimal))
+    (defun INFO_ORBR|WithdrawFees:object{OuronetInfoV3.ClientInfo} (patron:string id:string target:string))
     ;;
     ;;  [DALOS-INFO]  (relocated from the now-tombstoned INFO-ZERO; DALOS client-op previews wrapping IGNIS's DALOS|URCi_*)
     ;;
-    (defun INFO_DALOS|ControlSmartAccount:object{OuronetInfoV2.ClientInfo} (patron:string account:string))
-    (defun INFO_DALOS|DeploySmartAccount:object{OuronetInfoV2.ClientInfo} (account:string))
-    (defun INFO_DALOS|DeployStandardAccount:object{OuronetInfoV2.ClientInfo} (account:string))
-    (defun INFO_DALOS|RotateGovernor:object{OuronetInfoV2.ClientInfo} (patron:string account:string))
-    (defun INFO_DALOS|RotateGuard:object{OuronetInfoV2.ClientInfo} (patron:string account:string))
-    (defun INFO_DALOS|RotateStoa:object{OuronetInfoV2.ClientInfo} (patron:string account:string))
-    (defun INFO_DALOS|RotateSovereign:object{OuronetInfoV2.ClientInfo} (patron:string account:string))
-    (defun INFO_DALOS|UpdateEliteAccount:object{OuronetInfoV2.ClientInfo} (patron:string account:string))
-    (defun INFO_DALOS|UpdateEliteAccountSquared:object{OuronetInfoV2.ClientInfo} (patron:string sender:string receiver:string))
+    (defun INFO_DALOS|ControlSmartAccount:object{OuronetInfoV3.ClientInfo} (patron:string account:string))
+    (defun INFO_DALOS|DeploySmartAccount:object{OuronetInfoV3.ClientInfo} (account:string))
+    (defun INFO_DALOS|DeployStandardAccount:object{OuronetInfoV3.ClientInfo} (account:string))
+    (defun INFO_DALOS|RotateGovernor:object{OuronetInfoV3.ClientInfo} (patron:string account:string))
+    (defun INFO_DALOS|RotateGuard:object{OuronetInfoV3.ClientInfo} (patron:string account:string))
+    (defun INFO_DALOS|RotateStoa:object{OuronetInfoV3.ClientInfo} (patron:string account:string))
+    (defun INFO_DALOS|RotateSovereign:object{OuronetInfoV3.ClientInfo} (patron:string account:string))
+    (defun INFO_DALOS|UpdateEliteAccount:object{OuronetInfoV3.ClientInfo} (patron:string account:string))
+    (defun INFO_DALOS|UpdateEliteAccountSquared:object{OuronetInfoV3.ClientInfo} (patron:string sender:string receiver:string))
     ;;{5.4}  Validate [UEV/CAP]
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
     ;;{5.7}  User [A/C]
 
+
+    ;;<=========================================================================>
+    ;; ADDED 2026-10-12 -- interface-membership sweep (StoicSyntax-Prefixes.md Sec5,
+    ;; owner ruling). Every one of these was already live in the module body; this
+    ;; closes the gap between what the module DOES and what its interface SAYS it does.
+    ;;<=========================================================================>
+    (defun UC_LiquidityTaxDeclaration:[string] (clad:object{SwapperLiquidityV3.CompleteLiquidityAdditionData}))
+    (defun UC_TrimDecimalTrailingZeros:string (number:decimal))
 )
 ;;INFO_LIQUID|UnwrapStoa
 ;;INFO_LIQUID|WrapStoa
@@ -258,7 +266,7 @@
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
-    (implements InfoOneV2)
+    (implements InfoOneV3)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -274,7 +282,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -282,7 +290,7 @@
     (defun GOV|SWP|SC_NAME ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|SWP|SC_NAME)
         )
@@ -337,7 +345,7 @@
     (defun CT_EmptyCumulator ()
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (ref-IGNIS::UDC_EmptyOutputCumulatorV2)
         )
@@ -386,7 +394,7 @@
     )
     ;;
     (defun UC_LiquidityTaxDeclaration:[string]
-        (clad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData})
+        (clad:object{SwapperLiquidityV3.CompleteLiquidityAdditionData})
         @doc "The pre-text lines that DECLARE what an add-liquidity takes BEYOND its gas quote. \
             \ Adding liquidity charges the caller TWO different ways. Gas travels through the \
             \ OutputCumulator and lands in <ignis-need>, which every INFO_ already reports. The \
@@ -440,12 +448,12 @@
     ;;  [INFO] - Informational URC Functions
     ;;
     ;;  [DPTF]
-    (defun INFO_DPTF|UpdatePendingBranding:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_DPTF|UpdatePendingBranding:object{OuronetInfoV3.ClientInfo}
         (patron:string entity-id:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Update Pending Branding for {} DPTF" [entity-id])]
@@ -456,12 +464,12 @@
             )
         )
     )
-    (defun INFO_DPTF|UpgradeBranding:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_DPTF|UpgradeBranding:object{OuronetInfoV3.ClientInfo}
         (patron:string entity-id:string months:integer)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Upgrade Branding for {} DPTF for {} month(s)" [entity-id months])]
@@ -472,12 +480,12 @@
             )
         )
     )
-    (defun INFO_DPTF|Burn:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_DPTF|Burn:object{OuronetInfoV3.ClientInfo}
         (patron:string id:string account:string amount:decimal)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 ;;
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
@@ -490,12 +498,12 @@
             )
         )
     )
-    (defun INFO_DPTF|Control:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_DPTF|Control:object{OuronetInfoV3.ClientInfo}
         (patron:string id:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Control DPTF {} Boolean Properties" [id])]
@@ -506,12 +514,12 @@
             )
         )
     )
-    (defun INFO_DPTF|DeployAccount:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_DPTF|DeployAccount:object{OuronetInfoV3.ClientInfo}
         (patron:string id:string account:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 ;;
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
@@ -527,13 +535,13 @@
             )
         )
     )
-    (defun INFO_DPTF|DonateFees:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_DPTF|DonateFees:object{OuronetInfoV3.ClientInfo}
         (patron:string id:string)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 ;;
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount (ref-DALOS::GOV|DALOS|SC_NAME)))
             )
@@ -549,12 +557,12 @@
             )
         )
     )
-    (defun INFO_DPTF|Issue:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_DPTF|Issue:object{OuronetInfoV3.ClientInfo}
         (patron:string account:string name:[string])
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 ;;
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
@@ -570,12 +578,12 @@
             )
         )
     )
-    (defun INFO_DPTF|Mint:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_DPTF|Mint:object{OuronetInfoV3.ClientInfo}
         (patron:string id:string account:string amount:decimal origin:bool)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 ;;
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
@@ -598,13 +606,13 @@
             )
         )
     )
-    (defun INFO_DPTF|ResetFeeTarget:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_DPTF|ResetFeeTarget:object{OuronetInfoV3.ClientInfo}
         (patron:string id:string)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 ;;
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount (ref-DALOS::GOV|OUROBOROS|SC_NAME)))
             )
@@ -620,12 +628,12 @@
             )
         )
     )
-    (defun INFO_DPTF|RotateOwnership:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_DPTF|RotateOwnership:object{OuronetInfoV3.ClientInfo}
         (patron:string id:string new-owner:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 ;;
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount new-owner))
             )
@@ -638,12 +646,12 @@
             )
         )
     )
-    (defun INFO_DPTF|SetFee:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_DPTF|SetFee:object{OuronetInfoV3.ClientInfo}
         (patron:string id:string fee:decimal)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Sets fee for {} to {} Promille" [id fee])]
@@ -654,12 +662,12 @@
             )
         )
     )
-    (defun INFO_DPTF|SetFeeTarget:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_DPTF|SetFeeTarget:object{OuronetInfoV3.ClientInfo}
         (patron:string id:string target:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 ;;
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount target))
             )
@@ -672,12 +680,12 @@
             )
         )
     )
-    (defun INFO_DPTF|SetMinMove:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_DPTF|SetMinMove:object{OuronetInfoV3.ClientInfo}
         (patron:string id:string min-move-value:decimal)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Sets MinMove Value target for {} to {} " [id min-move-value])]
@@ -688,12 +696,12 @@
             )
         )
     )
-    (defun INFO_DPTF|ToggleFee:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_DPTF|ToggleFee:object{OuronetInfoV3.ClientInfo}
         (patron:string id:string toggle:bool)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [
@@ -714,12 +722,12 @@
             )
         )
     )
-    (defun INFO_DPTF|ToggleFeeLock:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_DPTF|ToggleFeeLock:object{OuronetInfoV3.ClientInfo}
         (patron:string id:string toggle:bool fee-unlocks:integer)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [
@@ -740,12 +748,12 @@
             )
         )
     )
-    (defun INFO_DPTF|ToggleFreezeAccount:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_DPTF|ToggleFreezeAccount:object{OuronetInfoV3.ClientInfo}
         (patron:string id:string account:string toggle:bool)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 ;;
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
@@ -768,12 +776,12 @@
             )
         )
     )
-    (defun INFO_DPTF|TogglePause:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_DPTF|TogglePause:object{OuronetInfoV3.ClientInfo}
         (patron:string id:string toggle:bool)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [
@@ -794,12 +802,12 @@
             )
         )
     )
-    (defun INFO_DPTF|ToggleReservation:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_DPTF|ToggleReservation:object{OuronetInfoV3.ClientInfo}
         (patron:string id:string toggle:bool)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [
@@ -820,12 +828,12 @@
             )
         )
     )
-    (defun INFO_DPTF|ToggleTransferRole:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_DPTF|ToggleTransferRole:object{OuronetInfoV3.ClientInfo}
         (patron:string id:string account:string toggle:bool)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 ;;
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
@@ -848,12 +856,12 @@
             )
         )
     )
-    (defun INFO_DPTF|Wipe:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_DPTF|Wipe:object{OuronetInfoV3.ClientInfo}
         (patron:string id:string atbw:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 ;;
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount atbw))
             )
@@ -866,12 +874,12 @@
             )
         )
     )
-    (defun INFO_DPTF|WipeSlim:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_DPTF|WipeSlim:object{OuronetInfoV3.ClientInfo}
         (patron:string id:string atbw:string amtbw:decimal)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 ;;
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount atbw))
             )
@@ -884,16 +892,16 @@
             )
         )
     )
-    (defun INFO_DPTF|Transfer:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_DPTF|Transfer:object{OuronetInfoV3.ClientInfo}
         (patron:string id:string sender:string receiver:string transfer-amount:decimal)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
                 ;;
                 (what-type:integer (at "type" (ref-TFT::URC_TransferClasses id sender receiver transfer-amount)))
-                (ico:object{IgnisCollectorV3.OutputCumulator}
+                (ico:object{IgnisCollectorV4.OutputCumulator}
                     (ref-TFT::URCi_TransferCumulator what-type id sender receiver)
                 )
                 (receiver-amount:decimal (ref-TFT::URC_ReceiverAmount id sender receiver transfer-amount))
@@ -934,14 +942,14 @@
             )
         )
     )
-    (defun INFO_DPTF|MultiTransfer:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_DPTF|MultiTransfer:object{OuronetInfoV3.ClientInfo}
         (patron:string id-lst:[string] sender:string receiver:string transfer-amount-lst:[decimal])
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
-                (ico:object{IgnisCollectorV3.OutputCumulator}
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
+                (ico:object{IgnisCollectorV4.OutputCumulator}
                     (ref-TFT::URCi_MultiTransferCumulator id-lst sender receiver transfer-amount-lst)
                 )
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico))
@@ -978,15 +986,15 @@
             )
         )
     )
-    (defun INFO_DPTF|BulkTransfer:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_DPTF|BulkTransfer:object{OuronetInfoV3.ClientInfo}
         (patron:string id:string sender:string receiver-lst:[string] transfer-amount-lst:[decimal])
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
                 ;;
-                (ico:object{IgnisCollectorV3.OutputCumulator}
+                (ico:object{IgnisCollectorV4.OutputCumulator}
                     (ref-TFT::URCi_BulkTransferCumulator id sender receiver-lst transfer-amount-lst)
                 )
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico))
@@ -1016,15 +1024,15 @@
             )
         )
     )
-    (defun INFO_DPTF|MultiBulkTransfer:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_DPTF|MultiBulkTransfer:object{OuronetInfoV3.ClientInfo}
         (patron:string id-lst:[string] sender:string receiver-array:[[string]] transfer-amount-array:[[decimal]])
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
                 ;;
-                (ico:object{IgnisCollectorV3.OutputCumulator}
+                (ico:object{IgnisCollectorV4.OutputCumulator}
                     (ref-TFT::URCi_MultiBulkTransferCumulator id-lst sender receiver-array transfer-amount-array)
                 )
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico))
@@ -1058,15 +1066,15 @@
             )
         )
     )
-    (defun INFO_DPTF|ClearDispo:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_DPTF|ClearDispo:object{OuronetInfoV3.ClientInfo}
         (patron:string account:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-ATS:module{AutostakeV3} ATS)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-ATS:module{AutostakeV4} ATS)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
                 ;;
                 (ouro-id:string (ref-DALOS::UR_OuroborosID))
                 (a-id:string (ref-DALOS::UR_AurynID))
@@ -1106,7 +1114,7 @@
             )
         )
     )
-    (defun INFO_DPTF|ClearDispoForeign:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_DPTF|ClearDispoForeign:object{OuronetInfoV3.ClientInfo}
         (patron:string executor:string executee:string)
         @doc "Cost + narrative preview for TS01-C1's DPTF|C_ClearDispoForeign -- the DELEGATED \
             \ dispo clear, where <executor> settles <executee>'s negative OURO. \
@@ -1122,11 +1130,11 @@
             \ is the only thing the foreign variant adds over the self variant."
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-ATS:module{AutostakeV3} ATS)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-ATS:module{AutostakeV4} ATS)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
                 ;;
                 (ouro-id:string (ref-DALOS::UR_OuroborosID))
                 (a-id:string (ref-DALOS::UR_AurynID))
@@ -1167,12 +1175,12 @@
             )
         )
     )
-    (defun INFO_DPTF|ToggleBurnRole:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_DPTF|ToggleBurnRole:object{OuronetInfoV3.ClientInfo}
         (patron:string id:string account:string toggle:bool)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 ;;
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
@@ -1185,12 +1193,12 @@
             )
         )
     )
-    (defun INFO_DPTF|ToggleMintRole:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_DPTF|ToggleMintRole:object{OuronetInfoV3.ClientInfo}
         (patron:string id:string account:string toggle:bool)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 ;;
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
@@ -1203,12 +1211,12 @@
             )
         )
     )
-    (defun INFO_DPTF|ToggleFeeExemptionRole:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_DPTF|ToggleFeeExemptionRole:object{OuronetInfoV3.ClientInfo}
         (patron:string id:string account:string toggle:bool)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 ;;
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
@@ -1221,12 +1229,12 @@
             )
         )
     )
-    (defun INFO_DPTF|Transmute:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_DPTF|Transmute:object{OuronetInfoV3.ClientInfo}
         (patron:string id:string transmuter:string transmute-amount:decimal)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
                 ;;
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount transmuter))
             )
@@ -1240,12 +1248,12 @@
         )
     )
     ;;  [DPOF]
-    (defun INFO_DPOF|UpdatePendingBranding:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_DPOF|UpdatePendingBranding:object{OuronetInfoV3.ClientInfo}
         (patron:string entity-id:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Update Pending Branding for {} DPOF" [entity-id])]
@@ -1256,12 +1264,12 @@
             )
         )
     )
-    (defun INFO_DPOF|UpgradeBranding:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_DPOF|UpgradeBranding:object{OuronetInfoV3.ClientInfo}
         (patron:string entity-id:string months:integer)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Upgrade Branding for {} DPOF for {} month(s)" [entity-id months])]
@@ -1272,12 +1280,12 @@
             )
         )
     )
-    (defun INFO_DPOF|AddQuantity:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_DPOF|AddQuantity:object{OuronetInfoV3.ClientInfo}
         (patron:string id:string nonce:integer account:string amount:decimal)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                 ;;
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
@@ -1290,12 +1298,12 @@
             )
         )
     )
-    (defun INFO_DPOF|Burn:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_DPOF|Burn:object{OuronetInfoV3.ClientInfo}
         (patron:string id:string nonce:integer account:string amount:decimal)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                 ;;
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
@@ -1308,12 +1316,12 @@
             )
         )
     )
-    (defun INFO_DPOF|Control:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_DPOF|Control:object{OuronetInfoV3.ClientInfo}
         (patron:string id:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Controls DPOF {} Boolean Properties" [id])]
@@ -1327,12 +1335,12 @@
     ;; NOTE: the former INFO_DPOF|Create was an orphan preview — DPOF has no C_Create client
     ;; op (create-without-quantity is not a gas-funded path; Mint creates+adds in one op).
     ;; Dropped in the URCi rehaul; re-add alongside a real client op if one is ever introduced.
-    (defun INFO_DPOF|DeployAccount:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_DPOF|DeployAccount:object{OuronetInfoV3.ClientInfo}
         (patron:string id:string account:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                 ;;
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
@@ -1351,12 +1359,12 @@
             )
         )
     )
-    (defun INFO_DPOF|Issue:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_DPOF|Issue:object{OuronetInfoV3.ClientInfo}
         (patron:string account:string name:[string])
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                 ;;
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
@@ -1372,12 +1380,12 @@
             )
         )
     )
-    (defun INFO_DPOF|Mint:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_DPOF|Mint:object{OuronetInfoV3.ClientInfo}
         (patron:string id:string account:string amount:decimal)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                 ;;
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_Mint id)))
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
@@ -1392,11 +1400,11 @@
         )
     )
     ;; ---- DPOF entity-completion: ownership/role toggles (1:1 URCi) ----
-    (defun INFO_DPOF|RotateOwnership:object{OuronetInfoV2.ClientInfo} (patron:string id:string new-owner:string)
+    (defun INFO_DPOF|RotateOwnership:object{OuronetInfoV3.ClientInfo} (patron:string id:string new-owner:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount new-owner))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -1408,11 +1416,11 @@
             )
         )
     )
-    (defun INFO_DPOF|MoveCreateRole:object{OuronetInfoV2.ClientInfo} (patron:string id:string receiver:string)
+    (defun INFO_DPOF|MoveCreateRole:object{OuronetInfoV3.ClientInfo} (patron:string id:string receiver:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount receiver))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -1424,11 +1432,11 @@
             )
         )
     )
-    (defun INFO_DPOF|ToggleAddQuantityRole:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string toggle:bool)
+    (defun INFO_DPOF|ToggleAddQuantityRole:object{OuronetInfoV3.ClientInfo} (patron:string id:string account:string toggle:bool)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -1440,11 +1448,11 @@
             )
         )
     )
-    (defun INFO_DPOF|ToggleBurnRole:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string toggle:bool)
+    (defun INFO_DPOF|ToggleBurnRole:object{OuronetInfoV3.ClientInfo} (patron:string id:string account:string toggle:bool)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -1456,11 +1464,11 @@
             )
         )
     )
-    (defun INFO_DPOF|ToggleFreezeAccount:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string toggle:bool)
+    (defun INFO_DPOF|ToggleFreezeAccount:object{OuronetInfoV3.ClientInfo} (patron:string id:string account:string toggle:bool)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -1472,11 +1480,11 @@
             )
         )
     )
-    (defun INFO_DPOF|TogglePause:object{OuronetInfoV2.ClientInfo} (patron:string id:string toggle:bool)
+    (defun INFO_DPOF|TogglePause:object{OuronetInfoV3.ClientInfo} (patron:string id:string toggle:bool)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(if toggle (format "Operation: Pauses DPOF {}" [id]) (format "Operation: Unpauses DPOF {}" [id]))]
@@ -1487,11 +1495,11 @@
             )
         )
     )
-    (defun INFO_DPOF|ToggleTransferRole:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string toggle:bool)
+    (defun INFO_DPOF|ToggleTransferRole:object{OuronetInfoV3.ClientInfo} (patron:string id:string account:string toggle:bool)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -1504,11 +1512,11 @@
         )
     )
     ;; ---- DPOF entity-completion: transfer family (URCi_MoveCumulator: transmit=ignis|small, transfer=ignis|smallest per nonce) ----
-    (defun INFO_DPOF|Transfer:object{OuronetInfoV2.ClientInfo} (patron:string id:string nonces:[integer] sender:string receiver:string method:bool)
+    (defun INFO_DPOF|Transfer:object{OuronetInfoV3.ClientInfo} (patron:string id:string nonces:[integer] sender:string receiver:string method:bool)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                 (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount sender))
                 (sa-r:string (ref-I|OURONET::OI|UC_ShortAccount receiver))
             )
@@ -1521,11 +1529,11 @@
             )
         )
     )
-    (defun INFO_DPOF|Transmit:object{OuronetInfoV2.ClientInfo} (patron:string id:string nonces:[integer] amounts:[decimal] sender:string receiver:string method:bool)
+    (defun INFO_DPOF|Transmit:object{OuronetInfoV3.ClientInfo} (patron:string id:string nonces:[integer] amounts:[decimal] sender:string receiver:string method:bool)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                 (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount sender))
                 (sa-r:string (ref-I|OURONET::OI|UC_ShortAccount receiver))
             )
@@ -1538,11 +1546,11 @@
             )
         )
     )
-    (defun INFO_DPOF|BulkTransfer:object{OuronetInfoV2.ClientInfo} (patron:string id:string nonces-array:[[integer]] sender:string receiver-lst:[string] method:bool)
+    (defun INFO_DPOF|BulkTransfer:object{OuronetInfoV3.ClientInfo} (patron:string id:string nonces-array:[[integer]] sender:string receiver-lst:[string] method:bool)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                 (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount sender))
                 (all-nonces:[integer] (fold (+) [] nonces-array))
             )
@@ -1556,11 +1564,11 @@
         )
     )
     ;; ---- DPOF entity-completion: wipe family (WipeSlim flat; Pure/Heavy/Clean per-nonce via URCi_WipeCumulator) ----
-    (defun INFO_DPOF|WipeSlim:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string nonce:integer amount:decimal)
+    (defun INFO_DPOF|WipeSlim:object{OuronetInfoV3.ClientInfo} (patron:string id:string account:string nonce:integer amount:decimal)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -1572,11 +1580,11 @@
             )
         )
     )
-    (defun INFO_DPOF|WipePure:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string removable-nonces-obj:object{DpofUdcV2.RemovableNonces})
+    (defun INFO_DPOF|WipePure:object{OuronetInfoV3.ClientInfo} (patron:string id:string account:string removable-nonces-obj:object{DpofUdcV2.RemovableNonces})
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -1588,11 +1596,11 @@
             )
         )
     )
-    (defun INFO_DPOF|WipeHeavy:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string)
+    (defun INFO_DPOF|WipeHeavy:object{OuronetInfoV3.ClientInfo} (patron:string id:string account:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -1604,11 +1612,11 @@
             )
         )
     )
-    (defun INFO_DPOF|WipeClean:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string nonces:[integer])
+    (defun INFO_DPOF|WipeClean:object{OuronetInfoV3.ClientInfo} (patron:string id:string account:string nonces:[integer])
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -1620,13 +1628,13 @@
             )
         )
     )
-    (defun INFO_DPOF|WipeSlice:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string removable-nonces-obj:object{DpofUdcV2.RemovableNonces})
+    (defun INFO_DPOF|WipeSlice:object{OuronetInfoV3.ClientInfo} (patron:string id:string account:string removable-nonces-obj:object{DpofUdcV2.RemovableNonces})
         @doc "Hydra wipe SLICE preview: exact IGNIS cost of one <Cp_WipeSlice> tx, computed \
             \ from the slice's own payload via the same URCi the executor bills from."
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                 (n:integer (length (at "r-nonces" removable-nonces-obj)))
             )
@@ -1639,14 +1647,14 @@
             )
         )
     )
-    (defun INFO_DPOF|WipeFull:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string plan:object{DpofUdcV2.DPOF|WipeSlicePlan})
+    (defun INFO_DPOF|WipeFull:object{OuronetInfoV3.ClientInfo} (patron:string id:string account:string plan:object{DpofUdcV2.DPOF|WipeSlicePlan})
         @doc "Hydra wipe FULL preview: grand-total IGNIS across the whole <URHC_BuildWipeSlicePlan> \
             \ plan = the sum of every slice's own <INFO_DPOF|WipeSlice> cost (per-slice ifp sums \
             \ mirror the executor byte-for-byte)."
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                 (slices:[object{DpofUdcV2.RemovableNonces}] (at "slices" plan))
                 (total-ifp:decimal
@@ -1671,12 +1679,12 @@
         )
     )
     ;;  [VST]
-    (defun INFO_VST|Hibernate:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_VST|Hibernate:object{OuronetInfoV3.ClientInfo}
         (patron:string hibernator:string target-account:string dptf:string amount:decimal dayz:integer)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-VST:module{VestingV2} VST)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-VST:module{VestingV3} VST)
                 ;;
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_Hibernate hibernator target-account dptf amount dayz)))
                 (sa-hibernator:string (ref-I|OURONET::OI|UC_ShortAccount hibernator))
@@ -1694,14 +1702,14 @@
             )
         )
     )
-    (defun INFO_VST|Awake:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_VST|Awake:object{OuronetInfoV3.ClientInfo}
         (patron:string awaker:string dpof:string nonce:integer)
         (let
             (
                 (ref-U|ATS:module{UtilityAtsV3} U|ATS)
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-                (ref-VST:module{VestingV2} VST)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+                (ref-VST:module{VestingV3} VST)
                 ;;
                 (dptf-id:string (ref-DPOF::UR_Hibernation dpof))
                 (precision:integer (ref-DPOF::UR_Decimals dpof))
@@ -1749,13 +1757,13 @@
             )
         )
     )
-    (defun INFO_VST|Slumber:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_VST|Slumber:object{OuronetInfoV3.ClientInfo}
         (patron:string merger:string dpof:string nonces:[integer])
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-                (ref-VST:module{VestingV2} VST)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+                (ref-VST:module{VestingV3} VST)
                 ;;
                 (dptf:string (ref-DPOF::UR_Hibernation dpof))
                 (sm:string (ref-I|OURONET::OI|UC_ShortAccount merger))
@@ -1813,11 +1821,11 @@
     ;;`URC_SplitSTOAPrices patron (UR_UsagePrice "dpmf")`.
     ;;Same shape as INFO_EQUITY|IssueCompany, INFO_SWP|ToggleFeeLock and INFO_ATS|ToggleParameterLock.
     ;;Pinned by `REPL/modules/VST.repl <<VST-I1>>`.
-    (defun INFO_VST|CreateFrozenLink:object{OuronetInfoV2.ClientInfo} (patron:string dptf:string)
+    (defun INFO_VST|CreateFrozenLink:object{OuronetInfoV3.ClientInfo} (patron:string dptf:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-VST:module{VestingV2} VST)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-VST:module{VestingV3} VST)
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_CreateSpecialTrueFungibleLink dptf)))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -1829,11 +1837,11 @@
             )
         )
     )
-    (defun INFO_VST|CreateReservationLink:object{OuronetInfoV2.ClientInfo} (patron:string dptf:string)
+    (defun INFO_VST|CreateReservationLink:object{OuronetInfoV3.ClientInfo} (patron:string dptf:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-VST:module{VestingV2} VST)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-VST:module{VestingV3} VST)
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_CreateSpecialTrueFungibleLink dptf)))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -1845,11 +1853,11 @@
             )
         )
     )
-    (defun INFO_VST|CreateVestingLink:object{OuronetInfoV2.ClientInfo} (patron:string dptf:string)
+    (defun INFO_VST|CreateVestingLink:object{OuronetInfoV3.ClientInfo} (patron:string dptf:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-VST:module{VestingV2} VST)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-VST:module{VestingV3} VST)
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_CreateSpecialOrtoFungibleLink dptf 1)))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -1861,11 +1869,11 @@
             )
         )
     )
-    (defun INFO_VST|CreateSleepingLink:object{OuronetInfoV2.ClientInfo} (patron:string dptf:string)
+    (defun INFO_VST|CreateSleepingLink:object{OuronetInfoV3.ClientInfo} (patron:string dptf:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-VST:module{VestingV2} VST)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-VST:module{VestingV3} VST)
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_CreateSpecialOrtoFungibleLink dptf 2)))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -1877,11 +1885,11 @@
             )
         )
     )
-    (defun INFO_VST|CreateHibernatingLink:object{OuronetInfoV2.ClientInfo} (patron:string dptf:string)
+    (defun INFO_VST|CreateHibernatingLink:object{OuronetInfoV3.ClientInfo} (patron:string dptf:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-VST:module{VestingV2} VST)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-VST:module{VestingV3} VST)
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_CreateSpecialOrtoFungibleLink dptf 3)))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -1894,11 +1902,11 @@
         )
     )
     ;; ---- Frozen family ----
-    (defun INFO_VST|Freeze:object{OuronetInfoV2.ClientInfo} (patron:string freezer:string freeze-output:string dptf:string amount:decimal)
+    (defun INFO_VST|Freeze:object{OuronetInfoV3.ClientInfo} (patron:string freezer:string freeze-output:string dptf:string amount:decimal)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-VST:module{VestingV2} VST)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-VST:module{VestingV3} VST)
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_Freeze freezer freeze-output dptf amount)))
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount freezer))
             )
@@ -1911,11 +1919,11 @@
             )
         )
     )
-    (defun INFO_VST|RepurposeFrozen:object{OuronetInfoV2.ClientInfo} (patron:string dptf-to-repurpose:string repurpose-from:string repurpose-to:string)
+    (defun INFO_VST|RepurposeFrozen:object{OuronetInfoV3.ClientInfo} (patron:string dptf-to-repurpose:string repurpose-from:string repurpose-to:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-VST:module{VestingV2} VST)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-VST:module{VestingV3} VST)
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_RepurposeTrueFungible dptf-to-repurpose repurpose-from repurpose-to)))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -1927,11 +1935,11 @@
             )
         )
     )
-    (defun INFO_VST|ToggleTransferRoleFrozenDPTF:object{OuronetInfoV2.ClientInfo} (patron:string s-dptf:string target:string toggle:bool)
+    (defun INFO_VST|ToggleTransferRoleFrozenDPTF:object{OuronetInfoV3.ClientInfo} (patron:string s-dptf:string target:string toggle:bool)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-VST:module{VestingV2} VST)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-VST:module{VestingV3} VST)
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_ToggleTransferRoleFrozenDPTF s-dptf)))
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount target))
             )
@@ -1945,11 +1953,11 @@
         )
     )
     ;; ---- Reserved family ----
-    (defun INFO_VST|Reserve:object{OuronetInfoV2.ClientInfo} (patron:string reserver:string dptf:string amount:decimal)
+    (defun INFO_VST|Reserve:object{OuronetInfoV3.ClientInfo} (patron:string reserver:string dptf:string amount:decimal)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-VST:module{VestingV2} VST)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-VST:module{VestingV3} VST)
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_Reserve reserver dptf amount)))
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount reserver))
             )
@@ -1962,11 +1970,11 @@
             )
         )
     )
-    (defun INFO_VST|Unreserve:object{OuronetInfoV2.ClientInfo} (patron:string unreserver:string r-dptf:string amount:decimal)
+    (defun INFO_VST|Unreserve:object{OuronetInfoV3.ClientInfo} (patron:string unreserver:string r-dptf:string amount:decimal)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-VST:module{VestingV2} VST)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-VST:module{VestingV3} VST)
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_Unreserve unreserver r-dptf amount)))
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount unreserver))
             )
@@ -1979,11 +1987,11 @@
             )
         )
     )
-    (defun INFO_VST|RepurposeReserved:object{OuronetInfoV2.ClientInfo} (patron:string dptf-to-repurpose:string repurpose-from:string repurpose-to:string)
+    (defun INFO_VST|RepurposeReserved:object{OuronetInfoV3.ClientInfo} (patron:string dptf-to-repurpose:string repurpose-from:string repurpose-to:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-VST:module{VestingV2} VST)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-VST:module{VestingV3} VST)
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_RepurposeTrueFungible dptf-to-repurpose repurpose-from repurpose-to)))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -1995,11 +2003,11 @@
             )
         )
     )
-    (defun INFO_VST|ToggleTransferRoleReservedDPTF:object{OuronetInfoV2.ClientInfo} (patron:string s-dptf:string target:string toggle:bool)
+    (defun INFO_VST|ToggleTransferRoleReservedDPTF:object{OuronetInfoV3.ClientInfo} (patron:string s-dptf:string target:string toggle:bool)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-VST:module{VestingV2} VST)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-VST:module{VestingV3} VST)
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_ToggleTransferRoleReservedDPTF s-dptf)))
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount target))
             )
@@ -2013,11 +2021,11 @@
         )
     )
     ;; ---- Vested family ----
-    (defun INFO_VST|Vest:object{OuronetInfoV2.ClientInfo} (patron:string vester:string target-account:string dptf:string amount:decimal offset:integer seconds:integer milestones:integer)
+    (defun INFO_VST|Vest:object{OuronetInfoV3.ClientInfo} (patron:string vester:string target-account:string dptf:string amount:decimal offset:integer seconds:integer milestones:integer)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-VST:module{VestingV2} VST)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-VST:module{VestingV3} VST)
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_Vest vester target-account dptf amount offset seconds milestones)))
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount target-account))
             )
@@ -2030,11 +2038,11 @@
             )
         )
     )
-    (defun INFO_VST|Unvest:object{OuronetInfoV2.ClientInfo} (patron:string unvester:string dpof:string nonce:integer)
+    (defun INFO_VST|Unvest:object{OuronetInfoV3.ClientInfo} (patron:string unvester:string dpof:string nonce:integer)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-VST:module{VestingV2} VST)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-VST:module{VestingV3} VST)
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_Unvest unvester dpof nonce)))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -2046,11 +2054,11 @@
             )
         )
     )
-    (defun INFO_VST|RepurposeVested:object{OuronetInfoV2.ClientInfo} (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string)
+    (defun INFO_VST|RepurposeVested:object{OuronetInfoV3.ClientInfo} (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-VST:module{VestingV2} VST)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-VST:module{VestingV3} VST)
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_RepurposeOrtoFungible dpof-to-repurpose nonce repurpose-from repurpose-to)))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -2063,11 +2071,11 @@
         )
     )
     ;; ---- Sleeping family ----
-    (defun INFO_VST|Sleep:object{OuronetInfoV2.ClientInfo} (patron:string sleeper:string target-account:string dptf:string amount:decimal seconds:integer)
+    (defun INFO_VST|Sleep:object{OuronetInfoV3.ClientInfo} (patron:string sleeper:string target-account:string dptf:string amount:decimal seconds:integer)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-VST:module{VestingV2} VST)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-VST:module{VestingV3} VST)
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_Sleep sleeper target-account dptf amount seconds)))
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount target-account))
             )
@@ -2080,11 +2088,11 @@
             )
         )
     )
-    (defun INFO_VST|Unsleep:object{OuronetInfoV2.ClientInfo} (patron:string unsleeper:string dpof:string nonce:integer)
+    (defun INFO_VST|Unsleep:object{OuronetInfoV3.ClientInfo} (patron:string unsleeper:string dpof:string nonce:integer)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-VST:module{VestingV2} VST)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-VST:module{VestingV3} VST)
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_Unsleep unsleeper dpof nonce)))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -2096,11 +2104,11 @@
             )
         )
     )
-    (defun INFO_VST|Merge:object{OuronetInfoV2.ClientInfo} (patron:string merger:string dpof:string nonces:[integer])
+    (defun INFO_VST|Merge:object{OuronetInfoV3.ClientInfo} (patron:string merger:string dpof:string nonces:[integer])
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-VST:module{VestingV2} VST)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-VST:module{VestingV3} VST)
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_MergeNonces dpof merger nonces 2)))
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount merger))
             )
@@ -2113,11 +2121,11 @@
             )
         )
     )
-    (defun INFO_VST|RepurposeMerge:object{OuronetInfoV2.ClientInfo} (patron:string dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string)
+    (defun INFO_VST|RepurposeMerge:object{OuronetInfoV3.ClientInfo} (patron:string dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-VST:module{VestingV2} VST)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-VST:module{VestingV3} VST)
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_MergeNonces dpof-to-repurpose repurpose-to nonces 2)))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -2129,11 +2137,11 @@
             )
         )
     )
-    (defun INFO_VST|RepurposeSleeping:object{OuronetInfoV2.ClientInfo} (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string)
+    (defun INFO_VST|RepurposeSleeping:object{OuronetInfoV3.ClientInfo} (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-VST:module{VestingV2} VST)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-VST:module{VestingV3} VST)
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_RepurposeOrtoFungible dpof-to-repurpose nonce repurpose-from repurpose-to)))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -2145,11 +2153,11 @@
             )
         )
     )
-    (defun INFO_VST|ToggleTransferRoleSleepingDPOF:object{OuronetInfoV2.ClientInfo} (patron:string s-dpof:string target:string toggle:bool)
+    (defun INFO_VST|ToggleTransferRoleSleepingDPOF:object{OuronetInfoV3.ClientInfo} (patron:string s-dpof:string target:string toggle:bool)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-VST:module{VestingV2} VST)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-VST:module{VestingV3} VST)
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_ToggleTransferRoleSleepingDPOF s-dpof)))
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount target))
             )
@@ -2163,11 +2171,11 @@
         )
     )
     ;; ---- Hibernating family (Hibernate/Awake/Slumber above) ----
-    (defun INFO_VST|RepurposeSlumber:object{OuronetInfoV2.ClientInfo} (patron:string dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string)
+    (defun INFO_VST|RepurposeSlumber:object{OuronetInfoV3.ClientInfo} (patron:string dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-VST:module{VestingV2} VST)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-VST:module{VestingV3} VST)
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_MergeNonces dpof-to-repurpose repurpose-to nonces 3)))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -2179,11 +2187,11 @@
             )
         )
     )
-    (defun INFO_VST|RepurposeHibernating:object{OuronetInfoV2.ClientInfo} (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string)
+    (defun INFO_VST|RepurposeHibernating:object{OuronetInfoV3.ClientInfo} (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-VST:module{VestingV2} VST)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-VST:module{VestingV3} VST)
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_RepurposeOrtoFungible dpof-to-repurpose nonce repurpose-from repurpose-to)))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -2195,11 +2203,11 @@
             )
         )
     )
-    (defun INFO_VST|ToggleTransferRoleHibernatingDPOF:object{OuronetInfoV2.ClientInfo} (patron:string s-dpof:string target:string toggle:bool)
+    (defun INFO_VST|ToggleTransferRoleHibernatingDPOF:object{OuronetInfoV3.ClientInfo} (patron:string s-dpof:string target:string toggle:bool)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-VST:module{VestingV2} VST)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-VST:module{VestingV3} VST)
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_ToggleTransferRoleHibernatingDPOF s-dpof)))
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount target))
             )
@@ -2226,7 +2234,7 @@
         (account:string dpof:string)
         (let
             (
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                 ;;
                 (owned-nonces:[integer] (sort (ref-DPOF::URH_AccountNonces account dpof)))
                 (l:integer (length owned-nonces))
@@ -2245,7 +2253,7 @@
         (let
             (
                 (ref-U|ATS:module{UtilityAtsV3} U|ATS)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                 ;;
                 (precision:integer (ref-DPOF::UR_Decimals dpof))
                 (nonce-supply:decimal (ref-DPOF::UR_NonceSupply dpof nonce))
@@ -2278,15 +2286,15 @@
         )
     )
     ;;  [ATS]
-    (defun INFO_ATS|Coil:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_ATS|Coil:object{OuronetInfoV3.ClientInfo}
         (patron:string coiler:string ats:string rt:string amount:decimal)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-ATS:module{AutostakeV3} ATS)
-                (ref-ATSU:module{AutostakeUsageV2} ATSU)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-ATS:module{AutostakeV4} ATS)
+                (ref-ATSU:module{AutostakeUsageV3} ATSU)
                 ;;
-                (coil-data:object{AutostakeV3.CoilData}
+                (coil-data:object{AutostakeV4.CoilData}
                     (ref-ATS::URC_RewardBearingTokenAmounts ats rt amount)
                 )
                 (royalty-fee:decimal (at "royalty-fee" coil-data))
@@ -2315,16 +2323,16 @@
             )
         )
     )
-    (defun INFO_ATS|Constrict:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_ATS|Constrict:object{OuronetInfoV3.ClientInfo}
         (patron:string constricter:string ats:string rt:string amount:decimal dayz:integer)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-ATS:module{AutostakeV3} ATS)
-                (ref-VST:module{VestingV2} VST)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-ATS:module{AutostakeV4} ATS)
+                (ref-VST:module{VestingV3} VST)
                 ;;
-                (coil-data:object{AutostakeV3.CoilData}
+                (coil-data:object{AutostakeV4.CoilData}
                     (ref-ATS::URC_RewardBearingTokenAmountsWithHibernation ats rt amount dayz)
                 )
                 (royalty-fee:decimal (at "royalty-fee" coil-data))
@@ -2366,16 +2374,16 @@
             )
         )
     )
-    (defun INFO_ATS|Curl:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_ATS|Curl:object{OuronetInfoV3.ClientInfo}
         (patron:string curler:string ats1:string ats2:string rt:string amount:decimal)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-ATS:module{AutostakeV3} ATS)
-                (ref-ATSU:module{AutostakeUsageV2} ATSU)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-ATS:module{AutostakeV4} ATS)
+                (ref-ATSU:module{AutostakeUsageV3} ATSU)
                 ;;
                 ;;<ats1>
-                (coil1-data:object{AutostakeV3.CoilData}
+                (coil1-data:object{AutostakeV4.CoilData}
                     (ref-ATS::URC_RewardBearingTokenAmounts ats1 rt amount)
                 )
                 (royalty1-fee:decimal (at "royalty-fee" coil1-data))
@@ -2383,7 +2391,7 @@
                 (c-rbt1-amount:decimal (at "rbt-amount" coil1-data))
                 ;;
                 ;;<ats2>
-                (coil2-data:object{AutostakeV3.CoilData}
+                (coil2-data:object{AutostakeV4.CoilData}
                     (ref-ATS::URC_RewardBearingTokenAmounts ats2 c-rbt1 c-rbt1-amount)
                 )
                 (royalty2-fee:decimal (at "royalty-fee" coil2-data))
@@ -2419,17 +2427,17 @@
             )
         )
     )
-    (defun INFO_ATS|Brumate:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_ATS|Brumate:object{OuronetInfoV3.ClientInfo}
         (patron:string brumator:string ats1:string ats2:string rt:string amount:decimal dayz:integer)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-ATS:module{AutostakeV3} ATS)
-                (ref-VST:module{VestingV2} VST)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-ATS:module{AutostakeV4} ATS)
+                (ref-VST:module{VestingV3} VST)
                 ;;
                 ;;<ats1>
-                (coil1-data:object{AutostakeV3.CoilData}
+                (coil1-data:object{AutostakeV4.CoilData}
                     (ref-ATS::URC_RewardBearingTokenAmounts ats1 rt amount)
                 )
                 (royalty1-fee:decimal (at "royalty-fee" coil1-data))
@@ -2437,7 +2445,7 @@
                 (c-rbt1-amount:decimal (at "rbt-amount" coil1-data))
                 ;;
                 ;;<ats2>
-                (coil2-data:object{AutostakeV3.CoilData}
+                (coil2-data:object{AutostakeV4.CoilData}
                     (ref-ATS::URC_RewardBearingTokenAmountsWithHibernation ats2 c-rbt1 c-rbt1-amount dayz)
                 )
                 (royalty2-fee:decimal (at "royalty-fee" coil2-data))
@@ -2486,16 +2494,16 @@
             )
         )
     )
-    (defun INFO_ATS|ColdRecovery:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_ATS|ColdRecovery:object{OuronetInfoV3.ClientInfo}
         (patron:string recoverer:string ats:string ra:decimal)
         (let
             (
                 (ref-U|ATS:module{UtilityAtsV3} U|ATS)
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-ATS:module{AutostakeV3} ATS)
-                (ref-ATSU:module{AutostakeUsageV2} ATSU)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-ATS:module{AutostakeV4} ATS)
+                (ref-ATSU:module{AutostakeUsageV3} ATSU)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 ;;
                 (index-name:string (ref-ATS::UR_IndexName ats))
                 (rt-lst:[string] (ref-ATS::UR_RewardTokenList ats))
@@ -2558,14 +2566,14 @@
             )
         )
     )
-    (defun INFO_ATS|Cull:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_ATS|Cull:object{OuronetInfoV3.ClientInfo}
         (patron:string culler:string ats:string)
         (let
             (
                 (ref-U|DEC:module{OuronetDecimalsV2} U|DEC)
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-ATS:module{AutostakeV3} ATS)
-                (ref-ATSU:module{AutostakeUsageV2} ATSU)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-ATS:module{AutostakeV4} ATS)
+                (ref-ATSU:module{AutostakeUsageV3} ATSU)
                 ;;
                 (c0:[decimal] (at "summed-culled-values" (ref-ATSU::URC_MultiCull ats culler)))
                 (c1:[decimal] (ref-ATSU::URC_SingleCull ats culler 1))
@@ -2601,15 +2609,15 @@
             )
         )
     )
-    (defun INFO_ATS|DirectRecovery:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_ATS|DirectRecovery:object{OuronetInfoV3.ClientInfo}
         (patron:string recoverer:string ats:string ra:decimal)
         (let
             (
                 (ref-U|ATS:module{UtilityAtsV3} U|ATS)
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-ATS:module{AutostakeV3} ATS)
-                (ref-ATSU:module{AutostakeUsageV2} ATSU)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-ATS:module{AutostakeV4} ATS)
+                (ref-ATSU:module{AutostakeUsageV3} ATSU)
                 ;;
                 ;;THE COST READER IS BOUND FIRST, and that ordering is load-bearing. URCi_
                 ;;DirectRecovery carries the op's own state guard, so binding it first makes this
@@ -2649,11 +2657,11 @@
         )
     )
     ;; ---- ATS entity-completion: pool config ops (1:1 ATS URCi, IGNIS) ----
-    (defun INFO_ATS|RotateOwnership:object{OuronetInfoV2.ClientInfo} (patron:string ats:string new-owner:string)
+    (defun INFO_ATS|RotateOwnership:object{OuronetInfoV3.ClientInfo} (patron:string ats:string new-owner:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-ATS:module{AutostakeV4} ATS)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount new-owner))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -2662,11 +2670,11 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_RotateOwnership ats)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
         ))
-    (defun INFO_ATS|Control:object{OuronetInfoV2.ClientInfo} (patron:string ats:string can-change-owner:bool syphoning:bool hibernate:bool)
+    (defun INFO_ATS|Control:object{OuronetInfoV3.ClientInfo} (patron:string ats:string can-change-owner:bool syphoning:bool hibernate:bool)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-ATS:module{AutostakeV4} ATS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Controls Boolean Properties of ATS-Pair {}" [ats])]
@@ -2674,11 +2682,11 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_Control ats)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
         ))
-    (defun INFO_ATS|UpdateRoyalty:object{OuronetInfoV2.ClientInfo} (patron:string ats:string royalty:decimal)
+    (defun INFO_ATS|UpdateRoyalty:object{OuronetInfoV3.ClientInfo} (patron:string ats:string royalty:decimal)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-ATS:module{AutostakeV4} ATS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Sets Royalty of ATS-Pair {} to {}" [ats royalty])]
@@ -2686,11 +2694,11 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_UpdateRoyalty ats)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [royalty])
         ))
-    (defun INFO_ATS|UpdateSyphon:object{OuronetInfoV2.ClientInfo} (patron:string ats:string syphon:decimal)
+    (defun INFO_ATS|UpdateSyphon:object{OuronetInfoV3.ClientInfo} (patron:string ats:string syphon:decimal)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-ATS:module{AutostakeV4} ATS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Sets Syphon of ATS-Pair {} to {}" [ats syphon])]
@@ -2698,11 +2706,11 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_UpdateSyphon ats)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [syphon])
         ))
-    (defun INFO_ATS|SetHibernationFees:object{OuronetInfoV2.ClientInfo} (patron:string ats:string peak:decimal decay:decimal)
+    (defun INFO_ATS|SetHibernationFees:object{OuronetInfoV3.ClientInfo} (patron:string ats:string peak:decimal decay:decimal)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-ATS:module{AutostakeV4} ATS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Sets Hibernation Fees of ATS-Pair {} (peak {}, decay {})" [ats peak decay])]
@@ -2710,11 +2718,11 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_SetHibernationFees ats)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [peak decay])
         ))
-    (defun INFO_ATS|ToggleParameterLock:object{OuronetInfoV2.ClientInfo} (patron:string ats:string toggle:bool)
+    (defun INFO_ATS|ToggleParameterLock:object{OuronetInfoV3.ClientInfo} (patron:string ats:string toggle:bool)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-ATS:module{AutostakeV4} ATS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(if toggle (format "Operation: Locks Parameters of ATS-Pair {}" [ats]) (format "Operation: Unlocks Parameters of ATS-Pair {}" [ats]))]
@@ -2724,11 +2732,11 @@
                 ;;STOA leg to XE_CollectStoa. Previously hardcoded NoStoaCosts.
                 (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-ATS::URCi_ToggleParameterLockStoa ats toggle)) [toggle])
         ))
-    (defun INFO_ATS|AddSecondary:object{OuronetInfoV2.ClientInfo} (patron:string ats:string reward-token:string rt-nfr:bool)
+    (defun INFO_ATS|AddSecondary:object{OuronetInfoV3.ClientInfo} (patron:string ats:string reward-token:string rt-nfr:bool)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-ATS:module{AutostakeV4} ATS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Adds Secondary Reward-Token {} to ATS-Pair {}" [reward-token ats])]
@@ -2736,11 +2744,11 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_AddSecondary)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
         ))
-    (defun INFO_ATS|ControlColdRecoveryFees:object{OuronetInfoV2.ClientInfo} (patron:string ats:string c-nfr:bool c-fr:bool)
+    (defun INFO_ATS|ControlColdRecoveryFees:object{OuronetInfoV3.ClientInfo} (patron:string ats:string c-nfr:bool c-fr:bool)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-ATS:module{AutostakeV4} ATS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Controls Cold-Recovery Fee flags of ATS-Pair {}" [ats])]
@@ -2748,11 +2756,11 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_ControlColdRecoveryFees ats)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
         ))
-    (defun INFO_ATS|SetColdRecoveryFees:object{OuronetInfoV2.ClientInfo} (patron:string ats:string fee-positions:integer fee-thresholds:[decimal] fee-array:[[decimal]])
+    (defun INFO_ATS|SetColdRecoveryFees:object{OuronetInfoV3.ClientInfo} (patron:string ats:string fee-positions:integer fee-thresholds:[decimal] fee-array:[[decimal]])
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-ATS:module{AutostakeV4} ATS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Sets the {} Cold-Recovery Fee positions of ATS-Pair {}" [fee-positions ats])]
@@ -2760,11 +2768,11 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_SetColdRecoveryFees)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
         ))
-    (defun INFO_ATS|SetColdRecoveryDuration:object{OuronetInfoV2.ClientInfo} (patron:string ats:string soft-or-hard:bool base:integer growth:integer)
+    (defun INFO_ATS|SetColdRecoveryDuration:object{OuronetInfoV3.ClientInfo} (patron:string ats:string soft-or-hard:bool base:integer growth:integer)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-ATS:module{AutostakeV4} ATS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Sets Cold-Recovery Duration of ATS-Pair {} (base {}, growth {})" [ats base growth])]
@@ -2772,11 +2780,11 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_SetColdRecoveryDuration ats)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
         ))
-    (defun INFO_ATS|ToggleElite:object{OuronetInfoV2.ClientInfo} (patron:string ats:string toggle:bool)
+    (defun INFO_ATS|ToggleElite:object{OuronetInfoV3.ClientInfo} (patron:string ats:string toggle:bool)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-ATS:module{AutostakeV4} ATS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(if toggle (format "Operation: Enables Elite Mode on ATS-Pair {}" [ats]) (format "Operation: Disables Elite Mode on ATS-Pair {}" [ats]))]
@@ -2784,11 +2792,11 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_ToggleElite ats)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [toggle])
         ))
-    (defun INFO_ATS|ToggleUpgrade:object{OuronetInfoV2.ClientInfo} (patron:string ats:string toggle:bool)
+    (defun INFO_ATS|ToggleUpgrade:object{OuronetInfoV3.ClientInfo} (patron:string ats:string toggle:bool)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-ATS:module{AutostakeV4} ATS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(if toggle (format "Operation: Enables Upgradeability on ATS-Pair {}" [ats]) (format "Operation: Disables Upgradeability on ATS-Pair {}" [ats]))]
@@ -2796,11 +2804,11 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_ToggleUpgrade ats)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [toggle])
         ))
-    (defun INFO_ATS|SwitchColdRecovery:object{OuronetInfoV2.ClientInfo} (patron:string ats:string toggle:bool)
+    (defun INFO_ATS|SwitchColdRecovery:object{OuronetInfoV3.ClientInfo} (patron:string ats:string toggle:bool)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-ATS:module{AutostakeV4} ATS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(if toggle (format "Operation: Enables Cold-Recovery on ATS-Pair {}" [ats]) (format "Operation: Disables Cold-Recovery on ATS-Pair {}" [ats]))]
@@ -2808,11 +2816,11 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_SwitchColdRecovery ats)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [toggle])
         ))
-    (defun INFO_ATS|ControlHotRecoveryFee:object{OuronetInfoV2.ClientInfo} (patron:string ats:string h-fr:bool)
+    (defun INFO_ATS|ControlHotRecoveryFee:object{OuronetInfoV3.ClientInfo} (patron:string ats:string h-fr:bool)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-ATS:module{AutostakeV4} ATS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Controls Hot-Recovery Fee flag of ATS-Pair {}" [ats])]
@@ -2820,11 +2828,11 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_ControlHotRecoveryFee ats)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
         ))
-    (defun INFO_ATS|SetHotRecoveryFee:object{OuronetInfoV2.ClientInfo} (patron:string ats:string promile:decimal decay:integer)
+    (defun INFO_ATS|SetHotRecoveryFee:object{OuronetInfoV3.ClientInfo} (patron:string ats:string promile:decimal decay:integer)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-ATS:module{AutostakeV4} ATS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Sets Hot-Recovery Fee of ATS-Pair {} ({}‰, decay {})" [ats promile decay])]
@@ -2832,11 +2840,11 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_SetHotRecoveryFees ats)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [promile])
         ))
-    (defun INFO_ATS|SwitchHotRecovery:object{OuronetInfoV2.ClientInfo} (patron:string ats:string toggle:bool)
+    (defun INFO_ATS|SwitchHotRecovery:object{OuronetInfoV3.ClientInfo} (patron:string ats:string toggle:bool)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-ATS:module{AutostakeV4} ATS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(if toggle (format "Operation: Enables Hot-Recovery on ATS-Pair {}" [ats]) (format "Operation: Disables Hot-Recovery on ATS-Pair {}" [ats]))]
@@ -2844,11 +2852,11 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_SwitchHotRecovery ats)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [toggle])
         ))
-    (defun INFO_ATS|SetDirectRecoveryFee:object{OuronetInfoV2.ClientInfo} (patron:string ats:string promile:decimal)
+    (defun INFO_ATS|SetDirectRecoveryFee:object{OuronetInfoV3.ClientInfo} (patron:string ats:string promile:decimal)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-ATS:module{AutostakeV4} ATS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Sets Direct-Recovery Fee of ATS-Pair {} to {}‰" [ats promile])]
@@ -2856,11 +2864,11 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_SetDirectRecoveryFee ats)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [promile])
         ))
-    (defun INFO_ATS|SwitchDirectRecovery:object{OuronetInfoV2.ClientInfo} (patron:string ats:string toggle:bool)
+    (defun INFO_ATS|SwitchDirectRecovery:object{OuronetInfoV3.ClientInfo} (patron:string ats:string toggle:bool)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-ATS:module{AutostakeV4} ATS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(if toggle (format "Operation: Enables Direct-Recovery on ATS-Pair {}" [ats]) (format "Operation: Disables Direct-Recovery on ATS-Pair {}" [ats]))]
@@ -2868,11 +2876,11 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_SwitchDirectRecovery ats)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [toggle])
         ))
-    (defun INFO_ATS|UpdatePendingBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string)
+    (defun INFO_ATS|UpdatePendingBranding:object{OuronetInfoV3.ClientInfo} (patron:string entity-id:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-ATS:module{AutostakeV4} ATS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Updates Pending Branding for ATS-Pair {}" [entity-id])]
@@ -2880,11 +2888,11 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_UpdatePendingBranding entity-id)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
         ))
-    (defun INFO_ATS|UpgradeBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string months:integer)
+    (defun INFO_ATS|UpgradeBranding:object{OuronetInfoV3.ClientInfo} (patron:string entity-id:string months:integer)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-ATS:module{AutostakeV4} ATS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Upgrades Branding for ATS-Pair {} for {} month(s)" [entity-id months])]
@@ -2892,11 +2900,11 @@
                 (ref-I|OURONET::OI|UDC_NoIgnisCosts)
                 (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-ATS::URCi_UpgradeBranding months)) [])
         ))
-    (defun INFO_ATS|Issue:object{OuronetInfoV2.ClientInfo} (patron:string account:string ats:[string])
+    (defun INFO_ATS|Issue:object{OuronetInfoV3.ClientInfo} (patron:string account:string ats:[string])
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-ATS:module{AutostakeV4} ATS)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -2906,11 +2914,11 @@
                 (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-ATS::URCi_IssueStoa (length ats))) [])
         ))
     ;; ---- ATS entity-completion: staking / recovery ops (1:1 ATSU URCi, IGNIS) ----
-    (defun INFO_ATS|Fuel:object{OuronetInfoV2.ClientInfo} (patron:string fueler:string ats:string reward-token:string amount:decimal)
+    (defun INFO_ATS|Fuel:object{OuronetInfoV3.ClientInfo} (patron:string fueler:string ats:string reward-token:string amount:decimal)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-ATSU:module{AutostakeUsageV2} ATSU)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-ATSU:module{AutostakeUsageV3} ATSU)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount fueler))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -2919,11 +2927,11 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_Fuel fueler ats reward-token amount)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [(ref-I|OURONET::OI|UC_FormatTokenAmount amount)])
         ))
-    (defun INFO_ATS|HotRecovery:object{OuronetInfoV2.ClientInfo} (patron:string recoverer:string ats:string ra:decimal)
+    (defun INFO_ATS|HotRecovery:object{OuronetInfoV3.ClientInfo} (patron:string recoverer:string ats:string ra:decimal)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-ATSU:module{AutostakeUsageV2} ATSU)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-ATSU:module{AutostakeUsageV3} ATSU)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Places {} into Hot Recovery on ATS-Pair {}" [ra ats])]
@@ -2931,11 +2939,11 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_HotRecovery recoverer ats ra)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [(ref-I|OURONET::OI|UC_FormatTokenAmount ra)])
         ))
-    (defun INFO_ATS|KickStart:object{OuronetInfoV2.ClientInfo} (patron:string kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal)
+    (defun INFO_ATS|KickStart:object{OuronetInfoV3.ClientInfo} (patron:string kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-ATSU:module{AutostakeUsageV2} ATSU)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-ATSU:module{AutostakeUsageV3} ATSU)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: KickStarts ATS-Pair {} with RT amounts {} for {} RBT" [ats rt-amounts rbt-request-amount])]
@@ -2943,11 +2951,11 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_KickStart kickstarter ats rt-amounts rbt-request-amount)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [(ref-I|OURONET::OI|UC_FormatTokenAmount rbt-request-amount)])
         ))
-    (defun INFO_ATS|Redeem:object{OuronetInfoV2.ClientInfo} (patron:string redeemer:string id:string nonce:integer)
+    (defun INFO_ATS|Redeem:object{OuronetInfoV3.ClientInfo} (patron:string redeemer:string id:string nonce:integer)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-ATSU:module{AutostakeUsageV2} ATSU)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-ATSU:module{AutostakeUsageV3} ATSU)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Redeems {} Nonce {} on its ATS-Pair" [id nonce])]
@@ -2955,11 +2963,11 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_Redeem redeemer id nonce)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
         ))
-    (defun INFO_ATS|Reverse:object{OuronetInfoV2.ClientInfo} (patron:string recoverer:string id:string nonce:integer)
+    (defun INFO_ATS|Reverse:object{OuronetInfoV3.ClientInfo} (patron:string recoverer:string id:string nonce:integer)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-ATSU:module{AutostakeUsageV2} ATSU)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-ATSU:module{AutostakeUsageV3} ATSU)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Reverses (Recovers) {} Nonce {}" [id nonce])]
@@ -2967,11 +2975,11 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_Recover recoverer id nonce)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
         ))
-    (defun INFO_ATS|Syphon:object{OuronetInfoV2.ClientInfo} (patron:string syphon-target:string ats:string syphon-amounts:[decimal])
+    (defun INFO_ATS|Syphon:object{OuronetInfoV3.ClientInfo} (patron:string syphon-target:string ats:string syphon-amounts:[decimal])
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-ATSU:module{AutostakeUsageV2} ATSU)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-ATSU:module{AutostakeUsageV3} ATSU)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount syphon-target))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -2980,11 +2988,11 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_Syphon syphon-target ats syphon-amounts)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [syphon-amounts])
         ))
-    (defun INFO_ATS|WithdrawRoyalties:object{OuronetInfoV2.ClientInfo} (patron:string ats:string target:string)
+    (defun INFO_ATS|WithdrawRoyalties:object{OuronetInfoV3.ClientInfo} (patron:string ats:string target:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-ATSU:module{AutostakeUsageV2} ATSU)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-ATSU:module{AutostakeUsageV3} ATSU)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount target))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -2994,20 +3002,20 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
         ))
     ;; ---- ATS entity-completion: composite / hot-rbt ops (reuse existing readers) ----
-    (defun INFO_ATS|VestedCoil:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_ATS|VestedCoil:object{OuronetInfoV3.ClientInfo}
         (patron:string coiler-vester:string ats:string coil-token:string amount:decimal target-account:string offset:integer duration:integer milestones:integer)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-ATS:module{AutostakeV3} ATS)
-                (ref-ATSU:module{AutostakeUsageV2} ATSU)
-                (ref-VST:module{VestingV2} VST)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-ATS:module{AutostakeV4} ATS)
+                (ref-ATSU:module{AutostakeUsageV3} ATSU)
+                (ref-VST:module{VestingV3} VST)
                 ;;
-                (coil-data:object{AutostakeV3.CoilData} (ref-ATS::URC_RewardBearingTokenAmounts ats coil-token amount))
+                (coil-data:object{AutostakeV4.CoilData} (ref-ATS::URC_RewardBearingTokenAmounts ats coil-token amount))
                 (c-rbt:string (at "rbt-id" coil-data))
                 (c-rbt-amount:decimal (at "rbt-amount" coil-data))
-                (ico:object{IgnisCollectorV3.OutputCumulator}
+                (ico:object{IgnisCollectorV4.OutputCumulator}
                     (ref-IGNIS::UDC_ConcatenateOutputCumulators
                         [ (ref-ATSU::URCi_Coil coiler-vester ats coil-token amount)
                           (ref-VST::URCi_Vest coiler-vester target-account c-rbt c-rbt-amount offset duration milestones) ] []))
@@ -3021,21 +3029,21 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [(ref-I|OURONET::OI|UC_FormatTokenAmount c-rbt-amount) milestones])
         ))
-    (defun INFO_ATS|VestedCurl:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_ATS|VestedCurl:object{OuronetInfoV3.ClientInfo}
         (patron:string curler-vester:string ats1:string ats2:string curl-token:string amount:decimal target-account:string offset:integer duration:integer milestones:integer)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-ATS:module{AutostakeV3} ATS)
-                (ref-ATSU:module{AutostakeUsageV2} ATSU)
-                (ref-VST:module{VestingV2} VST)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-ATS:module{AutostakeV4} ATS)
+                (ref-ATSU:module{AutostakeUsageV3} ATSU)
+                (ref-VST:module{VestingV3} VST)
                 ;;
-                (coil1-data:object{AutostakeV3.CoilData} (ref-ATS::URC_RewardBearingTokenAmounts ats1 curl-token amount))
-                (coil2-data:object{AutostakeV3.CoilData} (ref-ATS::URC_RewardBearingTokenAmounts ats2 (at "rbt-id" coil1-data) (at "rbt-amount" coil1-data)))
+                (coil1-data:object{AutostakeV4.CoilData} (ref-ATS::URC_RewardBearingTokenAmounts ats1 curl-token amount))
+                (coil2-data:object{AutostakeV4.CoilData} (ref-ATS::URC_RewardBearingTokenAmounts ats2 (at "rbt-id" coil1-data) (at "rbt-amount" coil1-data)))
                 (c-rbt2:string (at "rbt-id" coil2-data))
                 (c-rbt2-amount:decimal (at "rbt-amount" coil2-data))
-                (ico:object{IgnisCollectorV3.OutputCumulator}
+                (ico:object{IgnisCollectorV4.OutputCumulator}
                     (ref-IGNIS::UDC_ConcatenateOutputCumulators
                         [ (ref-ATSU::URCi_Curl curler-vester ats1 ats2 curl-token amount)
                           (ref-VST::URCi_Vest curler-vester target-account c-rbt2 c-rbt2-amount offset duration milestones) ] []))
@@ -3049,11 +3057,11 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [(ref-I|OURONET::OI|UC_FormatTokenAmount c-rbt2-amount) milestones])
         ))
-    (defun INFO_ATS|HOT-RBT|UpdatePendingBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string)
+    (defun INFO_ATS|HOT-RBT|UpdatePendingBranding:object{OuronetInfoV3.ClientInfo} (patron:string entity-id:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Updates Pending Branding for Hot-RBT {}" [entity-id])]
@@ -3061,11 +3069,11 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_UpdatePendingBranding entity-id)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
         ))
-    (defun INFO_ATS|HOT-RBT|UpgradeBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string months:integer)
+    (defun INFO_ATS|HOT-RBT|UpgradeBranding:object{OuronetInfoV3.ClientInfo} (patron:string entity-id:string months:integer)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Upgrades Branding for Hot-RBT {} for {} month(s)" [entity-id months])]
@@ -3073,12 +3081,12 @@
                 (ref-I|OURONET::OI|UDC_NoIgnisCosts)
                 (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-DPOF::URCi_UpgradeBranding months)) [])
         ))
-    (defun INFO_ATS|HOT-RBT|Repurpose:object{OuronetInfoV2.ClientInfo} (patron:string hot-rbt:string nonce:integer repurpose-to:string)
+    (defun INFO_ATS|HOT-RBT|Repurpose:object{OuronetInfoV3.ClientInfo} (patron:string hot-rbt:string nonce:integer repurpose-to:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-                (ref-VST:module{VestingV2} VST)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+                (ref-VST:module{VestingV3} VST)
                 (nonce-holder:string (ref-DPOF::UR_NonceHolder hot-rbt nonce))
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
             )
@@ -3088,11 +3096,11 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_RepurposeOrtoFungible hot-rbt nonce nonce-holder repurpose-to)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
         ))
-    (defun INFO_ATS|AddHotRBT:object{OuronetInfoV2.ClientInfo} (patron:string ats:string hot-rbt:string)
+    (defun INFO_ATS|AddHotRBT:object{OuronetInfoV3.ClientInfo} (patron:string ats:string hot-rbt:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-ATS:module{AutostakeV4} ATS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Adds Hot-RBT {} to ATS-Pair {}" [hot-rbt ats])]
@@ -3100,11 +3108,11 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_AddHotRBT ats hot-rbt)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
         ))
-    (defun INFO_ATS|RemoveSecondary:object{OuronetInfoV2.ClientInfo} (patron:string remover:string ats:string reward-token:string)
+    (defun INFO_ATS|RemoveSecondary:object{OuronetInfoV3.ClientInfo} (patron:string remover:string ats:string reward-token:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-ATSU:module{AutostakeUsageV2} ATSU)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-ATSU:module{AutostakeUsageV3} ATSU)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount remover))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -3114,12 +3122,12 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
         ))
     ;; [LIQUID]
-    (defun INFO_LIQUID|UnwrapUrStoa:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_LIQUID|UnwrapUrStoa:object{OuronetInfoV3.ClientInfo}
         (patron:string unwrapper:string amount:decimal)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-LIQUID:module{StoaLiquidStakingV2} LIQUID)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-LIQUID:module{StoaLiquidStakingV3} LIQUID)
                 (uw:string (ref-I|OURONET::OI|UC_ShortAccount unwrapper))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -3128,12 +3136,12 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-LIQUID::URCi_UnwrapUrStoa unwrapper amount)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
         ))
-    (defun INFO_LIQUID|WrapUrStoa:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_LIQUID|WrapUrStoa:object{OuronetInfoV3.ClientInfo}
         (patron:string wrapper:string amount:decimal)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-LIQUID:module{StoaLiquidStakingV2} LIQUID)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-LIQUID:module{StoaLiquidStakingV3} LIQUID)
                 (uw:string (ref-I|OURONET::OI|UC_ShortAccount wrapper))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -3142,12 +3150,12 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-LIQUID::URCi_WrapUrStoa wrapper amount)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
         ))
-    (defun INFO_LIQUID|UnwrapStoa:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_LIQUID|UnwrapStoa:object{OuronetInfoV3.ClientInfo}
         (patron:string unwrapper:string amount:decimal)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-LIQUID:module{StoaLiquidStakingV2} LIQUID)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-LIQUID:module{StoaLiquidStakingV3} LIQUID)
                 (uw:string (ref-I|OURONET::OI|UC_ShortAccount unwrapper))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -3156,12 +3164,12 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-LIQUID::URCi_UnwrapStoa unwrapper amount)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
         ))
-    (defun INFO_LIQUID|WrapStoa:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_LIQUID|WrapStoa:object{OuronetInfoV3.ClientInfo}
         (patron:string wrapper:string amount:decimal)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-LIQUID:module{StoaLiquidStakingV2} LIQUID)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-LIQUID:module{StoaLiquidStakingV3} LIQUID)
                 (uw:string (ref-I|OURONET::OI|UC_ShortAccount wrapper))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -3171,12 +3179,12 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
         ))
     ;;
-    (defun INFO_ORBR|Compress:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_ORBR|Compress:object{OuronetInfoV3.ClientInfo}
         (client:string ignis-amount:decimal)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-ORBR:module{OuroborosV2} OUROBOROS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-ORBR:module{OuroborosV3} OUROBOROS)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount client))
                 (ignis-to-ouro:[decimal] (ref-ORBR::URCv_Compress ignis-amount))
                 (ouro-remainder-amount:decimal (at 0 ignis-to-ouro))
@@ -3194,15 +3202,15 @@
             )
         )
     )
-    (defun INFO_ORBR|Sublimate:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_ORBR|Sublimate:object{OuronetInfoV3.ClientInfo}
         (client:string target:string ouro-amount:decimal)
         (let
             (
                 (ref-U|ATS:module{UtilityAtsV3} U|ATS)
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-ORBR:module{OuroborosV2} OUROBOROS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-ORBR:module{OuroborosV3} OUROBOROS)
                 (sa1:string (ref-I|OURONET::OI|UC_ShortAccount client))
                 (sa2:string (ref-I|OURONET::OI|UC_ShortAccount target))
                 ;;
@@ -3234,15 +3242,15 @@
             )
         )
     )
-    (defun INFO_ORBR|SublimateV2:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_ORBR|SublimateV2:object{OuronetInfoV3.ClientInfo}
         (client:string target:string ouro-amount:decimal)
         (let
             (
                 (ref-U|ATS:module{UtilityAtsV3} U|ATS)
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-ORBR:module{OuroborosV2} OUROBOROS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-ORBR:module{OuroborosV3} OUROBOROS)
                 (sa1:string (ref-I|OURONET::OI|UC_ShortAccount client))
                 (sa2:string (ref-I|OURONET::OI|UC_ShortAccount target))
                 ;;
@@ -3259,12 +3267,12 @@
             )
         )
     )
-    (defun INFO_ORBR|WithdrawFees:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_ORBR|WithdrawFees:object{OuronetInfoV3.ClientInfo}
         (patron:string id:string target:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-ORBR:module{OuroborosV2} OUROBOROS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-ORBR:module{OuroborosV3} OUROBOROS)
                 (st:string (ref-I|OURONET::OI|UC_ShortAccount target))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -3277,12 +3285,12 @@
         )
     )
     ;;  [SWP]
-    (defun INFO_SWP|ChangeOwnership:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_SWP|ChangeOwnership:object{OuronetInfoV3.ClientInfo}
         (patron:string swpair:string new-owner:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-SWP:module{SwapperV4} SWP)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-SWP:module{SwapperV5} SWP)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount new-owner))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -3294,12 +3302,12 @@
             )
         )
     )
-    (defun INFO_SWP|ModifyCanChangeOwner:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_SWP|ModifyCanChangeOwner:object{OuronetInfoV3.ClientInfo}
         (patron:string swpair:string new-boolean:bool)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-SWP:module{SwapperV4} SWP)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-SWP:module{SwapperV5} SWP)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Modifies <can-change-owner> of SWP-Pair {} to {}" [swpair new-boolean])]
@@ -3310,12 +3318,12 @@
             )
         )
     )
-    (defun INFO_SWP|ModifyWeights:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_SWP|ModifyWeights:object{OuronetInfoV3.ClientInfo}
         (patron:string swpair:string new-weights:[decimal])
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-SWP:module{SwapperV4} SWP)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-SWP:module{SwapperV5} SWP)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Modifies weights of SWP-Pair {} to {}" [swpair new-weights])]
@@ -3326,12 +3334,12 @@
             )
         )
     )
-    (defun INFO_SWP|ToggleAddLiquidity:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_SWP|ToggleAddLiquidity:object{OuronetInfoV3.ClientInfo}
         (patron:string swpair:string toggle:bool)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-SWPLC:module{SwapperLiquidityClientV3} SWPLC)
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPLC::URCi_ToggleAddLiquidity swpair toggle)))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -3353,12 +3361,12 @@
             )
         )
     )
-    (defun INFO_SWP|ToggleSwapCapability:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_SWP|ToggleSwapCapability:object{OuronetInfoV3.ClientInfo}
         (patron:string swpair:string toggle:bool)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-SWPU:module{SwapperUsageV3} SWPU)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-SWPU:module{SwapperUsageV4} SWPU)
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPU::URCi_ToggleSwapCapability swpair toggle)))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -3380,15 +3388,15 @@
             )
         )
     )
-    (defun INFO_SWP|EnableFrozenLP:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_SWP|EnableFrozenLP:object{OuronetInfoV3.ClientInfo}
         (patron:string swpair:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-SWP:module{SwapperV4} SWP)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-SWP:module{SwapperV5} SWP)
                 ;;
                 (lp-id:string (ref-SWP::UR_TokenLP swpair))
                 (current-frozen-link:string (ref-DPTF::UR_Frozen lp-id))
@@ -3434,15 +3442,15 @@
             )
         )
     )
-    (defun INFO_SWP|EnableSleepingLP:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_SWP|EnableSleepingLP:object{OuronetInfoV3.ClientInfo}
         (patron:string swpair:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-SWP:module{SwapperV4} SWP)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-SWP:module{SwapperV5} SWP)
                 ;;
                 (lp-id:string (ref-SWP::UR_TokenLP swpair))
                 (current-sleeping-link:string (ref-DPTF::UR_Sleeping lp-id))
@@ -3488,11 +3496,11 @@
             )
         )
     )
-    (defun INFO_SWP|UpdateAmplifier:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string amp:decimal)
+    (defun INFO_SWP|UpdateAmplifier:object{OuronetInfoV3.ClientInfo} (patron:string swpair:string amp:decimal)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-SWP:module{SwapperV4} SWP)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-SWP:module{SwapperV5} SWP)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Updates Amplifier of SWP-Pair {} to {}" [swpair amp])]
@@ -3500,11 +3508,11 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWP::URCi_UpdateAmplifier swpair)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [amp])
         ))
-    (defun INFO_SWP|UpdateFee:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string new-fee:decimal lp-or-special:bool)
+    (defun INFO_SWP|UpdateFee:object{OuronetInfoV3.ClientInfo} (patron:string swpair:string new-fee:decimal lp-or-special:bool)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-SWP:module{SwapperV4} SWP)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-SWP:module{SwapperV5} SWP)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Updates {} Fee of SWP-Pair {} to {}" [(if lp-or-special "LP" "Special") swpair new-fee])]
@@ -3512,11 +3520,11 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWP::URCi_UpdateFee swpair)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [new-fee])
         ))
-    (defun INFO_SWP|UpdateSpecialFeeTargets:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string targets:[string])
+    (defun INFO_SWP|UpdateSpecialFeeTargets:object{OuronetInfoV3.ClientInfo} (patron:string swpair:string targets:[string])
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-SWP:module{SwapperV4} SWP)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-SWP:module{SwapperV5} SWP)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Updates Special-Fee targets of SWP-Pair {} to {}" [swpair targets])]
@@ -3524,11 +3532,11 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWP::URCi_UpdateSpecialFeeTargets swpair)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [targets])
         ))
-    (defun INFO_SWP|ToggleFeeLock:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string toggle:bool)
+    (defun INFO_SWP|ToggleFeeLock:object{OuronetInfoV3.ClientInfo} (patron:string swpair:string toggle:bool)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-SWP:module{SwapperV4} SWP)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-SWP:module{SwapperV5} SWP)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(if toggle (format "Operation: Locks Fee Settings of SWP-Pair {}" [swpair]) (format "Operation: Unlocks Fee Settings of SWP-Pair {}" [swpair]))]
@@ -3538,11 +3546,11 @@
                 ;;XE_CollectStoa. Previously hardcoded NoStoaCosts, which quoted the unlock as free.
                 (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-SWP::URCi_ToggleFeeLockStoa swpair toggle)) [toggle])
         ))
-    (defun INFO_SWP|UpdatePendingBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string)
+    (defun INFO_SWP|UpdatePendingBranding:object{OuronetInfoV3.ClientInfo} (patron:string entity-id:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-SWP:module{SwapperV4} SWP)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-SWP:module{SwapperV5} SWP)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Updates Pending Branding for SWP-Pair {}" [entity-id])]
@@ -3550,11 +3558,11 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWP::URCi_UpdatePendingBranding entity-id)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
         ))
-    (defun INFO_SWP|UpgradeBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string months:integer)
+    (defun INFO_SWP|UpgradeBranding:object{OuronetInfoV3.ClientInfo} (patron:string entity-id:string months:integer)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-SWP:module{SwapperV4} SWP)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-SWP:module{SwapperV5} SWP)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Upgrades Branding for SWP-Pair {} for {} month(s)" [entity-id months])]
@@ -3562,11 +3570,11 @@
                 (ref-I|OURONET::OI|UDC_NoIgnisCosts)
                 (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-SWP::URCi_UpgradeBranding months)) [])
         ))
-    (defun INFO_SWP|UpdatePendingBrandingLPs:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string entity-pos:integer)
+    (defun INFO_SWP|UpdatePendingBrandingLPs:object{OuronetInfoV3.ClientInfo} (patron:string swpair:string entity-pos:integer)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-SWPLC:module{SwapperLiquidityClientV3} SWPLC)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Updates Pending LP-Branding for SWP-Pair {} entity-position {}" [swpair entity-pos])]
@@ -3574,11 +3582,11 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPLC::URCi_UpdatePendingBrandingLPs swpair entity-pos)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
         ))
-    (defun INFO_SWP|UpgradeBrandingLPs:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string entity-pos:integer months:integer)
+    (defun INFO_SWP|UpgradeBrandingLPs:object{OuronetInfoV3.ClientInfo} (patron:string swpair:string entity-pos:integer months:integer)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-SWPLC:module{SwapperLiquidityClientV3} SWPLC)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Upgrades LP-Branding for SWP-Pair {} entity-position {} for {} month(s)" [swpair entity-pos months])]
@@ -3586,13 +3594,13 @@
                 (ref-I|OURONET::OI|UDC_NoIgnisCosts)
                 (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-SWPLC::URCi_UpgradeBrandingLPs months)) [])
         ))
-    (defun INFO_SWP|Fuel:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_SWP|Fuel:object{OuronetInfoV3.ClientInfo}
         (patron:string account:string swpair:string input-amounts:[decimal])
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-SWP:module{SwapperV4} SWP)
-                (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-SWP:module{SwapperV5} SWP)
+                (ref-SWPLC:module{SwapperLiquidityClientV3} SWPLC)
                 ;;
                 (pool-tokens:[string] (ref-SWP::UR_PoolTokens swpair))
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPLC::URCi_Fuel account swpair input-amounts true)))
@@ -3611,19 +3619,19 @@
             )
         )
     )
-    (defun INFO_SWP|Firestarter:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_SWP|Firestarter:object{OuronetInfoV3.ClientInfo}
         (firestarter:string)
         (let
             (
                 (ref-U|ATS:module{UtilityAtsV3} U|ATS)
-                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-ORBR:module{OuroborosV2} OUROBOROS)
-                (ref-SWP:module{SwapperV4} SWP)
-                (ref-SWPI:module{SwapperIssueV4} SWPI)
-                (ref-SWPL:module{SwapperLiquidityV2} SWPL)
+                (ref-U|SWP:module{UtilitySwpV3} U|SWP)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-ORBR:module{OuroborosV3} OUROBOROS)
+                (ref-SWP:module{SwapperV5} SWP)
+                (ref-SWPI:module{SwapperIssueV5} SWPI)
+                (ref-SWPL:module{SwapperLiquidityV3} SWPL)
                 ;;
                 (wstoa-id:string (ref-DALOS::UR_WrappedStoaID))
                 (ouro-id:string (ref-DALOS::UR_OuroborosID))
@@ -3635,11 +3643,11 @@
                 ;;
                 (swpair:string (ref-SWP::UR_PrimordialPool))
                 (pool-type:string (ref-U|SWP::UC_PoolType swpair))
-                (dsid:object{UtilitySwpV2.DirectSwapInputData}
+                (dsid:object{UtilitySwpV3.DirectSwapInputData}
                     (ref-U|SWP::UDC_DirectSwapInputData input-ids input-amounts output-id)
                 )
                 ;;
-                (fees:object{UtilitySwpV2.SwapFeez} (ref-SWPL::UDC_PoolFees swpair))
+                (fees:object{UtilitySwpV3.SwapFeez} (ref-SWPL::UDC_PoolFees swpair))
                 (A:decimal (ref-SWP::UR_Amplifier swpair))
                 (X:[decimal] (ref-SWP::UR_PoolTokenSupplies swpair))
                 (X-prec:[integer] (ref-SWP::UR_PoolTokenPrecisions swpair))
@@ -3647,7 +3655,7 @@
                 (input-positions:[integer] (ref-SWPI::URCv_PoolTokenPositions swpair input-ids))
                 (output-position:integer (ref-SWP::URv_PoolTokenPosition swpair output-id))
                 (W:[decimal] (ref-SWP::UR_Weigths swpair))
-                (dtso:object{UtilitySwpV2.DirectTaxedSwapOutput}
+                (dtso:object{UtilitySwpV3.DirectTaxedSwapOutput}
                     (ref-SWPI::UC_BareboneSwapWithFeez firestarter pool-type dsid fees A X X-prec input-positions output-position W)
                 )
                 (gained-ouro:decimal (at "o-id-netto" dtso))
@@ -3668,12 +3676,12 @@
     )
     ;;
     ;; ---- SWP entity-completion: issue ops (all share SWPI|URCi_Issue [IGNIS] + dptf+swp [STOA]) ----
-    (defun INFO_SWP|IssueStable:object{OuronetInfoV2.ClientInfo}
-        (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal amp:decimal p:bool)
+    (defun INFO_SWP|IssueStable:object{OuronetInfoV3.ClientInfo}
+        (patron:string account:string pool-tokens:[object{SwapperV5.PoolTokens}] fee-lp:decimal amp:decimal p:bool)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-SWPI:module{SwapperIssueV4} SWPI)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-SWPI:module{SwapperIssueV5} SWPI)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -3689,12 +3697,12 @@
                     ;;`Stage_01/[6.2+3]_DPTF-SWP_Issuance-Only.repl <<SWP-ISSUE-INFO>>`.
                     (ref-SWPI::URCi_IssueStoa)) [])
         ))
-    (defun INFO_SWP|IssueStandard:object{OuronetInfoV2.ClientInfo}
-        (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal p:bool)
+    (defun INFO_SWP|IssueStandard:object{OuronetInfoV3.ClientInfo}
+        (patron:string account:string pool-tokens:[object{SwapperV5.PoolTokens}] fee-lp:decimal p:bool)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-SWPI:module{SwapperIssueV4} SWPI)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-SWPI:module{SwapperIssueV5} SWPI)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -3710,12 +3718,12 @@
                     ;;`Stage_01/[6.2+3]_DPTF-SWP_Issuance-Only.repl <<SWP-ISSUE-INFO>>`.
                     (ref-SWPI::URCi_IssueStoa)) [])
         ))
-    (defun INFO_SWP|IssueWeighted:object{OuronetInfoV2.ClientInfo}
-        (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool)
+    (defun INFO_SWP|IssueWeighted:object{OuronetInfoV3.ClientInfo}
+        (patron:string account:string pool-tokens:[object{SwapperV5.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-SWPI:module{SwapperIssueV4} SWPI)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-SWPI:module{SwapperIssueV5} SWPI)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -3731,13 +3739,13 @@
                     ;;`Stage_01/[6.2+3]_DPTF-SWP_Issuance-Only.repl <<SWP-ISSUE-INFO>>`.
                     (ref-SWPI::URCi_IssueStoa)) [])
         ))
-    (defun INFO_SWP|IssueStablePool:object{OuronetInfoV2.ClientInfo}
-        (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal amp:decimal p:bool)
+    (defun INFO_SWP|IssueStablePool:object{OuronetInfoV3.ClientInfo}
+        (patron:string account:string pool-tokens:[object{SwapperV5.PoolTokens}] fee-lp:decimal amp:decimal p:bool)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-SWPI:module{SwapperIssueV4} SWPI)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-SWPI:module{SwapperIssueV5} SWPI)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -3746,13 +3754,13 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPI::URCi_IssuePool account pool-tokens)))
                 (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))) [])
         ))
-    (defun INFO_SWP|IssueStandardPool:object{OuronetInfoV2.ClientInfo}
-        (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal p:bool)
+    (defun INFO_SWP|IssueStandardPool:object{OuronetInfoV3.ClientInfo}
+        (patron:string account:string pool-tokens:[object{SwapperV5.PoolTokens}] fee-lp:decimal p:bool)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-SWPI:module{SwapperIssueV4} SWPI)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-SWPI:module{SwapperIssueV5} SWPI)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -3761,13 +3769,13 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPI::URCi_IssuePool account pool-tokens)))
                 (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))) [])
         ))
-    (defun INFO_SWP|IssueWeightedPool:object{OuronetInfoV2.ClientInfo}
-        (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool)
+    (defun INFO_SWP|IssueWeightedPool:object{OuronetInfoV3.ClientInfo}
+        (patron:string account:string pool-tokens:[object{SwapperV5.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-SWPI:module{SwapperIssueV4} SWPI)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-SWPI:module{SwapperIssueV5} SWPI)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -3777,13 +3785,13 @@
                 (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))) [])
         ))
     ;; ---- SWP entity-completion: swaps (direct -> SWPU|URCi_Swap ; smart -> URCi_SmartSwap / URCi_SmartSwapWithBundle) ----
-    (defun INFO_SWP|SingleSwapNoSlippage:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_SWP|SingleSwapNoSlippage:object{OuronetInfoV3.ClientInfo}
         (patron:string account:string swpair:string input-id:string input-amount:decimal output-id:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-SWPU:module{SwapperUsageV3} SWPU)
-                (bounds:object{SwapperUsageV3.Slippage} (ref-SWPU::UDC_SpawnSlippageBounds swpair [input-id] [input-amount] output-id -1.0))
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-SWPU:module{SwapperUsageV4} SWPU)
+                (bounds:object{SwapperUsageV4.Slippage} (ref-SWPU::UDC_SpawnSlippageBounds swpair [input-id] [input-amount] output-id -1.0))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Swaps {} {} to {} on SWP-Pair {} (no slippage protection)" [input-amount input-id output-id swpair])]
@@ -3791,12 +3799,12 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPU::URCi_Swap account swpair [input-id] [input-amount] output-id -1.0 bounds)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
         ))
-    (defun INFO_SWP|SingleSwapWithSlippage:object{OuronetInfoV2.ClientInfo}
-        (patron:string account:string swpair:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV3.Slippage})
+    (defun INFO_SWP|SingleSwapWithSlippage:object{OuronetInfoV3.ClientInfo}
+        (patron:string account:string swpair:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV4.Slippage})
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-SWPU:module{SwapperUsageV3} SWPU)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-SWPU:module{SwapperUsageV4} SWPU)
                 (slippage:decimal (at "slippage-percent" slippage-bounds))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -3805,13 +3813,13 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPU::URCi_Swap account swpair [input-id] [input-amount] output-id slippage slippage-bounds)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
         ))
-    (defun INFO_SWP|MultiSwapNoSlippage:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_SWP|MultiSwapNoSlippage:object{OuronetInfoV3.ClientInfo}
         (patron:string account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-SWPU:module{SwapperUsageV3} SWPU)
-                (bounds:object{SwapperUsageV3.Slippage} (ref-SWPU::UDC_SpawnSlippageBounds swpair input-ids input-amounts output-id -1.0))
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-SWPU:module{SwapperUsageV4} SWPU)
+                (bounds:object{SwapperUsageV4.Slippage} (ref-SWPU::UDC_SpawnSlippageBounds swpair input-ids input-amounts output-id -1.0))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Multi-swaps {} to {} on SWP-Pair {} (no slippage protection)" [input-ids output-id swpair])]
@@ -3819,12 +3827,12 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPU::URCi_Swap account swpair input-ids input-amounts output-id -1.0 bounds)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
         ))
-    (defun INFO_SWP|MultiSwapWithSlippage:object{OuronetInfoV2.ClientInfo}
-        (patron:string account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage-bounds:object{SwapperUsageV3.Slippage})
+    (defun INFO_SWP|MultiSwapWithSlippage:object{OuronetInfoV3.ClientInfo}
+        (patron:string account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage-bounds:object{SwapperUsageV4.Slippage})
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-SWPU:module{SwapperUsageV3} SWPU)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-SWPU:module{SwapperUsageV4} SWPU)
                 (slippage:decimal (at "slippage-percent" slippage-bounds))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -3833,13 +3841,13 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPU::URCi_Swap account swpair input-ids input-amounts output-id slippage slippage-bounds)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
         ))
-    (defun INFO_SWP|SmartSwapNoSlippage:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_SWP|SmartSwapNoSlippage:object{OuronetInfoV3.ClientInfo}
         (patron:string account:string input-id:string input-amount:decimal output-id:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-SWPU:module{SwapperUsageV3} SWPU)
-                (bounds:object{SwapperUsageV3.Slippage} (ref-SWPU::UDC_SpawnSmartSwapSlippageBounds input-id input-amount output-id -1.0))
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-SWPU:module{SwapperUsageV4} SWPU)
+                (bounds:object{SwapperUsageV4.Slippage} (ref-SWPU::UDC_SpawnSmartSwapSlippageBounds input-id input-amount output-id -1.0))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Smart-swaps {} {} to {} (auto-routed, no slippage protection)" [input-amount input-id output-id])]
@@ -3847,12 +3855,12 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPU::URCi_SmartSwap account input-id input-amount output-id -1.0 bounds)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
         ))
-    (defun INFO_SWP|SmartSwapWithSlippage:object{OuronetInfoV2.ClientInfo}
-        (patron:string account:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV3.Slippage})
+    (defun INFO_SWP|SmartSwapWithSlippage:object{OuronetInfoV3.ClientInfo}
+        (patron:string account:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV4.Slippage})
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-SWPU:module{SwapperUsageV3} SWPU)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-SWPU:module{SwapperUsageV4} SWPU)
                 (slippage:decimal (at "slippage-percent" slippage-bounds))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -3861,13 +3869,13 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPU::URCi_SmartSwap account input-id input-amount output-id slippage slippage-bounds)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
         ))
-    (defun INFO_SWP|SmartSwapNoSlippageBundle:object{OuronetInfoV2.ClientInfo}
-        (patron:string account:string input-id:string input-amount:decimal output-id:string bundle:object{SwapperUsageV3.SmartSwapPathBundle})
+    (defun INFO_SWP|SmartSwapNoSlippageBundle:object{OuronetInfoV3.ClientInfo}
+        (patron:string account:string input-id:string input-amount:decimal output-id:string bundle:object{SwapperUsageV4.SmartSwapPathBundle})
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-SWPU:module{SwapperUsageV3} SWPU)
-                (bounds:object{SwapperUsageV3.Slippage} (ref-SWPU::UDC_Slippage 0.0 0 0.0))
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-SWPU:module{SwapperUsageV4} SWPU)
+                (bounds:object{SwapperUsageV4.Slippage} (ref-SWPU::UDC_Slippage 0.0 0 0.0))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Smart-swaps {} {} to {} via a provided route bundle (no slippage protection)" [input-amount input-id output-id])]
@@ -3875,12 +3883,12 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPU::URCi_SmartSwapWithBundle account input-id input-amount output-id -1.0 bounds bundle)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
         ))
-    (defun INFO_SWP|SmartSwapWithSlippageBundle:object{OuronetInfoV2.ClientInfo}
-        (patron:string account:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV3.Slippage} bundle:object{SwapperUsageV3.SmartSwapPathBundle})
+    (defun INFO_SWP|SmartSwapWithSlippageBundle:object{OuronetInfoV3.ClientInfo}
+        (patron:string account:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV4.Slippage} bundle:object{SwapperUsageV4.SmartSwapPathBundle})
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-SWPU:module{SwapperUsageV3} SWPU)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-SWPU:module{SwapperUsageV4} SWPU)
                 (slippage:decimal (at "slippage-percent" slippage-bounds))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -3890,17 +3898,17 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
         ))
     ;;
-    (defun INFO_SWP|AddLiquidity:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_SWP|AddLiquidity:object{OuronetInfoV3.ClientInfo}
         (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-SWPLC:module{SwapperLiquidityClientV3} SWPLC)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                 ;;the CLAD is read from SWPLC's own twin of the pricing reader, so the DECLARED tax
                 ;;and the CHARGED tax come from one place and the two collection flags are never
                 ;;restated here. See UC_LiquidityTaxDeclaration.
-                (clad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
+                (clad:object{SwapperLiquidityV3.CompleteLiquidityAdditionData}
                     (ref-SWPLC::URCi_AddStandardLiquidityClad account swpair input-amounts stoa-pid))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -3910,17 +3918,17 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPLC::URCi_AddStandardLiquidity account swpair input-amounts stoa-pid)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [input-amounts])
         ))
-    (defun INFO_SWP|AddStandardLiquidity:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_SWP|AddStandardLiquidity:object{OuronetInfoV3.ClientInfo}
         (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-SWPLC:module{SwapperLiquidityClientV3} SWPLC)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                 ;;the CLAD is read from SWPLC's own twin of the pricing reader, so the DECLARED tax
                 ;;and the CHARGED tax come from one place and the two collection flags are never
                 ;;restated here. See UC_LiquidityTaxDeclaration.
-                (clad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
+                (clad:object{SwapperLiquidityV3.CompleteLiquidityAdditionData}
                     (ref-SWPLC::URCi_AddStandardLiquidityClad account swpair input-amounts stoa-pid))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -3930,7 +3938,7 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPLC::URCi_AddStandardLiquidity account swpair input-amounts stoa-pid)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [input-amounts])
         ))
-    (defun INFO_SWP|AddIcedLiquidity:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_SWP|AddIcedLiquidity:object{OuronetInfoV3.ClientInfo}
         (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
         ;;THE POOL'S OWN GATE, RUN BEFORE THE QUOTE IS PRICED. `UEV_AddChilledLiquidity` refuses
         ;;this door on a pair without frozen LP, with the message reproduced below -- but it refuses
@@ -3945,7 +3953,7 @@
         ;;change. Pinned by RedTeam/[RT-K]_PreviewParity.repl <<RT-K-005a/b>>.
         (let
             (
-                (ref-SWP:module{SwapperV4} SWP)
+                (ref-SWP:module{SwapperV5} SWP)
             )
             (enforce
                 (ref-SWP::UR_IzFrozenLP swpair)
@@ -3954,13 +3962,13 @@
         )
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-SWPLC:module{SwapperLiquidityClientV3} SWPLC)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                 ;;the CLAD is read from SWPLC's own twin of the pricing reader, so the DECLARED tax
                 ;;and the CHARGED tax come from one place and the two collection flags are never
                 ;;restated here. See UC_LiquidityTaxDeclaration.
-                (clad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
+                (clad:object{SwapperLiquidityV3.CompleteLiquidityAdditionData}
                     (ref-SWPLC::URCi_AddIcedLiquidityClad account swpair input-amounts stoa-pid))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -3970,7 +3978,7 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPLC::URCi_AddIcedLiquidity account swpair input-amounts stoa-pid)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [input-amounts])
         ))
-    (defun INFO_SWP|AddGlacialLiquidity:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_SWP|AddGlacialLiquidity:object{OuronetInfoV3.ClientInfo}
         (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
         ;;THE POOL'S OWN GATE, RUN BEFORE THE QUOTE IS PRICED. `UEV_AddChilledLiquidity` refuses
         ;;this door on a pair without frozen LP, with the message reproduced below -- but it refuses
@@ -3985,7 +3993,7 @@
         ;;change. Pinned by RedTeam/[RT-K]_PreviewParity.repl <<RT-K-005a/b>>.
         (let
             (
-                (ref-SWP:module{SwapperV4} SWP)
+                (ref-SWP:module{SwapperV5} SWP)
             )
             (enforce
                 (ref-SWP::UR_IzFrozenLP swpair)
@@ -3994,13 +4002,13 @@
         )
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-SWPLC:module{SwapperLiquidityClientV3} SWPLC)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                 ;;the CLAD is read from SWPLC's own twin of the pricing reader, so the DECLARED tax
                 ;;and the CHARGED tax come from one place and the two collection flags are never
                 ;;restated here. See UC_LiquidityTaxDeclaration.
-                (clad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
+                (clad:object{SwapperLiquidityV3.CompleteLiquidityAdditionData}
                     (ref-SWPLC::URCi_AddGlacialLiquidityClad account swpair input-amounts stoa-pid))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -4010,17 +4018,17 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPLC::URCi_AddGlacialLiquidity account swpair input-amounts stoa-pid)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [input-amounts])
         ))
-    (defun INFO_SWP|AddFrozenLiquidity:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_SWP|AddFrozenLiquidity:object{OuronetInfoV3.ClientInfo}
         (patron:string account:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-SWPLC:module{SwapperLiquidityClientV3} SWPLC)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                 ;;the CLAD is read from SWPLC's own twin of the pricing reader, so the DECLARED tax
                 ;;and the CHARGED tax come from one place and the two collection flags are never
                 ;;restated here. See UC_LiquidityTaxDeclaration.
-                (clad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
+                (clad:object{SwapperLiquidityV3.CompleteLiquidityAdditionData}
                     (ref-SWPLC::URCi_AddFrozenLiquidityClad account swpair frozen-dptf input-amount stoa-pid))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -4030,17 +4038,17 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPLC::URCi_AddFrozenLiquidity account swpair frozen-dptf input-amount stoa-pid)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [(ref-I|OURONET::OI|UC_FormatTokenAmount input-amount)])
         ))
-    (defun INFO_SWP|AddSleepingLiquidity:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_SWP|AddSleepingLiquidity:object{OuronetInfoV3.ClientInfo}
         (patron:string account:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-SWPLC:module{SwapperLiquidityClientV3} SWPLC)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                 ;;the CLAD is read from SWPLC's own twin of the pricing reader, so the DECLARED tax
                 ;;and the CHARGED tax come from one place and the two collection flags are never
                 ;;restated here. See UC_LiquidityTaxDeclaration.
-                (clad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
+                (clad:object{SwapperLiquidityV3.CompleteLiquidityAdditionData}
                     (ref-SWPLC::URCi_AddSleepingLiquidityClad account swpair sleeping-dpof nonce stoa-pid))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -4050,14 +4058,14 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPLC::URCi_AddSleepingLiquidity account swpair sleeping-dpof nonce stoa-pid)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [nonce])
         ))
-    (defun INFO_SWP|RemoveLiquidity:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_SWP|RemoveLiquidity:object{OuronetInfoV3.ClientInfo}
         (patron:string account:string swpair:string lp-amount:decimal)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-SWP:module{SwapperV4} SWP)
-                (ref-SWPL:module{SwapperLiquidityV2} SWPL)
-                (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-SWP:module{SwapperV5} SWP)
+                (ref-SWPL:module{SwapperLiquidityV3} SWPL)
+                (ref-SWPLC:module{SwapperLiquidityClientV3} SWPLC)
                 ;;
                 (pool-token-ids:[string] (ref-SWP::UR_PoolTokens swpair))
                 (lp-id:string (ref-SWP::UR_TokenLP swpair))
@@ -4081,11 +4089,11 @@
     )
     ;;
     ;;[DALOS-INFO] — relocated from INFO-ZERO (Phase 1.2). Pure presentation; wrap IGNIS's DALOS|URCi_*.
-    (defun INFO_DALOS|ControlSmartAccount:object{OuronetInfoV2.ClientInfo} (patron:string account:string)
+    (defun INFO_DALOS|ControlSmartAccount:object{OuronetInfoV3.ClientInfo} (patron:string account:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 ;;
                 (is-ignis-zero:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-IGNIS::DALOS|URCi_ControlSmartAccount account)))
@@ -4100,11 +4108,11 @@
             )
         )
     )
-    (defun INFO_DALOS|DeploySmartAccount:object{OuronetInfoV2.ClientInfo} (account:string)
+    (defun INFO_DALOS|DeploySmartAccount:object{OuronetInfoV3.ClientInfo} (account:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 ;;
                 (is-stoa-zero:bool (ref-IGNIS::URC_IsNativeGasZero))
                 (kfp:decimal (ref-IGNIS::DALOS|URCi_DeploySmartAccount))
@@ -4119,11 +4127,11 @@
             )
         )
     )
-    (defun INFO_DALOS|DeployStandardAccount:object{OuronetInfoV2.ClientInfo} (account:string)
+    (defun INFO_DALOS|DeployStandardAccount:object{OuronetInfoV3.ClientInfo} (account:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 ;;
                 (is-stoa-zero:bool (ref-IGNIS::URC_IsNativeGasZero))
                 (kfp:decimal (ref-IGNIS::DALOS|URCi_DeployStandardAccount))
@@ -4138,11 +4146,11 @@
             )
         )
     )
-    (defun INFO_DALOS|RotateGovernor:object{OuronetInfoV2.ClientInfo} (patron:string account:string)
+    (defun INFO_DALOS|RotateGovernor:object{OuronetInfoV3.ClientInfo} (patron:string account:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 ;;
                 (is-ignis-zero:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-IGNIS::DALOS|URCi_RotateGovernor account)))
@@ -4157,11 +4165,11 @@
             )
         )
     )
-    (defun INFO_DALOS|RotateGuard:object{OuronetInfoV2.ClientInfo} (patron:string account:string)
+    (defun INFO_DALOS|RotateGuard:object{OuronetInfoV3.ClientInfo} (patron:string account:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 ;;
                 (is-ignis-zero:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-IGNIS::DALOS|URCi_RotateGuard account)))
@@ -4176,11 +4184,11 @@
             )
         )
     )
-    (defun INFO_DALOS|RotateStoa:object{OuronetInfoV2.ClientInfo} (patron:string account:string)
+    (defun INFO_DALOS|RotateStoa:object{OuronetInfoV3.ClientInfo} (patron:string account:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 ;;
                 (is-ignis-zero:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-IGNIS::DALOS|URCi_RotateStoa account)))
@@ -4195,11 +4203,11 @@
             )
         )
     )
-    (defun INFO_DALOS|RotateSovereign:object{OuronetInfoV2.ClientInfo} (patron:string account:string)
+    (defun INFO_DALOS|RotateSovereign:object{OuronetInfoV3.ClientInfo} (patron:string account:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 ;;
                 (is-ignis-zero:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-IGNIS::DALOS|URCi_RotateSovereign account)))
@@ -4214,11 +4222,11 @@
             )
         )
     )
-    (defun INFO_DALOS|UpdateEliteAccount:object{OuronetInfoV2.ClientInfo} (patron:string account:string)
+    (defun INFO_DALOS|UpdateEliteAccount:object{OuronetInfoV3.ClientInfo} (patron:string account:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 ;;
                 (is-ignis-zero:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-IGNIS::DALOS|URCi_UpdateEliteAccount patron)))
@@ -4233,11 +4241,11 @@
             )
         )
     )
-    (defun INFO_DALOS|UpdateEliteAccountSquared:object{OuronetInfoV2.ClientInfo} (patron:string sender:string receiver:string)
+    (defun INFO_DALOS|UpdateEliteAccountSquared:object{OuronetInfoV3.ClientInfo} (patron:string sender:string receiver:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 ;;
                 (is-ignis-zero:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-IGNIS::DALOS|URCi_UpdateEliteAccountSquared patron)))

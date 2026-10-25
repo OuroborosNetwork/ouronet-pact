@@ -105,7 +105,7 @@
         (pool:string "Bisthanium-98c486052a51")
         (rt:string "BI-98c486052a51")
         (healthy:string "ComatiCommand-98c486052a51")
-        (r:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (r:module{TalosStageOne_ClientTwoV3} TS01-C2)
     )
     (map print
         [
@@ -213,7 +213,7 @@
         (bad:string "NOSUCHTOKEN-98c486052a51")
         (real:string "BUSD-98c486052a51")
         (big:decimal 99999999.0)
-        (r:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (r:module{TalosStageOne_ClientOneV3} TS01-C1)
     )
     (map print
         [
@@ -309,7 +309,7 @@
     (
         (bad:string "NOSUCHOFT-98c486052a51")
         (real:string "V|OURO-98c486052a51")
-        (r:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (r:module{TalosStageOne_ClientOneV3} TS01-C1)
     )
     (map print
         [

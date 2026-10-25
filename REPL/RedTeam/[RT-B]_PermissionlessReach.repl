@@ -86,7 +86,7 @@
 (print "--- [RT-B-001 - reach a sovereign admin op without Talos, and pay nothing · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
     )
     (map print
         [
@@ -119,7 +119,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
         (admin:string KST.ANHD)
     )
@@ -206,7 +206,7 @@
 (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
 (let
     (
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
     )
     (map print
         [

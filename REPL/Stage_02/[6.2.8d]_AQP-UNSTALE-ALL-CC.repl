@@ -45,11 +45,11 @@
         (anhd:string KST.ANHD)
         (emma:string KST.EMMA)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
         (score-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryWonderCoach"))
         (pool-id:string (ref-U|DALOS::UDC_Makeid "DHWonderCoach"))
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
@@ -97,8 +97,8 @@
     (
         (emma:string KST.EMMA)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
         (auryn-id:string "AURYN-98c486052a51")
     )
@@ -133,10 +133,10 @@
     (
         (anhd:string KST.ANHD)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
         (score-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryWonderCoach"))
         (pool-id:string (ref-U|DALOS::UDC_Makeid "DHWonderCoach"))
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
@@ -153,7 +153,7 @@
     ;;`CCp_` marks a Hydra parallel-slice recipe: the gas station pays, which is why the owner does not.
     (let
         (
-            (quote-obj:object{OuronetInfoV2.ClientInfo}
+            (quote-obj:object{OuronetInfoV3.ClientInfo}
                 (AQP-INFO.INFO_AQP-FVT|UnstaleAll anhd fvt-id auryn-id 100))
             (gas-pre:decimal (ref-DPTF::UR_AccountSupply "GAS-98c486052a51" anhd))
             (report:string (ref-TS02-C3::AQP-FVT|CCp_UnstaleAll anhd fvt-id auryn-id 100))
@@ -209,8 +209,8 @@
     (
         (anhd:string KST.ANHD)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
         (auryn-id:string "AURYN-98c486052a51")
         (ffc-pre:integer (ref-FVT::UR_FVT-FFC|Count fvt-id auryn-id anhd))

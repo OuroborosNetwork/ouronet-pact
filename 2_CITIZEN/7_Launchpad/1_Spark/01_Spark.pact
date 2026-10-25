@@ -1,5 +1,5 @@
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface SparksV2
+(interface SparksV3
 
 
 
@@ -57,9 +57,9 @@
     ;;  [URCi] / [INFO]  (pure-citizen cost preview: Sigma of the sovereign Talos ops' IGNIS)
     ;;
     (defun URCi_BuySparks:decimal (buyer:string sparks-amount:integer iz-native:bool))
-    (defun INFO_BuySparks:object{OuronetInfoV2.ClientInfo} (patron:string buyer:string sparks-amount:integer iz-native:bool))
+    (defun INFO_BuySparks:object{OuronetInfoV3.ClientInfo} (patron:string buyer:string sparks-amount:integer iz-native:bool))
     (defun URCi_RedeemSparks:decimal (redemption-payer:string account-to-redeem:string redemption-quantity:decimal))
-    (defun INFO_RedeemSparks:object{OuronetInfoV2.ClientInfo} (patron:string redemption-payer:string account-to-redeem:string redemption-quantity:decimal))
+    (defun INFO_RedeemSparks:object{OuronetInfoV3.ClientInfo} (patron:string redemption-payer:string account-to-redeem:string redemption-quantity:decimal))
     ;;{5.4}  Validate [UEV/CAP]
     (defun CAP_Acquire (buyer:string amount:integer iz-native:bool))
     ;;{5.5}  Write [W]
@@ -86,7 +86,7 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements SparksV2)
+    (implements SparksV3)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -102,7 +102,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -110,7 +110,7 @@
     (defun GOV|DEMIPAD|SC_NAME ()
         (let
             (
-                (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
+                (ref-DEMIPAD:module{DemiourgosLaunchpadV3} DEMIPAD)
             )
             (ref-DEMIPAD::GOV|DEMIPAD|SC_NAME)
         )
@@ -140,7 +140,7 @@
     (defun P|Info ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::P|Info)
         )
@@ -293,7 +293,7 @@
         @event
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (spark-id:string (UR_SparkID))
                 (remaining-supply:decimal (ref-DPTF::UR_AccountSupply spark-id DEMIPAD|SC_NAME))
                 (amount:decimal (dec sparks-amount))
@@ -307,7 +307,7 @@
         @event
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (spark-id:string (UR_SparkID))
                 (supply:decimal (ref-DPTF::UR_AccountSupply spark-id account-to-redeem))
             )
@@ -322,7 +322,7 @@
         (compose-capability (GOV|SPARK_ADMIN))
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (spark-id:string (UR_SparkID))
                 (supply:decimal (ref-DPTF::UR_AccountSupply spark-id account-to-redeem))
             )
@@ -361,7 +361,7 @@
     (defun UR_BoostPromille:decimal ()
         (let
             (
-                (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
+                (ref-DEMIPAD:module{DemiourgosLaunchpadV3} DEMIPAD)
             )
             (at "boost" (ref-DEMIPAD::UR_Price (UR_SparkID)))
         )
@@ -369,7 +369,7 @@
     (defun UR_IzOpenForBusiness:bool ()
         (let
             (
-                (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
+                (ref-DEMIPAD:module{DemiourgosLaunchpadV3} DEMIPAD)
             )
             (ref-DEMIPAD::UR_OpenForBusiness (UR_SparkID))
         )
@@ -377,7 +377,7 @@
     (defun UR_FrozenSparkID:string ()
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
             )
             (ref-DPTF::UR_Frozen (UR_SparkID))
         )
@@ -385,8 +385,8 @@
     (defun UR_Sparks (account:string)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (spark-id:string (UR_SparkID))
                 (f-spark-id:string (UR_FrozenSparkID))
             )
@@ -420,9 +420,9 @@
                 (ref-coin:module{stoa-ns.fungible-v1} coin)
                 (ref-U|CT:module{OuronetConstantsV2} U|CT)
                 (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-DEMIPAD:module{DemiourgosLaunchpadV3} DEMIPAD)
                 ;;
                 (stoa-prec:integer (ref-U|CT::CT_STOA_PRECISION))
                 (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
@@ -456,7 +456,7 @@
             (
                 (ref-U|CT:module{OuronetConstantsV2} U|CT)
                 (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
-                (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
+                (ref-DEMIPAD:module{DemiourgosLaunchpadV3} DEMIPAD)
                 ;;
                 (stoa-prec:integer (ref-U|CT::CT_STOA_PRECISION))
                 (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
@@ -496,7 +496,7 @@
         (let
             (
                 (ref-U|CT:module{OuronetConstantsV2} U|CT)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (spark-id:string (UR_SparkID))
                 (supply:decimal (ref-DPTF::UR_AccountSupply spark-id account))
                 (stoa-prec:integer (ref-U|CT::CT_STOA_PRECISION))
@@ -505,12 +505,12 @@
             (floor (* supply rc) stoa-prec)
         )
     )
-    (defun URC_SparkAmountCosts:object{DemiourgosLaunchpadV2.Costs} (amount:integer)
+    (defun URC_SparkAmountCosts:object{DemiourgosLaunchpadV3.Costs} (amount:integer)
         (let
             (
                 (ref-U|CT:module{OuronetConstantsV2} U|CT)
                 (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
-                (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
+                (ref-DEMIPAD:module{DemiourgosLaunchpadV3} DEMIPAD)
                 ;;
                 (stoa-prec:integer (ref-U|CT::CT_STOA_PRECISION))
                 (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
@@ -530,9 +530,9 @@
             \ amount-independent; the transfer cost depends only on the DPTF fee class of Sparks."
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DEMIPAD:module{DemiourgosLaunchpadV3} DEMIPAD)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
                 (spark-id:string (UR_SparkID))
                 (pid:decimal (at "pid" (URC_SparkAmountCosts sparks-amount)))
                 (type:integer (if iz-native 0 1))
@@ -543,16 +543,16 @@
                    (ref-TFT::URCi_Transfer spark-id DEMIPAD|SC_NAME buyer (dec sparks-amount))))
         )
     )
-    (defun INFO_BuySparks:object{OuronetInfoV2.ClientInfo} (patron:string buyer:string sparks-amount:integer iz-native:bool)
+    (defun INFO_BuySparks:object{OuronetInfoV3.ClientInfo} (patron:string buyer:string sparks-amount:integer iz-native:bool)
         @doc "Cost preview for the SPARK|C_BuySparks pure-citizen buy (sole gas-funded path = the \
             \ TS02-CPAD Talos wrapper). IGNIS = URCi_BuySparks (Sigma of the two Talos ops). Launchpad \
             \ ops carry NO protocol STOA fee; the ACQUISITION cost (dollar pid + STOA wstoa) is declared \
             \ in the description as the good being bought, not a fee-to-execute (protocol stoa = none)."
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 (spark-id:string (UR_SparkID))
-                (costs:object{DemiourgosLaunchpadV2.Costs} (URC_SparkAmountCosts sparks-amount))
+                (costs:object{DemiourgosLaunchpadV3.Costs} (URC_SparkAmountCosts sparks-amount))
                 (pid:decimal (at "pid" costs))
                 (wstoa:decimal (at "wstoa" costs))
                 (pay:string (if iz-native "Native STOA" "OWS (Wrapped STOA)"))
@@ -575,11 +575,11 @@
             \ Per-op costs are fee-class based; fed the same redemption-quantity the exec receives."
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
-                (ref-VST:module{VestingV2} VST)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
+                (ref-VST:module{VestingV3} VST)
                 (spark-id:string (UR_SparkID))
                 (wstoa-id:string (ref-DALOS::UR_WrappedStoaID))
                 (redemption-value:decimal (floor (* (URC_SparkRedemptionCost) redemption-quantity) 12))
@@ -595,14 +595,14 @@
                       (ref-VST::URCi_Freeze DEMIPAD|SC_NAME account-to-redeem spark-id redemption-quantity)) ])
         )
     )
-    (defun INFO_RedeemSparks:object{OuronetInfoV2.ClientInfo} (patron:string redemption-payer:string account-to-redeem:string redemption-quantity:decimal)
+    (defun INFO_RedeemSparks:object{OuronetInfoV3.ClientInfo} (patron:string redemption-payer:string account-to-redeem:string redemption-quantity:decimal)
         @doc "Cost preview for the SPARK|C_RedemAll/FewSparks pure-citizen redeem (sole gas-funded path = \
             \ the TS02-CPAD Talos wrapper). IGNIS = URCi_RedeemSparks (Sigma of the six Talos ops). No \
             \ protocol STOA fee; the redeem RETURNS wSTOA to the account (a refund, not a cost)."
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (spark-id:string (UR_SparkID))
                 (wstoa-id:string (ref-DALOS::UR_WrappedStoaID))
                 (redemption-value:decimal (floor (* (URC_SparkRedemptionCost) redemption-quantity) 12))
@@ -623,7 +623,7 @@
         @doc "Variant 1 (with slippage) — coin.TRANSFER caps the UI signs, padded by (1 + slippage/100)."
         (let
             (
-                (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
+                (ref-DEMIPAD:module{DemiourgosLaunchpadV3} DEMIPAD)
                 (asset-id:string (UR_SparkID))
                 (type:integer (if iz-native 0 1))
                 (pid:decimal (at "pid" (URC_SparkAmountCosts amount)))
@@ -637,7 +637,7 @@
         @doc "Variant 2 (slippage off) — installs the coin.TRANSFER caps in-code at the live price."
         (let
             (
-                (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
+                (ref-DEMIPAD:module{DemiourgosLaunchpadV3} DEMIPAD)
                 (asset-id:string (UR_SparkID))
                 (type:integer (if iz-native 0 1))
                 (pid:decimal (at "pid" (URC_SparkAmountCosts amount)))
@@ -654,10 +654,10 @@
         (let
             (
                 (ref-U|CT:module{OuronetConstantsV2} U|CT)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-                (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+                (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
                 (stoa-prec:integer (ref-U|CT::CT_STOA_PRECISION))
                 ;;
                 (spark-id:string (UR_SparkID))
@@ -691,10 +691,10 @@
         (let
             (
                 (ref-U|CT:module{OuronetConstantsV2} U|CT)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-                (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+                (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
                 (stoa-prec:integer (ref-U|CT::CT_STOA_PRECISION))
                 ;;
                 (spark-id:string (UR_SparkID))
@@ -732,12 +732,12 @@
         (with-capability (SPARK|C>BUY sparks-amount)
             (let
                 (
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
-                    (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV4} TS02-DPAD)
+                    (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
                     ;;
                     (spark-id:string (UR_SparkID))
-                    (costs:object{DemiourgosLaunchpadV2.Costs} (URC_SparkAmountCosts sparks-amount))
+                    (costs:object{DemiourgosLaunchpadV3.Costs} (URC_SparkAmountCosts sparks-amount))
                     (pid:decimal (at "pid" costs))
                     (type:integer (if iz-native 0 1))
                     (sb:string (ref-I|OURONET::OI|UC_ShortAccount buyer))
@@ -754,7 +754,7 @@
         (with-capability (SPARK|C>REEDEM-ALL account-to-redeem)
             (let
                 (
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                     (spark-id:string (UR_SparkID))
                     (supply:decimal (ref-DPTF::UR_AccountSupply spark-id account-to-redeem))
                 )
@@ -766,7 +766,7 @@
         (with-capability (SPARK|C>REEDEM-ALL account-to-redeem)
             (let
                 (
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                     (spark-id:string (UR_SparkID))
                     (supply:decimal (ref-DPTF::UR_AccountSupply spark-id account-to-redeem))
                 )

@@ -1,19 +1,19 @@
 {
  "moduleHashes": {
-  "ATS": "q9egSXL5o_RR7TZyMOFRO9WW3G275XQwEaFSU4aSpps",
-  "SWPLC": "UrpNTeCvu3iR8m-H_xcLgbu3wBDUujwd4-aN4ofYTnE",
-  "TS01-C1": "lJ4KC_Kd6U3Z0npl2dgL1I0f_Tk2LwScbiWbek7XJ0w",
-  "TS01-C2": "i4Nss3YubthAXuZQZrtsxPaKvrBuwbr7OthjWUvhlO0",
-  "TS01-C3": "-s3QnTRseTb1AM68YqsxUI5pbImXJDV8e1k6iVfef1U",
-  "TS01-C4": "p3nTyQdGypJmCMUvv-c1WEQH16haAcOdH-stE0HAyIw",
-  "TS01-CP": "Zs8-rMtVbMr5bdSrAQyEYkDPHAlLQFg8BMh8e9QxxTs",
-  "TS02-C1": "9FhxY3HO5qT5AOw-wT6gmean0ievzBYRppkPI6FAT0M",
-  "TS02-C2": "LbnY0ydWmcA-goKwobDnLVKanBr4U6ZRhPlnDpgNzME",
-  "TS02-C3": "EuqxOZ2levBfJeG2KNsMg9f_X4PSQKIcG9hnBxzQ7ds",
-  "TS02-CPAD": "DvLbtKVBl02gLcsLCq4NQKlnqGZdGRCTH7Fg3S6UIK8",
-  "TS02-DPAD": "dLztzfE3wr8Rv2uTgBd8LOJx7OVW79Rr0LO7UvPKQ1c"
+  "ATS": "RWIsI5wm5eS1F4WJ723hvBNBi6sjjh1CWhilUIeQ2JA",
+  "SWPLC": "ryzMXFpu8IudxiDm8VDrvrgYtSGZ0ou2UZxt3-d68M4",
+  "TS01-C1": "JhIkrK4xMNO9RPRHwv0u5qOCO59aoKvUpsfI8KGI_yA",
+  "TS01-C2": "nOrRNfHlUMewRC-axcJIj9d9DridimoFY7KiBchSIpc",
+  "TS01-C3": "Sss3u_Zh-s6U3aXwDEH3p253qj9PxuUoOE-95z-mz3g",
+  "TS01-C4": "XnyJhJ0-uGtDvc9-eruTPI_IIxkpRQjA3JcJBkL2UxE",
+  "TS01-CP": "_GYfTjt6x4wvwyddWf07_fZ5crTfI7mOThlF-KxuEz8",
+  "TS02-C1": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+  "TS02-C2": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+  "TS02-C3": "yEm3erU_vgdSZ48L8_9qmuIVRQ_NfSxP4zkrtQLZDX8",
+  "TS02-CPAD": "kZJnKKMM4J3A_7ss5mCfdc6vhJJM5ihClbU3soBuSOs",
+  "TS02-DPAD": "rVKjURldVF5tGuZhJF3zhyUJlbSeg-YQkts4E0tTT8E"
  },
  "note": "WHEN the registry snapshot was last confirmed against mainnet, by REPL/tools/_registrylive.py. Written only on a clean run. The offline gate prints this date; it cannot verify it.",
- "surfaceHash": "6759484a5916ba4c",
- "verifiedAt": "2026-10-12"
+ "surfaceHash": "56f3f7f008117146",
+ "verifiedAt": "2026-10-25"
 }

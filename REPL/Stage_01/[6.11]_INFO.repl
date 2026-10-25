@@ -2,7 +2,7 @@
 ;; REPL/Stage_01/[6.11]_INFO.repl — INFO-layer (#78) per-module smoke tests.
 ;;   INFO functions are URC_<MOD>|<Op> thin wrappers over the <MOD>|URCi_ readers,
 ;;   living in INFO-ONE (Stage-1) / INFO-TWO (Stage-2). Each returns an
-;;   object{OuronetInfoV2.ClientInfo}. Runs AFTER [4.0]_Sovereign-Executor (usage
+;;   object{OuronetInfoV3.ClientInfo}. Runs AFTER [4.0]_Sovereign-Executor (usage
 ;;   prices, incl ignis|medium, must be populated). Add a block per module as the
 ;;   rehaul proceeds (DALOS -> DPTF -> DPOF -> VST -> ATS -> SWP -> LIQUID -> ORBR).
 ;;
@@ -235,7 +235,7 @@
         ;;EVERY call shape the smoke block above already proves reachable, re-used here for the
         ;;INVARIANT rather than for shape. Widening this list is the whole extension mechanism:
         ;;one line per preview, no new assertion to write.
-        (cis:[object{OuronetInfoV2.ClientInfo}]
+        (cis:[object{OuronetInfoV3.ClientInfo}]
             [ (INFO-ONE.INFO_DALOS|ControlSmartAccount p a)
               (INFO-ONE.INFO_DALOS|DeploySmartAccount a)
               (INFO-ONE.INFO_DALOS|DeployStandardAccount a)
@@ -279,10 +279,10 @@
     )
     (map print
         (map
-            (lambda (ci:object{OuronetInfoV2.ClientInfo})
+            (lambda (ci:object{OuronetInfoV3.ClientInfo})
                 (let*
                     (
-                        (ig:object{OuronetInfoV2.ClientIgnisCosts} (at "ignis" ci))
+                        (ig:object{OuronetInfoV3.ClientIgnisCosts} (at "ignis" ci))
                         (full:decimal (at "ignis-full" ig))
                         (need:decimal (at "ignis-need" ig))
                         (disc:decimal (at "ignis-discount" ig))

@@ -48,8 +48,8 @@
 (let
     (
         (patron:string KST.ANHD)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
     )
     (let
@@ -111,8 +111,8 @@
 (print "--- [ADV-02 — DPTF property guards that read a flag with no argument to vary · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
     )
     (let

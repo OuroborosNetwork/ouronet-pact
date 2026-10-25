@@ -3,7 +3,7 @@
  "modules": {
   "AOZ": {
    "deployed": true,
-   "hash": "UgDNqvR2Khy4A1ZQEK9ic0Kdetuoc_kDsgD_2_mOL88",
+   "hash": "Vv8hBl9V817gcqYo6dH7wUSNpXjIpFCjHN3r66Pu_3g",
    "repoPath": "2_CITIZEN/1_AOZ/01_AOZ+.pact",
    "interfaces": [
     "ouronet-ns.AgeOfZalmoxis"
@@ -92,13 +92,13 @@
   },
   "AQP-ANK": {
    "deployed": true,
-   "hash": "9eFnctlln356ylLHbnCCkGiHb-qNcygdAy3-eNkqn00",
+   "hash": "FjO4M8jjqkmyqBARkK3oC4QQR_w0QVDohe0etb3Kook",
    "repoPath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/01_ANK.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.AcquisitionAnchorsV1"
+    "ouronet-ns.AcquisitionAnchorsV3"
    ],
-   "chars": 121847,
+   "chars": 129132,
    "shapes": {
     "schemas": [],
     "tables": [
@@ -176,6 +176,7 @@
      "UEV_ExecutorIzAnchorAuthority",
      "UEV_ExecutorIzAssetAuthority",
      "UEV_ExecutorIzClassOwner",
+     "UEV_ExecutorNotCustodial",
      "UEV_IssueAnchor",
      "UEV_LiveAnchor",
      "UEV_Promile",
@@ -198,6 +199,7 @@
      "URCi_IssueAnchorStoa",
      "URCi_RevokeAnchor",
      "URCi_RevokeBoostClass",
+     "URCv_AnchorableDptfAuthority",
      "URCv_CoreDptf",
      "URH_ANK|AllAnchorIds",
      "URH_BC|AllBoostClassIds",
@@ -265,6 +267,7 @@
      "AQP|SC_KEY",
      "AQP|SC_NAME",
      "BAR",
+     "CT_ANK_LP_PREFIXES",
      "CT_ANK_MAX_DPTF_AMOUNT",
      "CT_ANK_MAX_PROMILE",
      "CT_ANK_MIN_DPTF_AMOUNT",
@@ -278,12 +281,12 @@
   },
   "AQP-BOOT": {
    "deployed": true,
-   "hash": "QBNir0wfvGM5X04IKerkiwXPUyaR2GLy-MZOtISUzzc",
+   "hash": "Rjsr0zQWkVaqo3Et1rtMqIhAjkt-jyJdFTH49_LGWgg",
    "repoPath": "2_CITIZEN/5_VaultsMinter/04_AQP-BOOT.pact",
    "interfaces": [
-    "ouronet-ns.AcquisitionPoolBootV1"
+    "ouronet-ns.AcquisitionPoolBootV2"
    ],
-   "chars": 78485,
+   "chars": 100776,
    "shapes": {
     "schemas": [],
     "tables": [],
@@ -298,6 +301,7 @@
      "C_Step10_IssueMultipletFamily",
      "C_Step11_WireFarmTriplet",
      "C_Step12_AddFvtRewardLinks",
+     "C_Step12b_AddLateFvtRewardLinks",
      "C_Step13_CreateCustodiansVault",
      "C_Step1_CreateBunnySet",
      "C_Step2_CreateSnakePowerAnchorClasses",
@@ -306,9 +310,13 @@
      "C_Step5_CreateSubsidiaryScores",
      "C_Step6_CreateOuroLpTriplet",
      "C_Step7_CreatePoolsAndScores",
+     "C_Step7b_CreateStoicismPool",
      "C_Step8_IssueFvtEntities",
+     "C_Step8b_IssueLateFvtEntities",
      "C_Step9_AddFvtScoreEntities",
-     "GOV|Demiurgoi"
+     "C_Step9b_AddLateFvtScoreEntities",
+     "GOV|Demiurgoi",
+     "UEV_BootStepState"
     ],
     "pacts": [],
     "constants": [
@@ -329,19 +337,26 @@
      "BOOT|CUSTODIANS_VALUE_GOLDEN",
      "BOOT|CUSTODIANS_VALUE_SILVER",
      "BOOT|FVT_BLOODSHED_TREASURY",
+     "BOOT|FVT_CLASS_TREASURY",
+     "BOOT|FVT_CLASS_VAULT",
      "BOOT|FVT_CODING_TREASURY",
      "BOOT|FVT_CUSTODIANS_VAULT",
+     "BOOT|FVT_NOSFERATU_TREASURY",
      "BOOT|FVT_OURO_LP_FARM",
      "BOOT|FVT_SHARES_TREASURY",
      "BOOT|FVT_SNAKES_TREASURY",
+     "BOOT|FVT_STOICISM_VAULT",
      "BOOT|FVT_SUBSIDIARY_TREASURY",
+     "BOOT|FVT_WONDERCOACH_TREASURY",
      "BOOT|MODEL_CUSTODIANS_BRONZE",
      "BOOT|MODEL_CUSTODIANS_GOLDEN",
      "BOOT|MODEL_CUSTODIANS_SILVER",
      "BOOT|MODEL_CUSTODIANS_TRIPLET",
      "BOOT|MX_FROZEN",
      "BOOT|MX_SLEEPING",
+     "BOOT|POOL_CLASS_TF",
      "BOOT|POOL_CUSTODIANS",
+     "BOOT|POOL_STOICISM",
      "BOOT|PRECISION",
      "BOOT|REWARD_MODE_HETEROGENEOUS",
      "BOOT|SCORE_BRONZE",
@@ -356,11 +371,11 @@
   },
   "AQP-DSA": {
    "deployed": true,
-   "hash": "CXL_PKoU2eykZHVnCkFnMuOO04a-a6MsXh_9CGYwu8s",
+   "hash": "MAkGbpwAeX897KzerAUyl0gPce34DhabNo0gEd5a3g8",
    "repoPath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/08_DSA.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.DsaV1"
+    "ouronet-ns.DsaV3"
    ],
    "chars": 53651,
    "shapes": {
@@ -477,13 +492,13 @@
   },
   "AQP-FVT": {
    "deployed": true,
-   "hash": "Z3R291CrNeLTi0_Zn3UrkicpHR3zE2VT2Z0UXiaJaV8",
+   "hash": "ksm3rftWfJyh9H4Mx2Oa2jk9bW3Ei3f3hhLlgIfe7c0",
    "repoPath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/05_FVT.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.AcquisitionFarmsVaultsTreasuriesV1"
+    "ouronet-ns.AcquisitionFarmsVaultsTreasuriesV4"
    ],
-   "chars": 189257,
+   "chars": 270786,
    "shapes": {
     "schemas": [],
     "tables": [
@@ -496,6 +511,7 @@
     "capabilities": [
      "FVT|C>ADD-REWARD-LINK",
      "FVT|C>ADD-SCORE-ENTITY",
+     "FVT|C>CLEAR-POOL-SWEEP",
      "FVT|C>COLLECT",
      "FVT|C>COLLECTABLE-STAKE-FLOW",
      "FVT|C>CONTROL-FVT",
@@ -504,9 +520,15 @@
      "FVT|C>INJECT-STREAM",
      "FVT|C>ISSUE-FVT",
      "FVT|C>ISSUE-MULTIPLET-FAMILY",
+     "FVT|C>LATCH-STREAM-ELIGIBLE",
      "FVT|C>ORTO-FUNGIBLE-STAKE-FLOW",
+     "FVT|C>REASSIGN-COLLECTABLE-BENEFICIARY",
+     "FVT|C>REASSIGN-ORTO-BENEFICIARY",
+     "FVT|C>REASSIGN-TRUE-FUNGIBLE-BENEFICIARY",
+     "FVT|C>RELEASE-SPECIAL-CUSTODIAL",
      "FVT|C>ROTATE-OWNERSHIP-FVT",
      "FVT|C>SET-COMMON-DENOMINATOR",
+     "FVT|C>SET-MIN-INJECT-AMOUNT",
      "FVT|C>SET-MOSAIC",
      "FVT|C>SET-QUALITY-SPLIT",
      "FVT|C>SET-SPLIT-MODE",
@@ -526,17 +548,26 @@
      "SECURE"
     ],
     "functions": [
+     "AA_MigrateStreamEligible",
+     "CC_ClearPoolSweep",
      "CC_Collect",
      "CC_CollectableStakeFlow",
      "CC_Inject",
      "CC_InjectFinalize",
      "CC_InjectStream",
+     "CC_LatchStreamEligible",
      "CC_OrtoFungibleStakeFlow",
+     "CC_ReassignCollectableStakeBeneficiary",
+     "CC_ReassignOrtoStakeBeneficiary",
+     "CC_ReassignTrueFungibleStakeBeneficiary",
      "CC_SweepBegin",
      "CC_SweepRevokeAnchor",
      "CC_TrueFungibleStakeFlow",
      "CC_UnstaleMyScores",
+     "CCp_FvtFixSlice",
      "CCp_InjectFixChunk",
+     "CCp_ReleaseSpecialCustodial",
+     "CCp_StakeSpecialCustodial",
      "CCp_SweepRecomputeChunk",
      "CCp_UnstaleAll",
      "CT_AqpScName",
@@ -548,6 +579,7 @@
      "C_IssueMultipletFamily",
      "C_RotateOwnership",
      "C_SetCommonDenominator",
+     "C_SetMinInjectAmount",
      "C_SetMosaic",
      "C_SetQualitySplit",
      "C_SetSplitMode",
@@ -574,11 +606,14 @@
      "UEV_AddScoreEntityScoreContext",
      "UEV_AddScoreEntityTripletContext",
      "UEV_CollectContext",
+     "UEV_DriftLockedScoreEntity",
      "UEV_ExecutorIzFvtOwner",
+     "UEV_FVT|PoolReleasable",
      "UEV_InjectContext",
      "UEV_IssueMultipletFamilyContext",
      "UEV_SetCommonDenominatorContext",
      "UEV_SetMosaicContext",
+     "UEV_StreamEligibleMemberOk",
      "UEV_StreamParams",
      "URC_CollectClaimableRewards",
      "URC_FvtUserStillPresent",
@@ -595,11 +630,18 @@
      "URC_StakeScoreDeltaSum",
      "URC_StreamStatus",
      "URC_UserTier1AvailableRewards",
+     "URCi_ClearPoolSweep",
      "URCi_CollectFull",
      "URCi_Issue",
      "URCi_IssueMultipletFamily",
      "URCi_IssueStoa",
+     "URCi_LatchStreamEligible",
+     "URCi_ReassignCollectableStakeBeneficiary",
+     "URCi_ReassignOrtoStakeBeneficiary",
+     "URCi_ReassignTrueFungibleStakeBeneficiary",
+     "URCi_ReleaseSpecialCustodial",
      "URCi_UnstaleMyScores",
+     "URH_FVT|ActiveSweepCoversPool",
      "URH_FvtEnabledScoreEntityIdsForFvt",
      "URH_FvtPresentUsers",
      "URH_FvtStalePresentUsers",
@@ -611,6 +653,7 @@
      "UR_FVT-QS|Mode",
      "UR_FVT-RG|AvailableRewards",
      "UR_FVT-RG|CurrentRps",
+     "UR_FVT-RG|MinInjectAmount",
      "UR_FVT-RG|RewardEnabled",
      "UR_FVT-RG|RewardKind",
      "UR_FVT-RG|RoyaltyRewards",
@@ -644,6 +687,7 @@
      "UR_FVT|OracleOn",
      "UR_FVT|OwnerKonto",
      "UR_FVT|SplitMode",
+     "UR_FVT|StreamEligible",
      "UR_FVT|SweepActive",
      "UR_FVT|SweepProgress",
      "UR_FVT|TotalDebScore",
@@ -656,6 +700,7 @@
      "WU_FvtVacateFreeze",
      "WU_Fvt|CommonDenominator",
      "WU_Fvt|OracleOn",
+     "WU_Fvt|StreamEligible",
      "XB_FvtInject",
      "XE_RefreshCollectableStakeAnchors",
      "XE_RefreshTrueFungibleStakeAnchors",
@@ -663,11 +708,15 @@
      "XE_SetFvtVacateFrozen",
      "XE_SweepBegin",
      "XE_SweepEnd",
+     "XI_CollectableStakePhases",
      "XI_Control",
      "XI_IssueFvt",
+     "XI_LatchStreamEligible",
+     "XI_OrtoStakePhases",
      "XI_RefreshCollectableStakeAnchors",
      "XI_RefreshTrueFungibleStakeAnchors",
-     "XI_SetCommonDenominator"
+     "XI_SetCommonDenominator",
+     "XI_TrueFungibleStakePhases"
     ],
     "pacts": [],
     "constants": [
@@ -721,10 +770,10 @@
   },
   "AQP-INFO": {
    "deployed": true,
-   "hash": "vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0",
+   "hash": "xgbZB_kTCHcXTTE5dvaTQL7jGxwAM8MBYQvvKF62EJE",
    "repoPath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
    "interfaces": [],
-   "chars": 88149,
+   "chars": 114115,
    "shapes": {
     "schemas": [],
     "tables": [],
@@ -754,8 +803,10 @@
      "INFO_AQP-DSA|WithdrawRoyalty",
      "INFO_AQP-FVT|AddRewardLink",
      "INFO_AQP-FVT|AddScoreEntity",
+     "INFO_AQP-FVT|ClearPoolSweep",
      "INFO_AQP-FVT|Collect",
      "INFO_AQP-FVT|Control",
+     "INFO_AQP-FVT|FvtFixSlice",
      "INFO_AQP-FVT|Inject",
      "INFO_AQP-FVT|InjectFinalize",
      "INFO_AQP-FVT|InjectFixChunk",
@@ -763,8 +814,10 @@
      "INFO_AQP-FVT|Issue",
      "INFO_AQP-FVT|IssueGenericEarningVault",
      "INFO_AQP-FVT|IssueMultipletFamily",
+     "INFO_AQP-FVT|LatchStreamEligible",
      "INFO_AQP-FVT|RotateOwnership",
      "INFO_AQP-FVT|SetCommonDenominator",
+     "INFO_AQP-FVT|SetMinInjectAmount",
      "INFO_AQP-FVT|SetMosaic",
      "INFO_AQP-FVT|SetQualitySplit",
      "INFO_AQP-FVT|SetSplitMode",
@@ -779,21 +832,30 @@
      "INFO_AQP-MTX|2SweepRevokeAnchor",
      "INFO_AQP-POOL|AbortVacate",
      "INFO_AQP-POOL|AddScore",
+     "INFO_AQP-POOL|BackfillScoreSlice",
      "INFO_AQP-POOL|BatchDrainCollectable",
      "INFO_AQP-POOL|BatchDrainOrtoFungible",
      "INFO_AQP-POOL|BatchDrainTrueFungible",
      "INFO_AQP-POOL|BatchVacateCollectables",
      "INFO_AQP-POOL|BatchVacateOrtoFungible",
      "INFO_AQP-POOL|BatchVacateTrueFungible",
+     "INFO_AQP-POOL|BeginScoreRevoke",
      "INFO_AQP-POOL|DisablePoolStake",
+     "INFO_AQP-POOL|DrainScoreSlice",
      "INFO_AQP-POOL|EnablePoolStake",
+     "INFO_AQP-POOL|FinalizeScoreRevoke",
      "INFO_AQP-POOL|FinalizeVacate",
      "INFO_AQP-POOL|FullVacate",
      "INFO_AQP-POOL|Issue",
+     "INFO_AQP-POOL|ReassignCollectableStakeBeneficiary",
+     "INFO_AQP-POOL|ReassignOrtoStakeBeneficiary",
+     "INFO_AQP-POOL|ReassignTrueFungibleStakeBeneficiary",
+     "INFO_AQP-POOL|ReleaseSpecialCustodial",
      "INFO_AQP-POOL|RevokeScore",
      "INFO_AQP-POOL|StakeNonFungibleCollectable",
      "INFO_AQP-POOL|StakeOrtoFungible",
      "INFO_AQP-POOL|StakeSemiFungibleCollectable",
+     "INFO_AQP-POOL|StakeSpecialCustodial",
      "INFO_AQP-POOL|StakeTrueFungible",
      "INFO_AQP-POOL|SyncNonFungibleAnchors",
      "INFO_AQP-POOL|SyncSemiFungibleAnchors",
@@ -802,6 +864,11 @@
      "INFO_AQP-POOL|UnstakeOrtoFungible",
      "INFO_AQP-POOL|UnstakeSemiFungibleCollectable",
      "INFO_AQP-POOL|UnstakeTrueFungible",
+     "INFO_AQP-POOL|UpdateScoreMultipliers",
+     "INFO_AQP-POOL|VacateNonFungible",
+     "INFO_AQP-POOL|VacateOrtoFungible",
+     "INFO_AQP-POOL|VacateSemiFungible",
+     "INFO_AQP-POOL|VacateTrueFungible",
      "INFO_AQP-SCR|CombineTripletScoreModel",
      "INFO_AQP-SCR|ControlScore",
      "INFO_AQP-SCR|CreateScoreBoostClassLink",
@@ -818,6 +885,7 @@
      "INFO_AQP-SCR|IssueSingleScoreModel",
      "INFO_AQP-SCR|IssueTriplet",
      "INFO_AQP-SCR|IssueTrueFungibleScore",
+     "INFO_AQP-SCR|LockScoreDrift",
      "INFO_AQP-SCR|RotateScoreOwnership"
     ],
     "pacts": [],
@@ -829,13 +897,13 @@
   },
   "AQP-POOL": {
    "deployed": true,
-   "hash": "aEnxclO_VtpCBm8I5jdBABDGVsTrt0YN8IdU6MTAEi8",
+   "hash": "sacGoPWz_9Pd3PYmpJUnfTIsxP83Gtq_DxaP-IFTxIs",
    "repoPath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/03_AQP.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.AcquisitionPoolsV1"
+    "ouronet-ns.AcquisitionPoolsV3"
    ],
-   "chars": 162896,
+   "chars": 229572,
    "shapes": {
     "schemas": [],
     "tables": [
@@ -855,12 +923,17 @@
     ],
     "capabilities": [
      "AQP|C>ADD-SCORE",
+     "AQP|C>BACKFILL-SCORE-SLICE",
+     "AQP|C>BEGIN-SCORE-REVOKE",
      "AQP|C>DISABLE-POOL-STAKE",
+     "AQP|C>DRAIN-SCORE-SLICE",
      "AQP|C>ENABLE-POOL-STAKE",
+     "AQP|C>FINALIZE-SCORE-REVOKE",
      "AQP|C>ISSUE-POOL",
      "AQP|C>REVOKE-SCORE",
      "AQP|C>SYNC-COLLECTABLE-ANCHORS",
      "AQP|C>SYNC-TF-ANCHORS",
+     "AQP|C>UPDATE-SCORE-MULTIPLIERS",
      "AQP|GOV",
      "AQP|XE>COLLECTABLE-POOL-CUSTODY",
      "AQP|XE>ORTO-FUNGIBLE-POOL-CUSTODY",
@@ -878,16 +951,21 @@
      "CAP_AqpAssetOwner",
      "CAP_PoolOwner",
      "CAP_StakeOwner",
+     "CC_FinalizeScoreRevoke",
+     "CC_UpdateScoreMultipliers",
+     "CCp_BackfillScoreSlice",
      "CT_AqpScName",
      "CT_Bar",
      "CT_EmptyCumulator",
      "C_AddScore",
+     "C_BeginScoreRevoke",
      "C_DisablePoolStake",
      "C_EnablePoolStake",
      "C_Issue",
      "C_RevokeScore",
      "C_SyncCollectableAnchors",
      "C_SyncTrueFungibleAnchors",
+     "Cp_DrainScoreSlice",
      "GOV|Demiurgoi",
      "P|A_Add",
      "P|A_AddIMP",
@@ -898,6 +976,9 @@
      "P|UEV_IMC",
      "P|UR",
      "P|UR_IMP",
+     "UC_AQP|BackfillRowsForBeneficiary",
+     "UC_AQP|BackfillSumForBeneficiary",
+     "UC_AQP|BackfillUniqueBeneficiaries",
      "UC_PoolScoreSlotPatch",
      "UCk_BenDpnfAnkMeta",
      "UCk_BenDpnfNonceTotal",
@@ -922,15 +1003,23 @@
      "UDC_AQP|SemiFungibleTracker",
      "UDC_AQP|TrueFungibleTracker",
      "UDC_AQP|UserOccupancy",
+     "UEV_AQP|ScoreDrainComplete",
+     "UEV_AQP|ScoreMxChangeSafe",
      "UEV_AddScorePoolAndScore",
+     "UEV_BeginScoreRevoke",
      "UEV_ExecutorIzAqpAssetOwner",
      "UEV_ExecutorIzPoolOwner",
      "UEV_IssuePoolClassAndAsset",
      "UEV_RevokeScorePoolAndScore",
+     "UEV_ScoreDefinitionTargetMatchesPool",
      "UEV_StakeBeneficiaryAccount",
      "UEV_StakeCollectableLeg",
      "UEV_StakeOrtoFungibleDpofLeg",
      "UEV_StakeTrueFungibleDptfLeg",
+     "URC_AQP|PoolHasWeightedStakers",
+     "URC_AQP|PoolLiquidityLegs",
+     "URC_AQP|ScoreBackfillSupported",
+     "URC_AQP|ScoreMxChangeSafe",
      "URC_AqpOwnerKonto",
      "URC_AqpOwnerKontoFromClassAndAsset",
      "URC_BenCollectableHasStake",
@@ -963,6 +1052,10 @@
      "URC_StakeTrueFungibleDptfMatchesPool",
      "URC_StakeTrueFungiblePoolClassOk",
      "URCi_AddScore",
+     "URCi_BackfillScoreSlice",
+     "URCi_BeginScoreRevoke",
+     "URCi_DrainScoreSlice",
+     "URCi_FinalizeScoreRevoke",
      "URCi_Issue",
      "URCi_IssueStoa",
      "URCi_RevokeScore",
@@ -971,6 +1064,13 @@
      "URCi_SyncCollectableAnchorsFull",
      "URCi_SyncTrueFungibleAnchors",
      "URCi_SyncTrueFungibleAnchorsFull",
+     "URCi_UpdateScoreMultipliers",
+     "URHC_AQP|PoolOrphanedScores",
+     "URHC_AQP|PoolSweepClear",
+     "URHC_AQP|ScoreBackfillCandidates",
+     "URHC_AQP|ScoreBackfillNeeded",
+     "URHC_AQP|ScoreBackfillOutstanding",
+     "URHC_AQP|ScoreDrainOutstanding",
      "URH_AQP|ActiveDpnfTrackerRows",
      "URH_AQP|ActiveDpofTrackerRows",
      "URH_AQP|ActiveDpsfTrackerRows",
@@ -986,6 +1086,8 @@
      "URH_AQP|DpsfStakesByOwner",
      "URH_AQP|DptfStakesByBeneficiary",
      "URH_AQP|DptfStakesByOwner",
+     "URH_AQP|ScoreBackfillLegRows",
+     "URH_AQP|ScoreTargetBaseForBeneficiary",
      "UR_AQP|BenDpnfActiveNonceCount",
      "UR_AQP|BenDpnfAnkMeta",
      "UR_AQP|BenDpnfLastAnkSyncCount",
@@ -1108,15 +1210,17 @@
   },
   "AQP-SCORE": {
    "deployed": true,
-   "hash": "g7nAGCH06_ulMofU4XoN1ReUhdzDnBW1vs5To1ayzyA",
+   "hash": "RmDjpkZMHpkHobZLZFoFhPZgGe88E-bKLQG2I95gTsk",
    "repoPath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/02_SCORE.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.AcquisitionScoresV1"
+    "ouronet-ns.AcquisitionScoresV5"
    ],
-   "chars": 207599,
+   "chars": 295523,
    "shapes": {
-    "schemas": [],
+    "schemas": [
+     "SCR|SleepStake"
+    ],
     "tables": [
      "P|MT",
      "P|T",
@@ -1128,6 +1232,7 @@
      "SCR|T|SF|Score",
      "SCR|T|Score",
      "SCR|T|ScoreEntityModel",
+     "SCR|T|SleepStake",
      "SCR|T|Triplet",
      "SCR|T|UserScore"
     ],
@@ -1152,9 +1257,13 @@
      "SCR|C>ISSUE-SINGLE-SCORE-MODEL",
      "SCR|C>ISSUE-TRIPLET",
      "SCR|C>ISSUE-TRUE-FUNGIBLE-SCORE",
+     "SCR|C>LOCK-SCORE-DRIFT",
      "SCR|C>ROTATE-OWNERSHIP-SCORE",
+     "SCR|C>UPDATE-MULTIPLIERS",
+     "SCR|XE>APPLY-RAW-BASE-DELTA",
      "SCR|XE>CREATE-AQPOOL-LINK",
      "SCR|XE>CREATE-FVT-LINK",
+     "SCR|XE>DRAIN-BASE",
      "SCR|XE>NUKE-SCORE-FOR-VACATE",
      "SCR|XE>REFRESH-USER-SCORE-DEB",
      "SCR|XE>REVOKE-AQPOOL-LINK",
@@ -1170,6 +1279,7 @@
      "SECURE"
     ],
     "functions": [
+     "AA_MigrateDriftLocked",
      "CT_AqpScName",
      "CT_Bar",
      "CT_EmptyCumulator",
@@ -1189,6 +1299,7 @@
      "C_IssueSingleScoreModel",
      "C_IssueTriplet",
      "C_IssueTrueFungibleScore",
+     "C_LockScoreDrift",
      "C_RotateOwnership",
      "GOV|Demiurgoi",
      "P|A_Add",
@@ -1201,6 +1312,14 @@
      "P|UR",
      "P|UR_IMP",
      "UC_ComputeTripletId",
+     "UC_DecayMonthsRemaining",
+     "UC_MxAtMonths",
+     "UC_MxForRemaining",
+     "UC_MxFrozenFloor",
+     "UC_MxOrderingOk",
+     "UC_MxSleepIntervalOk",
+     "UC_SleepMonthsRemaining",
+     "UC_SleepMxAtMonths",
      "UCk_NFClassScore",
      "UCk_NFDefRevision",
      "UCk_NFScore",
@@ -1208,6 +1327,7 @@
      "UCk_NFTraitScore",
      "UCk_SFDefRevision",
      "UCk_SFScore",
+     "UCk_SleepStake",
      "UCk_Triplet",
      "UCk_UserScore",
      "UCx_StakeEqualNativeUnitRawWeight",
@@ -1222,6 +1342,7 @@
      "UDC_SCR|Triplet",
      "UDC_SCR|UserSchema",
      "UEV_DpnfStakeScoreContext",
+     "UEV_DpofSpecialStakeScoreContext",
      "UEV_DpofStakeScoreContext",
      "UEV_DpsfStakeScoreContext",
      "UEV_DptfStakeScoreContext",
@@ -1231,11 +1352,17 @@
      "UEV_NonFungibleScoreDefinition",
      "UEV_NonFungibleScoreDefinitionSet",
      "UEV_NonFungibleScoreDefinitionTrait",
+     "UEV_SemiFungibleScoreDefinition",
+     "URC_HubsFirstScoreIds",
      "URC_IsTrueTriplet",
      "URC_LpAmountToLpDenominatorEquivalent",
      "URC_NFTraitKeysList",
      "URC_OrtoDpofIsSpecialLeg",
      "URC_OrtoDpofUsesSleepingMultiplier",
+     "URC_SCR|LiveRemainingTerm",
+     "URC_SCR|SleepingLegHeldMultiplier",
+     "URC_SCR|SleepingLegHeldWeight",
+     "URC_SCR|SleepingLegWeight",
      "URC_ScoreEntityModelExists",
      "URC_SignedBaseDeltaForDpnfStake",
      "URC_SignedBaseDeltaForDpofStake",
@@ -1264,11 +1391,20 @@
      "URCi_IssueScoreStoa",
      "URCi_IssueSemiFungibleScoreDefinition",
      "URCi_IssueTriplet",
+     "URCi_LockScoreDrift",
      "URCi_RotateOwnership",
      "URCx_DpnfModelOneScrDefinitionRawWeight",
      "URCx_DpnfModelZeroDpdcNativeRawWeight",
+     "URCx_EquityShareRawWeight",
      "URCx_SfStakeDefinitionWeightedRawWeight",
      "URH_SCR|AllScoreIds",
+     "URH_SCR|NFClassScoreDefinition",
+     "URH_SCR|NFTraitScoreDefinition",
+     "URH_SCR|PoolScoreIdsWithHolders",
+     "URH_SCR|SFScoreDefinition",
+     "URH_SCR|ScoreDefinedNonFungibles",
+     "URH_SCR|ScoreDefinedSemiFungibles",
+     "URH_SCR|ScoreHolderAccounts",
      "UR_N-DEF-REV|NFDefRevision",
      "UR_N-DEF-REV|NFDefRevisionClassRevisionNonce",
      "UR_N-DEF-REV|NFDefRevisionDpnfId",
@@ -1304,6 +1440,7 @@
      "UR_SCR|ScoreCanUpgrade",
      "UR_SCR|ScoreClass",
      "UR_SCR|ScoreDebBoost",
+     "UR_SCR|ScoreDriftLocked",
      "UR_SCR|ScoreEntityModel",
      "UR_SCR|ScoreFvtLink",
      "UR_SCR|ScoreLpDenominator",
@@ -1324,6 +1461,7 @@
      "UR_SCR|ScoreTriplet",
      "UR_SCR|ScoreTripletId",
      "UR_SCR|ScoreVacateGeneration",
+     "UR_SCR|SleepRemainingAtStake",
      "UR_SCR|Triplet",
      "UR_SCR|TripletBronzeScoreId",
      "UR_SCR|TripletCategory",
@@ -1350,10 +1488,13 @@
      "WU_Score|BoostClassLink",
      "WU_Score|BoostLink",
      "WU_Score|DebBoost",
+     "WU_Score|DriftLocked",
      "WU_Score|FvtLink",
+     "WU_Score|Multipliers",
      "WU_Score|Nuke",
      "WU_Score|NzsCount",
      "WU_Score|OwnerKonto",
+     "WU_Score|SleepStake",
      "WW_NFClassScore",
      "WW_NFDefRevision",
      "WW_NFTraitKeys",
@@ -1363,12 +1504,15 @@
      "WW_UserScore",
      "XE_ApplyCollectableStakeDelta",
      "XE_ApplyOrtoFungibleStakeDelta",
+     "XE_ApplyRawBaseDelta",
      "XE_ApplyTrueFungibleStakeDelta",
      "XE_CreateAqpoolLink",
      "XE_CreateFvtLink",
+     "XE_DrainBase",
      "XE_NukeScoreForVacate",
      "XE_RefreshUserScoreDeb",
      "XE_RevokeAqpoolLink",
+     "XE_SetScoreMultipliers",
      "XI_1|UpdateScoreDataForNonFungible",
      "XI_1|UpdateScoreDataForOrtoFungible",
      "XI_1|UpdateScoreDataForOrtoFungibleLP",
@@ -1386,14 +1530,24 @@
      "XI_IssueOneFromModel",
      "XI_IssueSemiFungibleScoreDefinition",
      "XI_IssueTriplet",
-     "XI_RotateOwnership"
+     "XI_LockScoreDrift",
+     "XI_RotateOwnership",
+     "XI_SleepStakeRecord"
     ],
     "pacts": [],
     "constants": [
      "AQP|SC_NAME",
      "BAR",
+     "CT_HIBERNATE_MONTHS",
+     "CT_MX_FROZEN_DEFAULT",
+     "CT_MX_HIBERNATED_DEFAULT",
+     "CT_MX_SLEEPING_DEFAULT",
      "CT_SCORE_MODEL_SINGLE",
      "CT_SCORE_MODEL_TRIPLET",
+     "CT_SIGNED_FLOOR_NOTE",
+     "CT_SLEEP_MAX_SECONDS",
+     "CT_SLEEP_MONTHS",
+     "CT_SLEEP_MONTH_SECONDS",
      "EOC",
      "GAS|ISSUE-SCORE",
      "GAS|ISSUE-SCORE-MODEL",
@@ -1405,13 +1559,13 @@
   },
   "AQP-VCT": {
    "deployed": true,
-   "hash": "smsG7xxn2xG4dRds4n7On64_mX_FaXhcgtw-XWLRcbU",
+   "hash": "jR6AK9pO2f_FyDKcsvSNUgoUYNaJCkXEeI9rY2mXBUo",
    "repoPath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/06_VCT.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.AcquisitionVacateV1"
+    "ouronet-ns.AcquisitionVacateV4"
    ],
-   "chars": 173220,
+   "chars": 177794,
    "shapes": {
     "schemas": [],
     "tables": [
@@ -1481,6 +1635,7 @@
      "UC_VacateMergeDecimalNonceRowsForBeneficiary",
      "UC_VacateMergeIntNonceRowsForBeneficiary",
      "UC_VacateOfLegsToVacateArrays",
+     "UC_VacateOrtoDestinations",
      "UC_VacateSumAmountForBeneficiaryFromLegs",
      "UC_VacateTfLegsToTftBulkArrays",
      "UC_VacateUniqueBeneficiaries",
@@ -1526,6 +1681,10 @@
      "URCi_BatchVacateTrueFungible",
      "URCi_FinalizeVacate",
      "URCi_FullVacate",
+     "URCi_VacateNonFungible",
+     "URCi_VacateOrtoFungible",
+     "URCi_VacateSemiFungible",
+     "URCi_VacateTrueFungible",
      "URHC_BuildVacateSlicePlan",
      "URHC_VacateNonceOwnerRows",
      "URHC_VacateNonceOwnerRowsRaw",
@@ -1599,13 +1758,13 @@
   },
   "ATS": {
    "deployed": true,
-   "hash": "q9egSXL5o_RR7TZyMOFRO9WW3G275XQwEaFSU4aSpps",
+   "hash": "RWIsI5wm5eS1F4WJ723hvBNBi6sjjh1CWhilUIeQ2JA",
    "repoPath": "1_SOVEREIGN/STAGE_01/2_Core/08_ATS.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.BrandingUsagePrimaryV2",
-    "ouronet-ns.AutostakeV3",
-    "ouronet-ns.AutostakeComputerV2"
+    "ouronet-ns.BrandingUsagePrimaryV3",
+    "ouronet-ns.AutostakeV4",
+    "ouronet-ns.AutostakeComputerV3"
    ],
    "chars": 130920,
    "shapes": {
@@ -1880,11 +2039,11 @@
   },
   "ATSU": {
    "deployed": true,
-   "hash": "ETxfRkJU8ZjBesAThHR06VRP1M3ClMS-gq6tcLg8dF0",
+   "hash": "zj_WLbRBjm5-Hs2rVpO6xebqU-qhy1lez3_aLi-K-XM",
    "repoPath": "1_SOVEREIGN/STAGE_01/2_Core/10_ATSU.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.AutostakeUsageV2"
+    "ouronet-ns.AutostakeUsageV3"
    ],
    "chars": 115343,
    "shapes": {
@@ -2441,11 +2600,11 @@
   },
   "BRD": {
    "deployed": true,
-   "hash": "p6Cjo5-TwpVd2n_pb3o3fvsCen46MP07yJAKdD4a_KA",
+   "hash": "c9MBQPTQyREnXFgDaLzQwBXYod8kbwZ2IeuRi-HBDyI",
    "repoPath": "1_SOVEREIGN/STAGE_01/2_Core/04_BRD.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.BrandingV2"
+    "ouronet-ns.BrandingV3"
    ],
    "chars": 24498,
    "shapes": {
@@ -2519,10 +2678,10 @@
   },
   "CODEX": {
    "deployed": true,
-   "hash": "L3H75v1TeU8IG6LUbweAXjw4KwV5AufNkBjgpsf4F5I",
+   "hash": "5d_8vAslezaPrY5OipSztCkUt_yhBjOJMdZvYpuRSwA",
    "repoPath": "1_SOVEREIGN/STAGE_01/2_Core/21_CODEX.pact",
    "interfaces": [
-    "ouronet-ns.CodexV2",
+    "ouronet-ns.CodexV3",
     "ouronet-ns.OuronetPolicyV2"
    ],
    "chars": 47794,
@@ -2653,14 +2812,14 @@
   },
   "DALOS": {
    "deployed": true,
-   "hash": "ks6sIIhHoPr3y_aSoBXERCEm1deE3NMr3D8HPsPW814",
+   "hash": "E4-z-_vNXN56Dl2APSKaC90E14FLJOlHuw4FBmroI98",
    "repoPath": "1_SOVEREIGN/STAGE_01/2_Core/01_DALOS.pact",
    "interfaces": [
     "stoa-ns.gas-payer-v1",
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.OuronetDalosV2"
+    "ouronet-ns.OuronetDalosV3"
    ],
-   "chars": 85632,
+   "chars": 86942,
    "shapes": {
     "schemas": [
      "DALOS|AccountSchemaV2",
@@ -2884,11 +3043,11 @@
   },
   "DEMIPAD": {
    "deployed": true,
-   "hash": "ZP7Db3x-kc-pJFF_TwhYc7HLXIz2E1TyHnL26gSFYOo",
+   "hash": "4p2dEKWQf3dbHYK4obWtS3dL04AOv9YULXFLuJfWUIw",
    "repoPath": "1_SOVEREIGN/STAGE_02/2_Core/02_DEMIPAD/00_Demipad.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.DemiourgosLaunchpadV2"
+    "ouronet-ns.DemiourgosLaunchpadV3"
    ],
    "chars": 80440,
    "shapes": {
@@ -3036,11 +3195,11 @@
   },
   "DEMIPAD-CUSTODIANS": {
    "deployed": true,
-   "hash": "HSABls9p5hiaRIVxVYOLlBGcJhGEXJCzaHgeutlUxiQ",
+   "hash": "aMYspM5XxMde1EiZRwTE4bkQheHd7AkIdP3L5YYKXQQ",
    "repoPath": "2_CITIZEN/7_Launchpad/3_Custodians/03_Custodians.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.SaleCustodiansV2"
+    "ouronet-ns.SaleCustodiansV3"
    ],
    "chars": 22054,
    "shapes": {
@@ -3104,11 +3263,11 @@
   },
   "DEMIPAD-SNAKES": {
    "deployed": true,
-   "hash": "4yM3Yf4_ZbQN6xhd1dOB1aHcOottQqy9Y2cGUVkTRto",
+   "hash": "xQ-HwSY7faFwnYP6qOxvFjHyW51F7ZWV8xacttjFJQA",
    "repoPath": "2_CITIZEN/7_Launchpad/2_Snakes/02_Snakes.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.SaleSnakesV2"
+    "ouronet-ns.SaleSnakesV3"
    ],
    "chars": 22323,
    "shapes": {
@@ -3171,11 +3330,11 @@
   },
   "DEMIPAD-SPARK": {
    "deployed": true,
-   "hash": "1SZJcKAoE7JZhNWn4MFIfO-dHxv9FcovmE0e7ju8soA",
+   "hash": "yeBxzmY8whQUtCL0kQY9pEsCQzmMRgE_s8R47WFyouQ",
    "repoPath": "2_CITIZEN/7_Launchpad/1_Spark/01_Spark.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.SparksV2"
+    "ouronet-ns.SparksV3"
    ],
    "chars": 32823,
    "shapes": {
@@ -3250,11 +3409,11 @@
   },
   "DEMIPAD-STOICPAY": {
    "deployed": true,
-   "hash": "csRhpwj30XRuSWKSJ-yAMf2c5n1RSzTwZMXWvUuP744",
+   "hash": "dgQNCGpqpN5LQ1nlxSj4dETMKX-lNODCNenFmfRpPUM",
    "repoPath": "2_CITIZEN/7_Launchpad/4_StoicPay/04_STOICPAY.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.StoicPayV3"
+    "ouronet-ns.StoicPayV4"
    ],
    "chars": 25109,
    "shapes": {
@@ -3320,12 +3479,12 @@
   },
   "DPDC": {
    "deployed": true,
-   "hash": "XnlPyILDe7wvmX6sfo4XxQyGwhQWjfuQF1ERIoNzL0s",
+   "hash": "gpvuIJMiIJ6MebkP0uP1j-qIw-n-xJgn3oG8I7goEwE",
    "repoPath": "1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/02_DPDC.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.BrandingUsageTertiaryV2",
-    "ouronet-ns.DpdcV2"
+    "ouronet-ns.BrandingUsageTertiaryV3",
+    "ouronet-ns.DpdcV3"
    ],
    "chars": 70519,
    "shapes": {
@@ -3542,11 +3701,11 @@
   },
   "DPDC-C": {
    "deployed": true,
-   "hash": "IcLk0rRSSFFM20KIurtArOv-bhBTDGpp00Cm-YcBlHI",
+   "hash": "vyf_mbw8VOBaebIRRKdowjsDimBGzuKvS22ClQMQaeA",
    "repoPath": "1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/03_DPDC-C.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.DpdcCreateV2"
+    "ouronet-ns.DpdcCreateV3"
    ],
    "chars": 57541,
    "shapes": {
@@ -3661,11 +3820,11 @@
   },
   "DPDC-F": {
    "deployed": true,
-   "hash": "3Eppe7LGoy0Vh-1GMxQrUg4sK35Usgsvpv3il89VKR0",
+   "hash": "wATbPs8RcOZ5SWOsGuudf3HAhyBNC8ZpUuXTa2emW6E",
    "repoPath": "1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/09_DPDC-F.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.DpdcFragmentsV2"
+    "ouronet-ns.DpdcFragmentsV3"
    ],
    "chars": 27966,
    "shapes": {
@@ -3720,11 +3879,11 @@
   },
   "DPDC-I": {
    "deployed": true,
-   "hash": "WI9qGgIJXiwgpyAIoyiCRX7QcWQdivj_oMaV0x4eeDk",
+   "hash": "zf_nHZRlPouilzVuNcqcOb9DAiCSJXOYUWTVEjMUb9o",
    "repoPath": "1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/04_DPDC-I.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.DpdcIssueV2"
+    "ouronet-ns.DpdcIssueV3"
    ],
    "chars": 23598,
    "shapes": {
@@ -3769,11 +3928,11 @@
   },
   "DPDC-MNG": {
    "deployed": true,
-   "hash": "AY_6AZS-OL1SmgnHwZJ0UH5YebfIxZQh7cbFp8BOMJw",
+   "hash": "Vbj2qMeDN88-KOc4-TszUcFAeQB4BlwuZHzZ74soyEc",
    "repoPath": "1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/06_DPDC-MNG.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.DpdcManagementV2"
+    "ouronet-ns.DpdcManagementV3"
    ],
    "chars": 57849,
    "shapes": {
@@ -3866,11 +4025,11 @@
   },
   "DPDC-N": {
    "deployed": true,
-   "hash": "sDeOCTlLRtTR5-2g2Q6FyqwyLbj7IMiBCO_T2Fs2-9E",
+   "hash": "slP2OqVGNvgNmDFkR8HbK0aJqaxsYGU85zxW0AFZ-48",
    "repoPath": "1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/10_DPDC-N.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.DpdcNonceV2"
+    "ouronet-ns.DpdcNonceV3"
    ],
    "chars": 39058,
    "shapes": {
@@ -3943,11 +4102,11 @@
   },
   "DPDC-R": {
    "deployed": true,
-   "hash": "U3KIFJDj3akYpm662y5JjozuBZvgFSnTeuOlCzTYBYQ",
+   "hash": "qxRRzRUHNRoEJKbj1prF0dzGcov6dBQ6kZr1WhvJmh4",
    "repoPath": "1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/05_DPDC-R.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.DpdcRolesV2"
+    "ouronet-ns.DpdcRolesV3"
    ],
    "chars": 39844,
    "shapes": {
@@ -4031,13 +4190,13 @@
   },
   "DPDC-S": {
    "deployed": true,
-   "hash": "itgzaFgxE5Egd4GWHObP4_8u0eyqek10ubfnid4V6Tg",
+   "hash": "BPlRunipbLSqIauANIjivZSnIFWzvcRAN9z3ikIer1w",
    "repoPath": "1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/08_DPDC-S.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.DpdcSetsV2"
+    "ouronet-ns.DpdcSetsV3"
    ],
-   "chars": 78077,
+   "chars": 80114,
    "shapes": {
     "schemas": [],
     "tables": [
@@ -4151,11 +4310,11 @@
   },
   "DPDC-T": {
    "deployed": true,
-   "hash": "RZEeQgiEpyInidQmQnW2Rj3Wnori6vlDmYwuMHBaViY",
+   "hash": "FB9MKoF5NVLatkHPmisPsC_n0fYaLzIB37lW2-4RG80",
    "repoPath": "1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/07_DPDC-T.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.DpdcTransferV2"
+    "ouronet-ns.DpdcTransferV3"
    ],
    "chars": 47216,
    "shapes": {
@@ -4223,7 +4382,7 @@
   },
   "DPDC-UDC": {
    "deployed": true,
-   "hash": "Ka0Ycln3JwoNGVkbeOOpzN18yenzIyNGEz0dnWshCuo",
+   "hash": "Cttb_sDHOq4sCmjNQNKH3-RO8zFP6L_ydL3EZwuFPs8",
    "repoPath": "1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/01_DPDC-UDC.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
@@ -4288,7 +4447,7 @@
   },
   "DPL-UR": {
    "deployed": true,
-   "hash": "CrjYQUkBpQkpqanjdJvh7AAPtko0jbkcOv_jQvVzBVY",
+   "hash": "_hWloWqX2xYSrRIbTFuOZOpyh5zGlVvpLwZY0WFjzOk",
    "repoPath": "2_CITIZEN/Stage_Z/01_DPL-UR.pact",
    "interfaces": [],
    "chars": 1960,
@@ -4317,12 +4476,12 @@
   },
   "DPOF": {
    "deployed": true,
-   "hash": "ww5ZiESbMsAY8GpyC6BabJSxKb0QR75dCesJbv4JXZo",
+   "hash": "KaHdTynztVA2Dh8KLipuQdif8NKJP6LWHko2Ey5mdKk",
    "repoPath": "1_SOVEREIGN/STAGE_01/2_Core/06_DPOF.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.BrandingUsagePrimaryV2",
-    "ouronet-ns.DemiourgosPactOrtoFungibleV2"
+    "ouronet-ns.BrandingUsagePrimaryV3",
+    "ouronet-ns.DemiourgosPactOrtoFungibleV3"
    ],
    "chars": 128815,
    "shapes": {
@@ -4590,12 +4749,12 @@
   },
   "DPTF": {
    "deployed": true,
-   "hash": "Rqg1FTijxUvIMYG3NBiAgc0Mgeg-gN6tGGuK7-CQPTo",
+   "hash": "bNUN_Hrtn16-W7e4rPiAVfjGbgNl2SDuNH7-l0gAxtA",
    "repoPath": "1_SOVEREIGN/STAGE_01/2_Core/05_DPTF.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.BrandingUsagePrimaryV2",
-    "ouronet-ns.DemiourgosPactTrueFungibleV2"
+    "ouronet-ns.BrandingUsagePrimaryV3",
+    "ouronet-ns.DemiourgosPactTrueFungibleV3"
    ],
    "chars": 122663,
    "shapes": {
@@ -4866,11 +5025,11 @@
   },
   "DSP": {
    "deployed": true,
-   "hash": "otPjv-z6iIQKqMILhC1E8z0G29ItCaiR2I0CtkkFSfM",
+   "hash": "kHyLxxtskv9C2EqFKl0uLIGQYmNkPhqLbFsOjv0j_dI",
    "repoPath": "2_CITIZEN/Stage_Z/03_DSP+.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.DispenserV2"
+    "ouronet-ns.DispenserV3"
    ],
    "chars": 61738,
    "shapes": {
@@ -4959,7 +5118,7 @@
   },
   "ELITE": {
    "deployed": true,
-   "hash": "wKvH9cF7zORiYHJ_FGj5rK4bm_ovDQUv5b7bpo_b4wY",
+   "hash": "djJLYqRa69ZRKyMR4kcftHXEEKH_-zTTwdHs1_C7IRY",
    "repoPath": "1_SOVEREIGN/STAGE_01/2_Core/07_ELITE.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
@@ -5007,13 +5166,13 @@
   },
   "EQUITY": {
    "deployed": true,
-   "hash": "hGPNFoA8xk3_PckYuuvMqDKfm33vepnWcNTdPq7DUpk",
+   "hash": "nSAHukohYMtKdtoov26jKeADguNhFzE7y57lVmATIiQ",
    "repoPath": "1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/11_EQUITY+.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.EquityV2"
+    "ouronet-ns.EquityV4"
    ],
-   "chars": 43388,
+   "chars": 44196,
    "shapes": {
     "schemas": [],
     "tables": [
@@ -5055,6 +5214,7 @@
      "UEV_ShareAmountsForMaking",
      "UEV_SharePackageTier",
      "URC_CombineCapacity",
+     "URC_IzEquitySemiFungible",
      "URC_MakeSharePackage",
      "URC_SharesPerMillion",
      "URC_SingleSharePerMillions",
@@ -5107,14 +5267,14 @@
   },
   "IGNIS": {
    "deployed": true,
-   "hash": "R7i4tlilH8ARCNFy2h8HPHNrgQvGhgmrHcmLlvvpu50",
+   "hash": "0XJmmbjMTPkrKRZutN-erVsLADFT_cUx8Mdirxrte7o",
    "repoPath": "1_SOVEREIGN/STAGE_01/2_Core/02_IGNIS.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.IgnisCollectorV3",
-    "ouronet-ns.OuronetInfoV2"
+    "ouronet-ns.IgnisCollectorV4",
+    "ouronet-ns.OuronetInfoV3"
    ],
-   "chars": 92888,
+   "chars": 95260,
    "shapes": {
     "schemas": [],
     "tables": [
@@ -5236,10 +5396,10 @@
   },
   "INFO-ONE": {
    "deployed": true,
-   "hash": "JyAEdHn7uh41Uo8apC06aWsipneVZG9Fl_oUJu9DXoI",
+   "hash": "yTt058C7SSF2Gy3rIgUd-IbJVZWoeyAaqo5imJdQJDA",
    "repoPath": "1_SOVEREIGN/STAGE_01/Z_Reads/02_INFO-ONE+.pact",
    "interfaces": [
-    "ouronet-ns.InfoOneV2"
+    "ouronet-ns.InfoOneV3"
    ],
    "chars": 222145,
    "shapes": {
@@ -5453,7 +5613,7 @@
   },
   "INFO-TWO": {
    "deployed": true,
-   "hash": "LI_UBB66mCnjNl9QU0TLU5QjJYF7BSzdQQ9nxhhBF80",
+   "hash": "mAD0_Y1lNxBBOJNzgAjDFsWUS-2tAjCC7PXYNdNh5a8",
    "repoPath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
    "interfaces": [],
    "chars": 73464,
@@ -5630,7 +5790,7 @@
   },
   "INFO-ZERO": {
    "deployed": true,
-   "hash": "rztvKQOaSR6KvKN3CJYBKfZWF5HgpVbT5I_W3fdLMm4",
+   "hash": "bBnrYKcWrxNCMyjyGJjiRI1sB5Ty463-bG3kQfk_-ps",
    "repoPath": "1_SOVEREIGN/STAGE_01/Z_Reads/01_INFO-ZERO.pact",
    "interfaces": [],
    "chars": 1854,
@@ -5651,10 +5811,10 @@
   },
   "KBN": {
    "deployed": true,
-   "hash": "5nVlXL2e0s3PFdhxzwWFmIgcl52ka49pIeIDJEjsqZs",
+   "hash": "pQQChv5WPxgMVODFTw2KCIUPlfkKqp0zlDHn37ZsMrk",
    "repoPath": "2_CITIZEN/4_BunniesMinter/02_KBunnies.pact",
    "interfaces": [],
-   "chars": 11486,
+   "chars": 13651,
    "shapes": {
     "schemas": [
      "BunnyMetaData"
@@ -5708,13 +5868,13 @@
   },
   "LIQUID": {
    "deployed": true,
-   "hash": "fPn76dBt1-u5WKQDDKFFDcevs86h1b_GgNUtBACjIBg",
+   "hash": "VNpKH1GsuaAbFqbMvFERu4quJY5rEOyo7NO5DI7PG7I",
    "repoPath": "1_SOVEREIGN/STAGE_01/2_Core/12_LIQUID.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.StoaLiquidStakingV2"
+    "ouronet-ns.StoaLiquidStakingV3"
    ],
-   "chars": 27612,
+   "chars": 27614,
    "shapes": {
     "schemas": [],
     "tables": [
@@ -5782,13 +5942,13 @@
   },
   "MTX-AQP": {
    "deployed": true,
-   "hash": "GnaBHgIWqnoLahra8cBN_0dLMdCAqAFmL1wi1NmJdzo",
+   "hash": "rXOrP1iEjV9_Nl9fZ7H3R4VJWO70_5-wAke9pZmg0aA",
    "repoPath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/07_MTX-AQP.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.AqpMtxV1"
+    "ouronet-ns.AqpMtxV2"
    ],
-   "chars": 26317,
+   "chars": 27939,
    "shapes": {
     "schemas": [],
     "tables": [
@@ -5840,11 +6000,11 @@
   },
   "MTX-SWP": {
    "deployed": true,
-   "hash": "IAHAD-gi2epkh6ya2iWlVvxXnwsT3l57c9MVUevjAiE",
+   "hash": "Tyr4wBW3ckIdz5FW-T3vorQObjrTgdg558k3vPH3J7c",
    "repoPath": "1_SOVEREIGN/STAGE_01/2_Core/20_MTX-SWP.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.SwapperMtxV4"
+    "ouronet-ns.SwapperMtxV5"
    ],
    "chars": 58471,
    "shapes": {
@@ -5990,12 +6150,12 @@
   },
   "O-UI-EIGHT": {
    "deployed": true,
-   "hash": "7DDsHeKwHDnsiqaiOHEBZLO3i_rQGgcRDjgOzu0R0N0",
+   "hash": "l5_5qeDYdISPTrscJI3jBJuwLPSGjMKCN9p48JTLbzA",
    "repoPath": "2_CITIZEN/Stage_Z/AppReads/OuronetUI/08_O-UI-EIGHT.pact",
    "interfaces": [
     "ouronet-ns.OUiEightV2"
    ],
-   "chars": 18918,
+   "chars": 19037,
    "shapes": {
     "schemas": [],
     "tables": [],
@@ -6025,7 +6185,7 @@
   },
   "O-UI-FOUR": {
    "deployed": true,
-   "hash": "X1ju3aQh4tnCQHYhc5f-Mw16WJoCVnp1TZgS78n9-rQ",
+   "hash": "MK6CAxicaBA_ww54aQqQ0rvbarcVeHoHNiYr8V2pwX4",
    "repoPath": "2_CITIZEN/Stage_Z/AppReads/OuronetUI/04_O-UI-FOUR.pact",
    "interfaces": [
     "ouronet-ns.OUiFourV1"
@@ -6053,12 +6213,12 @@
   },
   "O-UI-NINE": {
    "deployed": true,
-   "hash": "IobZ5by7UBZgJxykAbHiv0k_PhCk1_RD61XT01Y5ZYI",
+   "hash": "0t82fdJIvN3VdZGHv-GcugbYFkQIJMhDE87js7VZTT0",
    "repoPath": "2_CITIZEN/Stage_Z/AppReads/OuronetUI/09_O-UI-NINE.pact",
    "interfaces": [
     "ouronet-ns.OUiNineV2"
    ],
-   "chars": 20620,
+   "chars": 23350,
    "shapes": {
     "schemas": [],
     "tables": [],
@@ -6126,7 +6286,7 @@
   },
   "O-UI-SEVEN": {
    "deployed": true,
-   "hash": "VKP0sHFnSR3-AcyibfuiyxrXN3OtMtVq0YEYDT9E2_s",
+   "hash": "FTCq4Dx6tfEbGQ3oGtP9GmDrAa8GqxfFZXQKK72-Diw",
    "repoPath": "2_CITIZEN/Stage_Z/AppReads/OuronetUI/07_O-UI-SEVEN.pact",
    "interfaces": [
     "ouronet-ns.OUiSevenV1"
@@ -6157,7 +6317,7 @@
   },
   "O-UI-TEN": {
    "deployed": true,
-   "hash": "G2NpjCXfBAxx8MQyAK9j_HlVmY-2ykggvW-b6cRVTO0",
+   "hash": "eyJyOKkzucQXD5EAw_n0XJ2DT2-MBa8mNYZ0ikB1DKI",
    "repoPath": "2_CITIZEN/Stage_Z/AppReads/OuronetUI/10_O-UI-TEN.pact",
    "interfaces": [
     "ouronet-ns.OUiTenV1"
@@ -6318,13 +6478,13 @@
   },
   "OUROBOROS": {
    "deployed": true,
-   "hash": "6kA1wWQkFddog57qbeG86xkHz8wv1MwqjZpaKuGb7_0",
+   "hash": "AqKat7EIflxDVqmAm3QIWeRPG7sBplAMAPv7D9F8ehg",
    "repoPath": "1_SOVEREIGN/STAGE_01/2_Core/13_OUROBOROS.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.OuroborosV2"
+    "ouronet-ns.OuroborosV3"
    ],
-   "chars": 40209,
+   "chars": 40196,
    "shapes": {
     "schemas": [],
     "tables": [
@@ -6395,7 +6555,7 @@
   },
   "P-UI-ONE": {
    "deployed": true,
-   "hash": "S5a-TYdndz3L1JmROLg4cdYTaGELZoa5A3mFk0SOBOY",
+   "hash": "W-vfCUWpUCFDmxziY4Csi1DXEhn0u_IvOw-CMavRijA",
    "repoPath": "2_CITIZEN/Stage_Z/AppReads/Pythia/01_P-UI-ONE.pact",
    "interfaces": [
     "ouronet-ns.PUiOneV1"
@@ -6422,11 +6582,11 @@
   },
   "PYTHIA": {
    "deployed": true,
-   "hash": "KPTmyuIIismmZ0cHaYWDdsmydKMVNGNR4ylzCMbIsiQ",
+   "hash": "g-JkSLqwUMhh7vVwN5LXk61NWq1uD91-nHg5zrXXNEo",
    "repoPath": "1_SOVEREIGN/STAGE_01/2_Core/22_PYTHIA.pact",
    "interfaces": [
-    "ouronet-ns.PythiaV5",
-    "ouronet-ns.PythiaLedgerV3",
+    "ouronet-ns.PythiaV6",
+    "ouronet-ns.PythiaLedgerV4",
     "ouronet-ns.OuronetPolicyV2"
    ],
    "chars": 75563,
@@ -6604,13 +6764,13 @@
   },
   "RPS": {
    "deployed": true,
-   "hash": "0O5oyS6YnTNdQqKxF99zAzpYVApcHFAVhIn7NkXmitY",
+   "hash": "eIa1LtrWngJDc0AydxFLmVTBrq1zLlYcLU4AKhGWdz0",
    "repoPath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/04_RPS.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.AcquisitionRewardPerShareV1"
+    "ouronet-ns.AcquisitionRewardPerShareV4"
    ],
-   "chars": 289703,
+   "chars": 298402,
    "shapes": {
     "schemas": [],
     "tables": [
@@ -6644,6 +6804,7 @@
      "SECURE"
     ],
     "functions": [
+     "AA_MigrateMinInject",
      "CT_AqpScName",
      "CT_Bar",
      "GOV|Demiurgoi",
@@ -6797,6 +6958,7 @@
      "UR_FVT-RG|CurrentRps",
      "UR_FVT-RG|DptfId",
      "UR_FVT-RG|FvtId",
+     "UR_FVT-RG|MinInjectAmount",
      "UR_FVT-RG|MultipletFamilyId",
      "UR_FVT-RG|RewardEnabled",
      "UR_FVT-RG|RewardKind",
@@ -6872,6 +7034,7 @@
      "WU_MemberVault|UnclaimedCount",
      "WU_RpsGlobal|AvailableRewards",
      "WU_RpsGlobal|CurrentRps",
+     "WU_RpsGlobal|MinInjectAmount",
      "WU_RpsGlobal|RewardEnabled",
      "WU_RpsGlobal|RoyaltyRewards",
      "WU_RpsGlobal|StreamCount",
@@ -6921,6 +7084,7 @@
      "XE_XI_BookStakeUnclaimedCounts",
      "XE_XI_CheckpointStakeRps",
      "XE_XI_FixUserFvtDeb",
+     "XE_XI_FixUserFvtDebIn",
      "XE_XI_FixUserFvtDebPenalizedIn",
      "XE_XI_FixUserMemberDeb",
      "XE_XI_FvtAddStream",
@@ -6931,6 +7095,7 @@
      "XE_XI_ReleaseStream",
      "XE_XI_RotateOwnership",
      "XE_XI_RpsPreScore",
+     "XE_XI_SetMinInjectAmount",
      "XE_XI_SetMosaic",
      "XE_XI_SetSplitMode",
      "XE_XI_SyncFvtPresence",
@@ -6973,6 +7138,7 @@
      "XI_ReleaseStream",
      "XI_RotateOwnership",
      "XI_RpsPreScore",
+     "XI_SetMinInjectAmount",
      "XI_SetMosaic",
      "XI_SetSplitMode",
      "XI_SweepRecomputeUserMember",
@@ -6990,6 +7156,7 @@
     "constants": [
      "AQP|SC_NAME",
      "BAR",
+     "CT_DEFAULT_MIN_INJECT",
      "CT_FORCED_FIX_RATE",
      "CT_FVT_RPS_PREC",
      "CT_MEMBERSHIP_MODE_BAR",
@@ -7027,12 +7194,12 @@
   },
   "STOAICO": {
    "deployed": true,
-   "hash": "Dnke_sFhj34abRwvKeuo2dkN9ltxwxZizVBCDB5RLIg",
+   "hash": "LZAEoYS_jv-A8SWs55JZLFjvbpfcH75EBEYK4nafSuU",
    "repoPath": "2_CITIZEN/7_Launchpad/5_StoicIco/05_STOAICO.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2"
    ],
-   "chars": 51629,
+   "chars": 55655,
    "shapes": {
     "schemas": [
      "GeneralContributionSchema",
@@ -7046,6 +7213,7 @@
     ],
     "capabilities": [
      "GOV",
+     "GOV|MIGRATE-GENERAL-FIELDS",
      "GOV|STOAICO_ADMIN",
      "INIT-ICO-DISTRIBUTION",
      "P|PAD-STOAICO|REMOTE-GOV",
@@ -7063,6 +7231,7 @@
      "AA_FlushUncollected",
      "A_InitialiseDistributionVault",
      "A_Inject",
+     "A_MigrateGeneralFields",
      "A_Stake",
      "A_Unstake",
      "Ap_FlushUncollectedSlice",
@@ -7141,14 +7310,14 @@
   },
   "SWP": {
    "deployed": true,
-   "hash": "vrGyFrynLlEB57ujiG438aENUasqHI2_ppDhLJ6coRg",
+   "hash": "cUF_vfl7b2Q4ya6HYJeAVz6l054OfD0c1UBDYQVqVPQ",
    "repoPath": "1_SOVEREIGN/STAGE_01/2_Core/15_SWP.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.BrandingUsagePrimaryV2",
-    "ouronet-ns.SwapperV4"
+    "ouronet-ns.BrandingUsagePrimaryV3",
+    "ouronet-ns.SwapperV5"
    ],
-   "chars": 100437,
+   "chars": 100439,
    "shapes": {
     "schemas": [
      "SWP|AsymmetrySchema",
@@ -7357,13 +7526,13 @@
   },
   "SWPI": {
    "deployed": true,
-   "hash": "jqBfiYRyhqH6NPpeQlRf_rDNjFbvXdZUquoAO0J--b8",
+   "hash": "GgonYOslDKdpoKPm2prn1xFwDjUemnhkJntnR7cQtko",
    "repoPath": "1_SOVEREIGN/STAGE_01/2_Core/16_SWPI.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.SwapperIssueV4"
+    "ouronet-ns.SwapperIssueV5"
    ],
-   "chars": 136106,
+   "chars": 136091,
    "shapes": {
     "schemas": [],
     "tables": [
@@ -7473,11 +7642,11 @@
   },
   "SWPL": {
    "deployed": true,
-   "hash": "fb9yb4TOkESqB4QK4jNUgP-_3PLUtzc704q4UtpacWg",
+   "hash": "3gpA5dZkCEOvKtWIUNHaJ2vGYsirnyf-Bs9ATduVRRM",
    "repoPath": "1_SOVEREIGN/STAGE_01/2_Core/17_SWPL.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.SwapperLiquidityV2"
+    "ouronet-ns.SwapperLiquidityV3"
    ],
    "chars": 96884,
    "shapes": {
@@ -7561,12 +7730,12 @@
   },
   "SWPLC": {
    "deployed": true,
-   "hash": "UrpNTeCvu3iR8m-H_xcLgbu3wBDUujwd4-aN4ofYTnE",
+   "hash": "ryzMXFpu8IudxiDm8VDrvrgYtSGZ0ou2UZxt3-d68M4",
    "repoPath": "1_SOVEREIGN/STAGE_01/2_Core/18_SWPLC.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.BrandingUsageSecondaryV2",
-    "ouronet-ns.SwapperLiquidityClientV2"
+    "ouronet-ns.BrandingUsageSecondaryV3",
+    "ouronet-ns.SwapperLiquidityClientV3"
    ],
    "chars": 74171,
    "shapes": {
@@ -7657,11 +7826,11 @@
   },
   "SWPT": {
    "deployed": true,
-   "hash": "-g_ye7oMhwnGmEdjZpQkC8C24VMmmkDTxDuOQvQklpk",
+   "hash": "wyaH8_JL4kr9DFwEvDdB_gYdX_mMdSvLblFMmwAf_lo",
    "repoPath": "1_SOVEREIGN/STAGE_01/2_Core/14_SWPT.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.SwapTracerV3"
+    "ouronet-ns.SwapTracerV4"
    ],
    "chars": 60726,
    "shapes": {
@@ -7741,11 +7910,11 @@
   },
   "SWPU": {
    "deployed": true,
-   "hash": "3MDyxoGaDge26FYI1VgqwY_lzuJB13PwUXOB2TzYwaE",
+   "hash": "u5yfokah49DbSK8RXLL5DXvk2JgigvN6TeY5f7TPORo",
    "repoPath": "1_SOVEREIGN/STAGE_01/2_Core/19_SWPU.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.SwapperUsageV3"
+    "ouronet-ns.SwapperUsageV4"
    ],
    "chars": 132572,
    "shapes": {
@@ -7843,11 +8012,11 @@
   },
   "TFT": {
    "deployed": true,
-   "hash": "tZGJC60jG03FvaiJmGWD9kSM_U4Ozey6jAMPZlCoKtA",
+   "hash": "nIb8-m8d15DHZaIeWw6KBlzxaUdD38CTGI6ZkibGWRc",
    "repoPath": "1_SOVEREIGN/STAGE_01/2_Core/09_TFT.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.TrueFungibleTransferV2"
+    "ouronet-ns.TrueFungibleTransferV3"
    ],
    "chars": 89480,
    "shapes": {
@@ -7976,7 +8145,7 @@
   },
   "TS01-A": {
    "deployed": true,
-   "hash": "c8I3vquuKhr-oGDVqGr3hqOSd_2HEugaGbkdXpc98Yg",
+   "hash": "dPT65yDncig6ddYBImu4BG6EvPXbewSnzkdFAPNJXb8",
    "repoPath": "1_SOVEREIGN/STAGE_01/3_Talos/01_TS01-A.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
@@ -8053,11 +8222,11 @@
   },
   "TS01-C1": {
    "deployed": true,
-   "hash": "lJ4KC_Kd6U3Z0npl2dgL1I0f_Tk2LwScbiWbek7XJ0w",
+   "hash": "JhIkrK4xMNO9RPRHwv0u5qOCO59aoKvUpsfI8KGI_yA",
    "repoPath": "1_SOVEREIGN/STAGE_01/3_Talos/02_TS01-C1.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.TalosStageOne_ClientOneV2"
+    "ouronet-ns.TalosStageOne_ClientOneV3"
    ],
    "chars": 73201,
    "shapes": {
@@ -8157,13 +8326,13 @@
   },
   "TS01-C2": {
    "deployed": true,
-   "hash": "P8QhJ5YqeeW59DobDppv3no7YTclxsccxkVBtSl5ylo",
+   "hash": "nOrRNfHlUMewRC-axcJIj9d9DridimoFY7KiBchSIpc",
    "repoPath": "1_SOVEREIGN/STAGE_01/3_Talos/03_TS01-C2.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.TalosStageOne_ClientTwoV2"
+    "ouronet-ns.TalosStageOne_ClientTwoV3"
    ],
-   "chars": 82713,
+   "chars": 82715,
    "shapes": {
     "schemas": [],
     "tables": [
@@ -8277,13 +8446,13 @@
   },
   "TS01-C3": {
    "deployed": true,
-   "hash": "R9wk3kd8IvCYvcrI8ouZFB8Z-KLqcoJND9arHIM9egQ",
+   "hash": "Sss3u_Zh-s6U3aXwDEH3p253qj9PxuUoOE-95z-mz3g",
    "repoPath": "1_SOVEREIGN/STAGE_01/3_Talos/04_TS01-C3.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.TalosStageOne_ClientThreeV4"
+    "ouronet-ns.TalosStageOne_ClientThreeV5"
    ],
-   "chars": 62856,
+   "chars": 62865,
    "shapes": {
     "schemas": [],
     "tables": [
@@ -8354,11 +8523,11 @@
   },
   "TS01-C4": {
    "deployed": true,
-   "hash": "p3nTyQdGypJmCMUvv-c1WEQH16haAcOdH-stE0HAyIw",
+   "hash": "XnyJhJ0-uGtDvc9-eruTPI_IIxkpRQjA3JcJBkL2UxE",
    "repoPath": "1_SOVEREIGN/STAGE_01/3_Talos/06_TS01-C4.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.TalosStageOne_ClientFourV8"
+    "ouronet-ns.TalosStageOne_ClientFourV9"
    ],
    "chars": 18324,
    "shapes": {
@@ -8411,11 +8580,11 @@
   },
   "TS01-CP": {
    "deployed": true,
-   "hash": "Zs8-rMtVbMr5bdSrAQyEYkDPHAlLQFg8BMh8e9QxxTs",
+   "hash": "_GYfTjt6x4wvwyddWf07_fZ5crTfI7mOThlF-KxuEz8",
    "repoPath": "1_SOVEREIGN/STAGE_01/3_Talos/05_TS01-P.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.TalosStageOne_ClientPactsV4"
+    "ouronet-ns.TalosStageOne_ClientPactsV5"
    ],
    "chars": 12269,
    "shapes": {
@@ -8460,13 +8629,13 @@
   },
   "TS02-C1": {
    "deployed": true,
-   "hash": "0cu6G7nPCnerl9A-585XViL3YGiUfElCr6Y5kUGQKzE",
+   "hash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
    "repoPath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.TalosStageTwo_ClientOneV2"
+    "ouronet-ns.TalosStageTwo_ClientOneV3"
    ],
-   "chars": 72388,
+   "chars": 74272,
    "shapes": {
     "schemas": [],
     "tables": [
@@ -8568,13 +8737,13 @@
   },
   "TS02-C2": {
    "deployed": true,
-   "hash": "Mqi49RwMD1hmiCHvHxD-w4QBiSXYGyKywMcD3cBakS4",
+   "hash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
    "repoPath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.TalosStageTwo_ClientTwoV2"
+    "ouronet-ns.TalosStageTwo_ClientTwoV3"
    ],
-   "chars": 57794,
+   "chars": 59678,
    "shapes": {
     "schemas": [],
     "tables": [
@@ -8670,13 +8839,13 @@
   },
   "TS02-C3": {
    "deployed": true,
-   "hash": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+   "hash": "yEm3erU_vgdSZ48L8_9qmuIVRQ_NfSxP4zkrtQLZDX8",
    "repoPath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.TalosStageTwo_ClientThreeV1"
+    "ouronet-ns.TalosStageTwo_ClientThreeV5"
    ],
-   "chars": 113993,
+   "chars": 151481,
    "shapes": {
     "schemas": [],
     "tables": [
@@ -8685,9 +8854,18 @@
     ],
     "capabilities": [
      "AQP|C>ABORT-VACATE",
+     "AQP|C>BACKFILL-SCORE-SLICE",
+     "AQP|C>BEGIN-SCORE-REVOKE",
+     "AQP|C>DRAIN-SCORE-SLICE",
+     "AQP|C>FINALIZE-SCORE-REVOKE",
+     "AQP|C>REASSIGN-COLLECTABLE-BENEFICIARY",
+     "AQP|C>REASSIGN-ORTO-BENEFICIARY",
+     "AQP|C>REASSIGN-TRUE-FUNGIBLE-BENEFICIARY",
+     "AQP|C>RELEASE-SPECIAL-CUSTODIAL",
      "AQP|C>STAKE-NON-FUNGIBLE-COLLECTABLE",
      "AQP|C>STAKE-ORTO-FUNGIBLE",
      "AQP|C>STAKE-SEMI-FUNGIBLE-COLLECTABLE",
+     "AQP|C>STAKE-SPECIAL-CUSTODIAL",
      "AQP|C>STAKE-TRUE-FUNGIBLE",
      "AQP|C>SYNC-NON-FUNGIBLE-ANCHORS",
      "AQP|C>SYNC-SEMI-FUNGIBLE-ANCHORS",
@@ -8696,6 +8874,8 @@
      "AQP|C>UNSTAKE-ORTO-FUNGIBLE",
      "AQP|C>UNSTAKE-SEMI-FUNGIBLE-COLLECTABLE",
      "AQP|C>UNSTAKE-TRUE-FUNGIBLE",
+     "AQP|C>UPDATE-SCORE-MULTIPLIERS",
+     "FVT|C>CLEAR-POOL-SWEEP",
      "GOV",
      "GOV|TS02-C3_ADMIN",
      "P|TALOS-SUMMONER",
@@ -8720,13 +8900,16 @@
      "AQP-DSA|C_SetAgencyFee",
      "AQP-DSA|C_SetOracleAuth",
      "AQP-DSA|C_WithdrawRoyalty",
+     "AQP-FVT|CC_ClearPoolSweep",
      "AQP-FVT|CC_Collect",
      "AQP-FVT|CC_Inject",
      "AQP-FVT|CC_InjectFinalize",
      "AQP-FVT|CC_InjectStream",
+     "AQP-FVT|CC_LatchStreamEligible",
      "AQP-FVT|CC_SweepBegin",
      "AQP-FVT|CC_SweepRevokeAnchor",
      "AQP-FVT|CC_UnstaleMyScores",
+     "AQP-FVT|CCp_FvtFixSlice",
      "AQP-FVT|CCp_InjectFixChunk",
      "AQP-FVT|CCp_SweepRecomputeChunk",
      "AQP-FVT|CCp_UnstaleAll",
@@ -8738,12 +8921,17 @@
      "AQP-FVT|C_IssueMultipletFamily",
      "AQP-FVT|C_RotateOwnership",
      "AQP-FVT|C_SetCommonDenominator",
+     "AQP-FVT|C_SetMinInjectAmount",
      "AQP-FVT|C_SetMosaic",
      "AQP-FVT|C_SetQualitySplit",
      "AQP-FVT|C_SetSplitMode",
      "AQP-FVT|C_ToggleRewardLink",
      "AQP-FVT|C_ToggleScoreEntityLink",
+     "AQP-POOL|CC_FinalizeScoreRevoke",
      "AQP-POOL|CC_FullVacate",
+     "AQP-POOL|CC_ReassignCollectableStakeBeneficiary",
+     "AQP-POOL|CC_ReassignOrtoStakeBeneficiary",
+     "AQP-POOL|CC_ReassignTrueFungibleStakeBeneficiary",
      "AQP-POOL|CC_StakeNonFungibleCollectable",
      "AQP-POOL|CC_StakeOrtoFungible",
      "AQP-POOL|CC_StakeSemiFungibleCollectable",
@@ -8752,14 +8940,23 @@
      "AQP-POOL|CC_UnstakeOrtoFungible",
      "AQP-POOL|CC_UnstakeSemiFungibleCollectable",
      "AQP-POOL|CC_UnstakeTrueFungible",
+     "AQP-POOL|CC_UpdateScoreMultipliers",
+     "AQP-POOL|CC_VacateNonFungible",
+     "AQP-POOL|CC_VacateOrtoFungible",
+     "AQP-POOL|CC_VacateSemiFungible",
+     "AQP-POOL|CC_VacateTrueFungible",
+     "AQP-POOL|CCp_BackfillScoreSlice",
      "AQP-POOL|CCp_BatchDrainCollectable",
      "AQP-POOL|CCp_BatchDrainOrtoFungible",
      "AQP-POOL|CCp_BatchDrainTrueFungible",
      "AQP-POOL|CCp_BatchVacateCollectables",
      "AQP-POOL|CCp_BatchVacateOrtoFungible",
      "AQP-POOL|CCp_BatchVacateTrueFungible",
+     "AQP-POOL|CCp_ReleaseSpecialCustodial",
+     "AQP-POOL|CCp_StakeSpecialCustodial",
      "AQP-POOL|C_AbortVacate",
      "AQP-POOL|C_AddScore",
+     "AQP-POOL|C_BeginScoreRevoke",
      "AQP-POOL|C_DisablePoolStake",
      "AQP-POOL|C_EnablePoolStake",
      "AQP-POOL|C_FinalizeVacate",
@@ -8768,10 +8965,7 @@
      "AQP-POOL|C_SyncNonFungibleAnchors",
      "AQP-POOL|C_SyncSemiFungibleAnchors",
      "AQP-POOL|C_SyncTrueFungibleAnchors",
-     "AQP-POOL|XB_VacateNonFungible",
-     "AQP-POOL|XB_VacateOrtoFungible",
-     "AQP-POOL|XB_VacateSemiFungible",
-     "AQP-POOL|XB_VacateTrueFungible",
+     "AQP-POOL|Cp_DrainScoreSlice",
      "AQP-SCR|C_CombineTripletScoreModel",
      "AQP-SCR|C_ControlScore",
      "AQP-SCR|C_CreateScoreBoostClassLink",
@@ -8788,6 +8982,7 @@
      "AQP-SCR|C_IssueSingleScoreModel",
      "AQP-SCR|C_IssueTriplet",
      "AQP-SCR|C_IssueTrueFungibleScore",
+     "AQP-SCR|C_LockScoreDrift",
      "AQP-SCR|C_RotateScoreOwnership",
      "CT_Bar",
      "GOV|Demiurgoi",
@@ -8828,7 +9023,7 @@
   },
   "TS02-CPAD": {
    "deployed": true,
-   "hash": "DvLbtKVBl02gLcsLCq4NQKlnqGZdGRCTH7Fg3S6UIK8",
+   "hash": "kZJnKKMM4J3A_7ss5mCfdc6vhJJM5ihClbU3soBuSOs",
    "repoPath": "2_CITIZEN/7_Launchpad/99_TS02-CPAD.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
@@ -8877,11 +9072,11 @@
   },
   "TS02-DPAD": {
    "deployed": true,
-   "hash": "dLztzfE3wr8Rv2uTgBd8LOJx7OVW79Rr0LO7UvPKQ1c",
+   "hash": "rVKjURldVF5tGuZhJF3zhyUJlbSeg-YQkts4E0tTT8E",
    "repoPath": "1_SOVEREIGN/STAGE_02/3_Talos/05_TS02-DPAD.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.TalosStageTwo_DemiPadV2"
+    "ouronet-ns.TalosStageTwo_DemiPadV4"
    ],
    "chars": 22210,
    "shapes": {
@@ -9388,10 +9583,10 @@
   },
   "U|SWP": {
    "deployed": true,
-   "hash": "qVgNWdtqTADrrWB4PXjOrsSMoPrKTCc63xa2D3qKlDc",
+   "hash": "MfmOK0BLqNp6MkSsnTCS9C0PFumiP_FuVjEaXBmQ494",
    "repoPath": "1_SOVEREIGN/STAGE_01/1_Utilities/12_U_SWP.pact",
    "interfaces": [
-    "ouronet-ns.UtilitySwpV2"
+    "ouronet-ns.UtilitySwpV3"
    ],
    "chars": 43510,
    "shapes": {
@@ -9485,13 +9680,13 @@
   },
   "VST": {
    "deployed": true,
-   "hash": "gxaPbZBT7U-dYYdnrmA-2fH7V-CCtiuC8bxvPDsGQEs",
+   "hash": "GYko5JH54UcGP-q0iWFKJHgU2PeRLUZFeNFlJXKIwbE",
    "repoPath": "1_SOVEREIGN/STAGE_01/2_Core/11_VST.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.VestingV2"
+    "ouronet-ns.VestingV3"
    ],
-   "chars": 117864,
+   "chars": 128295,
    "shapes": {
     "schemas": [],
     "tables": [
@@ -9540,7 +9735,8 @@
      "VST|X>MERGE",
      "VST|X>REPURPOSE-ORTO-FUNGIBLE",
      "VST|X>TOGGLE-SPECIAL-OF-TR",
-     "VST|X>TOGGLE-SPECIAL-TF-TR"
+     "VST|X>TOGGLE-SPECIAL-TF-TR",
+     "VST|XE>UNSLEEP"
     ],
     "functions": [
      "CT_Bar",
@@ -9591,7 +9787,9 @@
      "UEV_NoncesForMerging",
      "UEV_StillHasSleeping",
      "URC_CullMetaDataAmountWithObject",
+     "URC_HibernationFeePromile",
      "URC_SecondsToUnlock",
+     "URC_SpecialLegIssuerRestricted",
      "URC_SpecialTransferRoleKonto",
      "URCi_Awake",
      "URCi_Brumate",
@@ -9619,6 +9817,7 @@
      "URCi_Unsleep",
      "URCi_Unvest",
      "URCi_Vest",
+     "XE_Unsleep",
      "XI_CreateSpecialOrtoFungibleLink",
      "XI_CreateSpecialTrueFungibleLink",
      "XI_RepurposeOrtoFungible",
@@ -9635,6 +9834,79 @@
      "P|I",
      "VST|SC_KEY",
      "VST|SC_NAME"
+    ]
+   }
+  },
+  "O-UI-FOURTEEN": {
+   "deployed": true,
+   "hash": "Rn6InI2qEYgZH5wDCBrQDEbiUkTkXDsLDvlz2kAlx-8",
+   "repoPath": "2_CITIZEN/Stage_Z/AppReads/OuronetUI/14_O-UI-FOURTEEN.pact",
+   "interfaces": [
+    "ouronet-ns.OUiFourteenV1"
+   ],
+   "chars": 22115,
+   "shapes": {
+    "schemas": [],
+    "tables": [],
+    "capabilities": [
+     "GOV",
+     "GOV|O_UI_FOURTEEN_ADMIN"
+    ],
+    "functions": [
+     "GOV|Demiurgoi",
+     "URC_14|MyScoreInPool",
+     "URC_14|PoolLabel",
+     "URC_14|ScoreDefinition",
+     "URC_14|ScoreEntityFull",
+     "URC_14|ScoreKind",
+     "URC_14|TripletRungs",
+     "URH_14|AllScoreEntities",
+     "URH_14|MyPoolIds",
+     "URH_14|MyScoreEntities",
+     "URH_14|PoolForAsset"
+    ],
+    "pacts": [],
+    "constants": [
+     "CT_14_SCORE_KINDS",
+     "GOV|MD_O-UI-FOURTEEN"
+    ]
+   }
+  },
+  "O-UI-THIRTEEN": {
+   "deployed": true,
+   "hash": "NYiFLIIzOQodzn04dWBunASIufHjdXuzgwNM_8zvXfE",
+   "repoPath": "2_CITIZEN/Stage_Z/AppReads/OuronetUI/13_O-UI-THIRTEEN.pact",
+   "interfaces": [
+    "ouronet-ns.OUiThirteenV1"
+   ],
+   "chars": 26201,
+   "shapes": {
+    "schemas": [],
+    "tables": [],
+    "capabilities": [
+     "GOV",
+     "GOV|O_UI_THIRTEEN_ADMIN"
+    ],
+    "functions": [
+     "GOV|Demiurgoi",
+     "URC_13|AnchorDetail",
+     "URC_13|AnchorFull",
+     "URC_13|AnchorKind",
+     "URC_13|AnchorRow",
+     "URC_13|AnchorTerms",
+     "URC_13|AnchorableAsset",
+     "URC_13|AssetName",
+     "URC_13|NeedsSync",
+     "URH_13|AnchorCatalogue",
+     "URH_13|BoostClasses",
+     "URH_13|MyAnchorableAssets",
+     "URH_13|MyAnchors",
+     "URH_13|MyAuthorityTrueFungibles"
+    ],
+    "pacts": [],
+    "constants": [
+     "CT_13_SPECIAL_PREFIXES",
+     "GOV|MD_O-UI-THIRTEEN"
     ]
    }
   }

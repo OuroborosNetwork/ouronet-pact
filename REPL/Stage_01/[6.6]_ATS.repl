@@ -54,9 +54,9 @@
     (
         (aoz:string KST.AOZT)
         (atsc:string KST.ATSTK)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
 
         (p-k:string "PKOSON-98c486052a51")
         (e-k:string "EKOSON-98c486052a51")
@@ -139,12 +139,12 @@
 (print "--- [Init STEP 001 · 02 · let / invocation] ---")
 (let 
     (
-        (ref-INFO-ONE:module{InfoOneV2} INFO-ONE)
+        (ref-INFO-ONE:module{InfoOneV3} INFO-ONE)
         (aoz:string KST.AOZT)
         ;(atsc:string KST.ATSTK)
-        ;(ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        ;(ref-ATS:module{AutostakeV3} ATS)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        ;(ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        ;(ref-ATS:module{AutostakeV4} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
 
         (p-k:string "PKOSON-98c486052a51")
         (e-k:string "EKOSON-98c486052a51")
@@ -204,8 +204,8 @@
     (
         (aoz:string KST.AOZT)
         (atsc:string KST.ATSTK)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-ATS:module{AutostakeV4} ATS)
         ;;
         (p-k:string "PKOSON-98c486052a51")
         (e-k:string "EKOSON-98c486052a51")
@@ -268,9 +268,9 @@
     (
         (aoz:string KST.AOZT)
         (atsc:string KST.ATSTK)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+        (ref-ATS:module{AutostakeV4} ATS)
         ;;
         (p-k:string "PKOSON-98c486052a51")
         (e-k:string "EKOSON-98c486052a51")
@@ -355,10 +355,10 @@
     (
         (aoz:string KST.AOZT)
         (atsc:string KST.ATSTK)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         ;;
         (p-k:string "PKOSON-98c486052a51")
         (e-k:string "EKOSON-98c486052a51")
@@ -412,10 +412,10 @@
     (
         (aoz:string KST.AOZT)
         (atsc:string KST.ATSTK)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         ;;
         (p-k:string "PKOSON-98c486052a51")
         (e-k:string "EKOSON-98c486052a51")
@@ -482,10 +482,10 @@
 (print "--- [Hot RBT and Redeem Test 4|5 · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
         (aoz:string KST.AOZT)
         (ps:string "PlebeicStrength-98c486052a51")
         (dd-k:string "DDKOSON-98c486052a51")
@@ -569,10 +569,10 @@
 (print "--- [Hot RBT and Redeem Test 5|5 · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
         (aoz:string KST.AOZT)
         (atsc:string KST.ATSTK)
         (ps:string "PlebeicStrength-98c486052a51")
@@ -686,9 +686,9 @@
     (
         (aoz:string KST.AOZT)
         (atsc:string KST.ATSTK)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+        (ref-ATS:module{AutostakeV4} ATS)
         ;;
         (p-k:string "PKOSON-98c486052a51")
         (e-k:string "EKOSON-98c486052a51")
@@ -775,10 +775,10 @@
         (patron:string KST.ANHD)
         (aoz:string KST.AOZT)
         (atsc:string KST.ATSTK)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         ;;
         (p-k:string "PKOSON-98c486052a51")
         (e-k:string "EKOSON-98c486052a51")
@@ -865,9 +865,9 @@
         (aoz:string KST.AOZT)
         (atsc:string KST.ATSTK)
         (patron:string KST.ANHD)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+        (ref-ATS:module{AutostakeV4} ATS)
         ;;
         (p-k:string "PKOSON-98c486052a51")
         (e-k:string "EKOSON-98c486052a51")
@@ -968,10 +968,10 @@
         (atsc:string KST.ATSTK)
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         ;;
         (p-k:string "PKOSON-98c486052a51")
         (e-k:string "EKOSON-98c486052a51")
@@ -1081,10 +1081,10 @@
         (atsc:string KST.ATSTK)
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         ;;
         (p-k:string "PKOSON-98c486052a51")
         (e-k:string "EKOSON-98c486052a51")
@@ -1174,10 +1174,10 @@
         (atsc:string KST.ATSTK)
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         ;;
         (p-k:string "PKOSON-98c486052a51")
         (e-k:string "EKOSON-98c486052a51")
@@ -1271,13 +1271,13 @@
         (atsc:string KST.ATSTK)
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
-        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+        (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
         (ref-U|ATS:module{UtilityAtsV3} U|ATS)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         ;;
         (p-k:string "PKOSON-98c486052a51")
         (e-k:string "EKOSON-98c486052a51")
@@ -1392,7 +1392,7 @@
 (print "--- [Parameter Unlock with STOA Fee Collection · 02 · let / invocation] ---")
     (let
         (
-            (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+            (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
             (aoz:string KST.AOZT)
             (ps:string "PlebeicStrength-98c486052a51")
         )
@@ -1442,10 +1442,10 @@
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
         (ref-U|ATS:module{UtilityAtsV3} U|ATS)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+        (ref-ATS:module{AutostakeV4} ATS)
         ;;
         (p-k:string "PKOSON-98c486052a51")
         (e-k:string "EKOSON-98c486052a51")
@@ -1528,11 +1528,11 @@
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
         (ref-U|ATS:module{UtilityAtsV3} U|ATS)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         ;;
         (p-k:string "PKOSON-98c486052a51")
         (e-k:string "EKOSON-98c486052a51")
@@ -1615,11 +1615,11 @@
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
         (ref-U|ATS:module{UtilityAtsV3} U|ATS)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         ;;
         (p-k:string "PKOSON-98c486052a51")
         (e-k:string "EKOSON-98c486052a51")
@@ -1685,12 +1685,12 @@
         (ref-U|LST:module{StringProcessorV2} U|LST)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-U|ATS:module{UtilityAtsV3} U|ATS)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-TFT:module{TrueFungibleTransferV2} TFT)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-TFT:module{TrueFungibleTransferV3} TFT)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         ;;
         (p-k:string "PKOSON-98c486052a51")
         (e-k:string "EKOSON-98c486052a51")
@@ -1782,11 +1782,11 @@
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
         (ref-U|ATS:module{UtilityAtsV3} U|ATS)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         ;;
         (p-k:string "PKOSON-98c486052a51")
         (e-k:string "EKOSON-98c486052a51")
@@ -1878,11 +1878,11 @@
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
         (ref-U|ATS:module{UtilityAtsV3} U|ATS)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         ;;
         (p-k:string "PKOSON-98c486052a51")
         (e-k:string "EKOSON-98c486052a51")
@@ -1960,11 +1960,11 @@
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
         (ref-U|ATS:module{UtilityAtsV3} U|ATS)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         ;;
         (p-k:string "PKOSON-98c486052a51")
         (e-k:string "EKOSON-98c486052a51")
@@ -2062,12 +2062,12 @@
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
         (ref-U|ATS:module{UtilityAtsV3} U|ATS)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         ;;
         (p-k:string "PKOSON-98c486052a51")
         (e-k:string "EKOSON-98c486052a51")
@@ -2184,7 +2184,7 @@
 (print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
     )
     (ref-TS01-C2::ATS|C_Brumate
         "Ѻ.œâσzüştŒhłσćØTöõúoвþçЧлρËШđюλ2ÙPeжŘťȚŤtθËûrólþŘß₿øuŁdáNÎČȘřΦĘbχλΩĄ¢ц2ŹθõĐLcÑÁäăå₿ξЭжулxòΘηĂœŞÝUËcω∇ß$ωoñД7θÁяЯéEU¢CЮxÃэJĘčÎΠ£αöŮЖбlćшbăÙЦÎAдŃЭб$ĞцFδŃËúHãjÁÝàĘSt"
@@ -2242,13 +2242,13 @@
         (emma:string KST.EMMA)
         (lumy:string KST.LUMY)
         (ref-U|ATS:module{UtilityAtsV3} U|ATS)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
         
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         ;;
         (lq-idx:string "StoaLiquindex-98c486052a51")
         (sstoa:string "DWK-98c486052a51")
@@ -2455,13 +2455,13 @@
         (emma:string KST.EMMA)
         (lumy:string KST.LUMY)
         (ref-U|ATS:module{UtilityAtsV3} U|ATS)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
         
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         ;;
         (lq-idx:string "StoaLiquindex-98c486052a51")
         (sstoa:string "DWK-98c486052a51")
@@ -2590,13 +2590,13 @@
         (emma:string KST.EMMA)
         (lumy:string KST.LUMY)
         (ref-U|ATS:module{UtilityAtsV3} U|ATS)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
         
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         ;;
         (lq-idx:string "StoaLiquindex-98c486052a51")
         (sstoa:string "DWK-98c486052a51")
@@ -2717,7 +2717,7 @@
 (print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         ;;
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
@@ -2772,7 +2772,7 @@
 (print "--- [Cull A LOT · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
         ;;
@@ -2824,8 +2824,8 @@
 (print "--- [ToggleUpgrade Proof 1|2 · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-ATS:module{AutostakeV4} ATS)
         (aoz:string KST.AOZT)
         (ps:string "PlebeicStrength-98c486052a51")
     )
@@ -2874,8 +2874,8 @@
 (print "--- [ToggleUpgrade Proof 2|2 · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-ATS:module{AutostakeV4} ATS)
         (aoz:string KST.AOZT)
         (ps:string "PlebeicStrength-98c486052a51")
     )
@@ -2925,8 +2925,8 @@
 (print "--- [SetHibernationFees Proof · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-ATS:module{AutostakeV4} ATS)
         (aoz:string KST.AOZT)
         (ps:string "PlebeicStrength-98c486052a51")
         (peak-before:decimal (ref-ATS::UR_PeakHibernatePromile ps))
@@ -2974,8 +2974,8 @@
 (print "--- [Fresh Test Pool Setup 1|3 - Issue Hot-RBT Candidate Token · 01 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
         (aoz:string KST.AOZT)
         (split-stoa:[decimal]
             (ref-DALOS::URC_SplitSTOAPrices aoz (ref-DALOS::UR_UsagePrice "dpmf"))
@@ -3058,8 +3058,8 @@
 (print "--- [Fresh Test Pool Setup 2|3 - Issue Cold-RBT Candidate Token · 01 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
         (aoz:string KST.AOZT)
         (split-stoa:[decimal]
             (ref-DALOS::URC_SplitSTOAPrices aoz (ref-DALOS::UR_UsagePrice "dptf"))
@@ -3137,7 +3137,7 @@
 (print "--- [Fresh Test Pool Setup 3|3 - Issue ATS Pair · 01 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (aoz:string KST.AOZT)
         (split-stoa:[decimal]
             (ref-DALOS::URC_SplitSTOAPrices aoz (ref-DALOS::UR_UsagePrice "ats"))
@@ -3177,7 +3177,7 @@
     (print "--- [Fresh Test Pool Setup 3|3 · 02 · let / invocation] ---")
     (let
         (
-            (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+            (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
             (aoz:string KST.AOZT)
             (p-k:string "PKOSON-98c486052a51")
             (tkrbt:string "TKRBT-98c486052a51")
@@ -3229,8 +3229,8 @@
 (print "--- [AddHotRBT Proof · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-ATS:module{AutostakeV4} ATS)
         (aoz:string KST.AOZT)
         (tkp:string "TestKickPair-98c486052a51")
         (thrbt:string "THRBT-98c486052a51")
@@ -3293,7 +3293,7 @@
 (let
     (
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-ATS:module{AutostakeV4} ATS)
         (aoz:string KST.AOZT)
         (tkp:string "TestKickPair-98c486052a51")
     )
@@ -3348,8 +3348,8 @@
 (print "--- [AA_RemoveSecondary Proof 1|2 - AddSecondary and Fuel · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-ATS:module{AutostakeV4} ATS)
         (aoz:string KST.AOZT)
         (tkp:string "TestKickPair-98c486052a51")
         (e-k:string "EKOSON-98c486052a51")
@@ -3404,7 +3404,7 @@
 (let
     (
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-ATS:module{AutostakeV4} ATS)
         (aoz:string KST.AOZT)
         (tkp:string "TestKickPair-98c486052a51")
         (e-k:string "EKOSON-98c486052a51")
@@ -3456,9 +3456,9 @@
 (print "--- [SetHotRecoveryFee and HotRecovery Proof · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
         (aoz:string KST.AOZT)
         (ps:string "PlebeicStrength-98c486052a51")
         (dd-k:string "DDKOSON-98c486052a51")
@@ -3521,8 +3521,8 @@
 (print "--- [HOT-RBT Branding Proof 1|2 - UpdatePendingBranding · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-BRD:module{BrandingV2} BRD)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-BRD:module{BrandingV3} BRD)
         (aoz:string KST.AOZT)
         (dd-k:string "DDKOSON-98c486052a51")
     )
@@ -3571,7 +3571,7 @@
 (print "--- [HOT-RBT Branding Proof 2|2 - UpgradeBranding · 01 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (aoz:string KST.AOZT)
         (months:integer 1)
         (split-stoa:[decimal]
@@ -3612,8 +3612,8 @@
     (print "--- [HOT-RBT Branding Proof 2|2 · 02 · let / invocation] ---")
     (let
         (
-            (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-            (ref-BRD:module{BrandingV2} BRD)
+            (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+            (ref-BRD:module{BrandingV3} BRD)
             (dd-k:string "DDKOSON-98c486052a51")
             (flag-before:integer (ref-BRD::UR_Flag dd-k false))
         )
@@ -3671,8 +3671,8 @@
 (print "--- [HOT-RBT Repurpose Proof · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
         (aoz:string KST.AOZT)
         (emma:string KST.EMMA)
         (dd-k:string "DDKOSON-98c486052a51")
@@ -3734,9 +3734,9 @@
 (print "--- [Reverse (Recover) Proof · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
         (aoz:string KST.AOZT)
         (dd-k:string "DDKOSON-98c486052a51")
         (pd-k:string "PDKOSON-98c486052a51")
@@ -3802,8 +3802,8 @@
 (print "--- [WithdrawRoyalties Proof · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-ATS:module{AutostakeV4} ATS)
         (aoz:string KST.AOZT)
         (emma:string KST.EMMA)
         (ps:string "PlebeicStrength-98c486052a51")
@@ -3873,9 +3873,9 @@
 (print "--- [DirectRecovery Proof · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
         (aoz:string KST.AOZT)
         (ps:string "PlebeicStrength-98c486052a51")
         (pd-k:string "PDKOSON-98c486052a51")
@@ -3955,8 +3955,8 @@
 (print "--- [Royalty Ceiling Proof · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-ATS:module{AutostakeV4} ATS)
         (aoz:string KST.AOZT)
         (ps:string "PlebeicStrength-98c486052a51")
     )

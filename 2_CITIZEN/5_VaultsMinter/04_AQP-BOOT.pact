@@ -29,7 +29,7 @@
 ;;   Step 0 — after sovereign AQP modules (ANK, SCR, AQP-POOL, FVT) are deployed: IMC + vault governor.
 ;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface AcquisitionPoolBootV1
+(interface AcquisitionPoolBootV2
 
 
 
@@ -78,7 +78,7 @@
         (patron:string)
     )
     ;;UEV_BootStepState is deliberately NOT declared here. It is an internal guard, not public
-    ;;API, and AcquisitionPoolBootV1 is ALREADY DEPLOYED -- a deployed interface cannot be
+    ;;API, and AcquisitionPoolBootV2 is ALREADY DEPLOYED -- a deployed interface cannot be
     ;;changed, so declaring it would force a V1->V2 bump and a cascade for a helper nobody calls
     ;;from outside. The module carries it; the interface does not need to.
     (defun C_Step1_CreateBunnySet:string
@@ -129,10 +129,10 @@
     ;;THE FOUR LATE STEPS ARE DELIBERATELY NOT DECLARED HERE. Added to this interface first, on
     ;;2026-10-08, and removed the same day once the chain was asked:
     ;;
-    ;;    (describe-module "ouronet-ns.AcquisitionPoolBootV1")
+    ;;    (describe-module "ouronet-ns.AcquisitionPoolBootV2")
     ;;      hash BB3RVLU5ocTAc7PTAMZJC5lq4kUlVoGCkEm9xal1psY
     ;;
-    ;;AcquisitionPoolBootV1 IS LIVE, and a deployed interface cannot be changed in Pact. Shipping
+    ;;AcquisitionPoolBootV2 IS LIVE, and a deployed interface cannot be changed in Pact. Shipping
     ;;it with four extra declarations would have failed the upgrade outright -- at signing time,
     ;;on the owner's gas, with nothing before it to object.
     ;;
@@ -157,7 +157,7 @@
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
-    (implements AcquisitionPoolBootV1)
+    (implements AcquisitionPoolBootV2)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -173,7 +173,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -419,8 +419,8 @@
                     (ref-P|RPS:module{OuronetPolicyV2} RPS)
                     (ref-P|FVT:module{OuronetPolicyV2} AQP-FVT)
                     (ref-P|VCT:module{OuronetPolicyV2} AQP-VCT)
-                    (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                    (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+                    (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
                     ;;
                     (aqp-sc:string (ref-ANK::GOV|AQP|SC_NAME))
                 )
@@ -502,7 +502,7 @@
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
                     ;;
                     (bronze-boost-class-id:string (ref-U|DALOS::UDC_Makeid "BronzeSnakePower"))
                     (silver-boost-class-id:string (ref-U|DALOS::UDC_Makeid "SilverSnakePower"))
@@ -567,7 +567,7 @@
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
                     ;;
                     (unity-boost-class-id:string (ref-U|DALOS::UDC_Makeid "UnityBooster"))
                     (stoa-boost-class-id:string (ref-U|DALOS::UDC_Makeid "StoaBooster"))
@@ -626,7 +626,7 @@
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
                     (score-coding:string (ref-U|DALOS::UDC_Makeid "TheCodingDivision"))
                     (score-bloodshed:string (ref-U|DALOS::UDC_Makeid "Bloodshed"))
                     (score-company-share:string (ref-U|DALOS::UDC_Makeid "DemiourgosShareholder"))
@@ -658,7 +658,7 @@
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
                     (score-sub-coding:string (ref-U|DALOS::UDC_Makeid "SubsidiaryCodingDivision"))
                     (score-sub-wondercoach:string (ref-U|DALOS::UDC_Makeid "SubsidiaryWonderCoach"))
                     (score-sub-bloodshed:string (ref-U|DALOS::UDC_Makeid "SubsidiaryBloodshed"))
@@ -761,7 +761,7 @@
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
                     ;;
                     (silver-id:string (ref-U|DALOS::UDC_Makeid BOOT|SCORE_SILVER))
                     (bronze-id:string (ref-U|DALOS::UDC_Makeid BOOT|SCORE_BRONZE))
@@ -887,7 +887,7 @@
                 (enforce (= (length ouro-triplet-score-ids) 3) "Step 7 expects ouro-triplet-score-ids=[silver bronze golden].")
             (let
                 (
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
                     ;;
                     (asset-coding:string (at 0 dh-asset-ids))
@@ -1044,7 +1044,7 @@
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
                     (farm-id:string (ref-U|DALOS::UDC_Makeid BOOT|FVT_OURO_LP_FARM))
                     (sub-treasury-id:string (ref-U|DALOS::UDC_Makeid BOOT|FVT_SUBSIDIARY_TREASURY))
                     (coding-treasury-id:string (ref-U|DALOS::UDC_Makeid BOOT|FVT_CODING_TREASURY))
@@ -1085,7 +1085,7 @@
         (with-capability (GOV|AQP_BOOT_ADMIN)
             (let
                 (
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
                 )
                 (enforce (= (length subsidiary-score-ids) 5) "Step 9 expects subsidiary-score-ids×5.")
                 (map
@@ -1116,7 +1116,7 @@
         (with-capability (GOV|AQP_BOOT_ADMIN)
             (let
                 (
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
                     (family-id:string (concat ["F" "|" ouro-id "|" auryn-id "|" elite-auryn-id]))
                 )
                 (ref-TS02-C3::AQP-FVT|C_IssueMultipletFamily
@@ -1138,7 +1138,7 @@
         (with-capability (GOV|AQP_BOOT_ADMIN)
             (let
                 (
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
                     (wire-farm:bool
                         (and
                             (!= farm-id "")
@@ -1178,7 +1178,7 @@
         (with-capability (GOV|AQP_BOOT_ADMIN)
             (let
                 (
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
                     (ref-U|CT:module{OuronetConstantsV2} U|CT)
                     (bar:string (ref-U|CT::CT_BAR))
                 )
@@ -1241,7 +1241,7 @@
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
                     (fvt-id:string (ref-U|DALOS::UDC_Makeid BOOT|FVT_CUSTODIANS_VAULT))
                     (pool-id:string (ref-U|DALOS::UDC_Makeid BOOT|POOL_CUSTODIANS))
                     (bronze-model-id:string (ref-U|DALOS::UDC_Makeid BOOT|MODEL_CUSTODIANS_BRONZE))
@@ -1336,8 +1336,8 @@
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
-                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+                    (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
                     (fvt-id:string (ref-U|DALOS::UDC_Makeid BOOT|FVT_CUSTODIANS_VAULT))
                     (pool-id:string (ref-U|DALOS::UDC_Makeid BOOT|POOL_CUSTODIANS))
                     (pool-owner:string (AQP-POOL.URC_AqpOwnerKonto pool-id))
@@ -1418,7 +1418,7 @@
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
                     (pool-id:string (ref-U|DALOS::UDC_Makeid BOOT|POOL_STOICISM))
                     ;;THE STAKED ASSET'S OWNER, DERIVED -- not read from the pool row, which this
                     ;;transaction has not created yet. Step 7 aborted for exactly that reason on
@@ -1459,7 +1459,7 @@
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
                     (nosferatu-treasury-id:string
                         (ref-U|DALOS::UDC_Makeid BOOT|FVT_NOSFERATU_TREASURY))
                     (wondercoach-treasury-id:string
@@ -1508,7 +1508,7 @@
         (with-capability (GOV|AQP_BOOT_ADMIN)
             (let
                 (
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
                 )
                 (ref-TS02-C3::AQP-FVT|C_AddScoreEntity patron
                     (AQP-FVT.UR_FVT|OwnerKonto nosferatu-treasury-id)
@@ -1546,7 +1546,7 @@
         (with-capability (GOV|AQP_BOOT_ADMIN)
             (let
                 (
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
                     (ref-U|CT:module{OuronetConstantsV2} U|CT)
                     (bar:string (ref-U|CT::CT_BAR))
                 )

@@ -1,19 +1,18 @@
 ;; ---------------------------------------------------------------------------
-;; OURONET DEPLOY -- file 2 of 24
-;; This is STEP 2 of 25 in the full sequence (see Deploy/MANIFEST.md).
+;; OURONET DEPLOY -- file 2 of 25
+;; This is STEP 2 of 26 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-1 must have run first, including the init steps between deploys.
-;; 3 source file(s), 198,069 gas measured in the REPL gas model, 236,464 bytes
+;; 3 source file(s), 205,369 gas measured in the REPL gas model, 239,576 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/01_DALOS.pact
 ;;   1_SOVEREIGN/STAGE_01/2_Core/02_IGNIS.pact
 ;;   1_SOVEREIGN/STAGE_01/2_Core/04_BRD.pact
 ;;
-;; TOTAL: 5 interface(s), 3 module(s), 12 table(s)
+;; TOTAL: 4 interface(s), 3 module(s), 12 table(s)
 ;; What it DEPLOYS, in load order:
 ;;   -- 1_SOVEREIGN/STAGE_01/2_Core/01_DALOS.pact
-;;      interface  OuronetPolicyV2
-;;      interface  OuronetDalosV2
+;;      interface  OuronetDalosV3
 ;;      module     DALOS
 ;;      table      P|T
 ;;      table      P|MT
@@ -23,13 +22,13 @@
 ;;      table      DALOS|AccountTable
 ;;      table      DALOS|KadenaLedger
 ;;   -- 1_SOVEREIGN/STAGE_01/2_Core/02_IGNIS.pact
-;;      interface  IgnisCollectorV3
-;;      interface  OuronetInfoV2
+;;      interface  IgnisCollectorV4
+;;      interface  OuronetInfoV3
 ;;      module     IGNIS
 ;;      table      P|T
 ;;      table      P|MT
 ;;   -- 1_SOVEREIGN/STAGE_01/2_Core/04_BRD.pact
-;;      interface  BrandingV2
+;;      interface  BrandingV3
 ;;      module     BRD
 ;;      table      P|T
 ;;      table      P|MT
@@ -46,125 +45,11 @@
 ;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact
 ;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface OuronetPolicyV2
-    @doc "Interface exposing OuronetPolicyV2 Functions, which are needed for intermodule communication \
-        \ Each Module must have these Functions for these Purposes"
+;; OuronetPolicyV2: already deployed and unchanged -- see LIVE_INTERFACES
 
-    ;;<=========================================================================>
-    ;;{1}  GOVERNANCE
-    ;;{G1}  constants
-    ;;{G2}  schemas
-    ;;{G3}  tables  ⟨cannot exist in an interface⟩
-    ;;{G4}  capabilities
-    ;;{G5}  functions
-
-    ;;<=========================================================================>
-    ;;{2}  POLICY
-    ;;{P1}  constants
-    ;;{P2}  schemas
-    ;;
-    ;;TWO TABLES, AND THEY ARE NOT TWO SHAPES OF THE SAME THING.
-    ;;
-    ;;`P|S` backs a KEYED table: one named guard per row, answering "give me THE guard called X".
-    ;;Every entry in the tree is a `<MODULE>|Remote<Target>Gov`, read by name at SETUP time to
-    ;;COMPOSE account governors -- `(UEV_GuardOfAny [(create-capability-guard (DPDC.DPDC|GOV))
-    ;;(P|UR "DPDC-S|RemoteDpdcGov") ...])`. Two read sites in the whole codebase, both cold.
-    ;;
-    ;;`P|MS` backs a SINGLE row holding a LIST, answering "is ANY of my registered peers in scope
-    ;;right now?". Hot path: every `P|UEV_IMC` on every protected call.
-    ;;
-    ;;THE LIST SHAPE IS FORCED, NOT CHOSEN. `P|UEV_IMC` takes NO ARGUMENTS, and Pact has no
-    ;;`msg.sender` -- a callee cannot learn who called it. So it cannot do a keyed lookup; the only
-    ;;question it can ask is set-membership-by-proof, which is inherently O(N). The O(1)
-    ;;alternative would be making every caller name itself, i.e. a new parameter on several hundred
-    ;;protected signatures. And one row holding a list is ONE read, where a row-per-guard table
-    ;;would need `keys`/`select` -- a full scan plus N reads. The list is the cheap variant.
-    ;;
-    ;;THE COST, MEASURED 2026-09-20 rather than guessed. `P|UEV_IMC` = `8 + 8.1*N` gas:
-    ;;    N= 16 -> 138      N= 64 ->  527      N=256 -> 2082
-    ;;Dead linear, no short-circuit (`UEV_Any` maps `UC_Try` over the whole chain). Against a
-    ;;2,000,000 block limit the real chains are nothing: 46 tables, mean 7.1 guards, max 29
-    ;;(DALOS -- every module calls it; IGNIS is second at 25 because every module bills). The
-    ;;chain length IS the dependency graph, so legitimate growth was never the threat.
-    ;;
-    ;;THE THREAT WAS UNBOUNDED DUPLICATE GROWTH. `P|A_AddIMP` used to be a blind append: replaying
-    ;;one module's `P|A_Define` took IGNIS from 16 entries to 17, and every duplicate taxes every
-    ;;IMC-gated call on the chain forever while nothing reports it. `P|A_AddIMP` is now idempotent,
-    ;;which makes `P|A_Define` safe to replay and retires the hazard instead of routing around it.
-    ;;`P|A_RemoveIMP` and `P|A_SetIMP` close the other half: until 2026-09-20 there was NO WAY to
-    ;;revoke a retired or compromised peer short of upgrading the module.
-    ;;
-    ;;THE SEED. Every chain begins with the module's OWN `(create-capability-guard (SECURE))`,
-    ;;written in by `P|A_AddIMP`'s `with-default-read` default. That is how a module reaches its
-    ;;own `P|UEV_IMC`-gated functions, so `P|A_RemoveIMP` refuses to drop it and `P|A_SetIMP`
-    ;;refuses a list without it. Losing it walls a module off from itself.
-    ;;
-    ;;Composition is auditable at any time: `REPL/tools/_impdiff.py` derives the intended chain
-    ;;from every module's `P|A_Define` and diffs it against a live snapshot.
-    (defschema P|S
-        policy:guard
-    )
-    (defschema P|MS
-        m-policies:[guard]
-    )
-    ;;{P3}  tables  ⟨cannot exist in an interface⟩
-    ;;{P4}  capabilities
-    ;;{P5}  functions
-    (defun P|UR:guard (policy-name:string)
-        @doc "Reads a Policy from the local module Policy Table"
-    )
-    (defun P|UR_IMP:[guard] ()
-        @doc "Reads the whole Intermodule Policy Guard Chain"
-    )
-    (defun P|A_Add (policy-name:string policy-guard:guard)
-        @doc "Adds a Policy in the local module Policy Table"
-    )
-    (defun P|A_AddIMP (policy-guard:guard)
-        @doc "Add a Policy in the local Policy Guard Chain. IDEMPOTENT: adding a guard that is \
-            \ already present is a no-op, so `P|A_Define` is safe to replay."
-    )
-    (defun P|A_RemoveIMP (policy-guard:guard)
-        @doc "Revoke a Policy from the local Policy Guard Chain. Removes every occurrence, and \
-            \ refuses to drop the module's own SECURE seed."
-    )
-    (defun P|A_SetIMP (policy-guards:[guard])
-        @doc "Replace the whole local Policy Guard Chain. Deduplicates; enforces that the \
-            \ module's own SECURE seed is present."
-    )
-    (defun P|A_Define ()
-        @doc "Defines in each module the policies that are needed for intermodule communication"
-    )
-    (defun P|UEV_IMC ()
-        @doc "Defines the Intermodule Guards"
-    )
-
-    ;;<=========================================================================>
-    ;;{3}  CST
-    ;;{3.1}  constants
-    ;;{3.2}  schemas
-    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
-
-    ;;<=========================================================================>
-    ;;{4}  CAPABILITIES
-    ;;{C1}  Trivial [bronze]
-    ;;{C2}  Simple
-    ;;{C3}  Composed
-    ;;{C4}  Ownership [gold]
-
-    ;;<=========================================================================>
-    ;;{5}  FUNCTIONS
-    ;;{5.1}  Construct [CT/UDC]
-    ;;{5.2}  Compute [UC]
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    ;;{5.4}  Validate [UEV/CAP]
-    ;;{5.5}  Write [W]
-    ;;{5.6}  Aux/X
-    ;;{5.7}  User [A/C]
-
-)
 
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface OuronetDalosV2
+(interface OuronetDalosV3
     @doc "Interface exposing the DALOS public API — the sovereign identity, account and \
         \ ledger core. Declares the account and ledger readers, account-ownership \
         \ enforcement, virtual-gas and action-price readers, and the governance hooks \
@@ -415,6 +300,16 @@
     (defun C_RotateStoa (patron:string executor:string stoa:string))
     (defun C_RotateSovereign (patron:string executor:string new-sovereign:string))
 
+
+    ;;<=========================================================================>
+    ;; ADDED 2026-10-12 -- interface-membership sweep (StoicSyntax-Prefixes.md Sec5,
+    ;; owner ruling). Every one of these was already live in the module body; this
+    ;; closes the gap between what the module DOES and what its interface SAYS it does.
+    ;;<=========================================================================>
+    (defun UC_GuardProtocol:string (g:guard))
+    (defun UEV_EnforceGuardProtocol (g:guard is-keyset-based:bool))
+    (defun UEV_enforce-notional-at-floor:bool ())
+    (defun URH_AccountCounter ())
 )
 ;;
 (module DALOS GOV
@@ -430,7 +325,7 @@
     ;;
     (implements stoa-ns.gas-payer-v1)
     (implements OuronetPolicyV2)
-    (implements OuronetDalosV2)
+    (implements OuronetDalosV3)
 
     ;;<=========================================================================>
     ;;{#}  GASSTATION
@@ -877,8 +772,8 @@
         ;;
         nonce:integer
         elite:object{DALOS|EliteSchema}
-        ouroboros:object{OuronetDalosV2.DPTF|BalanceSchema}
-        ignis:object{OuronetDalosV2.DPTF|BalanceSchema}
+        ouroboros:object{OuronetDalosV3.DPTF|BalanceSchema}
+        ignis:object{OuronetDalosV3.DPTF|BalanceSchema}
     )
     (defschema DALOS|EliteSchema
         class:string
@@ -957,7 +852,7 @@
     (defcap AHU ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (ah:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
             )
             (ref-DALOS::CAP_EnforceAccountOwnership ah)
@@ -1091,7 +986,7 @@
     )
     (defun CT_Info ()                                   (at 0 ["DalosInformation"]))
     ;;
-    (defun UDC_TrueFungibleAccount:object{OuronetDalosV2.DPTF|BalanceSchema}
+    (defun UDC_TrueFungibleAccount:object{OuronetDalosV3.DPTF|BalanceSchema}
         (a:decimal b:bool c:bool d:bool e:bool f:bool g:string h:string)
         {"balance"              : a
         ,"frozen"               : b
@@ -1102,7 +997,7 @@
         ,"id"                   : g
         ,"account"              : h}
     )
-    (defun UDC_BlankTrueFungible:object{OuronetDalosV2.DPTF|BalanceSchema} (account:string)
+    (defun UDC_BlankTrueFungible:object{OuronetDalosV3.DPTF|BalanceSchema} (account:string)
         (UDC_TrueFungibleAccount 0.0 false false false false false BAR account)
     )
     ;;{5.2}  Compute [UC]
@@ -1159,7 +1054,7 @@
     (defun UR_SilverStoaID:string ()
         (at "silver-stoa-id" (read DALOS|PropertiesTable DALOS|INFO ["silver-stoa-id"]))
     )
-    (defun UR_CanonicalStoaIds:object{OuronetDalosV2.CanonicalStoaIds} ()
+    (defun UR_CanonicalStoaIds:object{OuronetDalosV3.CanonicalStoaIds} ()
         @doc "#65fL Phase 8b: OURO/WSTOA/SSTOA together in ONE read, for a caller that \
             \ needs all 3 identities to check against a single <id> (e.g. \
             \ SWPI::URC_WorthWSTOA's 3-way WSTOA/SSTOA/OURO shortcut dispatch) — replaces \
@@ -1209,11 +1104,31 @@
     (defun UR_AccountCreationStoa:bool ()
         @doc "Is STOA collected on Ouronet account creation? Independent of the global STOA \
             \ toggle (UR_NativeToggle) so onboarding can stay free while global STOA is ON. \
-            \ Defaults FALSE for rows written before this flag existed."
-        (with-default-read DALOS|GasManagementTable DALOS|VGD
-            {"account-creation-stoa" : false}
-            {"account-creation-stoa" := t}
-            t
+            \ Defaults FALSE when the FIELD is absent from an existing row. \
+            \ \
+            \ CORRECTED 2026-10-15. This used `with-default-read` and claimed it `Defaults \
+            \ FALSE for rows written before this flag existed`. It does not. That default \
+            \ applies only when the ROW IS MISSING; when the row exists but lacks the field, \
+            \ the binding form throws `Key account-creation-stoa not found in object`. \
+            \ DALOS|VGD is written at genesis and this flag was added later, so EVERY call \
+            \ threw -- verified on mainnet against an arbitrary account, which failed \
+            \ identically. That broke INFO_DALOS|DeployStandardAccount (the activate-account \
+            \ cost preview never resolved) and would have broken the exec path too the moment \
+            \ native STOA collection was switched on, since TS01-C1 reads the same price \
+            \ behind (not URC_IsNativeGasZero). \
+            \ \
+            \ It was also UNFIXABLE BY TRANSACTION: the only writer of the field is \
+            \ XI_ToggleAccountCreationStoa, whose defcap enforces against this very read, so \
+            \ the toggle that would populate the row could not itself run."
+        (let
+            (
+                (row:object{DALOS|GasManagementSchema}
+                    (read DALOS|GasManagementTable DALOS|VGD))
+            )
+            (if (contains "account-creation-stoa" row)
+                (at "account-creation-stoa" row)
+                false
+            )
         )
     )
     (defun UR_NativeSpent:decimal ()
@@ -1296,7 +1211,7 @@
         (at "deb" (UR_Elite account))
     )
     ;;[4.2] TrueFungible INFO
-    (defun UR_TrueFungible:object{OuronetDalosV2.DPTF|BalanceSchema}
+    (defun UR_TrueFungible:object{OuronetDalosV3.DPTF|BalanceSchema}
         (account:string snake-or-gas:bool)
         (if snake-or-gas
             (with-default-read DALOS|AccountTable account
@@ -1785,7 +1700,7 @@
         )
     )
     ;;Protection: Class 2 — SECURE
-    (defun XI_UpdateTF (account:string snake-or-gas:bool new-obj:object{OuronetDalosV2.DPTF|BalanceSchema})
+    (defun XI_UpdateTF (account:string snake-or-gas:bool new-obj:object{OuronetDalosV3.DPTF|BalanceSchema})
         (require-capability (SECURE))
         (if snake-or-gas
             (update DALOS|AccountTable account
@@ -2041,7 +1956,7 @@
             ,"ignis"        : (AUx_UpdateTrueFungibleObject (UR_TrueFungible account false) account)}
         )
     )
-    (defun AUx_UpdateTrueFungibleObject:object{OuronetDalosV2.DPTF|BalanceSchema}
+    (defun AUx_UpdateTrueFungibleObject:object{OuronetDalosV3.DPTF|BalanceSchema}
         (input-obj:object account:string)
         (let
             (
@@ -2177,7 +2092,7 @@
 ;; ===== 1_SOVEREIGN/STAGE_01/2_Core/02_IGNIS.pact ===================
 
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface IgnisCollectorV3
+(interface IgnisCollectorV4
     @doc "IgnisCollectorV3 — the interface defining Ouronet's virtual-gas (IGNIS) data model \
         \ and collection API. Declares the cumulator schemas \
         \ (OutputCumulator/ModularCumulator per-interactor legs, plus Compressed and Primed \
@@ -2303,10 +2218,18 @@
     (defun XE_CollectStoa (patron:string amount:decimal))
     (defun C_DonateStoa (executor:string amount:decimal))
 
+
+    ;;<=========================================================================>
+    ;; ADDED 2026-10-12 -- interface-membership sweep (StoicSyntax-Prefixes.md Sec5,
+    ;; owner ruling). Every one of these was already live in the module body; this
+    ;; closes the gap between what the module DOES and what its interface SAYS it does.
+    ;;<=========================================================================>
+    (defun UC_FindKeyIndex:integer (key-lst:[string] key:string))
+    (defun UDC_EmptyOutputCumulatorV2:object{OutputCumulator} ())
 )
 
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface OuronetInfoV2
+(interface OuronetInfoV3
     @doc "Holds Information Schemas"
 
     ;;<=========================================================================>
@@ -2386,7 +2309,7 @@
     ;;
     ;;  [UC] Functions
     ;;
-    (defun OI|UC_IfpFromOutputCumulator:decimal (input:object{IgnisCollectorV3.OutputCumulator}))
+    (defun OI|UC_IfpFromOutputCumulator:decimal (input:object{IgnisCollectorV4.OutputCumulator}))
     (defun OI|UC_ShortAccount:string (account:string))
     (defun OI|UC_ConvertPrice:string (input-price:decimal))
     (defun OI|UC_FormatIndex:string (index:decimal))
@@ -2417,8 +2340,8 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements IgnisCollectorV3)
-    (implements OuronetInfoV2)
+    (implements IgnisCollectorV4)
+    (implements OuronetInfoV3)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -2434,7 +2357,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -2462,7 +2385,7 @@
     (defun P|Info ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::P|Info)
         )
@@ -2586,7 +2509,7 @@
     (defconst DALOS|SC_NAME
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|DALOS|SC_NAME)
         )
@@ -2594,7 +2517,7 @@
     (defconst OUROBOROS|SC_NAME
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|OUROBOROS|SC_NAME)
         )
@@ -2794,6 +2717,7 @@
         ,"AQP-FVT|CC_Inject"                            : 21.0
         ,"AQP-FVT|CC_InjectFinalize"                    : 7.0
         ,"AQP-FVT|CC_InjectStream"                      : 5.0
+        ,"AQP-FVT|CC_LatchStreamEligible"               : 23.0
         ,"AQP-FVT|CC_SweepBegin"                        : 19.0
         ,"AQP-FVT|CC_SweepRevokeAnchor"                 : 29.0
         ,"AQP-FVT|CC_UnstaleMyScores"                   : 11.0
@@ -2862,6 +2786,7 @@
         ,"AQP-SCR|C_IssueSingleScoreModel"              : 16.0
         ,"AQP-SCR|C_IssueTriplet"                       : 39.0
         ,"AQP-SCR|C_IssueTrueFungibleScore"             : 28.0
+        ,"AQP-SCR|C_LockScoreDrift"                     : 13.0
         ,"AQP-SCR|C_RotateScoreOwnership"               : 13.0
         ,"ATS|AA_RemoveSecondary"                        : 41.0
         ,"ATS|C_AddHotRBT"                              : 26.0
@@ -3224,7 +3149,7 @@
     (defcap IGNIS|C>DEBIT (sender:string ta:decimal)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (read-gas:decimal (ref-DALOS::UR_TF_AccountSupply sender false))
             )
             (enforce (<= ta read-gas) "Insufficient GAS for GAS-Debiting")
@@ -3236,7 +3161,7 @@
     (defcap IGNIS|C>CREDIT (receiver:string)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::UEV_EnforceAccountExists receiver)
             (compose-capability (SECURE))
@@ -3245,7 +3170,7 @@
     (defcap IGNIS|C>DC (patron:string)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (compose-capability (IGNIS|S>DISCOUNT patron (UDC_MakeIDP (ref-DALOS::URC_IgnisGasDiscount patron))))
             (compose-capability (P|IGNIS|CALLER))
@@ -3256,7 +3181,7 @@
         (UEV_Patron patron)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (first:string (take 1 interactor))
                 (sigma:string "Σ")
                 (tanker:string (ref-DALOS::UR_Tanker))
@@ -3314,7 +3239,7 @@
             (ref-U|CT::CT_STOA_PRECISION)
         )
     )
-    (defun UDC_EmptyOutputCumulatorV2:object{IgnisCollectorV3.OutputCumulator} ()
+    (defun UDC_EmptyOutputCumulatorV2:object{IgnisCollectorV4.OutputCumulator} ()
         {"cumulator-chain"      :
             [
                 {"ignis"        : 0.0
@@ -3326,7 +3251,7 @@
     (defun UDC_MakeIDP:string (ignis-discount:decimal)
         (format "{}{}" [(* (- 1.0 ignis-discount) 100.0) "%"])
     )
-    (defun UDC_ConstructOutputCumulator:object{IgnisCollectorV3.OutputCumulator}
+    (defun UDC_ConstructOutputCumulator:object{IgnisCollectorV4.OutputCumulator}
         (price:decimal active-account:string trigger:bool output-lst:list)
         (UDC_MakeOutputCumulator
             [
@@ -3339,7 +3264,7 @@
             output-lst
         )
     )
-    (defun UDC_BrandingCumulator:object{IgnisCollectorV3.OutputCumulator}
+    (defun UDC_BrandingCumulator:object{IgnisCollectorV4.OutputCumulator}
         (active-account:string multiplier:decimal)
         (UDC_ConstructOutputCumulator
             (* multiplier (UC_IgnisLeg "tier-branding"))
@@ -3348,7 +3273,7 @@
             []
         )
     )
-    (defun UDC_LegCumulator:object{IgnisCollectorV3.OutputCumulator}
+    (defun UDC_LegCumulator:object{IgnisCollectorV4.OutputCumulator}
         (leg-key:string active-account:string)
         @doc "Cumulator for ONE named internal write leg (IG|LEGS). Replaces the hardcoded \
             \ UDC_<tier>Cumulator calls inside XI_/XB_ writers so every internal charge has a \
@@ -3360,10 +3285,10 @@
             []
         )
     )
-    (defun UDC_CustomCodeCumulator:object{IgnisCollectorV3.OutputCumulator} ()
+    (defun UDC_CustomCodeCumulator:object{IgnisCollectorV4.OutputCumulator} ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (UDC_ConstructOutputCumulator
                 (* 5.0 (UC_IgnisLeg "tier-biggest"))
@@ -3374,11 +3299,11 @@
         )
     )
     ;;
-    (defun UDC_MakeModularCumulator:object{IgnisCollectorV3.ModularCumulator}
+    (defun UDC_MakeModularCumulator:object{IgnisCollectorV4.ModularCumulator}
         (price:decimal active-account:string trigger:bool)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (interactor:string
                     (if (ref-DALOS::UR_AccountType active-account)
                         active-account
@@ -3394,20 +3319,20 @@
             )
         )
     )
-    (defun UDC_MakeOutputCumulator:object{IgnisCollectorV3.OutputCumulator}
-        (input-modular-cumulator-chain:[object{IgnisCollectorV3.ModularCumulator}] output-lst:list)
+    (defun UDC_MakeOutputCumulator:object{IgnisCollectorV4.OutputCumulator}
+        (input-modular-cumulator-chain:[object{IgnisCollectorV4.ModularCumulator}] output-lst:list)
         {"cumulator-chain"  : input-modular-cumulator-chain
         ,"output"           : output-lst}
     )
-    (defun UDC_ConcatenateOutputCumulators:object{IgnisCollectorV3.OutputCumulator}
-        (input-output-cumulator-chain:[object{IgnisCollectorV3.OutputCumulator}] new-output-lst:list)
+    (defun UDC_ConcatenateOutputCumulators:object{IgnisCollectorV4.OutputCumulator}
+        (input-output-cumulator-chain:[object{IgnisCollectorV4.OutputCumulator}] new-output-lst:list)
         (let
             (
                 (ref-U|LST:module{StringProcessorV2} U|LST)
-                (folded-obj:[[object{IgnisCollectorV3.ModularCumulator}]]
+                (folded-obj:[[object{IgnisCollectorV4.ModularCumulator}]]
                     (fold
                         (lambda
-                            (acc:[[object{IgnisCollectorV3.ModularCumulator}]] idx:integer)
+                            (acc:[[object{IgnisCollectorV4.ModularCumulator}]] idx:integer)
                             (ref-U|LST::UC_AppL
                                 acc
                                 (at "cumulator-chain" (at idx input-output-cumulator-chain))
@@ -3422,8 +3347,8 @@
             ,"output"           : new-output-lst}
         )
     )
-    (defun UDC_CompressOutputCumulator:object{IgnisCollectorV3.CompressedCumulator}
-        (input-output-cumulator:object{IgnisCollectorV3.OutputCumulator})
+    (defun UDC_CompressOutputCumulator:object{IgnisCollectorV4.CompressedCumulator}
+        (input-output-cumulator:object{IgnisCollectorV4.OutputCumulator})
         @doc "Merges same-interactor legs of a cumulator-chain into one (interactor, summed-ignis) \
             \ entry each. Optimized (DALOS audit, post-#8H): uses the local single-pass \
             \ UC_FindKeyIndex instead of U|LST::UC_Search (which does ~4x the traversals for a \
@@ -3434,13 +3359,13 @@
         (let
             (
                 (ref-U|LST:module{StringProcessorV2} U|LST)
-                (cumulator-chain-input:[object{IgnisCollectorV3.ModularCumulator}]
+                (cumulator-chain-input:[object{IgnisCollectorV4.ModularCumulator}]
                     (at "cumulator-chain" input-output-cumulator)
                 )
-                (folded-obj:object{IgnisCollectorV3.CompressedCumulator}
+                (folded-obj:object{IgnisCollectorV4.CompressedCumulator}
                     (fold
                         (lambda
-                            (acc:object{IgnisCollectorV3.CompressedCumulator} idx:integer)
+                            (acc:object{IgnisCollectorV4.CompressedCumulator} idx:integer)
                             (let
                                 (
                                     (read-ignis-price:decimal (at "ignis" (at idx cumulator-chain-input)))
@@ -3473,21 +3398,21 @@
             folded-obj
         )
     )
-    (defun UDC_PrimeIgnisCumulator:object{IgnisCollectorV3.PrimedCumulator}
-        (patron:string input:object{IgnisCollectorV3.CompressedCumulator})
+    (defun UDC_PrimeIgnisCumulator:object{IgnisCollectorV4.PrimedCumulator}
+        (patron:string input:object{IgnisCollectorV4.CompressedCumulator})
         @doc "Splits each compressed leg into a smart-account cut and a principal/BAR cut per the \
             \ GAS_QUARTER fee-share. Optimized (DALOS audit, post-#8H) the same way as \
             \ UDC_CompressOutputCumulator above — see that function's @doc."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (ref-U|LST:module{StringProcessorV2} U|LST)
                 (fll:integer (length (at "ignis-prices" input)))
                 (ignis-discount:decimal (ref-DALOS::URC_IgnisGasDiscount patron))
-                (folded-obj:object{IgnisCollectorV3.CompressedCumulator}
+                (folded-obj:object{IgnisCollectorV4.CompressedCumulator}
                     (fold
                         (lambda
-                            (acc:object{IgnisCollectorV3.CompressedCumulator} idx:integer)
+                            (acc:object{IgnisCollectorV4.CompressedCumulator} idx:integer)
                             (let
                                 (
                                     (input-ignis-price:decimal (at idx (at "ignis-prices" input)))
@@ -3554,22 +3479,22 @@
             {"primed-cumulator" : folded-obj}
         )
     )
-    (defun OI|UDC_ClientInfo:object{OuronetInfoV2.ClientInfo}
-        (a:[string] b:[string] c:object{OuronetInfoV2.ClientIgnisCosts} d:object{OuronetInfoV2.ClientStoaCosts} e:list)
+    (defun OI|UDC_ClientInfo:object{OuronetInfoV3.ClientInfo}
+        (a:[string] b:[string] c:object{OuronetInfoV3.ClientIgnisCosts} d:object{OuronetInfoV3.ClientStoaCosts} e:list)
         {"pre-text"         : a
         ,"post-text"        : b
         ,"ignis"            : c
         ,"stoa"           : d
         ,"output"           : e}
     )
-    (defun OI|UDC_ClientIgnisCosts:object{OuronetInfoV2.ClientIgnisCosts}
+    (defun OI|UDC_ClientIgnisCosts:object{OuronetInfoV3.ClientIgnisCosts}
         (a:decimal b:decimal c:decimal d:string)
         {"ignis-discount"   : a
         ,"ignis-full"       : b
         ,"ignis-need"       : c
         ,"ignis-text"       : d}
     )
-    (defun OI|UDC_ClientStoaCosts:object{OuronetInfoV2.ClientStoaCosts}
+    (defun OI|UDC_ClientStoaCosts:object{OuronetInfoV3.ClientStoaCosts}
         (a:decimal b:decimal c:decimal d:[decimal] e:[string] f:string)
         {"stoa-discount"  : a
         ,"stoa-full"      : b
@@ -3578,7 +3503,7 @@
         ,"stoa-targets"   : e
         ,"stoa-text"      : f}
     )
-    (defun OI|UDC_FullStoaCosts:object{OuronetInfoV2.ClientStoaCosts} (kfp:decimal)
+    (defun OI|UDC_FullStoaCosts:object{OuronetInfoV3.ClientStoaCosts} (kfp:decimal)
         (let
             (
                 (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
@@ -3602,12 +3527,12 @@
             )
         )
     )
-    (defun OI|UDC_StoaCosts:object{OuronetInfoV2.ClientStoaCosts} (patron:string kfp:decimal)
+    (defun OI|UDC_StoaCosts:object{OuronetInfoV3.ClientStoaCosts} (patron:string kfp:decimal)
         (let
             (
                 (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
                 (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 ;;
                 (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                 (stoa-discount:decimal (ref-DALOS::URC_StoaGasDiscount patron))
@@ -3635,7 +3560,7 @@
             )
         )
     )
-    (defun OI|UDC_NoStoaCosts:object{OuronetInfoV2.ClientStoaCosts} ()
+    (defun OI|UDC_NoStoaCosts:object{OuronetInfoV3.ClientStoaCosts} ()
         (OI|UDC_ClientStoaCosts
             1.0
             0.0
@@ -3645,17 +3570,17 @@
             "Operation is free of native Stoa (STOA)"
         )
     )
-    (defun OI|UDC_DynamicStoaCost:object{OuronetInfoV2.ClientStoaCosts} (patron:string kfp:decimal)
+    (defun OI|UDC_DynamicStoaCost:object{OuronetInfoV3.ClientStoaCosts} (patron:string kfp:decimal)
         (if (= kfp 0.0)
             (OI|UDC_NoStoaCosts)
             (OI|UDC_StoaCosts patron kfp)
         )
     )
     ;;
-    (defun OI|UDC_IgnisCosts:object{OuronetInfoV2.ClientIgnisCosts} (patron:string ifp:decimal)
+    (defun OI|UDC_IgnisCosts:object{OuronetInfoV3.ClientIgnisCosts} (patron:string ifp:decimal)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 ;;
                 (ignis-discount:decimal (ref-DALOS::URC_IgnisGasDiscount patron))
                 (discount-percent:string (format "{}%" [(* 100.0 (- 1.0 ignis-discount))]))
@@ -3678,7 +3603,7 @@
             )
         )
     )
-    (defun OI|UDC_NoIgnisCosts:object{OuronetInfoV2.ClientIgnisCosts} ()
+    (defun OI|UDC_NoIgnisCosts:object{OuronetInfoV3.ClientIgnisCosts} ()
         (OI|UDC_ClientIgnisCosts
             1.0
             0.0
@@ -3686,7 +3611,7 @@
             "Operation is free of Ouronet GAS (IGNIS)"
         )
     )
-    (defun OI|UDC_DynamicIgnisCost:object{OuronetInfoV2.ClientIgnisCosts} (patron:string ifp:decimal)
+    (defun OI|UDC_DynamicIgnisCost:object{OuronetInfoV3.ClientIgnisCosts} (patron:string ifp:decimal)
         (if (= ifp 0.0)
             (OI|UDC_NoIgnisCosts)
             (OI|UDC_IgnisCosts patron ifp)
@@ -3783,10 +3708,10 @@
     ;;
     ;;[OURONET-INFO] Functions — shared cost/format vocabulary (relocated from INFO-ZERO;
     ;;  must live pre-Talos so Talos + all cost modules + Z_Reads presentation can reach it)
-    (defun OI|UC_IfpFromOutputCumulator:decimal (input:object{IgnisCollectorV3.OutputCumulator})
+    (defun OI|UC_IfpFromOutputCumulator:decimal (input:object{IgnisCollectorV4.OutputCumulator})
         (let
             (
-                (cc:[object{IgnisCollectorV3.ModularCumulator}] (at "cumulator-chain" input))
+                (cc:[object{IgnisCollectorV4.ModularCumulator}] (at "cumulator-chain" input))
             )
             (fold
                 (lambda
@@ -3884,7 +3809,7 @@
     (defun URC_IsVirtualGasZeroAbsolutely:bool (id:string)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (t1:bool (URC_IsVirtualGasZero))
                 (gas-id:string (ref-DALOS::UR_IgnisID))
                 (t2:bool (if (or (= gas-id BAR)(= id gas-id)) true false))
@@ -3895,7 +3820,7 @@
     (defun URC_IsVirtualGasZero:bool ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (if (ref-DALOS::UR_VirtualToggle)
                 false
@@ -3906,7 +3831,7 @@
     (defun URC_IsNativeGasZero:bool ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (if (ref-DALOS::UR_NativeToggle)
                 false
@@ -3918,37 +3843,37 @@
     ;;[DALOS-URCi] cost readers — the single source for each DALOS client op's tier choice.
     ;;  DALOS deploys below IGNIS (cannot host these); Talos bills through them and the Z_Reads
     ;;  presentation derives its preview from the same call, so billing and preview never drift.
-    (defun DALOS|URCi_ControlSmartAccount:object{IgnisCollectorV3.OutputCumulator} (account:string)
+    (defun DALOS|URCi_ControlSmartAccount:object{IgnisCollectorV4.OutputCumulator} (account:string)
         (UDC_ConstructOutputCumulator
             (UC_IgnisPrice "DALOS|C_ControlSmartAccount" "setup")
             account (URC_IsVirtualGasZero) [])
     )
-    (defun DALOS|URCi_RotateGovernor:object{IgnisCollectorV3.OutputCumulator} (account:string)
+    (defun DALOS|URCi_RotateGovernor:object{IgnisCollectorV4.OutputCumulator} (account:string)
         (UDC_ConstructOutputCumulator
             (UC_IgnisPrice "DALOS|C_RotateGovernor" "auth")
             account (URC_IsVirtualGasZero) [])
     )
-    (defun DALOS|URCi_RotateGuard:object{IgnisCollectorV3.OutputCumulator} (account:string)
+    (defun DALOS|URCi_RotateGuard:object{IgnisCollectorV4.OutputCumulator} (account:string)
         (UDC_ConstructOutputCumulator
             (UC_IgnisPrice "DALOS|C_RotateGuard" "auth")
             account (URC_IsVirtualGasZero) [])
     )
-    (defun DALOS|URCi_RotateStoa:object{IgnisCollectorV3.OutputCumulator} (account:string)
+    (defun DALOS|URCi_RotateStoa:object{IgnisCollectorV4.OutputCumulator} (account:string)
         (UDC_ConstructOutputCumulator
             (UC_IgnisPrice "DALOS|C_RotateStoa" "auth")
             account (URC_IsVirtualGasZero) [])
     )
-    (defun DALOS|URCi_RotateSovereign:object{IgnisCollectorV3.OutputCumulator} (account:string)
+    (defun DALOS|URCi_RotateSovereign:object{IgnisCollectorV4.OutputCumulator} (account:string)
         (UDC_ConstructOutputCumulator
             (UC_IgnisPrice "DALOS|C_RotateSovereign" "auth")
             account (URC_IsVirtualGasZero) [])
     )
-    (defun DALOS|URCi_UpdateEliteAccount:object{IgnisCollectorV3.OutputCumulator} (patron:string)
+    (defun DALOS|URCi_UpdateEliteAccount:object{IgnisCollectorV4.OutputCumulator} (patron:string)
         (UDC_ConstructOutputCumulator
             (UC_IgnisPrice "DALOS|C_UpdateEliteAccount" "usage")
             patron (URC_IsVirtualGasZero) [])
     )
-    (defun DALOS|URCi_UpdateEliteAccountSquared:object{IgnisCollectorV3.OutputCumulator} (patron:string)
+    (defun DALOS|URCi_UpdateEliteAccountSquared:object{IgnisCollectorV4.OutputCumulator} (patron:string)
         (UDC_ConstructOutputCumulator
             (UC_IgnisPrice "DALOS|C_UpdateEliteAccountSquared" "usage")
             patron (URC_IsVirtualGasZero) [])
@@ -3961,7 +3886,7 @@
             \ is the single gate, and both the exec path and the INFO preview read it here."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (if (ref-DALOS::UR_AccountCreationStoa) (UC_StoaPrice "acct-smart") 0.0)
         )
@@ -3973,7 +3898,7 @@
             \ is the single gate, and both the exec path and the INFO preview read it here."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (if (ref-DALOS::UR_AccountCreationStoa) (UC_StoaPrice "acct-standard") 0.0)
         )
@@ -3981,7 +3906,7 @@
     (defun OI|UR_StoaTargets:[string] ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             [
                 (at 2 (ref-DALOS::UR_DemiurgoiID))
@@ -4003,7 +3928,7 @@
         @doc "Capability that ensures a DALOS account can act as gas payer, enforcing all necesarry restrictions"
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (if (ref-DALOS::UR_AccountType patron)
                 (do
@@ -4021,7 +3946,7 @@
         (require-capability (IGNIS|C>COLLECT patron interactor amount))
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (collector:string
                     (if (= interactor BAR)
                         (ref-DALOS::UR_Tanker)
@@ -4044,7 +3969,7 @@
         (require-capability (IGNIS|C>DEBIT sender ta))
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::XB_UpdateBalance sender false 
                 (- (ref-DALOS::UR_TF_AccountSupply sender false) ta)
@@ -4056,7 +3981,7 @@
         (require-capability (IGNIS|C>CREDIT receiver))
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::XB_UpdateBalance receiver false 
                 (+ (ref-DALOS::UR_TF_AccountSupply receiver false) ta)
@@ -4107,7 +4032,7 @@
             \ migrate / wrap / unwrap). This one collects it TO the protocol."
             (let
                 (
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
                     (demiurgoi:[string] (ref-DALOS::UR_DemiurgoiID))
                     (stoa-sender:string (ref-DALOS::UR_AccountStoa patron))
                     (split:[decimal] (ref-DALOS::URC_SplitSTOAPricesFull amount))
@@ -4136,7 +4061,7 @@
             \ discount follows the asset rather than the payer."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (XB_CollectStoaFull patron
                 (* (ref-DALOS::URC_StoaGasDiscount discount-account) amount) trigger)
@@ -4167,15 +4092,15 @@
     )
     ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_CollectIgnis
-        (patron:string input-output-cumulator:object{IgnisCollectorV3.OutputCumulator})
+        (patron:string input-output-cumulator:object{IgnisCollectorV4.OutputCumulator})
         (P|UEV_IMC)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (compressed-cumulator:object{IgnisCollectorV3.CompressedCumulator}
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (compressed-cumulator:object{IgnisCollectorV4.CompressedCumulator}
                     (UDC_CompressOutputCumulator input-output-cumulator)
                 )
-                (primed-cumulator:object{IgnisCollectorV3.PrimedCumulator}
+                (primed-cumulator:object{IgnisCollectorV4.PrimedCumulator}
                     (UDC_PrimeIgnisCumulator patron compressed-cumulator)
                 )
                 (ignis-prices:[decimal] (at "ignis-prices" (at "primed-cumulator" primed-cumulator)))
@@ -4215,7 +4140,7 @@
                         (let
                             (
                                 (icl:integer (length ignis-prices))
-                                (primed-collector:object{IgnisCollectorV3.CompressedCumulator} 
+                                (primed-collector:object{IgnisCollectorV4.CompressedCumulator} 
                                     (at "primed-cumulator" primed-cumulator)
                                 )
                             )
@@ -4290,7 +4215,7 @@
 
 ;; ===== 1_SOVEREIGN/STAGE_01/2_Core/04_BRD.pact =====================
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface BrandingV2
+(interface BrandingV3
     @doc "Interface Exposing the Branding Functions needed to create the Branding Functionality \
         \ Entities are DPTF DPMF DPSF DPNF ATSPairs SWPairs \
         \ Should Future entities be added, they too can be branded via this module \
@@ -4376,6 +4301,13 @@
     (defun A_Live (patron:string executor:string entity-id:string))
     (defun A_SetFlag (patron:string executor:string entity-id:string flag:integer))
 
+
+    ;;<=========================================================================>
+    ;; ADDED 2026-10-12 -- interface-membership sweep (StoicSyntax-Prefixes.md Sec5,
+    ;; owner ruling). Every one of these was already live in the module body; this
+    ;; closes the gap between what the module DOES and what its interface SAYS it does.
+    ;;<=========================================================================>
+    (defun UDC_BrandingGenesis:object{Schema} (input:object{Schema} genesis:time))
 )
 
 (module BRD GOV
@@ -4389,7 +4321,7 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements BrandingV2)
+    (implements BrandingV3)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -4405,7 +4337,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -4428,7 +4360,7 @@
     (defun P|Info ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::P|Info)
         )
@@ -4571,8 +4503,8 @@
     ;;{3.2}  schemas
     ;;
     (defschema BRD|PropertiesSchema
-        branding:object{BrandingV2.Schema}
-        branding-pending:object{BrandingV2.Schema}
+        branding:object{BrandingV3.Schema}
+        branding-pending:object{BrandingV3.Schema}
     )
     ;;{3.3}  tables
     (deftable BRD|BrandingTable:{BRD|PropertiesSchema})
@@ -4601,7 +4533,7 @@
         @event
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (mp:integer (URC_MaxBluePayment entity-owner-account))
                 (flag:integer (UR_Flag entity-id false))
                 (premium:time (UR_PremiumUntil entity-id false))
@@ -4635,38 +4567,38 @@
         )
     )
     ;;
-    (defun UDC_BrandingLogo:object{BrandingV2.Schema} (input:object{BrandingV2.Schema} logo:string)
+    (defun UDC_BrandingLogo:object{BrandingV3.Schema} (input:object{BrandingV3.Schema} logo:string)
         (+
             {"logo" : logo}
             (remove "logo" input)
         )
     )
-    (defun UDC_BrandingDescription:object{BrandingV2.Schema} (input:object{BrandingV2.Schema} description:string)
+    (defun UDC_BrandingDescription:object{BrandingV3.Schema} (input:object{BrandingV3.Schema} description:string)
         (+
             {"description" : description}
             (remove "description" input)
         )
     )
-    (defun UDC_BrandingWebsite:object{BrandingV2.Schema} (input:object{BrandingV2.Schema} website:string)
+    (defun UDC_BrandingWebsite:object{BrandingV3.Schema} (input:object{BrandingV3.Schema} website:string)
         (+
             {"website" : website}
             (remove "website" input)
         )
     )
-    (defun UDC_BrandingSocial:object{BrandingV2.Schema} (input:object{BrandingV2.Schema} social:[object{BrandingV2.SocialSchema}])
+    (defun UDC_BrandingSocial:object{BrandingV3.Schema} (input:object{BrandingV3.Schema} social:[object{BrandingV3.SocialSchema}])
         (+
             {"social" : social}
             (remove "social" input)
         )
     )
-    (defun UDC_BrandingFlag:object{BrandingV2.Schema} (input:object{BrandingV2.Schema} flag:integer)
+    (defun UDC_BrandingFlag:object{BrandingV3.Schema} (input:object{BrandingV3.Schema} flag:integer)
         (enforce (contains flag (enumerate 0 4)) "Invalid Flag Integer")
         (+
             {"flag" : flag}
             (remove "flag" input)
         )
     )
-    (defun UDC_BrandingPremium:object{BrandingV2.Schema} (input:object{BrandingV2.Schema} premium:time)
+    (defun UDC_BrandingPremium:object{BrandingV3.Schema} (input:object{BrandingV3.Schema} premium:time)
         (+
             {"premium-until" : premium}
             (remove "premium-until" input)
@@ -4677,7 +4609,7 @@
     ;;under the cascade rule, for a constructor only <XE_Issue> needs. The siblings are
     ;;interface-declared because external modules build branding objects with them;
     ;;nothing outside BRD sets a genesis.
-    (defun UDC_BrandingGenesis:object{BrandingV2.Schema} (input:object{BrandingV2.Schema} genesis:time)
+    (defun UDC_BrandingGenesis:object{BrandingV3.Schema} (input:object{BrandingV3.Schema} genesis:time)
         (+
             {"genesis" : genesis}
             (remove "genesis" input)
@@ -4685,7 +4617,7 @@
     )
     ;;{5.2}  Compute [UC]
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    (defun UR_Branding:object{BrandingV2.Schema} (id:string pending:bool)
+    (defun UR_Branding:object{BrandingV3.Schema} (id:string pending:bool)
         (if pending
             (with-read BRD|BrandingTable id
                 { "branding-pending" := b }
@@ -4706,7 +4638,7 @@
     (defun UR_Website:string (id:string pending:bool)
         (at "website" (UR_Branding id pending))
     )
-    (defun UR_Social:[object{BrandingV2.SocialSchema}] (id:string pending:bool)
+    (defun UR_Social:[object{BrandingV3.SocialSchema}] (id:string pending:bool)
         (at "social" (UR_Branding id pending))
     )
     (defun UR_Flag:integer (id:string pending:bool)
@@ -4721,7 +4653,7 @@
     (defun URC_MaxBluePayment (account:string)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (mt:integer (ref-DALOS::UR_Elite-Tier-Major account))
             )
             (if (<= mt 2)
@@ -4741,7 +4673,7 @@
             \ XE_UpgradeBranding write (exec billing) and every C_UpgradeBranding INFO preview."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (* (dec months) (ref-DALOS::UR_UsagePrice "blue"))
         )
@@ -4766,7 +4698,7 @@
         ;;Fixed 2026-09-12, owner-authorised.
         (let
             (
-                (fresh:object{BrandingV2.Schema}
+                (fresh:object{BrandingV3.Schema}
                     (UDC_BrandingGenesis BRD|DEFAULT (at "block-time" (chain-data))))
             )
             (insert BRD|BrandingTable entity-id
@@ -4776,7 +4708,7 @@
         )
     )
     ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
-    (defun XE_UpdatePendingBranding (entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
+    (defun XE_UpdatePendingBranding (entity-id:string logo:string description:string website:string social:[object{BrandingV3.SocialSchema}])
         @doc "Updates <pending-branding> with new branding data. \
             \ This is done by <entity-id> owners to brand their <entity-id> \
             \ Branding Administrator must afterwards set this <pending-branding> data to live, \
@@ -4784,11 +4716,11 @@
         (P|UEV_IMC)
         (let
             (
-                (pending:object{BrandingV2.Schema} (UR_Branding entity-id true))
-                (p1:object{BrandingV2.Schema} (UDC_BrandingLogo pending logo))
-                (p2:object{BrandingV2.Schema} (UDC_BrandingDescription p1 description))
-                (p3:object{BrandingV2.Schema} (UDC_BrandingWebsite p2 website))
-                (p4:object{BrandingV2.Schema} (UDC_BrandingSocial p3 social))
+                (pending:object{BrandingV3.Schema} (UR_Branding entity-id true))
+                (p1:object{BrandingV3.Schema} (UDC_BrandingLogo pending logo))
+                (p2:object{BrandingV3.Schema} (UDC_BrandingDescription p1 description))
+                (p3:object{BrandingV3.Schema} (UDC_BrandingWebsite p2 website))
+                (p4:object{BrandingV3.Schema} (UDC_BrandingSocial p3 social))
             )
             (with-capability (SECURE)
                 (XI_UpdateBrandingData entity-id true p4)
@@ -4824,8 +4756,8 @@
         (with-capability (BRD|C>UPGRADE entity-id entity-owner-account months)
             (let
                 (
-                    (branding:object{BrandingV2.Schema} (UR_Branding entity-id false))
-                    (branding-pending:object{BrandingV2.Schema} (UR_Branding entity-id true))
+                    (branding:object{BrandingV3.Schema} (UR_Branding entity-id false))
+                    (branding-pending:object{BrandingV3.Schema} (UR_Branding entity-id true))
                     (flag:integer (UR_Flag entity-id false))
                     (premium:time (UR_PremiumUntil entity-id false))
                     (current:time (at "block-time" (chain-data)))
@@ -4845,16 +4777,16 @@
                         )
                     )
 
-                    (as-is1:object{BrandingV2.Schema} (UDC_BrandingFlag branding 1))
-                    (as-is2:object{BrandingV2.Schema} (UDC_BrandingPremium as-is1 premium-until))
+                    (as-is1:object{BrandingV3.Schema} (UDC_BrandingFlag branding 1))
+                    (as-is2:object{BrandingV3.Schema} (UDC_BrandingPremium as-is1 premium-until))
 
-                    (from-pending1:object{BrandingV2.Schema} (UDC_BrandingFlag branding-pending 1))
-                    (from-pending2:object{BrandingV2.Schema} (UDC_BrandingPremium from-pending1 premium-until))
+                    (from-pending1:object{BrandingV3.Schema} (UDC_BrandingFlag branding-pending 1))
+                    (from-pending2:object{BrandingV3.Schema} (UDC_BrandingPremium from-pending1 premium-until))
 
-                    (np1:object{BrandingV2.Schema} (UDC_BrandingLogo branding-pending BAR))
-                    (np2:object{BrandingV2.Schema} (UDC_BrandingDescription np1 BAR))
-                    (np3:object{BrandingV2.Schema} (UDC_BrandingWebsite np2 BAR))
-                    (np4:object{BrandingV2.Schema} (UDC_BrandingSocial np3 [SOCIAL|EMPTY]))
+                    (np1:object{BrandingV3.Schema} (UDC_BrandingLogo branding-pending BAR))
+                    (np2:object{BrandingV3.Schema} (UDC_BrandingDescription np1 BAR))
+                    (np3:object{BrandingV3.Schema} (UDC_BrandingWebsite np2 BAR))
+                    (np4:object{BrandingV3.Schema} (UDC_BrandingSocial np3 [SOCIAL|EMPTY]))
                 )
                 (if (= flag 3)
                     (do
@@ -4869,7 +4801,7 @@
     )
     ;;
     ;;Protection: Class 2 — SECURE
-    (defun XI_UpdateBrandingData (entity-id:string pending:bool branding:object{BrandingV2.Schema})
+    (defun XI_UpdateBrandingData (entity-id:string pending:bool branding:object{BrandingV3.Schema})
         (require-capability (SECURE))
         (if pending
             (update BRD|BrandingTable entity-id
@@ -4890,21 +4822,21 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership executor)
         )
         (with-capability (BRD|C>LIVE)
             (let
                 (
-                    (branding-pending:object{BrandingV2.Schema} (UR_Branding entity-id true))
+                    (branding-pending:object{BrandingV3.Schema} (UR_Branding entity-id true))
                     (flag:integer (UR_Flag entity-id false))
                     (updated-flag:integer (if (<= flag 1) flag 2))
-                    (updated-branding:object{BrandingV2.Schema} (UDC_BrandingFlag branding-pending updated-flag))
-                    (np1:object{BrandingV2.Schema} (UDC_BrandingLogo branding-pending BAR))
-                    (np2:object{BrandingV2.Schema} (UDC_BrandingDescription np1 BAR))
-                    (np3:object{BrandingV2.Schema} (UDC_BrandingWebsite np2 BAR))
-                    (np4:object{BrandingV2.Schema} (UDC_BrandingSocial np3 [SOCIAL|EMPTY]))
+                    (updated-branding:object{BrandingV3.Schema} (UDC_BrandingFlag branding-pending updated-flag))
+                    (np1:object{BrandingV3.Schema} (UDC_BrandingLogo branding-pending BAR))
+                    (np2:object{BrandingV3.Schema} (UDC_BrandingDescription np1 BAR))
+                    (np3:object{BrandingV3.Schema} (UDC_BrandingWebsite np2 BAR))
+                    (np4:object{BrandingV3.Schema} (UDC_BrandingSocial np3 [SOCIAL|EMPTY]))
                 )
                 (XI_UpdateBrandingData entity-id false updated-branding)
                 (XI_UpdateBrandingData entity-id true np4)
@@ -4919,15 +4851,15 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership executor)
         )
         (with-capability (BRD|C>ADMIN_SET flag)
             (let
                 (
-                    (existing-branding:object{BrandingV2.Schema} (UR_Branding entity-id false))
-                    (modified-branding:object{BrandingV2.Schema} (UDC_BrandingFlag existing-branding flag))
+                    (existing-branding:object{BrandingV3.Schema} (UR_Branding entity-id false))
+                    (modified-branding:object{BrandingV3.Schema} (UDC_BrandingFlag existing-branding flag))
                 )
                 (XI_UpdateBrandingData entity-id false modified-branding)
             )

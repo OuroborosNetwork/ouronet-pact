@@ -51,11 +51,11 @@
 (print "--- [SWP TX 01 - Issue DPMF Test · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         ;(ref-DPTF:module{DemiourgosPactTrueFungible} DPTF)
         ;(ref-VST:module{Vesting} VST)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        ;(ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        ;(ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         ;(patron:string KST.ANHD)
         (emma:string KST.EMMA)
         (split-stoa:[decimal] 
@@ -151,14 +151,14 @@
 (let
     (
         ;(ref-U|CT:module{OuronetConstantsV2} U|CT)
-        ;(ref-DALOS:module{OuronetDalosV2} DALOS)
-        ;(ref-BRD:module{BrandingV2} BRD)
+        ;(ref-DALOS:module{OuronetDalosV3} DALOS)
+        ;(ref-BRD:module{BrandingV3} BRD)
         ;(ref-SWP:module{Swapper} SWP)
         ;(ref-TS01-A:module{TalosStageOne_Admin} TS01-A)
         ;(ref-DPTF:module{DemiourgosPactTrueFungible} DPTF)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-TS01-C1-V2:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-TS01-C1-V2:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
         (dpmf:string "MVST-98c486052a51")

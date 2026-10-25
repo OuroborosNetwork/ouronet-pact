@@ -39,8 +39,8 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (patron:string KST.ANHD)
     )
     (let
@@ -71,8 +71,8 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (patron:string KST.ANHD)
     )
     (let
@@ -138,7 +138,7 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
         (patron:string KST.ANHD)
     )
     (let
@@ -211,7 +211,7 @@
 (print "--- [AQP-G3 — SCORE's NF-definition branch selector, as a 2x2 on its two list arguments · 02 · let / invocation] ---")
 (let
     (
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
     )
     (map print
         [
@@ -258,7 +258,7 @@
 (print "--- [AQP-G4 — ANK's fungibility tuple, as a truth table on one list argument · 02 · let / invocation] ---")
 (let
     (
-        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+        (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
     )
     (map print
         [
@@ -306,8 +306,8 @@
 (print "--- [AQP-G5 — SCORE's NF-definition list alignment, in both definition modes · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
         (dhb:string "DHB-98c486052a51")
     )
     (map print
@@ -378,8 +378,8 @@
 (print "--- [AQP-G7 — three Stage-2 argument-domain guards, including one string prefix that gates a refund · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
-        (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+        (ref-DPDC-N:module{DpdcNonceV3} DPDC-N)
+        (ref-VCT:module{AcquisitionVacateV4} AQP-VCT)
     )
     (map print
         [
@@ -543,7 +543,7 @@
 (let*
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (tf:string (ref-U|DALOS::UDC_Makeid "TfStakePool"))
         (of:string (ref-U|DALOS::UDC_Makeid "OfStakePool"))
         (sf:string (ref-U|DALOS::UDC_Makeid "SfStakePool"))
@@ -627,7 +627,7 @@
 (let*
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (pool:string (ref-U|DALOS::UDC_Makeid "ResumeVacPool"))
     )
     (map print
@@ -668,7 +668,7 @@
 (let*
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (of:string (ref-U|DALOS::UDC_Makeid "OfStakePool"))
     )
     (ref-TS02-C3::AQP-POOL|C_DisablePoolStake KST.ANHD (AQP-POOL.URC_AqpOwnerKonto of) of)
@@ -688,7 +688,7 @@
 (let*
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (of:string (ref-U|DALOS::UDC_Makeid "OfStakePool"))
     )
     (map print
@@ -719,8 +719,8 @@
 (let*
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
-        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (of:string (ref-U|DALOS::UDC_Makeid "OfStakePool"))
     )
     (ref-TS02-C3::AQP-POOL|C_EnablePoolStake KST.ANHD (AQP-POOL.URC_AqpOwnerKonto of) of)
@@ -755,7 +755,7 @@
 (let*
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (sf:string (ref-U|DALOS::UDC_Makeid "SfStakePool"))
     )
     (ref-TS02-C3::AQP-POOL|C_DisablePoolStake KST.ANHD (AQP-POOL.URC_AqpOwnerKonto sf) sf)
@@ -775,7 +775,7 @@
 (let*
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (sf:string (ref-U|DALOS::UDC_Makeid "SfStakePool"))
     )
     (map print
@@ -806,8 +806,8 @@
 (let*
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
-        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (sf:string (ref-U|DALOS::UDC_Makeid "SfStakePool"))
     )
     (ref-TS02-C3::AQP-POOL|C_EnablePoolStake KST.ANHD (AQP-POOL.URC_AqpOwnerKonto sf) sf)
@@ -851,7 +851,7 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
     )
     (ref-TS02-C3::AQP-FVT|C_ToggleScoreEntityLink KST.ANHD (AQP-FVT.UR_FVT|OwnerKonto (ref-U|DALOS::UDC_Makeid "ResumeVacVault"))
         (ref-U|DALOS::UDC_Makeid "ResumeVacVault") 1 (ref-U|DALOS::UDC_Makeid "ResumeVacScore") false)
@@ -871,8 +871,8 @@
 (let*
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-        (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+        (ref-RPS:module{AcquisitionRewardPerShareV4} RPS)
         (pool:string (ref-U|DALOS::UDC_Makeid "ResumeVacPool"))
     )
     (map print
@@ -906,8 +906,8 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
-        (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+        (ref-RPS:module{AcquisitionRewardPerShareV4} RPS)
     )
     (ref-TS02-C3::AQP-FVT|C_ToggleScoreEntityLink KST.ANHD (AQP-FVT.UR_FVT|OwnerKonto (ref-U|DALOS::UDC_Makeid "ResumeVacVault"))
         (ref-U|DALOS::UDC_Makeid "ResumeVacVault") 1 (ref-U|DALOS::UDC_Makeid "ResumeVacScore") true)
@@ -939,7 +939,7 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
     )
     (ref-TS02-C3::AQP-FVT|C_ToggleScoreEntityLink KST.ANHD (AQP-FVT.UR_FVT|OwnerKonto (ref-U|DALOS::UDC_Makeid "OfStakeVault"))
         (ref-U|DALOS::UDC_Makeid "OfStakeVault") 1 (ref-U|DALOS::UDC_Makeid "OfStakeScore") false)
@@ -959,8 +959,8 @@
 (let*
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-        (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+        (ref-RPS:module{AcquisitionRewardPerShareV4} RPS)
         (pool:string (ref-U|DALOS::UDC_Makeid "OfStakePool"))
     )
     (map print
@@ -994,8 +994,8 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
-        (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+        (ref-RPS:module{AcquisitionRewardPerShareV4} RPS)
     )
     (ref-TS02-C3::AQP-FVT|C_ToggleScoreEntityLink KST.ANHD (AQP-FVT.UR_FVT|OwnerKonto (ref-U|DALOS::UDC_Makeid "OfStakeVault"))
         (ref-U|DALOS::UDC_Makeid "OfStakeVault") 1 (ref-U|DALOS::UDC_Makeid "OfStakeScore") true)
@@ -1027,7 +1027,7 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
     )
     (ref-TS02-C3::AQP-FVT|C_ToggleScoreEntityLink KST.ANHD (AQP-FVT.UR_FVT|OwnerKonto (ref-U|DALOS::UDC_Makeid "SfStakeVault"))
         (ref-U|DALOS::UDC_Makeid "SfStakeVault") 1 (ref-U|DALOS::UDC_Makeid "SfStakeScore") false)
@@ -1047,8 +1047,8 @@
 (let*
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-        (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+        (ref-RPS:module{AcquisitionRewardPerShareV4} RPS)
         (pool:string (ref-U|DALOS::UDC_Makeid "SfStakePool"))
     )
     (map print
@@ -1082,8 +1082,8 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
-        (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+        (ref-RPS:module{AcquisitionRewardPerShareV4} RPS)
     )
     (ref-TS02-C3::AQP-FVT|C_ToggleScoreEntityLink KST.ANHD (AQP-FVT.UR_FVT|OwnerKonto (ref-U|DALOS::UDC_Makeid "SfStakeVault"))
         (ref-U|DALOS::UDC_Makeid "SfStakeVault") 1 (ref-U|DALOS::UDC_Makeid "SfStakeScore") true)
@@ -1121,8 +1121,8 @@
 (let*
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (score:string (ref-U|DALOS::UDC_Makeid "ResumeVacScore"))
     )
     (map print
@@ -1203,7 +1203,7 @@
 (print "--- [AQP-G16 — SCR|XI>ISSUE-SCORE: the shape gate, then the class/lp-denominator rule behind it · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
     )
     (map print
         [
@@ -1239,7 +1239,7 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
     )
     (map print
         [
@@ -1259,7 +1259,7 @@
             ;;--- a boost-class link with a BAR class id. The score is real and has no stakers, so
             ;;the guard's other half is satisfied and this is attributable to the BAR check.
             (expect-failure "<<AQP-G17>> a boost-class link with a BAR class id is refused"
-                "boost-class-id must be non-BAR and the score must have no stakers"
+                "boost-class-id must be non-BAR, the score must have no stakers (nzs-count = 0) — vacate to reconfigure — and the score must not be drift-locked"
                 (ref-TS02-C3::AQP-SCR|C_CreateScoreBoostClassLink KST.ANHD (AQP-SCORE.UR_SCR|ScoreOwnerKonto (ref-U|DALOS::UDC_Makeid "ResumeVacScore"))
                     (ref-U|DALOS::UDC_Makeid "ResumeVacScore") "|"))
         ]
@@ -1293,7 +1293,7 @@
 (print "--- [AQP-G18 — FVT|C>ISSUE-FVT: class bounds, name reuse, and the denominator contract · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
     )
     (map print
         [
@@ -1338,7 +1338,7 @@
 (let*
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (pool:string (ref-U|DALOS::UDC_Makeid "ResumeVacPool"))
         (score:string (ref-U|DALOS::UDC_Makeid "SfStakeScore"))
     )
@@ -1420,8 +1420,8 @@
 (let*
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-RPS:module{AcquisitionRewardPerShareV4} RPS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (vault:string (ref-U|DALOS::UDC_Makeid "SfStakeVault"))
     )
     (map print
@@ -1477,7 +1477,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ouro:string "OURO-98c486052a51")
         (auryn:string (ref-DALOS::UR_AurynID))
         (elite:string (ref-DALOS::UR_EliteAurynID))
@@ -1526,7 +1526,7 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
     )
     (map print
         [
@@ -1567,8 +1567,8 @@
 ;;block survives a price change.
 (let*
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (patron:string KST.ANHD)
         (patron-stoa:string (ref-DALOS::UR_AccountStoa patron))
         (demiurgoi:[string] (ref-DALOS::UR_DemiurgoiID))
@@ -1608,7 +1608,7 @@
 (let*
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
+        (ref-RPS:module{AcquisitionRewardPerShareV4} RPS)
         (farm:string (ref-U|DALOS::UDC_Makeid "G23Farm"))
     )
     (map print
@@ -1678,8 +1678,8 @@
 ;;score issuance enforces ownership of the owner-konto it is issued to.
 (let*
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (patron:string KST.ANHD)
         (ps:string (ref-DALOS::UR_AccountStoa patron))
         (dem:[string] (ref-DALOS::UR_DemiurgoiID))
@@ -1716,8 +1716,8 @@
 ;;class-branch rule is reached instead.
 (let*
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (patron:string KST.ANHD)
         (ps:string (ref-DALOS::UR_AccountStoa patron))
         (dem:[string] (ref-DALOS::UR_DemiurgoiID))
@@ -1760,7 +1760,7 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
     )
     (ref-TS02-C3::AQP-POOL|C_AddScore KST.ANHD (AQP-POOL.URC_AqpOwnerKonto (ref-U|DALOS::UDC_Makeid "ResumeVacPool"))
         (ref-U|DALOS::UDC_Makeid "ResumeVacPool") (ref-U|DALOS::UDC_Makeid "G25Score"))
@@ -1782,7 +1782,7 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
     )
     (ref-TS02-C3::AQP-POOL|C_AddScore KST.ANHD (AQP-POOL.URC_AqpOwnerKonto (ref-U|DALOS::UDC_Makeid "DrainVacPool"))
         (ref-U|DALOS::UDC_Makeid "DrainVacPool") (ref-U|DALOS::UDC_Makeid "G24Score"))
@@ -1802,8 +1802,8 @@
 (let*
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-RPS:module{AcquisitionRewardPerShareV4} RPS)
         (vault:string (ref-U|DALOS::UDC_Makeid "SfStakeVault"))
         (emma-score:string (ref-U|DALOS::UDC_Makeid "G24Score"))
         (anhd-score:string (ref-U|DALOS::UDC_Makeid "G25Score"))
@@ -1858,8 +1858,8 @@
 (print "--- [AQP-G26 — the PER-ELEMENT NF score-definition rules, both modes · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
         (dhb:string "DHB-98c486052a51")
     )
     (map print
@@ -1929,9 +1929,9 @@
 (let*
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-        (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-RPS:module{AcquisitionRewardPerShareV4} RPS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (ouro:string (ref-U|DALOS::UDC_Makeid "OURO"))
         (ofv:string (ref-U|DALOS::UDC_Makeid "OfStakeVault"))
         (over:integer (+ AQP-FVT.INJECT-FIX-CHUNK-MAX 1))
@@ -1998,7 +1998,7 @@
 (print "--- [AQP-G29 — an anchor cannot be issued against an inactive BoostClass · 02 · let / invocation] ---")
 (let
     (
-        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+        (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
     )
     (map print
         [
@@ -2035,8 +2035,8 @@
 (let*
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
         (drain:string (ref-U|DALOS::UDC_Makeid "DrainVacPool"))
         (tfp:string (ref-U|DALOS::UDC_Makeid "TfStakePool"))
         (linked:string (ref-U|DALOS::UDC_Makeid "G24Score"))
@@ -2116,7 +2116,7 @@
 (let*
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
+        (ref-RPS:module{AcquisitionRewardPerShareV4} RPS)
         (vault:string (ref-U|DALOS::UDC_Makeid "TfStakeVault"))
         (ouro:string (ref-U|DALOS::UDC_Makeid "OURO"))
         (dlk:string (ref-U|DALOS::UDC_Makeid "DLK"))
@@ -2180,7 +2180,7 @@
 (print "--- [AQP-G32 — the Global Administrative Pause freezes every Stage-2 Talos client too · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
     )
     (let
@@ -2351,8 +2351,8 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (tf-score:string (ref-U|DALOS::UDC_Makeid "TfStakeScore"))
         (tf-vault:string (ref-U|DALOS::UDC_Makeid "TfStakeVault"))
         (ouro:string (ref-U|DALOS::UDC_Makeid "OURO"))
@@ -2414,7 +2414,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+        (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
         (revoked:string "TempClassTF-98c486052a51")
     )
     (map print
@@ -2458,9 +2458,9 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (revoked:string "TempClassTF-98c486052a51")
     )
     (let
@@ -2554,8 +2554,8 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
     )
     (let
         (
@@ -2685,8 +2685,8 @@
 (namespace "ouronet-ns")
 (let*
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (patron:string KST.ANHD)
         (ps:string (ref-DALOS::UR_AccountStoa patron))
         (dem:[string] (ref-DALOS::UR_DemiurgoiID))
@@ -2724,8 +2724,8 @@
 (let*
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (bronze:string (ref-U|DALOS::UDC_Makeid "G28Bronze"))
         (silver:string (ref-U|DALOS::UDC_Makeid "G25Score"))
         (golden:string (ref-U|DALOS::UDC_Makeid "G28Golden"))
@@ -2757,7 +2757,7 @@
 (let*
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
+        (ref-RPS:module{AcquisitionRewardPerShareV4} RPS)
         (vault:string (ref-U|DALOS::UDC_Makeid "SfStakeVault"))
         (bronze:string (ref-U|DALOS::UDC_Makeid "G28Bronze"))
         (silver:string (ref-U|DALOS::UDC_Makeid "G25Score"))
@@ -3013,9 +3013,9 @@
 (print "--- [AQP-G37 — four ANK admission guards, none of which needed a fixture · 02 · let / invocation] ---")
 (let
     (
-        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (bc:string "TfStakeBoost-98c486052a51")
         (nf:string "TNF-98c486052a51")
         (lp:string "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
@@ -3199,7 +3199,7 @@
 (let*
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (sf:string (ref-U|DALOS::UDC_Makeid "SfStakePool"))
     )
     (map print
@@ -3244,7 +3244,7 @@
 (let*
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (pool:string (ref-U|DALOS::UDC_Makeid "ResumeVacPool"))
         (ouro:string "OURO-98c486052a51")
     )
@@ -3301,7 +3301,7 @@
 (let*
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
         (tf-score:string (ref-U|DALOS::UDC_Makeid "TfStakeScore"))
     )
     (map print
@@ -3349,9 +3349,9 @@
 (print "--- [AQP-G44 — the vacate class backstop, driven on a FORCED corrupt pool row · 02 · let / invocation] ---")
 (let
     (
-        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (junk:string "JunkClassPool-98c486052a51")
         (dhb:string "DHB-98c486052a51")
     )
@@ -3418,8 +3418,8 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (ouro:string "OURO-98c486052a51")
     )
     (map print
@@ -3475,10 +3475,10 @@
 (print "--- [AQP-D1a — the STOA peg claim: baseline at $0.10 · 02 · let / invocation] ---")
 (let
     (
-        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+        (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
     )
     (map print
         [
@@ -3537,8 +3537,8 @@
 (let
     (
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
     )
     ;;REWRITTEN 2026-10-02 (owner ruling), and the previous version of this block pinned a BUG.
     ;;
@@ -3636,8 +3636,8 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-VCT:module{AcquisitionVacateV4} AQP-VCT)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
         (ref-U|CT:module{OuronetConstantsV2} U|CT)
     )
     (map print
@@ -3659,8 +3659,8 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-VCT:module{AcquisitionVacateV4} AQP-VCT)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
     )
     (let
         (
@@ -3695,7 +3695,7 @@
 ;;in a consolidated run read a token this suite invented, so the revert is asserted, not assumed.
 (let
     (
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
         (ref-U|CT:module{OuronetConstantsV2} U|CT)
     )
     (map print
@@ -3736,9 +3736,9 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
         (ref-U|CT:module{OuronetConstantsV2} U|CT)
     )
     (let
@@ -3827,7 +3827,7 @@
 ;;it. Both arms are asserted: a one-armed test would pass on `(if trigger 0.0 0.0)`.
 (let
     (
-        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+        (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
     )
     (map print
         [
@@ -3858,7 +3858,7 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
     )
     (let
         (
@@ -3894,7 +3894,7 @@
 ;;a SMART account: it must clear the owner check and be refused by the beneficiary one.
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-DPDC:module{DpdcV3} DPDC)
     )
     (let
         (
@@ -3979,7 +3979,7 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
+        (ref-RPS:module{AcquisitionRewardPerShareV4} RPS)
     )
     (let
         (
@@ -4111,7 +4111,7 @@
 (print "--- [AQP-F3 — VCT: the pure vacate shape-converters, on the edges that bit · 02 · let / invocation] ---")
 (let
     (
-        (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+        (ref-VCT:module{AcquisitionVacateV4} AQP-VCT)
     )
     (map print
         [
@@ -4150,7 +4150,7 @@
 ;;OF vacate" when in fact there is nothing to vacate, so it is pinned explicitly.
 (let
     (
-        (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+        (ref-VCT:module{AcquisitionVacateV4} AQP-VCT)
     )
     (map print
         [
@@ -4197,7 +4197,7 @@
 (print "--- [AQP-F4 — AQP: the M5 cross-pool stake scans, owner side against beneficiary side · 02 · let / invocation] ---")
 (let
     (
-        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
     )
     (let
         (
@@ -4247,7 +4247,7 @@
 ;;and the empty ones still prove the two scans do not disagree about ABSENCE.
 (let
     (
-        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
     )
     (map print
         [
@@ -4298,7 +4298,7 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
     )
     (let
         (
@@ -4401,7 +4401,7 @@
 (print "--- [AQP-F6 — VCT: the shadowed batch guard gets its voice back · 02 · let / invocation] ---")
 (let
     (
-        (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+        (ref-VCT:module{AcquisitionVacateV4} AQP-VCT)
     )
     (map print
         [
@@ -4471,7 +4471,7 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (ouro:string "OURO-98c486052a51")
         (dhcd:string "DHCD-98c486052a51")
     )
@@ -4563,8 +4563,8 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
-        (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
+        (ref-VCT:module{AcquisitionVacateV4} AQP-VCT)
+        (ref-RPS:module{AcquisitionRewardPerShareV4} RPS)
         (ouro:string "OURO-98c486052a51")
     )
     (let
@@ -4573,7 +4573,7 @@
             ;;one real leg, built through the module's own constructor rather than a hand-written
             ;;object, so the test cannot drift from the schema
             ;;untyped on purpose: VCT|VacateTfLeg is a MODULE schema, not an interface member, so
-            ;;`object{AcquisitionVacateV1.VCT|VacateTfLeg}` does not resolve through a modref. Built
+            ;;`object{AcquisitionVacateV4.VCT|VacateTfLeg}` does not resolve through a modref. Built
             ;;via the module's own constructor rather than a literal so the shape cannot drift.
             (legs (ref-VCT::UC_TfLegsFromParallelArrays [KST.ANHD] [KST.ANHD] [20.0]))
         )
@@ -4642,9 +4642,9 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-INFO:module{OuronetInfoV2} IGNIS)
+        (ref-RPS:module{AcquisitionRewardPerShareV4} RPS)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-INFO:module{OuronetInfoV3} IGNIS)
         (ouro:string "OURO-98c486052a51")
     )
     (let
@@ -4722,13 +4722,13 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (probe:string "SLOT-PROBE-SCORE")
     )
     (let
         (
             ;;untyped: AQP|Schema is a MODULE schema, not an interface member, so
-            ;;`object{AcquisitionPoolsV1.AQP|Schema}` does not resolve through a modref.
+            ;;`object{AcquisitionPoolsV3.AQP|Schema}` does not resolve through a modref.
             (pool-row (ref-AQP::UR_AQP|Pool (ref-U|DALOS::UDC_Makeid "TfStakePool")))
         )
         (let
@@ -4786,7 +4786,7 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (mvst:string "MVST-98c486052a51")
     )
     (let
@@ -4836,7 +4836,7 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (mvst:string "MVST-98c486052a51")
         (dhb:string "DHB-98c486052a51")
     )
@@ -4918,9 +4918,9 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (tnf:string "TNF-98c486052a51")
     )
     (map print
@@ -5030,7 +5030,7 @@
 ;;have counted every one -- which is what a consumer polls to know its cached weights are stale.
 (let
     (
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
         (tcd:string "TheCodingDivision-98c486052a51")
         (dhcd:string "DHCD-98c486052a51")
     )
@@ -5086,9 +5086,9 @@
 (print "--- [AQP-F13 — RPS: the multiplet LADDER, and the two stake-flow previews' documented asymmetry · 02 · let / invocation] ---")
 (let
     (
-        (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-RPS:module{AcquisitionRewardPerShareV4} RPS)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
     )
     (let
         (
@@ -5148,7 +5148,7 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
+        (ref-RPS:module{AcquisitionRewardPerShareV4} RPS)
         (mvst:string "MVST-98c486052a51")
         (dhcd:string "DHCD-98c486052a51")
     )
@@ -5257,8 +5257,8 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
-        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-VCT:module{AcquisitionVacateV4} AQP-VCT)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (ouro:string "OURO-98c486052a51")
     )
     (let
@@ -5297,7 +5297,7 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+        (ref-VCT:module{AcquisitionVacateV4} AQP-VCT)
         (ouro:string "OURO-98c486052a51")
     )
     (let
@@ -5342,7 +5342,7 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+        (ref-VCT:module{AcquisitionVacateV4} AQP-VCT)
         (ouro:string "OURO-98c486052a51")
         (dhcd:string "DHCD-98c486052a51")
     )
@@ -5396,8 +5396,8 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
-        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-VCT:module{AcquisitionVacateV4} AQP-VCT)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (dhcd:string "DHCD-98c486052a51")
     )
     (let
@@ -5473,7 +5473,7 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+        (ref-VCT:module{AcquisitionVacateV4} AQP-VCT)
         (dhcd:string "DHCD-98c486052a51")
         (mvst:string "MVST-98c486052a51")
     )
@@ -5542,8 +5542,8 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-        (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+        (ref-VCT:module{AcquisitionVacateV4} AQP-VCT)
         (ouro:string "OURO-98c486052a51")
     )
     (let
@@ -5580,8 +5580,8 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-        (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+        (ref-VCT:module{AcquisitionVacateV4} AQP-VCT)
         (ouro:string "OURO-98c486052a51")
     )
     (let
@@ -5616,8 +5616,8 @@
 ;;is driven on a real id and a bad one, so the delegation is shown to actually reach the validator.
 (let
     (
-        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+        (ref-DPDC:module{DpdcV3} DPDC)
         (mvst:string "MVST-98c486052a51")
         (dhcd:string "DHCD-98c486052a51")
     )
@@ -5675,7 +5675,7 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
+        (ref-RPS:module{AcquisitionRewardPerShareV4} RPS)
         (ouro:string "OURO-98c486052a51")
         (swpair:string "W|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
     )
@@ -5718,7 +5718,7 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
+        (ref-RPS:module{AcquisitionRewardPerShareV4} RPS)
     )
     (let
         (
@@ -5746,8 +5746,8 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
         (dhcd:string "DHCD-98c486052a51")
     )
     (let

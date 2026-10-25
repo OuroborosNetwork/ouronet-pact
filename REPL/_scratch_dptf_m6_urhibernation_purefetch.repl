@@ -34,7 +34,7 @@
 ;;than the one-gas spread between them, so re-adding it turns this red.
 (let
     (
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
         (ouro-id:string "OURO-98c486052a51")
     )
     (let ((g0:integer (env-gas)))

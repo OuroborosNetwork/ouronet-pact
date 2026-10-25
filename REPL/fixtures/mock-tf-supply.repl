@@ -32,7 +32,7 @@
 (let
     (
         (patron:string KST.ANHD)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
     )
     (ref-TS01-C1::DPTF|C_Mint patron patron "MOCKA-98c486052a51" 1000000.0 true)
     (ref-TS01-C1::DPTF|C_Mint patron patron "MOCKB-98c486052a51" 1000000.0 true)
@@ -51,7 +51,7 @@
 (print "--- [FIXTURE mock-tf-supply — postcondition · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
     )
     (map print
         [

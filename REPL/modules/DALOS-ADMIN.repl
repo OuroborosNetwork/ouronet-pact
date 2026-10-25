@@ -38,7 +38,7 @@
 (print "--- [DALOS-ADMIN-01 — global toggles round-trip · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
     )
     (let ((gap0:bool (ref-DALOS::UR_GAP)) (acs0:bool (ref-DALOS::UR_AccountCreationStoa)))
@@ -81,8 +81,8 @@
 (print "--- [DALOS-ADMIN-02 — A_UpdateUsagePrice writes the price the pricing layer reads · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
     )
     (let ((p0:decimal (ref-DALOS::UR_UsagePrice "dptf")))
@@ -141,7 +141,7 @@
 (print "--- [DALOS-ADMIN-03 — A_MigrateLiquidFunds: the gas-station escape hatch · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
         (ref-coin:module{stoa-ns.fungible-v1} coin)
     )
@@ -218,7 +218,7 @@
 (print "--- [DALOS-ADMIN-03b — the migration gate, and the message that lies about it · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
         (ref-coin:module{stoa-ns.fungible-v1} coin)
     )
@@ -291,7 +291,7 @@
 (print "--- [DALOS-G1 — the account-type guard family, probed DIRECTLY · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (standard:string KST.ANHD)
     )
     (let
@@ -354,7 +354,7 @@
 ;;Crossing the two guard kinds against the two modes is the same shape of test, one level down.
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
     )
     (env-data { "gp-ks": { "keys": ["PK_AncientHodler"], "pred": "keys-all" } })
     (let
@@ -381,7 +381,7 @@
 (print "--- [DALOS-G1 · 03 · the global collection toggles, tripped from live state] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
     )
     (let
         (
@@ -435,7 +435,7 @@
 (print "--- [DALOS-G8 - UEV_StandardAccOwn's governor check, driven · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (standard:string KST.ANHD)
         (other:string KST.EMMA)
     )
@@ -514,7 +514,7 @@
 (let
     (
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
     )
     (env-sigs [{ "key": "PK_Lumy", "caps": [] }])
     ;;LUMY names HER OWN account as executor, which is the fixture that satisfies the executor
@@ -725,7 +725,7 @@
 (let
     (
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
     )
     (map print
         [
@@ -776,8 +776,8 @@
 (print "--- [DALOS-G4 — transferability, the smart-account control no-op, and account glyphs · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
         (std:string KST.ANHD)
     )
@@ -956,7 +956,7 @@
 (print "--- [DALOS-G6 — the Global Administrative Pause freezes every Stage-1 Talos client · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
     )
     (let
@@ -1074,15 +1074,15 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
         (bj:string KC.BJ)
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DALOS|UpdateEliteAccount patron patron))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_DALOS|UpdateEliteAccount patron patron))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C1::DALOS|C_UpdateEliteAccount patron patron))
         )
@@ -1112,15 +1112,15 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
         (bj:string KC.BJ)
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DALOS|UpdateEliteAccountSquared patron patron patron))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_DALOS|UpdateEliteAccountSquared patron patron patron))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C1::DALOS|C_UpdateEliteAccountSquared patron patron patron))
         )
@@ -1153,15 +1153,15 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
 (let
     (
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
         (bj:string KC.BJ)
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DALOS|RotateGuard patron emma))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_DALOS|RotateGuard patron emma))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C1::DALOS|C_RotateGuard patron emma (keyset-ref-guard "ouronet-ns.us-0001_emma-keyset") true))
         )
@@ -1191,15 +1191,15 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
 (let
     (
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
         (bj:string KC.BJ)
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DALOS|RotateStoa patron emma))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_DALOS|RotateStoa patron emma))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C1::DALOS|C_RotateStoa patron emma KC.KADN_NAME_000d))
         )
@@ -1231,15 +1231,15 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_BM", "caps": [] }])
 (let
     (
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
         (bj:string KC.BJ)
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DALOS|ControlSmartAccount patron bj))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_DALOS|ControlSmartAccount patron bj))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C1::DALOS|C_ControlSmartAccount patron bj true false true))
         )
@@ -1281,8 +1281,8 @@
 (env-sigs [{ "key": "PK_Emma", "caps": [] } { "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
         (new-stoa:string "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e")
     )
     (let

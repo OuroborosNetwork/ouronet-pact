@@ -3,7 +3,7 @@
 ;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact
 ;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface StoaLiquidStakingV2
+(interface StoaLiquidStakingV3
     @doc "Exposes the functions needed for Stoa Liquid Staking, Wrap and Unwrap STOA \
         \ as well as their URSTOA Counterparts"
 
@@ -48,10 +48,10 @@
     ;;  [UR]
     ;;
     (defun UR_IzOuronetAccountRegisteredForUrstoaHoldings:bool (ouronet-account:string))
-    (defun URCi_UnwrapStoa:object{IgnisCollectorV3.OutputCumulator} (unwrapper:string amount:decimal))
-    (defun URCi_WrapStoa:object{IgnisCollectorV3.OutputCumulator} (wrapper:string amount:decimal))
-    (defun URCi_UnwrapUrStoa:object{IgnisCollectorV3.OutputCumulator} (unwrapper:string amount:decimal))
-    (defun URCi_WrapUrStoa:object{IgnisCollectorV3.OutputCumulator} (wrapper:string amount:decimal))
+    (defun URCi_UnwrapStoa:object{IgnisCollectorV4.OutputCumulator} (unwrapper:string amount:decimal))
+    (defun URCi_WrapStoa:object{IgnisCollectorV4.OutputCumulator} (wrapper:string amount:decimal))
+    (defun URCi_UnwrapUrStoa:object{IgnisCollectorV4.OutputCumulator} (unwrapper:string amount:decimal))
+    (defun URCi_WrapUrStoa:object{IgnisCollectorV4.OutputCumulator} (wrapper:string amount:decimal))
     ;;{5.4}  Validate [UEV/CAP]
     ;;
     ;;  [UEV]
@@ -67,8 +67,8 @@
     ;;
     ;;  [C]
     ;;
-    (defun C_UnwrapStoa:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string amount:decimal))
-    (defun C_WrapStoa:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string amount:decimal))
+    (defun C_UnwrapStoa:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string amount:decimal))
+    (defun C_WrapStoa:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string amount:decimal))
     ;;
     ;;#13H fix: C_RegisterOuronetAccountForUrstoaHoldings removed (2026-08-27) - it took a
     ;;caller-supplied <guard> for an arbitrary <ouronet-account> with no ownership check
@@ -76,9 +76,16 @@
     ;;handled by UI-constructed Pact code using the real signer's own (read-keyset "ks"), the
     ;;same established pattern already used for native Stoa unwrap - see
     ;;OuronetInformational/memories/2026-08-27-urstoa-account-creation-is-ui-constructed.md.
-    (defun C_UnwrapUrStoa:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string amount:decimal))
-    (defun C_WrapUrStoa:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string amount:decimal))
+    (defun C_UnwrapUrStoa:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string amount:decimal))
+    (defun C_WrapUrStoa:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string amount:decimal))
 
+
+    ;;<=========================================================================>
+    ;; ADDED 2026-10-12 -- interface-membership sweep (StoicSyntax-Prefixes.md Sec5,
+    ;; owner ruling). Every one of these was already live in the module body; this
+    ;; closes the gap between what the module DOES and what its interface SAYS it does.
+    ;;<=========================================================================>
+    (defun UEV_Amount (amount:decimal))
 )
 ;;
 (module LIQUID GOV
@@ -92,7 +99,7 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements StoaLiquidStakingV2)
+    (implements StoaLiquidStakingV3)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -119,7 +126,7 @@
         (let
             (
                 (ref-coin:module{stoa-ns.fungible-v1} coin)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (target-balance:decimal (ref-coin::get-balance migration-target-stoa-account))
                 (gap:bool (ref-DALOS::UR_GAP))
             )
@@ -138,7 +145,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -146,7 +153,7 @@
     (defun GOV|LiquidKey ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|LiquidKey)
         )
@@ -154,7 +161,7 @@
     (defun GOV|LIQUID|SC_NAME ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|LIQUID|SC_NAME)
         )
@@ -179,7 +186,7 @@
     (defun P|Info ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::P|Info)
         )
@@ -372,7 +379,7 @@
     (defcap LIQUID|C>X_WRAPPER (account:string)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership account)
             (compose-capability (LIQUID|CONVERTER))
@@ -400,23 +407,23 @@
         (let
             (
                 (ref-ur-coin:module{stoa-ns.ur-stoic-fungible-v1} coin)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (stoa-patron:string (ref-DALOS::UR_AccountStoa ouronet-account))
                 (trial (try false (ref-ur-coin::UR_UR|Details stoa-patron)))
             )
             (if (= (typeof trial) "bool") false true)
         )
     )
-    (defun URCi_UnwrapStoa:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_UnwrapStoa:object{IgnisCollectorV4.OutputCumulator}
         (unwrapper:string amount:decimal)
         @doc "Cost preview for C_UnwrapStoa: unwrapper->LIQUID wrapped-STOA transfer + burn, \
             \ re-derived purely (the STOA fuel payout is a separate side effect)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
                 (lq-sc:string LIQUID|SC_NAME)
                 (w-stoa-id:string (ref-DALOS::UR_WrappedStoaID))
             )
@@ -429,16 +436,16 @@
             )
         )
     )
-    (defun URCi_WrapStoa:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_WrapStoa:object{IgnisCollectorV4.OutputCumulator}
         (wrapper:string amount:decimal)
         @doc "Cost preview for C_WrapStoa: mint wrapped-STOA on LIQUID + LIQUID->wrapper \
             \ transfer, re-derived purely (the STOA fuel intake is a separate side effect)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
                 (lq-sc:string LIQUID|SC_NAME)
                 (w-stoa-id:string (ref-DALOS::UR_WrappedStoaID))
             )
@@ -451,16 +458,16 @@
             )
         )
     )
-    (defun URCi_UnwrapUrStoa:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_UnwrapUrStoa:object{IgnisCollectorV4.OutputCumulator}
         (unwrapper:string amount:decimal)
         @doc "Cost preview for C_UnwrapUrStoa: unwrapper->LIQUID Ur-STOA transfer + burn, \
             \ re-derived purely (the Ur-STOA transmit payout is a separate side effect)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
                 (lq-sc:string LIQUID|SC_NAME)
                 (w-ur-stoa-id:string (ref-DALOS::UR_UrStoaID))
             )
@@ -473,16 +480,16 @@
             )
         )
     )
-    (defun URCi_WrapUrStoa:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_WrapUrStoa:object{IgnisCollectorV4.OutputCumulator}
         (wrapper:string amount:decimal)
         @doc "Cost preview for C_WrapUrStoa: mint Ur-STOA on LIQUID + LIQUID->wrapper transfer, \
             \ re-derived purely (the Ur-STOA intake is a separate side effect)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
                 (lq-sc:string LIQUID|SC_NAME)
                 (w-ur-stoa-id:string (ref-DALOS::UR_UrStoaID))
             )
@@ -500,8 +507,8 @@
         @doc "Enforces Liquid Staking is live with an existing Autostake Pair"
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (w-stoa:string (ref-DALOS::UR_WrappedStoaID))
                 (l-stoa:string (ref-DALOS::UR_SilverStoaID))
             )
@@ -544,7 +551,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership executor)
         )
@@ -555,7 +562,7 @@
                     ;;XB_MoveDalosFuel lives in IGNIS, not DALOS — it was called through the
                     ;;DALOS ref, which DOES NOT have that member, so this admin migration path
                     ;;died on every call (modref members resolve at runtime, so it still loaded).
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (lq-stoa:string LIQUID|SC_STOA-NAME)
                     (present-stoa-balance:decimal (ref-coin::get-balance lq-stoa))
                 )
@@ -565,16 +572,16 @@
             )
         )
     )
-    (defun C_UnwrapStoa:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_UnwrapStoa:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string amount:decimal)
         (P|UEV_IMC)
         (let
             (
                 (ref-coin:module{stoa-ns.fungible-v1} coin)
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
                 (lq-sc:string LIQUID|SC_NAME)
                 (lq-stoa:string LIQUID|SC_STOA-NAME)
                 (stoa-patron:string (ref-DALOS::UR_AccountStoa executor))
@@ -583,7 +590,7 @@
             (with-capability (LIQUID|C>UNWRAP executor)
                 (let
                     (
-                        (output:object{IgnisCollectorV3.OutputCumulator}
+                        (output:object{IgnisCollectorV4.OutputCumulator}
                             (ref-IGNIS::UDC_ConcatenateOutputCumulators
                                 [
                                     (ref-TFT::C_Transfer patron executor lq-sc w-stoa-id amount true)
@@ -602,15 +609,15 @@
             )
         )
     )
-    (defun C_WrapStoa:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_WrapStoa:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string amount:decimal)
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
                 (lq-sc:string LIQUID|SC_NAME)
                 (lq-stoa:string LIQUID|SC_STOA-NAME)
                 (stoa-patron:string (ref-DALOS::UR_AccountStoa executor))
@@ -619,7 +626,7 @@
             (with-capability (LIQUID|C>WRAP executor)
                 (let
                     (
-                        (output:object{IgnisCollectorV3.OutputCumulator}
+                        (output:object{IgnisCollectorV4.OutputCumulator}
                             (ref-IGNIS::UDC_ConcatenateOutputCumulators
                                 [
                                     (ref-DPTF::C_Mint patron lq-sc w-stoa-id amount false)
@@ -635,7 +642,7 @@
             )
         )
     )
-    (defun C_UnwrapUrStoa:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_UnwrapUrStoa:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string amount:decimal)
         @doc "Executor is the Ouronet Account doing the Unwrapping (renamed from `unwrapper`, \
             \ patron/executor canon 2.2, 2026-09-21). \
@@ -648,10 +655,10 @@
         (let
             (
                 (ref-ur-coin:module{stoa-ns.ur-stoic-fungible-v1} coin)
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
                 (lq-sc:string LIQUID|SC_NAME)
                 (lq-stoa:string LIQUID|SC_STOA-NAME)
                 (stoa-patron:string (ref-DALOS::UR_AccountStoa executor))
@@ -660,7 +667,7 @@
             (with-capability (LIQUID|C>UR-UNWRAP executor)
                 (let
                     (
-                        (output:object{IgnisCollectorV3.OutputCumulator}
+                        (output:object{IgnisCollectorV4.OutputCumulator}
                             (ref-IGNIS::UDC_ConcatenateOutputCumulators
                                 [
                                     (ref-TFT::C_Transfer patron executor lq-sc w-ur-stoa-id amount true)
@@ -679,7 +686,7 @@
             )
         )
     )
-    (defun C_WrapUrStoa:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_WrapUrStoa:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string amount:decimal)
         @doc "Executor is the Ouronet Account doing the Wrapping (renamed from `wrapper`, \
             \ patron/executor canon 2.2, 2026-09-21). \
@@ -692,10 +699,10 @@
         (let
             (
                 (ref-ur-coin:module{stoa-ns.ur-stoic-fungible-v1} coin)
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
                 (lq-sc:string LIQUID|SC_NAME)
                 (lq-stoa:string LIQUID|SC_STOA-NAME)
                 (stoa-patron:string (ref-DALOS::UR_AccountStoa executor))
@@ -704,7 +711,7 @@
             (with-capability (LIQUID|C>UR-WRAP executor)
                 (let
                     (
-                        (output:object{IgnisCollectorV3.OutputCumulator}
+                        (output:object{IgnisCollectorV4.OutputCumulator}
                             (ref-IGNIS::UDC_ConcatenateOutputCumulators
                                 [
                                     (ref-DPTF::C_Mint patron lq-sc w-ur-stoa-id amount false)

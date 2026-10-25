@@ -40,8 +40,8 @@
 (print "--- [TX-EQUITY-001 - Issue Shareholder Collection · 01 · let / invocation] ---")
 (let
     (
-        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (owner:string KST.ANHD)
         (dpsf-price:decimal
             ;;IssueCompany = the underlying SFT collection issue PLUS the $100 equity premium,
@@ -72,9 +72,9 @@
 (print "--- [TX-EQUITY-001 · 02 · issue + baseline reads] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-EQUITY:module{EquityV3} EQUITY)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-EQUITY:module{EquityV4} EQUITY)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
         (owner:string KST.ANHD)
         (links:[string] (make-list 24 "ipfs://EquityTestLink"))
     )
@@ -139,9 +139,9 @@
 (print "--- [TX-EQUITY-002 - Make / Convert / Break round trip, exact conservation · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-EQUITY:module{EquityV3} EQUITY)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-EQUITY:module{EquityV4} EQUITY)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
         (owner:string KST.ANHD)
         (id:string "E|TSEQ-98c486052a51")
     )
@@ -173,8 +173,8 @@
 (print "--- [TX-EQUITY-002 · 03 · Convert 1,000 Tier-1 (100/unit) -> 500 Tier-2 (200/unit)] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
         (owner:string KST.ANHD)
         (id:string "E|TSEQ-98c486052a51")
     )
@@ -202,9 +202,9 @@
 (print "--- [TX-EQUITY-002 · 04 · Break 500 Tier-2 units -> 100,000 shares; full-circle conservation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-EQUITY:module{EquityV3} EQUITY)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-EQUITY:module{EquityV4} EQUITY)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
         (owner:string KST.ANHD)
         (id:string "E|TSEQ-98c486052a51")
     )
@@ -255,7 +255,7 @@
 (print "--- [TX-EQUITY-003 - negative paths: capacity, modulo, invalid nonce/tier · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
         (owner:string KST.ANHD)
         (id:string "E|TSEQ-98c486052a51")
     )
@@ -320,7 +320,7 @@
 ;;client route to exercise it does not exist yet.
 (let
     (
-        (ref-EQ:module{EquityV3} EQUITY)
+        (ref-EQ:module{EquityV4} EQUITY)
         (eq-id:string "E|TSEQ-98c486052a51")
     )
     (map print
@@ -345,8 +345,8 @@
 ;;share count moves.
 (let
     (
-        (ref-EQ:module{EquityV3} EQUITY)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-EQ:module{EquityV4} EQUITY)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
         (eq-id:string "E|TSEQ-98c486052a51")
         (t3:integer (ref-EQ::URC_SingleSharePerMillions "E|TSEQ-98c486052a51" 3))
     )
@@ -396,8 +396,8 @@
 ;;weight follow it. The supply is restored in the same transaction, so nothing downstream moves.
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
         (eq-id:string "E|TSEQ-98c486052a51")
     )
     (map print
@@ -415,7 +415,7 @@
 (update DPDC.DPSF|T|Nonces (concat ["E|TSEQ-98c486052a51" "|" "1"]) { "nonce-supply" : 10000000 })
 (let
     (
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
         (eq-id:string "E|TSEQ-98c486052a51")
     )
     (map print
@@ -438,7 +438,7 @@
 (update DPDC.DPSF|T|Nonces (concat ["E|TSEQ-98c486052a51" "|" "1"]) { "nonce-supply" : 1000000 })
 (let
     (
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
         (eq-id:string "E|TSEQ-98c486052a51")
     )
     (map print

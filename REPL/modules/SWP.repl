@@ -45,8 +45,8 @@
 (print "--- [SWPX-01a — SWP|C_IssueStandardPool, defpact step 0|2 · 02 · let / invocation] ---")
 (let
     (
-        (ref-SWP:module{SwapperV4} SWP)
-        (ref-TS01-CP:module{TalosStageOne_ClientPactsV4} TS01-CP)
+        (ref-SWP:module{SwapperV5} SWP)
+        (ref-TS01-CP:module{TalosStageOne_ClientPactsV5} TS01-CP)
         (patron:string KST.ANHD)
     )
     (print (format "principals = {}" [(ref-SWP::UR_Principals)]))
@@ -73,9 +73,9 @@
 ;; below; a one-sided test would pass against a guard that never rejects.
 (let
     (
-        (ref-SWP:module{SwapperV4} SWP)
-        (ref-SWPI:module{SwapperIssueV4} SWPI)
-        (ref-TS01-CP:module{TalosStageOne_ClientPactsV4} TS01-CP)
+        (ref-SWP:module{SwapperV5} SWP)
+        (ref-SWPI:module{SwapperIssueV5} SWPI)
+        (ref-TS01-CP:module{TalosStageOne_ClientPactsV5} TS01-CP)
         (patron:string KST.ANHD)
         (dlk:string "DLK-98c486052a51")
     )
@@ -123,7 +123,7 @@
 (print "--- [SWPX-01b — standard pool, defpact step 1|2 (ignis + STOA) · 01 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (split-stoa:[decimal]
             (ref-DALOS::URC_SplitSTOAPrices KST.ANHD
                 (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))))
@@ -171,8 +171,8 @@
 (print "--- [SWPX-01c — standard pool, defpact step 2|2 + assertions · 02 · let / invocation] ---")
 (let
     (
-        (ref-SWP:module{SwapperV4} SWP)
-        (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+        (ref-SWP:module{SwapperV5} SWP)
+        (ref-U|SWP:module{UtilitySwpV3} U|SWP)
         (toks:[string] ["DLK-98c486052a51" "BUSD-98c486052a51" "TUSD-98c486052a51" "USDT-98c486052a51"])
     )
     ;; The pool id is DERIVED from (tokens, weights, amp) -- it is not chosen. Computing it here
@@ -234,10 +234,10 @@
 (print "--- [SWPX-02a — SWP|C_IssueWeightedPool, defpact step 0|2 · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS01-CP:module{TalosStageOne_ClientPactsV4} TS01-CP)
+        (ref-TS01-CP:module{TalosStageOne_ClientPactsV5} TS01-CP)
         (patron:string KST.ANHD)
         (dlk:string "DLK-98c486052a51")
-        (pt:[object{SwapperV4.PoolTokens}]
+        (pt:[object{SwapperV5.PoolTokens}]
             [
                 { "token-id":  "DLK-98c486052a51",  "token-supply": 5000.0}
                 { "token-id":  "BUSD-98c486052a51", "token-supply": 100000.0}
@@ -281,7 +281,7 @@
 (print "--- [SWPX-02b — weighted pool, defpact step 1|2 (ignis + STOA) · 01 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (split-stoa:[decimal]
             (ref-DALOS::URC_SplitSTOAPrices KST.ANHD
                 (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))))
@@ -325,8 +325,8 @@
 (print "--- [SWPX-02c — weighted pool, defpact step 2|2 + assertions · 02 · let / invocation] ---")
 (let
     (
-        (ref-SWP:module{SwapperV4} SWP)
-        (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+        (ref-SWP:module{SwapperV5} SWP)
+        (ref-U|SWP:module{UtilitySwpV3} U|SWP)
         (toks:[string] ["DLK-98c486052a51" "BUSD-98c486052a51" "TUSD-98c486052a51" "USDC-98c486052a51"])
         (w:[decimal] [0.4 0.2 0.2 0.2])
     )
@@ -388,9 +388,9 @@
 (print "--- [SWPX-02d - SWP|S>WEIGHTS: modifying weights on a live weighted pool · 02 · let / invocation] ---")
 (let
     (
-        (ref-SWP:module{SwapperV4} SWP)
-        (ref-U|SWP:module{UtilitySwpV2} U|SWP)
-        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
+        (ref-SWP:module{SwapperV5} SWP)
+        (ref-U|SWP:module{UtilitySwpV3} U|SWP)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV5} TS01-C3)
         (toks:[string] ["DLK-98c486052a51" "BUSD-98c486052a51" "TUSD-98c486052a51" "USDC-98c486052a51"])
         (w:[decimal] [0.4 0.2 0.2 0.2])
     )
@@ -440,7 +440,7 @@
 ;;quietly change swap outputs in whatever test runs next.
 (let
     (
-        (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+        (ref-U|SWP:module{UtilitySwpV3} U|SWP)
         (toks:[string] ["DLK-98c486052a51" "BUSD-98c486052a51" "TUSD-98c486052a51" "USDC-98c486052a51"])
     )
     (print
@@ -488,9 +488,9 @@
     )
     (let
         (
-            (ref-BRD:module{BrandingV2} BRD)
-            (ref-U|SWP:module{UtilitySwpV2} U|SWP)
-            (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
+            (ref-BRD:module{BrandingV3} BRD)
+            (ref-U|SWP:module{UtilitySwpV3} U|SWP)
+            (ref-TS01-C3:module{TalosStageOne_ClientThreeV5} TS01-C3)
             (toks:[string] ["DLK-98c486052a51" "BUSD-98c486052a51" "TUSD-98c486052a51" "USDT-98c486052a51"])
         )
         (let ((sp:string (ref-U|SWP::UC_PoolID toks (make-list 4 1.0) -1.0)))
@@ -506,7 +506,7 @@
                     ]
                 )
                 (ref-TS01-C3::SWP|C_UpgradeBranding KST.ANHD (SWP.UR_OwnerKonto sp) sp 2)
-                (let ((b:object{BrandingV2.Schema} (ref-BRD::UR_Branding sp false)))
+                (let ((b:object{BrandingV3.Schema} (ref-BRD::UR_Branding sp false)))
                     (map print
                         [
                             (expect "<<SWPX-03>> the upgrade moves the tier DOWN, 3 -> 1"
@@ -529,9 +529,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-SWP:module{SwapperV4} SWP)
-        (ref-U|SWP:module{UtilitySwpV2} U|SWP)
-        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
+        (ref-SWP:module{SwapperV5} SWP)
+        (ref-U|SWP:module{UtilitySwpV3} U|SWP)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV5} TS01-C3)
         (toks:[string] ["DLK-98c486052a51" "BUSD-98c486052a51" "TUSD-98c486052a51" "USDT-98c486052a51"])
     )
     (let ((sp:string (ref-U|SWP::UC_PoolID toks (make-list 4 1.0) -1.0)))
@@ -621,9 +621,9 @@
 (print "--- [SWP-G1 — UEV_SwapData: five ways to describe a swap wrongly · 02 · let / invocation] ---")
 (let
     (
-        (ref-SWPI:module{SwapperIssueV4} SWPI)
-        (ref-SWP:module{SwapperV4} SWP)
-        (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+        (ref-SWPI:module{SwapperIssueV5} SWPI)
+        (ref-SWP:module{SwapperV5} SWP)
+        (ref-U|SWP:module{UtilitySwpV3} U|SWP)
         (pool:string "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
     )
     (let
@@ -730,7 +730,7 @@
 (print "--- [SWP-G2 — pool identity, membership and fee-shape validators · 02 · let / invocation] ---")
 (let
     (
-        (ref-SWP:module{SwapperV4} SWP)
+        (ref-SWP:module{SwapperV5} SWP)
         (pool:string "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
         (outsider:string "NOTATOKEN-98c486052a51")
     )
@@ -798,7 +798,7 @@
 (print "--- [SWP-G3 — state guards that take their expected answer as an argument · 02 · let / invocation] ---")
 (let
     (
-        (ref-SWP:module{SwapperV4} SWP)
+        (ref-SWP:module{SwapperV5} SWP)
         (pool:string "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
     )
     (let
@@ -856,9 +856,9 @@
 (print "--- [SWP-G4 — the slippage constructor's two input rules · 02 · let / invocation] ---")
 (let
     (
-        (ref-SWPU:module{SwapperUsageV3} SWPU)
-        (ref-SWP:module{SwapperV4} SWP)
-        (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+        (ref-SWPU:module{SwapperUsageV4} SWPU)
+        (ref-SWP:module{SwapperV5} SWP)
+        (ref-U|SWP:module{UtilitySwpV3} U|SWP)
         (pool:string "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
     )
     (let
@@ -867,7 +867,7 @@
         )
         (let
             (
-                (dsid:object{UtilitySwpV2.DirectSwapInputData}
+                (dsid:object{UtilitySwpV3.DirectSwapInputData}
                     (ref-U|SWP::UDC_DirectSwapInputData [(at 0 toks)] [1.0] (at 1 toks)))
             )
             (map print
@@ -923,9 +923,9 @@
 (print "--- [SWP-G5 — SWPLC liquidity admission: a disabled mode and an over-large withdrawal · 02 · let / invocation] ---")
 (let
     (
-        (ref-SWP:module{SwapperV4} SWP)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
+        (ref-SWP:module{SwapperV5} SWP)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-SWPLC:module{SwapperLiquidityClientV3} SWPLC)
         (pool:string "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
     )
     (let
@@ -980,8 +980,8 @@
 (print "--- [SWP-G6 — SWPI pure-compute validators: the `v` band, where a bad ARGUMENT is the whole test · 02 · let / invocation] ---")
 (let
     (
-        (ref-SWPI:module{SwapperIssueV4} SWPI)
-        (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+        (ref-SWPI:module{SwapperIssueV5} SWPI)
+        (ref-U|SWP:module{UtilitySwpV3} U|SWP)
         (pool:string "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
         (t1:string "DLK-98c486052a51")
         (t2:string "OURO-98c486052a51")
@@ -1057,7 +1057,7 @@
 (print "--- [SWP-G7 — SWPL liquidity-shape validators, and the mixed-sign list that used to pass · 02 · let / invocation] ---")
 (let
     (
-        (ref-SWPL:module{SwapperLiquidityV2} SWPL)
+        (ref-SWPL:module{SwapperLiquidityV3} SWPL)
         (pool:string "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
     )
     (map print
@@ -1125,7 +1125,7 @@
 (print "--- [SWP-G8 — UEV_FeeSplit and the STOA precision floor · 02 · let / invocation] ---")
 (let
     (
-        (ref-SWP:module{SwapperV4} SWP)
+        (ref-SWP:module{SwapperV5} SWP)
     )
     (map print
         [
@@ -1274,8 +1274,8 @@
 (print "--- [SWP-G11a — turn a pool's swap capability OFF (the fixture the inactive guards need) · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
-        (ref-SWP:module{SwapperV4} SWP)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV5} TS01-C3)
+        (ref-SWP:module{SwapperV5} SWP)
         (pool:string "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
     )
     (map print
@@ -1394,9 +1394,9 @@
 (print "--- [SWP-G11c — restore: swapping back ON, and the worth floor that gates the restart · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
-        (ref-SWP:module{SwapperV4} SWP)
-        (ref-SWPI:module{SwapperIssueV4} SWPI)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV5} TS01-C3)
+        (ref-SWP:module{SwapperV5} SWP)
+        (ref-SWPI:module{SwapperIssueV5} SWPI)
         (pool:string "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
     )
     (map print
@@ -1439,7 +1439,7 @@
 (let
     (
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-        (ref-SWP:module{SwapperV4} SWP)
+        (ref-SWP:module{SwapperV5} SWP)
     )
     (map print
         [
@@ -1490,8 +1490,8 @@
 (let
     (
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
-        (ref-SWP:module{SwapperV4} SWP)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV5} TS01-C3)
+        (ref-SWP:module{SwapperV5} SWP)
         (pool:string "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
     )
     (map print
@@ -1534,10 +1534,10 @@
 ;;ones to keep the total non-negative while leaving a single element out of range.
 (let*
     (
-        (ref-SWP:module{SwapperV4} SWP)
-        (ref-SWPI:module{SwapperIssueV4} SWPI)
-        (ref-SWPL:module{SwapperLiquidityV2} SWPL)
-        (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
+        (ref-SWP:module{SwapperV5} SWP)
+        (ref-SWPI:module{SwapperIssueV5} SWPI)
+        (ref-SWPL:module{SwapperLiquidityV3} SWPL)
+        (ref-SWPLC:module{SwapperLiquidityClientV3} SWPLC)
         (pool:string "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
         (pt:[string] (ref-SWP::UR_PoolTokens pool))
         (n:integer (length pt))
@@ -1618,16 +1618,16 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
-        (ref-SWP:module{SwapperV4} SWP)
-        (ref-SWPL:module{SwapperLiquidityV2} SWPL)
-        (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
+        (ref-SWP:module{SwapperV5} SWP)
+        (ref-SWPL:module{SwapperLiquidityV3} SWPL)
+        (ref-SWPLC:module{SwapperLiquidityClientV3} SWPLC)
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
         (pool:string "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
-        (split:object{SwapperLiquidityV2.LiquiditySplit}
+        (split:object{SwapperLiquidityV3.LiquiditySplit}
             (ref-SWPL::UDC_LiquiditySplit [1.0 1.0 1.0] [0.0 0.0 0.0]))
-        (ld-balanced:object{SwapperLiquidityV2.LiquidityData}
+        (ld-balanced:object{SwapperLiquidityV3.LiquidityData}
             (ref-SWPL::UDC_LiquidityData split (ref-SWPL::UDC_LiquiditySplitType true false) 3.0 0.0 0.0))
-        (ld-asymmetric:object{SwapperLiquidityV2.LiquidityData}
+        (ld-asymmetric:object{SwapperLiquidityV3.LiquidityData}
             (ref-SWPL::UDC_LiquidityData split (ref-SWPL::UDC_LiquiditySplitType false true) 0.0 3.0 0.0))
     )
     (map print
@@ -1677,12 +1677,12 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
-        (ref-SWP:module{SwapperV4} SWP)
-        (ref-SWPL:module{SwapperLiquidityV2} SWPL)
-        (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
+        (ref-SWP:module{SwapperV5} SWP)
+        (ref-SWPL:module{SwapperLiquidityV3} SWPL)
+        (ref-SWPLC:module{SwapperLiquidityClientV3} SWPLC)
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
         (pool:string "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
-        (ld-asymmetric:object{SwapperLiquidityV2.LiquidityData}
+        (ld-asymmetric:object{SwapperLiquidityV3.LiquidityData}
             (ref-SWPL::UDC_LiquidityData
                 (ref-SWPL::UDC_LiquiditySplit [1.0 1.0 1.0] [0.0 0.0 0.0])
                 (ref-SWPL::UDC_LiquiditySplitType false true) 0.0 3.0 0.0))
@@ -1736,18 +1736,18 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
-        (ref-SWP:module{SwapperV4} SWP)
+        (ref-SWP:module{SwapperV5} SWP)
         (pool:string "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
         (pt:[string] (ref-SWP::UR_PoolTokens pool))
         (a:string (at 0 pt))
         (b:string (at 1 pt))
-        (miss:object{SwapperUsageV3.CachedPathOrMiss} {"nodes":[],"edges":[],"is-new":false})
-        (empty-route:object{SwapperUsageV3.SmartSwapPathBundle}
+        (miss:object{SwapperUsageV4.CachedPathOrMiss} {"nodes":[],"edges":[],"is-new":false})
+        (empty-route:object{SwapperUsageV4.SmartSwapPathBundle}
             {"swap-route":{"nodes":[],"edges":[]},"boost-path":miss,"stoa-paths":[]})
         ;;a REVERSED route: nodes [b a] is a genuine one-hop path through this very pool, so it is
         ;;structurally valid and active — it simply starts at the wrong end. That is what makes this
         ;;case test the endpoint check rather than the path validator three lines below it.
-        (reversed-route:object{SwapperUsageV3.SmartSwapPathBundle}
+        (reversed-route:object{SwapperUsageV4.SmartSwapPathBundle}
             {"swap-route":{"nodes":[b a],"edges":[pool]},"boost-path":miss,"stoa-paths":[]})
     )
     (map print
@@ -1796,19 +1796,19 @@
 ;;bound of zero, which would forbid every asymmetric deposit rather than only the extreme ones.
 (let*
     (
-        (ref-SWP:module{SwapperV4} SWP)
-        (ref-SWPL:module{SwapperLiquidityV2} SWPL)
+        (ref-SWP:module{SwapperV5} SWP)
+        (ref-SWPL:module{SwapperLiquidityV3} SWPL)
         (pool:string "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
         (n:integer (length (ref-SWP::UR_PoolTokens pool)))
         (zero:[decimal] (make-list n 0.0))
         ;;an asymmetric vector is "everything into token 0, nothing into the rest". A dust amount is
         ;;within tolerance; a million is not. Both are the same SHAPE, so the only thing that differs
         ;;between the two cases is magnitude — which is what the guard measures.
-        (dust:object{SwapperLiquidityV2.LiquidityData}
+        (dust:object{SwapperLiquidityV3.LiquidityData}
             (ref-SWPL::UDC_LiquidityData
                 (ref-SWPL::UDC_LiquiditySplit zero (+ [0.000001] (make-list (- n 1) 0.0)))
                 (ref-SWPL::UDC_LiquiditySplitType false true) 0.0 0.000001 0.0))
-        (skewed:object{SwapperLiquidityV2.LiquidityData}
+        (skewed:object{SwapperLiquidityV3.LiquidityData}
             (ref-SWPL::UDC_LiquidityData
                 (ref-SWPL::UDC_LiquiditySplit zero (+ [1000000.0] (make-list (- n 1) 0.0)))
                 (ref-SWPL::UDC_LiquiditySplitType false true) 0.0 1000000.0 0.0))
@@ -1861,8 +1861,8 @@
 ;;would pass for the wrong reason.
 (let*
     (
-        (ref-SWP:module{SwapperV4} SWP)
-        (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+        (ref-SWP:module{SwapperV5} SWP)
+        (ref-U|SWP:module{UtilitySwpV3} U|SWP)
         (o:string "OURO-98c486052a51")
         (b:string "BUSD-98c486052a51")
         (w:[decimal] [1.0 1.0])
@@ -1909,9 +1909,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
-        (ref-SWPI:module{SwapperIssueV4} SWPI)
-        (t1:object{SwapperV4.PoolTokens} {"token-id":"OURO-98c486052a51","token-supply":100.0})
-        (t2:object{SwapperV4.PoolTokens} {"token-id":"DLK-98c486052a51","token-supply":100.0})
+        (ref-SWPI:module{SwapperIssueV5} SWPI)
+        (t1:object{SwapperV5.PoolTokens} {"token-id":"OURO-98c486052a51","token-supply":100.0})
+        (t2:object{SwapperV5.PoolTokens} {"token-id":"DLK-98c486052a51","token-supply":100.0})
     )
     (map print
         [
@@ -2627,7 +2627,7 @@
 (print "--- [SWP-G26 — removing a token that was never a principal · 02 · let / invocation] ---")
 (let
     (
-        (ref-SWP:module{SwapperV4} SWP)
+        (ref-SWP:module{SwapperV5} SWP)
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
         (tok:string "AURYN-98c486052a51")
     )
@@ -2680,8 +2680,8 @@
 (print "--- [SWPX-10a - MTX add-liquidity defpact, step 0|2 · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS01-CP:module{TalosStageOne_ClientPactsV4} TS01-CP)
-        (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+        (ref-TS01-CP:module{TalosStageOne_ClientPactsV5} TS01-CP)
+        (ref-U|SWP:module{UtilitySwpV3} U|SWP)
         (toks:[string] ["DLK-98c486052a51" "BUSD-98c486052a51" "TUSD-98c486052a51" "USDC-98c486052a51"])
     )
     (ref-TS01-CP::SWP|C_AddStandardLiquidity KST.ANHD KST.ANHD
@@ -2703,9 +2703,9 @@
 (print "--- [SWPX-10b - move the pool underneath the open pact, then continue · 02 · let / invocation] ---")
 (let
     (
-        (ref-SWP:module{SwapperV4} SWP)
-        (ref-U|SWP:module{UtilitySwpV2} U|SWP)
-        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
+        (ref-SWP:module{SwapperV5} SWP)
+        (ref-U|SWP:module{UtilitySwpV3} U|SWP)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV5} TS01-C3)
         (toks:[string] ["DLK-98c486052a51" "BUSD-98c486052a51" "TUSD-98c486052a51" "USDC-98c486052a51"])
     )
     (let
@@ -2762,9 +2762,9 @@
 ;;states why it is ineligible instead of relying on it.
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV5} TS01-C3)
     )
     (let
         (
@@ -2813,12 +2813,12 @@
 (print "--- [SWPX-12 - SPW|S>UPDATE_SPECIAL-FEE-TARGETS: how many targets a tier buys · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-SWP:module{SwapperV4} SWP)
-        (ref-U|SWP:module{UtilitySwpV2} U|SWP)
-        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-SWP:module{SwapperV5} SWP)
+        (ref-U|SWP:module{UtilitySwpV3} U|SWP)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV5} TS01-C3)
         (toks:[string] ["DLK-98c486052a51" "BUSD-98c486052a51" "TUSD-98c486052a51" "USDC-98c486052a51"])
-        (one:object{SwapperV4.FeeSplit} { "target" : KST.EMMA, "value" : 1 })
+        (one:object{SwapperV5.FeeSplit} { "target" : KST.EMMA, "value" : 1 })
     )
     (let
         (
@@ -2871,7 +2871,7 @@
 ;;reroute fees in whatever test runs next, and nothing downstream asserts on them.
 (let
     (
-        (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+        (ref-U|SWP:module{UtilitySwpV3} U|SWP)
         (toks:[string] ["DLK-98c486052a51" "BUSD-98c486052a51" "TUSD-98c486052a51" "USDC-98c486052a51"])
     )
     (print
@@ -2905,10 +2905,10 @@
 (print "--- [SWPX-13 - SPWU|C>TOGGLE-SWAP: the pool-worth floor · 02 · let / invocation] ---")
 (let
     (
-        (ref-SWP:module{SwapperV4} SWP)
-        (ref-SWPI:module{SwapperIssueV4} SWPI)
-        (ref-U|SWP:module{UtilitySwpV2} U|SWP)
-        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
+        (ref-SWP:module{SwapperV5} SWP)
+        (ref-SWPI:module{SwapperIssueV5} SWPI)
+        (ref-U|SWP:module{UtilitySwpV3} U|SWP)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV5} TS01-C3)
         (toks:[string] ["DLK-98c486052a51" "BUSD-98c486052a51" "TUSD-98c486052a51" "USDC-98c486052a51"])
     )
     (let
@@ -3005,7 +3005,7 @@
 (with-capability (SWPT.SECURE)
     (let
         (
-            (ref-SWPT:module{SwapTracerV3} SWPT)
+            (ref-SWPT:module{SwapTracerV4} SWPT)
             (a:string "TopoTestTokenA")
             (b:string "TopoTestTokenB")
         )
@@ -3069,11 +3069,11 @@
 ;;it were a valid one.
 ;;
 ;;Called module-qualified on purpose: UR_PathCacheRaw is deliberately NOT on the SwapTracerV3
-;;interface (the @doc says callers go through URC_ReadPathCache), so a `module{SwapTracerV3}` ref
+;;interface (the @doc says callers go through URC_ReadPathCache), so a `module{SwapTracerV4}` ref
 ;;cannot reach it.
 (let
     (
-        (ref-SWPT:module{SwapTracerV3} SWPT)
+        (ref-SWPT:module{SwapTracerV4} SWPT)
         (miss:string "NoSuchTokenA|NoSuchTokenB")
     )
     (map print
@@ -3122,10 +3122,10 @@
 (print "--- [SWP-D3 — the remaining SWP doc claims: two IMC gates, one crash residual, one identity · 02 · let / invocation] ---")
 (let
     (
-        (ref-U|SWP:module{UtilitySwpV2} U|SWP)
-        (ref-SWPI:module{SwapperIssueV4} SWPI)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-U|SWP:module{UtilitySwpV3} U|SWP)
+        (ref-SWPI:module{SwapperIssueV5} SWPI)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (dead:string "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
     )
     (let
@@ -3212,7 +3212,7 @@
 (let
     (
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-        (ref-SWP:module{SwapperV4} SWP)
+        (ref-SWP:module{SwapperV5} SWP)
     )
     (let
         (
@@ -3302,10 +3302,10 @@
 (print "--- [SWP-I1 — INFO_SWP|ToggleFeeLock quotes the STOA the unlock actually charges · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
-        (ref-U|SWP:module{UtilitySwpV2} U|SWP)
-        (ref-SWP:module{SwapperV4} SWP)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV5} TS01-C3)
+        (ref-U|SWP:module{UtilitySwpV3} U|SWP)
+        (ref-SWP:module{SwapperV5} SWP)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (toks:[string] ["DLK-98c486052a51" "BUSD-98c486052a51" "TUSD-98c486052a51" "USDT-98c486052a51"])
     )
     (let
@@ -3331,7 +3331,7 @@
                 (let
                     (
                         ;;PREDICTED — read BEFORE the unlock executes, exactly as a client would
-                        (predicted:object{OuronetInfoV2.ClientInfo}
+                        (predicted:object{OuronetInfoV3.ClientInfo}
                             (INFO-ONE.INFO_SWP|ToggleFeeLock patron sp false))
                         (stoa-before:decimal (coin.get-balance stoa-acct))
                         (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
@@ -3392,9 +3392,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
 (let
     (
-        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
-        (ref-SWP:module{SwapperV4} SWP)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV5} TS01-C3)
+        (ref-SWP:module{SwapperV5} SWP)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (wp:string "W|DLK-98c486052a51|BUSD-98c486052a51|TUSD-98c486052a51|USDC-98c486052a51")
         (sd:string "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
         (patron:string KST.ANHD)
@@ -3402,7 +3402,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_SWP|ModifyWeights patron wp [0.25 0.25 0.25 0.25]))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_SWP|ModifyWeights patron wp [0.25 0.25 0.25 0.25]))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C3::SWP|C_ModifyWeights patron (SWP.UR_OwnerKonto wp) wp [0.25 0.25 0.25 0.25]))
         )
@@ -3432,9 +3432,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
 (let
     (
-        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
-        (ref-SWP:module{SwapperV4} SWP)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV5} TS01-C3)
+        (ref-SWP:module{SwapperV5} SWP)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (wp:string "W|DLK-98c486052a51|BUSD-98c486052a51|TUSD-98c486052a51|USDC-98c486052a51")
         (sd:string "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
         (patron:string KST.ANHD)
@@ -3442,7 +3442,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_SWP|ToggleAddLiquidity patron wp true))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_SWP|ToggleAddLiquidity patron wp true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C3::SWP|C_ToggleAddLiquidity patron (SWP.UR_OwnerKonto wp) wp true))
         )
@@ -3474,9 +3474,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
 (let
     (
-        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
-        (ref-SWP:module{SwapperV4} SWP)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV5} TS01-C3)
+        (ref-SWP:module{SwapperV5} SWP)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (wp:string "W|DLK-98c486052a51|BUSD-98c486052a51|TUSD-98c486052a51|USDC-98c486052a51")
         (sd:string "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
         (patron:string KST.ANHD)
@@ -3484,7 +3484,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_SWP|ToggleSwapCapability patron sd false))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_SWP|ToggleSwapCapability patron sd false))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C3::SWP|C_ToggleSwapCapability patron (SWP.UR_OwnerKonto sd) sd false))
         )
@@ -3514,9 +3514,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
 (let
     (
-        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
-        (ref-SWP:module{SwapperV4} SWP)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV5} TS01-C3)
+        (ref-SWP:module{SwapperV5} SWP)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (wp:string "W|DLK-98c486052a51|BUSD-98c486052a51|TUSD-98c486052a51|USDC-98c486052a51")
         (sd:string "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
         (patron:string KST.ANHD)
@@ -3524,7 +3524,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_SWP|UpdateFee patron wp 12.0 true))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_SWP|UpdateFee patron wp 12.0 true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C3::SWP|C_UpdateFee patron (SWP.UR_OwnerKonto wp) wp 12.0 true))
         )
@@ -3554,9 +3554,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
 (let
     (
-        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
-        (ref-SWP:module{SwapperV4} SWP)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV5} TS01-C3)
+        (ref-SWP:module{SwapperV5} SWP)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (wp:string "W|DLK-98c486052a51|BUSD-98c486052a51|TUSD-98c486052a51|USDC-98c486052a51")
         (sd:string "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
         (patron:string KST.ANHD)
@@ -3564,7 +3564,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_SWP|ModifyCanChangeOwner patron wp false))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_SWP|ModifyCanChangeOwner patron wp false))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C3::SWP|C_ModifyCanChangeOwner patron (SWP.UR_OwnerKonto wp) wp false))
         )
@@ -3594,9 +3594,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
 (let
     (
-        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
-        (ref-SWP:module{SwapperV4} SWP)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV5} TS01-C3)
+        (ref-SWP:module{SwapperV5} SWP)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (wp:string "W|DLK-98c486052a51|BUSD-98c486052a51|TUSD-98c486052a51|USDC-98c486052a51")
         (sd:string "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
         (patron:string KST.ANHD)
@@ -3604,7 +3604,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_SWP|ChangeOwnership patron wp lumy))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_SWP|ChangeOwnership patron wp lumy))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C3::SWP|C_ChangeOwnership patron (ref-SWP::UR_OwnerKonto wp) lumy wp))
         )
@@ -3642,7 +3642,7 @@
 ;;makes the measurement repeatable — without it, the first run would consume the fixture.
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
     )
     ;;The STOA leg is `UR_UsagePrice "dptf"`, split 10/20/30/40 across the four fee targets, so it
     ;;needs one managed `coin.TRANSFER` per leg, sized from the same split the collector uses.
@@ -3665,14 +3665,14 @@
 )
 (let
     (
-        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV5} TS01-C3)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (wp:string "W|DLK-98c486052a51|BUSD-98c486052a51|TUSD-98c486052a51|USDC-98c486052a51")
         (patron:string KST.ANHD)
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_SWP|EnableFrozenLP patron wp))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_SWP|EnableFrozenLP patron wp))
             (stoa-acct:string (ref-DALOS::UR_AccountStoa patron))
         )
         (let
@@ -3739,7 +3739,7 @@
 ;;makes the measurement repeatable — without it, the first run would consume the fixture.
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
     )
     ;;The STOA leg is `UR_UsagePrice "dpmf"`, split 10/20/30/40 across the four fee targets, so it
     ;;needs one managed `coin.TRANSFER` per leg, sized from the same split the collector uses.
@@ -3762,14 +3762,14 @@
 )
 (let
     (
-        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV5} TS01-C3)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (wp:string "W|DLK-98c486052a51|BUSD-98c486052a51|TUSD-98c486052a51|USDC-98c486052a51")
         (patron:string KST.ANHD)
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_SWP|EnableSleepingLP patron wp))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_SWP|EnableSleepingLP patron wp))
             (stoa-acct:string (ref-DALOS::UR_AccountStoa patron))
         )
         (let
@@ -3831,9 +3831,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
 (let
     (
-        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
-        (ref-SWP:module{SwapperV4} SWP)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV5} TS01-C3)
+        (ref-SWP:module{SwapperV5} SWP)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
         (wp:string "W|DLK-98c486052a51|BUSD-98c486052a51|TUSD-98c486052a51|USDC-98c486052a51")
         (sd:string "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
@@ -3843,7 +3843,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_SWP|UpdatePendingBranding patron wp))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_SWP|UpdatePendingBranding patron wp))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C3::SWP|C_UpdatePendingBranding patron (SWP.UR_OwnerKonto wp) wp "ipfs://probe-logo" "cost probe" "https://probe.example" []))
         )
@@ -3878,9 +3878,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
 (let
     (
-        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
-        (ref-SWP:module{SwapperV4} SWP)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV5} TS01-C3)
+        (ref-SWP:module{SwapperV5} SWP)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
         (wp:string "W|DLK-98c486052a51|BUSD-98c486052a51|TUSD-98c486052a51|USDC-98c486052a51")
         (sd:string "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
@@ -3890,7 +3890,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_SWP|UpdatePendingBrandingLPs patron wp 1))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_SWP|UpdatePendingBrandingLPs patron wp 1))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C3::SWP|C_UpdatePendingBrandingLPs patron (SWP.UR_OwnerKonto wp) wp 1 "ipfs://probe-logo" "cost probe" "https://probe.example" []))
         )
@@ -3920,14 +3920,14 @@
 ;;hazard that decides whether such a measurement is even valid is written out at <<SWP-I2>>.
 ;;A TYPE DIVERGENCE, not an arity one, and the nastiest kind: both sides take THREE arguments and
 ;;the third is a list either way, but the preview wants `[string]` (`02_INFO-ONE+.pact:192`) while the
-;;exec wants `[object{SwapperV4.FeeSplit}]` (`04_TS01-C3.pact:79`). Two different values have to be
+;;exec wants `[object{SwapperV5.FeeSplit}]` (`04_TS01-C3.pact:79`). Two different values have to be
 ;;built for what looks like one argument, and passing the wrong one type-checks nowhere useful.
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
 (let
     (
-        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
-        (ref-SWP:module{SwapperV4} SWP)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV5} TS01-C3)
+        (ref-SWP:module{SwapperV5} SWP)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
         (wp:string "W|DLK-98c486052a51|BUSD-98c486052a51|TUSD-98c486052a51|USDC-98c486052a51")
         (sd:string "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
@@ -3937,7 +3937,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_SWP|UpdateSpecialFeeTargets patron wp ["probe-a" "probe-b"]))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_SWP|UpdateSpecialFeeTargets patron wp ["probe-a" "probe-b"]))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets patron (SWP.UR_OwnerKonto wp) wp [{"target": emma, "value": 1} {"target": lumy, "value": 1}]))
         )
@@ -3968,9 +3968,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
 (let
     (
-        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
-        (ref-SWP:module{SwapperV4} SWP)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV5} TS01-C3)
+        (ref-SWP:module{SwapperV5} SWP)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
         (wp:string "W|DLK-98c486052a51|BUSD-98c486052a51|TUSD-98c486052a51|USDC-98c486052a51")
         (sd:string "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
@@ -3980,7 +3980,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_SWP|Fuel patron patron sd [1.0 1.0 1.0]))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_SWP|Fuel patron patron sd [1.0 1.0 1.0]))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C3::SWP|C_Fuel patron patron sd [1.0 1.0 1.0]))
         )
@@ -4060,10 +4060,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
 (let
     (
-        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
-        (ref-SWP:module{SwapperV4} SWP)
-        (ref-SWPL:module{SwapperLiquidityV2} SWPL)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV5} TS01-C3)
+        (ref-SWP:module{SwapperV5} SWP)
+        (ref-SWPL:module{SwapperLiquidityV3} SWPL)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-U|LST:module{StringProcessorV2} U|LST)
         (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
         (sd:string "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
@@ -4073,7 +4073,7 @@
     (let
         (
             (ignis-id:string (ref-DALOS::UR_IgnisID))
-            (clad-op:object{SwapperLiquidityV2.CladOperation}
+            (clad-op:object{SwapperLiquidityV3.CladOperation}
                 (at "clad-op" (ref-SWPL::URC_STOA-PID|CLAD patron sd
                     (ref-SWPL::URC_LD sd amounts) true true (ref-U|CT|DIA::UR_STOA-PID|Price))))
         )
@@ -4087,7 +4087,7 @@
                                     (at idx (at "mt-amt" clad-op))
                                     0.0))
                              (enumerate 0 (- (length (at "mt-ids" clad-op)) 1)))))
-                (info:object{OuronetInfoV2.ClientInfo}
+                (info:object{OuronetInfoV3.ClientInfo}
                     (INFO-ONE.INFO_SWP|AddLiquidity patron patron sd amounts
                         (ref-U|CT|DIA::UR_STOA-PID|Price)))
                 (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
@@ -4153,10 +4153,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_AOZ", "caps": [] }])
 (let
     (
-        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
-        (ref-SWPU:module{SwapperUsageV3} SWPU)
-        (ref-SWP:module{SwapperV4} SWP)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV5} TS01-C3)
+        (ref-SWPU:module{SwapperUsageV4} SWPU)
+        (ref-SWP:module{SwapperV5} SWP)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (eur:string "W|OURO-98c486052a51|TEUR-98c486052a51|EURT-98c486052a51|EURC-98c486052a51|EURD-98c486052a51|AEUR-98c486052a51|CEUR-98c486052a51")
         (prim:string "W|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
         (patron:string KST.ANHD)
@@ -4164,7 +4164,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_SWP|SingleSwapNoSlippage patron patron eur "EURT-98c486052a51" 2400.0 "OURO-98c486052a51"))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_SWP|SingleSwapNoSlippage patron patron eur "EURT-98c486052a51" 2400.0 "OURO-98c486052a51"))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C3::SWP|C_SingleSwapNoSlippage patron patron eur "EURT-98c486052a51" 2400.0 "OURO-98c486052a51"))
         )
@@ -4198,10 +4198,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_AOZ", "caps": [] }])
 (let
     (
-        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
-        (ref-SWPU:module{SwapperUsageV3} SWPU)
-        (ref-SWP:module{SwapperV4} SWP)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV5} TS01-C3)
+        (ref-SWPU:module{SwapperUsageV4} SWPU)
+        (ref-SWP:module{SwapperV5} SWP)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (eur:string "W|OURO-98c486052a51|TEUR-98c486052a51|EURT-98c486052a51|EURC-98c486052a51|EURD-98c486052a51|AEUR-98c486052a51|CEUR-98c486052a51")
         (prim:string "W|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
         (patron:string KST.ANHD)
@@ -4209,7 +4209,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_SWP|SingleSwapWithSlippage patron patron eur "EURT-98c486052a51" 2400.0 "OURO-98c486052a51" (ref-SWPU::UDC_SpawnSlippageBounds eur ["EURT-98c486052a51"] [2400.0] "OURO-98c486052a51" 5.0)))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_SWP|SingleSwapWithSlippage patron patron eur "EURT-98c486052a51" 2400.0 "OURO-98c486052a51" (ref-SWPU::UDC_SpawnSlippageBounds eur ["EURT-98c486052a51"] [2400.0] "OURO-98c486052a51" 5.0)))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C3::SWP|C_SingleSwapWithSlippage patron patron eur "EURT-98c486052a51" 2400.0 "OURO-98c486052a51" (ref-SWPU::UDC_SpawnSlippageBounds eur ["EURT-98c486052a51"] [2400.0] "OURO-98c486052a51" 5.0)))
         )
@@ -4243,10 +4243,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_AOZ", "caps": [] }])
 (let
     (
-        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
-        (ref-SWPU:module{SwapperUsageV3} SWPU)
-        (ref-SWP:module{SwapperV4} SWP)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV5} TS01-C3)
+        (ref-SWPU:module{SwapperUsageV4} SWPU)
+        (ref-SWP:module{SwapperV5} SWP)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (eur:string "W|OURO-98c486052a51|TEUR-98c486052a51|EURT-98c486052a51|EURC-98c486052a51|EURD-98c486052a51|AEUR-98c486052a51|CEUR-98c486052a51")
         (prim:string "W|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
         (patron:string KST.ANHD)
@@ -4254,7 +4254,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_SWP|MultiSwapNoSlippage patron patron eur ["TEUR-98c486052a51" "EURT-98c486052a51"] [230.0 240.0] "OURO-98c486052a51"))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_SWP|MultiSwapNoSlippage patron patron eur ["TEUR-98c486052a51" "EURT-98c486052a51"] [230.0 240.0] "OURO-98c486052a51"))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C3::SWP|C_MultiSwapNoSlippage patron patron eur ["TEUR-98c486052a51" "EURT-98c486052a51"] [230.0 240.0] "OURO-98c486052a51"))
         )
@@ -4288,10 +4288,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_AOZ", "caps": [] }])
 (let
     (
-        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
-        (ref-SWPU:module{SwapperUsageV3} SWPU)
-        (ref-SWP:module{SwapperV4} SWP)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV5} TS01-C3)
+        (ref-SWPU:module{SwapperUsageV4} SWPU)
+        (ref-SWP:module{SwapperV5} SWP)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (eur:string "W|OURO-98c486052a51|TEUR-98c486052a51|EURT-98c486052a51|EURC-98c486052a51|EURD-98c486052a51|AEUR-98c486052a51|CEUR-98c486052a51")
         (prim:string "W|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
         (patron:string KST.ANHD)
@@ -4299,7 +4299,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_SWP|MultiSwapWithSlippage patron patron eur ["TEUR-98c486052a51" "EURT-98c486052a51"] [230.0 240.0] "OURO-98c486052a51" (ref-SWPU::UDC_SpawnSlippageBounds eur ["TEUR-98c486052a51" "EURT-98c486052a51"] [230.0 240.0] "OURO-98c486052a51" 5.0)))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_SWP|MultiSwapWithSlippage patron patron eur ["TEUR-98c486052a51" "EURT-98c486052a51"] [230.0 240.0] "OURO-98c486052a51" (ref-SWPU::UDC_SpawnSlippageBounds eur ["TEUR-98c486052a51" "EURT-98c486052a51"] [230.0 240.0] "OURO-98c486052a51" 5.0)))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C3::SWP|C_MultiSwapWithSlippage patron patron eur ["TEUR-98c486052a51" "EURT-98c486052a51"] [230.0 240.0] "OURO-98c486052a51" (ref-SWPU::UDC_SpawnSlippageBounds eur ["TEUR-98c486052a51" "EURT-98c486052a51"] [230.0 240.0] "OURO-98c486052a51" 5.0)))
         )
@@ -4340,10 +4340,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_AOZ", "caps": [] }])
 (let
     (
-        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
-        (ref-SWPU:module{SwapperUsageV3} SWPU)
-        (ref-SWP:module{SwapperV4} SWP)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV5} TS01-C3)
+        (ref-SWPU:module{SwapperUsageV4} SWPU)
+        (ref-SWP:module{SwapperV5} SWP)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (eur:string "W|OURO-98c486052a51|TEUR-98c486052a51|EURT-98c486052a51|EURC-98c486052a51|EURD-98c486052a51|AEUR-98c486052a51|CEUR-98c486052a51")
         (prim:string "W|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
         (patron:string KST.ANHD)
@@ -4351,7 +4351,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_SWP|SingleSwapNoSlippage patron patron prim "OURO-98c486052a51" 2.0 "DWK-98c486052a51"))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_SWP|SingleSwapNoSlippage patron patron prim "OURO-98c486052a51" 2.0 "DWK-98c486052a51"))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C3::SWP|C_SingleSwapNoSlippage patron patron prim "OURO-98c486052a51" 2.0 "DWK-98c486052a51"))
         )
@@ -4394,10 +4394,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_AOZ", "caps": [] }])
 (let
     (
-        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
-        (ref-SWPU:module{SwapperUsageV3} SWPU)
-        (ref-SWP:module{SwapperV4} SWP)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV5} TS01-C3)
+        (ref-SWPU:module{SwapperUsageV4} SWPU)
+        (ref-SWP:module{SwapperV5} SWP)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (eur:string "W|OURO-98c486052a51|TEUR-98c486052a51|EURT-98c486052a51|EURC-98c486052a51|EURD-98c486052a51|AEUR-98c486052a51|CEUR-98c486052a51")
         (prim:string "W|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
         (patron:string KST.ANHD)
@@ -4405,7 +4405,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_SWP|SmartSwapWithSlippage patron aozt "AKOSON-98c486052a51" 5.0 "TUSD-98c486052a51" (ref-SWPU::UDC_SpawnSmartSwapSlippageBounds "AKOSON-98c486052a51" 5.0 "TUSD-98c486052a51" 1.0)))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_SWP|SmartSwapWithSlippage patron aozt "AKOSON-98c486052a51" 5.0 "TUSD-98c486052a51" (ref-SWPU::UDC_SpawnSmartSwapSlippageBounds "AKOSON-98c486052a51" 5.0 "TUSD-98c486052a51" 1.0)))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C3::SWP|CC_SmartSwapWithSlippage patron aozt "AKOSON-98c486052a51" 5.0 "TUSD-98c486052a51" (ref-SWPU::UDC_SpawnSmartSwapSlippageBounds "AKOSON-98c486052a51" 5.0 "TUSD-98c486052a51" 1.0)))
         )
@@ -4439,10 +4439,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_AOZ", "caps": [] }])
 (let
     (
-        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
-        (ref-SWPU:module{SwapperUsageV3} SWPU)
-        (ref-SWP:module{SwapperV4} SWP)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV5} TS01-C3)
+        (ref-SWPU:module{SwapperUsageV4} SWPU)
+        (ref-SWP:module{SwapperV5} SWP)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (eur:string "W|OURO-98c486052a51|TEUR-98c486052a51|EURT-98c486052a51|EURC-98c486052a51|EURD-98c486052a51|AEUR-98c486052a51|CEUR-98c486052a51")
         (prim:string "W|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
         (patron:string KST.ANHD)
@@ -4450,7 +4450,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_SWP|SmartSwapNoSlippage patron aozt "AKOSON-98c486052a51" 5.0 "TUSD-98c486052a51"))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_SWP|SmartSwapNoSlippage patron aozt "AKOSON-98c486052a51" 5.0 "TUSD-98c486052a51"))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C3::SWP|CC_SmartSwapNoSlippage patron aozt "AKOSON-98c486052a51" 5.0 "TUSD-98c486052a51"))
         )
@@ -4488,9 +4488,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
-        (ref-SWPL:module{SwapperLiquidityV2} SWPL)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV5} TS01-C3)
+        (ref-SWPL:module{SwapperLiquidityV3} SWPL)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
         (pool:string "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
         (patron:string KST.ANHD)
@@ -4499,7 +4499,7 @@
     (let
         (
             (ignis-id:string (ref-DALOS::UR_IgnisID))
-            (clad-op:object{SwapperLiquidityV2.CladOperation}
+            (clad-op:object{SwapperLiquidityV3.CladOperation}
                 (at "clad-op" (ref-SWPL::URC_STOA-PID|CLAD patron pool
                     (ref-SWPL::URC_LD pool amounts) true true (ref-U|CT|DIA::UR_STOA-PID|Price))))
         )
@@ -4514,7 +4514,7 @@
                                     (at idx (at "mt-amt" clad-op))
                                     0.0))
                              (enumerate 0 (- (length (at "mt-ids" clad-op)) 1)))))
-                (info:object{OuronetInfoV2.ClientInfo}
+                (info:object{OuronetInfoV3.ClientInfo}
                     (INFO-ONE.INFO_SWP|AddStandardLiquidity patron patron pool amounts (ref-U|CT|DIA::UR_STOA-PID|Price)))
                 (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             )
@@ -4573,8 +4573,8 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV5} TS01-C3)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
         (pool:string "P|OURO-98c486052a51|BUSD-98c486052a51")
         (patron:string KST.ANHD)
@@ -4582,7 +4582,7 @@
     )
     (let
         (
-            (info:object{OuronetInfoV2.ClientInfo}
+            (info:object{OuronetInfoV3.ClientInfo}
                 (INFO-ONE.INFO_SWP|AddIcedLiquidity patron patron pool amounts (ref-U|CT|DIA::UR_STOA-PID|Price)))
             (predicted:decimal
                 (at "ignis-need" (at "ignis"
@@ -4633,8 +4633,8 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV5} TS01-C3)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
         (pool:string "P|OURO-98c486052a51|BUSD-98c486052a51")
         (patron:string KST.ANHD)
@@ -4695,16 +4695,16 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
-        (ref-SWP:module{SwapperV4} SWP)
-        (ref-SWPL:module{SwapperLiquidityV2} SWPL)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV5} TS01-C3)
+        (ref-SWP:module{SwapperV5} SWP)
+        (ref-SWPL:module{SwapperLiquidityV3} SWPL)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sd:string "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
         (patron:string KST.ANHD)
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_SWP|RemoveLiquidity patron patron sd 1.0))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_SWP|RemoveLiquidity patron patron sd 1.0))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C3::SWP|C_RemoveLiquidity patron patron sd 1.0))
         )
@@ -4763,17 +4763,17 @@
 )
 (let
     (
-        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV5} TS01-C3)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (wp:string "W|DLK-98c486052a51|BUSD-98c486052a51|TUSD-98c486052a51|USDC-98c486052a51")
         (patron:string KST.ANHD)
-        (pt:[object{SwapperV4.PoolTokens}]
+        (pt:[object{SwapperV5.PoolTokens}]
             [ { "token-id": "OURO-98c486052a51",  "token-supply": 2500.0 }
               { "token-id": "BUSD-98c486052a51",  "token-supply": 2500.0 } ])
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_SWP|IssueStable patron patron pt 25.0 85.0 false))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_SWP|IssueStable patron patron pt 25.0 85.0 false))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (stoa-before:decimal (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))
             (m (ref-TS01-C3::SWP|C_IssueStable patron patron pt 25.0 85.0 false))
@@ -4826,17 +4826,17 @@
 )
 (let
     (
-        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV5} TS01-C3)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (wp:string "W|DLK-98c486052a51|BUSD-98c486052a51|TUSD-98c486052a51|USDC-98c486052a51")
         (patron:string KST.ANHD)
-        (pt:[object{SwapperV4.PoolTokens}]
+        (pt:[object{SwapperV5.PoolTokens}]
             [ { "token-id": "OURO-98c486052a51",  "token-supply": 2500.0 }
               { "token-id": "BUSD-98c486052a51",  "token-supply": 2500.0 } ])
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_SWP|IssueWeighted patron patron pt 25.0 [0.5 0.5] false))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_SWP|IssueWeighted patron patron pt 25.0 [0.5 0.5] false))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (stoa-before:decimal (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))
             (m (ref-TS01-C3::SWP|C_IssueWeighted patron patron pt 25.0 [0.5 0.5] false))
@@ -4894,17 +4894,17 @@
 (env-chain-data { "block-time": (time "2030-11-22T00:00:00Z") })
 (let
     (
-        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV5} TS01-C3)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (wp:string "W|DLK-98c486052a51|BUSD-98c486052a51|TUSD-98c486052a51|USDC-98c486052a51")
         (patron:string KST.ANHD)
-        (pt:[object{SwapperV4.PoolTokens}]
+        (pt:[object{SwapperV5.PoolTokens}]
             [ { "token-id": "OURO-98c486052a51",  "token-supply": 2500.0 }
               { "token-id": "BUSD-98c486052a51",  "token-supply": 2500.0 } ])
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_SWP|UpgradeBranding patron wp 1))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_SWP|UpgradeBranding patron wp 1))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (stoa-before:decimal (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))
             (m (ref-TS01-C3::SWP|C_UpgradeBranding patron (SWP.UR_OwnerKonto wp) wp 1))
@@ -4963,17 +4963,17 @@
 (env-chain-data { "block-time": (time "2030-11-22T00:00:00Z") })
 (let
     (
-        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV5} TS01-C3)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (wp:string "W|DLK-98c486052a51|BUSD-98c486052a51|TUSD-98c486052a51|USDC-98c486052a51")
         (patron:string KST.ANHD)
-        (pt:[object{SwapperV4.PoolTokens}]
+        (pt:[object{SwapperV5.PoolTokens}]
             [ { "token-id": "OURO-98c486052a51",  "token-supply": 2500.0 }
               { "token-id": "BUSD-98c486052a51",  "token-supply": 2500.0 } ])
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_SWP|UpgradeBrandingLPs patron wp 1 1))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_SWP|UpgradeBrandingLPs patron wp 1 1))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (stoa-before:decimal (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))
             (m (ref-TS01-C3::SWP|C_UpgradeBrandingLPs patron (SWP.UR_OwnerKonto wp) wp 1 1))
@@ -5018,10 +5018,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
-        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
-        (ref-SWPU:module{SwapperUsageV3} SWPU)
-        (ref-SWP:module{SwapperV4} SWP)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV5} TS01-C3)
+        (ref-SWPU:module{SwapperUsageV4} SWPU)
+        (ref-SWP:module{SwapperV5} SWP)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (patron:string KST.ANHD)
         (sd:string "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
         (pt:[string] (ref-SWP::UR_PoolTokens sd))
@@ -5031,15 +5031,15 @@
         ;;<<SWP-G17>> uses. `boost-path` is a deliberate MISS and `stoa-paths` is empty: both sides of
         ;;the comparison receive the identical bundle, so whatever the boost branch decides, it decides
         ;;the same way for the preview and for the exec.
-        (miss:object{SwapperUsageV3.CachedPathOrMiss} {"nodes":[],"edges":[],"is-new":false})
-        (bundle:object{SwapperUsageV3.SmartSwapPathBundle}
+        (miss:object{SwapperUsageV4.CachedPathOrMiss} {"nodes":[],"edges":[],"is-new":false})
+        (bundle:object{SwapperUsageV4.SmartSwapPathBundle}
             {"swap-route":{"nodes":[a b],"edges":[sd]},"boost-path":miss,"stoa-paths":[]})
-        (sb:object{SwapperUsageV3.Slippage}
+        (sb:object{SwapperUsageV4.Slippage}
             (ref-SWPU::UDC_SpawnSmartSwapSlippageBounds a 1.0 b 1.0))
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_SWP|SmartSwapNoSlippageBundle patron patron a 1.0 b bundle))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_SWP|SmartSwapNoSlippageBundle patron patron a 1.0 b bundle))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C3::SWP|C_SmartSwapNoSlippage patron patron a 1.0 b bundle))
         )
@@ -5072,10 +5072,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
-        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
-        (ref-SWPU:module{SwapperUsageV3} SWPU)
-        (ref-SWP:module{SwapperV4} SWP)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV5} TS01-C3)
+        (ref-SWPU:module{SwapperUsageV4} SWPU)
+        (ref-SWP:module{SwapperV5} SWP)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (patron:string KST.ANHD)
         (sd:string "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
         (pt:[string] (ref-SWP::UR_PoolTokens sd))
@@ -5085,15 +5085,15 @@
         ;;<<SWP-G17>> uses. `boost-path` is a deliberate MISS and `stoa-paths` is empty: both sides of
         ;;the comparison receive the identical bundle, so whatever the boost branch decides, it decides
         ;;the same way for the preview and for the exec.
-        (miss:object{SwapperUsageV3.CachedPathOrMiss} {"nodes":[],"edges":[],"is-new":false})
-        (bundle:object{SwapperUsageV3.SmartSwapPathBundle}
+        (miss:object{SwapperUsageV4.CachedPathOrMiss} {"nodes":[],"edges":[],"is-new":false})
+        (bundle:object{SwapperUsageV4.SmartSwapPathBundle}
             {"swap-route":{"nodes":[a b],"edges":[sd]},"boost-path":miss,"stoa-paths":[]})
-        (sb:object{SwapperUsageV3.Slippage}
+        (sb:object{SwapperUsageV4.Slippage}
             (ref-SWPU::UDC_SpawnSmartSwapSlippageBounds a 1.0 b 1.0))
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_SWP|SmartSwapWithSlippageBundle patron patron a 1.0 b sb bundle))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_SWP|SmartSwapWithSlippageBundle patron patron a 1.0 b sb bundle))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C3::SWP|C_SmartSwapWithSlippage patron patron a 1.0 b sb bundle))
         )
@@ -5133,9 +5133,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
-        (ref-SWP:module{SwapperV4} SWP)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV5} TS01-C3)
+        (ref-SWP:module{SwapperV5} SWP)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sd:string "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
         (patron:string KST.ANHD)
     )
@@ -5146,7 +5146,7 @@
         (let
             (
                 (new-amp:decimal (* 2.0 amp-before))
-                (predicted:object{OuronetInfoV2.ClientInfo}
+                (predicted:object{OuronetInfoV3.ClientInfo}
                     (INFO-ONE.INFO_SWP|UpdateAmplifier patron sd (* 2.0 amp-before)))
                 (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             )
@@ -5215,10 +5215,10 @@
 )
 (let
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV5} TS01-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
         (ref-U|CT2:module{OuronetConstantsV2} U|CT)
         (pool:string "P|OURO-98c486052a51|BUSD-98c486052a51")
@@ -5300,16 +5300,16 @@
 )
 (let
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV5} TS01-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
         (ref-U|CT2:module{OuronetConstantsV2} U|CT)
-        (ref-SWPL:module{SwapperLiquidityV2} SWPL)
-        (ref-SWP:module{SwapperV4} SWP)
-        (ref-U|SWP:module{UtilitySwpV2} U|SWP)
-        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-SWPL:module{SwapperLiquidityV3} SWPL)
+        (ref-SWP:module{SwapperV5} SWP)
+        (ref-U|SWP:module{UtilitySwpV3} U|SWP)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
         (pool:string "P|OURO-98c486052a51|VST-98c486052a51")
         (vst:string "VST-98c486052a51")
         (patron:string KST.ANHD)
@@ -5324,7 +5324,7 @@
         )
         (let
             (
-                (info:object{OuronetInfoV2.ClientInfo}
+                (info:object{OuronetInfoV3.ClientInfo}
                     (INFO-ONE.INFO_SWP|AddSleepingLiquidity patron patron pool zvst
                         (ref-DPOF::UR_NoncesUsed zvst) (ref-U|CT|DIA::UR_STOA-PID|Price)))
                 ;;THE ASYMMETRY TAX AGAIN — the same principal-vs-gas confusion written out in full at
@@ -5339,7 +5339,7 @@
                 ;;(`18_SWPLC.pact:1239-1242`), not from a client-supplied amounts list, so the CLAD has
                 ;;to be reconstructed through `UC_MakeLiquidityList` rather than `URC_LD` on zeros.
                 (tax:decimal
-                    (let ((clad-op:object{SwapperLiquidityV2.CladOperation}
+                    (let ((clad-op:object{SwapperLiquidityV3.CladOperation}
                               (at "clad-op"
                                   (ref-SWPL::URC_STOA-PID|CLAD patron pool
                                       (ref-SWPL::URC_LD pool
@@ -5422,9 +5422,9 @@
 (print "--- [SWPX-14a · 01 · one transfer to eligibility] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
     )
     (let
         (
@@ -5459,9 +5459,9 @@
 (print "--- [SWPX-14b - firestart, and measure what it actually costs · 01 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV5} TS01-C3)
     )
     (let
         (
@@ -5550,8 +5550,8 @@
 (print "--- [SWP-G27 — OURO's price must come from the WEIGHTED pool math, not a flat ratio · 02 · let / invocation] ---")
 (let
     (
-        (ref-SWPI:module{SwapperIssueV4} SWPI)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-SWPI:module{SwapperIssueV5} SWPI)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
     )
     (let

@@ -57,8 +57,8 @@
             (ref-P|STOAICO:module{OuronetPolicyV2} STOAICO)
             ;;
             (ref-U|G:module{OuronetGuardsV2} U|G)
-            (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-            (ref-DPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
+            (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+            (ref-DPAD:module{DemiourgosLaunchpadV3} DEMIPAD)
             ;;
             (mg:guard (create-capability-guard (TS02-DPAD.P|TALOS-SUMMONER)))
             (lpad-sc:string (ref-DPAD::GOV|DEMIPAD|SC_NAME))
@@ -147,7 +147,7 @@
 (print "--- [TX-01 - Initialise STOA ICO · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (split-stoa:[decimal]
             (ref-DALOS::URC_SplitSTOAPrices
                 KST.ANHD
@@ -358,7 +358,7 @@
     (
         (emma:string KST.EMMA)
         (lumy:string KST.LUMY)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
         (wstoa-id:string (STOAICO.UR_Global8))
     )
     ;; Preflight lists exactly the straggler; the admin flush push-collects it (last => dust sweep).
@@ -492,8 +492,8 @@
 (print "--- [TX-TAL - STOAICO|C_Collect over the TALOS path, and a round-2 DEADLOCK · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
         (ref-CPAD:module{CitizenLaunchpadTalosV1} TS02-CPAD)
         (emma:string KST.EMMA)
         (lumy:string KST.LUMY)
@@ -584,8 +584,8 @@
 )
 (let
     (
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-TS02-CPAD:module{CitizenLaunchpadTalosV1} TS02-CPAD)
     )
     (let

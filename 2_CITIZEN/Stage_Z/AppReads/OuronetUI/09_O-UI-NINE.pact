@@ -71,7 +71,7 @@
     (defcap GOV ()                          (compose-capability (GOV|O_UI_NINE_ADMIN)))
     (defcap GOV|O_UI_NINE_ADMIN ()          (enforce-guard GOV|MD_O-UI-NINE))
     (defun GOV|Demiurgoi ()
-        (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi))
+        (let ((ref-DALOS:module{OuronetDalosV3} DALOS)) (ref-DALOS::GOV|Demiurgoi))
     )
 
     ;;{5}  FUNCTIONS
@@ -109,8 +109,8 @@
         (let
             (
                 (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-                (ref-SWPI:module{SwapperIssueV4} SWPI)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+                (ref-SWPI:module{SwapperIssueV5} SWPI)
                 ;;
                 (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                 (dptf-id:string (ref-DPOF::URCv_Parent dpof-id))
@@ -150,8 +150,8 @@
         (let
             (
                 (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-                (ref-SWPI:module{SwapperIssueV4} SWPI)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+                (ref-SWPI:module{SwapperIssueV5} SWPI)
                 ;;
                 (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                 (wallet-supply:decimal (ref-DPOF::UR_AccountSupply sleeping-id account))
@@ -195,7 +195,7 @@
             \ Replaces DPL-UR::URC_0018_OrtofungibleHeader, key-for-key."
         (let
             (
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                 ;;
                 (held-of:[string] (ref-DPOF::URH_HeldOrtoFungibles account))
                 (mngd-of:[string] (ref-DPOF::URH_OwnedOrtoFungibles account))
@@ -215,7 +215,7 @@
             \ Replaces DPL-UR::URC_0009a_OrtoFungibleEntry, key-for-key, plus `entry-ok`."
         (let
             (
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                 ;;
                 (wallet-nonces:[integer] (ref-DPOF::URH_AccountNonces account dpof-id))
             )
@@ -245,8 +245,8 @@
         (let
             (
                 (ref-U|CT:module{OuronetConstantsV2} U|CT)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-SWP:module{SwapperV4} SWP)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-SWP:module{SwapperV5} SWP)
                 ;;
                 (sleeping-id:string (ref-DPTF::UR_Sleeping (ref-SWP::UR_TokenLP swpair)))
             )
@@ -255,7 +255,7 @@
                 "Sleeping LP must be defined for this usage")
             (let
                 (
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                     ;;
                     (wallet-nonces:[integer] (ref-DPOF::URH_AccountNonces account sleeping-id))
                 )
@@ -279,8 +279,8 @@
         (let
             (
                 (ref-U|CT:module{OuronetConstantsV2} U|CT)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-SWP:module{SwapperV4} SWP)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-SWP:module{SwapperV5} SWP)
             )
             (map
                 (lambda (lp-id:string)
@@ -303,9 +303,9 @@
             \ Replaces DPL-UR::URC_0019_OrtofungibleButton, key-for-key."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-                (ref-VST:module{VestingV2} VST)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+                (ref-VST:module{VestingV3} VST)
                 ;;
                 (iz-smart:bool (ref-DALOS::UR_AccountType account))
                 (iz-owner-ats:bool (= (ref-DPOF::UR_Konto dpof) (ref-DALOS::GOV|ATS|SC_NAME)))
@@ -396,7 +396,7 @@
         (let
             (
                 (ref-U|ATS:module{UtilityAtsV3} U|ATS)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                 ;;
                 (precision:integer (ref-DPOF::UR_Decimals dpof))
                 (nonce-supply:decimal (ref-DPOF::UR_NonceSupply dpof nonce))
@@ -459,7 +459,7 @@
             \ when they are wanted."
         (let
             (
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                 ;;
                 (held-of:[string] (ref-DPOF::URH_HeldOrtoFungibles account))
                 (mngd-of:[string] (ref-DPOF::URH_OwnedOrtoFungibles account))
@@ -483,7 +483,7 @@
             \ that is a read that never asks for a price, which is this one."
         (let
             (
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
             )
             (map
                 (lambda (dpof:string)

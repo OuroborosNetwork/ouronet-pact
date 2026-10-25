@@ -41,7 +41,7 @@
 (print "--- [DPDC-01 — the son discriminator separates two collections that share the core · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-DPDC:module{DpdcV3} DPDC)
         (nf:string "MOCKN-98c486052a51")
         (sf:string "MOCKS-98c486052a51")
     )
@@ -75,8 +75,8 @@
 (print "--- [DPDC-02 — supply semantics differ by kind: NFT nonce = 1, SFT nonce = quantity · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
         (nf:string "MOCKN-98c486052a51")
         (sf:string "MOCKS-98c486052a51")
         (patron:string KST.ANHD)
@@ -114,9 +114,9 @@
 (print "--- [DPDC-03 — DPDC|C_MultiTransfer moves nonces across BOTH kinds in one call · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
         (nf:string "MOCKN-98c486052a51")
         (sf:string "MOCKS-98c486052a51")
         (patron:string KST.ANHD)
@@ -162,8 +162,8 @@
 (print "--- [DPDC-04 — C_BulkTransfer: one sender, many receivers, in one call · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
         (sf:string "MOCKS-98c486052a51")
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
@@ -211,9 +211,9 @@
 (print "--- [DPDC-05 — C_UpdatePendingBranding writes PENDING, leaving live branding alone · 02 · let / invocation] ---")
 (let
     (
-        (ref-BRD:module{BrandingV2} BRD)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-BRD:module{BrandingV3} BRD)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (nf:string "MOCKN-98c486052a51")
         (sf:string "MOCKS-98c486052a51")
         (patron:string KST.ANHD)
@@ -256,9 +256,9 @@
 (print "--- [DPDC-06 — DPSF|C_UpdateNonce: the SFT whole-object writer · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-DPDC:module{DpdcV3} DPDC)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
         (sf:string "MOCKS-98c486052a51")
         (patron:string KST.ANHD)
     )
@@ -329,8 +329,8 @@
 (print "--- [DPDC-07 — the four bulk wipes: Clean is strict, Dirty filters · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
         (sf:string "MOCKS-98c486052a51")
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
@@ -380,7 +380,7 @@
 (print "--- [DPDC-07b — WipeClean rejects a list containing a nonce the holder does not have · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
         (sf:string "MOCKS-98c486052a51")
     )
     (map print
@@ -406,8 +406,8 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
         (sf:string "MOCKS-98c486052a51")
         (emma:string KST.EMMA)
     )
@@ -476,15 +476,15 @@
 (print "--- [DPDC-08 — WipePure takes a dirty read; WipeHeavy finds the same set itself · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-DPDC-MNG:module{DpdcManagementV3} DPDC-MNG)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
         (sf:string "MOCKS-98c486052a51")
         (emma:string KST.EMMA)
     )
     (let
         (
-            (plan:object{DpdcManagementV2.RemovableNonces} (ref-DPDC-MNG::URHC_WipePure emma sf true))
+            (plan:object{DpdcManagementV3.RemovableNonces} (ref-DPDC-MNG::URHC_WipePure emma sf true))
         )
         (map print
             [
@@ -582,7 +582,7 @@
 (print "--- [DPDC-09 — UEV_Nonce: guard was shadowed by its own reader — NOW FIXED · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-DPDC:module{DpdcV3} DPDC)
         (sf:string "MOCKS-98c486052a51")
     )
     (map print
@@ -621,7 +621,7 @@
 (print "--- [DPDC-G2 — argument-domain guards: pause state, description, royalty precision, holding · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-DPDC:module{DpdcV3} DPDC)
         (nf:string "MOCKN-98c486052a51")
     )
     (map print
@@ -692,7 +692,7 @@
 (print "--- [DPDC-G2b - the state=false arm of UEV_PauseState, on a genuinely paused collection · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-DPDC:module{DpdcV3} DPDC)
         (nf:string "MOCKN-98c486052a51")
     )
     (env-module-admin DPDC)
@@ -752,7 +752,7 @@
 (print "--- [DPDC-G2d - CAP_OwnerOrCreator: owner OK, creator OK, third party refused · 01 · let / invocation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-DPDC:module{DpdcV3} DPDC)
         (nf:string "MOCKN-98c486052a51")
     )
     ;;the premise: for this fixture owner and creator are the SAME account, which is why the third
@@ -833,7 +833,7 @@
 (print "--- [DPDC-G3 — property guards that DPDC can only reach with a purpose-issued collection · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-DPDC:module{DpdcV3} DPDC)
         (locked:string "ADVC-98c486052a51")
         (open:string "MOCKS-98c486052a51")
     )
@@ -884,7 +884,7 @@
 (print "--- [DPDC-G4 — the DPDC-C input-shape family: nonce SIGN carries meaning here · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
+        (ref-DPDC-C:module{DpdcCreateV3} DPDC-C)
         (ref-UDC:module{DpdcUdcV2} DPDC-UDC)
     )
     (map print
@@ -1058,9 +1058,9 @@
 (print "--- [DPDC-G6 — collection existence, SFT holdings, fragmentation, and the four NFT roles · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-DPDC-F:module{DpdcFragmentsV2} DPDC-F)
-        (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-DPDC-F:module{DpdcFragmentsV3} DPDC-F)
+        (ref-DPDC-N:module{DpdcNonceV3} DPDC-N)
         (sf:string "MOCKS-98c486052a51")
         (nf:string "MOCKN-98c486052a51")
     )
@@ -1144,7 +1144,7 @@
 (print "--- [DPDC-G7 — the collectable-transfer amount rules · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
+        (ref-DPDC-T:module{DpdcTransferV3} DPDC-T)
         (sf:string "MOCKS-98c486052a51")
         (nf:string "MOCKN-98c486052a51")
     )
@@ -1499,8 +1499,8 @@
 (print "--- [DPDC-G13 — four argument-domain guards across the DPDC family · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
         (sf:string "MOCKS-98c486052a51")
         (nd:object{DpdcUdcV2.DPDC|NonceData} (DPDC-UDC.UDC_NonceData 0.0 0.0 "n" "d"
             (DPDC-UDC.UDC_NoMetaData)
@@ -1597,7 +1597,7 @@
 (print "--- [DPDC-G14 — FIXED: the bulk-transfer shape guard now answers in all three directions · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (nf:string "MOCKN-98c486052a51")
     )
     (map print
@@ -1731,16 +1731,16 @@
 (print "--- [DPDC-G16 - UC_CleanseAggregatedRoyalties drops zero-royalty creators · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
+        (ref-DPDC-T:module{DpdcTransferV3} DPDC-T)
     )
     (let
         (
-            (mixed:object{DpdcTransferV2.AggregatedRoyalties}
+            (mixed:object{DpdcTransferV3.AggregatedRoyalties}
                 (ref-DPDC-T::UDCx_AggregatedRoyalties ["a" "b" "c"] [1.5 0.0 2.5]))
         )
         (let
             (
-                (cleansed:object{DpdcTransferV2.AggregatedRoyalties}
+                (cleansed:object{DpdcTransferV3.AggregatedRoyalties}
                     (ref-DPDC-T::UC_CleanseAggregatedRoyalties mixed))
             )
             (map print
@@ -1759,7 +1759,7 @@
                     ;;mangling every input.
                     (expect "<<DPDC-G16>> ...while an already-clean aggregate passes through unchanged"
                         [["a" "b"] [1.5 2.5]]
-                        (let ((clean:object{DpdcTransferV2.AggregatedRoyalties}
+                        (let ((clean:object{DpdcTransferV3.AggregatedRoyalties}
                                   (ref-DPDC-T::UC_CleanseAggregatedRoyalties
                                       (ref-DPDC-T::UDCx_AggregatedRoyalties ["a" "b"] [1.5 2.5]))))
                             [(at "creators" clean) (at "ignis-royalties" clean)]))
@@ -1796,7 +1796,7 @@
 (print "--- [DPDC-G17 - IGNIS|C>DEBIT: you cannot debit more IGNIS than the account holds · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
     )
     (map print
         [
@@ -1848,7 +1848,7 @@
 (print "--- [DPDC-G18 - XIv_CreditOrDebitDPDC: debiting a nonce with zero supply · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
+        (ref-DPDC-C:module{DpdcCreateV3} DPDC-C)
         (sf:string "MOCKS-98c486052a51")
     )
     (map print
@@ -1893,7 +1893,7 @@
 (print "--- [DPDC-G19 - XIv_MappedCreditOrDebitDPDC: nonces and amounts must be the same length · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
+        (ref-DPDC-C:module{DpdcCreateV3} DPDC-C)
         (sf:string "MOCKS-98c486052a51")
     )
     (map print
@@ -1937,9 +1937,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
@@ -1948,7 +1948,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|TransferNonce patron sf patron lumy 1 2 false))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|TransferNonce patron sf patron lumy 1 2 false))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_TransferNonce patron patron lumy sf 1 2 false))
         )
@@ -1984,9 +1984,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
@@ -1995,7 +1995,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|TransferNonces patron sf patron lumy [1 4] [2 2] false))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|TransferNonces patron sf patron lumy [1 4] [2 2] false))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_TransferNonces patron patron lumy sf [1 4] [2 2] false))
         )
@@ -2027,9 +2027,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
@@ -2038,7 +2038,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|ToggleFreezeAccount patron sf emma false))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|ToggleFreezeAccount patron sf emma false))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto sf true) emma sf false))
         )
@@ -2068,9 +2068,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
@@ -2079,7 +2079,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|ToggleBurnRole patron sf lumy true))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|ToggleBurnRole patron sf lumy true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_ToggleBurnRole patron (DPDC.UR_OwnerKonto sf true) lumy sf true))
         )
@@ -2109,9 +2109,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
@@ -2120,7 +2120,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|ToggleTransferRole patron sf lumy true))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|ToggleTransferRole patron sf lumy true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_ToggleTransferRole patron (DPDC.UR_OwnerKonto sf true) lumy sf true))
         )
@@ -2150,9 +2150,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
@@ -2161,7 +2161,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|ToggleAddQuantityRole patron sf lumy true))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|ToggleAddQuantityRole patron sf lumy true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_ToggleAddQuantityRole patron (DPDC.UR_OwnerKonto sf true) lumy sf true))
         )
@@ -2191,9 +2191,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
@@ -2202,7 +2202,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|AddQuantity patron sf patron 1 5))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|AddQuantity patron sf patron 1 5))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_AddQuantity patron patron sf 1 5))
         )
@@ -2232,9 +2232,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
@@ -2243,7 +2243,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|Burn patron sf patron 1 1))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|Burn patron sf patron 1 1))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_Burn patron patron sf 1 1))
         )
@@ -2273,9 +2273,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
@@ -2284,7 +2284,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|TogglePause patron sf true))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|TogglePause patron sf true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_TogglePause patron (DPDC.UR_OwnerKonto sf true) sf true))
         )
@@ -2317,9 +2317,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
@@ -2328,7 +2328,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|UpdatePendingBranding patron sf "logo" "desc" "site.example" []))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|UpdatePendingBranding patron sf "logo" "desc" "site.example" []))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_UpdatePendingBranding patron (DPDC.UR_OwnerKonto sf true) sf "logo" "desc" "site.example" []))
         )
@@ -2358,9 +2358,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
@@ -2369,7 +2369,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPDC|BulkTransfer patron sf true [[2]] [[1]] patron [lumy] false))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPDC|BulkTransfer patron sf true [[2]] [[1]] patron [lumy] false))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPDC|C_BulkTransfer patron patron [lumy] sf true [[2]] [[1]] false))
         )
@@ -2399,9 +2399,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
@@ -2410,7 +2410,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPDC|MultiTransfer patron [nf sf] [false true] patron lumy [[2] [1]] [[1] [4]] false))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPDC|MultiTransfer patron [nf sf] [false true] patron lumy [[2] [1]] [[1] [4]] false))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPDC|C_MultiTransfer patron patron lumy [nf sf] [false true] [[2] [1]] [[1] [4]] false))
         )
@@ -2443,8 +2443,8 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -2452,7 +2452,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|ToggleBurnRole patron nf lumy true))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|ToggleBurnRole patron nf lumy true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_ToggleBurnRole patron (DPDC.UR_OwnerKonto nf false) lumy nf true))
         )
@@ -2482,8 +2482,8 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -2491,7 +2491,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|ToggleTransferRole patron nf lumy true))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|ToggleTransferRole patron nf lumy true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_ToggleTransferRole patron (DPDC.UR_OwnerKonto nf false) lumy nf true))
         )
@@ -2521,8 +2521,8 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -2530,7 +2530,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|ToggleUpdateRole patron nf lumy true))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|ToggleUpdateRole patron nf lumy true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_ToggleUpdateRole patron (DPDC.UR_OwnerKonto nf false) lumy nf true))
         )
@@ -2560,8 +2560,8 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -2569,7 +2569,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|ToggleModifyCreatorRole patron nf lumy true))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|ToggleModifyCreatorRole patron nf lumy true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_ToggleModifyCreatorRole patron (DPDC.UR_OwnerKonto nf false) lumy nf true))
         )
@@ -2599,8 +2599,8 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -2608,7 +2608,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|ToggleModifyRoyaltiesRole patron nf lumy true))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|ToggleModifyRoyaltiesRole patron nf lumy true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_ToggleModifyRoyaltiesRole patron (DPDC.UR_OwnerKonto nf false) lumy nf true))
         )
@@ -2638,8 +2638,8 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -2647,7 +2647,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|ToggleFreezeAccount patron nf lumy true))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|ToggleFreezeAccount patron nf lumy true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto nf false) lumy nf true))
         )
@@ -2677,8 +2677,8 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -2686,7 +2686,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|TogglePause patron nf true))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|TogglePause patron nf true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_TogglePause patron (DPDC.UR_OwnerKonto nf false) nf true))
         )
@@ -2716,8 +2716,8 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -2725,7 +2725,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|MoveCreateRole patron nf lumy))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|MoveCreateRole patron nf lumy))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_MoveCreateRole patron (DPDC.UR_OwnerKonto nf false) lumy nf))
         )
@@ -2757,8 +2757,8 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -2766,7 +2766,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateNonceName patron nf patron 2 true "CostProbe"))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateNonceName patron nf patron 2 true "CostProbe"))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_UpdateNonceName patron patron nf 2 true "CostProbe"))
         )
@@ -2796,8 +2796,8 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -2805,7 +2805,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|Control patron nf true true true true true true true true))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|Control patron nf true true true true true true true true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_Control patron (DPDC.UR_OwnerKonto nf false) nf true true true true true true true true))
         )
@@ -2834,8 +2834,8 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -2843,7 +2843,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|ToggleUpdateRole patron sf lumy true))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|ToggleUpdateRole patron sf lumy true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_ToggleUpdateRole patron (DPDC.UR_OwnerKonto sf true) lumy sf true))
         )
@@ -2872,8 +2872,8 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -2881,7 +2881,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|ToggleModifyCreatorRole patron sf lumy true))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|ToggleModifyCreatorRole patron sf lumy true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_ToggleModifyCreatorRole patron (DPDC.UR_OwnerKonto sf true) lumy sf true))
         )
@@ -2910,8 +2910,8 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -2919,7 +2919,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|ToggleModifyRoyaltiesRole patron sf lumy true))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|ToggleModifyRoyaltiesRole patron sf lumy true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_ToggleModifyRoyaltiesRole patron (DPDC.UR_OwnerKonto sf true) lumy sf true))
         )
@@ -2948,8 +2948,8 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -2957,7 +2957,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|MoveCreateRole patron sf lumy))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|MoveCreateRole patron sf lumy))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_MoveCreateRole patron (DPDC.UR_OwnerKonto sf true) lumy sf))
         )
@@ -2986,8 +2986,8 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -2995,7 +2995,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|MoveRecreateRole patron sf lumy))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|MoveRecreateRole patron sf lumy))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_MoveRecreateRole patron (DPDC.UR_OwnerKonto sf true) lumy sf))
         )
@@ -3024,8 +3024,8 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -3033,7 +3033,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|MoveSetUriRole patron sf lumy))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|MoveSetUriRole patron sf lumy))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_MoveSetUriRole patron (DPDC.UR_OwnerKonto sf true) lumy sf))
         )
@@ -3065,8 +3065,8 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -3074,7 +3074,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateNonceName patron sf patron 1 true "CostProbe"))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateNonceName patron sf patron 1 true "CostProbe"))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_UpdateNonceName patron patron sf 1 true "CostProbe"))
         )
@@ -3103,8 +3103,8 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -3112,7 +3112,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|Control patron sf true true true true true true true true))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|Control patron sf true true true true true true true true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_Control patron (DPDC.UR_OwnerKonto sf true) sf true true true true true true true true))
         )
@@ -3142,9 +3142,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -3158,7 +3158,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateNonceDescription patron nf patron 2 true "cost probe"))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateNonceDescription patron nf patron 2 true "cost probe"))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_UpdateNonceDescription patron patron nf 2 true "cost probe"))
         )
@@ -3188,9 +3188,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -3204,7 +3204,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateNonceRoyalty patron nf patron 2 true 3.0))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateNonceRoyalty patron nf patron 2 true 3.0))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_UpdateNonceRoyalty patron patron nf 2 true 3.0))
         )
@@ -3237,9 +3237,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -3253,7 +3253,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateNonceIgnisRoyalty patron nf patron 2 true 2.0))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateNonceIgnisRoyalty patron nf patron 2 true 2.0))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_UpdateNonceIgnisRoyalty patron patron nf 2 true 2.0))
         )
@@ -3283,9 +3283,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -3299,7 +3299,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateNonceScore patron nf patron 2 true 7.0))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateNonceScore patron nf patron 2 true 7.0))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_UpdateNonceScore patron patron nf 2 true 7.0))
         )
@@ -3329,9 +3329,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -3345,7 +3345,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|RemoveNonceScore patron nf patron 2 true))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|RemoveNonceScore patron nf patron 2 true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_RemoveNonceScore patron patron nf 2 true))
         )
@@ -3375,9 +3375,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -3391,7 +3391,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateNonceMetaData patron nf patron 2 true (ref-DPDC-UDC::UDC_NoMetaData)))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateNonceMetaData patron nf patron 2 true (ref-DPDC-UDC::UDC_NoMetaData)))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_UpdateNonceMetaData patron patron nf 2 true (ref-DPDC-UDC::UDC_NoMetaData)))
         )
@@ -3421,9 +3421,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -3437,7 +3437,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateNonceURI patron nf patron 2 true type (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateNonceURI patron nf patron 2 true type (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_UpdateNonceURI patron patron nf 2 true type (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
         )
@@ -3470,9 +3470,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -3486,7 +3486,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateNonce patron nf patron 2 true nd))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateNonce patron nf patron 2 true nd))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_UpdateNonce patron patron nf 2 true nd))
         )
@@ -3518,9 +3518,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -3534,7 +3534,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateNonces patron nf patron [2 3] true [nd nd]))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateNonces patron nf patron [2 3] true [nd nd]))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_UpdateNonces patron patron nf [2 3] true [nd nd]))
         )
@@ -3567,9 +3567,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -3583,7 +3583,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|TransferNonce patron nf patron lumy 2 1 false))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|TransferNonce patron nf patron lumy 2 1 false))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_TransferNonce patron patron lumy nf 2 1 false))
         )
@@ -3613,9 +3613,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -3629,7 +3629,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|TransferNonces patron nf patron lumy [2 3] [1 1] false))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|TransferNonces patron nf patron lumy [2 3] [1 1] false))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_TransferNonces patron patron lumy nf [2 3] [1 1] false))
         )
@@ -3659,9 +3659,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -3675,7 +3675,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|Burn patron nf patron 2))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|Burn patron nf patron 2))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_Burn patron patron nf 2))
         )
@@ -3705,9 +3705,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -3721,7 +3721,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|MoveRecreateRole patron nf lumy))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|MoveRecreateRole patron nf lumy))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_MoveRecreateRole patron (DPDC.UR_OwnerKonto nf false) lumy nf))
         )
@@ -3751,9 +3751,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -3767,7 +3767,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|MoveSetUriRole patron nf lumy))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|MoveSetUriRole patron nf lumy))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_MoveSetUriRole patron (DPDC.UR_OwnerKonto nf false) lumy nf))
         )
@@ -3801,9 +3801,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -3817,7 +3817,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|UpdatePendingBranding patron nf "ipfs://probe-logo" "cost probe" "https://probe.example" []))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|UpdatePendingBranding patron nf "ipfs://probe-logo" "cost probe" "https://probe.example" []))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_UpdatePendingBranding patron (DPDC.UR_OwnerKonto nf false) nf "ipfs://probe-logo" "cost probe" "https://probe.example" []))
         )
@@ -3847,10 +3847,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
@@ -3865,7 +3865,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateNonceDescription patron sf patron 2 true "cost probe"))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateNonceDescription patron sf patron 2 true "cost probe"))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_UpdateNonceDescription patron patron sf 2 true "cost probe"))
         )
@@ -3895,10 +3895,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
@@ -3913,7 +3913,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateNonceRoyalty patron sf patron 2 true 3.0))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateNonceRoyalty patron sf patron 2 true 3.0))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_UpdateNonceRoyalty patron patron sf 2 true 3.0))
         )
@@ -3946,10 +3946,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
@@ -3964,7 +3964,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateNonceIgnisRoyalty patron sf patron 2 true 2.0))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateNonceIgnisRoyalty patron sf patron 2 true 2.0))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_UpdateNonceIgnisRoyalty patron patron sf 2 true 2.0))
         )
@@ -3994,10 +3994,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
@@ -4012,7 +4012,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateNonceScore patron sf patron 2 true 7.0))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateNonceScore patron sf patron 2 true 7.0))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_UpdateNonceScore patron patron sf 2 true 7.0))
         )
@@ -4042,10 +4042,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
@@ -4060,7 +4060,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|RemoveNonceScore patron sf patron 2 true))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|RemoveNonceScore patron sf patron 2 true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_RemoveNonceScore patron patron sf 2 true))
         )
@@ -4090,10 +4090,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
@@ -4108,7 +4108,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateNonceMetaData patron sf patron 2 true (ref-DPDC-UDC::UDC_NoMetaData)))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateNonceMetaData patron sf patron 2 true (ref-DPDC-UDC::UDC_NoMetaData)))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_UpdateNonceMetaData patron patron sf 2 true (ref-DPDC-UDC::UDC_NoMetaData)))
         )
@@ -4138,10 +4138,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
@@ -4156,7 +4156,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateNonceURI patron sf patron 2 true type (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateNonceURI patron sf patron 2 true type (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_UpdateNonceURI patron patron sf 2 true type (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
         )
@@ -4186,10 +4186,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
@@ -4204,7 +4204,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateNonce patron sf patron 2 true nd))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateNonce patron sf patron 2 true nd))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_UpdateNonce patron patron sf 2 true nd))
         )
@@ -4236,10 +4236,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
@@ -4254,7 +4254,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateNonces patron sf patron [1 2] true [nd nd]))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateNonces patron sf patron [1 2] true [nd nd]))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_UpdateNonces patron patron sf [1 2] true [nd nd]))
         )
@@ -4284,10 +4284,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
@@ -4302,7 +4302,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|BulkTransfer patron sf [[1]] [[1]] patron [lumy] false))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|BulkTransfer patron sf [[1]] [[1]] patron [lumy] false))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_BulkTransfer patron patron [lumy] sf [[1]] [[1]] false))
         )
@@ -4332,10 +4332,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
@@ -4350,7 +4350,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|Create patron sf [7] [nd]))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|Create patron sf [7] [nd]))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_Create patron (DPDC.UR_Verum5 sf true) sf [7] [nd]))
         )
@@ -4380,10 +4380,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
@@ -4398,7 +4398,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|Repurpose patron sf patron lumy [1] [2]))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|Repurpose patron sf patron lumy [1] [2]))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             ;;patron/executor/executee all read ANHD/ANHD/ANHD here: the collection owner is
             ;;also paying and also the account being debited. Three roles, one account.
@@ -4430,10 +4430,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
@@ -4452,7 +4452,7 @@
     (ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto sf true) lumy sf true)
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|WipeNonce patron sf lumy 2))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|WipeNonce patron sf lumy 2))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_WipeNonce patron (DPDC.UR_OwnerKonto sf true) lumy sf 2))
         )
@@ -4482,10 +4482,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
@@ -4504,7 +4504,7 @@
     (ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto sf true) lumy sf true)
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|WipeNoncePartialy patron sf lumy 2 1))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|WipeNoncePartialy patron sf lumy 2 1))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_WipeNoncePartialy patron (DPDC.UR_OwnerKonto sf true) lumy sf 2 1))
         )
@@ -4534,10 +4534,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
@@ -4556,7 +4556,7 @@
     (ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto sf true) lumy sf true)
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|WipeClean patron lumy sf [2]))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|WipeClean patron lumy sf [2]))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_WipeClean patron (DPDC.UR_OwnerKonto sf true) lumy sf [2]))
         )
@@ -4586,10 +4586,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
@@ -4608,7 +4608,7 @@
     (ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto sf true) lumy sf true)
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|WipeDirty patron lumy sf [2]))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|WipeDirty patron lumy sf [2]))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_WipeDirty patron (DPDC.UR_OwnerKonto sf true) lumy sf [2]))
         )
@@ -4640,10 +4640,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
@@ -4662,7 +4662,7 @@
     (ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto sf true) lumy sf true)
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|WipePure patron lumy sf (DPDC-MNG.URHC_WipePure lumy sf true)))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|WipePure patron lumy sf (DPDC-MNG.URHC_WipePure lumy sf true)))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_WipePure patron (DPDC.UR_OwnerKonto sf true) lumy sf (DPDC-MNG.URHC_WipePure lumy sf true)))
         )
@@ -4696,10 +4696,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
@@ -4718,7 +4718,7 @@
     (ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto sf true) lumy sf true)
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|WipeHeavy patron lumy sf))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|WipeHeavy patron lumy sf))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|CC_WipeHeavy patron (DPDC.UR_OwnerKonto sf true) lumy sf ))
         )
@@ -4750,10 +4750,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
@@ -4772,7 +4772,7 @@
     (ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto sf true) lumy sf true)
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|WipeSlice patron lumy sf (DPDC-MNG.UDC_RemovableNonces [2] [2])))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|WipeSlice patron lumy sf (DPDC-MNG.UDC_RemovableNonces [2] [2])))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|Cp_WipeSlice patron lumy sf (DPDC-MNG.UDC_RemovableNonces [2] [2])))
         )
@@ -4802,10 +4802,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
@@ -4820,7 +4820,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|BulkTransfer patron nf [[2]] [[1]] patron [lumy] false))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|BulkTransfer patron nf [[2]] [[1]] patron [lumy] false))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_BulkTransfer patron patron [lumy] nf [[2]] [[1]] false))
         )
@@ -4852,10 +4852,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
@@ -4870,7 +4870,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|Create patron nf [nd]))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|Create patron nf [nd]))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_Create patron (DPDC.UR_Verum5 nf false) nf [nd]))
         )
@@ -4900,10 +4900,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
@@ -4918,7 +4918,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|Repurpose patron nf patron lumy [2] [1]))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|Repurpose patron nf patron lumy [2] [1]))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_Repurpose patron patron patron nf lumy [2] [1]))
         )
@@ -4948,10 +4948,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
@@ -4970,7 +4970,7 @@
     (ref-TS02-C2::DPNF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto nf false) emma nf true)
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|WipeNonce patron nf emma 1))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|WipeNonce patron nf emma 1))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_WipeNonce patron (DPDC.UR_OwnerKonto nf false) emma nf 1))
         )
@@ -5000,10 +5000,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
@@ -5022,7 +5022,7 @@
     (ref-TS02-C2::DPNF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto nf false) emma nf true)
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|WipeClean patron emma nf [1]))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|WipeClean patron emma nf [1]))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_WipeClean patron (DPDC.UR_OwnerKonto nf false) emma nf [1]))
         )
@@ -5052,10 +5052,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
@@ -5074,7 +5074,7 @@
     (ref-TS02-C2::DPNF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto nf false) emma nf true)
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|WipeDirty patron emma nf [1]))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|WipeDirty patron emma nf [1]))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_WipeDirty patron (DPDC.UR_OwnerKonto nf false) emma nf [1]))
         )
@@ -5104,10 +5104,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
@@ -5126,7 +5126,7 @@
     (ref-TS02-C2::DPNF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto nf false) emma nf true)
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|WipePure patron emma nf (DPDC-MNG.URHC_WipePure emma nf false)))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|WipePure patron emma nf (DPDC-MNG.URHC_WipePure emma nf false)))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_WipePure patron (DPDC.UR_OwnerKonto nf false) emma nf (DPDC-MNG.URHC_WipePure emma nf false)))
         )
@@ -5156,10 +5156,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
@@ -5178,7 +5178,7 @@
     (ref-TS02-C2::DPNF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto nf false) emma nf true)
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|WipeHeavy patron emma nf))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|WipeHeavy patron emma nf))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|CC_WipeHeavy patron (DPDC.UR_OwnerKonto nf false) emma nf ))
         )
@@ -5209,10 +5209,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
@@ -5231,7 +5231,7 @@
     (ref-TS02-C2::DPNF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto nf false) emma nf true)
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|WipeSlice patron emma nf (DPDC-MNG.UDC_RemovableNonces [1] [1])))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|WipeSlice patron emma nf (DPDC-MNG.UDC_RemovableNonces [1] [1])))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|Cp_WipeSlice patron emma nf (DPDC-MNG.UDC_RemovableNonces [1] [1])))
         )
@@ -5263,10 +5263,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
@@ -5282,7 +5282,7 @@
     (ref-TS02-C2::DPNF|C_Burn patron patron nf 2)
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|Respawn patron nf patron 2))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|Respawn patron nf patron 2))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_Respawn patron patron nf 2))
         )
@@ -5337,16 +5337,16 @@
 )
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|Issue patron patron patron "CostProbeS" "CPS" true true true true true true true true))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|Issue patron patron patron "CostProbeS" "CPS" true true true true true true true true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (stoa-before:decimal (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))
             (m (ref-TS02-C1::DPSF|C_Issue patron patron patron "CostProbeS" "CPS" true true true true true true true true))
@@ -5408,16 +5408,16 @@
 )
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|Issue patron patron patron "CostProbeN" "CPN" true true true true true true true true))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|Issue patron patron patron "CostProbeN" "CPN" true true true true true true true true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (stoa-before:decimal (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))
             (m (ref-TS02-C2::DPNF|C_Issue patron patron patron "CostProbeN" "CPN" true true true true true true true true))
@@ -5487,16 +5487,16 @@
 (env-chain-data { "block-time": (time "2030-11-22T00:00:00Z") })
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|UpgradeBranding patron sf 1))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|UpgradeBranding patron sf 1))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (stoa-before:decimal (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))
             (m (ref-TS02-C1::DPSF|C_UpgradeBranding patron (DPDC.UR_OwnerKonto sf true) sf 1))
@@ -5560,16 +5560,16 @@
 (env-chain-data { "block-time": (time "2030-11-22T00:00:00Z") })
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|UpgradeBranding patron nf 1))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|UpgradeBranding patron nf 1))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (stoa-before:decimal (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))
             (m (ref-TS02-C2::DPNF|C_UpgradeBranding patron (DPDC.UR_OwnerKonto nf false) nf 1))
@@ -5624,16 +5624,16 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_BJ", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPDC:module{DpdcV3} DPDC)
         (id:string "MOCKS-98c486052a51")
         (patron:string KST.ANHD)
         (bj:string KC.BJ)
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|ToggleExemptionRole patron id bj true))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|ToggleExemptionRole patron id bj true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_ToggleExemptionRole patron (DPDC.UR_OwnerKonto id true) bj id true))
         )
@@ -5683,16 +5683,16 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_BJ", "caps": [] }])
 (let
     (
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPDC:module{DpdcV3} DPDC)
         (id:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
         (bj:string KC.BJ)
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|ToggleExemptionRole patron id bj true))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|ToggleExemptionRole patron id bj true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_ToggleExemptionRole patron (DPDC.UR_OwnerKonto id false) bj id true))
         )
@@ -5730,10 +5730,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
@@ -5747,7 +5747,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|EnableNonceFragmentation patron nf 2 nd))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|EnableNonceFragmentation patron nf 2 nd))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_EnableNonceFragmentation patron (DPDC.UR_OwnerKonto nf false) nf 2 nd))
         )
@@ -5778,10 +5778,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
@@ -5796,7 +5796,7 @@
     (ref-TS02-C2::DPNF|C_EnableNonceFragmentation patron (DPDC.UR_OwnerKonto nf false) nf 2 nd)
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|MakeFragments patron patron nf 2 1))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|MakeFragments patron patron nf 2 1))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_MakeFragments patron patron nf 2 1))
         )
@@ -5833,11 +5833,11 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
@@ -5853,7 +5853,7 @@
     (ref-TS02-C2::DPNF|C_MakeFragments patron patron nf 2 1)
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|MergeFragments patron patron nf -2 (ref-DPDC::UR_AccountNonceSupply patron nf false -2)))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|MergeFragments patron patron nf -2 (ref-DPDC::UR_AccountNonceSupply patron nf false -2)))
             (frag-before:integer (ref-DPDC::UR_AccountNonceSupply patron nf false -2))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_MergeFragments patron patron nf -2 (ref-DPDC::UR_AccountNonceSupply patron nf false -2)))
@@ -5897,11 +5897,11 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
@@ -5917,7 +5917,7 @@
     (ref-TS02-C2::DPNF|C_MakeFragments patron patron nf 2 1)
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|RepurposeFragments patron nf patron lumy [-2] [(ref-DPDC::UR_AccountNonceSupply patron nf false -2)]))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|RepurposeFragments patron nf patron lumy [-2] [(ref-DPDC::UR_AccountNonceSupply patron nf false -2)]))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_RepurposeFragments patron patron patron nf lumy [-2] [(ref-DPDC::UR_AccountNonceSupply patron nf false -2)]))
         )
@@ -5948,10 +5948,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
@@ -5965,7 +5965,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|EnableNonceFragmentation patron sf 2 nd))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|EnableNonceFragmentation patron sf 2 nd))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_EnableNonceFragmentation patron (DPDC.UR_OwnerKonto sf true) sf 2 nd))
         )
@@ -6009,9 +6009,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-DPDC-MNG:module{DpdcManagementV3} DPDC-MNG)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (id:string "MOCKS-98c486052a51")
         (patron:string KST.ANHD)
         (holder:string KST.LUMY)
@@ -6021,11 +6021,11 @@
     (ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto id true) holder id true)
     (let
         (
-            (full:object{DpdcManagementV2.RemovableNonces} (ref-DPDC-MNG::URHC_WipePure holder id true))
+            (full:object{DpdcManagementV3.RemovableNonces} (ref-DPDC-MNG::URHC_WipePure holder id true))
         )
         (let
             (
-                (plan:object{DpdcManagementV2.DPDC-MNG|WipeSlicePlan}
+                (plan:object{DpdcManagementV3.DPDC-MNG|WipeSlicePlan}
                     (ref-DPDC-MNG::URHC_BuildWipeSlicePlan holder id true (length (at "r-nonces" full))))
             )
             (let
@@ -6036,7 +6036,7 @@
                 )
                 ;;THE CAMPAIGN — one Cp_WipeSlice per slice, accumulated inside a single window.
                 (map
-                    (lambda (slice:object{DpdcManagementV2.RemovableNonces})
+                    (lambda (slice:object{DpdcManagementV3.RemovableNonces})
                         (ref-TS02-C1::DPSF|Cp_WipeSlice patron holder id slice))
                     (at "slices" plan))
                 (let
@@ -6090,9 +6090,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
-        (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
+        (ref-DPDC-MNG:module{DpdcManagementV3} DPDC-MNG)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (id:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
         (holder:string KST.EMMA)
@@ -6102,11 +6102,11 @@
     (ref-TS02-C2::DPNF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto id false) holder id true)
     (let
         (
-            (full:object{DpdcManagementV2.RemovableNonces} (ref-DPDC-MNG::URHC_WipePure holder id false))
+            (full:object{DpdcManagementV3.RemovableNonces} (ref-DPDC-MNG::URHC_WipePure holder id false))
         )
         (let
             (
-                (plan:object{DpdcManagementV2.DPDC-MNG|WipeSlicePlan}
+                (plan:object{DpdcManagementV3.DPDC-MNG|WipeSlicePlan}
                     (ref-DPDC-MNG::URHC_BuildWipeSlicePlan holder id false (length (at "r-nonces" full))))
             )
             (let
@@ -6117,7 +6117,7 @@
                 )
                 ;;THE CAMPAIGN — one Cp_WipeSlice per slice, accumulated inside a single window.
                 (map
-                    (lambda (slice:object{DpdcManagementV2.RemovableNonces})
+                    (lambda (slice:object{DpdcManagementV3.RemovableNonces})
                         (ref-TS02-C2::DPNF|Cp_WipeSlice patron holder id slice))
                     (at "slices" plan))
                 (let

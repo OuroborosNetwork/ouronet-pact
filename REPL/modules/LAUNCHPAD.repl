@@ -56,7 +56,7 @@
 (print "--- [TX-SPK-KPAY-PRICE - the StoicPay price curve is total and strictly positive · 02 · let / invocation] ---")
 (let
     (
-        (ref-KPAY:module{StoicPayV3} DEMIPAD-STOICPAY)
+        (ref-KPAY:module{StoicPayV4} DEMIPAD-STOICPAY)
     )
     (let
         (
@@ -133,8 +133,8 @@
 (print "--- [LPAD-I1 — INFO_DEMIPAD|Deposit quote vs measured charge · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV4} TS02-DPAD)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (patron:string KST.ANHD)
         (buyer:string KST.EMMA)
         (asset:string "DHOC-98c486052a51")
@@ -183,14 +183,14 @@
 ;;coin.TRANSFER cap at the exact amount URC_Prices computes.
 (let
     (
-        (ref-DPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-        (ref-SPARK:module{SparksV2} DEMIPAD-SPARK)
+        (ref-DPAD:module{DemiourgosLaunchpadV3} DEMIPAD)
+        (ref-SPARK:module{SparksV3} DEMIPAD-SPARK)
         (spark-id:string "SPARK-98c486052a51")
         (amount:integer 20)
     )
     (let
         (
-            (prices-obj:object{DemiourgosLaunchpadV2.DEMIPAD|Prices}
+            (prices-obj:object{DemiourgosLaunchpadV3.DEMIPAD|Prices}
                 (ref-DPAD::URC_Prices spark-id (at "pid" (ref-SPARK::URC_SparkAmountCosts amount)) 0))
         )
         (let
@@ -221,7 +221,7 @@
                             "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" a4) ] } ])
             (let
                 (
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                     (ref-CPAD:module{CitizenLaunchpadTalosV1} TS02-CPAD)
                 )
                 (let
@@ -284,9 +284,9 @@
 (print "--- [LPAD-N2 - SPARK C_CustomRedemFewSparks: the CALLER's STOA price is what pays, not the oracle's · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-SPARK:module{SparksV2} DEMIPAD-SPARK)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-SPARK:module{SparksV3} DEMIPAD-SPARK)
         (spark-id:string "SPARK-98c486052a51")
         (frozen:string "F|SPARK-98c486052a51")
         (pad:string DEMIPAD-SPARK.DEMIPAD|SC_NAME)
@@ -376,9 +376,9 @@
 (print "--- [LPAD-N3 - SPARK C_CustomRedemAllSparks: ALL means the whole current balance · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-SPARK:module{SparksV2} DEMIPAD-SPARK)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-SPARK:module{SparksV3} DEMIPAD-SPARK)
         (spark-id:string "SPARK-98c486052a51")
         (frozen:string "F|SPARK-98c486052a51")
         (custom-pid:decimal 0.1)
@@ -463,8 +463,8 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
 (let
     (
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-SPARK:module{SparksV2} DEMIPAD-SPARK)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-SPARK:module{SparksV3} DEMIPAD-SPARK)
         (spark-id:string "SPARK-98c486052a51")
     )
     (map print
@@ -530,7 +530,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_LPAD", "caps": [] }])
 (let
     (
-        (ref-SNAKES:module{SaleSnakesV2} DEMIPAD-SNAKES)
+        (ref-SNAKES:module{SaleSnakesV3} DEMIPAD-SNAKES)
     )
     (let
         (
@@ -598,7 +598,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_LPAD", "caps": [] }])
 (let
     (
-        (ref-CUSTODIANS:module{SaleCustodiansV2} DEMIPAD-CUSTODIANS)
+        (ref-CUSTODIANS:module{SaleCustodiansV3} DEMIPAD-CUSTODIANS)
     )
     (let
         (

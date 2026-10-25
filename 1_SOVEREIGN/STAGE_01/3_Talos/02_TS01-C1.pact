@@ -2,7 +2,7 @@
 ;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/03_Talos.pact
 ;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface TalosStageOne_ClientOneV2
+(interface TalosStageOne_ClientOneV3
     @doc "Exposes Ouronets Stage One First Batch of Client Functions \
         \ Modules: DALOS, DPTF and DPOF are included in the First Batch"
 
@@ -56,7 +56,7 @@
     (defun DALOS|C_UpdateEliteAccountSquared (patron:string sender:string receiver:string))
     ;;
     ;;
-    (defun DPTF|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
+    (defun DPTF|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV3.SocialSchema}]))
     (defun DPTF|C_UpgradeBranding (patron:string executor:string entity-id:string months:integer))
     ;;
     (defun DPTF|C_Issue:list (patron:string executor:string name:[string] ticker:[string] decimals:[integer] can-change-owner:[bool] can-upgrade:[bool] can-add-special-role:[bool] can-freeze:[bool] can-wipe:[bool] can-pause:[bool]))
@@ -94,7 +94,7 @@
     (defun DPTF|C_MultiBulkTransfer (patron:string executor:string executee-array:[[string]] id-lst:[string] transfer-amount-array:[[decimal]]))
     ;;
     ;;
-    (defun DPOF|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
+    (defun DPOF|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV3.SocialSchema}]))
     (defun DPOF|C_UpgradeBranding (patron:string executor:string entity-id:string months:integer))
     ;;
     (defun DPOF|C_Issue:list (patron:string executor:string name:[string] ticker:[string] decimals:[integer] can-upgrade:[bool] can-change-owner:[bool] can-add-special-role:[bool] can-transfer-oft-create-role:[bool] can-freeze:[bool] can-wipe:[bool] can-pause:[bool]))
@@ -133,7 +133,7 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements TalosStageOne_ClientOneV2)
+    (implements TalosStageOne_ClientOneV3)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -149,7 +149,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -168,7 +168,7 @@
     (defcap P|TS ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (gap:bool (ref-DALOS::UR_GAP))
             )
             (enforce (not gap) "While Global Administrative Pause is online, no client Functions can be executed")
@@ -183,7 +183,7 @@
     (defun P|Info ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::P|Info)
         )
@@ -347,8 +347,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
                 )
                 (ref-DALOS::C_ControlSmartAccount patron executor payable-as-smart-contract payable-by-smart-contract payable-by-method)
                 (ref-IGNIS::XE_CollectIgnis patron (ref-IGNIS::DALOS|URCi_ControlSmartAccount executor))
@@ -379,8 +379,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                 )
                 (ref-DALOS::C_DeploySmartAccount executor guard stoa sovereign public)
@@ -417,8 +417,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                 )
                 (ref-DALOS::C_DeployStandardAccount executor guard stoa public)
@@ -438,8 +438,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
                 )
                 (ref-DALOS::C_RotateGovernor patron executor governor)
                 (ref-IGNIS::XE_CollectIgnis patron (ref-IGNIS::DALOS|URCi_RotateGovernor executor))
@@ -452,8 +452,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
                 )
                 (ref-DALOS::C_RotateGuard patron executor new-guard safe)
                 (ref-IGNIS::XE_CollectIgnis patron (ref-IGNIS::DALOS|URCi_RotateGuard executor))
@@ -467,8 +467,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
                 )
                 (ref-DALOS::C_RotateStoa patron executor stoa)
                 (ref-IGNIS::XE_CollectIgnis patron (ref-IGNIS::DALOS|URCi_RotateStoa executor))
@@ -482,8 +482,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
                 )
                 (ref-DALOS::C_RotateSovereign patron executor new-sovereign)
                 (ref-IGNIS::XE_CollectIgnis patron (ref-IGNIS::DALOS|URCi_RotateSovereign executor))
@@ -510,8 +510,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
                     (ref-ELITE:module{EliteV2} ELITE)
                     (ea-id:string (ref-DALOS::UR_EliteAurynID))
                 )
@@ -542,8 +542,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
                     (ref-ELITE:module{EliteV2} ELITE)
                     (ea-id:string (ref-DALOS::UR_EliteAurynID))
                 )
@@ -556,13 +556,13 @@
         )
     )
     ;;  [DPTF_Client]
-    (defun DPTF|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
+    (defun DPTF|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV3.SocialSchema}])
         @doc "Updates <pending-branding> for DPTF Token <entity-id> costing 100 IGNIS"
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-B|DPTF:module{BrandingUsagePrimaryV2} DPTF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-B|DPTF:module{BrandingUsagePrimaryV3} DPTF)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-B|DPTF::C_UpdatePendingBranding patron executor entity-id logo description website social)
@@ -577,7 +577,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-B|DPTF:module{BrandingUsagePrimaryV2} DPTF)
+                    (ref-B|DPTF:module{BrandingUsagePrimaryV3} DPTF)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                 )
                 (ref-B|DPTF::C_UpgradeBranding patron executor entity-id months)
@@ -593,10 +593,10 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-DPTF::C_Issue patron executor name ticker decimals can-change-owner can-upgrade can-add-special-role can-freeze can-wipe can-pause)
                     )
                 )
@@ -611,9 +611,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -629,8 +629,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_Control patron executor id cu cco casr cf cw cp)
@@ -644,8 +644,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_TogglePause patron executor id toggle)
@@ -662,8 +662,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_ToggleReservation patron executor id toggle)
@@ -682,8 +682,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_ToggleFee patron executor id toggle)
@@ -700,8 +700,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_SetMinMove patron executor id min-move-value)
@@ -715,8 +715,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_SetFee patron executor id fee)
@@ -730,9 +730,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount target))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -748,10 +748,10 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount (ref-DALOS::GOV|DALOS|SC_NAME)))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -767,10 +767,10 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount (ref-DALOS::GOV|OUROBOROS|SC_NAME)))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -785,10 +785,10 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-DPTF::C_ToggleFeeLock patron executor id toggle)
                     )
                     (collect:bool (at 0 (at "output" ico)))
@@ -828,10 +828,10 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-DALOS::CAP_EnforceAccountOwnership executor)
@@ -848,9 +848,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -868,8 +868,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_ToggleBurnRole patron executor executee id toggle)
@@ -882,8 +882,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_ToggleMintRole patron executor executee id toggle)
@@ -896,8 +896,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_ToggleFeeExemptionRole patron executor executee id toggle)
@@ -910,9 +910,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -936,8 +936,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-TFT:module{TrueFungibleTransferV3} TFT)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-TFT::C_ClearDispo patron executor executor)
@@ -958,8 +958,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-TFT:module{TrueFungibleTransferV3} TFT)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-TFT::C_ClearDispo patron executor executee)
@@ -972,9 +972,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -989,9 +989,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -1009,9 +1009,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                     (ref-ELITE:module{EliteV2} ELITE)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                 )
@@ -1030,9 +1030,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                     (ref-ELITE:module{EliteV2} ELITE)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                 )
@@ -1059,8 +1059,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-TFT:module{TrueFungibleTransferV3} TFT)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-TFT::C_Transmute patron executor id transmute-amount)
@@ -1084,9 +1084,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-TFT:module{TrueFungibleTransferV3} TFT)
                     (receiver-amount:decimal (ref-TFT::URC_ReceiverAmount id executor executee transfer-amount))
                     (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                     (sa-r:string (ref-I|OURONET::OI|UC_ShortAccount executee))
@@ -1108,9 +1108,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-TFT:module{TrueFungibleTransferV3} TFT)
                     (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                     (sa-r:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                 )
@@ -1142,9 +1142,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-TFT:module{TrueFungibleTransferV3} TFT)
                     (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -1159,9 +1159,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-TFT:module{TrueFungibleTransferV3} TFT)
                     (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -1172,13 +1172,13 @@
         )
     )
     ;;  [DPOF_Client]
-    (defun DPOF|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
+    (defun DPOF|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV3.SocialSchema}])
         @doc "Updates <pending-branding> for DPOF Token <entity-id> costing 150 IGNIS"
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-B|DPOF:module{BrandingUsagePrimaryV2} DPOF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-B|DPOF:module{BrandingUsagePrimaryV3} DPOF)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-B|DPOF::C_UpdatePendingBranding patron executor entity-id logo description website social)
@@ -1192,7 +1192,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-B|DPOF:module{BrandingUsagePrimaryV2} DPOF)
+                    (ref-B|DPOF:module{BrandingUsagePrimaryV3} DPOF)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                 )
                 (ref-B|DPOF::C_UpgradeBranding patron executor entity-id months)
@@ -1207,10 +1207,10 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-DPOF::C_Issue patron executor name ticker decimals can-upgrade can-change-owner can-add-special-role can-transfer-oft-create-role can-freeze can-wipe can-pause)
                     )
                 )
@@ -1225,8 +1225,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPOF::C_RotateOwnership patron executor executee id)
@@ -1239,8 +1239,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPOF::C_Control patron executor id cu cco casr ctocr cf cw cp sg)
@@ -1256,8 +1256,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPOF::C_TogglePause patron executor id toggle)
@@ -1290,10 +1290,10 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-DALOS::CAP_EnforceAccountOwnership executor)
@@ -1312,9 +1312,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -1332,8 +1332,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPOF::C_ToggleAddQuantityRole patron executor executee id toggle)
@@ -1346,8 +1346,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPOF::C_ToggleBurnRole patron executor executee id toggle)
@@ -1361,8 +1361,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPOF::C_MoveCreateRole patron executor executee id)
@@ -1375,8 +1375,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPOF::C_ToggleTransferRole patron executor executee id toggle)
@@ -1390,9 +1390,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -1407,9 +1407,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -1425,10 +1425,10 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (with-capability (P|TS)
                             (ref-DPOF::C_Mint patron executor id amount meta-data-chain)
                         )
@@ -1447,8 +1447,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                     (ref-ELITE:module{EliteV2} ELITE)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -1468,8 +1468,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                     (ref-ELITE:module{EliteV2} ELITE)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -1492,8 +1492,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                     (ref-ELITE:module{EliteV2} ELITE)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -1509,8 +1509,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                     (ref-ELITE:module{EliteV2} ELITE)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -1530,8 +1530,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                     (ref-ELITE:module{EliteV2} ELITE)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -1551,9 +1551,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                     (ref-ELITE:module{EliteV2} ELITE)
                     ;;
                     (ss:string (ref-I|OURONET::OI|UC_ShortAccount executor))
@@ -1574,9 +1574,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                     (ref-ELITE:module{EliteV2} ELITE)
                     ;;
                     (ss:string (ref-I|OURONET::OI|UC_ShortAccount executor))
@@ -1598,9 +1598,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                     (ref-ELITE:module{EliteV2} ELITE)
                     ;;
                     (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount executor))

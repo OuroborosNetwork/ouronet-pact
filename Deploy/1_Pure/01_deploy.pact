@@ -1,8 +1,8 @@
 ;; ---------------------------------------------------------------------------
-;; OURONET DEPLOY -- file 1 of 24
-;; This is STEP 1 of 25 in the full sequence (see Deploy/MANIFEST.md).
+;; OURONET DEPLOY -- file 1 of 25
+;; This is STEP 1 of 26 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-0 must have run first, including the init steps between deploys.
-;; 13 source file(s), 183,286 gas measured in the REPL gas model, 214,478 bytes
+;; 13 source file(s), 184,367 gas measured in the REPL gas model, 215,005 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/1_Utilities/01_U_CT.pact
@@ -57,7 +57,7 @@
 ;;      interface  UtilityVstV2
 ;;      module     U|VST
 ;;   -- 1_SOVEREIGN/STAGE_01/1_Utilities/12_U_SWP.pact
-;;      interface  UtilitySwpV2
+;;      interface  UtilitySwpV3
 ;;      module     U|SWP
 ;;   -- 1_SOVEREIGN/STAGE_01/1_Utilities/13_U_BFS.pact
 ;;      interface  BreadthFirstSearchV2
@@ -3618,7 +3618,7 @@
 
 ;; ===== 1_SOVEREIGN/STAGE_01/1_Utilities/12_U_SWP.pact ==============
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface UtilitySwpV2
+(interface UtilitySwpV3
     @doc "Exported Utility Functions for the SWP Module"
 
     ;;<=========================================================================>
@@ -3798,10 +3798,18 @@
     ;;{5.6}  Aux/X
     ;;{5.7}  User [A/C]
 
+
+    ;;<=========================================================================>
+    ;; ADDED 2026-10-12 -- interface-membership sweep (StoicSyntax-Prefixes.md Sec5,
+    ;; owner ruling). Every one of these was already live in the module body; this
+    ;; closes the gap between what the module DOES and what its interface SAYS it does.
+    ;;<=========================================================================>
+    (defun UC_IntPow:decimal (base:decimal power:integer))
+    (defun UC_PoolType:string (swpair:string))
 )
 
 (module U|SWP GOV
-    @doc "Swap-pool math and helper library (implements UtilitySwpV2). Defines swap \
+    @doc "Swap-pool math and helper library (implements UtilitySwpV3). Defines swap \
         \ input/output schemas with UDC constructors, and implements the pool invariant \
         \ solvers: Curve-style stable-pool math, weighted and equal-weight constant-product \
         \ swaps and inverses, plus LP and pool-id helpers and swpair/token routing \
@@ -3810,7 +3818,7 @@
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
-    (implements UtilitySwpV2)
+    (implements UtilitySwpV3)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -3868,7 +3876,7 @@
     )
     ;;
     ;;
-    (defun UDC_DirectRawSwapInput:object{UtilitySwpV2.DirectRawSwapInput}
+    (defun UDC_DirectRawSwapInput:object{UtilitySwpV3.DirectRawSwapInput}
         (a:decimal b:[decimal] c:[decimal] d:[integer] e:integer f:integer g:[decimal])
         {"A"                : a
         ,"X"                : b
@@ -3878,7 +3886,7 @@
         ,"output-precision" : f
         ,"weights"          : g}
     )
-    (defun UDC_InverseRawSwapInput:object{UtilitySwpV2.InverseRawSwapInput}
+    (defun UDC_InverseRawSwapInput:object{UtilitySwpV3.InverseRawSwapInput}
         (a:decimal b:[decimal] c:decimal d:integer e:integer f:integer g:[decimal])
         {"A"                : a
         ,"X"                : b
@@ -3889,20 +3897,20 @@
         ,"weights"          : g}
     )
     ;;
-    (defun UDC_DirectSwapInputData:object{UtilitySwpV2.DirectSwapInputData}
+    (defun UDC_DirectSwapInputData:object{UtilitySwpV3.DirectSwapInputData}
         (a:[string] b:[decimal] c:string)
         {"input-ids"        : a
         ,"input-amounts"    : b
         ,"output-id"        : c}
     )
-    (defun UDC_ReverseSwapInputData:object{UtilitySwpV2.ReverseSwapInputData}
+    (defun UDC_ReverseSwapInputData:object{UtilitySwpV3.ReverseSwapInputData}
         (a:string b:decimal c:string)
         {"output-id"        : a
         ,"output-amount"    : b
         ,"input-id"         : c}
     )
     ;;
-    (defun UDC_DirectTaxedSwapOutput:object{UtilitySwpV2.DirectTaxedSwapOutput}
+    (defun UDC_DirectTaxedSwapOutput:object{UtilitySwpV3.DirectTaxedSwapOutput}
         (a:[decimal] b:string c:decimal d:decimal e:decimal)
         {"lp-fuel"          : a
         ,"o-id"             : b
@@ -3910,7 +3918,7 @@
         ,"o-id-liquid"      : d
         ,"o-id-netto"       : e}
     )
-    (defun UDC_InverseTaxedSwapOutput:object{UtilitySwpV2.InverseTaxedSwapOutput}
+    (defun UDC_InverseTaxedSwapOutput:object{UtilitySwpV3.InverseTaxedSwapOutput}
         (a:decimal b:decimal c:[decimal] d:string e:decimal)
         {"o-id-liquid"      : a
         ,"o-id-special"     : b
@@ -3918,14 +3926,14 @@
         ,"i-id"             : d
         ,"i-id-brutto"      : e}
     )
-    (defun UDC_SwapFeez:object{UtilitySwpV2.SwapFeez}
+    (defun UDC_SwapFeez:object{UtilitySwpV3.SwapFeez}
         (a:decimal b:decimal c:decimal)
         {"lp"               : a
         ,"special"          : b
         ,"boost"            : c}
     )
-    (defun UDC_VirtualSwapEngine:object{UtilitySwpV2.VirtualSwapEngine}
-        (a:[string] b:[integer] c:string d:[decimal] e:string f:[decimal] g:decimal h:[decimal] i:object{UtilitySwpV2.SwapFeez} j:[decimal] k:[decimal] l:[decimal] m:[object{UtilitySwpV2.DirectSwapInputData}])
+    (defun UDC_VirtualSwapEngine:object{UtilitySwpV3.VirtualSwapEngine}
+        (a:[string] b:[integer] c:string d:[decimal] e:string f:[decimal] g:decimal h:[decimal] i:object{UtilitySwpV3.SwapFeez} j:[decimal] k:[decimal] l:[decimal] m:[object{UtilitySwpV3.DirectSwapInputData}])
         {"v-tokens"         : a
         ,"v-prec"           : b
         ,"account"          : c
@@ -3943,7 +3951,7 @@
     ;;{5.2}  Compute [UC]
     ;;S - Stable Pools Computation using Curve Finance original math.
     (defun UC_ComputeY 
-        (drsi:object{UtilitySwpV2.DirectRawSwapInput})
+        (drsi:object{UtilitySwpV3.DirectRawSwapInput})
         @doc "Computes <output-amount> of the Swap given the <input-amount>"
         (let
             (
@@ -4002,7 +4010,7 @@
         )
     )
     (defun UCv_ComputeInverseY
-        (irsi:object{UtilitySwpV2.InverseRawSwapInput})
+        (irsi:object{UtilitySwpV3.InverseRawSwapInput})
         @doc "Computes the <input-amount> for the Swap given the <output-amount>"
         (let        
             (
@@ -4221,7 +4229,7 @@
     ;;decimal) token precisions is routinely swallowed entirely by the final settlement-precision rounding.
     ;;Accepted as a bounded, documented limitation of the underlying language, not tracked as an open bug.
     (defun UC_ComputeWP
-        (drsi:object{UtilitySwpV2.DirectRawSwapInput})
+        (drsi:object{UtilitySwpV3.DirectRawSwapInput})
         @doc "Swapping 100A for y amount of C >> Equation in a weighted constant product pool: \
             \ How much C do you get for swapping 100A ? \
             \ xA^wA * xB^wB * xC^wC * xD^wD = (xA + 100)^wA * xB^wB * (xC - y)^wC * xD^wD \
@@ -4258,7 +4266,7 @@
         )
     )
     (defun UC_ComputeInverseWP
-        (irsi:object{UtilitySwpV2.InverseRawSwapInput})
+        (irsi:object{UtilitySwpV3.InverseRawSwapInput})
         @doc "Swapping ??A for 100C >> Equation in a weighted constant product pool: \
             \ How much A do you need to swap to get 100C ?  \
             \ xA^wA * xB^wB * xC^wC * xD^wD = (xA + y)^wA * xB^wB * (xC - 100)^wC * xD^wD \
@@ -4297,7 +4305,7 @@
     )
     ;;W - Equal Weight Constant Product Pools Computations
     (defun UC_ComputeEP:decimal 
-        (drsi:object{UtilitySwpV2.DirectRawSwapInput})
+        (drsi:object{UtilitySwpV3.DirectRawSwapInput})
         @doc "Swapping 100A for y amount of C >> Equation in an equal weight constant product pool: \
             \ xA * xB * xC * xD = (xA + 100) * xB * (xC - y) * xD \
             \ This Functions solves for y"
@@ -4323,7 +4331,7 @@
         )
     )
     (defun UC_ComputeInverseEP:decimal
-        (irsi:object{UtilitySwpV2.InverseRawSwapInput})
+        (irsi:object{UtilitySwpV3.InverseRawSwapInput})
         @doc "How Much A is needed to get 100C >> Equation in an equal weight constant product pool: \
             \ xA * xB * xC * xD = (xA + y) * xB * (xC - 100) * xD \
             \ This function solves for Y"

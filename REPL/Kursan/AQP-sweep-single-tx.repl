@@ -100,8 +100,8 @@
         (ouro-id:string "OURO-98c486052a51")
         (ouro-owner:string (AQP-ANK.URC_AnchorableAssetOwner ouro-id [true true]))
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (pool-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpPool"))
         (score-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpScore"))
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpFvt"))
@@ -185,10 +185,10 @@
     (
         (patron:string KST.ANHD)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (anchor-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpAnchor"))
         (pool-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpPool"))
         (boost-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpBoost"))
@@ -238,7 +238,7 @@
         ;;more likely to do it in STOA (a native-coin transfer) than in IGNIS.
         (let
             (
-                (sweep-quote:object{OuronetInfoV2.ClientInfo}
+                (sweep-quote:object{OuronetInfoV3.ClientInfo}
                     (AQP-INFO.INFO_AQP-FVT|SweepRevokeAnchor patron anchor-id))
                 (ignis-pre:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
                 (stoa-pre:decimal (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))

@@ -75,7 +75,7 @@
     (defcap GOV ()                          (compose-capability (GOV|O_UI_TWELVE_ADMIN)))
     (defcap GOV|O_UI_TWELVE_ADMIN ()           (enforce-guard GOV|MD_O-UI-TWELVE))
     (defun GOV|Demiurgoi ()
-        (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi))
+        (let ((ref-DALOS:module{OuronetDalosV3} DALOS)) (ref-DALOS::GOV|Demiurgoi))
     )
 
     ;;{5}  FUNCTIONS
@@ -150,7 +150,7 @@
     (defun URC_PoolTypeWord:[string] (swpair:string)
         @doc "The pool's type code and its display word: S -> Stable, W -> Weigthed, else Product."
         (let*
-            ( (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+            ( (ref-U|SWP:module{UtilitySwpV3} U|SWP)
               (t:string (ref-U|SWP::UC_PoolType swpair)) )
             [t (if (= t "S") "Stable" (if (= t "W") "Weigthed" "Product"))]
         )
@@ -158,7 +158,7 @@
 
     (defun URC_ShortAccounts:[string] (accounts:[string])
         @doc "Abbreviated account strings for display, via the INFO-ZERO shortener."
-        (let ((ref-INFO:module{OuronetInfoV2} IGNIS))
+        (let ((ref-INFO:module{OuronetInfoV3} IGNIS))
             (map (lambda (a:string) (ref-INFO::OI|UC_ShortAccount a)) accounts)
         )
     )
@@ -169,8 +169,8 @@
             \ to diagnose when the thing all of them share can be called on its own."
         (let*
             ( (ref-DIA:module{DiaStoaPidV2} U|CT)
-              (ref-SWP:module{SwapperV4} SWP)
-              (ref-SWPI:module{SwapperIssueV4} SWPI)
+              (ref-SWP:module{SwapperV5} SWP)
+              (ref-SWPI:module{SwapperIssueV5} SWPI)
               (ptp:[string] (URC_PoolTypeWord swpair))
               (glsb:bool (ref-SWP::UR_LiquidBoost))
               (lp-fee:decimal (ref-SWP::UR_FeeLP swpair))
@@ -197,7 +197,7 @@
             \ `keys SWP|Pairs`, i.e. an index read rather than a scan. That distinction is the \
             \ one that matters for composability; see ../RULES.md rule 5."
         (let*
-            ( (ref-SWP:module{SwapperV4} SWP)
+            ( (ref-SWP:module{SwapperV5} SWP)
               (glsb:bool (ref-SWP::UR_LiquidBoost))
               (asm:bool (ref-SWP::UR_Asymetric))
               (pools:[string] (ref-SWP::URC_Swpairs)) )
@@ -212,7 +212,7 @@
     (defun URC_PoolDashboard:object (swpair:string)
         @doc "The public per-pool panel: value, supplies, weights and the fee breakdown."
         (let*
-            ( (ref-SWP:module{SwapperV4} SWP)
+            ( (ref-SWP:module{SwapperV5} SWP)
               (core:object (URC_PoolCore swpair))
               (sup:[decimal] (at "pool-token-supplies" core))
               (lp:decimal (at "lp-supply" core))
@@ -253,8 +253,8 @@
             \ on top of everything the public dashboard shows. Supplies are floored to each \
             \ token's own precision here, which the public panel does not do."
         (let*
-            ( (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-              (ref-SWP:module{SwapperV4} SWP)
+            ( (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+              (ref-SWP:module{SwapperV5} SWP)
               (core:object (URC_PoolCore swpair))
               (raw:[decimal] (at "pool-token-supplies" core))
               (tokens:[string] (ref-SWP::UR_PoolTokens swpair))
@@ -302,10 +302,10 @@
         @doc "What the account holds of each of this pool's tokens, plus its virtual OURO and \
             \ resident IGNIS -- everything the add-liquidity form needs to bound its inputs."
         (let*
-            ( (ref-DALOS:module{OuronetDalosV2} DALOS)
-              (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-              (ref-TFT:module{TrueFungibleTransferV2} TFT)
-              (ref-SWP:module{SwapperV4} SWP)
+            ( (ref-DALOS:module{OuronetDalosV3} DALOS)
+              (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+              (ref-TFT:module{TrueFungibleTransferV3} TFT)
+              (ref-SWP:module{SwapperV5} SWP)
               (tokens:[string] (ref-SWP::UR_PoolTokens swpair)) )
             {"panel-ok" : true
             ,"pool-tokens" : tokens
@@ -321,9 +321,9 @@
         @doc "The management panel: ownership, toggles, and the frozen/sleeping links of the LP \
             \ token and every pool token."
         (let*
-            ( (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-              (ref-SWP:module{SwapperV4} SWP)
-              (ref-SWPI:module{SwapperIssueV4} SWPI)
+            ( (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+              (ref-SWP:module{SwapperV5} SWP)
+              (ref-SWPI:module{SwapperIssueV5} SWPI)
               (lp-id:string (ref-SWP::UR_TokenLP swpair))
               (pv:[decimal] (ref-SWPI::URC_PoolValue swpair))
               (all:[string] (+ [lp-id] (ref-SWP::UR_PoolTokens swpair))) )
@@ -358,8 +358,8 @@
             \ See this file's header. It is a decision-feeding number -- it bounds what the UI \
             \ lets a user add -- so it is fixed rather than ported faithfully."
         (let*
-            ( (ref-DALOS:module{OuronetDalosV2} DALOS)
-              (ref-SWP:module{SwapperV4} SWP)
+            ( (ref-DALOS:module{OuronetDalosV3} DALOS)
+              (ref-SWP:module{SwapperV5} SWP)
               (owner:string (ref-SWP::UR_OwnerKonto swpair))
               (total:decimal (ref-SWP::URC_PoolTotalFee swpair))
               (lp:decimal (ref-SWP::UR_FeeLP swpair))
@@ -422,11 +422,11 @@
             \ discounted -- the same trade previews differently for different callers, which is \
             \ correct and is why this cannot be cached across users."
         (let*
-            ( (ref-U|SWP:module{UtilitySwpV2} U|SWP)
-              (ref-SWP:module{SwapperV4} SWP)
-              (ref-SWPI:module{SwapperIssueV4} SWPI)
-              (ref-SWPL:module{SwapperLiquidityV2} SWPL)
-              (dsid:object{UtilitySwpV2.DirectSwapInputData}
+            ( (ref-U|SWP:module{UtilitySwpV3} U|SWP)
+              (ref-SWP:module{SwapperV5} SWP)
+              (ref-SWPI:module{SwapperIssueV5} SWPI)
+              (ref-SWPL:module{SwapperLiquidityV3} SWPL)
+              (dsid:object{UtilitySwpV3.DirectSwapInputData}
                 (ref-U|SWP::UDC_DirectSwapInputData input-ids input-amounts output-id)) )
             (at "o-id-netto"
                 (ref-SWPI::UC_BareboneSwapWithFeez
@@ -453,11 +453,11 @@
             \ against URCv_05|DirectSwap's netto in a UI without reading both docs is how a \
             \ preview ends up off by the fee."
         (let*
-            ( (ref-U|SWP:module{UtilitySwpV2} U|SWP)
-              (ref-SWP:module{SwapperV4} SWP)
-              (ref-SWPI:module{SwapperIssueV4} SWPI)
-              (ref-SWPL:module{SwapperLiquidityV2} SWPL)
-              (rsid:object{UtilitySwpV2.ReverseSwapInputData}
+            ( (ref-U|SWP:module{UtilitySwpV3} U|SWP)
+              (ref-SWP:module{SwapperV5} SWP)
+              (ref-SWPI:module{SwapperIssueV5} SWPI)
+              (ref-SWPL:module{SwapperLiquidityV3} SWPL)
+              (rsid:object{UtilitySwpV3.ReverseSwapInputData}
                 (ref-U|SWP::UDC_ReverseSwapInputData output-id output-amount input-id)) )
             (at "i-id-brutto"
                 (ref-SWPI::UC_InverseBareboneSwapWithFeez
@@ -482,8 +482,8 @@
             \ ADVISORY, NOT A GUARANTEE. It bounds the FIELD, not the trade: the pool's own \
             \ refusal is the real limit, and this number does not consult it. A UI that treats \
             \ it as a promise will let a user submit a swap that the contract still declines."
-        (let ((ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-              (ref-SWP:module{SwapperV4} SWP))
+        (let ((ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+              (ref-SWP:module{SwapperV5} SWP))
             (floor (* (/ promille 1000.0) (ref-SWP::UR_PoolTokenSupply swpair output-id))
                    (ref-DPTF::UR_Decimals output-id))
         )

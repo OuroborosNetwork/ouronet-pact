@@ -85,7 +85,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -104,7 +104,7 @@
     (defcap P|TS ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (gap:bool (ref-DALOS::UR_GAP))
             )
             (enforce (not gap) "While Global Administrative Pause is online, no client Functions can be executed")
@@ -119,7 +119,7 @@
     (defun P|Info ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::P|Info)
         )
@@ -275,7 +275,7 @@
     (defun UC_ShortAccount:string (account:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
             )
             (ref-I|OURONET::OI|UC_ShortAccount account)
         )
@@ -293,7 +293,7 @@
             (let
                 (
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-SPARK:module{SparksV2} DEMIPAD-SPARK)
+                    (ref-SPARK:module{SparksV3} DEMIPAD-SPARK)
                 )
                 (ref-SPARK::C_BuySparks patron buyer sparks-amount iz-native max-cost)
                 (ref-TS01-A::XB_DynamicFuelSTOA)
@@ -304,7 +304,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-SPARK:module{SparksV2} DEMIPAD-SPARK)
+                    (ref-SPARK:module{SparksV3} DEMIPAD-SPARK)
                 )
                 (ref-SPARK::C_RedemAllSparks patron redemption-payer account-to-redeem)
             )
@@ -314,7 +314,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-SPARK:module{SparksV2} DEMIPAD-SPARK)
+                    (ref-SPARK:module{SparksV3} DEMIPAD-SPARK)
                 )
                 (ref-SPARK::C_RedemFewSparks patron redemption-payer account-to-redeem redemption-quantity)
             )
@@ -327,7 +327,7 @@
             (let
                 (
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-SNAKES:module{SaleSnakesV2} DEMIPAD-SNAKES)
+                    (ref-SNAKES:module{SaleSnakesV3} DEMIPAD-SNAKES)
                 )
                 (ref-SNAKES::C_Acquire patron buyer nonce amount iz-native max-cost)
                 (ref-TS01-A::XB_DynamicFuelSTOA)
@@ -340,7 +340,7 @@
             (let
                 (
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-CUSTODIANS:module{SaleCustodiansV2} DEMIPAD-CUSTODIANS)
+                    (ref-CUSTODIANS:module{SaleCustodiansV3} DEMIPAD-CUSTODIANS)
                 )
                 (ref-CUSTODIANS::C_Acquire patron buyer nonce amount iz-native max-cost)
                 (ref-TS01-A::XB_DynamicFuelSTOA)
@@ -353,7 +353,7 @@
             (let
                 (
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-KPAY:module{StoicPayV3} DEMIPAD-STOICPAY)
+                    (ref-KPAY:module{StoicPayV4} DEMIPAD-STOICPAY)
                     (acquisition-text:string (ref-KPAY::C_BuyStoicPay patron buyer kpay-amount iz-native max-cost))
                 )
                 (ref-TS01-A::XB_DynamicFuelSTOA)

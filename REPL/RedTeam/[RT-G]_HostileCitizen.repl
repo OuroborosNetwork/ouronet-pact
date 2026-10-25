@@ -106,7 +106,7 @@
 (print "--- [RT-G-001b - the adversary attacks the sovereign core · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
         (ouro:string "OURO-98c486052a51")
         (victim:string KST.ANHD)
         (attacker:string KST.EMMA)
@@ -197,7 +197,7 @@
 (print "--- [RT-G-002 - drain the gas station through the STOA-moving primitive · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (attacker:string KST.EMMA)
     )
     (let
@@ -251,7 +251,7 @@
 )
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
     )
     (let
         (

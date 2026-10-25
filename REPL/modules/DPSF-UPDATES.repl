@@ -47,7 +47,7 @@
 (print "--- [DSU-01 — what [6.1.7] actually wrote (14 ops, previously unasserted) · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-DPDC:module{DpdcV3} DPDC)
         (id:string "TSFS-98c486052a51")
         (nd:object{DpdcUdcV2.DPDC|NonceData} (DPDC.UR_NativeNonceData "TSFS-98c486052a51" true 7))
     )
@@ -96,7 +96,7 @@
 (print "--- [DSU-01 · 03 · branding] ---")
 (let
     (
-        (b:object{BrandingV2.Schema} (BRD.UR_Branding "TSFS-98c486052a51" false))
+        (b:object{BrandingV3.Schema} (BRD.UR_Branding "TSFS-98c486052a51" false))
     )
     (map print
         [
@@ -125,8 +125,8 @@
 (print "--- [DSU-02 — DPSF|C_RemoveNonceScore (never exercised before) · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
         (id:string "TSFS-98c486052a51")
         (patron:string KST.ANHD)
     )
@@ -174,9 +174,9 @@
 (print "--- [DSU-03 — DPSF|C_UpdateNonceURI (never exercised before) · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-DPDC:module{DpdcV3} DPDC)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
         (id:string "TSFS-98c486052a51")
         (patron:string KST.ANHD)
     )
@@ -231,8 +231,8 @@
 (print "--- [DSU-04 — DPSF|C_Repurpose is a FORCED move, single and multi mode · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
         (id:string "TSFS-98c486052a51")
         (patron:string KST.ANHD)
     )
@@ -253,8 +253,8 @@
 ;; and multi mode calls the plural XE_Debit*-Nonces. Two nonces exercise the second branch.
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
         (id:string "TSFS-98c486052a51")
         (patron:string KST.ANHD)
     )
@@ -297,8 +297,8 @@
 (print "--- [DSU-05 — repurpose rejections · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
         (id:string "TSFS-98c486052a51")
     )
     (map print
@@ -332,8 +332,8 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
         (id:string "TSFS-98c486052a51")
     )
     (map print

@@ -38,7 +38,7 @@
 (print "--- [DPTF-01 — issuance properties (C_Issue, via fixture) · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
         (a:string "MOCKA-98c486052a51")
     )
     (map print
@@ -70,8 +70,8 @@
 (print "--- [DPTF-02 — C_Mint raises supply and credits the account · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
         (a:string "MOCKA-98c486052a51")
         (patron:string KST.ANHD)
     )
@@ -125,8 +125,8 @@
 (print "--- [DPTF-03 — C_Transfer moves balance, conserving supply · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
         (a:string "MOCKA-98c486052a51")
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
@@ -166,8 +166,8 @@
 (print "--- [DPTF-04 — C_Burn lowers supply and debits the account · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
         (a:string "MOCKA-98c486052a51")
         (patron:string KST.ANHD)
     )
@@ -221,8 +221,8 @@
 (print "--- [DPTF-05 — fee surface: SetFee / ToggleFee / SetFeeTarget / ResetFeeTarget · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
         (a:string "MOCKA-98c486052a51")
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
@@ -277,8 +277,8 @@
 (print "--- [DPTF-06 — C_SetMinMove / C_TogglePause / C_ToggleTransferRole / C_ToggleFeeExemptionRole · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
         (a:string "MOCKA-98c486052a51")
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
@@ -344,8 +344,8 @@
 (print "--- [DPTF-07 — C_Control flips properties; C_RotateOwnership moves the konto · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
         (b:string "MOCKB-98c486052a51")
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
@@ -422,8 +422,8 @@
 (print "--- [DPTF-08 — C_MultiBulkTransfer: fans out across tokens AND receivers · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
         (a:string "MOCKA-98c486052a51")
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
@@ -477,8 +477,8 @@
 (print "--- [DPTF-09 — DPTF|C_Wipe: the account must be FROZEN first · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
         (a:string "MOCKA-98c486052a51")
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
@@ -510,8 +510,8 @@
 (print "--- [DPTF-09 · 02 · freeze then wipe] ---")
 (let
     (
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
         (a:string "MOCKA-98c486052a51")
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
@@ -569,7 +569,7 @@
 (print "--- [DPTF-G1 — the UEV_ guard family, probed DIRECTLY · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
         (a:string "MOCKA-98c486052a51")
         (b:string "MOCKB-98c486052a51")
     )
@@ -618,7 +618,7 @@
 ;;silent false negative: an expect-failure that does not fail proves nothing at all.
 (let
     (
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
         (a:string "MOCKA-98c486052a51")
         (emma:string KST.EMMA)
     )
@@ -706,7 +706,7 @@
 (print "--- [DPTF-G2 — the special-link existence family, as 2x2s on their own boolean argument · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
         (a:string "MOCKA-98c486052a51")
     )
     (let
@@ -814,8 +814,8 @@
 (let
     (
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
     )
     (map print
         [
@@ -893,8 +893,8 @@
 (print "--- [DPTF-G6 — the treasury-in-debt fixture, and the four guards behind it · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
     )
     (let
@@ -1024,7 +1024,7 @@
 (print "--- [DPTF-G5 — URCv_Parent: the frozen-LP exclusion, which is a 4th-character test · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
     )
     (map print
         [
@@ -1072,9 +1072,9 @@
 (print "--- [DPTF-G7 — the OURO dispo floor, and why its sibling guard cannot fire · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
         (ref-U|DPTF:module{UtilityDptfV2} U|DPTF)
     )
     (let
@@ -1263,9 +1263,9 @@
 (print "--- [DPTF-G10 — clearing a dispo: the two preconditions, and the smart-account exclusion · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
     )
     (let
         (
@@ -1411,9 +1411,9 @@
 (print "--- [DPTF-G10c · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
     )
     (let
         (
@@ -1452,7 +1452,7 @@
 (print "--- [DPTF-G10c · 03 · the same call, with the subject's signature] ---")
 (let
     (
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
     )
     (map print
         [
@@ -1491,7 +1491,7 @@
 (print "--- [DPTF-G11 — the multi-transfer list parity check · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
         (a:string "MOCKA-98c486052a51")
         (b:string "MOCKB-98c486052a51")
     )
@@ -1542,8 +1542,8 @@
 (print "--- [DPTF-G12 - XBv_UpdateSupply: supply cannot go negative · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
         (a:string "MOCKA-98c486052a51")
     )
     (map print
@@ -1630,9 +1630,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (a:string "MOCKA-98c486052a51")
         (patron:string KST.ANHD)
         ;;the one user-deployed smart account in the boot chain
@@ -1653,7 +1653,7 @@
     (let
         (
             ;;FUNCTION COVERAGE (G6) — `INFO_DPTF|ToggleFeeExemptionRole`, per the owner's spec.
-            (predicted:object{OuronetInfoV2.ClientInfo}
+            (predicted:object{OuronetInfoV3.ClientInfo}
                 (INFO-ONE.INFO_DPTF|ToggleFeeExemptionRole patron a smart true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (msg:string (ref-TS01-C1::DPTF|C_ToggleFeeExemptionRole patron (DPTF.UR_Konto a) smart a true))
@@ -1708,7 +1708,7 @@
 ;;wrong in the other.
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
     )
     ;;The STOA fee is a real coin.transfer split 10/20/30/40 across the four fee targets, so it needs
     ;;a managed coin.TRANSFER per leg. Sized from the same split the collector uses, never hardcoded.
@@ -1733,15 +1733,15 @@
 )
 (let
     (
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (a:string "MOCKA-98c486052a51")
         (patron:string KST.ANHD)
         (months:integer 1)
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo}
+            (predicted:object{OuronetInfoV3.ClientInfo}
                 (INFO-ONE.INFO_DPTF|UpgradeBranding patron a months))
             (stoa-acct:string (ref-DALOS::UR_AccountStoa patron))
         )
@@ -1786,9 +1786,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (a:string "MOCKA-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -1796,7 +1796,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|Mint patron a patron 1.0 false))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_DPTF|Mint patron a patron 1.0 false))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C1::DPTF|C_Mint patron patron a 1.0 false))
         )
@@ -1828,9 +1828,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (a:string "MOCKA-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -1838,7 +1838,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|Burn patron a patron 1.0))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_DPTF|Burn patron a patron 1.0))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C1::DPTF|C_Burn patron patron a 1.0))
         )
@@ -1871,9 +1871,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (a:string "MOCKA-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -1881,7 +1881,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|Transfer patron a patron lumy 10.0))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_DPTF|Transfer patron a patron lumy 10.0))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C1::DPTF|C_Transfer patron patron lumy a 10.0 false))
         )
@@ -1915,9 +1915,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (a:string "MOCKA-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -1925,7 +1925,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|SetFee patron a 30.0))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_DPTF|SetFee patron a 30.0))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C1::DPTF|C_SetFee patron (DPTF.UR_Konto a) a 30.0))
         )
@@ -1956,9 +1956,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (a:string "MOCKA-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -1966,7 +1966,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|ToggleFee patron a true))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_DPTF|ToggleFee patron a true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C1::DPTF|C_ToggleFee patron (DPTF.UR_Konto a) a true))
         )
@@ -1997,9 +1997,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (a:string "MOCKA-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -2007,7 +2007,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|SetMinMove patron a 5.0))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_DPTF|SetMinMove patron a 5.0))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C1::DPTF|C_SetMinMove patron (DPTF.UR_Konto a) a 5.0))
         )
@@ -2038,9 +2038,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (a:string "MOCKA-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -2048,7 +2048,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|TogglePause patron a true))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_DPTF|TogglePause patron a true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C1::DPTF|C_TogglePause patron (DPTF.UR_Konto a) a true))
         )
@@ -2079,9 +2079,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (a:string "MOCKA-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -2089,7 +2089,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|ToggleReservation patron a true))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_DPTF|ToggleReservation patron a true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C1::DPTF|C_ToggleReservation patron (DPTF.UR_Konto a) a true))
         )
@@ -2119,9 +2119,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (a:string "MOCKA-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -2129,7 +2129,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|ToggleBurnRole patron a lumy true))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_DPTF|ToggleBurnRole patron a lumy true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C1::DPTF|C_ToggleBurnRole patron (DPTF.UR_Konto a) lumy a true))
         )
@@ -2160,9 +2160,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (a:string "MOCKA-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -2170,7 +2170,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|ToggleMintRole patron a lumy true))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_DPTF|ToggleMintRole patron a lumy true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C1::DPTF|C_ToggleMintRole patron (DPTF.UR_Konto a) lumy a true))
         )
@@ -2201,9 +2201,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (a:string "MOCKA-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -2211,7 +2211,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|ToggleFreezeAccount patron a lumy true))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_DPTF|ToggleFreezeAccount patron a lumy true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C1::DPTF|C_ToggleFreezeAccount patron (DPTF.UR_Konto a) lumy a true))
         )
@@ -2242,9 +2242,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (a:string "MOCKA-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -2252,7 +2252,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|BulkTransfer patron a patron [lumy] [10.0]))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_DPTF|BulkTransfer patron a patron [lumy] [10.0]))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C1::DPTF|C_BulkTransfer patron patron [lumy] a [10.0]))
         )
@@ -2283,9 +2283,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (a:string "MOCKA-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -2294,7 +2294,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|UpdatePendingBranding patron a))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_DPTF|UpdatePendingBranding patron a))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C1::DPTF|C_UpdatePendingBranding patron (DPTF.UR_Konto (DPTF.URCv_Parent a)) a "ipfs://logo" "desc" "https://site.example" []))
         )
@@ -2323,9 +2323,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (a:string "MOCKA-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -2334,7 +2334,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|SetFeeTarget patron a emma))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_DPTF|SetFeeTarget patron a emma))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C1::DPTF|C_SetFeeTarget patron (DPTF.UR_Konto a) a emma))
         )
@@ -2366,9 +2366,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (a:string "MOCKA-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -2377,7 +2377,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|DonateFees patron a))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_DPTF|DonateFees patron a))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C1::DPTF|C_DonateFees patron (DPTF.UR_Konto a) a))
         )
@@ -2406,9 +2406,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (a:string "MOCKA-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -2417,7 +2417,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|RotateOwnership patron a emma))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_DPTF|RotateOwnership patron a emma))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C1::DPTF|C_RotateOwnership patron (DPTF.UR_Konto a) emma a))
         )
@@ -2448,9 +2448,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (a:string "MOCKA-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -2459,7 +2459,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|ToggleTransferRole patron a coca true))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_DPTF|ToggleTransferRole patron a coca true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C1::DPTF|C_ToggleTransferRole patron (DPTF.UR_Konto a) coca a true))
         )
@@ -2490,9 +2490,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (a:string "MOCKA-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -2501,7 +2501,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|MultiTransfer patron [a] patron lumy [10.0]))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_DPTF|MultiTransfer patron [a] patron lumy [10.0]))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C1::DPTF|C_MultiTransfer patron patron lumy [a] [10.0] false))
         )
@@ -2530,9 +2530,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (a:string "MOCKA-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -2541,7 +2541,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|MultiBulkTransfer patron [a] patron [[lumy]] [[10.0]]))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_DPTF|MultiBulkTransfer patron [a] patron [[lumy]] [[10.0]]))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C1::DPTF|C_MultiBulkTransfer patron patron [[lumy]] [a] [[10.0]]))
         )
@@ -2571,9 +2571,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
         (a:string "MOCKA-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -2584,7 +2584,7 @@
     (ref-TS01-C1::DPTF|C_ToggleFreezeAccount patron (DPTF.UR_Konto a) lumy a true)
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|Wipe patron a lumy))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_DPTF|Wipe patron a lumy))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C1::DPTF|C_Wipe patron (DPTF.UR_Konto a) lumy a))
         )
@@ -2614,9 +2614,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
         (a:string "MOCKA-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -2627,7 +2627,7 @@
     (ref-TS01-C1::DPTF|C_ToggleFreezeAccount patron (DPTF.UR_Konto a) lumy a true)
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|WipeSlim patron a lumy 5.0))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_DPTF|WipeSlim patron a lumy 5.0))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C1::DPTF|C_WipeSlim patron (DPTF.UR_Konto a) lumy a 5.0))
         )
@@ -2676,15 +2676,15 @@
 )
 (let
     (
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (a:string "MOCKA-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|Issue patron patron ["CostProbeTf"]))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_DPTF|Issue patron patron ["CostProbeTf"]))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (stoa-before:decimal (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))
             (m (ref-TS01-C1::DPTF|C_Issue patron patron ["CostProbeTf"] ["CPTF"] [24] [true] [true] [true] [true] [true] [true]))
@@ -2744,15 +2744,15 @@
 (env-chain-data { "block-time": (time "2030-11-22T00:00:00Z") })
 (let
     (
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (a:string "MOCKA-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|UpgradeBranding patron a 1))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_DPTF|UpgradeBranding patron a 1))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (stoa-before:decimal (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))
             (m (ref-TS01-C1::DPTF|C_UpgradeBranding patron (DPTF.UR_Konto (DPTF.URCv_Parent a)) a 1))
@@ -2816,8 +2816,8 @@
 )
 (let
     (
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (a:string "MOCKA-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -2826,7 +2826,7 @@
     (ref-TS01-C1::DPTF|C_ToggleFeeLock patron (DPTF.UR_Konto a) a true)
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|ToggleFeeLock patron a false 0))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_DPTF|ToggleFeeLock patron a false 0))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (stoa-before:decimal (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))
             (m (ref-TS01-C1::DPTF|C_ToggleFeeLock patron (DPTF.UR_Konto a) a false))
@@ -2882,8 +2882,8 @@
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (let
     (
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
         (ouro:string "OURO-98c486052a51")
         (attacker:string KST.EMMA)
     )
@@ -2952,7 +2952,7 @@
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (let
     (
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
         (attacker:string KST.EMMA)
         (victim:string KST.ANHD)
     )
@@ -2998,7 +2998,7 @@
 (env-sigs [{ "key": "PK_Lumy", "caps": [] }])
 (let
     (
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
     )
     (map print
         [
@@ -3012,7 +3012,7 @@
 (env-sigs [{ "key": "PK_Lumy", "caps": [] } { "key": "PK_Emma", "caps": [] }])
 (let
     (
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
     )
     (map print
         [
@@ -3055,9 +3055,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
         (ouro:string "OURO-98c486052a51")
         (overdraft:decimal 1580000.0)
     )
@@ -3101,9 +3101,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
         (ouro:string "OURO-98c486052a51")
         (overdraft:decimal 1580000.0)
     )

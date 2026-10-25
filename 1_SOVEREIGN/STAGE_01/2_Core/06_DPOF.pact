@@ -120,7 +120,7 @@
 )
 
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface DemiourgosPactOrtoFungibleV2
+(interface DemiourgosPactOrtoFungibleV3
     @doc "Exposes Functions related to Orto-Fungibles \
         \ Orto-Fungibles are the next Evoloution of the Meta-Fungibles \
         \ using a newer and more efficient Architecture, and fixing discovered bugs \
@@ -195,27 +195,27 @@
     (defun UC_BuildWipeSlicePlan:object{DpofUdcV2.DPOF|WipeSlicePlan}
         (account:string id:string removable-nonces-obj:object{DpofUdcV2.RemovableNonces} slice-count:integer))
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    (defun URCi_MoveCumulator:object{IgnisCollectorV3.OutputCumulator} (id:string nonces:[integer] transmit-or-transfer:bool))
-    (defun URCi_WipeCumulator:object{IgnisCollectorV3.OutputCumulator} (id:string removable-nonces-obj:object{DpofUdcV2.RemovableNonces}))
+    (defun URCi_MoveCumulator:object{IgnisCollectorV4.OutputCumulator} (id:string nonces:[integer] transmit-or-transfer:bool))
+    (defun URCi_WipeCumulator:object{IgnisCollectorV4.OutputCumulator} (id:string removable-nonces-obj:object{DpofUdcV2.RemovableNonces}))
     ;;  [URCi] composer/price cost readers — single source per op (the C_/XE_ bills them, INFO previews from them)
-    (defun URCi_UpdatePendingBranding:object{IgnisCollectorV3.OutputCumulator} (entity-id:string))
-    (defun URCi_RotateOwnership:object{IgnisCollectorV3.OutputCumulator} (id:string))
-    (defun URCi_Control:object{IgnisCollectorV3.OutputCumulator} (id:string))
-    (defun URCi_TogglePause:object{IgnisCollectorV3.OutputCumulator} (id:string))
-    (defun URCi_ToggleFreezeAccount:object{IgnisCollectorV3.OutputCumulator} (id:string))
-    (defun URCi_ToggleAddQuantityRole:object{IgnisCollectorV3.OutputCumulator} (id:string))
-    (defun URCi_ToggleBurnRole:object{IgnisCollectorV3.OutputCumulator} (id:string))
-    (defun URCi_MoveCreateRole:object{IgnisCollectorV3.OutputCumulator} (id:string))
-    (defun URCi_ToggleTransferRole:object{IgnisCollectorV3.OutputCumulator} (id:string))
-    (defun URCi_AddQuantity:object{IgnisCollectorV3.OutputCumulator} (id:string))
-    (defun URCi_Burn:object{IgnisCollectorV3.OutputCumulator} (id:string))
-    (defun URCi_WipeSlim:object{IgnisCollectorV3.OutputCumulator} (id:string))
-    (defun URCi_UpdateSpecialOrtoFungible:object{IgnisCollectorV3.OutputCumulator} (main-dptf:string))
-    (defun URCi_Mint:object{IgnisCollectorV3.OutputCumulator} (id:string))
+    (defun URCi_UpdatePendingBranding:object{IgnisCollectorV4.OutputCumulator} (entity-id:string))
+    (defun URCi_RotateOwnership:object{IgnisCollectorV4.OutputCumulator} (id:string))
+    (defun URCi_Control:object{IgnisCollectorV4.OutputCumulator} (id:string))
+    (defun URCi_TogglePause:object{IgnisCollectorV4.OutputCumulator} (id:string))
+    (defun URCi_ToggleFreezeAccount:object{IgnisCollectorV4.OutputCumulator} (id:string))
+    (defun URCi_ToggleAddQuantityRole:object{IgnisCollectorV4.OutputCumulator} (id:string))
+    (defun URCi_ToggleBurnRole:object{IgnisCollectorV4.OutputCumulator} (id:string))
+    (defun URCi_MoveCreateRole:object{IgnisCollectorV4.OutputCumulator} (id:string))
+    (defun URCi_ToggleTransferRole:object{IgnisCollectorV4.OutputCumulator} (id:string))
+    (defun URCi_AddQuantity:object{IgnisCollectorV4.OutputCumulator} (id:string))
+    (defun URCi_Burn:object{IgnisCollectorV4.OutputCumulator} (id:string))
+    (defun URCi_WipeSlim:object{IgnisCollectorV4.OutputCumulator} (id:string))
+    (defun URCi_UpdateSpecialOrtoFungible:object{IgnisCollectorV4.OutputCumulator} (main-dptf:string))
+    (defun URCi_Mint:object{IgnisCollectorV4.OutputCumulator} (id:string))
     (defun URCi_IssueGas:decimal (token-count:integer))
     (defun URCi_IssueStoa:decimal (token-count:integer))
     (defun URCi_UpgradeBranding:decimal (months:integer))
-    (defun URCi_DeployAccount:object{IgnisCollectorV3.OutputCumulator} (account:string))
+    (defun URCi_DeployAccount:object{IgnisCollectorV4.OutputCumulator} (account:string))
     ;;
     ;;  [UR]
     ;;
@@ -335,7 +335,7 @@
     ;;
     ;;  [X]
     ;;
-    (defun XB_IssueFree:object{IgnisCollectorV3.OutputCumulator}
+    (defun XB_IssueFree:object{IgnisCollectorV4.OutputCumulator}
         (
             account:string
             ;;
@@ -359,7 +359,7 @@
     (defun XB_DeployAccountWNE (account:string id:string))
     (defun XB_InsertNewNonce (nonce-owner:string id:string nonce:integer amount:decimal meta-data-chain:[object]))
     (defun XE_UpdateRewardBearingToken (atspair:string hot-rbt:string))
-    (defun XE_UpdateSpecialOrtoFungible:object{IgnisCollectorV3.OutputCumulator}
+    (defun XE_UpdateSpecialOrtoFungible:object{IgnisCollectorV4.OutputCumulator}
         (main-dptf:string secondary-dpof:string vzh-tag:integer)
     )
     (defun XB_W|AccountRoles (id:string account:string account-data:object{DpofUdcV2.DPOF|AccountRoles}))
@@ -367,7 +367,7 @@
     ;;
     ;;  [C]
     ;;
-    (defun C_Issue:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_Issue:object{IgnisCollectorV4.OutputCumulator}
         (
             patron:string executor:string 
             name:[string] ticker:[string] decimals:[integer]
@@ -375,32 +375,40 @@
             can-freeze:[bool] can-wipe:[bool] can-pause:[bool]
         )
     )
-    (defun C_RotateOwnership:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string))
-    (defun C_Control:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string id:string cu:bool cco:bool casr:bool ctocr:bool cf:bool cw:bool cp:bool sg:bool))
-    (defun C_TogglePause:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string id:string toggle:bool))
+    (defun C_RotateOwnership:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string executee:string id:string))
+    (defun C_Control:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string id:string cu:bool cco:bool casr:bool ctocr:bool cf:bool cw:bool cp:bool sg:bool))
+    (defun C_TogglePause:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string id:string toggle:bool))
         ;;
-    (defun C_ToggleFreezeAccount:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string toggle:bool))
-    (defun C_ToggleAddQuantityRole:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string toggle:bool))
-    (defun C_ToggleBurnRole:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string toggle:bool))
-    (defun C_MoveCreateRole:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string))
-    (defun C_ToggleTransferRole:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string toggle:bool))
+    (defun C_ToggleFreezeAccount:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string executee:string id:string toggle:bool))
+    (defun C_ToggleAddQuantityRole:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string executee:string id:string toggle:bool))
+    (defun C_ToggleBurnRole:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string executee:string id:string toggle:bool))
+    (defun C_MoveCreateRole:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string executee:string id:string))
+    (defun C_ToggleTransferRole:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string executee:string id:string toggle:bool))
         ;;
-    (defun C_AddQuantity:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string id:string nonce:integer amount:decimal))
-    (defun C_Burn:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string id:string nonce:integer amount:decimal))
-    (defun C_Mint:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string id:string amount:decimal meta-data-chain:[object]))
+    (defun C_AddQuantity:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string id:string nonce:integer amount:decimal))
+    (defun C_Burn:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string id:string nonce:integer amount:decimal))
+    (defun C_Mint:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string id:string amount:decimal meta-data-chain:[object]))
         ;;
-    (defun C_WipeSlim:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string nonce:integer amount:decimal))
-    (defun CC_WipeHeavy:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string))
-    (defun C_WipePure:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string removable-nonces-obj:object{DpofUdcV2.RemovableNonces}))
-    (defun C_WipeClean:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string nonces:[integer]))
-    (defun Cp_WipeSlice:object{IgnisCollectorV3.OutputCumulator} (id:string account:string removable-nonces-obj:object{DpofUdcV2.RemovableNonces}))
+    (defun C_WipeSlim:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string executee:string id:string nonce:integer amount:decimal))
+    (defun CC_WipeHeavy:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string executee:string id:string))
+    (defun C_WipePure:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string executee:string id:string removable-nonces-obj:object{DpofUdcV2.RemovableNonces}))
+    (defun C_WipeClean:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string executee:string id:string nonces:[integer]))
+    (defun Cp_WipeSlice:object{IgnisCollectorV4.OutputCumulator} (id:string account:string removable-nonces-obj:object{DpofUdcV2.RemovableNonces}))
         ;;
-    (defun C_Transmit:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string nonces:[integer] amounts:[decimal] method:bool))
-    (defun C_Transfer:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string nonces:[integer] method:bool))
-    (defun C_BulkTransfer:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_Transmit:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string executee:string id:string nonces:[integer] amounts:[decimal] method:bool))
+    (defun C_Transfer:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string executee:string id:string nonces:[integer] method:bool))
+    (defun C_BulkTransfer:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string executee-lst:[string] id:string nonces-array:[[integer]] method:bool)
     )
 
+
+    ;;<=========================================================================>
+    ;; ADDED 2026-10-12 -- interface-membership sweep (StoicSyntax-Prefixes.md Sec5,
+    ;; owner ruling). Every one of these was already live in the module body; this
+    ;; closes the gap between what the module DOES and what its interface SAYS it does.
+    ;;<=========================================================================>
+    (defun UC_CeilDiv:integer (numerator:integer denominator:integer))
+    (defun UC_FlattenNoncesArray:[integer] (nonces-array:[[integer]]))
 )
 ;;
 (module DPOF GOV
@@ -416,8 +424,8 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements BrandingUsagePrimaryV2)
-    (implements DemiourgosPactOrtoFungibleV2)
+    (implements BrandingUsagePrimaryV3)
+    (implements DemiourgosPactOrtoFungibleV3)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -433,7 +441,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -461,7 +469,7 @@
     (defun P|Info ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::P|Info)
         )
@@ -597,7 +605,7 @@
     (defconst ATS|SC_NAME
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|ATS|SC_NAME)
         )
@@ -628,7 +636,7 @@
         @event
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::UEV_SenderWithReceiver (UR_Konto id) new-owner)
             (ref-DALOS::UEV_EnforceAccountExists new-owner)
@@ -678,7 +686,7 @@
         @doc "Toggle Verum 1"
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::UEV_NotSmartOuronetAccount account)
             (CAP_Owner id)
@@ -693,7 +701,7 @@
         @doc "Toggle Verum 2"
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::UEV_NotSmartOuronetAccount account)
             (CAP_Owner id)
@@ -708,7 +716,7 @@
         @doc "Toggle Verum 4"
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::UEV_NotSmartOuronetAccount account)
             (CAP_Owner id)
@@ -723,7 +731,7 @@
         @doc "Switch Verum 4"
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (current:string (UR_Verum4 id))
             )
             (ref-DALOS::UEV_NotSmartOuronetAccount receiver)
@@ -736,7 +744,7 @@
         @doc "Toggle Verum 5"
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (special:[string] ["V|" "Z|"])
                 (ft:string (take 2 id))
                 (iz-special:bool (contains ft special))
@@ -759,7 +767,7 @@
     (defcap DPOF|S>MOVE (id:string sender:string receiver:string method:bool)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             ;;1]Ownership
             (if (and method (ref-DALOS::UR_AccountType receiver))
@@ -782,7 +790,7 @@
             \ Standard Ouronet accounts only (no smart accounts in receiver-lst)."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (ref-U|LST:module{StringProcessorV2} U|LST)
                 ;;
                 (l:integer (length receiver-lst))
@@ -821,7 +829,7 @@
     (defcap AHU ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (ah:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
             )
             (ref-DALOS::CAP_EnforceAccountOwnership ah)
@@ -859,7 +867,7 @@
             (
                 (ref-U|LST:module{StringProcessorV2} U|LST)
                 (ref-U|INT:module{OuronetIntegersV2} U|INT)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-U|INT::UEV_UniformList 
                 [
@@ -886,7 +894,7 @@
         @event
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership client)
             (UEV_AccountAddQuantityState id client true)
@@ -911,7 +919,7 @@
         @event
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (nonces-used:integer (UR_NoncesUsed id))
                 (owner:string (UR_Konto id))
             )
@@ -947,7 +955,7 @@
     (defcap DPOF|C>DEBIT (account:string id:string nonces:[integer] amounts:[decimal] wipe-mode:bool)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (ref-U|LST:module{StringProcessorV2} U|LST)
                 (l1:integer (length nonces))
                 (l2:integer (length amounts))
@@ -1088,7 +1096,7 @@
         @event
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (ref-U|LST:module{StringProcessorV2} U|LST)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership sender)
@@ -1108,7 +1116,7 @@
         @event
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (ref-U|LST:module{StringProcessorV2} U|LST)
                 ;;
                 (l:integer (length receiver-lst))
@@ -1140,7 +1148,7 @@
         (enforce (contains vzh-tag [1 2 3]) "Invalid Vesting|Sleeping|Hibernation Tag")
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (main-special-id:string
                     (cond
                         ((= vzh-tag 1) (ref-DPTF::UR_Vesting main-dptf))
@@ -1402,11 +1410,11 @@
         )
     )
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    (defun URCix_NoncesCumulator:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCix_NoncesCumulator:object{IgnisCollectorV4.OutputCumulator}
         (id:string number-of-nonces:integer price-per-nonce:decimal output-obj:object)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (*
@@ -1419,14 +1427,14 @@
             )
         )
     )
-    (defun URCi_MoveCumulator:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_MoveCumulator:object{IgnisCollectorV4.OutputCumulator}
         (id:string nonces:[integer] transmit-or-transfer:bool)
         @doc "PER-NONCE unit for an ortofungible move: transmit costs the small unit, transfer \
             \ the smallest, multiplied by the nonce count in URCix_NoncesCumulator. Units come \
             \ from the IG|LEGS constants, not a DALOS table (owner 2026-09-07)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (URCix_NoncesCumulator 
                 id 
@@ -1439,7 +1447,7 @@
             )
         )
     )
-    (defun URCi_WipeCumulator:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_WipeCumulator:object{IgnisCollectorV4.OutputCumulator}
         (id:string removable-nonces-obj:object{DpofUdcV2.RemovableNonces})
         @doc "Wipe IGNIS = 5 ignis PER NONCE WIPED (owner 2026-09-05: ortofungible wiping scales \
             \ with nonce count), sourced from the central IG|WEIGHTS map in the IGNIS module. \
@@ -1447,7 +1455,7 @@
             \ path (C_WipeClean/Heavy/Pure + Cp_WipeSlice) and their INFO_* previews."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (URCix_NoncesCumulator 
                 id 
@@ -1622,7 +1630,7 @@
         ;;(at "frozen" (read DPOF|T|AccountRoles (UC_IdAccount id account) ["frozen"]))
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (and
                 (with-default-read DPOF|T|AccountRoles (UC_IdAccount id account)
@@ -1638,7 +1646,7 @@
         ;;(at "role-oft-add-quantity" (read DPOF|T|AccountRoles (UC_IdAccount id account) ["role-oft-add-quantity"]))
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (or
                 (with-default-read DPOF|T|AccountRoles (UC_IdAccount id account)
@@ -1654,7 +1662,7 @@
         ;;(at "role-oft-burn" (read DPOF|T|AccountRoles (UC_IdAccount id account) ["role-oft-burn"]))
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (or
                 (with-default-read DPOF|T|AccountRoles (UC_IdAccount id account)
@@ -1670,7 +1678,7 @@
         ;;(at "role-oft-create" (read DPOF|T|AccountRoles (UC_IdAccount id account) ["role-oft-create"]))
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (owner:string (UR_Konto id))
             )
             (fold (or) false
@@ -1690,7 +1698,7 @@
         ;;(at "role-transfer" (read DPOF|T|AccountRoles (UC_IdAccount id account) ["role-transfer"]))
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (or
                 (with-default-read DPOF|T|AccountRoles (UC_IdAccount id account)
@@ -1814,7 +1822,7 @@
             \ computation, named once and callable, so a call site never has to branch."
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (parent:string (URCv_Parent entity-id))
             )
             (if (= parent entity-id) (UR_Konto entity-id) (ref-DPTF::UR_Konto parent))
@@ -1866,138 +1874,138 @@
     ;;
     ;;[URCi] cost readers — single cost source per op. The C_/XE_ returns/bills its URCi; Phase 1.2 INFO
     ;;  previews from the same reader. (Per-nonce wipe/move costs are URCi_WipeCumulator/URCi_MoveCumulator.)
-    (defun URCi_UpdatePendingBranding:object{IgnisCollectorV3.OutputCumulator} (entity-id:string)
+    (defun URCi_UpdatePendingBranding:object{IgnisCollectorV4.OutputCumulator} (entity-id:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (ref-IGNIS::UDC_BrandingCumulator (UR_Konto entity-id) 1.5)
         )
     )
-    (defun URCi_RotateOwnership:object{IgnisCollectorV3.OutputCumulator} (id:string)
+    (defun URCi_RotateOwnership:object{IgnisCollectorV4.OutputCumulator} (id:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisPrice "DPOF|C_RotateOwnership" "auth")
                 (UR_Konto id) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_Control:object{IgnisCollectorV3.OutputCumulator} (id:string)
+    (defun URCi_Control:object{IgnisCollectorV4.OutputCumulator} (id:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisPrice "DPOF|C_Control" "setup")
                 (UR_Konto id) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_TogglePause:object{IgnisCollectorV3.OutputCumulator} (id:string)
+    (defun URCi_TogglePause:object{IgnisCollectorV4.OutputCumulator} (id:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisPrice "DPOF|C_TogglePause" "setup")
                 (UR_Konto id) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_ToggleFreezeAccount:object{IgnisCollectorV3.OutputCumulator} (id:string)
+    (defun URCi_ToggleFreezeAccount:object{IgnisCollectorV4.OutputCumulator} (id:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisPrice "DPOF|C_ToggleFreezeAccount" "setup")
                 (UR_Konto id) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_ToggleAddQuantityRole:object{IgnisCollectorV3.OutputCumulator} (id:string)
+    (defun URCi_ToggleAddQuantityRole:object{IgnisCollectorV4.OutputCumulator} (id:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisPrice "DPOF|C_ToggleAddQuantityRole" "auth")
                 (UR_Konto id) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_ToggleBurnRole:object{IgnisCollectorV3.OutputCumulator} (id:string)
+    (defun URCi_ToggleBurnRole:object{IgnisCollectorV4.OutputCumulator} (id:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisPrice "DPOF|C_ToggleBurnRole" "auth")
                 (UR_Konto id) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_MoveCreateRole:object{IgnisCollectorV3.OutputCumulator} (id:string)
+    (defun URCi_MoveCreateRole:object{IgnisCollectorV4.OutputCumulator} (id:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisPrice "DPOF|C_MoveCreateRole" "auth")
                 (UR_Konto id) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_ToggleTransferRole:object{IgnisCollectorV3.OutputCumulator} (id:string)
+    (defun URCi_ToggleTransferRole:object{IgnisCollectorV4.OutputCumulator} (id:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisPrice "DPOF|C_ToggleTransferRole" "usage")
                 (UR_Konto id) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_AddQuantity:object{IgnisCollectorV3.OutputCumulator} (id:string)
+    (defun URCi_AddQuantity:object{IgnisCollectorV4.OutputCumulator} (id:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisPrice "DPOF|C_AddQuantity" "setup")
                 (UR_Konto id) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_Burn:object{IgnisCollectorV3.OutputCumulator} (id:string)
+    (defun URCi_Burn:object{IgnisCollectorV4.OutputCumulator} (id:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisPrice "DPOF|C_Burn" "setup")
                 (UR_Konto id) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_WipeSlim:object{IgnisCollectorV3.OutputCumulator} (id:string)
+    (defun URCi_WipeSlim:object{IgnisCollectorV4.OutputCumulator} (id:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisPrice "DPOF|C_WipeSlim" "setup")
                 (UR_Konto id) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_UpdateSpecialOrtoFungible:object{IgnisCollectorV3.OutputCumulator} (main-dptf:string)
+    (defun URCi_UpdateSpecialOrtoFungible:object{IgnisCollectorV4.OutputCumulator} (main-dptf:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
             )
             (ref-IGNIS::UDC_LegCumulator "special-of-link" (ref-DPTF::UR_Konto main-dptf))
         )
     )
     ;;  Mint: URCi is the Medium price part; C_Mint concatenates the created-nonce output onto it.
-    (defun URCi_Mint:object{IgnisCollectorV3.OutputCumulator} (id:string)
+    (defun URCi_Mint:object{IgnisCollectorV4.OutputCumulator} (id:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisPrice "DPOF|C_Mint" "setup")
@@ -2011,7 +2019,7 @@
             \ Shared by the exec path and its INFO_* preview, so both move as one."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             ;;deterrence scales PER TOKEN; the op's own compute is charged ONCE
             (+ (* (dec token-count) (ref-IGNIS::UC_IgnisDeter "issue-of"))
@@ -2025,7 +2033,7 @@
             \ user pays does not. Shared by the exec path and its INFO_* preview."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (* (dec token-count) (ref-IGNIS::UC_StoaPrice "issue-of"))
         )
@@ -2033,21 +2041,21 @@
     (defun URCi_UpgradeBranding:decimal (months:integer)
         (let
             (
-                (ref-BRD:module{BrandingV2} BRD)
+                (ref-BRD:module{BrandingV3} BRD)
             )
             (ref-BRD::URCi_UpgradeBranding months)
         )
     )
     ;;  DeployAccount: CORE C_DeployAccount returns no cumulator; the ignis|small toll is billed
     ;;  by Talos keyed on the deployed account. This reader single-sources that toll for exec + INFO.
-    (defun URCi_DeployAccount:object{IgnisCollectorV3.OutputCumulator} (account:string)
+    (defun URCi_DeployAccount:object{IgnisCollectorV4.OutputCumulator} (account:string)
         @doc "IGNIS cost of DELIBERATE token-account creation (the explicit C_DeployAccount \
             \ entrypoint, billed at its Talos wrapper): the central IG|DETER token-account tier \
             \ (50) — an anti-spam deterrent per owner 2026-09-05. Auto-creation inside a transfer \
             \ never reaches this reader and stays FREE (S1 constraint). Shared by exec + INFO_*."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisPrice "DPOF|C_DeployAccount" "token-account")
@@ -2136,7 +2144,7 @@
             (enforce (!= fourth BAR) "Sleeping LP Tokens not allowed for this operation")
             (let
                 (
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                     (parent:string (URCv_Parent id))
                 )
                 (if (= parent id)
@@ -2337,7 +2345,7 @@
     (defun UEV_MoveRoleCheck (id:string sender:string receiver:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 (verum-five:[string] (UR_Verum5 id))
                 (lvf:integer (length verum-five))
                 (transfer-roles:integer
@@ -2353,7 +2361,7 @@
             (if are-transfer-roles-active
                 (let
                     (
-                        (ref-DALOS:module{OuronetDalosV2} DALOS)
+                        (ref-DALOS:module{OuronetDalosV3} DALOS)
                         (ouroboros:string (ref-DALOS::GOV|OUROBOROS|SC_NAME))
                         (dalos:string (ref-DALOS::GOV|DALOS|SC_NAME))
                         ;;
@@ -2376,7 +2384,7 @@
         @doc "Enforces DPOF Token ID Ownership"
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership (UR_Konto id))
         )
@@ -2409,7 +2417,7 @@
     )
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          DPOF|C>ISSUE
-    (defun XB_IssueFree:object{IgnisCollectorV3.OutputCumulator}
+    (defun XB_IssueFree:object{IgnisCollectorV4.OutputCumulator}
         (
             account:string
             ;;
@@ -2437,8 +2445,8 @@
             )
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-BRD:module{BrandingV2} BRD)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-BRD:module{BrandingV3} BRD)
                     (ref-U|LST:module{StringProcessorV2} U|LST)
                     (l1:integer (length name))
                     (gas-costs:decimal (URCi_IssueGas l1))
@@ -2782,13 +2790,13 @@
     )
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          DPOF|C>UPDATE-SPECIAL
-    (defun XE_UpdateSpecialOrtoFungible:object{IgnisCollectorV3.OutputCumulator}
+    (defun XE_UpdateSpecialOrtoFungible:object{IgnisCollectorV4.OutputCumulator}
         (main-dptf:string secondary-dpof:string vzh-tag:integer)
         (P|UEV_IMC)
         (with-capability (DPOF|C>UPDATE-SPECIAL main-dptf secondary-dpof vzh-tag)
             (let
                 (
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 )
                 (cond
                     ((= vzh-tag 1)
@@ -2977,8 +2985,8 @@
             {"id"       : id}
         )
     )
-    (defun C_UpdatePendingBranding:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
+    (defun C_UpdatePendingBranding:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV3.SocialSchema}])
         @doc "Updates <entity-id>'s pending branding. <executor> is bound to the PARENT token's \
             \ owner -- branding a derived entity is the parent owner's right. Ownership itself \
             \ is proven by DPOF|C>UPDATE-BRD via UEV_ParentOwnership; the binding is what keeps \
@@ -2987,7 +2995,7 @@
         (UEV_ExecutorIsParentKonto executor entity-id)
         (let
             (
-                (ref-BRD:module{BrandingV2} BRD)
+                (ref-BRD:module{BrandingV3} BRD)
             )
             (with-capability (DPOF|C>UPDATE-BRD entity-id)
                 (ref-BRD::XE_UpdatePendingBranding entity-id logo description website social)
@@ -3000,9 +3008,9 @@
         (UEV_ExecutorIsParentKonto executor entity-id)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-BRD:module{BrandingV2} BRD)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-BRD:module{BrandingV3} BRD)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (parent:string (URCv_Parent entity-id))
                 (parent-owner:string
                     (if (= parent entity-id)
@@ -3019,7 +3027,7 @@
         )
     )
     ;;
-    (defun C_Issue:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_Issue:object{IgnisCollectorV4.OutputCumulator}
         (
             patron:string executor:string 
             name:[string] ticker:[string] decimals:[integer]
@@ -3036,11 +3044,11 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 (l1:integer (length name))
                 (stoa-costs:decimal (URCi_IssueStoa l1))
                 (iz-special:[bool] (make-list l1 false))
-                (ico:object{IgnisCollectorV3.OutputCumulator}
+                (ico:object{IgnisCollectorV4.OutputCumulator}
                     (with-capability (SECURE)
                         (XB_IssueFree 
                             executor name ticker decimals 
@@ -3054,7 +3062,7 @@
             ico
         )
     )
-    (defun C_RotateOwnership:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_RotateOwnership:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string executee:string id:string)
         (P|UEV_IMC)
         (UEV_ExecutorIsKonto executor id)
@@ -3063,7 +3071,7 @@
             (URCi_RotateOwnership id)
         )
     )
-    (defun C_Control:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_Control:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string id:string cu:bool cco:bool casr:bool ctocr:bool cf:bool cw:bool cp:bool sg:bool)
         (P|UEV_IMC)
         (UEV_ExecutorIsKonto executor id)
@@ -3072,7 +3080,7 @@
             (URCi_Control id)
         )
     )
-    (defun C_TogglePause:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_TogglePause:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string id:string toggle:bool)
         (P|UEV_IMC)
         (UEV_ExecutorIsKonto executor id)
@@ -3108,7 +3116,7 @@
         (UEV_id id)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (create-role-account:string (UR_Verum4 id))
                 (f:bool false)
                 (role-oft-create-boolean:bool (if (= create-role-account account) true f))
@@ -3132,7 +3140,7 @@
             )
         )
     )
-    (defun C_ToggleFreezeAccount:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_ToggleFreezeAccount:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string executee:string id:string toggle:bool)
         @doc "Toggle Verum 1"
         (P|UEV_IMC)
@@ -3155,7 +3163,7 @@
             )
         )
     )
-    (defun C_ToggleAddQuantityRole:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_ToggleAddQuantityRole:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string executee:string id:string toggle:bool)
         @doc "Toggle Verum 2"
         (P|UEV_IMC)
@@ -3178,7 +3186,7 @@
             )
         )
     )
-    (defun C_ToggleBurnRole:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_ToggleBurnRole:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string executee:string id:string toggle:bool)
         @doc "Toggle Verum 3"
         (P|UEV_IMC)
@@ -3201,7 +3209,7 @@
             )
         )
     )
-    (defun C_MoveCreateRole:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_MoveCreateRole:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string executee:string id:string)
         @doc "Switch Verum 4"
         (P|UEV_IMC)
@@ -3221,7 +3229,7 @@
             (URCi_MoveCreateRole id)
         )
     )
-    (defun C_ToggleTransferRole:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_ToggleTransferRole:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string executee:string id:string toggle:bool)
         @doc "Toggle Verum 5"
         (P|UEV_IMC)
@@ -3246,7 +3254,7 @@
         
     )
     ;;
-    (defun C_AddQuantity:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_AddQuantity:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string id:string nonce:integer amount:decimal)
         (P|UEV_IMC)
         (let
@@ -3263,7 +3271,7 @@
             )
         )
     )
-    (defun C_Burn:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_Burn:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string id:string nonce:integer amount:decimal)
         (P|UEV_IMC)
         (let
@@ -3280,12 +3288,12 @@
             )
         )
     )
-    (defun C_Mint:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_Mint:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string id:string amount:decimal meta-data-chain:[object])
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 (supply:decimal (UR_Supply id))
                 (nonces-used:integer (UR_NoncesUsed id))
             )
@@ -3303,7 +3311,7 @@
         )
     )
     ;;Wipes
-    (defun C_WipeSlim:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_WipeSlim:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string executee:string id:string nonce:integer amount:decimal)
         @doc "Wipes a specific DPOF <id> <nonce> on <executee> by <amount> \
         \ Amount may be lower or equal to the nonce amount. \
@@ -3324,7 +3332,7 @@
             )
         )
     )
-    (defun CC_WipeHeavy:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string)
+    (defun CC_WipeHeavy:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string executee:string id:string)
         @doc "Wipes all viable <id> Nonces of an DPOF <executee> \
             \ \
             \ |Heavy| reffers to the usage of expensive functions like <select> or <keys> \
@@ -3334,7 +3342,7 @@
         (UEV_ExecutorIsKonto executor id)
         (C_WipePure patron executor executee id (URHC_WipePure executee id))
     )
-    (defun C_WipePure:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_WipePure:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string executee:string id:string removable-nonces-obj:object{DpofUdcV2.RemovableNonces})
         @doc "Wipes all <id> Nonces of an DPOF <executee>, presented via an <removable-nonces-obj> object \
             \ \
@@ -3363,7 +3371,7 @@
             )
         )
     )
-    (defun C_WipeClean:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_WipeClean:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string executee:string id:string nonces:[integer])
         @doc "Wipes <id> select <nonces> of a DPOF <executee>"
         (P|UEV_IMC)
@@ -3375,7 +3383,7 @@
             )
         )
     )
-    (defun Cp_WipeSlice:object{IgnisCollectorV3.OutputCumulator}
+    (defun Cp_WipeSlice:object{IgnisCollectorV4.OutputCumulator}
         (id:string account:string removable-nonces-obj:object{DpofUdcV2.RemovableNonces})
         @doc "Hydra parallel wipe slice: wipes exactly ONE <URHC_BuildWipeSlicePlan> slice of \
             \ <account>'s <id> nonces. Order-independent and retryable: slices are disjoint by \
@@ -3403,7 +3411,7 @@
         )
     )
     ;;Transfers
-    (defun C_Transmit:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_Transmit:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string executee:string id:string nonces:[integer] amounts:[decimal] method:bool)
         @doc "Transfer DPOF <id> <nonces> from <executor> to <executee> by a specific <amount> \
             \ This debits the <executor> nonces by <amount> and creates new nonces on executee of <amount> \
@@ -3430,7 +3438,7 @@
             )
         )
     )
-    (defun C_Transfer:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_Transfer:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string executee:string id:string nonces:[integer] method:bool)
         @doc "Transfer DPOF <id> <nonces> from <executor> to <executee> by changing their Ownership"
         (P|UEV_IMC)
@@ -3441,7 +3449,7 @@
             )
         )
     )
-    (defun C_BulkTransfer:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_BulkTransfer:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string executee-lst:[string] id:string nonces-array:[[integer]] method:bool)
         @doc "Bulk whole-nonce transfer: one executor, many receivers (DemiourgosPactOrtoFungibleV2). \
             \ One IGNIS cumulator for total nonce count — not N× C_Transfer collection overhead."

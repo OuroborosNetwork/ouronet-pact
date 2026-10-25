@@ -3,7 +3,7 @@
 ;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact
 ;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface AutostakeUsageV2
+(interface AutostakeUsageV3
     @doc "Exposes Autostake Usage Functions, which involve Token Transfers"
 
     ;;<=========================================================================>
@@ -48,20 +48,20 @@
     ;;
     ;;  [UDC]
     ;;
-    (defun URCi_UnlimitedUncoilCumulator:object{IgnisCollectorV3.OutputCumulator} (ats:string account:string))
-    (defun URCi_WithdrawRoyalties:object{IgnisCollectorV3.OutputCumulator} (ats:string target:string))
-    (defun URCi_KickStart:object{IgnisCollectorV3.OutputCumulator} (kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal))
-    (defun URCi_Fuel:object{IgnisCollectorV3.OutputCumulator} (fueler:string ats:string reward-token:string amount:decimal))
-    (defun URCi_Coil:object{IgnisCollectorV3.OutputCumulator} (coiler:string ats:string rt:string amount:decimal))
-    (defun URCi_Curl:object{IgnisCollectorV3.OutputCumulator} (curler:string ats1:string ats2:string rt:string amount:decimal))
-    (defun URCi_ColdRecovery:object{IgnisCollectorV3.OutputCumulator} (recoverer:string ats:string ra:decimal))
-    (defun URCi_Cull:object{IgnisCollectorV3.OutputCumulator} (culler:string ats:string))
-    (defun URCi_HotRecovery:object{IgnisCollectorV3.OutputCumulator} (recoverer:string ats:string ra:decimal))
-    (defun URCi_Recover:object{IgnisCollectorV3.OutputCumulator} (recoverer:string id:string nonce:integer))
-    (defun URCi_Redeem:object{IgnisCollectorV3.OutputCumulator} (redeemer:string id:string nonce:integer))
-    (defun URCi_DirectRecovery:object{IgnisCollectorV3.OutputCumulator} (recoverer:string ats:string ra:decimal))
-    (defun URCi_Syphon:object{IgnisCollectorV3.OutputCumulator} (syphon-target:string ats:string syphon-amounts:[decimal]))
-    (defun URCi_RemoveSecondary:object{IgnisCollectorV3.OutputCumulator} (remover:string ats:string reward-token:string))
+    (defun URCi_UnlimitedUncoilCumulator:object{IgnisCollectorV4.OutputCumulator} (ats:string account:string))
+    (defun URCi_WithdrawRoyalties:object{IgnisCollectorV4.OutputCumulator} (ats:string target:string))
+    (defun URCi_KickStart:object{IgnisCollectorV4.OutputCumulator} (kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal))
+    (defun URCi_Fuel:object{IgnisCollectorV4.OutputCumulator} (fueler:string ats:string reward-token:string amount:decimal))
+    (defun URCi_Coil:object{IgnisCollectorV4.OutputCumulator} (coiler:string ats:string rt:string amount:decimal))
+    (defun URCi_Curl:object{IgnisCollectorV4.OutputCumulator} (curler:string ats1:string ats2:string rt:string amount:decimal))
+    (defun URCi_ColdRecovery:object{IgnisCollectorV4.OutputCumulator} (recoverer:string ats:string ra:decimal))
+    (defun URCi_Cull:object{IgnisCollectorV4.OutputCumulator} (culler:string ats:string))
+    (defun URCi_HotRecovery:object{IgnisCollectorV4.OutputCumulator} (recoverer:string ats:string ra:decimal))
+    (defun URCi_Recover:object{IgnisCollectorV4.OutputCumulator} (recoverer:string id:string nonce:integer))
+    (defun URCi_Redeem:object{IgnisCollectorV4.OutputCumulator} (redeemer:string id:string nonce:integer))
+    (defun URCi_DirectRecovery:object{IgnisCollectorV4.OutputCumulator} (recoverer:string ats:string ra:decimal))
+    (defun URCi_Syphon:object{IgnisCollectorV4.OutputCumulator} (syphon-target:string ats:string syphon-amounts:[decimal]))
+    (defun URCi_RemoveSecondary:object{IgnisCollectorV4.OutputCumulator} (remover:string ats:string reward-token:string))
     ;;{5.4}  Validate [UEV/CAP]
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
@@ -69,36 +69,43 @@
     ;;
     ;;  [A]
     ;;
-    (defun AA_RemoveSecondary:object{IgnisCollectorV3.OutputCumulator}
+    (defun AA_RemoveSecondary:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string ats:string reward-token:string accounts-with-ats-data:[string])
     )
-    (defun A_KickStart:object{IgnisCollectorV3.OutputCumulator}
+    (defun A_KickStart:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal)
     )
     ;;
     ;;  [C]
     ;;
-    (defun CC_RemoveSecondary:object{IgnisCollectorV3.OutputCumulator}
+    (defun CC_RemoveSecondary:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string ats:string reward-token:string)
     )
-    (defun C_WithdrawRoyalties:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string ats:string))
+    (defun C_WithdrawRoyalties:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string executee:string ats:string))
         ;;
-    (defun C_KickStart:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal))
-    (defun C_Fuel:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string ats:string reward-token:string amount:decimal))
-    (defun C_Coil:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string ats:string rt:string amount:decimal))
-    (defun C_Curl:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string ats1:string ats2:string rt:string amount:decimal))
+    (defun C_KickStart:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal))
+    (defun C_Fuel:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string ats:string reward-token:string amount:decimal))
+    (defun C_Coil:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string ats:string rt:string amount:decimal))
+    (defun C_Curl:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string ats1:string ats2:string rt:string amount:decimal))
         ;;
-    (defun C_ColdRecovery:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string ats:string ra:decimal))
-    (defun C_Cull:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string ats:string))
+    (defun C_ColdRecovery:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string ats:string ra:decimal))
+    (defun C_Cull:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string ats:string))
         ;;
-    (defun C_HotRecovery:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string ats:string ra:decimal))
-    (defun C_Recover:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string id:string nonce:integer))
-    (defun C_Redeem:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string id:string nonce:integer))
+    (defun C_HotRecovery:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string ats:string ra:decimal))
+    (defun C_Recover:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string id:string nonce:integer))
+    (defun C_Redeem:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string id:string nonce:integer))
         ;;
-    (defun C_DirectRecovery:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string ats:string ra:decimal))
+    (defun C_DirectRecovery:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string ats:string ra:decimal))
         ;;
-    (defun C_Syphon:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string ats:string syphon-amounts:[decimal]))
+    (defun C_Syphon:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string executee:string ats:string syphon-amounts:[decimal]))
 
+
+    ;;<=========================================================================>
+    ;; ADDED 2026-10-12 -- interface-membership sweep (StoicSyntax-Prefixes.md Sec5,
+    ;; owner ruling). Every one of these was already live in the module body; this
+    ;; closes the gap between what the module DOES and what its interface SAYS it does.
+    ;;<=========================================================================>
+    (defun UEV_FuelableIndex (ats:string))
 )
 ;;
 (module ATSU GOV
@@ -113,7 +120,7 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements AutostakeUsageV2)
+    (implements AutostakeUsageV3)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -138,7 +145,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -146,7 +153,7 @@
     (defun GOV|AutostakeKey ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|AutostakeKey)
         )
@@ -185,7 +192,7 @@
     (defun P|Info ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::P|Info)
         )
@@ -323,7 +330,7 @@
     (defconst ATS|SC_NAME
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|ATS|SC_NAME)
         )
@@ -344,7 +351,7 @@
         @event
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             ;;ATTRIBUTION, not authority. GOV|ATSU_ADMIN below decides WHETHER this may happen;
             ;;<executor> records WHO made it happen, and is enforced so the record cannot be a
@@ -360,7 +367,7 @@
         @event
         (let
             (
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-ATS:module{AutostakeV4} ATS)
             )
             (ref-ATS::CAP_Owner ats)
             ;;BINDS the NAMED executor to the pool owner. CAP_Owner proves that SOMEBODY holding
@@ -374,7 +381,7 @@
     (defcap ATSU|C>X_REMOVE-SECONDARY (ats:string reward-token:string)
         (let
             (
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-ATS:module{AutostakeV4} ATS)
                 (rt-position:integer (ref-ATS::URCv_RewardTokenPosition ats reward-token))
             )
             (enforce (> rt-position 0) "Primal RT cannot be removed")
@@ -388,8 +395,8 @@
     (defcap ATSU|C>WITHDRAW-ROYALTIES (executor:string executee:string ats:string)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-ATS:module{AutostakeV4} ATS)
                 (royalties:[decimal] (ref-ATS::UR_RewardTokenRUR ats 3))
                 (sum:decimal (fold (+) 0.0 royalties))
             )
@@ -420,7 +427,7 @@
         @event
         (let
             (
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-ATS:module{AutostakeV4} ATS)
                 (ref-U|ATS:module{UtilityAtsV3} U|ATS)
                 (would-be-index:decimal (ref-U|ATS::UC_KickStartIndex rt-amounts rbt-request-amount))
             )
@@ -447,8 +454,8 @@
             \ as syphon's own floor, on top of the pre-existing checks."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-ATS:module{AutostakeV4} ATS)
                 (ref-U|ATS:module{UtilityAtsV3} U|ATS)
                 (index:decimal (ref-ATS::URC_Index ats))
                 (rt-lst:[string] (ref-ATS::UR_RewardTokenList ats))
@@ -471,7 +478,7 @@
     (defun UEV_FuelableIndex (ats:string)
         (let
             (
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-ATS:module{AutostakeV4} ATS)
             )
             (enforce
                 (>= (ref-ATS::URC_Index ats) 0.1)
@@ -483,7 +490,7 @@
         @event
         (let
             (
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-ATS:module{AutostakeV4} ATS)
                 (index:decimal (ref-ATS::URC_Index ats))
             )
             (ref-ATS::UEV_RewardTokenExistance ats reward-token true)
@@ -508,7 +515,7 @@
         @event
         (let
             (
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-ATS:module{AutostakeV4} ATS)
                 (h:bool (ref-ATS::UR_Hibernate ats))
             )
             (ref-ATS::UEV_RewardTokenExistance ats coil-token true)
@@ -520,7 +527,7 @@
         @event
         (let
             (
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-ATS:module{AutostakeV4} ATS)
                 (h1:bool (ref-ATS::UR_Hibernate ats1))
                 (h2:bool (ref-ATS::UR_Hibernate ats2))
             )
@@ -533,8 +540,8 @@
         @event
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-ATS:module{AutostakeV4} ATS)
                 (cold-recovery-positions:integer (ref-ATS::UR_ColdRecoveryPositions ats))
             )
             (enforce (<= usable-cold-recovery-position cold-recovery-positions) 
@@ -548,7 +555,7 @@
     (defcap ATSU|C>DEPLOY (ats:string acc:string)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::UEV_EnforceAccountExists acc)
             (compose-capability (ATSU|C>NORMALIZE_LEDGER ats acc))
@@ -557,8 +564,8 @@
     (defcap ATSU|C>NORMALIZE_LEDGER (ats:string acc:string)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-ATS:module{AutostakeV4} ATS)
                 (dalos-admin:guard GOV|MD_ATSU)
                 (autos-admin:guard GOV|SC_ATSU)
                 (acc-g:guard (ref-DALOS::UR_AccountGuard acc))
@@ -584,7 +591,7 @@
         @event
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership culler)
             (compose-capability (ATSU|C>NORMALIZE_LEDGER ats culler))
@@ -596,8 +603,8 @@
         @event
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-ATS:module{AutostakeV4} ATS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership recoverer)
             (ref-ATS::UEV_HotRecoveryState ats true)
@@ -617,8 +624,8 @@
         @event
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                 (iz-rbt:bool (ref-DPOF::URC_IzRBT id))
             )
             (ref-DALOS::UEV_EnforceAccountType recoverer false)
@@ -630,8 +637,8 @@
         @event
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                 (iz-rbt:bool (ref-DPOF::URC_IzRBT id))
             )
             (ref-DALOS::UEV_EnforceAccountType redeemer false)
@@ -644,8 +651,8 @@
         @event
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-ATS:module{AutostakeV4} ATS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership recoverer)
             (ref-ATS::UEV_DirectRecoveryState ats true)
@@ -657,7 +664,7 @@
         @event
         (let
             (
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-ATS:module{AutostakeV4} ATS)
                 (ref-U|LST:module{StringProcessorV2} U|LST)
                 (rt-lst:[string] (ref-ATS::UR_RewardTokenList ats))
                 (l0:integer (length syphon-amounts))
@@ -708,7 +715,7 @@
     (defun CT_EmptyCumulator ()
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (ref-IGNIS::UDC_EmptyOutputCumulatorV2)
         )
@@ -731,7 +738,7 @@
                 (ref-U|LST:module{StringProcessorV2} U|LST)
                 (ref-U|DEC:module{OuronetDecimalsV2} U|DEC)
                 (ref-U|ATS:module{UtilityAtsV3} U|ATS)
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-ATS:module{AutostakeV4} ATS)
                 ;;
                 (zr:object{UtilityAtsV3.Awo} (ref-ATS::UDC_MakeZeroUnstakeObject ats))
                 (ng:object{UtilityAtsV3.Awo} (ref-ATS::UDC_MakeNegativeUnstakeObject ats))
@@ -806,7 +813,7 @@
         @doc "Outputs <cull-output> as a value of RTs"
         (let
             (
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-ATS:module{AutostakeV4} ATS)
                 ;;
                 (unstake-obj:object{UtilityAtsV3.Awo} (ref-ATS::UR_P1-7 ats acc position))
                 (cull-output:[decimal] (ref-ATS::URC_CullValue ats unstake-obj))
@@ -814,12 +821,12 @@
             cull-output
         )
     )
-    (defun URCi_UnlimitedUncoilCumulator:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_UnlimitedUncoilCumulator:object{IgnisCollectorV4.OutputCumulator}
         (ats:string account:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-ATS:module{AutostakeV4} ATS)
                 ;;
                 (p0:[object{UtilityAtsV3.Awo}] (ref-ATS::UR_P0 ats account))
                 (size:decimal (dec (length p0)))
@@ -830,15 +837,15 @@
             (ref-IGNIS::UDC_ConstructOutputCumulator price account trigger [])
         )
     )
-    (defun URCi_WithdrawRoyalties:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_WithdrawRoyalties:object{IgnisCollectorV4.OutputCumulator}
         (ats:string target:string)
         @doc "Cost preview for C_WithdrawRoyalties — a single multi-transfer of the \
             \ pool's nonzero-royalty reward-token legs to <target>, re-derived purely \
             \ via TFT URCi_MultiTransferCumulator (same nonzero-royalty filter as exec)."
         (let
             (
-                (ref-ATS:module{AutostakeV3} ATS)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                (ref-ATS:module{AutostakeV4} ATS)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
                 (reward-tokens:[string] (ref-ATS::UR_RewardTokenList ats))
                 (royalties:[decimal] (ref-ATS::UR_RewardTokenRUR ats 3))
                 (nonzero-idx:[integer]
@@ -856,7 +863,7 @@
             )
         )
     )
-    (defun URCi_KickStart:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_KickStart:object{IgnisCollectorV4.OutputCumulator}
         (kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal)
         @doc "Cost preview for C_KickStart / A_KickStart (both delegate to XI_KickStart): \
             \ one reward-token transfer per rt (mapped purely), plus cold-mint + \
@@ -864,14 +871,14 @@
             \ pre-kickstart index (the exec value reflects post-write state)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-ATS:module{AutostakeV3} ATS)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-ATS:module{AutostakeV4} ATS)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 ;;
                 (rbt-id:string (ref-ATS::UR_ColdRewardBearingToken ats))
                 (rt-lst:[string] (ref-ATS::UR_RewardTokenList ats))
-                (folded-obj:[object{IgnisCollectorV3.OutputCumulator}]
+                (folded-obj:[object{IgnisCollectorV4.OutputCumulator}]
                     (map
                         (lambda (idx:integer)
                             (ref-TFT::URCi_Transfer (at idx rt-lst) kickstarter ATS|SC_NAME (at idx rt-amounts))
@@ -879,13 +886,13 @@
                         (enumerate 0 (- (length rt-lst) 1))
                     )
                 )
-                (ico1:object{IgnisCollectorV3.OutputCumulator}
+                (ico1:object{IgnisCollectorV4.OutputCumulator}
                     (ref-IGNIS::UDC_ConcatenateOutputCumulators folded-obj [])
                 )
-                (ico2:object{IgnisCollectorV3.OutputCumulator}
+                (ico2:object{IgnisCollectorV4.OutputCumulator}
                     (ref-DPTF::URCi_Mint rbt-id ATS|SC_NAME false)
                 )
-                (ico3:object{IgnisCollectorV3.OutputCumulator}
+                (ico3:object{IgnisCollectorV4.OutputCumulator}
                     (ref-TFT::URCi_Transfer rbt-id ATS|SC_NAME kickstarter rbt-request-amount)
                 )
                 (index:decimal (ref-ATS::URC_Index ats))
@@ -893,7 +900,7 @@
             (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3] [index])
         )
     )
-    (defun URCi_Fuel:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_Fuel:object{IgnisCollectorV4.OutputCumulator}
         (fueler:string ats:string reward-token:string amount:decimal)
         @doc "Cost preview for C_Fuel — a single reward-token transfer into the ATS SC."
         ;;The op's own gate, not a copy of it. Without this the quote succeeded -- returning a
@@ -902,12 +909,12 @@
         (UEV_FuelableIndex ats)
         (let
             (
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
             )
             (ref-TFT::URCi_Transfer reward-token fueler ATS|SC_NAME amount)
         )
     )
-    (defun URCi_Coil:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_Coil:object{IgnisCollectorV4.OutputCumulator}
         (coiler:string ats:string rt:string amount:decimal)
         @doc "Cost preview for C_Coil (flavor-B composer). Re-derives C_Coil's \
             \ Concatenate[transfer, mint, transfer] purely — calling each sub-op's \
@@ -917,63 +924,63 @@
             \ mirrors the exec [c-rbt-amount])."
         (let
             (
-                (ref-ATS:module{AutostakeV3} ATS)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-ATS:module{AutostakeV4} ATS)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 ;;
-                (coil-data:object{AutostakeV3.CoilData}
+                (coil-data:object{AutostakeV4.CoilData}
                     (ref-ATS::URC_RewardBearingTokenAmounts ats rt amount)
                 )
                 (c-rbt:string (at "rbt-id" coil-data))
                 (c-rbt-amount:decimal (at "rbt-amount" coil-data))
                 ;;
-                (ico1:object{IgnisCollectorV3.OutputCumulator}
+                (ico1:object{IgnisCollectorV4.OutputCumulator}
                     (ref-TFT::URCi_Transfer rt coiler ATS|SC_NAME amount)
                 )
-                (ico2:object{IgnisCollectorV3.OutputCumulator}
+                (ico2:object{IgnisCollectorV4.OutputCumulator}
                     (ref-DPTF::URCi_Mint c-rbt ATS|SC_NAME false)
                 )
-                (ico3:object{IgnisCollectorV3.OutputCumulator}
+                (ico3:object{IgnisCollectorV4.OutputCumulator}
                     (ref-TFT::URCi_Transfer c-rbt ATS|SC_NAME coiler c-rbt-amount)
                 )
             )
             (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3] [c-rbt-amount])
         )
     )
-    (defun URCi_Curl:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_Curl:object{IgnisCollectorV4.OutputCumulator}
         (curler:string ats1:string ats2:string rt:string amount:decimal)
         @doc "Cost preview for C_Curl (flavor-B composer): two chained coils across \
             \ ats1/ats2, re-derived purely via sub-op cost readers (no writes). \
             \ Cost-equivalent to C_Curl's billed cumulator; output mirrors [c-rbt2-amount]."
         (let
             (
-                (ref-ATS:module{AutostakeV3} ATS)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-ATS:module{AutostakeV4} ATS)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 ;;
-                (coil1-data:object{AutostakeV3.CoilData}
+                (coil1-data:object{AutostakeV4.CoilData}
                     (ref-ATS::URC_RewardBearingTokenAmounts ats1 rt amount)
                 )
                 (c-rbt1:string (at "rbt-id" coil1-data))
                 (c-rbt1-amount:decimal (at "rbt-amount" coil1-data))
-                (coil2-data:object{AutostakeV3.CoilData}
+                (coil2-data:object{AutostakeV4.CoilData}
                     (ref-ATS::URC_RewardBearingTokenAmounts ats2 c-rbt1 c-rbt1-amount)
                 )
                 (c-rbt2:string (at "rbt-id" coil2-data))
                 (c-rbt2-amount:decimal (at "rbt-amount" coil2-data))
                 ;;
-                (ico1:object{IgnisCollectorV3.OutputCumulator}
+                (ico1:object{IgnisCollectorV4.OutputCumulator}
                     (ref-TFT::URCi_Transfer rt curler ATS|SC_NAME amount)
                 )
-                (ico2:object{IgnisCollectorV3.OutputCumulator}
+                (ico2:object{IgnisCollectorV4.OutputCumulator}
                     (ref-DPTF::URCi_Mint c-rbt1 ATS|SC_NAME false)
                 )
-                (ico3:object{IgnisCollectorV3.OutputCumulator}
+                (ico3:object{IgnisCollectorV4.OutputCumulator}
                     (ref-DPTF::URCi_Mint c-rbt2 ATS|SC_NAME false)
                 )
-                (ico4:object{IgnisCollectorV3.OutputCumulator}
+                (ico4:object{IgnisCollectorV4.OutputCumulator}
                     (ref-TFT::URCi_Transfer c-rbt2 ATS|SC_NAME curler c-rbt2-amount)
                 )
             )
@@ -981,7 +988,7 @@
         )
     )
     ;;
-    (defun URCi_ColdRecovery:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_ColdRecovery:object{IgnisCollectorV4.OutputCumulator}
         (recoverer:string ats:string ra:decimal)
         @doc "Cost preview for C_ColdRecovery: flat 2x-biggest construct + cold-transfer \
             \ + cold-burn + (unlimited-uncoil when position=-1) + (fee-leg burns when a \
@@ -994,17 +1001,17 @@
         ;;this condition. Pinned by RedTeam/[RT-K]_PreviewParity.repl <<RT-K-001d>>.
         (let
             (
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-ATS:module{AutostakeV4} ATS)
             )
             (ref-ATS::UEV_ColdRecoveryState ats true)
         )
         (let
             (
                 (ref-U|ATS:module{UtilityAtsV3} U|ATS)
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-ATS:module{AutostakeV3} ATS)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-ATS:module{AutostakeV4} ATS)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
                 ;;
                 (usable-cold-recovery-position:integer (ref-ATS::URC_WhichPosition ats ra recoverer))
                 (rt-lst:[string] (ref-ATS::UR_RewardTokenList ats))
@@ -1016,22 +1023,22 @@
                 (c-fr:bool (ref-ATS::UR_ColdRecoveryFeeRedirection ats))
                 (price:decimal (ref-IGNIS::UC_IgnisPrice "ATS|C_ColdRecovery" "usage"))
                 ;;
-                (ico0:object{IgnisCollectorV3.OutputCumulator}
+                (ico0:object{IgnisCollectorV4.OutputCumulator}
                     (ref-IGNIS::UDC_ConstructOutputCumulator price ATS|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
                 )
-                (ico1:object{IgnisCollectorV3.OutputCumulator}
+                (ico1:object{IgnisCollectorV4.OutputCumulator}
                     (ref-TFT::URCi_Transfer c-rbt recoverer ATS|SC_NAME ra)
                 )
-                (ico2:object{IgnisCollectorV3.OutputCumulator}
+                (ico2:object{IgnisCollectorV4.OutputCumulator}
                     (ref-DPTF::URCi_Burn c-rbt ATS|SC_NAME)
                 )
-                (ico3:object{IgnisCollectorV3.OutputCumulator}
+                (ico3:object{IgnisCollectorV4.OutputCumulator}
                     (if (!= usable-cold-recovery-position -1)
                         EOC
                         (URCi_UnlimitedUncoilCumulator ats recoverer)
                     )
                 )
-                (ico4:object{IgnisCollectorV3.OutputCumulator}
+                (ico4:object{IgnisCollectorV4.OutputCumulator}
                     (if (= c-rbt-fee 0.0)
                         EOC
                         (if c-fr
@@ -1052,7 +1059,7 @@
             (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico0 ico1 ico2 ico3 ico4] [])
         )
     )
-    (defun URCi_Cull:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_Cull:object{IgnisCollectorV4.OutputCumulator}
         (culler:string ats:string)
         @doc "Cost preview for C_Cull: flat 2x-biggest construct + one transfer per \
             \ reward-token whose cumulative cull weight is nonzero. Cull weights are \
@@ -1061,9 +1068,9 @@
         (let
             (
                 (ref-U|DEC:module{OuronetDecimalsV2} U|DEC)
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-ATS:module{AutostakeV3} ATS)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-ATS:module{AutostakeV4} ATS)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
                 ;;
                 (rt-lst:[string] (ref-ATS::UR_RewardTokenList ats))
                 (c0:[decimal] (at "summed-culled-values" (URC_MultiCull ats culler)))
@@ -1078,10 +1085,10 @@
                 (cw:[decimal] (ref-U|DEC::UC_AddHybridArray ca))
                 ;;
                 (price:decimal (ref-IGNIS::UC_IgnisPrice "ATS|C_Cull" "usage"))
-                (ico1:object{IgnisCollectorV3.OutputCumulator}
+                (ico1:object{IgnisCollectorV4.OutputCumulator}
                     (ref-IGNIS::UDC_ConstructOutputCumulator price ATS|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
                 )
-                (folded-obj:[object{IgnisCollectorV3.OutputCumulator}]
+                (folded-obj:[object{IgnisCollectorV4.OutputCumulator}]
                     (map
                         (lambda (idx:integer)
                             (if (!= (at idx cw) 0.0)
@@ -1092,7 +1099,7 @@
                         (enumerate 0 (- (length rt-lst) 1))
                     )
                 )
-                (ico2:object{IgnisCollectorV3.OutputCumulator}
+                (ico2:object{IgnisCollectorV4.OutputCumulator}
                     (ref-IGNIS::UDC_ConcatenateOutputCumulators folded-obj [])
                 )
             )
@@ -1100,7 +1107,7 @@
         )
     )
     ;;
-    (defun URCi_HotRecovery:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_HotRecovery:object{IgnisCollectorV4.OutputCumulator}
         (recoverer:string ats:string ra:decimal)
         @doc "Cost preview for C_HotRecovery (flavor-B composer): fixed 3x-biggest \
             \ construct + cold-transfer + cold-burn + hot-mint + hot-transfer, re-derived \
@@ -1120,7 +1127,7 @@
         ;;Cross-module calls go through the interface modref (`::`), never `module.function`.
         (let
             (
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-ATS:module{AutostakeV4} ATS)
             )
             ;;ORDER MATTERS FOR PARITY, not just for safety. ATS|C>HOT_RECOVERY checks the
             ;;toggle first and the Hot-RBT second; a preview that checked them the other way round
@@ -1134,17 +1141,17 @@
         )
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-                (ref-ATS:module{AutostakeV3} ATS)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+                (ref-ATS:module{AutostakeV4} ATS)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
                 ;;
                 (c-rbt:string (ref-ATS::UR_ColdRewardBearingToken ats))
                 (h-rbt:string (ref-ATS::UR_HotRewardBearingToken ats))
                 (new-nonce:integer (+ (ref-DPOF::UR_NoncesUsed h-rbt) 1))
                 ;;
-                (ico1:object{IgnisCollectorV3.OutputCumulator}
+                (ico1:object{IgnisCollectorV4.OutputCumulator}
                     (ref-IGNIS::UDC_ConstructOutputCumulator
                         (ref-IGNIS::UC_IgnisPrice "ATS|C_HotRecovery" "usage")
                         ATS|SC_NAME
@@ -1152,56 +1159,56 @@
                         []
                     )
                 )
-                (ico2:object{IgnisCollectorV3.OutputCumulator}
+                (ico2:object{IgnisCollectorV4.OutputCumulator}
                     (ref-TFT::URCi_Transfer c-rbt recoverer ATS|SC_NAME ra)
                 )
-                (ico3:object{IgnisCollectorV3.OutputCumulator}
+                (ico3:object{IgnisCollectorV4.OutputCumulator}
                     (ref-DPTF::URCi_Burn c-rbt ATS|SC_NAME)
                 )
-                (ico4:object{IgnisCollectorV3.OutputCumulator}
+                (ico4:object{IgnisCollectorV4.OutputCumulator}
                     (ref-DPOF::URCi_Mint h-rbt)
                 )
-                (ico5:object{IgnisCollectorV3.OutputCumulator}
+                (ico5:object{IgnisCollectorV4.OutputCumulator}
                     (ref-DPOF::URCi_MoveCumulator h-rbt [new-nonce] false)
                 )
             )
             (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3 ico4 ico5] [])
         )
     )
-    (defun URCi_Recover:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_Recover:object{IgnisCollectorV4.OutputCumulator}
         (recoverer:string id:string nonce:integer)
         @doc "Cost preview for C_Recover (flavor-B composer): DPOF nonce-transfer + \
             \ DPOF burn + cold-mint + cold-transfer, re-derived purely via sub-op cost \
             \ readers. Cost-equivalent to C_Recover."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-                (ref-ATS:module{AutostakeV3} ATS)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+                (ref-ATS:module{AutostakeV4} ATS)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
                 ;;
                 (ats:string (ref-DPOF::UR_RewardBearingToken id))
                 (c-rbt:string (ref-ATS::UR_ColdRewardBearingToken ats))
                 (nonce-supply:decimal (ref-DPOF::UR_NonceSupply id nonce))
                 ;;
-                (ico1:object{IgnisCollectorV3.OutputCumulator}
+                (ico1:object{IgnisCollectorV4.OutputCumulator}
                     (ref-DPOF::URCi_MoveCumulator id [nonce] false)
                 )
-                (ico2:object{IgnisCollectorV3.OutputCumulator}
+                (ico2:object{IgnisCollectorV4.OutputCumulator}
                     (ref-DPOF::URCi_Burn id)
                 )
-                (ico3:object{IgnisCollectorV3.OutputCumulator}
+                (ico3:object{IgnisCollectorV4.OutputCumulator}
                     (ref-DPTF::URCi_Mint c-rbt ATS|SC_NAME false)
                 )
-                (ico4:object{IgnisCollectorV3.OutputCumulator}
+                (ico4:object{IgnisCollectorV4.OutputCumulator}
                     (ref-TFT::URCi_Transfer c-rbt ATS|SC_NAME recoverer nonce-supply)
                 )
             )
             (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3 ico4] [])
         )
     )
-    (defun URCi_Redeem:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_Redeem:object{IgnisCollectorV4.OutputCumulator}
         (redeemer:string id:string nonce:integer)
         @doc "Cost preview for C_Redeem: DPOF nonce-transfer + DPOF burn + a \
             \ multi-transfer of the decay-earned reward-token split, plus (when a decay \
@@ -1209,11 +1216,11 @@
             \ purely (same as exec); sub-op costs via URCi readers, no writes."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-                (ref-ATS:module{AutostakeV3} ATS)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+                (ref-ATS:module{AutostakeV4} ATS)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
                 ;;
                 (precision:integer (ref-DPOF::UR_Decimals id))
                 (nonce-supply:decimal (ref-DPOF::UR_NonceSupply id nonce))
@@ -1239,16 +1246,16 @@
                 (fee-rts:[decimal] (zip (lambda (x:decimal y:decimal) (- x y)) total-rts earned-rts))
                 (have-fee-rts:bool (!= (fold (+) 0.0 fee-rts) 0.0))
                 ;;
-                (ico1:object{IgnisCollectorV3.OutputCumulator}
+                (ico1:object{IgnisCollectorV4.OutputCumulator}
                     (ref-DPOF::URCi_MoveCumulator id [nonce] false)
                 )
-                (ico2:object{IgnisCollectorV3.OutputCumulator}
+                (ico2:object{IgnisCollectorV4.OutputCumulator}
                     (ref-DPOF::URCi_Burn id)
                 )
-                (ico3:object{IgnisCollectorV3.OutputCumulator}
+                (ico3:object{IgnisCollectorV4.OutputCumulator}
                     (ref-TFT::URCi_MultiTransferCumulator rt-lst ATS|SC_NAME redeemer earned-rts)
                 )
-                (folded-obj:[object{IgnisCollectorV3.OutputCumulator}]
+                (folded-obj:[object{IgnisCollectorV4.OutputCumulator}]
                     (if have-fee-rts
                         (map
                             (lambda (idx:integer)
@@ -1259,7 +1266,7 @@
                         [EOC]
                     )
                 )
-                (ico4:object{IgnisCollectorV3.OutputCumulator}
+                (ico4:object{IgnisCollectorV4.OutputCumulator}
                     (if (and (not h-fr) (!= earned-rbt nonce-supply))
                         (ref-IGNIS::UDC_ConcatenateOutputCumulators folded-obj [])
                         EOC
@@ -1270,7 +1277,7 @@
         )
     )
     ;;
-    (defun URCi_DirectRecovery:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_DirectRecovery:object{IgnisCollectorV4.OutputCumulator}
         (recoverer:string ats:string ra:decimal)
         @doc "Cost preview for C_DirectRecovery: cold-transfer + cold-burn + a \
             \ multi-transfer of the fee-adjusted reward-token split back to recoverer, \
@@ -1282,17 +1289,17 @@
         ;;this condition. Pinned by RedTeam/[RT-K]_PreviewParity.repl <<RT-K-001f>>.
         (let
             (
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-ATS:module{AutostakeV4} ATS)
             )
             (ref-ATS::UEV_DirectRecoveryState ats true)
         )
         (let
             (
                 (ref-U|ATS:module{UtilityAtsV3} U|ATS)
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-ATS:module{AutostakeV3} ATS)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-ATS:module{AutostakeV4} ATS)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
                 ;;
                 (c-rbt:string (ref-ATS::UR_ColdRewardBearingToken ats))
                 (fee:decimal (ref-ATS::UR_DirectRecoveryFee ats))
@@ -1305,13 +1312,13 @@
                 (reward-tokens:[string] (ref-ATS::UR_RewardTokenList ats))
                 (release-amounts:[decimal] (ref-ATS::URCv_RTSplitAmounts ats c-rbt-remainder))
                 ;;
-                (ico1:object{IgnisCollectorV3.OutputCumulator}
+                (ico1:object{IgnisCollectorV4.OutputCumulator}
                     (ref-TFT::URCi_Transfer c-rbt recoverer ATS|SC_NAME ra)
                 )
-                (ico2:object{IgnisCollectorV3.OutputCumulator}
+                (ico2:object{IgnisCollectorV4.OutputCumulator}
                     (ref-DPTF::URCi_Burn c-rbt ATS|SC_NAME)
                 )
-                (ico3:object{IgnisCollectorV3.OutputCumulator}
+                (ico3:object{IgnisCollectorV4.OutputCumulator}
                     (ref-TFT::URCi_MultiTransferCumulator reward-tokens ATS|SC_NAME recoverer release-amounts)
                 )
             )
@@ -1319,19 +1326,19 @@
         )
     )
     ;;
-    (defun URCi_Syphon:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_Syphon:object{IgnisCollectorV4.OutputCumulator}
         (syphon-target:string ats:string syphon-amounts:[decimal])
         @doc "Cost preview for C_Syphon: one transfer per reward-token whose \
             \ syphon-amount is > 0 (EOC for zero legs), mapped purely over the pool's \
             \ reward-token list. Cost-equivalent to C_Syphon."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-ATS:module{AutostakeV3} ATS)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-ATS:module{AutostakeV4} ATS)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
                 ;;
                 (rt-lst:[string] (ref-ATS::UR_RewardTokenList ats))
-                (folded-obj:[object{IgnisCollectorV3.OutputCumulator}]
+                (folded-obj:[object{IgnisCollectorV4.OutputCumulator}]
                     (map
                         (lambda (idx:integer)
                             (if (> (at idx syphon-amounts) 0.0)
@@ -1346,7 +1353,7 @@
             (ref-IGNIS::UDC_ConcatenateOutputCumulators folded-obj [])
         )
     )
-    (defun URCi_RemoveSecondary:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_RemoveSecondary:object{IgnisCollectorV4.OutputCumulator}
         (remover:string ats:string reward-token:string)
         @doc "Cost preview for CC_RemoveSecondary — pure re-derivation of its 3-leg concat: one \
             \ ignis|token-issue construct + two full-amount transfers (reward-token in to \
@@ -1354,9 +1361,9 @@
             \ royalty balance at the removed reward-token position."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-ATS:module{AutostakeV3} ATS)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-ATS:module{AutostakeV4} ATS)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
                 (ref-U|LST:module{StringProcessorV2} U|LST)
                 ;;
                 (rt-lst:[string] (ref-ATS::UR_RewardTokenList ats))
@@ -1381,7 +1388,7 @@
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
     ;;Protection: Class 2 — SECURE
-    (defun XI_KickStart:object{IgnisCollectorV3.OutputCumulator}
+    (defun XI_KickStart:object{IgnisCollectorV4.OutputCumulator}
         (patron:string kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal)
         @doc "Shared write path for both the owner (C_KickStart) and administrative \
             \ (A_KickStart) entrypoints (audit finding #11M / M2 fix). All bound and \
@@ -1391,18 +1398,18 @@
         (let
             (
                 (ref-U|LST:module{StringProcessorV2} U|LST)
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-ATS:module{AutostakeV3} ATS)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-ATS:module{AutostakeV4} ATS)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 ;;
                 (rbt-id:string (ref-ATS::UR_ColdRewardBearingToken ats))
                 (rt-lst:[string] (ref-ATS::UR_RewardTokenList ats))
                 ;;
-                (folded-obj:[object{IgnisCollectorV3.OutputCumulator}]
+                (folded-obj:[object{IgnisCollectorV4.OutputCumulator}]
                     (fold
                         (lambda
-                            (acc:[object{IgnisCollectorV3.OutputCumulator}] idx:integer)
+                            (acc:[object{IgnisCollectorV4.OutputCumulator}] idx:integer)
                             (do
                                 (ref-ATS::XE_UpdateRUR ats (at idx rt-lst) 1 true (at idx rt-amounts))
                                 (ref-U|LST::UC_AppL acc
@@ -1414,13 +1421,13 @@
                         (enumerate 0 (- (length rt-lst) 1))
                     )
                 )
-                (ico1:object{IgnisCollectorV3.OutputCumulator}
+                (ico1:object{IgnisCollectorV4.OutputCumulator}
                     (ref-IGNIS::UDC_ConcatenateOutputCumulators folded-obj [])
                 )
-                (ico2:object{IgnisCollectorV3.OutputCumulator}
+                (ico2:object{IgnisCollectorV4.OutputCumulator}
                     (ref-DPTF::C_Mint patron ATS|SC_NAME rbt-id rbt-request-amount false)
                 )
-                (ico3:object{IgnisCollectorV3.OutputCumulator}
+                (ico3:object{IgnisCollectorV4.OutputCumulator}
                     (ref-TFT::C_Transfer patron ATS|SC_NAME kickstarter rbt-id rbt-request-amount true)
                 )
                 (index:decimal (ref-ATS::URC_Index ats))
@@ -1433,7 +1440,7 @@
         (require-capability (ATSU|C>DEPLOY ats acc))
         (let
             (
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-ATS:module{AutostakeV4} ATS)
             )
             (ref-ATS::XE_SpawnAutostakeAccount ats acc)
             (XI_Normalize ats acc)
@@ -1444,8 +1451,8 @@
         (require-capability (ATSU|C>NORMALIZE_LEDGER ats acc))
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-ATS:module{AutostakeV4} ATS)
                 (p0:[object{UtilityAtsV3.Awo}] (ref-ATS::UR_P0 ats acc))
                 (p1:object{UtilityAtsV3.Awo} (ref-ATS::UR_P1-7 ats acc 1))
                 (p2:object{UtilityAtsV3.Awo} (ref-ATS::UR_P1-7 ats acc 2))
@@ -1513,7 +1520,7 @@
     (defun XI_UUP (ats:string acc:string data:[object{UtilityAtsV3.Awo}])
         (let
             (
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-ATS:module{AutostakeV4} ATS)
             )
             (ref-ATS::XE_UpP0 ats acc (drop -7 data))
             (ref-ATS::XE_UpP1 ats acc (at 0 (take 1 (take -7 data))))
@@ -1533,7 +1540,7 @@
         (let
             (
                 (ref-U|LST:module{StringProcessorV2} U|LST)
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-ATS:module{AutostakeV4} ATS)
                 (p0:[object{UtilityAtsV3.Awo}] (ref-ATS::UR_P0 ats acc))
                 (size:integer (length p0))
             )
@@ -1575,7 +1582,7 @@
         (require-capability (SECURE))
         (let
             (
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-ATS:module{AutostakeV4} ATS)
                 (multi-cull-obj:object (URC_MultiCull ats acc))
                 (after-cull:[object{UtilityAtsV3.Awo}] (at "after-cull" multi-cull-obj))
                 (culled-values:[[decimal]] (at "culled-values" multi-cull-obj))
@@ -1589,7 +1596,7 @@
     (defun XI_SingleCull:[decimal] (ats:string acc:string position:integer)
         (let
             (
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-ATS:module{AutostakeV4} ATS)
                 ;;
                 (cull-output:[decimal] (URC_SingleCull ats acc position))
                 (rt-lst:[string] (ref-ATS::UR_RewardTokenList ats))
@@ -1605,7 +1612,7 @@
         )
     )
     ;;Protection: Class 2 — SECURE
-    (defun XI_RemoveSecondary:object{IgnisCollectorV3.OutputCumulator}
+    (defun XI_RemoveSecondary:object{IgnisCollectorV4.OutputCumulator}
         (patron:string remover:string ats:string reward-token:string)
         @doc "Fix (audit finding #1C / C2): (1) the account list to reshape is ALWAYS derived on-chain \
             \ here via <ATS.URH_ExistingAutostakePairs ats> — never trusted from a caller — so removal can \
@@ -1619,10 +1626,10 @@
         (let
             (
                 (ref-U|LST:module{StringProcessorV2} U|LST)
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-ATS:module{AutostakeV3} ATS)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-ATS:module{AutostakeV4} ATS)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
                 (ats-sc:string (ref-ATS::GOV|ATS|SC_NAME))
                 ;;
                 (rt-lst:[string] (ref-ATS::UR_RewardTokenList ats))
@@ -1635,7 +1642,7 @@
                 ;; Complete, on-chain-derived account list — never trusted from a caller (fix #1C/C2).
                 (accounts-with-ats-data:[string] (ref-ATS::URH_ExistingAutostakePairs ats))
                 ;;
-                (ico1:object{IgnisCollectorV3.OutputCumulator}
+                (ico1:object{IgnisCollectorV4.OutputCumulator}
                     (ref-IGNIS::UDC_ConstructOutputCumulator
                         (ref-IGNIS::UC_IgnisPrice "ATS|CC_RemoveSecondary" "ats-secondary")
                         ATS|SC_NAME
@@ -1643,10 +1650,10 @@
                         []
                     )
                 )
-                (ico2:object{IgnisCollectorV3.OutputCumulator}
+                (ico2:object{IgnisCollectorV4.OutputCumulator}
                     (ref-TFT::C_Transfer patron ATS|SC_NAME remover reward-token remove-sum true)
                 )
-                (ico3:object{IgnisCollectorV3.OutputCumulator}
+                (ico3:object{IgnisCollectorV4.OutputCumulator}
                     (ref-TFT::C_Transfer patron remover ATS|SC_NAME primal-rt remove-sum true)
                 )
             )
@@ -1677,7 +1684,7 @@
     )
     ;;{5.7}  User [A/C]
     ;;
-    (defun AA_RemoveSecondary:object{IgnisCollectorV3.OutputCumulator}
+    (defun AA_RemoveSecondary:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string ats:string reward-token:string accounts-with-ats-data:[string])
         @doc "Administrative Variant. Fix (audit finding #1C / C2b): <accounts-with-ats-data> is now \
             \ IGNORED — XI_RemoveSecondary always re-derives the complete account list on-chain via \
@@ -1690,7 +1697,7 @@
             (XI_RemoveSecondary patron executor ats reward-token)
         )
     )
-    (defun A_KickStart:object{IgnisCollectorV3.OutputCumulator}
+    (defun A_KickStart:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal)
         @doc "Administrative variant (audit finding #11M / M2): forgoes pool ownership \
             \ for module governance (GOV|ATSU_ADMIN); resulting index is only bound by \
@@ -1710,7 +1717,7 @@
             (XI_KickStart patron executor ats rt-amounts rbt-request-amount)
         )
     )
-    (defun CC_RemoveSecondary:object{IgnisCollectorV3.OutputCumulator}
+    (defun CC_RemoveSecondary:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string ats:string reward-token:string)
         @doc "Client Variant. XI_RemoveSecondary derives the complete account list itself via \
             \ <ATS.URH_ExistingAutostakePairs ats>."
@@ -1719,7 +1726,7 @@
             (XI_RemoveSecondary patron executor ats reward-token)
         )
     )
-    (defun C_WithdrawRoyalties:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_WithdrawRoyalties:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string executee:string ats:string)
         @doc "Fix (audit finding #33N): C_MultiTransfer debits every leg unconditionally - a \
             \ reward-token with a zero accrued royalty (routine whenever a pool has more than \
@@ -1732,8 +1739,8 @@
         (with-capability (ATSU|C>WITHDRAW-ROYALTIES executor executee ats)
             (let
                 (
-                    (ref-ATS:module{AutostakeV3} ATS)
-                    (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                    (ref-ATS:module{AutostakeV4} ATS)
+                    (ref-TFT:module{TrueFungibleTransferV3} TFT)
                     (reward-tokens:[string] (ref-ATS::UR_RewardTokenList ats))
                     (royalties:[decimal] (ref-ATS::UR_RewardTokenRUR ats 3))
                     (nonzero-idx:[integer]
@@ -1763,7 +1770,7 @@
             )
         )
     )
-    (defun C_KickStart:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_KickStart:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal)
         @doc "Owner-facing variant. Fix (audit finding #11M / M2): resulting index now \
             \ bounded to [0.1, 100.0] via ATSU|C>KICKSTART / ATSU|C>X_KICKSTART. \
@@ -1782,14 +1789,14 @@
             (XI_KickStart patron executor ats rt-amounts rbt-request-amount)
         )
     )
-    (defun C_Fuel:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_Fuel:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string ats:string reward-token:string amount:decimal)
         @doc "Fuels an <ats> ATS-Pair, increasing it Index."
         (P|UEV_IMC)
         (let
             (
-                (ref-ATS:module{AutostakeV3} ATS)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                (ref-ATS:module{AutostakeV4} ATS)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
             )
             (with-capability (ATSU|C>FUEL ats reward-token)
                 (ref-ATS::XE_UpdateRUR ats reward-token 1 true amount)
@@ -1797,7 +1804,7 @@
             )
         )
     )
-    (defun C_Coil:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_Coil:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string ats:string rt:string amount:decimal)
         @doc "Autostakes an <rt> Token on <ats> ATS-Pair. \
             \ If Hibernate is on, retains the <c-rbt-amount>, which will then be hibernated \
@@ -1806,13 +1813,13 @@
         (with-capability (ATSU|C>COIL ats rt)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATS:module{AutostakeV3} ATS)
-                    (ref-TFT:module{TrueFungibleTransferV2} TFT)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-ATS:module{AutostakeV4} ATS)
+                    (ref-TFT:module{TrueFungibleTransferV3} TFT)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                     ;;
                     ;;<ats>
-                    (coil-data:object{AutostakeV3.CoilData} 
+                    (coil-data:object{AutostakeV4.CoilData} 
                         (ref-ATS::URC_RewardBearingTokenAmounts ats rt amount)
                     )
                     (input-amount:decimal (at "first-input-amount" coil-data))
@@ -1820,13 +1827,13 @@
                     (c-rbt:string (at "rbt-id" coil-data))
                     (c-rbt-amount:decimal (at "rbt-amount" coil-data))
                     ;;
-                    (ico1:object{IgnisCollectorV3.OutputCumulator}
+                    (ico1:object{IgnisCollectorV4.OutputCumulator}
                         (ref-TFT::C_Transfer patron executor ATS|SC_NAME rt amount true)
                     )
-                    (ico2:object{IgnisCollectorV3.OutputCumulator}
+                    (ico2:object{IgnisCollectorV4.OutputCumulator}
                         (ref-DPTF::C_Mint patron ATS|SC_NAME c-rbt c-rbt-amount false)
                     )
-                    (ico3:object{IgnisCollectorV3.OutputCumulator}
+                    (ico3:object{IgnisCollectorV4.OutputCumulator}
                         (ref-TFT::C_Transfer patron ATS|SC_NAME executor c-rbt c-rbt-amount true)
                     )
                 )
@@ -1839,7 +1846,7 @@
             )  
         )
     )
-    (defun C_Curl:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_Curl:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string ats1:string ats2:string rt:string amount:decimal)
         @doc "Coils through 2 ATS-Pairs, outputting the <c-rbt2> to the <executor> \
             \ Both <ats1> and <ats2> must have <hibernation> off"
@@ -1847,13 +1854,13 @@
         (with-capability (ATSU|C>CURL ats1 ats2 rt)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATS:module{AutostakeV3} ATS)
-                    (ref-TFT:module{TrueFungibleTransferV2} TFT)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-ATS:module{AutostakeV4} ATS)
+                    (ref-TFT:module{TrueFungibleTransferV3} TFT)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                     ;;
                     ;;<ats1>
-                    (coil1-data:object{AutostakeV3.CoilData} 
+                    (coil1-data:object{AutostakeV4.CoilData} 
                         (ref-ATS::URC_RewardBearingTokenAmounts ats1 rt amount)
                     )
                     (input1-amount:decimal (at "first-input-amount" coil1-data))
@@ -1862,7 +1869,7 @@
                     (c-rbt1-amount:decimal (at "rbt-amount" coil1-data))
                     ;;
                     ;;<ats2>
-                    (coil2-data:object{AutostakeV3.CoilData} 
+                    (coil2-data:object{AutostakeV4.CoilData} 
                         (ref-ATS::URC_RewardBearingTokenAmounts ats2 c-rbt1 c-rbt1-amount)
                     )
                     (input2-amount:decimal (at "first-input-amount" coil2-data))
@@ -1870,16 +1877,16 @@
                     (c-rbt2:string (at "rbt-id" coil2-data))
                     (c-rbt2-amount:decimal (at "rbt-amount" coil2-data))
                     ;;
-                    (ico1:object{IgnisCollectorV3.OutputCumulator}
+                    (ico1:object{IgnisCollectorV4.OutputCumulator}
                         (ref-TFT::C_Transfer patron executor ATS|SC_NAME rt amount true)
                     )
-                    (ico2:object{IgnisCollectorV3.OutputCumulator}
+                    (ico2:object{IgnisCollectorV4.OutputCumulator}
                         (ref-DPTF::C_Mint patron ATS|SC_NAME c-rbt1 c-rbt1-amount false)
                     )
-                    (ico3:object{IgnisCollectorV3.OutputCumulator}
+                    (ico3:object{IgnisCollectorV4.OutputCumulator}
                         (ref-DPTF::C_Mint patron ATS|SC_NAME c-rbt2 c-rbt2-amount false)
                     )
-                    (ico4:object{IgnisCollectorV3.OutputCumulator}
+                    (ico4:object{IgnisCollectorV4.OutputCumulator}
                         (ref-TFT::C_Transfer patron ATS|SC_NAME executor c-rbt2 c-rbt2-amount true)
                     )
                 )
@@ -1897,14 +1904,14 @@
             )
         )
     )
-    (defun C_ColdRecovery:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_ColdRecovery:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string ats:string ra:decimal)
         (P|UEV_IMC)
         (with-capability (ATSU|C>DEPLOY ats executor)
             (XI_DeployAccount ats executor)
             (let
                 (
-                    (ref-ATS:module{AutostakeV3} ATS)
+                    (ref-ATS:module{AutostakeV4} ATS)
                     (usable-cold-recovery-position:integer (ref-ATS::URC_WhichPosition ats ra executor))
                 )
                 (enforce (!= usable-cold-recovery-position 0) "Cold Recovery Unavailable! All existing Positions are used!")
@@ -1913,9 +1920,9 @@
                         (
                             (ref-U|LST:module{StringProcessorV2} U|LST)
                             (ref-U|ATS:module{UtilityAtsV3} U|ATS)
-                            (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                            (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                            (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                            (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                            (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                            (ref-TFT:module{TrueFungibleTransferV3} TFT)
                             ;;
                             (rt-lst:[string] (ref-ATS::UR_RewardTokenList ats))
                             (c-rbt:string (ref-ATS::UR_ColdRewardBearingToken ats))
@@ -1940,27 +1947,27 @@
                             (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                             ;;
 
-                            (ico0:object{IgnisCollectorV3.OutputCumulator}
+                            (ico0:object{IgnisCollectorV4.OutputCumulator}
                                 ;;10 Flat IGNIS cost for Cold Recovery
                                 (ref-IGNIS::UDC_ConstructOutputCumulator price ATS|SC_NAME trigger [])
                             )
-                            (ico1:object{IgnisCollectorV3.OutputCumulator}
+                            (ico1:object{IgnisCollectorV4.OutputCumulator}
                                 (ref-TFT::C_Transfer patron executor ATS|SC_NAME c-rbt ra true)
                             )
-                            (ico2:object{IgnisCollectorV3.OutputCumulator}
+                            (ico2:object{IgnisCollectorV4.OutputCumulator}
                                 (ref-DPTF::C_Burn patron ATS|SC_NAME c-rbt ra)
                             )
                             ;;
                             (c-fr:bool (ref-ATS::UR_ColdRecoveryFeeRedirection ats))
                             (cull-time:time (ref-ATS::URC_CullColdRecoveryTime ats executor))
                             ;;
-                            (ico3:object{IgnisCollectorV3.OutputCumulator}
+                            (ico3:object{IgnisCollectorV4.OutputCumulator}
                                 (if (!= usable-cold-recovery-position -1)
                                     EOC
                                     (URCi_UnlimitedUncoilCumulator ats executor)
                                 )
                             )
-                            (ico4:object{IgnisCollectorV3.OutputCumulator}
+                            (ico4:object{IgnisCollectorV4.OutputCumulator}
                                 ;;Handle the Fee Part
                                 (if (= c-rbt-fee 0.0)
                                     EOC
@@ -1969,7 +1976,7 @@
                                         (ref-IGNIS::UDC_ConcatenateOutputCumulators 
                                             (fold
                                                 (lambda
-                                                    (acc:[object{IgnisCollectorV3.OutputCumulator}] idx:integer)
+                                                    (acc:[object{IgnisCollectorV4.OutputCumulator}] idx:integer)
                                                     (do
                                                         (ref-ATS::XE_UpdateRUR ats (at idx rt-lst) 1 false (at idx ng-c-fr))
                                                         (ref-U|LST::UC_AppL acc 
@@ -2006,7 +2013,7 @@
             )
         )
     )
-    (defun C_Cull:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_Cull:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string ats:string)
         (P|UEV_IMC)
         (with-capability (ATSU|C>CULL executor ats)
@@ -2014,9 +2021,9 @@
                 (
                     (ref-U|LST:module{StringProcessorV2} U|LST)
                     (ref-U|DEC:module{OuronetDecimalsV2} U|DEC)
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATS:module{AutostakeV3} ATS)
-                    (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-ATS:module{AutostakeV4} ATS)
+                    (ref-TFT:module{TrueFungibleTransferV3} TFT)
                     ;;
                     (rt-lst:[string] (ref-ATS::UR_RewardTokenList ats))
                     (c0:[decimal] (XI_MultiCull ats executor))
@@ -2033,13 +2040,13 @@
                     (price:decimal (ref-IGNIS::UC_IgnisPrice "ATS|C_Cull" "usage"))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                     ;;
-                    (ico1:object{IgnisCollectorV3.OutputCumulator}
+                    (ico1:object{IgnisCollectorV4.OutputCumulator}
                         (ref-IGNIS::UDC_ConstructOutputCumulator price ATS|SC_NAME trigger [])
                     )
-                    (folded-obj:[object{IgnisCollectorV3.OutputCumulator}]
+                    (folded-obj:[object{IgnisCollectorV4.OutputCumulator}]
                         (fold
                             (lambda
-                                (acc:[object{IgnisCollectorV3.OutputCumulator}] idx:integer)
+                                (acc:[object{IgnisCollectorV4.OutputCumulator}] idx:integer)
                                 (ref-U|LST::UC_AppL acc
                                     (if (!= (at idx cw) 0.0)
                                         (do
@@ -2054,7 +2061,7 @@
                             (enumerate 0 (- (length rt-lst) 1))
                         )
                     )
-                    (ico2:object{IgnisCollectorV3.OutputCumulator}
+                    (ico2:object{IgnisCollectorV4.OutputCumulator}
                         (ref-IGNIS::UDC_ConcatenateOutputCumulators folded-obj [])
                     )
                 )
@@ -2063,7 +2070,7 @@
             )
         )
     )
-    (defun C_HotRecovery:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_HotRecovery:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string ats:string ra:decimal)
         (P|UEV_IMC)
         ;;THE CAPABILITY IS ACQUIRED BEFORE THE `let`, and that ordering is load-bearing -- the same
@@ -2078,22 +2085,22 @@
         (with-capability (ATS|C>HOT_RECOVERY executor ats ra)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-                (ref-ATS:module{AutostakeV3} ATS)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+                (ref-ATS:module{AutostakeV4} ATS)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
                 ;;
                 (c-rbt:string (ref-ATS::UR_ColdRewardBearingToken ats))
                 (h-rbt:string (ref-ATS::UR_HotRewardBearingToken ats))
                 (present-time:time (at "block-time" (chain-data)))
-                (meta-data-obj:object{AutostakeV3.ATS|Hot} {"mint-time" : present-time})
+                (meta-data-obj:object{AutostakeV4.ATS|Hot} {"mint-time" : present-time})
                 (new-nonce:integer (+ (ref-DPOF::UR_NoncesUsed h-rbt) 1))
                 ;;
             )
                 (let
                     (
-                        (ico1:object{IgnisCollectorV3.OutputCumulator}
+                        (ico1:object{IgnisCollectorV4.OutputCumulator}
                             (ref-IGNIS::UDC_ConstructOutputCumulator 
                                 (ref-IGNIS::UC_IgnisPrice "ATS|C_HotRecovery" "usage")
                                 ATS|SC_NAME
@@ -2101,16 +2108,16 @@
                                 []
                             )
                         )
-                        (ico2:object{IgnisCollectorV3.OutputCumulator}
+                        (ico2:object{IgnisCollectorV4.OutputCumulator}
                             (ref-TFT::C_Transfer patron executor ATS|SC_NAME c-rbt ra true)
                         )
-                        (ico3:object{IgnisCollectorV3.OutputCumulator}
+                        (ico3:object{IgnisCollectorV4.OutputCumulator}
                             (ref-DPTF::C_Burn patron ATS|SC_NAME c-rbt ra)
                         )
-                        (ico4:object{IgnisCollectorV3.OutputCumulator}
+                        (ico4:object{IgnisCollectorV4.OutputCumulator}
                             (ref-DPOF::C_Mint patron ATS|SC_NAME h-rbt ra [meta-data-obj])
                         )
-                        (ico5:object{IgnisCollectorV3.OutputCumulator}
+                        (ico5:object{IgnisCollectorV4.OutputCumulator}
                             (ref-DPOF::C_Transfer patron ATS|SC_NAME executor h-rbt [new-nonce] true)
                         )
                     )
@@ -2119,7 +2126,7 @@
         )
         )
     )
-    (defun C_Recover:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_Recover:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string id:string nonce:integer)
         (P|UEV_IMC)
         ;;THE CAPABILITY IS ACQUIRED BEFORE THE `let`, and that ordering is load-bearing.
@@ -2133,11 +2140,11 @@
         (with-capability (ATS|C>RECOVER executor id nonce)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-                (ref-ATS:module{AutostakeV3} ATS)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+                (ref-ATS:module{AutostakeV4} ATS)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
                 ;;
                 (ats:string (ref-DPOF::UR_RewardBearingToken id))
                 (c-rbt:string (ref-ATS::UR_ColdRewardBearingToken ats))
@@ -2145,16 +2152,16 @@
             )
                 (let
                     (
-                        (ico1:object{IgnisCollectorV3.OutputCumulator}
+                        (ico1:object{IgnisCollectorV4.OutputCumulator}
                             (ref-DPOF::C_Transfer patron executor ATS|SC_NAME id [nonce] true)
                         )
-                        (ico2:object{IgnisCollectorV3.OutputCumulator}
+                        (ico2:object{IgnisCollectorV4.OutputCumulator}
                             (ref-DPOF::C_Burn patron ATS|SC_NAME id nonce nonce-supply)
                         )
-                        (ico3:object{IgnisCollectorV3.OutputCumulator}
+                        (ico3:object{IgnisCollectorV4.OutputCumulator}
                             (ref-DPTF::C_Mint patron ATS|SC_NAME c-rbt nonce-supply false)
                         )
-                        (ico4:object{IgnisCollectorV3.OutputCumulator}
+                        (ico4:object{IgnisCollectorV4.OutputCumulator}
                             (ref-TFT::C_Transfer patron ATS|SC_NAME executor c-rbt nonce-supply true)
                         )
                     )
@@ -2163,7 +2170,7 @@
             )
         )
     )
-    (defun C_Redeem:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_Redeem:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string id:string nonce:integer)
         (P|UEV_IMC)
         ;;CAPABILITY BEFORE THE `let` -- same fix as C_Recover above, same cause.
@@ -2176,11 +2183,11 @@
         (let
             (
                 (ref-U|LST:module{StringProcessorV2} U|LST)
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-                (ref-ATS:module{AutostakeV3} ATS)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+                (ref-ATS:module{AutostakeV4} ATS)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
                 ;;
                 (precision:integer (ref-DPOF::UR_Decimals id))
                 (nonce-supply:decimal (ref-DPOF::UR_NonceSupply id nonce))
@@ -2217,20 +2224,20 @@
             )
                 (let
                     (
-                        (ico1:object{IgnisCollectorV3.OutputCumulator}
+                        (ico1:object{IgnisCollectorV4.OutputCumulator}
                             (ref-DPOF::C_Transfer patron executor ATS|SC_NAME id [nonce] true)
                         )
-                        (ico2:object{IgnisCollectorV3.OutputCumulator}
+                        (ico2:object{IgnisCollectorV4.OutputCumulator}
                             (ref-DPOF::C_Burn patron ATS|SC_NAME id nonce nonce-supply)
                         )
-                        (ico3:object{IgnisCollectorV3.OutputCumulator}
+                        (ico3:object{IgnisCollectorV4.OutputCumulator}
                             (ref-TFT::C_MultiTransfer patron ATS|SC_NAME executor rt-lst earned-rts true)
                         )
-                        (folded-obj:[object{IgnisCollectorV3.OutputCumulator}]
+                        (folded-obj:[object{IgnisCollectorV4.OutputCumulator}]
                             (if have-fee-rts
                                 (fold
                                     (lambda
-                                        (acc:[object{IgnisCollectorV3.OutputCumulator}] idx:integer)
+                                        (acc:[object{IgnisCollectorV4.OutputCumulator}] idx:integer)
                                         (do
                                             (ref-ATS::XE_UpdateRUR ats (at idx rt-lst) 1 false (at idx fee-rts))
                                             (ref-U|LST::UC_AppL acc
@@ -2244,7 +2251,7 @@
                                 [EOC]
                             )
                         )
-                        (ico4:object{IgnisCollectorV3.OutputCumulator}
+                        (ico4:object{IgnisCollectorV4.OutputCumulator}
                             (if (and (not h-fr) (!= earned-rbt nonce-supply))
                                 (ref-IGNIS::UDC_ConcatenateOutputCumulators folded-obj [])
                                 EOC
@@ -2263,17 +2270,17 @@
             )
         )
     )
-    (defun C_DirectRecovery:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_DirectRecovery:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string ats:string ra:decimal)
         (P|UEV_IMC)
         (with-capability (ATS|C>DIRECT_RECOVERY executor ats ra)
             (let
                 (
                     (ref-U|ATS:module{UtilityAtsV3} U|ATS)
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                    (ref-ATS:module{AutostakeV3} ATS)
-                    (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                    (ref-ATS:module{AutostakeV4} ATS)
+                    (ref-TFT:module{TrueFungibleTransferV3} TFT)
                     ;;
                     (rt-lst:[string] (ref-ATS::UR_RewardTokenList ats))
                     (c-rbt:string (ref-ATS::UR_ColdRewardBearingToken ats))
@@ -2309,22 +2316,22 @@
             )
         )
     )
-    (defun C_Syphon:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_Syphon:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string executee:string ats:string syphon-amounts:[decimal])
         (P|UEV_IMC)
         (with-capability (ATSU|C>SYPHON executor ats syphon-amounts)
             (let
                 (
                     (ref-U|LST:module{StringProcessorV2} U|LST)
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATS:module{AutostakeV3} ATS)
-                    (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-ATS:module{AutostakeV4} ATS)
+                    (ref-TFT:module{TrueFungibleTransferV3} TFT)
                     ;;
                     (rt-lst:[string] (ref-ATS::UR_RewardTokenList ats))
-                    (folded-obj:[object{IgnisCollectorV3.OutputCumulator}]
+                    (folded-obj:[object{IgnisCollectorV4.OutputCumulator}]
                         (fold
                             (lambda
-                                (acc:[object{IgnisCollectorV3.OutputCumulator}] idx:integer)
+                                (acc:[object{IgnisCollectorV4.OutputCumulator}] idx:integer)
                                 (ref-U|LST::UC_AppL acc
                                     (if (> (at idx syphon-amounts) 0.0)
                                         (do

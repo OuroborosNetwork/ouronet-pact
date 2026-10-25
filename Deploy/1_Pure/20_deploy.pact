@@ -1,8 +1,8 @@
 ;; ---------------------------------------------------------------------------
-;; OURONET DEPLOY -- file 20 of 24
-;; This is STEP 20 of 25 in the full sequence (see Deploy/MANIFEST.md).
+;; OURONET DEPLOY -- file 20 of 25
+;; This is STEP 20 of 26 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-19 must have run first, including the init steps between deploys.
-;; 2 source file(s), 149,410 gas measured in the REPL gas model, 157,313 bytes
+;; 2 source file(s), 235,433 gas measured in the REPL gas model, 158,259 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact
@@ -11,12 +11,12 @@
 ;; TOTAL: 2 interface(s), 2 module(s), 4 table(s)
 ;; What it DEPLOYS, in load order:
 ;;   -- 1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact
-;;      interface  TalosStageTwo_ClientOneV2
+;;      interface  TalosStageTwo_ClientOneV3
 ;;      module     TS02-C1
 ;;      table      P|T
 ;;      table      P|MT
 ;;   -- 1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact
-;;      interface  TalosStageTwo_ClientTwoV2
+;;      interface  TalosStageTwo_ClientTwoV3
 ;;      module     TS02-C2
 ;;      table      P|T
 ;;      table      P|MT
@@ -32,7 +32,7 @@
 ;; History/shared registry: 1_SOVEREIGN/STAGE_02/0_Interfaces/03_Talos.pact
 ;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface TalosStageTwo_ClientOneV2
+(interface TalosStageTwo_ClientOneV3
     @doc "Exposes Stage Two First Batch of Client Functions: \
         \ the SemiFungible Client Functions"
 
@@ -78,7 +78,7 @@
     ;;  [2] DPDC
     ;;
     (defun DPDC|C_MultiTransfer (patron:string executor:string executee:string ids:[string] sons:[bool] nonces-array:[[integer]] amounts-array:[[integer]] method:bool))
-    (defun DPSF|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
+    (defun DPSF|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV3.SocialSchema}]))
     (defun DPSF|C_UpgradeBranding (patron:string executor:string entity-id:string months:integer))
     ;;
     ;;  [3] DPDC-C
@@ -130,10 +130,10 @@
     (defun DPSF|C_WipeNonce (patron:string executor:string executee:string id:string nonce:integer))
         ;;
     (defun DPSF|CC_WipeHeavy (patron:string executor:string executee:string id:string))
-    (defun DPSF|C_WipePure (patron:string executor:string executee:string id:string removable-nonces-obj:object{DpdcManagementV2.RemovableNonces}))
+    (defun DPSF|C_WipePure (patron:string executor:string executee:string id:string removable-nonces-obj:object{DpdcManagementV3.RemovableNonces}))
     (defun DPSF|C_WipeClean (patron:string executor:string executee:string id:string nonces:[integer]))
     (defun DPSF|C_WipeDirty (patron:string executor:string executee:string id:string nonces:[integer]))
-    (defun DPSF|Cp_WipeSlice (patron:string account:string id:string removable-nonces-obj:object{DpdcManagementV2.RemovableNonces}))
+    (defun DPSF|Cp_WipeSlice (patron:string account:string id:string removable-nonces-obj:object{DpdcManagementV3.RemovableNonces}))
     ;;
     ;;  [7] DPDC-T
     ;;
@@ -225,6 +225,13 @@
         (patron:string executor:string executee-lst:[string] id:string nonces-array:[[integer]] amounts-array:[[integer]] method:bool)
     )
 
+
+    ;;<=========================================================================>
+    ;; ADDED 2026-10-12 -- interface-membership sweep (StoicSyntax-Prefixes.md Sec5,
+    ;; owner ruling). Every one of these was already live in the module body; this
+    ;; closes the gap between what the module DOES and what its interface SAYS it does.
+    ;;<=========================================================================>
+    (defun UC_ShortAccount:string (account:string))
 )
 ;;
 (module TS02-C1 GOV
@@ -234,7 +241,7 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements TalosStageTwo_ClientOneV2)
+    (implements TalosStageTwo_ClientOneV3)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -250,7 +257,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -269,7 +276,7 @@
     (defcap P|TS ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (gap:bool (ref-DALOS::UR_GAP))
             )
             (enforce (not gap) "While Global Administrative Pause is online, no client Functions can be executed")
@@ -284,7 +291,7 @@
     (defun P|Info ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::P|Info)
         )
@@ -447,7 +454,7 @@
     (defun UC_ShortAccount:string (account:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
             )
             (ref-I|OURONET::OI|UC_ShortAccount account)
         )
@@ -466,14 +473,14 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPDC-T:module{DpdcTransferV3} DPDC-T)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                     (ra:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                     (hm:integer (length ids))
                     ;;
-                    (irs:object{DpdcTransferV2.AggregatedRoyalties}
+                    (irs:object{DpdcTransferV3.AggregatedRoyalties}
                         (ref-DPDC-T::C_IgnisRoyaltyCollector patron executor ids sons nonces-array amounts-array)
                     )
                     (c:[string] (at "creators" irs))
@@ -494,13 +501,13 @@
             )
         )
     )
-    (defun DPSF|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
+    (defun DPSF|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV3.SocialSchema}])
         @doc "Updates <pending-branding> for DPSF Token <entity-id> costing 400 IGNIS"
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC:module{DpdcV2} DPDC)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC:module{DpdcV3} DPDC)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC::C_UpdatePendingBranding patron executor entity-id true logo description website social)
@@ -514,7 +521,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-DPDC:module{DpdcV2} DPDC)
+                    (ref-DPDC:module{DpdcV3} DPDC)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                 )
                 (ref-DPDC::C_UpgradeBranding patron executor entity-id true months)
@@ -536,10 +543,10 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-C:module{DpdcCreateV3} DPDC-C)
                     (l:integer (length input-nonce-data))
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (if (= l 1)
                             (ref-DPDC-C::C_CreateNewNonce
                                 patron executor id true 0 (at 0 amount) (at 0 input-nonce-data) false
@@ -573,10 +580,10 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-I:module{DpdcIssueV2} DPDC-I)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-I:module{DpdcIssueV3} DPDC-I)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-DPDC-I::C_IssueDigitalCollection
                             patron executor executee true
                             collection-name collection-ticker
@@ -600,8 +607,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-R:module{DpdcRolesV3} DPDC-R)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-R::C_ToggleAddQuantityRole patron executor executee id toggle)
@@ -614,8 +621,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-R:module{DpdcRolesV3} DPDC-R)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-R::C_ToggleFreezeAccount patron executor executee id true toggle)
@@ -629,8 +636,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-R:module{DpdcRolesV3} DPDC-R)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-R::C_ToggleExemptionRole patron executor executee id true toggle)
@@ -644,8 +651,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-R:module{DpdcRolesV3} DPDC-R)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-R::C_ToggleBurnRole patron executor executee id true toggle)
@@ -659,8 +666,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-R:module{DpdcRolesV3} DPDC-R)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-R::C_ToggleUpdateRole patron executor executee id true toggle)
@@ -674,8 +681,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-R:module{DpdcRolesV3} DPDC-R)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-R::C_ToggleModifyCreatorRole patron executor executee id true toggle)
@@ -689,8 +696,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-R:module{DpdcRolesV3} DPDC-R)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-R::C_ToggleModifyRoyaltiesRole patron executor executee id true toggle)
@@ -704,8 +711,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-R:module{DpdcRolesV3} DPDC-R)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-R::C_ToggleTransferRole patron executor executee id true toggle)
@@ -719,8 +726,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-R:module{DpdcRolesV3} DPDC-R)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-R::C_MoveCreateRole patron executor executee id true)
@@ -735,8 +742,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-R:module{DpdcRolesV3} DPDC-R)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-R::C_MoveRecreateRole patron executor executee id true)
@@ -750,8 +757,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-R:module{DpdcRolesV3} DPDC-R)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-R::C_MoveSetUriRole patron executor executee id true)
@@ -767,8 +774,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG) 
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-MNG:module{DpdcManagementV3} DPDC-MNG) 
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-MNG::C_Control patron executor id true cu cco ccc casr ctncr cf cw cp)
@@ -781,8 +788,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG) 
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-MNG:module{DpdcManagementV3} DPDC-MNG) 
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-MNG::C_TogglePause patron executor id true toggle)
@@ -795,8 +802,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG) 
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-MNG:module{DpdcManagementV3} DPDC-MNG) 
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-MNG::C_AddQuantity patron executor id nonce amount)
@@ -810,8 +817,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG) 
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-MNG:module{DpdcManagementV3} DPDC-MNG) 
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-MNG::C_BurnSFT patron executor id nonce amount)
@@ -825,8 +832,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG) 
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-MNG:module{DpdcManagementV3} DPDC-MNG) 
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-MNG::C_WipeSlim patron executor executee id nonce amount)
@@ -840,8 +847,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-MNG:module{DpdcManagementV3} DPDC-MNG)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-MNG::C_WipeNonce patron executor executee id true nonce)
@@ -854,9 +861,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-MNG:module{DpdcManagementV3} DPDC-MNG)
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-DPDC-MNG::CC_WipeHeavy patron executor executee id true)
                     )
                     (no-of-nonces:integer (length (at "r-nonces" (at 0 (at "output" ico)))))
@@ -870,13 +877,13 @@
             )
         )
     )
-    (defun DPSF|C_WipePure (patron:string executor:string executee:string id:string removable-nonces-obj:object{DpdcManagementV2.RemovableNonces})
+    (defun DPSF|C_WipePure (patron:string executor:string executee:string id:string removable-nonces-obj:object{DpdcManagementV3.RemovableNonces})
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-MNG:module{DpdcManagementV3} DPDC-MNG)
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-DPDC-MNG::C_WipePure patron executor executee id true removable-nonces-obj) 
                     )
                     (no-of-nonces:integer (length (at "r-nonces" (at 0 (at "output" ico)))))
@@ -894,9 +901,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-MNG:module{DpdcManagementV3} DPDC-MNG)
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-DPDC-MNG::C_WipeClean patron executor executee id true nonces) 
                     )
                     (no-of-nonces:integer (length (at "r-nonces" (at 0 (at "output" ico)))))
@@ -914,9 +921,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-MNG:module{DpdcManagementV3} DPDC-MNG)
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-DPDC-MNG::C_WipeDirty patron executor executee id true nonces)
                     )
                     (no-of-nonces:integer (length (at "r-nonces" (at 0 (at "output" ico)))))
@@ -930,7 +937,7 @@
             )
         )
     )
-    (defun DPSF|Cp_WipeSlice (patron:string account:string id:string removable-nonces-obj:object{DpdcManagementV2.RemovableNonces})
+    (defun DPSF|Cp_WipeSlice (patron:string account:string id:string removable-nonces-obj:object{DpdcManagementV3.RemovableNonces})
         @doc "Hydra parallel wipe slice: wipes ONE <URHC_BuildWipeSlicePlan> slice of the SFT \
             \ <account>'s <id> nonces. The UI dirty-reads the plan and fires one such tx per \
             \ slice, all in parallel; slices are disjoint, order-independent and retryable \
@@ -938,9 +945,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-MNG:module{DpdcManagementV3} DPDC-MNG)
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-DPDC-MNG::Cp_WipeSlice account id true removable-nonces-obj)
                     )
                     (no-of-nonces:integer (length (at "r-nonces" (at 0 (at "output" ico)))))
@@ -964,9 +971,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPDC-T:module{DpdcTransferV3} DPDC-T)
                     (sf:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                     (st:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
                 )
@@ -982,13 +989,13 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPDC-T:module{DpdcTransferV3} DPDC-T)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                     (ra:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                     ;;
-                    (irs:object{DpdcTransferV2.AggregatedRoyalties}
+                    (irs:object{DpdcTransferV3.AggregatedRoyalties}
                         (ref-DPDC-T::C_IgnisRoyaltyCollector patron executor [id] [true] [[nonce]] [[amount]])
                     )
                     (r:[decimal] (at "ignis-royalties" irs))
@@ -1012,13 +1019,13 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPDC-T:module{DpdcTransferV3} DPDC-T)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                     (ra:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                     ;;
-                    (irs:object{DpdcTransferV2.AggregatedRoyalties}
+                    (irs:object{DpdcTransferV3.AggregatedRoyalties}
                         (ref-DPDC-T::C_IgnisRoyaltyCollector patron executor [id] [true] [nonces] [amounts])
                     )
                     (c:[string] (at "creators" irs))
@@ -1044,9 +1051,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPDC-T:module{DpdcTransferV3} DPDC-T)
                     ;;
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                     (l:integer (length executee-lst))
@@ -1079,13 +1086,13 @@
                 ;;amounts, not from balances, so moving the call does not change what is charged.
                 (let
                     (
-                        (core-ico:object{IgnisCollectorV3.OutputCumulator}
+                        (core-ico:object{IgnisCollectorV4.OutputCumulator}
                             (ref-DPDC-T::C_BulkTransfer patron executor executee-lst id son nonces-array amounts-array method)
                         )
                     )
                 (let
                     (
-                    (irs:object{DpdcTransferV2.AggregatedRoyalties}
+                    (irs:object{DpdcTransferV3.AggregatedRoyalties}
                         (ref-DPDC-T::C_IgnisRoyaltyCollector patron executor ids sons nonces-array amounts-array)
                     )
                     (r:[decimal] (at "ignis-royalties" irs))
@@ -1122,9 +1129,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPDC-S:module{DpdcSetsV3} DPDC-S)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 ;;G-44 FIX (2026-09-17), and the G-14 shape exactly: <nonce> used to be bound HERE,
@@ -1150,10 +1157,10 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPDC:module{DpdcV2} DPDC)
-                    (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPDC:module{DpdcV3} DPDC)
+                    (ref-DPDC-S:module{DpdcSetsV3} DPDC-S)
                     (set-class:integer (ref-DPDC::UR_NonceClass id true nonce))
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
@@ -1174,9 +1181,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-S:module{DpdcSetsV3} DPDC-S)
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-DPDC-S::C_DefinePrimordialSet patron executor id true set-name score-multiplier set-definition ind)
                     )
                 )
@@ -1201,9 +1208,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-S:module{DpdcSetsV3} DPDC-S)
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-DPDC-S::C_DefineCompositeSet patron executor id true set-name score-multiplier set-definition ind)
                     )
                 )
@@ -1229,9 +1236,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-S:module{DpdcSetsV3} DPDC-S)
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-DPDC-S::C_DefineHybridSet patron executor id true set-name score-multiplier primordial-sd composite-sd ind)
                     )
                 )
@@ -1255,8 +1262,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-S:module{DpdcSetsV3} DPDC-S)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-S::C_EnableSetClassFragmentation patron executor id true set-class fragmentation-ind)
@@ -1270,8 +1277,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-S:module{DpdcSetsV3} DPDC-S)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-S::C_ToggleSet patron executor id true set-class toggle)
@@ -1285,8 +1292,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-S:module{DpdcSetsV3} DPDC-S)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-S::C_RenameSet patron executor id true set-class new-name)
@@ -1303,8 +1310,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV3} DPDC-N)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonces patron executor id true [set-class] nos false [new-nonce-data])
@@ -1318,8 +1325,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV3} DPDC-N)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonces patron executor id true set-classes nos false new-nonces-data)
@@ -1333,8 +1340,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV3} DPDC-N)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceRoyalty patron executor id true set-class nos false royalty-value)
@@ -1348,8 +1355,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV3} DPDC-N)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceIgnisRoyalty patron executor id true set-class nos false royalty-value)
@@ -1363,8 +1370,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV3} DPDC-N)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceName patron executor id true set-class nos false name)
@@ -1378,8 +1385,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV3} DPDC-N)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceDescription patron executor id true set-class nos false description)
@@ -1393,8 +1400,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV3} DPDC-N)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceScore patron executor id true set-class nos false score)
@@ -1418,8 +1425,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV3} DPDC-N)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceMetaData patron executor id true set-class nos false meta-data)
@@ -1436,8 +1443,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV3} DPDC-N)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceURI patron executor id true set-class nos false ay u1 u2 u3)
@@ -1455,9 +1462,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPDC-F:module{DpdcFragmentsV2} DPDC-F)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPDC-F:module{DpdcFragmentsV3} DPDC-F)
                     (sf:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                     (st:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
                 )
@@ -1473,8 +1480,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-F:module{DpdcFragmentsV2} DPDC-F)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-F:module{DpdcFragmentsV3} DPDC-F)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-F::C_MakeFragments patron executor id true nonce amount)
@@ -1488,8 +1495,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-F:module{DpdcFragmentsV2} DPDC-F)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-F:module{DpdcFragmentsV3} DPDC-F)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-F::C_MergeFragments patron executor id true nonce amount)
@@ -1503,8 +1510,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-F:module{DpdcFragmentsV2} DPDC-F)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-F:module{DpdcFragmentsV3} DPDC-F)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-F::C_EnableNonceFragmentation patron executor id true nonce fragmentation-ind)
@@ -1522,8 +1529,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV3} DPDC-N)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonces patron executor id true [nonce] nos true [new-nonce-data])
@@ -1537,8 +1544,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV3} DPDC-N)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonces patron executor id true nonces nos true new-nonces-data)
@@ -1552,8 +1559,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV3} DPDC-N)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceRoyalty patron executor id true nonce nos true royalty-value)
@@ -1567,8 +1574,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV3} DPDC-N)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceIgnisRoyalty patron executor id true nonce nos true royalty-value)
@@ -1582,8 +1589,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV3} DPDC-N)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceName patron executor id true nonce nos true name)
@@ -1597,8 +1604,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV3} DPDC-N)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceDescription patron executor id true nonce nos true description)
@@ -1612,8 +1619,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV3} DPDC-N)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceScore patron executor id true nonce nos true score)
@@ -1637,8 +1644,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV3} DPDC-N)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceMetaData patron executor id true nonce nos true meta-data)
@@ -1655,8 +1662,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV3} DPDC-N)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceURI patron executor id true nonce nos true ay u1 u2 u3)
@@ -1688,11 +1695,11 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-EQUITY:module{EquityV3} EQUITY)
+                    (ref-EQUITY:module{EquityV4} EQUITY)
                     ;;
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-EQUITY::C_IssueShareholderCollection 
                             patron executor collection-name collection-ticker
                             royalty ignis-royalty ipfs-links
@@ -1716,12 +1723,12 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
-                    (ref-EQUITY:module{EquityV3} EQUITY)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPDC-T:module{DpdcTransferV3} DPDC-T)
+                    (ref-EQUITY:module{EquityV4} EQUITY)
                     ;;
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-EQUITY::C_MorphPackageShares
                             patron executor id input-nonce input-amount output-nonce
                         )
@@ -1731,7 +1738,7 @@
                     (ir-amounts:[integer] (at 1 output))
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                     ;;
-                    (irs:object{DpdcTransferV2.AggregatedRoyalties}
+                    (irs:object{DpdcTransferV3.AggregatedRoyalties}
                         (ref-DPDC-T::C_IgnisRoyaltyCollector patron executor [id] [true] [ir-nonces] [ir-amounts])
                     )
                     (c:[string] (at "creators" irs))
@@ -1788,7 +1795,7 @@
 ;; History/shared registry: 1_SOVEREIGN/STAGE_02/0_Interfaces/03_Talos.pact
 ;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface TalosStageTwo_ClientTwoV2
+(interface TalosStageTwo_ClientTwoV3
     @doc "Exposes Stage Two Second Batch of Client Functions: \
         \ the NonFungible Client Functions"
 
@@ -1833,7 +1840,7 @@
     ;;
     ;;  [2] DPDC
     ;;
-    (defun DPNF|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
+    (defun DPNF|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV3.SocialSchema}]))
     (defun DPNF|C_UpgradeBranding (patron:string executor:string entity-id:string months:integer))
     ;;
     ;;  [3] DPDC-C
@@ -1883,10 +1890,10 @@
     (defun DPNF|C_WipeNonce (patron:string executor:string executee:string id:string nonce:integer))
         ;;
     (defun DPNF|CC_WipeHeavy (patron:string executor:string executee:string id:string))
-    (defun DPNF|C_WipePure (patron:string executor:string executee:string id:string removable-nonces-obj:object{DpdcManagementV2.RemovableNonces}))
+    (defun DPNF|C_WipePure (patron:string executor:string executee:string id:string removable-nonces-obj:object{DpdcManagementV3.RemovableNonces}))
     (defun DPNF|C_WipeClean (patron:string executor:string executee:string id:string nonces:[integer]))
     (defun DPNF|C_WipeDirty (patron:string executor:string executee:string id:string nonces:[integer]))
-    (defun DPNF|Cp_WipeSlice (patron:string account:string id:string removable-nonces-obj:object{DpdcManagementV2.RemovableNonces}))
+    (defun DPNF|Cp_WipeSlice (patron:string account:string id:string removable-nonces-obj:object{DpdcManagementV3.RemovableNonces}))
     ;;
     ;;  [7] DPDC-T
     ;;
@@ -1964,6 +1971,13 @@
         (patron:string executor:string executee-lst:[string] id:string nonces-array:[[integer]] amounts-array:[[integer]] method:bool)
     )
 
+
+    ;;<=========================================================================>
+    ;; ADDED 2026-10-12 -- interface-membership sweep (StoicSyntax-Prefixes.md Sec5,
+    ;; owner ruling). Every one of these was already live in the module body; this
+    ;; closes the gap between what the module DOES and what its interface SAYS it does.
+    ;;<=========================================================================>
+    (defun UC_ShortAccount:string (account:string))
 )
 ;;
 (module TS02-C2 GOV
@@ -1973,7 +1987,7 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements TalosStageTwo_ClientTwoV2)
+    (implements TalosStageTwo_ClientTwoV3)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -1989,7 +2003,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -2008,7 +2022,7 @@
     (defcap P|TS ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (gap:bool (ref-DALOS::UR_GAP))
             )
             (enforce (not gap) "While Global Administrative Pause is online, no client Functions can be executed")
@@ -2023,7 +2037,7 @@
     (defun P|Info ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::P|Info)
         )
@@ -2187,7 +2201,7 @@
     (defun UC_ShortAccount:string (account:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
             )
             (ref-I|OURONET::OI|UC_ShortAccount account)
         )
@@ -2201,13 +2215,13 @@
     ;;
     ;;  [2] DPDC
     ;;
-    (defun DPNF|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
+    (defun DPNF|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV3.SocialSchema}])
         @doc "Updates <pending-branding> for DPNF Token <entity-id> costing 500 IGNIS"
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC:module{DpdcV2} DPDC)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC:module{DpdcV3} DPDC)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC::C_UpdatePendingBranding patron executor entity-id false logo description website social)
@@ -2221,7 +2235,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-DPDC:module{DpdcV2} DPDC)
+                    (ref-DPDC:module{DpdcV3} DPDC)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                 )
                 (ref-DPDC::C_UpgradeBranding patron executor entity-id false months)
@@ -2242,10 +2256,10 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-C:module{DpdcCreateV3} DPDC-C)
                     (l:integer (length input-nonce-data))
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (if (= l 1)
                             (ref-DPDC-C::C_CreateNewNonce
                                 patron executor id false 0 1 (at 0 input-nonce-data) false
@@ -2279,10 +2293,10 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-I:module{DpdcIssueV2} DPDC-I)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-I:module{DpdcIssueV3} DPDC-I)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-DPDC-I::C_IssueDigitalCollection
                             patron executor executee false
                             collection-name collection-ticker
@@ -2306,8 +2320,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-R:module{DpdcRolesV3} DPDC-R)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-R::C_ToggleFreezeAccount patron executor executee id false toggle)
@@ -2321,8 +2335,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-R:module{DpdcRolesV3} DPDC-R)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-R::C_ToggleExemptionRole patron executor executee id false toggle)
@@ -2336,8 +2350,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-R:module{DpdcRolesV3} DPDC-R)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-R::C_ToggleBurnRole patron executor executee id false toggle)
@@ -2351,8 +2365,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-R:module{DpdcRolesV3} DPDC-R)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-R::C_ToggleUpdateRole patron executor executee id false toggle)
@@ -2366,8 +2380,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-R:module{DpdcRolesV3} DPDC-R)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-R::C_ToggleModifyCreatorRole patron executor executee id false toggle)
@@ -2381,8 +2395,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-R:module{DpdcRolesV3} DPDC-R)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-R::C_ToggleModifyRoyaltiesRole patron executor executee id false toggle)
@@ -2396,8 +2410,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-R:module{DpdcRolesV3} DPDC-R)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-R::C_ToggleTransferRole patron executor executee id false toggle)
@@ -2411,8 +2425,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-R:module{DpdcRolesV3} DPDC-R)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-R::C_MoveCreateRole patron executor executee id false)
@@ -2427,8 +2441,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-R:module{DpdcRolesV3} DPDC-R)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-R::C_MoveRecreateRole patron executor executee id false)
@@ -2442,8 +2456,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-R:module{DpdcRolesV3} DPDC-R)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-R::C_MoveSetUriRole patron executor executee id false)
@@ -2459,8 +2473,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG) 
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-MNG:module{DpdcManagementV3} DPDC-MNG) 
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-MNG::C_Control patron executor id false cu cco ccc casr ctncr cf cw cp)
@@ -2473,8 +2487,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG) 
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-MNG:module{DpdcManagementV3} DPDC-MNG) 
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-MNG::C_TogglePause patron executor id false toggle)
@@ -2487,8 +2501,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG) 
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-MNG:module{DpdcManagementV3} DPDC-MNG) 
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-MNG::C_RespawnNFT patron executor id nonce)
@@ -2502,8 +2516,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG) 
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-MNG:module{DpdcManagementV3} DPDC-MNG) 
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-MNG::C_BurnNFT patron executor id nonce)
@@ -2517,8 +2531,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG) 
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-MNG:module{DpdcManagementV3} DPDC-MNG) 
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-MNG::C_WipeNonce patron executor executee id false nonce)
@@ -2531,9 +2545,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-MNG:module{DpdcManagementV3} DPDC-MNG)
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-DPDC-MNG::CC_WipeHeavy patron executor executee id false)
                     )
                     (no-of-nonces:integer (length (at "r-nonces" (at 0 (at "output" ico)))))
@@ -2547,13 +2561,13 @@
             )
         )
     )
-    (defun DPNF|C_WipePure (patron:string executor:string executee:string id:string removable-nonces-obj:object{DpdcManagementV2.RemovableNonces})
+    (defun DPNF|C_WipePure (patron:string executor:string executee:string id:string removable-nonces-obj:object{DpdcManagementV3.RemovableNonces})
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-MNG:module{DpdcManagementV3} DPDC-MNG)
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-DPDC-MNG::C_WipePure patron executor executee id false removable-nonces-obj) 
                     )
                     (no-of-nonces:integer (length (at "r-nonces" (at 0 (at "output" ico)))))
@@ -2571,9 +2585,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-MNG:module{DpdcManagementV3} DPDC-MNG)
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-DPDC-MNG::C_WipeClean patron executor executee id false nonces) 
                     )
                     (no-of-nonces:integer (length (at "r-nonces" (at 0 (at "output" ico)))))
@@ -2591,9 +2605,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-MNG:module{DpdcManagementV3} DPDC-MNG)
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-DPDC-MNG::C_WipeDirty patron executor executee id false nonces)
                     )
                     (no-of-nonces:integer (length (at "r-nonces" (at 0 (at "output" ico)))))
@@ -2607,7 +2621,7 @@
             )
         )
     )
-    (defun DPNF|Cp_WipeSlice (patron:string account:string id:string removable-nonces-obj:object{DpdcManagementV2.RemovableNonces})
+    (defun DPNF|Cp_WipeSlice (patron:string account:string id:string removable-nonces-obj:object{DpdcManagementV3.RemovableNonces})
         @doc "Hydra parallel wipe slice: wipes ONE <URHC_BuildWipeSlicePlan> slice of the NFT \
             \ <account>'s <id> nonces. The UI dirty-reads the plan and fires one such tx per \
             \ slice, all in parallel; slices are disjoint, order-independent and retryable \
@@ -2615,9 +2629,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-MNG:module{DpdcManagementV3} DPDC-MNG)
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-DPDC-MNG::Cp_WipeSlice account id false removable-nonces-obj)
                     )
                     (no-of-nonces:integer (length (at "r-nonces" (at 0 (at "output" ico)))))
@@ -2641,9 +2655,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPDC-T:module{DpdcTransferV3} DPDC-T)
                     (sf:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                     (st:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
                 )
@@ -2659,13 +2673,13 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPDC-T:module{DpdcTransferV3} DPDC-T)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                     (ra:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                     ;;
-                    (irs:object{DpdcTransferV2.AggregatedRoyalties}
+                    (irs:object{DpdcTransferV3.AggregatedRoyalties}
                         (ref-DPDC-T::C_IgnisRoyaltyCollector patron executor [id] [false] [[nonce]] [[amount]])
                     )
                     (r:[decimal] (at "ignis-royalties" irs))
@@ -2689,13 +2703,13 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPDC-T:module{DpdcTransferV3} DPDC-T)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                     (ra:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                     ;;
-                    (irs:object{DpdcTransferV2.AggregatedRoyalties}
+                    (irs:object{DpdcTransferV3.AggregatedRoyalties}
                         (ref-DPDC-T::C_IgnisRoyaltyCollector patron executor [id] [false] [nonces] [amounts])
                     )
                     (c:[string] (at "creators" irs))
@@ -2720,7 +2734,7 @@
         @doc "Bulk NFT transfer — son=false wrapper over TS02-C1.DPDC|C_BulkTransfer."
         (let
             (
-                (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+                (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
             )
             (ref-TS02-C1::DPDC|C_BulkTransfer patron executor executee-lst id false nonces-array amounts-array method)
         )
@@ -2734,10 +2748,10 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPDC:module{DpdcV2} DPDC)
-                    (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPDC:module{DpdcV3} DPDC)
+                    (ref-DPDC-S:module{DpdcSetsV3} DPDC-S)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                     (nonce:integer (+ 1 (ref-DPDC::UR_NoncesUsed id false)))
                 )
@@ -2754,10 +2768,10 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPDC:module{DpdcV2} DPDC)
-                    (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPDC:module{DpdcV3} DPDC)
+                    (ref-DPDC-S:module{DpdcSetsV3} DPDC-S)
                     (set-class:integer (ref-DPDC::UR_NonceClass id false nonce))
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
@@ -2778,9 +2792,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-S:module{DpdcSetsV3} DPDC-S)
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-DPDC-S::C_DefinePrimordialSet patron executor id false set-name score-multiplier set-definition ind)
                     )
                 )
@@ -2805,9 +2819,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-S:module{DpdcSetsV3} DPDC-S)
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-DPDC-S::C_DefineCompositeSet patron executor id false set-name score-multiplier set-definition ind)
                     )
                 )
@@ -2833,9 +2847,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-S:module{DpdcSetsV3} DPDC-S)
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-DPDC-S::C_DefineHybridSet patron executor id false set-name score-multiplier primordial-sd composite-sd ind)
                     )
                 )
@@ -2859,8 +2873,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-S:module{DpdcSetsV3} DPDC-S)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-S::C_EnableSetClassFragmentation patron executor id false set-class fragmentation-ind)
@@ -2874,8 +2888,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-S:module{DpdcSetsV3} DPDC-S)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-S::C_ToggleSet patron executor id false set-class toggle)
@@ -2889,8 +2903,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-S:module{DpdcSetsV3} DPDC-S)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-S::C_RenameSet patron executor id false set-class new-name)
@@ -2907,8 +2921,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV3} DPDC-N)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonces patron executor id false [set-class] nos false [new-nonce-data])
@@ -2922,8 +2936,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV3} DPDC-N)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonces patron executor id false set-classes nos false new-nonces-data)
@@ -2937,8 +2951,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV3} DPDC-N)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceRoyalty patron executor id false set-class nos false royalty-value)
@@ -2952,8 +2966,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV3} DPDC-N)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceIgnisRoyalty patron executor id false set-class nos false royalty-value)
@@ -2967,8 +2981,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV3} DPDC-N)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceName patron executor id false set-class nos false name)
@@ -2982,8 +2996,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV3} DPDC-N)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceDescription patron executor id false set-class nos false description)
@@ -2997,8 +3011,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV3} DPDC-N)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceScore patron executor id false set-class nos false score)
@@ -3022,8 +3036,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV3} DPDC-N)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceMetaData patron executor id false set-class nos false meta-data)
@@ -3040,8 +3054,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV3} DPDC-N)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceURI patron executor id false set-class nos false ay u1 u2 u3)
@@ -3059,9 +3073,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPDC-F:module{DpdcFragmentsV2} DPDC-F)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPDC-F:module{DpdcFragmentsV3} DPDC-F)
                     (sf:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                     (st:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
                 )
@@ -3079,8 +3093,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-F:module{DpdcFragmentsV2} DPDC-F)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-F:module{DpdcFragmentsV3} DPDC-F)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-F::C_MakeFragments patron executor id false nonce amount)
@@ -3094,8 +3108,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-F:module{DpdcFragmentsV2} DPDC-F)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-F:module{DpdcFragmentsV3} DPDC-F)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-F::C_MergeFragments patron executor id false nonce amount)
@@ -3109,8 +3123,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-F:module{DpdcFragmentsV2} DPDC-F)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-F:module{DpdcFragmentsV3} DPDC-F)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-F::C_EnableNonceFragmentation patron executor id false nonce fragmentation-ind)
@@ -3128,8 +3142,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV3} DPDC-N)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonces patron executor id false [nonce] nos true [new-nonce-data])
@@ -3144,8 +3158,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV3} DPDC-N)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonces patron executor id false nonces nos true new-nonces-data)
@@ -3160,8 +3174,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV3} DPDC-N)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceRoyalty patron executor id false nonce nos true royalty-value)
@@ -3175,8 +3189,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV3} DPDC-N)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceIgnisRoyalty patron executor id false nonce nos true royalty-value)
@@ -3190,8 +3204,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV3} DPDC-N)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceName patron executor id false nonce nos true name)
@@ -3205,8 +3219,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV3} DPDC-N)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceDescription patron executor id false nonce nos true description)
@@ -3220,8 +3234,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV3} DPDC-N)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceScore patron executor id false nonce nos true score)
@@ -3245,8 +3259,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV3} DPDC-N)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceMetaData patron executor id false nonce nos true meta-data)
@@ -3263,8 +3277,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV3} DPDC-N)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceURI patron executor id false nonce nos true ay u1 u2 u3)

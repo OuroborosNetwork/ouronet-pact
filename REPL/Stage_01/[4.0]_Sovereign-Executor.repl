@@ -230,9 +230,9 @@
 (let
     (
         (ref-U|CT:module{OuronetConstantsV2} U|CT)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-LIQUID:module{StoaLiquidStakingV2} LIQUID)
-        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-LIQUID:module{StoaLiquidStakingV3} LIQUID)
+        (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
         ;;
         (bar:string (ref-U|CT::CT_BAR))
@@ -385,14 +385,14 @@
         (ref-P|SWP:module{OuronetPolicyV2} SWP)
         ;;
         (ref-U|G:module{OuronetGuardsV2} U|G)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-VST:module{VestingV2} VST)
-        (ref-LIQUID:module{StoaLiquidStakingV2} LIQUID)
-        (ref-ORBR:module{OuroborosV2} OUROBOROS)
-        (ref-SWP:module{SwapperV4} SWP)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-VST:module{VestingV3} VST)
+        (ref-LIQUID:module{StoaLiquidStakingV3} LIQUID)
+        (ref-ORBR:module{OuroborosV3} OUROBOROS)
+        (ref-SWP:module{SwapperV5} SWP)
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
         ;;
         (patron:string KST.ANHD)
         (dalos-sc:string (ref-DALOS::GOV|DALOS|SC_NAME))
@@ -566,8 +566,8 @@
 (print "--- [TX-05 [4.1.5] - Dalos INIT [05]: Mint Primordial Tokens · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
         ;;
         (patron:string KST.ANHD)
         (info:string (ref-DALOS::CT_Info))
@@ -802,8 +802,8 @@
 (print "--- [TX-06 [4.1.6] - Dalos INIT [06]: Issue Vested Snake Tokens · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         ;;
         (patron:string KST.ANHD)
         (OuroID:string (ref-DALOS::UR_OuroborosID))
@@ -847,8 +847,8 @@
 (print "--- [TX-07 [4.1.7] - Dalos INIT [07]: Issue Primordial Autostake Pairs · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         ;;
         (patron:string KST.ANHD)
         (OuroID:string (ref-DALOS::UR_OuroborosID))
@@ -931,8 +931,8 @@
 (print "--- [TX-08 [4.1.8] - Dalos INIT [08]: Mint Ouroboros Token · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
         ;;
         (patron:string KST.ANHD)
         (ouro-amount:decimal 2000000.0)     ;;Main-Net Value Different
@@ -972,7 +972,7 @@
 (print "--- [TX-09 [4.1.9] - Dalos INIT [09]: Make Startup GAS(IGNIS) · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         (patron:string KST.ANHD)
         (aozt:string KST.AOZT)
         (emma:string KST.EMMA)
@@ -1018,9 +1018,9 @@
 (print "--- [TX-10 [4.1.10] - Dalos INIT [10]: Setup WSTOA and SSTOA · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
         ;;
         (patron:string KST.ANHD)
         (AurynID:string (ref-DALOS::UR_AurynID))
@@ -1091,7 +1091,7 @@
 (print "--- [TX-11 [4.1.11] - Dalos INIT [11]: Wrap Stoa · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         (patron:string KST.ANHD)
     )
     (ref-TS01-C2::LQD|C_WrapStoa patron patron 1.0)
@@ -1132,7 +1132,7 @@
 (let
     (
         (ref-ur-coin:module{stoa-ns.ur-stoic-fungible-v1} coin)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (patron:string KST.ANHD)
     )
     ;; create the liquid smart account's UrStoa account (WrapUrStoa transfers UrStoa into it)
@@ -1168,9 +1168,9 @@
 (print "--- [TX-11b [4.1.11b] - Dalos INIT [11b]: Wrap UrStoa (mirror WrapStoa) · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
         (ref-ur-coin:module{stoa-ns.ur-stoic-fungible-v1} coin)
         (patron:string KST.ANHD)
     )
@@ -1226,9 +1226,9 @@
 (print "--- [TX-12 [4.1.12] - Dalos INIT [12]: Coil Wrapped Stoa · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         ;;
         (patron:string KST.ANHD)
     )
@@ -1271,9 +1271,9 @@
 (print "--- [TX-13 [4.1.13] - Dalos INIT [13]: KickStart Auryndex · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         ;;
         (patron:string KST.ANHD)
         (atspair:string  (at 0 (ref-DPTF::UR_RewardBearingToken (ref-DALOS::UR_AurynID))))
@@ -1313,9 +1313,9 @@
 (print "--- [TX-14 [4.1.14] - Dalos INIT [14]: Kickstart EliteAuryndex · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         ;;
         (patron:string KST.ANHD)
         (atspair:string  (at 0 (ref-DPTF::UR_RewardBearingToken (ref-DALOS::UR_EliteAurynID))))
@@ -1355,8 +1355,8 @@
 (print "--- [TX-15 [4.1.15] - Dalos INIT [15]: Transmute · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
         ;;
         (patron:string KST.ANHD)
         (ouro-id:string (ref-DALOS::UR_OuroborosID))
@@ -1395,8 +1395,8 @@
 (print "--- [TX-16 [4.1.16] - Dalos INIT [16]: Transfer · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
         (OuroID:string (ref-DALOS::UR_OuroborosID))
         ;;
         (patron:string KST.ANHD)
@@ -1435,8 +1435,8 @@
 (print "--- [TX-17 [4.1.17] - Dalos INIT [17]: Issue Special Tokens · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
         (split-stoa:[decimal]
             (ref-DALOS::URC_SplitSTOAPrices
                 KST.ANHD
@@ -1481,9 +1481,9 @@
 
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         ;;
         (patron:string KST.ANHD)
         (OuroID:string (ref-DALOS::UR_OuroborosID))
@@ -1540,7 +1540,7 @@
 (print "--- [TX-18 [4.1.18] - Dalos INIT [18]: SWP Setup 1 · 02 · let / invocation] ---")
 (let
     (
-        (ref-SWP:module{SwapperV4} SWP)
+        (ref-SWP:module{SwapperV5} SWP)
         (u:[string] ["|"])
     )
     [
@@ -1627,8 +1627,8 @@
 (print "--- [TX-18 [4.1.19] - Dalos INIT [19]: SWP Setup 2 · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
         ;;
         (patron:string KST.ANHD)
@@ -1708,7 +1708,7 @@
 (print "--- [TX-20 [4.1.20] - Dalos INIT [20]: Pension, Liquid Wrap and ATS Fixtures · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (split-stoa:[decimal]
             (ref-DALOS::URC_SplitSTOAPrices
                 KST.ANHD
@@ -1775,10 +1775,10 @@
             ;;
             (ref-coin:module{stoa-ns.fungible-v1} coin)
 
-            (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-            (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-            (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-            (ref-ATS:module{AutostakeV3} ATS)
+            (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+            (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+            (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+            (ref-ATS:module{AutostakeV4} ATS)
             ;;
             (patron:string KST.ANHD)
             (patron-stoa:string (ref-DALOS::UR_AccountStoa patron))

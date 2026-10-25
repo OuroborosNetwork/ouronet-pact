@@ -2682,7 +2682,7 @@
 (print "--- [NSFR-G2 - the split-call minting shape is price-neutral, and WHY · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
+        (ref-DPDC-C:module{DpdcCreateV3} DPDC-C)
         (dhn-id:string "DHN-98c486052a51")
     )
     (let
@@ -2778,7 +2778,7 @@
 (print "--- [NSFR-F1 - the A_Fix ladder, actually executed · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+        (ref-DPDC-N:module{DpdcNonceV3} DPDC-N)
         (id:string "DHN-98c486052a51")
         (patron:string KST.ANHD)
         (creator:string KST.EMMA)
@@ -2932,7 +2932,7 @@
 (print "--- [NSFR-F3 - the length guard, enforced through the real rung · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+        (ref-DPDC-N:module{DpdcNonceV3} DPDC-N)
         (id:string "DHN-98c486052a51")
         (patron:string KST.ANHD)
         (creator:string KST.EMMA)

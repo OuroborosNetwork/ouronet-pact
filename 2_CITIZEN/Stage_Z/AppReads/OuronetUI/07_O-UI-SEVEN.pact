@@ -64,7 +64,7 @@
     (defcap GOV ()                          (compose-capability (GOV|O_UI_SEVEN_ADMIN)))
     (defcap GOV|O_UI_SEVEN_ADMIN ()         (enforce-guard GOV|MD_O-UI-SEVEN))
     (defun GOV|Demiurgoi ()
-        (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi))
+        (let ((ref-DALOS:module{OuronetDalosV3} DALOS)) (ref-DALOS::GOV|Demiurgoi))
     )
 
     ;;{5}  FUNCTIONS
@@ -89,7 +89,7 @@
         (let
             (
                 (ref-U|CT:module{OuronetConstantsV2} U|CT)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (let
                 (
@@ -104,7 +104,7 @@
                     (let
                         (
                             (ref-coin:module{stoa-ns.fungible-v1} coin)
-                            (ref-CODEX:module{CodexV2} CODEX)
+                            (ref-CODEX:module{CodexV3} CODEX)
                             ;;
                             (payment-key:string
                                 (if iz-activated (ref-DALOS::UR_AccountStoa account) bar))
@@ -195,7 +195,7 @@
         (let
             (
                 (ref-U|CT:module{OuronetConstantsV2} U|CT)
-                (ref-CODEX:module{CodexV2} CODEX)
+                (ref-CODEX:module{CodexV3} CODEX)
                 ;;
                 (row-exists:bool (!= (try false (ref-CODEX::UR_STG|Data tag-name)) false))
             )
@@ -260,9 +260,9 @@
         (let
             (
                 (ref-U|CT:module{OuronetConstantsV2} U|CT)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
             )
             (let
                 (
@@ -270,12 +270,12 @@
                         (!= (try (ref-U|CT::CT_BAR)
                                  (ref-DALOS::UR_AccountPublicKey selected-ouronet-account))
                             (ref-U|CT::CT_BAR)))
-                    (no-costs:object{OuronetInfoV2.ClientStoaCosts}
+                    (no-costs:object{OuronetInfoV3.ClientStoaCosts}
                         (ref-I|OURONET::OI|UDC_NoStoaCosts))
                 )
                 (let
                     (
-                        (stoa-costs:object{OuronetInfoV2.ClientStoaCosts}
+                        (stoa-costs:object{OuronetInfoV3.ClientStoaCosts}
                             (if (or iz-activated (ref-IGNIS::URC_IsNativeGasZero))
                                 no-costs
                                 (ref-I|OURONET::OI|UDC_FullStoaCosts

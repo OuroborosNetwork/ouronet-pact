@@ -85,7 +85,7 @@
     (defcap GOV ()                          (compose-capability (GOV|O_UI_TWO_ADMIN)))
     (defcap GOV|O_UI_TWO_ADMIN ()          (enforce-guard GOV|MD_O-UI-TWO))
     (defun GOV|Demiurgoi ()
-        (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi))
+        (let ((ref-DALOS:module{OuronetDalosV3} DALOS)) (ref-DALOS::GOV|Demiurgoi))
     )
 
     ;;{3}  CST
@@ -138,7 +138,7 @@
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     (defun URC_Value:decimal (id:string amount:decimal price:decimal)
         @doc "Amount times price, floored to the token's own precision."
-        (let ((ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF))
+        (let ((ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF))
             (floor (* amount price) (ref-DPTF::UR_Decimals id))
         )
     )
@@ -150,10 +150,10 @@
             \ Public and called per card rather than computed once and passed down -- see the \
             \ file header. IGNIS is a fixed 0.01 by definition, not a market price."
         (let*
-            ( (ref-DALOS:module{OuronetDalosV2} DALOS)
-              (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-              (ref-ATS:module{AutostakeV3} ATS)
-              (ref-SWPI:module{SwapperIssueV4} SWPI)
+            ( (ref-DALOS:module{OuronetDalosV3} DALOS)
+              (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+              (ref-ATS:module{AutostakeV4} ATS)
+              (ref-SWPI:module{SwapperIssueV5} SWPI)
               (ref-DIA:module{DiaStoaPidV2} U|CT)
               (idx-a:string (UC_PickId (ref-DPTF::UR_RewardBearingToken (ref-DALOS::UR_AurynID))
                                        OuronetIdsV1.IDX_AURYNDEX))
@@ -178,9 +178,9 @@
             \ `dispo-capacity` is the ABSOLUTE value of URC_MinimumOuro -- a negative minimum \
             \ is a credit, and the card shows it as a positive capacity."
         (let*
-            ( (ref-DALOS:module{OuronetDalosV2} DALOS)
-              (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-              (ref-TFT:module{TrueFungibleTransferV2} TFT)
+            ( (ref-DALOS:module{OuronetDalosV3} DALOS)
+              (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+              (ref-TFT:module{TrueFungibleTransferV3} TFT)
               (id:string (ref-DALOS::UR_OuroborosID))
               (p:decimal (at 0 (URC_Prices)))
               (held:decimal (ref-DPTF::UR_AccountSupply id account))
@@ -203,8 +203,8 @@
         @doc "The IGNIS card, plus both gas-discount strings. IGNIS is priced at a flat 0.01 by \
             \ definition rather than by a pool, so this card cannot fail on pricing."
         (let*
-            ( (ref-DALOS:module{OuronetDalosV2} DALOS)
-              (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+            ( (ref-DALOS:module{OuronetDalosV3} DALOS)
+              (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
               (id:string (ref-DALOS::UR_IgnisID))
               (p:decimal 0.01)
               (held:decimal (ref-DPTF::UR_AccountSupply id account))
@@ -228,8 +228,8 @@
     (defun URC_Auryn:object (account:string)
         @doc "The AURYN card: held and global supply."
         (let*
-            ( (ref-DALOS:module{OuronetDalosV2} DALOS)
-              (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+            ( (ref-DALOS:module{OuronetDalosV3} DALOS)
+              (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
               (id:string (ref-DALOS::UR_AurynID))
               (p:decimal (at 2 (URC_Prices)))
               (held:decimal (ref-DPTF::UR_AccountSupply id account))
@@ -248,8 +248,8 @@
             \ just the native balance on this card -- which is why the two numbers differ."
         (let*
             ( (ref-U|CT:module{OuronetConstantsV2} U|CT)
-              (ref-DALOS:module{OuronetDalosV2} DALOS)
-              (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+              (ref-DALOS:module{OuronetDalosV3} DALOS)
+              (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
               (ref-ELITE:module{EliteV2} ELITE)
               (id:string (ref-DALOS::UR_EliteAurynID))
               (p:decimal (at 3 (URC_Prices)))
@@ -284,8 +284,8 @@
             \ _hardcodedids.py does not match its shape. Carried over from \
             \ DPL-UR::URC_0002_PrimordialsSingle verbatim and named so it is visible."
         (let*
-            ( (ref-DALOS:module{OuronetDalosV2} DALOS)
-              (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+            ( (ref-DALOS:module{OuronetDalosV3} DALOS)
+              (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
               (ref-coin:module{stoa-ns.stoic-fungible-v1} coin)
               (ref-urcoin:module{stoa-ns.ur-stoic-fungible-v1} coin)
               (id:string (ref-DALOS::UR_UrStoaID))
@@ -308,8 +308,8 @@
             \ why the native read is wrapped in `try`: an account with no coin row is normal, \
             \ not an error."
         (let*
-            ( (ref-DALOS:module{OuronetDalosV2} DALOS)
-              (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+            ( (ref-DALOS:module{OuronetDalosV3} DALOS)
+              (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
               (ref-coin:module{stoa-ns.stoic-fungible-v1} coin)
               (id:string (ref-DALOS::UR_WrappedStoaID))
               (p:decimal (at 4 (URC_Prices)))
@@ -331,8 +331,8 @@
     (defun URC_SilverStoa:object (account:string)
         @doc "The SSTOA card: held and global supply."
         (let*
-            ( (ref-DALOS:module{OuronetDalosV2} DALOS)
-              (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+            ( (ref-DALOS:module{OuronetDalosV3} DALOS)
+              (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
               (id:string (ref-DALOS::UR_SilverStoaID))
               (p:decimal (at 5 (URC_Prices)))
               (held:decimal (ref-DPTF::UR_AccountSupply id account))
@@ -358,10 +358,10 @@
             \ and a `select` cannot run inside a `try` -- see URH_GoldenStoaNonces below. Keeping \
             \ it here would make this card untriable and take the whole composer down with it."
         (let*
-            ( (ref-DALOS:module{OuronetDalosV2} DALOS)
-              (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-              (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-              (ref-ATS:module{AutostakeV3} ATS)
+            ( (ref-DALOS:module{OuronetDalosV3} DALOS)
+              (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+              (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+              (ref-ATS:module{AutostakeV4} ATS)
               (idx-g:string (UC_PickId (ref-DPTF::UR_RewardToken (ref-DALOS::UR_SilverStoaID))
                                        OuronetIdsV1.IDX_GOLDENPILLAR))
               (id:string (ref-ATS::UR_ColdRewardBearingToken idx-g))
@@ -402,10 +402,10 @@
             \ pays a scan to get it."
         (let*
             ( (ref-U|CT:module{OuronetConstantsV2} U|CT)
-              (ref-DALOS:module{OuronetDalosV2} DALOS)
-              (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-              (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-              (ref-ATS:module{AutostakeV3} ATS)
+              (ref-DALOS:module{OuronetDalosV3} DALOS)
+              (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+              (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+              (ref-ATS:module{AutostakeV4} ATS)
               ;;THE DERIVATION IS GUARDED, THE SELECT IS NOT, AND THAT SPLIT IS THE WHOLE POINT.
               ;;Everything needed to reach the hibernated id is plain reads, so it fits inside a
               ;;`try`; the nonce `select` that follows cannot, because `try` runs its body in
@@ -448,11 +448,11 @@
             \ worth as though it were a real one. Recomputing means the total either is correct \
             \ or fails outright -- and a failed total is visible, where a quiet undercount is not."
         (let*
-            ( (ref-DALOS:module{OuronetDalosV2} DALOS)
-              (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-              (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-              (ref-TFT:module{TrueFungibleTransferV2} TFT)
-              (ref-ATS:module{AutostakeV3} ATS)
+            ( (ref-DALOS:module{OuronetDalosV3} DALOS)
+              (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+              (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+              (ref-TFT:module{TrueFungibleTransferV3} TFT)
+              (ref-ATS:module{AutostakeV4} ATS)
               (ref-coin:module{stoa-ns.stoic-fungible-v1} coin)
               (pp:[decimal] (URC_Prices))
               (ouro:string (ref-DALOS::UR_OuroborosID))
@@ -493,7 +493,7 @@
             \ the caller -- the Codex membership lives client-side, and a read module has no \
             \ business scanning for it."
         (let*
-            ( (ref-DALOS:module{OuronetDalosV2} DALOS)
+            ( (ref-DALOS:module{OuronetDalosV3} DALOS)
               (id:string (ref-DALOS::UR_IgnisID))
               (total:decimal
                 (fold (+) 0.0

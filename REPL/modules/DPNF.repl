@@ -41,7 +41,7 @@
 (print "--- [DPNF-01 — collection properties and nonce baseline · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-DPDC:module{DpdcV3} DPDC)
         (nf:string "MOCKN-98c486052a51")
     )
     (map print
@@ -74,8 +74,8 @@
 (print "--- [DPNF-02 — the nonce-field family each writes ITS OWN field · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
     )
@@ -121,9 +121,9 @@
 (print "--- [DPNF-03 — C_TransferNonce moves a unique nonce; roles gate what they claim · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
@@ -167,9 +167,9 @@
 (print "--- [DPNF-04 — ops that ONLY assertion-free probes had ever touched · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-DPDC:module{DpdcV3} DPDC)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
@@ -234,9 +234,9 @@
 (print "--- [DPNF-05 — DPNF|C_Repurpose: the collection owner takes a nonce BACK · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)

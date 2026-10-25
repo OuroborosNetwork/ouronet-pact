@@ -1,8 +1,8 @@
 ;; ---------------------------------------------------------------------------
-;; OURONET DEPLOY -- file 6 of 24
-;; This is STEP 6 of 25 in the full sequence (see Deploy/MANIFEST.md).
+;; OURONET DEPLOY -- file 6 of 25
+;; This is STEP 6 of 26 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-5 must have run first, including the init steps between deploys.
-;; 3 source file(s), 231,586 gas measured in the REPL gas model, 226,250 bytes
+;; 3 source file(s), 244,695 gas measured in the REPL gas model, 227,464 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/13_OUROBOROS.pact
@@ -12,12 +12,12 @@
 ;; TOTAL: 3 interface(s), 3 module(s), 14 table(s)
 ;; What it DEPLOYS, in load order:
 ;;   -- 1_SOVEREIGN/STAGE_01/2_Core/13_OUROBOROS.pact
-;;      interface  OuroborosV2
+;;      interface  OuroborosV3
 ;;      module     OUROBOROS
 ;;      table      P|T
 ;;      table      P|MT
 ;;   -- 1_SOVEREIGN/STAGE_01/2_Core/14_SWPT.pact
-;;      interface  SwapTracerV3
+;;      interface  SwapTracerV4
 ;;      module     SWPT
 ;;      table      P|T
 ;;      table      P|MT
@@ -25,7 +25,7 @@
 ;;      table      SWPT|PathCache
 ;;      table      SWPT|TopologyVersion
 ;;   -- 1_SOVEREIGN/STAGE_01/2_Core/15_SWP.pact
-;;      interface  SwapperV4
+;;      interface  SwapperV5
 ;;      module     SWP
 ;;      table      P|T
 ;;      table      P|MT
@@ -47,7 +47,7 @@
 ;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact
 ;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface OuroborosV2
+(interface OuroborosV3
     @doc "Exposes Functions related to the OUROBOROS Module"
 
     ;;<=========================================================================>
@@ -92,29 +92,29 @@
     (defun URC_ProjectedStoaLiquindex:[decimal] ())
     (defun URCv_Compress:[decimal] (ignis-amount:decimal))
     (defun URCv_Sublimate:decimal (ouro-amount:decimal))
-    (defun URCi_Compress:object{IgnisCollectorV3.OutputCumulator} (client:string ignis-amount:decimal))
-    (defun URCi_Fuel:object{IgnisCollectorV3.OutputCumulator} ())
-    (defun URCi_Sublimate:object{IgnisCollectorV3.OutputCumulator} (client:string target:string ouro-amount:decimal))
-    (defun URCi_SublimateV2:object{IgnisCollectorV3.OutputCumulator} (client:string target:string ouro-amount:decimal))
-    (defun URCi_WithdrawFees:object{IgnisCollectorV3.OutputCumulator} (id:string target:string))
+    (defun URCi_Compress:object{IgnisCollectorV4.OutputCumulator} (client:string ignis-amount:decimal))
+    (defun URCi_Fuel:object{IgnisCollectorV4.OutputCumulator} ())
+    (defun URCi_Sublimate:object{IgnisCollectorV4.OutputCumulator} (client:string target:string ouro-amount:decimal))
+    (defun URCi_SublimateV2:object{IgnisCollectorV4.OutputCumulator} (client:string target:string ouro-amount:decimal))
+    (defun URCi_WithdrawFees:object{IgnisCollectorV4.OutputCumulator} (id:string target:string))
     ;;{5.4}  Validate [UEV/CAP]
     ;;
     (defun UEV_Exchange ())
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
-    (defun XB_Compress:object{IgnisCollectorV3.OutputCumulator} (patron:string client:string ignis-amount:decimal))
+    (defun XB_Compress:object{IgnisCollectorV4.OutputCumulator} (patron:string client:string ignis-amount:decimal))
     ;;{5.7}  User [A/C]
     ;;
     ;;
-    (defun C_Compress:object{IgnisCollectorV3.OutputCumulator} (executor:string ignis-amount:decimal))
-    (defun C_Fuel:object{IgnisCollectorV3.OutputCumulator} (patron:string ))
-    (defun C_Sublimate:object{IgnisCollectorV3.OutputCumulator} (executor:string executee:string ouro-amount:decimal))
+    (defun C_Compress:object{IgnisCollectorV4.OutputCumulator} (executor:string ignis-amount:decimal))
+    (defun C_Fuel:object{IgnisCollectorV4.OutputCumulator} (patron:string ))
+    (defun C_Sublimate:object{IgnisCollectorV4.OutputCumulator} (executor:string executee:string ouro-amount:decimal))
     ;;#23H fix: C_SublimateV2 was already live/actively-used (TS01-C2's ORBR|C_SublimateV2,
     ;;TS01-C3's Firestarter path) but missing from its own interface. Cheaper alternative to
     ;;C_Sublimate (freeze+C_WipeSlim+unfreeze instead of transfer+burn) - added here, no
     ;;behavioral change, the module already implements this exact signature.
-    (defun C_SublimateV2:object{IgnisCollectorV3.OutputCumulator} (executor:string executee:string ouro-amount:decimal))
-    (defun C_WithdrawFees:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string))
+    (defun C_SublimateV2:object{IgnisCollectorV4.OutputCumulator} (executor:string executee:string ouro-amount:decimal))
+    (defun C_WithdrawFees:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string executee:string id:string))
 
 )
 ;;
@@ -129,7 +129,7 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements OuroborosV2)
+    (implements OuroborosV3)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -154,7 +154,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -162,7 +162,7 @@
     (defun GOV|OuroborosKey ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|OuroborosKey)
         )
@@ -170,7 +170,7 @@
     (defun GOV|ORBR|SC_NAME ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|OUROBOROS|SC_NAME)
         )
@@ -199,7 +199,7 @@
     (defun P|Info ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::P|Info)
         )
@@ -373,7 +373,7 @@
         @event
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::UEV_EnforceAccountType target false)
             (compose-capability (IGNIS|C>CONVERT client))
@@ -387,7 +387,7 @@
     (defcap IGNIS|C>CONVERT(client:string)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::UEV_EnforceAccountType client false)
             (UEV_Exchange)
@@ -417,8 +417,8 @@
         @event
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
             )
             (ref-DALOS::UEV_EnforceAccountType target false)
             (ref-DPTF::CAP_Owner id)
@@ -444,7 +444,7 @@
     (defun CT_EmptyCumulator ()
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (ref-IGNIS::UDC_EmptyOutputCumulatorV2)
         )
@@ -457,9 +457,9 @@
         (let
             (
                 (ref-coin:module{stoa-ns.fungible-v1} coin)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-ATS:module{AutostakeV4} ATS)
                 (orb-sc ORBR|SC_NAME)
                 (present-stoa-balance:decimal (ref-coin::get-balance (ref-DALOS::UR_AccountStoa orb-sc)))
                 (w-stoa:string (ref-DALOS::UR_WrappedStoaID))
@@ -486,8 +486,8 @@
         (let
             (
                 (ref-U|ATS:module{UtilityAtsV3} U|ATS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
             )
             (enforce (= (floor ignis-amount 0) ignis-amount) "Only whole Units of GAS(Ignis) can be compressed")
             (enforce (>= ignis-amount 1.00) "Only amounts greater than or equal to 1.0 can be used to compress gas")
@@ -510,8 +510,8 @@
     (defun URCv_Sublimate:decimal (ouro-amount:decimal)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
             )
             ;;NOTE: the constant is 0.99, not the 1.0 the message advertises. Pinned AS WRITTEN
             ;;in REPL/modules/OUROBOROS.repl <<ORBR-G1>> (0.99 accepted, 0.98 refused) so the
@@ -540,17 +540,17 @@
         )
     )
     ;;
-    (defun URCi_Compress:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_Compress:object{IgnisCollectorV4.OutputCumulator}
         (client:string ignis-amount:decimal)
         @doc "Cost preview for C_Compress (and cost-identical XB_Compress): client->ORBR IGNIS \
             \ transfer + IGNIS burn + OURO mint + ORBR->client OURO transfer. Output == \
             \ [ouro-remainder-amount], re-derived purely."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
                 ;;
                 (ouro-id:string (ref-DALOS::UR_OuroborosID))
                 (ignis-id:string (ref-DALOS::UR_IgnisID))
@@ -567,17 +567,17 @@
             )
         )
     )
-    (defun URCi_Fuel:object{IgnisCollectorV3.OutputCumulator} ()
+    (defun URCi_Fuel:object{IgnisCollectorV4.OutputCumulator} ()
         @doc "Cost preview for C_Fuel: when wrapped-STOA exists and the ORBR STOA balance is \
             \ positive, the wrap + ATSU fuel legs; otherwise EOC (no-op). Re-derived purely."
         (let
             (
                 (ref-coin:module{stoa-ns.fungible-v1} coin)
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-ATSU:module{AutostakeUsageV2} ATSU)
-                (ref-LIQUID:module{StoaLiquidStakingV2} LIQUID)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-ATSU:module{AutostakeUsageV3} ATSU)
+                (ref-LIQUID:module{StoaLiquidStakingV3} LIQUID)
                 (orb-sc ORBR|SC_NAME)
                 (present-stoa-balance:decimal (ref-coin::get-balance (ref-DALOS::UR_AccountStoa orb-sc)))
                 (w-stoa:string (ref-DALOS::UR_WrappedStoaID))
@@ -599,17 +599,17 @@
             )
         )
     )
-    (defun URCi_Sublimate:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_Sublimate:object{IgnisCollectorV4.OutputCumulator}
         (client:string target:string ouro-amount:decimal)
         @doc "Cost preview for C_Sublimate: client->ORBR OURO transfer + OURO burn + IGNIS mint \
             \ + ORBR->target IGNIS transfer. Output == [ignis-amount], re-derived purely."
         (let
             (
                 (ref-U|ATS:module{UtilityAtsV3} U|ATS)
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
                 ;;
                 (ignis-id:string (ref-DALOS::UR_IgnisID))
                 (ouro-id:string (ref-DALOS::UR_OuroborosID))
@@ -629,7 +629,7 @@
             )
         )
     )
-    (defun URCi_SublimateV2:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_SublimateV2:object{IgnisCollectorV4.OutputCumulator}
         (client:string target:string ouro-amount:decimal)
         @doc "Cost preview for C_SublimateV2: (conditional) freeze client + wipe-slim the OURO \
             \ + unfreeze + IGNIS mint + ORBR->target IGNIS transfer. Output == [ignis-amount], \
@@ -637,10 +637,10 @@
         (let
             (
                 (ref-U|ATS:module{UtilityAtsV3} U|ATS)
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
                 ;;
                 (ignis-id:string (ref-DALOS::UR_IgnisID))
                 (ouro-id:string (ref-DALOS::UR_OuroborosID))
@@ -665,15 +665,15 @@
             )
         )
     )
-    (defun URCi_WithdrawFees:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_WithdrawFees:object{IgnisCollectorV4.OutputCumulator}
         (id:string target:string)
         @doc "Cost preview for C_WithdrawFees: the base token-issue IGNIS price + the ORBR-> \
             \ target transfer of the accrued fee supply, re-derived purely."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
                 (withdraw-amount:decimal (ref-DPTF::UR_AccountSupply id ORBR|SC_NAME))
                 (price:decimal (ref-IGNIS::UC_IgnisDeter "fee-withdraw"))
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
@@ -701,7 +701,7 @@
         ;;REPL/Stage_01/[4.0]_Sovereign-Executor.repl <<TX4.0-CONFIG>>.
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (ouro-id:string (ref-DALOS::UR_OuroborosID))
                 (gas-id:string (ref-DALOS::UR_IgnisID))
             )
@@ -709,7 +709,7 @@
             (enforce (!= gas-id BAR) "Ignis is not set")
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (orb-sc ORBR|SC_NAME)
 
                 (o-rm:bool (ref-DPTF::UR_AccountRoleMint ouro-id orb-sc))
@@ -740,7 +740,7 @@
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
     ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
-    (defun XB_Compress:object{IgnisCollectorV3.OutputCumulator}
+    (defun XB_Compress:object{IgnisCollectorV4.OutputCumulator}
         (patron:string client:string ignis-amount:decimal)
         @doc "SC-account-tolerant IGNIS→OURO compress for INTERNAL module callers (registered OUROBOROS IMC). Same \
             \ conversion + fee as C_Compress (98.5% efficiency), but authorized by IGNIS|XB>COMPRESS which OMITS the \
@@ -750,10 +750,10 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
                 ;;
                 (ouro-id:string (ref-DALOS::UR_OuroborosID))
                 (ignis-id:string (ref-DALOS::UR_IgnisID))
@@ -774,15 +774,15 @@
         )
     )
     ;;{5.7}  User [A/C]
-    (defun C_Compress:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_Compress:object{IgnisCollectorV4.OutputCumulator}
         (executor:string ignis-amount:decimal)
         (P|UEV_IMC)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
                 ;;
                 (ouro-id:string (ref-DALOS::UR_OuroborosID))
                 (ignis-id:string (ref-DALOS::UR_IgnisID))
@@ -809,16 +809,16 @@
             )
         )
     )
-    (defun C_Fuel:object{IgnisCollectorV3.OutputCumulator} (patron:string )
+    (defun C_Fuel:object{IgnisCollectorV4.OutputCumulator} (patron:string )
         (P|UEV_IMC)
         (let
             (
                 (ref-coin:module{stoa-ns.fungible-v1} coin)
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-ATSU:module{AutostakeUsageV2} ATSU)
-                (ref-LIQUID:module{StoaLiquidStakingV2} LIQUID)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-ATSU:module{AutostakeUsageV3} ATSU)
+                (ref-LIQUID:module{StoaLiquidStakingV3} LIQUID)
                 (orb-sc ORBR|SC_NAME)
                 (orb-stoa ORBR|SC_STOA-NAME)
                 (lq-stoa (ref-LIQUID::GOV|LIQUID|SC_STOA-NAME))
@@ -849,16 +849,16 @@
             )
         )
     )
-    (defun C_Sublimate:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_Sublimate:object{IgnisCollectorV4.OutputCumulator}
         (executor:string executee:string ouro-amount:decimal)
         (P|UEV_IMC)
         (let
             (
                 (ref-U|ATS:module{UtilityAtsV3} U|ATS)
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
                 ;;
                 (ignis-id:string (ref-DALOS::UR_IgnisID))
                 (ouro-id:string (ref-DALOS::UR_OuroborosID))
@@ -885,16 +885,16 @@
             )
         )
     )
-    (defun C_SublimateV2:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_SublimateV2:object{IgnisCollectorV4.OutputCumulator}
         (executor:string executee:string ouro-amount:decimal)
         (P|UEV_IMC)
         (let
             (
                 (ref-U|ATS:module{UtilityAtsV3} U|ATS)
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
                 ;;
                 (ignis-id:string (ref-DALOS::UR_IgnisID))
                 (ouro-id:string (ref-DALOS::UR_OuroborosID))
@@ -927,7 +927,7 @@
             )
         )
     )
-    (defun C_WithdrawFees:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_WithdrawFees:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string executee:string id:string)
         @doc "Withdraws the DPTF fees accrued on the OUROBOROS smart account for <id>. \
             \ Executor: the TOKEN OWNER, proven in OUROBOROS|C>WITHDRAW by CAP_Owner + \
@@ -937,9 +937,9 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
                 (withdraw-amount:decimal (ref-DPTF::UR_AccountSupply id ORBR|SC_NAME))
                 (price:decimal (ref-IGNIS::UC_IgnisDeter "fee-withdraw"))
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
@@ -981,7 +981,7 @@
 ;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact
 ;;
 ;; net: v2   ·   dev: v3   ;; bumped by the StoicSyntax refactor — deploy v3 then set net: v3
-(interface SwapTracerV3
+(interface SwapTracerV4
     @doc "Exposes Tracer Functions, needed to compute Paths between Tokens existing on \
         \ Liquidity Pools. \
         \ \
@@ -1162,6 +1162,15 @@
     (defun XE_UpdateGraph (swpair:string))
     ;;{5.7}  User [A/C]
 
+
+    ;;<=========================================================================>
+    ;; ADDED 2026-10-12 -- interface-membership sweep (StoicSyntax-Prefixes.md Sec5,
+    ;; owner ruling). Every one of these was already live in the module body; this
+    ;; closes the gap between what the module DOES and what its interface SAYS it does.
+    ;;<=========================================================================>
+    (defun UC_ExcludeEdges:[string] (swpairs:[string] exclude:[string]))
+    (defun UC_FindNeighbourIndex:[integer] (neighbours:[object{NeighbourEdge}] token:string))
+    (defun UR_PathCacheRaw:object{PathCacheRow} (key:string))
 )
 ;;
 (module SWPT GOV
@@ -1177,7 +1186,7 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements SwapTracerV3)
+    (implements SwapTracerV4)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -1193,7 +1202,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -1216,7 +1225,7 @@
     (defun P|Info ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::P|Info)
         )
@@ -1369,15 +1378,15 @@
     ;;{3.2}  schemas
     ;;
     (defschema SWPT|GraphSchema
-        neighbours:[object{SwapTracerV3.NeighbourEdge}]
+        neighbours:[object{SwapTracerV4.NeighbourEdge}]
     )
     ;;{3.3}  tables
     (deftable SWPT|Graph:{SWPT|GraphSchema})                    ;;Key = <token>
-    (deftable SWPT|PathCache:{SwapTracerV3.PathCacheRow})       ;;Key = <token-a>|<token-b> (insertion-order, reversed-lookup at read time)
+    (deftable SWPT|PathCache:{SwapTracerV4.PathCacheRow})       ;;Key = <token-a>|<token-b> (insertion-order, reversed-lookup at read time)
     ;;#65bL Phase 1: own table per this codebase's storage-pattern rule (never
     ;;co-locate a row read for other reasons — segregated so only the path that
     ;;needs the counter pays to deserialize it).
-    (deftable SWPT|TopologyVersion:{SwapTracerV3.TopologyVersionRow})  ;;Key = TOPOLOGY_VERSION_KEY (singleton)
+    (deftable SWPT|TopologyVersion:{SwapTracerV4.TopologyVersionRow})  ;;Key = TOPOLOGY_VERSION_KEY (singleton)
 
     ;;<=========================================================================>
     ;;{4}  CAPABILITIES
@@ -1403,7 +1412,7 @@
     )
     ;;{5.2}  Compute [UC]
     ;;
-    (defun UC_FindNeighbourIndex:[integer] (neighbours:[object{SwapTracerV3.NeighbourEdge}] token:string)
+    (defun UC_FindNeighbourIndex:[integer] (neighbours:[object{SwapTracerV4.NeighbourEdge}] token:string)
         @doc "Returns [idx] of the entry in <neighbours> whose token field matches \
             \ <token>, or [] if no such entry exists yet."
         (let
@@ -1454,7 +1463,7 @@
         (let
             (
                 (ref-U|LST:module{StringProcessorV2} U|LST)
-                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+                (ref-U|SWP:module{UtilitySwpV3} U|SWP)
                 (nodes:[string] (ref-U|SWP::UC_MakeGraphNodes input output swpairs))
             )
             (if (= 0 (length nodes))
@@ -1506,14 +1515,14 @@
         )
     )
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    (defun UR_Graph:[object{SwapTracerV3.NeighbourEdge}] (token:string)
+    (defun UR_Graph:[object{SwapTracerV4.NeighbourEdge}] (token:string)
         (with-default-read SWPT|Graph token
             {"neighbours" : []}
             {"neighbours" := n}
             n
         )
     )
-    (defun UR_PathCacheRaw:object{SwapTracerV3.PathCacheRow} (key:string)
+    (defun UR_PathCacheRaw:object{SwapTracerV4.PathCacheRow} (key:string)
         @doc "#34 Phase 7: raw keyed read against SWPT|PathCache, [BAR]-sentinel default \
             \ for a missing row. Internal — callers go through <URC_ReadPathCache> for the \
             \ reversed-lookup logic, never this directly. \
@@ -1545,7 +1554,7 @@
             \ table scan."
         (let*
             (
-                (neighbours:[object{SwapTracerV3.NeighbourEdge}] (UR_Graph t1))
+                (neighbours:[object{SwapTracerV4.NeighbourEdge}] (UR_Graph t1))
                 (idx:[integer] (UC_FindNeighbourIndex neighbours t2))
             )
             (if (= (length idx) 0)
@@ -1692,7 +1701,7 @@
             \ function directly instead, to skip this self-fetch."
         (let*
             (
-                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+                (ref-U|SWP:module{UtilitySwpV3} U|SWP)
                 (full-nodes:[string] (ref-U|SWP::UC_MakeGraphNodes input output swpairs))
                 (raw-graph:[object{RawGraphNode}] (URC_FetchRawGraph full-nodes))
             )
@@ -1862,7 +1871,7 @@
         (let
             (
                 (ref-U|LST:module{StringProcessorV2} U|LST)
-                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+                (ref-U|SWP:module{UtilitySwpV3} U|SWP)
                 (nodes:[string] (ref-U|SWP::UC_MakeGraphNodes input output swpairs))
             )
             (if (= 0 (length nodes))
@@ -2075,7 +2084,7 @@
         )
     )
     ;;#34 Phase 7: dirty-read path-cache core functions.
-    (defun URC_ReadPathCache:object{SwapTracerV3.PathCacheRow} (token-a:string token-b:string)
+    (defun URC_ReadPathCache:object{SwapTracerV4.PathCacheRow} (token-a:string token-b:string)
         @doc "Reversed-lookup read: checks <token-a>|<token-b> first, then \
             \ <token-b>|<token-a> reversed (the graph is confirmed bidirectional — \
             \ XI_UpdateGraphForSwpair's symmetric i×j registration), before concluding \
@@ -2090,14 +2099,14 @@
         (let*
             (
                 (key-fwd:string (+ (+ token-a "|") token-b))
-                (row-fwd:object{SwapTracerV3.PathCacheRow} (UR_PathCacheRaw key-fwd))
+                (row-fwd:object{SwapTracerV4.PathCacheRow} (UR_PathCacheRaw key-fwd))
             )
             (if (!= (at "nodes" row-fwd) [BAR])
                 row-fwd
                 (let*
                     (
                         (key-rev:string (+ (+ token-b "|") token-a))
-                        (row-rev:object{SwapTracerV3.PathCacheRow} (UR_PathCacheRaw key-rev))
+                        (row-rev:object{SwapTracerV4.PathCacheRow} (UR_PathCacheRaw key-rev))
                     )
                     (if (!= (at "nodes" row-rev) [BAR])
                         {
@@ -2111,7 +2120,7 @@
             )
         )
     )
-    (defun URC_ReadPathCacheFresh:object{SwapTracerV3.PathCacheRow} (token-a:string token-b:string)
+    (defun URC_ReadPathCacheFresh:object{SwapTracerV4.PathCacheRow} (token-a:string token-b:string)
         @doc "#65bL Phase 1: <URC_ReadPathCache>, additionally collapsing a STALE entry \
             \ (its <topology-version> behind the live counter) to the same [BAR] miss \
             \ sentinel a genuinely-absent entry already returns. Callers never need to \
@@ -2119,7 +2128,7 @@
             \ both mean 'don't trust this, go search live instead'."
         (let*
             (
-                (row:object{SwapTracerV3.PathCacheRow} (URC_ReadPathCache token-a token-b))
+                (row:object{SwapTracerV4.PathCacheRow} (URC_ReadPathCache token-a token-b))
                 (current-version:integer (UR_TopologyVersion))
             )
             (if (< (at "topology-version" row) current-version)
@@ -2196,7 +2205,7 @@
         (require-capability (SECURE))
         (let*
             (
-                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+                (ref-U|SWP:module{UtilitySwpV3} U|SWP)
                 (tokens:[string] (ref-U|SWP::UC_TokensFromSwpairString swpair))
                 (n:integer (length tokens))
             )
@@ -2231,7 +2240,7 @@
         (require-capability (SECURE))
         (let*
             (
-                (existing:[object{SwapTracerV3.NeighbourEdge}] (UR_Graph from))
+                (existing:[object{SwapTracerV4.NeighbourEdge}] (UR_Graph from))
                 (idx:[integer] (UC_FindNeighbourIndex existing to))
                 (is-new-pair:bool (= (length idx) 0))
                 (old-swpairs:[string]
@@ -2242,7 +2251,7 @@
                 )
                 (is-new-swpair:bool (not (contains swpair old-swpairs)))
                 (did-change:bool (or is-new-pair is-new-swpair))
-                (new-neighbours:[object{SwapTracerV3.NeighbourEdge}]
+                (new-neighbours:[object{SwapTracerV4.NeighbourEdge}]
                     (if is-new-pair
                         (+ existing [{"token": to, "swpairs": [swpair]}])
                         (let*
@@ -2295,12 +2304,12 @@
             (
                 (key-fwd:string (+ (+ token-a "|") token-b))
                 (key-rev:string (+ (+ token-b "|") token-a))
-                (row-fwd:object{SwapTracerV3.PathCacheRow} (UR_PathCacheRaw key-fwd))
-                (row-rev:object{SwapTracerV3.PathCacheRow} (UR_PathCacheRaw key-rev))
+                (row-fwd:object{SwapTracerV4.PathCacheRow} (UR_PathCacheRaw key-fwd))
+                (row-rev:object{SwapTracerV4.PathCacheRow} (UR_PathCacheRaw key-rev))
                 (already-fwd:bool (!= (at "nodes" row-fwd) [BAR]))
                 (already-rev:bool (!= (at "nodes" row-rev) [BAR]))
                 (current-version:integer (UR_TopologyVersion))
-                (new-row:object{SwapTracerV3.PathCacheRow}
+                (new-row:object{SwapTracerV4.PathCacheRow}
                     {"nodes": nodes, "edges": edges, "topology-version": current-version}
                 )
             )
@@ -2355,7 +2364,7 @@
 ;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact
 ;;
 ;; net: v3   ·   dev: v4   ;; bumped by the StoicSyntax refactor — deploy v4 then set net: v4
-(interface SwapperV4
+(interface SwapperV5
     @doc "Swapper forward surface for module SWP (successor to SwapperV4). \
         \ Row shapes use this interface's PoolTokens and FeeSplit schemas (field-compatible with SwapperV4). \
         \ V3: UR_StoaValue and XE_UpdateStoaValue for STOA pool ledger on SWP|Pairs."
@@ -2466,18 +2475,18 @@
     ;;
     (defun URH_OwnedSwapPairs:[string] (account:string))
     ;;  [URCi] cost readers — single source per op (EnableFrozen/Sleeping/ToggleAddOrSwap composers -> Phase 1.2)
-    (defun URCi_UpdatePendingBranding:object{IgnisCollectorV3.OutputCumulator} (entity-id:string))
-    (defun URCi_ChangeOwnership:object{IgnisCollectorV3.OutputCumulator} (swpair:string))
-    (defun URCi_ModifyCanChangeOwner:object{IgnisCollectorV3.OutputCumulator} (swpair:string))
-    (defun URCi_ModifyWeights:object{IgnisCollectorV3.OutputCumulator} (swpair:string))
-    (defun URCi_UpdateAmplifier:object{IgnisCollectorV3.OutputCumulator} (swpair:string))
-    (defun URCi_UpdateFee:object{IgnisCollectorV3.OutputCumulator} (swpair:string))
-    (defun URCi_UpdateSpecialFeeTargets:object{IgnisCollectorV3.OutputCumulator} (swpair:string))
-    (defun URCi_ToggleFeeLock:object{IgnisCollectorV3.OutputCumulator} (swpair:string toggle:bool))
+    (defun URCi_UpdatePendingBranding:object{IgnisCollectorV4.OutputCumulator} (entity-id:string))
+    (defun URCi_ChangeOwnership:object{IgnisCollectorV4.OutputCumulator} (swpair:string))
+    (defun URCi_ModifyCanChangeOwner:object{IgnisCollectorV4.OutputCumulator} (swpair:string))
+    (defun URCi_ModifyWeights:object{IgnisCollectorV4.OutputCumulator} (swpair:string))
+    (defun URCi_UpdateAmplifier:object{IgnisCollectorV4.OutputCumulator} (swpair:string))
+    (defun URCi_UpdateFee:object{IgnisCollectorV4.OutputCumulator} (swpair:string))
+    (defun URCi_UpdateSpecialFeeTargets:object{IgnisCollectorV4.OutputCumulator} (swpair:string))
+    (defun URCi_ToggleFeeLock:object{IgnisCollectorV4.OutputCumulator} (swpair:string toggle:bool))
     (defun URCi_ToggleFeeLockStoa:decimal (swpair:string toggle:bool))
-    (defun URCi_EnableFrozenLP:object{IgnisCollectorV3.OutputCumulator} (patron:string swpair:string))
-    (defun URCi_EnableSleepingLP:object{IgnisCollectorV3.OutputCumulator} (patron:string swpair:string))
-    (defun URCi_ToggleAddOrSwap:object{IgnisCollectorV3.OutputCumulator} (swpair:string toggle:bool add-or-swap:bool))
+    (defun URCi_EnableFrozenLP:object{IgnisCollectorV4.OutputCumulator} (patron:string swpair:string))
+    (defun URCi_EnableSleepingLP:object{IgnisCollectorV4.OutputCumulator} (patron:string swpair:string))
+    (defun URCi_ToggleAddOrSwap:object{IgnisCollectorV4.OutputCumulator} (swpair:string toggle:bool add-or-swap:bool))
     (defun URCi_UpgradeBranding:decimal (months:integer))
     ;;{5.4}  Validate [UEV/CAP]
     ;;
@@ -2514,17 +2523,26 @@
     (defun A_DefinePrimordialPool (patron:string executor:string primordial-pool:string))
     (defun A_ToggleAsymetricLiquidityAddition (patron:string executor:string toggle:bool))
     ;;
-    (defun C_ChangeOwnership:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string swpair:string))
-    (defun C_EnableFrozenLP:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string swpair:string))
-    (defun C_EnableSleepingLP:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string swpair:string))
-    (defun C_ModifyCanChangeOwner:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string swpair:string new-boolean:bool))
-    (defun C_ModifyWeights:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string swpair:string new-weights:[decimal]))
-    (defun C_ToggleAddOrSwap:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string swpair:string toggle:bool add-or-swap:bool))
-    (defun C_ToggleFeeLock:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string swpair:string toggle:bool))
-    (defun C_UpdateAmplifier:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string swpair:string amp:decimal))
-    (defun C_UpdateFee:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string swpair:string new-fee:decimal lp-or-special:bool))
-    (defun C_UpdateSpecialFeeTargets:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string swpair:string targets:[object{FeeSplit}]))
+    (defun C_ChangeOwnership:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string executee:string swpair:string))
+    (defun C_EnableFrozenLP:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string swpair:string))
+    (defun C_EnableSleepingLP:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string swpair:string))
+    (defun C_ModifyCanChangeOwner:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string swpair:string new-boolean:bool))
+    (defun C_ModifyWeights:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string swpair:string new-weights:[decimal]))
+    (defun C_ToggleAddOrSwap:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string swpair:string toggle:bool add-or-swap:bool))
+    (defun C_ToggleFeeLock:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string swpair:string toggle:bool))
+    (defun C_UpdateAmplifier:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string swpair:string amp:decimal))
+    (defun C_UpdateFee:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string swpair:string new-fee:decimal lp-or-special:bool))
+    (defun C_UpdateSpecialFeeTargets:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string swpair:string targets:[object{FeeSplit}]))
 
+
+    ;;<=========================================================================>
+    ;; ADDED 2026-10-12 -- interface-membership sweep (StoicSyntax-Prefixes.md Sec5,
+    ;; owner ruling). Every one of these was already live in the module body; this
+    ;; closes the gap between what the module DOES and what its interface SAYS it does.
+    ;;<=========================================================================>
+    (defun CAP_Owner (swpair:string))
+    (defun UC_PoolTokenPrecisions:[integer] (swpair:string))
+    (defun UEV_AsymetricState (state:bool))
 )
 ;;
 (module SWP GOV
@@ -2541,8 +2559,8 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements BrandingUsagePrimaryV2)
-    (implements SwapperV4)
+    (implements BrandingUsagePrimaryV3)
+    (implements SwapperV5)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -2567,7 +2585,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -2575,7 +2593,7 @@
     (defun GOV|SwapKey ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|SwapKey)
         )
@@ -2583,7 +2601,7 @@
     (defun GOV|SWP|SC_NAME ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|SWP|SC_NAME)
         )
@@ -2614,7 +2632,7 @@
     (defun P|Info ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::P|Info)
         )
@@ -2801,14 +2819,14 @@
         ;;Weights and token composition
         genesis-weights:[decimal]                       ;;[.]   Weights at issue
         weights:[decimal]                               ;;[M]   Current weights
-        genesis-ratio:[object{SwapperV4.PoolTokens}]    ;;[.]   Token supplies at issue
-        pool-tokens:[object{SwapperV4.PoolTokens}]      ;;[M]   Current per-token supplies
+        genesis-ratio:[object{SwapperV5.PoolTokens}]    ;;[.]   Token supplies at issue
+        pool-tokens:[object{SwapperV5.PoolTokens}]      ;;[M]   Current per-token supplies
         token-lp:string                                 ;;[.]   LP DPTF id for this pool
         ;;
         ;;Fees
         fee-lp:decimal                                  ;;[M]   LP fee (promille semantics per module)
         fee-special:decimal                             ;;[M]
-        fee-special-targets:[object{SwapperV4.FeeSplit}];;[M]
+        fee-special-targets:[object{SwapperV5.FeeSplit}];;[M]
         fee-lock:bool                                   ;;[M]
         unlocks:integer                                 ;;[M]   Fee-target edit generation counter
         ;;
@@ -2866,7 +2884,7 @@
         @event
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 ;;
                 (current-owner:string (UR_OwnerKonto swpair))
                 (current-special-targets:integer (length (UR_FeeSPT swpair)))
@@ -2939,7 +2957,7 @@
         (let
             (
                 (ref-U|INT:module{OuronetIntegersV2} U|INT)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (pool-tokens:[string] (UR_PoolTokens swpair))
                 (l0:integer (length pool-tokens))
                 (l1:integer (length new-supplies))
@@ -2975,7 +2993,7 @@
     (defcap SWP|S>UPDATE-SUPPLY (swpair:string id:string new-supply:decimal)
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
             )
             (ref-DPTF::UEV_Amount id new-supply)
             (UEV_id swpair)
@@ -3010,11 +3028,11 @@
             )
         )
     )
-    (defcap SPW|S>UPDATE_SPECIAL-FEE-TARGETS (swpair:string targets:[object{SwapperV4.FeeSplit}])
+    (defcap SPW|S>UPDATE_SPECIAL-FEE-TARGETS (swpair:string targets:[object{SwapperV5.FeeSplit}])
         @event
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (target-no:integer (length targets))
                 (owner:string (UR_OwnerKonto swpair))
                 (major:integer (ref-DALOS::UR_Elite-Tier-Major owner))
@@ -3032,7 +3050,7 @@
             (CAP_Owner swpair)
             (map
                 (lambda
-                    (obj:object{SwapperV4.FeeSplit})
+                    (obj:object{SwapperV5.FeeSplit})
                     (UEV_FeeSplit obj)
                 )
                 targets
@@ -3059,7 +3077,7 @@
     (defcap AHU ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (ah:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
             )
             (ref-DALOS::CAP_EnforceAccountOwnership ah)
@@ -3094,7 +3112,7 @@
         (compose-capability (GOV|SWP_ADMIN))
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (current:[string] (UR_Principals))
                 (current-count:integer (if (= current [BAR]) 0 (length current)))
             )
@@ -3131,7 +3149,7 @@
         (let
             (
                 (ref-U|LST:module{StringProcessorV2} U|LST)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (current:[string] (UR_Principals))
             )
             (ref-DPTF::UEV_id new)
@@ -3184,8 +3202,8 @@
         (compose-capability (GOV|SWP_ADMIN))
         (let
             (
-                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-U|SWP:module{UtilitySwpV3} U|SWP)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 ;;
                 (primality:bool (UR_Primality primordial-pool))
                 (pt:[string] (UR_PoolTokens primordial-pool))
@@ -3233,21 +3251,21 @@
     (defun CT_EmptyCumulator ()
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (ref-IGNIS::UDC_EmptyOutputCumulatorV2)
         )
     )
     (defun CT_Info ()                                   (at 0 ["SwapperInformation"]))
     ;;{5.2}  Compute [UC]
-    (defun UC_ExtractTokens:[string] (input:[object{SwapperV4.PoolTokens}])
+    (defun UC_ExtractTokens:[string] (input:[object{SwapperV5.PoolTokens}])
         (let
             (
                 (ref-U|LST:module{StringProcessorV2} U|LST)
             )
             (fold
                 (lambda
-                    (acc:[string] item:object{SwapperV4.PoolTokens})
+                    (acc:[string] item:object{SwapperV5.PoolTokens})
                     (ref-U|LST::UC_AppL acc (at "token-id" item))
                 )
                 []
@@ -3255,14 +3273,14 @@
             )
         )
     )
-    (defun UC_ExtractTokenSupplies:[decimal] (input:[object{SwapperV4.PoolTokens}])
+    (defun UC_ExtractTokenSupplies:[decimal] (input:[object{SwapperV5.PoolTokens}])
         (let
             (
                 (ref-U|LST:module{StringProcessorV2} U|LST)
             )
             (fold
                 (lambda
-                    (acc:[decimal] item:object{SwapperV4.PoolTokens})
+                    (acc:[decimal] item:object{SwapperV5.PoolTokens})
                     (ref-U|LST::UC_AppL acc (at "token-supply" item))
                 )
                 []
@@ -3270,7 +3288,7 @@
             )
         )
     )
-    (defun UC_CustomSpecialFeeTargets:[string] (io:[object{SwapperV4.FeeSplit}])
+    (defun UC_CustomSpecialFeeTargets:[string] (io:[object{SwapperV5.FeeSplit}])
         (let
             (
                 (ref-U|LST:module{StringProcessorV2} U|LST)
@@ -3288,7 +3306,7 @@
             )
         )
     )
-    (defun UC_CustomSpecialFeeTargetsProportions:[decimal] (io:[object{SwapperV4.FeeSplit}])
+    (defun UC_CustomSpecialFeeTargetsProportions:[decimal] (io:[object{SwapperV5.FeeSplit}])
         (let
             (
                 (ref-U|LST:module{StringProcessorV2} U|LST)
@@ -3310,7 +3328,7 @@
         (let
             (
                 (ref-U|LST:module{StringProcessorV2} U|LST)
-                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+                (ref-U|SWP:module{UtilitySwpV3} U|SWP)
                 ;;
                 (pool-tokens:[string] (ref-U|SWP::UC_TokensFromSwpairString swpair))
                 (iz-on-pool:bool (contains id pool-tokens))
@@ -3323,8 +3341,8 @@
         (let
             (
                 (ref-U|LST:module{StringProcessorV2} U|LST)
-                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-U|SWP:module{UtilitySwpV3} U|SWP)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 ;;
                 (pool-tokens:[string] (ref-U|SWP::UC_TokensFromSwpairString swpair))
                 (l:integer (length pool-tokens))
@@ -3383,10 +3401,10 @@
     (defun UR_Weigths:[decimal] (swpair:string)
         (at "weights" (read SWP|Pairs swpair ["weights"]))
     )
-    (defun UR_GenesisRatio:[object{SwapperV4.PoolTokens}] (swpair:string)
+    (defun UR_GenesisRatio:[object{SwapperV5.PoolTokens}] (swpair:string)
         (at "genesis-ratio" (read SWP|Pairs swpair ["genesis-ratio"]))
     )
-    (defun UR_PoolTokenObject:[object{SwapperV4.PoolTokens}] (swpair:string)
+    (defun UR_PoolTokenObject:[object{SwapperV5.PoolTokens}] (swpair:string)
         (at "pool-tokens" (read SWP|Pairs swpair ["pool-tokens"]))
     )
     (defun UR_TokenLP:string (swpair:string)
@@ -3398,7 +3416,7 @@
     (defun UR_FeeSP:decimal (swpair:string)
         (at "fee-special" (read SWP|Pairs swpair ["fee-special"]))
     )
-    (defun UR_FeeSPT:[object{SwapperV4.FeeSplit}] (swpair:string)
+    (defun UR_FeeSPT:[object{SwapperV5.FeeSplit}] (swpair:string)
         (at "fee-special-targets" (read SWP|Pairs swpair ["fee-special-targets"]))
     )
     (defun UR_FeeLock:bool (swpair:string)
@@ -3471,7 +3489,7 @@
         (let
             (
                 (ref-U|LST:module{StringProcessorV2} U|LST)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 ;;
                 (pool-tokens:[string] (UR_PoolTokens swpair))
                 (l:integer (length pool-tokens))
@@ -3527,7 +3545,7 @@
         @doc "Computes the LP Capacity of a Given Swap Pair"
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
             )
             (ref-DPTF::UR_Supply (UR_TokenLP swpair))
         )
@@ -3572,7 +3590,7 @@
         @doc "Outputs all unique tokens existing across all Swap Pools"
         (let
             (
-                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+                (ref-U|SWP:module{UtilitySwpV3} U|SWP)
             )
             (ref-U|SWP::UC_UniqueTokens (URC_Swpairs))
         )
@@ -3608,12 +3626,12 @@
             \ <SPWU|X>SMART-SWAP> with no fallback. Audit ref: #19H."
         (filter (lambda (swpair:string) (UR_CanSwap swpair)) (URC_Swpairs))
     )
-    (defun URC_LpComposer:[string] (pool-tokens:[object{SwapperV4.PoolTokens}] weights:[decimal] amp:decimal)
+    (defun URC_LpComposer:[string] (pool-tokens:[object{SwapperV5.PoolTokens}] weights:[decimal] amp:decimal)
         (let
             (
                 (ref-U|LST:module{StringProcessorV2} U|LST)
-                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-U|SWP:module{UtilitySwpV3} U|SWP)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (pool-token-ids:[string] (UC_ExtractTokens pool-tokens))
                 (l:integer (length pool-token-ids))
                 (pool-token-names:[string]
@@ -3660,78 +3678,78 @@
     )
     ;;
     ;;[URCi] cost readers — single cost source per op. Enable*/ToggleAddOrSwap composers -> Phase 1.2.
-    (defun URCi_UpdatePendingBranding:object{IgnisCollectorV3.OutputCumulator} (entity-id:string)
+    (defun URCi_UpdatePendingBranding:object{IgnisCollectorV4.OutputCumulator} (entity-id:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (ref-IGNIS::UDC_BrandingCumulator (UR_OwnerKonto entity-id) 4.0)
         )
     )
-    (defun URCi_ChangeOwnership:object{IgnisCollectorV3.OutputCumulator} (swpair:string)
+    (defun URCi_ChangeOwnership:object{IgnisCollectorV4.OutputCumulator} (swpair:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisPrice "SWP|C_ChangeOwnership" "auth")
                 (UR_OwnerKonto swpair) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_ModifyCanChangeOwner:object{IgnisCollectorV3.OutputCumulator} (swpair:string)
+    (defun URCi_ModifyCanChangeOwner:object{IgnisCollectorV4.OutputCumulator} (swpair:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisPrice "SWP|C_ModifyCanChangeOwner" "auth")
                 (UR_OwnerKonto swpair) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_ModifyWeights:object{IgnisCollectorV3.OutputCumulator} (swpair:string)
+    (defun URCi_ModifyWeights:object{IgnisCollectorV4.OutputCumulator} (swpair:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisPrice "SWP|C_ModifyWeights" "fee")
                 (UR_OwnerKonto swpair) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_UpdateAmplifier:object{IgnisCollectorV3.OutputCumulator} (swpair:string)
+    (defun URCi_UpdateAmplifier:object{IgnisCollectorV4.OutputCumulator} (swpair:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisPrice "SWP|C_UpdateAmplifier" "fee")
                 (UR_OwnerKonto swpair) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_UpdateFee:object{IgnisCollectorV3.OutputCumulator} (swpair:string)
+    (defun URCi_UpdateFee:object{IgnisCollectorV4.OutputCumulator} (swpair:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisPrice "SWP|C_UpdateFee" "fee")
                 (UR_OwnerKonto swpair) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_UpdateSpecialFeeTargets:object{IgnisCollectorV3.OutputCumulator} (swpair:string)
+    (defun URCi_UpdateSpecialFeeTargets:object{IgnisCollectorV4.OutputCumulator} (swpair:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisPrice "SWP|C_UpdateSpecialFeeTargets" "fee")
                 (UR_OwnerKonto swpair) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_ToggleFeeLock:object{IgnisCollectorV3.OutputCumulator} (swpair:string toggle:bool)
+    (defun URCi_ToggleFeeLock:object{IgnisCollectorV4.OutputCumulator} (swpair:string toggle:bool)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 (unlock-costs:[decimal] (if toggle [0.0 0.0] (ref-IGNIS::UC_FeeUnlockPrice)))
                 (gas-costs:decimal (+ (ref-IGNIS::UC_IgnisLeg "tier-small") (at 0 unlock-costs)))
                 (output:bool (> (at 1 unlock-costs) 0.0))
@@ -3746,7 +3764,7 @@
             \ Mirrors DPTF's <URCi_ToggleFeeLockStoa>."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (if toggle 0.0 (at 1 (ref-IGNIS::UC_FeeUnlockPrice)))
         )
@@ -3754,21 +3772,21 @@
     (defun URCi_UpgradeBranding:decimal (months:integer)
         (let
             (
-                (ref-BRD:module{BrandingV2} BRD)
+                (ref-BRD:module{BrandingV3} BRD)
             )
             (ref-BRD::URCi_UpgradeBranding months)
         )
     )
-    (defun URCi_EnableFrozenLP:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_EnableFrozenLP:object{IgnisCollectorV4.OutputCumulator}
         (patron:string swpair:string)
         @doc "Cost preview for C_EnableFrozenLP: if no frozen link exists yet, the VST \
             \ create-frozen-link cost; otherwise the medium IGNIS price on the pool owner \
             \ (output == existing link). Re-derived purely (XI_EnableFrozenLP is a free write)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-VST:module{VestingV2} VST)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-VST:module{VestingV3} VST)
                 (lp-id:string (UR_TokenLP swpair))
                 (current-frozen-link:string (ref-DPTF::UR_Frozen lp-id))
             )
@@ -3783,16 +3801,16 @@
             )
         )
     )
-    (defun URCi_EnableSleepingLP:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_EnableSleepingLP:object{IgnisCollectorV4.OutputCumulator}
         (patron:string swpair:string)
         @doc "Cost preview for C_EnableSleepingLP: if no sleeping link exists yet, the VST \
             \ create-sleeping-link (vzh-tag 2) cost; otherwise the medium IGNIS price on the \
             \ pool owner (output == existing link). Re-derived purely."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-VST:module{VestingV2} VST)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-VST:module{VestingV3} VST)
                 (lp-id:string (UR_TokenLP swpair))
                 (current-sleeping-link:string (ref-DPTF::UR_Sleeping lp-id))
             )
@@ -3807,7 +3825,7 @@
             )
         )
     )
-    (defun URCi_ToggleAddOrSwap:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_ToggleAddOrSwap:object{IgnisCollectorV4.OutputCumulator}
         (swpair:string toggle:bool add-or-swap:bool)
         @doc "Cost preview for C_ToggleAddOrSwap: the base 5x-biggest IGNIS price (ico0) plus, \
             \ when enabling add-liquidity (toggle), the one-time LP burn/mint + per-pool-token \
@@ -3817,15 +3835,15 @@
         (let
             (
                 (ref-U|LST:module{StringProcessorV2} U|LST)
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (biggest:decimal (ref-IGNIS::UC_IgnisLeg "tier-biggest"))
                 (price:decimal (* 5.0 biggest))
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
-                (ico0:object{IgnisCollectorV3.OutputCumulator}
+                (ico0:object{IgnisCollectorV4.OutputCumulator}
                     (ref-IGNIS::UDC_ConstructOutputCumulator price (UR_OwnerKonto swpair) trigger [])
                 )
-                (ico1:object{IgnisCollectorV3.OutputCumulator}
+                (ico1:object{IgnisCollectorV4.OutputCumulator}
                     (if toggle
                         (let
                             (
@@ -3840,22 +3858,22 @@
                                 (lp-id:string (UR_TokenLP swpair))
                                 (lp-burn-role:bool (ref-DPTF::UR_AccountRoleBurn lp-id SWP|SC_NAME))
                                 (lp-mint-role:bool (ref-DPTF::UR_AccountRoleMint lp-id SWP|SC_NAME))
-                                (ico2:object{IgnisCollectorV3.OutputCumulator}
+                                (ico2:object{IgnisCollectorV4.OutputCumulator}
                                     (if (not lp-burn-role)
                                         (ref-DPTF::URCi_ToggleBurnRole lp-id)
                                         EOC
                                     )
                                 )
-                                (ico3:object{IgnisCollectorV3.OutputCumulator}
+                                (ico3:object{IgnisCollectorV4.OutputCumulator}
                                     (if (not lp-mint-role)
                                         (ref-DPTF::URCi_ToggleMintRole lp-id)
                                         EOC
                                     )
                                 )
-                                (folded-obj:[object{IgnisCollectorV3.OutputCumulator}]
+                                (folded-obj:[object{IgnisCollectorV4.OutputCumulator}]
                                     (fold
                                         (lambda
-                                            (acc:[object{IgnisCollectorV3.OutputCumulator}] idx:integer)
+                                            (acc:[object{IgnisCollectorV4.OutputCumulator}] idx:integer)
                                             (ref-U|LST::UC_AppL
                                                 acc
                                                 (if (not (ref-DPTF::UR_AccountRoleFeeExemption (at idx ptts) SWP|SC_NAME))
@@ -3868,7 +3886,7 @@
                                         (enumerate 0 (- (length ptts) 1))
                                     )
                                 )
-                                (ico4:object{IgnisCollectorV3.OutputCumulator}
+                                (ico4:object{IgnisCollectorV4.OutputCumulator}
                                     (ref-IGNIS::UDC_ConcatenateOutputCumulators folded-obj [])
                                 )
                             )
@@ -3882,10 +3900,10 @@
         )
     )
     ;;{5.4}  Validate [UEV/CAP]
-    (defun UEV_FeeSplit (input:object{SwapperV4.FeeSplit})
+    (defun UEV_FeeSplit (input:object{SwapperV5.FeeSplit})
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (tg:string (at "target" input))
                 (v:integer (at "value" input))
             )
@@ -3974,7 +3992,7 @@
     (defun UEV_CheckTwo (token-ids:[string] w:[decimal] amp:decimal)
         (let
             (
-                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+                (ref-U|SWP:module{UtilitySwpV3} U|SWP)
                 (e0:string (at 0 token-ids))
                 (e1:string (at 1 token-ids))
                 (swp1:string (ref-U|SWP::UC_PoolID token-ids w amp))
@@ -3989,7 +4007,7 @@
     (defun UEV_CheckAgainstMass:bool (token-ids:[string] present-pools:[string])
         (let
             (
-                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+                (ref-U|SWP:module{UtilitySwpV3} U|SWP)
             )
             (fold
                 (lambda
@@ -4034,7 +4052,7 @@
         @doc "Enforces SWPair Ownership"
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership (UR_OwnerKonto swpair))
         )
@@ -4060,7 +4078,7 @@
             (let
                 (
                     (pool-tokens:[string] (UR_PoolTokens swpair))
-                    (new-pool-tokens:[object{SwapperV4.PoolTokens}]
+                    (new-pool-tokens:[object{SwapperV5.PoolTokens}]
                         (zip (lambda (x:string y:decimal) { "token-id": x, "token-supply": y }) pool-tokens new-supplies)
                     )
                 )
@@ -4076,10 +4094,10 @@
         (let
             (
                 (ref-U|LST:module{StringProcessorV2} U|LST)
-                (current-pool-tokens:[object{SwapperV4.PoolTokens}] (UR_PoolTokenObject swpair))
+                (current-pool-tokens:[object{SwapperV5.PoolTokens}] (UR_PoolTokenObject swpair))
                 (id-pos:integer (URv_PoolTokenPosition swpair id))
-                (new:object{SwapperV4.PoolTokens} { "token-id" : id, "token-supply" : new-supply})
-                (new-pool-tokens:[object{SwapperV4.PoolTokens}] (ref-U|LST::UC_ReplaceAt current-pool-tokens id-pos new))
+                (new:object{SwapperV5.PoolTokens} { "token-id" : id, "token-supply" : new-supply})
+                (new-pool-tokens:[object{SwapperV5.PoolTokens}] (ref-U|LST::UC_ReplaceAt current-pool-tokens id-pos new))
             )
             (with-capability (SWP|S>UPDATE-SUPPLY swpair id new-supply)
                 (update SWP|Pairs swpair
@@ -4097,7 +4115,7 @@
         )
     )
     ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
-    (defun XE_Issue:string (account:string pool-tokens:[object{SwapperV4.PoolTokens}] token-lp:string fee-lp:decimal weights:[decimal] amp:decimal p:bool)
+    (defun XE_Issue:string (account:string pool-tokens:[object{SwapperV5.PoolTokens}] token-lp:string fee-lp:decimal weights:[decimal] amp:decimal p:bool)
         @doc "Forward writer: inserts the new SWP|Pairs row, registers the LP tracker \
             \ (C9 fix), saves the pool, and deploys token accounts. \
             \ #52L fix (R4): returns the newly-constructed <swpair> ID — callers \
@@ -4106,8 +4124,8 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-U|SWP:module{UtilitySwpV3} U|SWP)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (n:integer (length pool-tokens))
                 (what:bool (if (= amp -1.0) true false))
                 (pool-token-ids:[string] (UC_ExtractTokens pool-tokens))
@@ -4258,7 +4276,7 @@
         (require-capability (SWP|C>TG_FEE-LOCK swpair toggle))
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (update SWP|Pairs swpair
                 { "fee-lock" : toggle}
@@ -4290,7 +4308,7 @@
         )
     )
     ;;Protection: Class 3 — Custom: SPW|S>UPDATE_SPECIAL-FEE-TARGETS
-    (defun XI_UpdateSpecialFeeTargets (swpair:string targets:[object{SwapperV4.FeeSplit}])
+    (defun XI_UpdateSpecialFeeTargets (swpair:string targets:[object{SwapperV5.FeeSplit}])
         (require-capability (SPW|S>UPDATE_SPECIAL-FEE-TARGETS swpair targets))
         (update SWP|Pairs swpair
             {"fee-special-targets"                : targets}
@@ -4328,7 +4346,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership executor)
         )
@@ -4379,7 +4397,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership executor)
         )
@@ -4402,7 +4420,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership executor)
         )
@@ -4421,7 +4439,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership executor)
         )
@@ -4435,7 +4453,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership executor)
         )
@@ -4449,15 +4467,15 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership executor)
         )
         (with-capability (SWP|C>TG-ASYMETRIC-LQ toggle)
             (let
                 (
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                     ;;
                     (ignis-id:string (ref-DALOS::UR_IgnisID))
                     (ouro-id:string (ref-DALOS::UR_OuroborosID))
@@ -4514,8 +4532,8 @@
             \ NAMED is that owner. (patron/executor canon 2.2, indirect route named.)"
         (enforce (= executor (UR_OwnerKonto entity-id)) "Executor is not the Entity Owner")
     )
-    (defun C_UpdatePendingBranding:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
+    (defun C_UpdatePendingBranding:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV3.SocialSchema}])
         @doc "Updates <entity-id>'s pending branding. <executor> is bound to the entity OWNER; \
             \ ownership itself is proven by SWP|C>UPDATE-BRD. The binding is what keeps the \
             \ parameter from being a name nobody reads."
@@ -4523,7 +4541,7 @@
         (UEV_ExecutorIsOwnerKonto executor entity-id)
         (let
             (
-                (ref-BRD:module{BrandingV2} BRD)
+                (ref-BRD:module{BrandingV3} BRD)
             )
             (with-capability (SWP|C>UPDATE-BRD entity-id)
                 (ref-BRD::XE_UpdatePendingBranding entity-id logo description website social)
@@ -4536,8 +4554,8 @@
         (UEV_ExecutorIsOwnerKonto executor entity-id)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-BRD:module{BrandingV2} BRD)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-BRD:module{BrandingV3} BRD)
             )
             ;;Perform the branding upgrade (side effect); bill the STOA via the URCi (== XE_UpgradeBranding's price)
             (with-capability (SWP|C>UPGRADE-BRD entity-id)
@@ -4547,7 +4565,7 @@
         )
     )
     ;;
-    (defun C_ChangeOwnership:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_ChangeOwnership:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string executee:string swpair:string)
         (P|UEV_IMC)
         (UEV_ExecutorIsOwnerKonto executor swpair)
@@ -4556,16 +4574,16 @@
             (URCi_ChangeOwnership swpair)
         )
     )
-    (defun C_EnableFrozenLP:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_EnableFrozenLP:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string swpair:string)
         (P|UEV_IMC)
         (UEV_ExecutorIsOwnerKonto executor swpair)
         (with-capability (SWP|C>ENABLE-FROZEN swpair)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                    (ref-VST:module{VestingV2} VST)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                    (ref-VST:module{VestingV3} VST)
                     (lp-id:string (UR_TokenLP swpair))
                     (current-frozen-link:string (ref-DPTF::UR_Frozen lp-id))
                 )
@@ -4590,16 +4608,16 @@
             )
         )
     )
-    (defun C_EnableSleepingLP:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_EnableSleepingLP:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string swpair:string)
         (P|UEV_IMC)
         (UEV_ExecutorIsOwnerKonto executor swpair)
         (with-capability (SWP|C>ENABLE-SLEEPING swpair)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                    (ref-VST:module{VestingV2} VST)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                    (ref-VST:module{VestingV3} VST)
                     (lp-id:string (UR_TokenLP swpair))
                     (current-sleeping-link:string (ref-DPTF::UR_Sleeping lp-id))
                 )
@@ -4625,7 +4643,7 @@
             )
         )
     )
-    (defun C_ModifyCanChangeOwner:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_ModifyCanChangeOwner:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string swpair:string new-boolean:bool)
         (P|UEV_IMC)
         (UEV_ExecutorIsOwnerKonto executor swpair)
@@ -4634,7 +4652,7 @@
             (URCi_ModifyCanChangeOwner swpair)
         )
     )
-    (defun C_ModifyWeights:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_ModifyWeights:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string swpair:string new-weights:[decimal])
         (P|UEV_IMC)
         (UEV_ExecutorIsOwnerKonto executor swpair)
@@ -4643,7 +4661,7 @@
             (URCi_ModifyWeights swpair)
         )
     )
-    (defun C_ToggleAddOrSwap:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_ToggleAddOrSwap:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string swpair:string toggle:bool add-or-swap:bool)
         @doc "#71L: called directly (cross-module C_->C_) by SWPU::C_ToggleSwapCapability and \
             \ SWPLC::C_ToggleAddLiquidity, instead of through an XE_* forward entrypoint — \
@@ -4663,15 +4681,15 @@
         (let
             (
                 (ref-U|LST:module{StringProcessorV2} U|LST)
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (biggest:decimal (ref-IGNIS::UC_IgnisLeg "tier-biggest"))
                 (price:decimal (* 5.0 biggest))
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
-                (ico0:object{IgnisCollectorV3.OutputCumulator}
+                (ico0:object{IgnisCollectorV4.OutputCumulator}
                     (ref-IGNIS::UDC_ConstructOutputCumulator price (UR_OwnerKonto swpair) trigger [])
                 )
-                (ico1:object{IgnisCollectorV3.OutputCumulator}
+                (ico1:object{IgnisCollectorV4.OutputCumulator}
                     (with-capability (P|GOVERNING-CALLER)
                         (if toggle
                             (let
@@ -4687,22 +4705,22 @@
                                     (lp-id:string (UR_TokenLP swpair))
                                     (lp-burn-role:bool (ref-DPTF::UR_AccountRoleBurn lp-id SWP|SC_NAME))
                                     (lp-mint-role:bool (ref-DPTF::UR_AccountRoleMint lp-id SWP|SC_NAME))
-                                    (ico2:object{IgnisCollectorV3.OutputCumulator}
+                                    (ico2:object{IgnisCollectorV4.OutputCumulator}
                                         (if (not lp-burn-role)
                                             (ref-DPTF::C_ToggleBurnRole patron (ref-DPTF::UR_Konto lp-id) SWP|SC_NAME lp-id true)
                                             EOC
                                         )
                                     )
-                                    (ico3:object{IgnisCollectorV3.OutputCumulator}
+                                    (ico3:object{IgnisCollectorV4.OutputCumulator}
                                         (if (not lp-mint-role)
                                             (ref-DPTF::C_ToggleMintRole patron (ref-DPTF::UR_Konto lp-id) SWP|SC_NAME lp-id true)
                                             EOC
                                         )
                                     )
-                                    (folded-obj:[object{IgnisCollectorV3.OutputCumulator}]
+                                    (folded-obj:[object{IgnisCollectorV4.OutputCumulator}]
                                         (fold
                                             (lambda
-                                                (acc:[object{IgnisCollectorV3.OutputCumulator}] idx:integer)
+                                                (acc:[object{IgnisCollectorV4.OutputCumulator}] idx:integer)
                                                 (ref-U|LST::UC_AppL
                                                     acc
                                                     (if (not (ref-DPTF::UR_AccountRoleFeeExemption (at idx ptts) SWP|SC_NAME))
@@ -4715,7 +4733,7 @@
                                             (enumerate 0 (- (length ptts) 1))
                                         )
                                     )
-                                    (ico4:object{IgnisCollectorV3.OutputCumulator}
+                                    (ico4:object{IgnisCollectorV4.OutputCumulator}
                                         (ref-IGNIS::UDC_ConcatenateOutputCumulators folded-obj [])
                                     )
                                 )
@@ -4732,18 +4750,18 @@
             (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico0 ico1] [])
         )
     )
-    (defun C_ToggleFeeLock:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_ToggleFeeLock:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string swpair:string toggle:bool)
         (P|UEV_IMC)
         (UEV_ExecutorIsOwnerKonto executor swpair)
         (with-capability (SWP|C>TG_FEE-LOCK swpair toggle)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (toggle-costs:[decimal] (XI_ToggleFeeLock swpair toggle))
                     (stoa-costs:decimal (at 1 toggle-costs))
                     ;;URCi computed HERE — reads fee-unlocks BEFORE XI_IncrementFeeUnlocks below mutates it
-                    (cumulator:object{IgnisCollectorV3.OutputCumulator} (URCi_ToggleFeeLock swpair toggle))
+                    (cumulator:object{IgnisCollectorV4.OutputCumulator} (URCi_ToggleFeeLock swpair toggle))
                 )
                 (if (> stoa-costs 0.0)
                     (do
@@ -4756,7 +4774,7 @@
             )
         )
     )
-    (defun C_UpdateAmplifier:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_UpdateAmplifier:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string swpair:string amp:decimal)
         (P|UEV_IMC)
         (UEV_ExecutorIsOwnerKonto executor swpair)
@@ -4765,7 +4783,7 @@
             (URCi_UpdateAmplifier swpair)
         )
     )
-    (defun C_UpdateFee:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_UpdateFee:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string swpair:string new-fee:decimal lp-or-special:bool)
         (P|UEV_IMC)
         (UEV_ExecutorIsOwnerKonto executor swpair)
@@ -4774,8 +4792,8 @@
             (URCi_UpdateFee swpair)
         )
     )
-    (defun C_UpdateSpecialFeeTargets:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string executor:string swpair:string targets:[object{SwapperV4.FeeSplit}])
+    (defun C_UpdateSpecialFeeTargets:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string swpair:string targets:[object{SwapperV5.FeeSplit}])
         (P|UEV_IMC)
         (UEV_ExecutorIsOwnerKonto executor swpair)
         (with-capability (SPW|S>UPDATE_SPECIAL-FEE-TARGETS swpair targets)

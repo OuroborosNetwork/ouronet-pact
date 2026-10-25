@@ -108,7 +108,7 @@
     (defcap GOV ()                          (compose-capability (GOV|O_UI_THIRTEEN_ADMIN)))
     (defcap GOV|O_UI_THIRTEEN_ADMIN ()      (enforce-guard GOV|MD_O-UI-THIRTEEN))
     (defun GOV|Demiurgoi ()
-        (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi))
+        (let ((ref-DALOS:module{OuronetDalosV3} DALOS)) (ref-DALOS::GOV|Demiurgoi))
     )
 
     ;;{5}  FUNCTIONS
@@ -140,8 +140,8 @@
             \ and `DemiBunnies` tells them everything."
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 ;;
                 (kind:string (URC_13|AnchorKind asset-fungibility))
             )
@@ -170,7 +170,7 @@
             \ deciding independently which field to believe."
         (let
             (
-                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
                 ;;
                 (kind:string (URC_13|AnchorKind (ref-ANK::UR_ANK|Fungibility anchor-id)))
             )
@@ -202,7 +202,7 @@
             \ the two cannot drift in what a row means."
         (let
             (
-                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
                 ;;
                 (asset:string (ref-ANK::UR_ANK|AnchoredAsset anchor-id))
                 (fung:[bool] (ref-ANK::UR_ANK|Fungibility anchor-id))
@@ -234,7 +234,7 @@
             \ to see which reader an arm called was to count parentheses."
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
             )
             (if (= asset-kind "dptf")
                 (ref-AQP::URC_BenDptfAnchorsNeedSync account asset-id)
@@ -258,7 +258,7 @@
             \ button and bill the user once per anchor for one piece of work."
         (let
             (
-                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
                 ;;
                 (row:object (URC_13|AnchorRow anchor-id))
             )
@@ -293,7 +293,7 @@
             \ eventually believe the wrong one."
         (let
             (
-                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
                 ;;
                 (row:object (URC_13|AnchorRow anchor-id))
                 (fung:[bool] (ref-ANK::UR_ANK|Fungibility anchor-id))
@@ -354,7 +354,7 @@
             \ point read. Not `try`-composable: RULES.md rule 5."
         (let
             (
-                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
             )
             (map (lambda (a:string) (URC_13|AnchorRow a)) (ref-ANK::URH_ANK|AllAnchorIds))
         )
@@ -370,7 +370,7 @@
             \ three, and the filter predicate lives in two places."
         (let
             (
-                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
             )
             (map
                 (lambda (a:string) (URC_13|AnchorDetail a account))
@@ -402,7 +402,7 @@
             \ form."
         (let
             (
-                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
                 ;;
                 (all-anchors:[string] (ref-ANK::URH_ANK|AllAnchorIds))
             )
@@ -477,10 +477,10 @@
             \ duplicate asset in the picker is indistinguishable from two real assets."
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-SWP:module{SwapperV4} SWP)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-SWP:module{SwapperV5} SWP)
                 (ref-U|CT:module{OuronetConstantsV2} U|CT)
-                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
                 ;;
                 (owned:[string] (ref-DPTF::URH_OwnedTrueFungibles account))
                 (bar:string (ref-U|CT::CT_BAR))
@@ -551,8 +551,8 @@
             \ at 1,500,000, so this is `/local` only and needs a generous limit."
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (+
                 (+
@@ -582,7 +582,7 @@
             \ near-identical inline objects."
         (let
             (
-                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
                 ;;
                 (named:object (URC_13|AssetName asset-id asset-fungibility))
             )

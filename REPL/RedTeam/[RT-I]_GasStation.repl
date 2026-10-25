@@ -265,8 +265,8 @@
 (print "--- [RT-I-001f - what the unvalidated tail actually COSTS the attacker · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
         (patron:string KST.ANHD)
     )
     (let
@@ -333,8 +333,8 @@
 (print "--- [RT-I-001g - the exemption jumped over a guard that already said this · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
         (smart:string KC.BJ)
     )
     ;;XE_CollectIgnis is now P|UEV_IMC-protected, so a bare REPL call cannot reach the billing
@@ -384,7 +384,7 @@
 (print "--- [RT-I-001h - WHICH accounts are gassless, against the stated design · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (user-smart:string KC.BJ)
     )
     (map print
@@ -436,8 +436,8 @@
 (print "--- [RT-I-001i - why the one-line fix is NOT safe · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-SWP:module{SwapperV4} SWP)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-SWP:module{SwapperV5} SWP)
     )
     (map print
         [

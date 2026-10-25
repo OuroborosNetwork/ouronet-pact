@@ -24,7 +24,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -208,9 +208,9 @@
     (defun A_BunnyRGBSet (patron:string kbn-id:string)
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-                (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+                (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
                 ;;
                 ;;CORRECTED 2026-10-02: was <(* 0.9R)>. Pact's lexer splits at the
                 ;;digit->letter boundary, so <0.9R> and <0.9 R> are the SAME
@@ -281,7 +281,7 @@
             (
                 (ref-U|LST:module{StringProcessorV2} U|LST)
                 (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-                (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+                (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
                 ;;
                 (l:integer (length mdm))
                 (legendary:[integer] [25 175 274 388 407 873 880 954 1033 1095])

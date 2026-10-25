@@ -51,7 +51,7 @@
    },
    {
     "name": "social",
-    "type": "[object{BrandingV2.SocialSchema}]"
+    "type": "[object{BrandingV3.SocialSchema}]"
    }
   ],
   "ATS.HOT-RBT|C_UpgradeBranding": [
@@ -781,7 +781,7 @@
    },
    {
     "name": "social",
-    "type": "[object{BrandingV2.SocialSchema}]"
+    "type": "[object{BrandingV3.SocialSchema}]"
    }
   ],
   "TS01-C1.DPOF|C_UpgradeBranding": [
@@ -1475,7 +1475,7 @@
    },
    {
     "name": "social",
-    "type": "[object{BrandingV2.SocialSchema}]"
+    "type": "[object{BrandingV3.SocialSchema}]"
    }
   ],
   "TS01-C1.DPTF|C_UpgradeBranding": [
@@ -2235,7 +2235,7 @@
    },
    {
     "name": "social",
-    "type": "[object{BrandingV2.SocialSchema}]"
+    "type": "[object{BrandingV3.SocialSchema}]"
    }
   ],
   "TS01-C2.ATS|C_UpdateRoyalty": [
@@ -2439,7 +2439,7 @@
    },
    {
     "name": "social",
-    "type": "[object{BrandingV2.SocialSchema}]"
+    "type": "[object{BrandingV3.SocialSchema}]"
    }
   ],
   "TS01-C2.ATS|HOT-RBT|C_UpgradeBranding": [
@@ -3183,7 +3183,7 @@
    },
    {
     "name": "slippage-bounds",
-    "type": "object{SwapperUsageV3.Slippage}"
+    "type": "object{SwapperUsageV4.Slippage}"
    }
   ],
   "TS01-C3.SWP|C_AddFrozenLiquidity": [
@@ -3365,7 +3365,7 @@
    },
    {
     "name": "pool-tokens",
-    "type": "[object{SwapperV4.PoolTokens}]"
+    "type": "[object{SwapperV5.PoolTokens}]"
    },
    {
     "name": "fee-lp",
@@ -3391,7 +3391,7 @@
    },
    {
     "name": "pool-tokens",
-    "type": "[object{SwapperV4.PoolTokens}]"
+    "type": "[object{SwapperV5.PoolTokens}]"
    },
    {
     "name": "fee-lp",
@@ -3413,7 +3413,7 @@
    },
    {
     "name": "pool-tokens",
-    "type": "[object{SwapperV4.PoolTokens}]"
+    "type": "[object{SwapperV5.PoolTokens}]"
    },
    {
     "name": "fee-lp",
@@ -3517,7 +3517,7 @@
    },
    {
     "name": "slippage-bounds",
-    "type": "object{SwapperUsageV3.Slippage}"
+    "type": "object{SwapperUsageV4.Slippage}"
    }
   ],
   "TS01-C3.SWP|C_RemoveLiquidity": [
@@ -3591,7 +3591,7 @@
    },
    {
     "name": "slippage-bounds",
-    "type": "object{SwapperUsageV3.Slippage}"
+    "type": "object{SwapperUsageV4.Slippage}"
    }
   ],
   "TS01-C3.SWP|C_SmartSwapNoSlippage": [
@@ -3617,7 +3617,7 @@
    },
    {
     "name": "bundle",
-    "type": "object{SwapperUsageV3.SmartSwapPathBundle}"
+    "type": "object{SwapperUsageV4.SmartSwapPathBundle}"
    }
   ],
   "TS01-C3.SWP|C_SmartSwapWithSlippage": [
@@ -3643,11 +3643,11 @@
    },
    {
     "name": "slippage-bounds",
-    "type": "object{SwapperUsageV3.Slippage}"
+    "type": "object{SwapperUsageV4.Slippage}"
    },
    {
     "name": "bundle",
-    "type": "object{SwapperUsageV3.SmartSwapPathBundle}"
+    "type": "object{SwapperUsageV4.SmartSwapPathBundle}"
    }
   ],
   "TS01-C3.SWP|C_ToggleAddLiquidity": [
@@ -3771,7 +3771,7 @@
    },
    {
     "name": "social",
-    "type": "[object{BrandingV2.SocialSchema}]"
+    "type": "[object{BrandingV3.SocialSchema}]"
    }
   ],
   "TS01-C3.SWP|C_UpdatePendingBrandingLPs": [
@@ -3805,7 +3805,7 @@
    },
    {
     "name": "social",
-    "type": "[object{BrandingV2.SocialSchema}]"
+    "type": "[object{BrandingV3.SocialSchema}]"
    }
   ],
   "TS01-C3.SWP|C_UpdateSpecialFeeTargets": [
@@ -3823,7 +3823,7 @@
    },
    {
     "name": "targets",
-    "type": "[object{SwapperV4.FeeSplit}]"
+    "type": "[object{SwapperV5.FeeSplit}]"
    }
   ],
   "TS01-C3.SWP|C_UpgradeBranding": [
@@ -4111,7 +4111,7 @@
    },
    {
     "name": "pool-tokens",
-    "type": "[object{SwapperV4.PoolTokens}]"
+    "type": "[object{SwapperV5.PoolTokens}]"
    },
    {
     "name": "fee-lp",
@@ -4137,7 +4137,7 @@
    },
    {
     "name": "pool-tokens",
-    "type": "[object{SwapperV4.PoolTokens}]"
+    "type": "[object{SwapperV5.PoolTokens}]"
    },
    {
     "name": "fee-lp",
@@ -4159,7 +4159,7 @@
    },
    {
     "name": "pool-tokens",
-    "type": "[object{SwapperV4.PoolTokens}]"
+    "type": "[object{SwapperV5.PoolTokens}]"
    },
    {
     "name": "fee-lp",
@@ -5471,7 +5471,7 @@
    },
    {
     "name": "social",
-    "type": "[object{BrandingV2.SocialSchema}]"
+    "type": "[object{BrandingV3.SocialSchema}]"
    }
   ],
   "TS02-C1.DPSF|C_UpdateSetNonce": [
@@ -5849,7 +5849,7 @@
    },
    {
     "name": "removable-nonces-obj",
-    "type": "object{DpdcManagementV2.RemovableNonces}"
+    "type": "object{DpdcManagementV3.RemovableNonces}"
    }
   ],
   "TS02-C1.DPSF|Cp_WipeSlice": [
@@ -5867,7 +5867,7 @@
    },
    {
     "name": "removable-nonces-obj",
-    "type": "object{DpdcManagementV2.RemovableNonces}"
+    "type": "object{DpdcManagementV3.RemovableNonces}"
    }
   ],
   "TS02-C2.DPNF|CC_WipeHeavy": [
@@ -7001,7 +7001,7 @@
    },
    {
     "name": "social",
-    "type": "[object{BrandingV2.SocialSchema}]"
+    "type": "[object{BrandingV3.SocialSchema}]"
    }
   ],
   "TS02-C2.DPNF|C_UpdateSetNonce": [
@@ -7353,7 +7353,7 @@
    },
    {
     "name": "removable-nonces-obj",
-    "type": "object{DpdcManagementV2.RemovableNonces}"
+    "type": "object{DpdcManagementV3.RemovableNonces}"
    }
   ],
   "TS02-C2.DPNF|Cp_WipeSlice": [
@@ -7371,7 +7371,7 @@
    },
    {
     "name": "removable-nonces-obj",
-    "type": "object{DpdcManagementV2.RemovableNonces}"
+    "type": "object{DpdcManagementV3.RemovableNonces}"
    }
   ],
   "TS02-C3.AQP-ANK|C_IssueNonFungibleAnchor": [
@@ -7854,6 +7854,20 @@
     "type": "integer"
    }
   ],
+  "TS02-C3.AQP-FVT|CC_LatchStreamEligible": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "executor",
+    "type": "string"
+   },
+   {
+    "name": "fvt-id",
+    "type": "string"
+   }
+  ],
   "TS02-C3.AQP-FVT|CC_SweepBegin": [
    {
     "name": "patron",
@@ -8142,6 +8156,28 @@
    {
     "name": "common-denominator",
     "type": "string"
+   }
+  ],
+  "TS02-C3.AQP-FVT|C_SetMinInjectAmount": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "executor",
+    "type": "string"
+   },
+   {
+    "name": "fvt-id",
+    "type": "string"
+   },
+   {
+    "name": "reward-dptf-id",
+    "type": "string"
+   },
+   {
+    "name": "min-inject-amount",
+    "type": "decimal"
    }
   ],
   "TS02-C3.AQP-FVT|C_SetMosaic": [
@@ -9508,6 +9544,20 @@
     "type": "decimal"
    }
   ],
+  "TS02-C3.AQP-SCR|C_LockScoreDrift": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "executor",
+    "type": "string"
+   },
+   {
+    "name": "score-id",
+    "type": "string"
+   }
+  ],
   "TS02-C3.AQP-SCR|C_RotateScoreOwnership": [
    {
     "name": "patron",
@@ -10498,6 +10548,16 @@
     "type": "string"
    }
   ],
+  "AQP-INFO.INFO_AQP-FVT|LatchStreamEligible": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "fvt-id",
+    "type": "string"
+   }
+  ],
   "AQP-INFO.INFO_AQP-FVT|RotateOwnership": [
    {
     "name": "patron",
@@ -10524,6 +10584,24 @@
    {
     "name": "common-denominator",
     "type": "string"
+   }
+  ],
+  "AQP-INFO.INFO_AQP-FVT|SetMinInjectAmount": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "fvt-id",
+    "type": "string"
+   },
+   {
+    "name": "reward-dptf-id",
+    "type": "string"
+   },
+   {
+    "name": "min-inject-amount",
+    "type": "decimal"
    }
   ],
   "AQP-INFO.INFO_AQP-FVT|SetMosaic": [
@@ -10775,7 +10853,7 @@
    },
    {
     "name": "legs",
-    "type": "[object{AcquisitionSchemasV1.VCT|VacateNonceLeg}]"
+    "type": "[object{AcquisitionSchemasV3.VCT|VacateNonceLeg}]"
    }
   ],
   "AQP-INFO.INFO_AQP-POOL|BatchDrainOrtoFungible": [
@@ -10793,7 +10871,7 @@
    },
    {
     "name": "legs",
-    "type": "[object{AcquisitionSchemasV1.VCT|VacateNonceLeg}]"
+    "type": "[object{AcquisitionSchemasV3.VCT|VacateNonceLeg}]"
    }
   ],
   "AQP-INFO.INFO_AQP-POOL|BatchDrainTrueFungible": [
@@ -10811,7 +10889,7 @@
    },
    {
     "name": "legs",
-    "type": "[object{AcquisitionSchemasV1.VCT|VacateTfLeg}]"
+    "type": "[object{AcquisitionSchemasV3.VCT|VacateTfLeg}]"
    }
   ],
   "AQP-INFO.INFO_AQP-POOL|BatchVacateCollectables": [
@@ -10833,7 +10911,7 @@
    },
    {
     "name": "legs",
-    "type": "[object{AcquisitionSchemasV1.VCT|VacateNonceLeg}]"
+    "type": "[object{AcquisitionSchemasV3.VCT|VacateNonceLeg}]"
    }
   ],
   "AQP-INFO.INFO_AQP-POOL|BatchVacateOrtoFungible": [
@@ -10851,7 +10929,7 @@
    },
    {
     "name": "legs",
-    "type": "[object{AcquisitionSchemasV1.VCT|VacateNonceLeg}]"
+    "type": "[object{AcquisitionSchemasV3.VCT|VacateNonceLeg}]"
    }
   ],
   "AQP-INFO.INFO_AQP-POOL|BatchVacateTrueFungible": [
@@ -10869,7 +10947,7 @@
    },
    {
     "name": "legs",
-    "type": "[object{AcquisitionSchemasV1.VCT|VacateTfLeg}]"
+    "type": "[object{AcquisitionSchemasV3.VCT|VacateTfLeg}]"
    }
   ],
   "AQP-INFO.INFO_AQP-POOL|BeginScoreRevoke": [
@@ -10963,15 +11041,15 @@
    },
    {
     "name": "tf-lanes",
-    "type": "[object{AcquisitionSchemasV1.VCT|VacateTfLane}]"
+    "type": "[object{AcquisitionSchemasV3.VCT|VacateTfLane}]"
    },
    {
     "name": "of-lanes",
-    "type": "[object{AcquisitionSchemasV1.VCT|VacateNonceLane}]"
+    "type": "[object{AcquisitionSchemasV3.VCT|VacateNonceLane}]"
    },
    {
     "name": "coll-lanes",
-    "type": "[object{AcquisitionSchemasV1.VCT|VacateNonceLane}]"
+    "type": "[object{AcquisitionSchemasV3.VCT|VacateNonceLane}]"
    },
    {
     "name": "coll-son",
@@ -11822,6 +11900,16 @@
    {
     "name": "mx-frozen",
     "type": "decimal"
+   }
+  ],
+  "AQP-INFO.INFO_AQP-SCR|LockScoreDrift": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "score-id",
+    "type": "string"
    }
   ],
   "AQP-INFO.INFO_AQP-SCR|RotateScoreOwnership": [
@@ -14077,7 +14165,7 @@
    },
    {
     "name": "pool-tokens",
-    "type": "[object{SwapperV4.PoolTokens}]"
+    "type": "[object{SwapperV5.PoolTokens}]"
    },
    {
     "name": "fee-lp",
@@ -14103,7 +14191,7 @@
    },
    {
     "name": "pool-tokens",
-    "type": "[object{SwapperV4.PoolTokens}]"
+    "type": "[object{SwapperV5.PoolTokens}]"
    },
    {
     "name": "fee-lp",
@@ -14129,7 +14217,7 @@
    },
    {
     "name": "pool-tokens",
-    "type": "[object{SwapperV4.PoolTokens}]"
+    "type": "[object{SwapperV5.PoolTokens}]"
    },
    {
     "name": "fee-lp",
@@ -14151,7 +14239,7 @@
    },
    {
     "name": "pool-tokens",
-    "type": "[object{SwapperV4.PoolTokens}]"
+    "type": "[object{SwapperV5.PoolTokens}]"
    },
    {
     "name": "fee-lp",
@@ -14173,7 +14261,7 @@
    },
    {
     "name": "pool-tokens",
-    "type": "[object{SwapperV4.PoolTokens}]"
+    "type": "[object{SwapperV5.PoolTokens}]"
    },
    {
     "name": "fee-lp",
@@ -14199,7 +14287,7 @@
    },
    {
     "name": "pool-tokens",
-    "type": "[object{SwapperV4.PoolTokens}]"
+    "type": "[object{SwapperV5.PoolTokens}]"
    },
    {
     "name": "fee-lp",
@@ -14295,7 +14383,7 @@
    },
    {
     "name": "slippage-bounds",
-    "type": "object{SwapperUsageV3.Slippage}"
+    "type": "object{SwapperUsageV4.Slippage}"
    }
   ],
   "INFO-ONE.INFO_SWP|RemoveLiquidity": [
@@ -14369,7 +14457,7 @@
    },
    {
     "name": "slippage-bounds",
-    "type": "object{SwapperUsageV3.Slippage}"
+    "type": "object{SwapperUsageV4.Slippage}"
    }
   ],
   "INFO-ONE.INFO_SWP|SmartSwapNoSlippage": [
@@ -14417,7 +14505,7 @@
    },
    {
     "name": "bundle",
-    "type": "object{SwapperUsageV3.SmartSwapPathBundle}"
+    "type": "object{SwapperUsageV4.SmartSwapPathBundle}"
    }
   ],
   "INFO-ONE.INFO_SWP|SmartSwapWithSlippage": [
@@ -14443,7 +14531,7 @@
    },
    {
     "name": "slippage-bounds",
-    "type": "object{SwapperUsageV3.Slippage}"
+    "type": "object{SwapperUsageV4.Slippage}"
    }
   ],
   "INFO-ONE.INFO_SWP|SmartSwapWithSlippageBundle": [
@@ -14469,11 +14557,11 @@
    },
    {
     "name": "slippage-bounds",
-    "type": "object{SwapperUsageV3.Slippage}"
+    "type": "object{SwapperUsageV4.Slippage}"
    },
    {
     "name": "bundle",
-    "type": "object{SwapperUsageV3.SmartSwapPathBundle}"
+    "type": "object{SwapperUsageV4.SmartSwapPathBundle}"
    }
   ],
   "INFO-ONE.INFO_SWP|ToggleAddLiquidity": [
@@ -15383,7 +15471,7 @@
    },
    {
     "name": "ico",
-    "type": "object{IgnisCollectorV3.OutputCumulator}"
+    "type": "object{IgnisCollectorV4.OutputCumulator}"
    }
   ],
   "INFO-TWO.INFO_DPDC-MNG|WipeFull": [
@@ -15401,7 +15489,7 @@
    },
    {
     "name": "plan",
-    "type": "object{DpdcManagementV2.DPDC-MNG|WipeSlicePlan}"
+    "type": "object{DpdcManagementV3.DPDC-MNG|WipeSlicePlan}"
    }
   ],
   "INFO-TWO.INFO_DPDC-MNG|WipeMulti": [
@@ -15419,7 +15507,7 @@
    },
    {
     "name": "obj",
-    "type": "object{DpdcManagementV2.RemovableNonces}"
+    "type": "object{DpdcManagementV3.RemovableNonces}"
    },
    {
     "name": "label",
@@ -15497,7 +15585,7 @@
    },
    {
     "name": "ico",
-    "type": "object{IgnisCollectorV3.OutputCumulator}"
+    "type": "object{IgnisCollectorV4.OutputCumulator}"
    }
   ],
   "INFO-TWO.INFO_DPDC-R|Toggle": [
@@ -15523,7 +15611,7 @@
    },
    {
     "name": "ico",
-    "type": "object{IgnisCollectorV3.OutputCumulator}"
+    "type": "object{IgnisCollectorV4.OutputCumulator}"
    },
    {
     "name": "toggle",
@@ -16637,7 +16725,7 @@
    },
    {
     "name": "social",
-    "type": "[object{BrandingV2.SocialSchema}]"
+    "type": "[object{BrandingV3.SocialSchema}]"
    }
   ],
   "INFO-TWO.INFO_DPNF|UpdateSetNonce": [
@@ -16951,7 +17039,7 @@
    },
    {
     "name": "plan",
-    "type": "object{DpdcManagementV2.DPDC-MNG|WipeSlicePlan}"
+    "type": "object{DpdcManagementV3.DPDC-MNG|WipeSlicePlan}"
    }
   ],
   "INFO-TWO.INFO_DPNF|WipeHeavy": [
@@ -17001,7 +17089,7 @@
    },
    {
     "name": "removable-nonces-obj",
-    "type": "object{DpdcManagementV2.RemovableNonces}"
+    "type": "object{DpdcManagementV3.RemovableNonces}"
    }
   ],
   "INFO-TWO.INFO_DPNF|WipeSlice": [
@@ -17019,7 +17107,7 @@
    },
    {
     "name": "removable-nonces-obj",
-    "type": "object{DpdcManagementV2.RemovableNonces}"
+    "type": "object{DpdcManagementV3.RemovableNonces}"
    }
   ],
   "INFO-TWO.INFO_DPSF|AddQuantity": [
@@ -18137,7 +18225,7 @@
    },
    {
     "name": "social",
-    "type": "[object{BrandingV2.SocialSchema}]"
+    "type": "[object{BrandingV3.SocialSchema}]"
    }
   ],
   "INFO-TWO.INFO_DPSF|UpdateSetNonce": [
@@ -18451,7 +18539,7 @@
    },
    {
     "name": "plan",
-    "type": "object{DpdcManagementV2.DPDC-MNG|WipeSlicePlan}"
+    "type": "object{DpdcManagementV3.DPDC-MNG|WipeSlicePlan}"
    }
   ],
   "INFO-TWO.INFO_DPSF|WipeHeavy": [
@@ -18523,7 +18611,7 @@
    },
    {
     "name": "removable-nonces-obj",
-    "type": "object{DpdcManagementV2.RemovableNonces}"
+    "type": "object{DpdcManagementV3.RemovableNonces}"
    }
   ],
   "INFO-TWO.INFO_DPSF|WipeSlice": [
@@ -18541,7 +18629,7 @@
    },
    {
     "name": "removable-nonces-obj",
-    "type": "object{DpdcManagementV2.RemovableNonces}"
+    "type": "object{DpdcManagementV3.RemovableNonces}"
    }
   ],
   "INFO-TWO.INFO_EQUITY|IssueCompany": [
@@ -18981,6 +19069,7 @@
   "TS02-C3.AQP-FVT|CC_Inject": "AQP-INFO.INFO_AQP-FVT|Inject",
   "TS02-C3.AQP-FVT|CC_InjectFinalize": "AQP-INFO.INFO_AQP-FVT|InjectFinalize",
   "TS02-C3.AQP-FVT|CC_InjectStream": "AQP-INFO.INFO_AQP-FVT|InjectStream",
+  "TS02-C3.AQP-FVT|CC_LatchStreamEligible": "AQP-INFO.INFO_AQP-FVT|LatchStreamEligible",
   "TS02-C3.AQP-FVT|CC_SweepBegin": "AQP-INFO.INFO_AQP-FVT|SweepBegin",
   "TS02-C3.AQP-FVT|CC_SweepRevokeAnchor": "AQP-INFO.INFO_AQP-FVT|SweepRevokeAnchor",
   "TS02-C3.AQP-FVT|CC_UnstaleMyScores": "AQP-INFO.INFO_AQP-FVT|UnstaleMyScores",
@@ -18996,6 +19085,7 @@
   "TS02-C3.AQP-FVT|C_IssueMultipletFamily": "AQP-INFO.INFO_AQP-FVT|IssueMultipletFamily",
   "TS02-C3.AQP-FVT|C_RotateOwnership": "AQP-INFO.INFO_AQP-FVT|RotateOwnership",
   "TS02-C3.AQP-FVT|C_SetCommonDenominator": "AQP-INFO.INFO_AQP-FVT|SetCommonDenominator",
+  "TS02-C3.AQP-FVT|C_SetMinInjectAmount": "AQP-INFO.INFO_AQP-FVT|SetMinInjectAmount",
   "TS02-C3.AQP-FVT|C_SetMosaic": "AQP-INFO.INFO_AQP-FVT|SetMosaic",
   "TS02-C3.AQP-FVT|C_SetQualitySplit": "AQP-INFO.INFO_AQP-FVT|SetQualitySplit",
   "TS02-C3.AQP-FVT|C_SetSplitMode": "AQP-INFO.INFO_AQP-FVT|SetSplitMode",
@@ -19056,6 +19146,7 @@
   "TS02-C3.AQP-SCR|C_IssueSingleScoreModel": "AQP-INFO.INFO_AQP-SCR|IssueSingleScoreModel",
   "TS02-C3.AQP-SCR|C_IssueTriplet": "AQP-INFO.INFO_AQP-SCR|IssueTriplet",
   "TS02-C3.AQP-SCR|C_IssueTrueFungibleScore": "AQP-INFO.INFO_AQP-SCR|IssueTrueFungibleScore",
+  "TS02-C3.AQP-SCR|C_LockScoreDrift": "AQP-INFO.INFO_AQP-SCR|LockScoreDrift",
   "TS02-C3.AQP-SCR|C_RotateScoreOwnership": "AQP-INFO.INFO_AQP-SCR|RotateScoreOwnership",
   "TS02-DPAD.DEMIPAD|C_Deposit": "INFO-TWO.INFO_DEMIPAD|Deposit",
   "TS02-DPAD.DEMIPAD|C_FuelNonFungible": "INFO-TWO.INFO_DEMIPAD|FuelNonFungible",
@@ -19068,5 +19159,5 @@
   "TS02-DPAD.DEMIPAD|C_RetrieveTrueFungible": "INFO-TWO.INFO_DEMIPAD|RetrieveTrueFungible",
   "TS02-DPAD.DEMIPAD|C_Withdraw": "INFO-TWO.INFO_DEMIPAD|Withdraw"
  },
- "surfaceHash": "18073c988afc8069"
+ "surfaceHash": "f0b0cf91e433c90c"
 }

@@ -71,7 +71,7 @@
     (defcap GOV ()                          (compose-capability (GOV|O_UI_FOUR_ADMIN)))
     (defcap GOV|O_UI_FOUR_ADMIN ()          (enforce-guard GOV|MD_O-UI-FOUR))
     (defun GOV|Demiurgoi ()
-        (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi))
+        (let ((ref-DALOS:module{OuronetDalosV3} DALOS)) (ref-DALOS::GOV|Demiurgoi))
     )
 
     ;;{3}  CONSTANTS
@@ -110,7 +110,7 @@
         (let
             (
                 (ref-U|CT:module{OuronetConstantsV2} U|CT)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 ;;
                 (dollarz-contributed:decimal (STOAICO.UR_User1 account))
                 (ico-dollarz-contributed:decimal (STOAICO.UR_Global1))

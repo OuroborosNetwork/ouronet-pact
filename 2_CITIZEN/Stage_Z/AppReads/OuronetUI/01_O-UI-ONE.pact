@@ -88,7 +88,7 @@
     (defcap GOV|O_UI_ONE_ADMIN ()      (enforce-guard GOV|MD_O-UI-ONE))
     ;;{G5}  functions
     (defun GOV|Demiurgoi ()
-        (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi))
+        (let ((ref-DALOS:module{OuronetDalosV3} DALOS)) (ref-DALOS::GOV|Demiurgoi))
     )
 
     ;;<=========================================================================>
@@ -171,8 +171,8 @@
             \ SilverStoaPillar, GoldenStoaPillar. Every zone that needs a pair id calls this, \
             \ so the policy lives in exactly one place."
         (let
-            ( (ref-DALOS:module{OuronetDalosV2} DALOS)
-              (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF) )
+            ( (ref-DALOS:module{OuronetDalosV3} DALOS)
+              (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF) )
             [ (UC_PickId (ref-DPTF::UR_RewardBearingToken (ref-DALOS::UR_AurynID))
                          OuronetIdsV1.IDX_AURYNDEX)
               (UC_PickId (ref-DPTF::UR_RewardBearingToken (ref-DALOS::UR_EliteAurynID))
@@ -193,14 +193,14 @@
             \ ATS::URC_Index and fails several frames later naming the wrong thing. These \
             \ literals were known-good on mainnet for months; the derivation is unproven there."
         (let*
-            ( (ref-ATS:module{AutostakeV3} ATS)
+            ( (ref-ATS:module{AutostakeV4} ATS)
               (ids:[string] (URC_IndexIds))
               (a:string (at 0 ids))
               (e:string (at 1 ids))
               (s:string (at 2 ids))
               (g:string (at 3 ids))
-              (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-              (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+              (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+              (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
               (hid:string (ref-DPTF::UR_Hibernation
                             (ref-ATS::UR_ColdRewardBearingToken g))) )
             {"zone-ok"  : true
@@ -226,8 +226,8 @@
             \ and on the STOA PID oracle -- the two things most likely to be absent on a fresh \
             \ chain, which is why this is its own zone rather than folded into zone 1."
         (let*
-            ( (ref-ATS:module{AutostakeV3} ATS)
-              (ref-SWPI:module{SwapperIssueV4} SWPI)
+            ( (ref-ATS:module{AutostakeV4} ATS)
+              (ref-SWPI:module{SwapperIssueV5} SWPI)
               (ref-DIA:module{DiaStoaPidV2} U|CT)
               (ids:[string] (URC_IndexIds))
               (ih-a:decimal (ref-ATS::URC_Index (at 0 ids)))
@@ -258,10 +258,10 @@
             \ reason it is not folded in with the global zones."
         (let*
             ( (ref-U|CT:module{OuronetConstantsV2} U|CT)
-              (ref-DALOS:module{OuronetDalosV2} DALOS)
+              (ref-DALOS:module{OuronetDalosV3} DALOS)
               (ref-ELITE:module{EliteV2} ELITE)
-              (ref-ATS:module{AutostakeV3} ATS)
-              (ref-SWPI:module{SwapperIssueV4} SWPI)
+              (ref-ATS:module{AutostakeV4} ATS)
+              (ref-SWPI:module{SwapperIssueV5} SWPI)
               (total:decimal (ref-ELITE::URC_EliteAurynzSupply account))
               (et:[decimal] (ref-U|CT::CT_ET))
               (et-last:decimal (at (- (length et) 1) et))
@@ -299,8 +299,8 @@
             \ wanted, it belongs in its own function so that needing it cannot take the rest \
             \ of the zone down with it."
         (let
-            ( (ref-DALOS:module{OuronetDalosV2} DALOS)
-              (ref-SWP:module{SwapperV4} SWP) )
+            ( (ref-DALOS:module{OuronetDalosV3} DALOS)
+              (ref-SWP:module{SwapperV5} SWP) )
             {"zone-ok"          : true
             ,"ignis-collection" : (if (ref-DALOS::UR_VirtualToggle) "ON" "OFF")
             ,"stoa-collection"  : (if (ref-DALOS::UR_NativeToggle) "ON" "OFF")
@@ -315,7 +315,7 @@
     (defun URC_ResidentIgnis:string (account:string)
         @doc "The account's resident IGNIS. One read, no composition -- kept separate because \
             \ it is the single value the header needs that cannot fail for any global reason."
-        (let ((ref-DALOS:module{OuronetDalosV2} DALOS))
+        (let ((ref-DALOS:module{OuronetDalosV3} DALOS))
             (UC_Amount (ref-DALOS::UR_TF_AccountSupply account false))
         )
     )

@@ -50,12 +50,12 @@
         (lumy:string KST.LUMY)
         (anhd:string KST.ANHD)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
         (anchor-id:string (ref-U|DALOS::UDC_Makeid "AurynRain"))
         (silver-class:string (ref-U|DALOS::UDC_Makeid "SilverSnakePower"))
         (silver-score:string (ref-U|DALOS::UDC_Makeid "SilverSnakePower"))
@@ -95,7 +95,7 @@
         ;;is a statement about the FEE and not about whether the sweep ran.
         (let
             (
-                (sweep-quote:object{OuronetInfoV2.ClientInfo} (AQP-INFO.INFO_AQP-FVT|SweepBegin lumy anchor-id))
+                (sweep-quote:object{OuronetInfoV3.ClientInfo} (AQP-INFO.INFO_AQP-FVT|SweepBegin lumy anchor-id))
                 (gas-pre:decimal (ref-DPTF::UR_AccountSupply "GAS-98c486052a51" lumy))
             )
         (print (format "<(CC01 AQP-FVT|CC_SweepBegin)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|CC_SweepBegin lumy (AQP-ANK.URC_AnchorableAssetOwner (AQP-ANK.UR_ANK|AnchoredAsset anchor-id) (AQP-ANK.UR_ANK|Fungibility anchor-id)) anchor-id)]))
@@ -158,12 +158,12 @@
         (lumy:string KST.LUMY)
         (anhd:string KST.ANHD)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
         (anchor-id:string (ref-U|DALOS::UDC_Makeid "AurynRain"))
         (silver-class:string (ref-U|DALOS::UDC_Makeid "SilverSnakePower"))
         (silver-score:string (ref-U|DALOS::UDC_Makeid "SilverSnakePower"))
@@ -198,7 +198,7 @@
         ;;`CCp_` marks it a Hydra parallel-slice recipe: the gas station pays, which is why it is free.
         (let
             (
-                (chunk-quote:object{OuronetInfoV2.ClientInfo}
+                (chunk-quote:object{OuronetInfoV3.ClientInfo}
                     (AQP-INFO.INFO_AQP-FVT|SweepRecomputeChunk lumy anchor-id 10))
                 (gas-pre:decimal (ref-DPTF::UR_AccountSupply "GAS-98c486052a51" lumy))
             )

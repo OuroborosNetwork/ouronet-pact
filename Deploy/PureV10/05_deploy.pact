@@ -1,28 +1,39 @@
 ;; ---------------------------------------------------------------------------
-;; OURONET DEPLOY -- file 21 of 24
-;; This is STEP 21 of 25 in the full sequence (see Deploy/MANIFEST.md).
-;; Steps 1-20 must have run first, including the init steps between deploys.
-;; 3 source file(s), 221,896 gas measured in the REPL gas model, 299,441 bytes
+;; OURONET DEPLOY -- file 5 of 22
+;; This is STEP 5 of 22 in the full sequence (see Deploy/MANIFEST.md).
+;; Steps 1-4 must have run first, including the init steps between deploys.
+;; 3 source file(s), 231,586 gas measured in the REPL gas model, 227,464 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
-;;   1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact
-;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact
-;;   1_SOVEREIGN/STAGE_02/3_Talos/05_TS02-DPAD.pact
+;;   1_SOVEREIGN/STAGE_01/2_Core/13_OUROBOROS.pact
+;;   1_SOVEREIGN/STAGE_01/2_Core/14_SWPT.pact
+;;   1_SOVEREIGN/STAGE_01/2_Core/15_SWP.pact
 ;;
-;; TOTAL: 2 interface(s), 3 module(s), 4 table(s)
+;; TOTAL: 3 interface(s), 3 module(s), 14 table(s)
 ;; What it DEPLOYS, in load order:
-;;   -- 1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact
-;;      interface  TalosStageTwo_ClientThreeV2
-;;      module     TS02-C3
+;;   -- 1_SOVEREIGN/STAGE_01/2_Core/13_OUROBOROS.pact
+;;      interface  OuroborosV3
+;;      module     OUROBOROS
 ;;      table      P|T
 ;;      table      P|MT
-;;   -- 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact
-;;      module     AQP-INFO
-;;   -- 1_SOVEREIGN/STAGE_02/3_Talos/05_TS02-DPAD.pact
-;;      interface  TalosStageTwo_DemiPadV2
-;;      module     TS02-DPAD
+;;   -- 1_SOVEREIGN/STAGE_01/2_Core/14_SWPT.pact
+;;      interface  SwapTracerV4
+;;      module     SWPT
 ;;      table      P|T
 ;;      table      P|MT
+;;      table      SWPT|Graph
+;;      table      SWPT|PathCache
+;;      table      SWPT|TopologyVersion
+;;   -- 1_SOVEREIGN/STAGE_01/2_Core/15_SWP.pact
+;;      interface  SwapperV5
+;;      module     SWP
+;;      table      P|T
+;;      table      P|MT
+;;      table      SWP|Properties
+;;      table      SWP|Asymmetry
+;;      table      SWP|Pairs
+;;      table      SWP|Pools
+;;      table      SWP|LP
 ;;
 ;; Paste this whole file as ONE transaction. It needs the Ouronet admin signature
 ;; and the `ouronet-ns` namespace, which the first line sets.
@@ -30,14 +41,14 @@
 
 (namespace "ouronet-ns")
 
-;; ===== 1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact ================
+;; ===== 1_SOVEREIGN/STAGE_01/2_Core/13_OUROBOROS.pact ===============
+;(namespace "n_9d612bcfe2320d6ecbbaa99b47aab60138a2adea")
 ;; Deploy: load THIS file — interface(s) + module ship together.
-;; History/shared registry: 1_SOVEREIGN/STAGE_02/0_Interfaces/03_Talos.pact
+;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact
 ;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface TalosStageTwo_ClientThreeV2
-    @doc "Exposes Stage Two Third Batch of Client Functions: \
-        \ the AcquisitionPools Client Functions"
+(interface OuroborosV3
+    @doc "Exposes Functions related to the OUROBOROS Module"
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -46,6 +57,9 @@
     ;;{G3}  tables  ⟨cannot exist in an interface⟩
     ;;{G4}  capabilities
     ;;{G5}  functions
+    ;;
+    (defun GOV|ORBR|SC_STOA-NAME ())
+    (defun GOV|ORBR|GUARD ())
 
     ;;<=========================================================================>
     ;;{2}  POLICY
@@ -73,364 +87,96 @@
     ;;{5.1}  Construct [CT/UDC]
     ;;{5.2}  Compute [UC]
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    (defun URCi_IssueGenericEarningVault:object{IgnisCollectorV3.OutputCumulator}
-        (owner-konto:string vault-name:string stake-dptf-id:string reward-dptf-id:string)
-    )
+    ;;
+    ;;
+    (defun URC_ProjectedStoaLiquindex:[decimal] ())
+    (defun URCv_Compress:[decimal] (ignis-amount:decimal))
+    (defun URCv_Sublimate:decimal (ouro-amount:decimal))
+    (defun URCi_Compress:object{IgnisCollectorV4.OutputCumulator} (client:string ignis-amount:decimal))
+    (defun URCi_Fuel:object{IgnisCollectorV4.OutputCumulator} ())
+    (defun URCi_Sublimate:object{IgnisCollectorV4.OutputCumulator} (client:string target:string ouro-amount:decimal))
+    (defun URCi_SublimateV2:object{IgnisCollectorV4.OutputCumulator} (client:string target:string ouro-amount:decimal))
+    (defun URCi_WithdrawFees:object{IgnisCollectorV4.OutputCumulator} (id:string target:string))
     ;;{5.4}  Validate [UEV/CAP]
+    ;;
+    (defun UEV_Exchange ())
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
+    (defun XB_Compress:object{IgnisCollectorV4.OutputCumulator} (patron:string client:string ignis-amount:decimal))
     ;;{5.7}  User [A/C]
     ;;
-    ;;  [VCT] -- per-leg vacate. ONE transaction each, standalone, for a pool owner who wants to
-    ;;  clear a single asset leg rather than the whole pool (CC_FullVacate does that).
     ;;
-    ;;  RENAMED FROM `XB_` 2026-10-03, and the prefix was not a cosmetic error. `XB_` means
-    ;;  "protected, used inside this module AND by a forward module" -- neither is true here:
-    ;;  NOTHING in TS02-C3 calls these (measured: zero in-module callers) and no other module
-    ;;  reaches them. They are ordinary Talos client entrypoints -- (patron, executor), P|TS,
-    ;;  one core call, IGNIS on the patron, a format string -- identical in shape to every `C_`
-    ;;  below, and they were simply named after their CALLEE (`AQP-VCT::XB_Vacate*`) instead of
-    ;;  after their own band.
-    ;;
-    ;;  The consequence was not cosmetic either. `_registry.py`'s entrypoint filter is
-    ;;  `^[A-Za-z0-9|_-]*\|C{1,2}p?_[A-Za-z0-9]+$`, which an `XB_` name cannot match -- so four
-    ;;  live client operations were ABSENT from OURONET-REGISTRY.json and therefore unreachable
-    ;;  from OuronetUI, unpriced in the IGNIS sheet, and invisible to every gate built on it.
-    ;;  They were also the ONLY `X*`-named definitions in all eleven Talos modules.
-    ;;
-    (defun AQP-POOL|CC_VacateTrueFungible:string (patron:string executor:string pool-id:string))
-    (defun AQP-POOL|CC_VacateOrtoFungible:string (patron:string executor:string pool-id:string dpof-id:string))
-    (defun AQP-POOL|CC_VacateSemiFungible:string (patron:string executor:string pool-id:string dpsf-id:string))
-    (defun AQP-POOL|CC_VacateNonFungible:string (patron:string executor:string pool-id:string dpnf-id:string))
-    ;;
-    ;;  [ANK]
-    ;;
-    (defun AQP-ANK|C_RevokeBoostClass:string (patron:string executor:string boost-class-id:string))
-    (defun AQP-ANK|C_IssueTrueFungibleAnchor:string
-        (patron:string executor:string anchor-name:string dptf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dptf-amount:decimal)
-    )
-    (defun AQP-ANK|C_IssueSemiFungibleAnchor:string
-        (patron:string executor:string anchor-name:string dpsf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpsf-nonce:integer)
-    )
-    (defun AQP-ANK|C_IssueNonFungibleAnchor:string
-        (patron:string executor:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-trait-key:string dpnf-trait-value:string)
-    )
-    (defun AQP-ANK|C_IssueNonFungibleSetAnchor:string
-        (patron:string executor:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-nonce-class:integer)
-    )
-    (defun AQP-ANK|C_RevokeAnchor:string (patron:string executor:string anchor-id:string))
-    ;;
-    ;;  [AQP-SCORE]
-    ;;
-    (defun AQP-SCR|C_IssueLiquidityScore:string
-        (patron:string executor:string score-name:string precision:integer lp-denominator:string mx-frozen:decimal mx-sleeping:decimal)
-    )
-    (defun AQP-SCR|C_IssueTrueFungibleScore:string
-        (patron:string executor:string score-name:string precision:integer mx-frozen:decimal)
-    )
-    (defun AQP-SCR|C_IssueOrtoFungibleScore:string
-        (patron:string executor:string score-name:string precision:integer mx-sleeping:decimal mx-hibernated:decimal)
-    )
-    (defun AQP-SCR|C_IssueSemiFungibleScore:string
-        (patron:string executor:string score-name:string precision:integer sft-equality:bool)
-    )
-    (defun AQP-SCR|C_IssueNonFungibleScore:string
-        (patron:string executor:string score-name:string precision:integer nft-score-model:integer)
-    )
-    (defun AQP-SCR|C_RotateScoreOwnership:string (patron:string executor:string executee:string score-id:string))
-    (defun AQP-SCR|C_ControlScore:string (patron:string executor:string score-id:string new-can-upgrade:bool new-can-change-owner:bool))
-    (defun AQP-SCR|C_CreateScoreBoostClassLink:string (patron:string executor:string score-id:string boost-class-id:string))
-    (defun AQP-SCR|C_CreateScoreBoostLink:string (patron:string executor:string score-id:string boost-score-id:string))
-    (defun AQP-SCR|C_EnableDebBoost:string (patron:string executor:string score-id:string))
-    (defun AQP-SCR|C_IssueTriplet:string
-        (patron:string executor:string bronze-score-id:string silver-score-id:string golden-score-id:string)
-    )
-    (defun AQP-SCR|C_IssueSingleScoreModel:string
-        (patron:string executor:string model-name:string score-class:integer collectable-id:string precision:integer nonces:[integer] nonce-score-values:[decimal] boost-class-id:string)
-    )
-    (defun AQP-SCR|C_CombineTripletScoreModel:string
-        (patron:string executor:string model-name:string bronze-model-id:string silver-model-id:string golden-model-id:string)
-    )
-    (defun AQP-SCR|C_IssueScoreFromModel:string (patron:string executor:string model-id:string agency-name:string))
-    (defun AQP-SCR|C_IssueSemiFungibleScoreDefinition:string
-        (patron:string executor:string score-id:string dpsf-id:string nonces:[integer] nonce-score-values:[decimal])
-    )
-    (defun AQP-SCR|C_IssueNonFungibleScoreDefinition:string
-        (patron:string executor:string score-id:string dpnf-id:string trait-keys:[string] trait-values:[string] trait-score-values:[decimal])
-    )
-    (defun AQP-SCR|C_IssueNonFungibleSetScoreDefinition:string
-        (patron:string executor:string score-id:string dpnf-id:string dpnf-nonce-classes:[integer] class-score-values:[decimal])
-    )
-    ;;
-    ;;  [AQP-POOL]
-    ;;
-    (defun AQP-POOL|C_Issue:string
-        (patron:string executor:string pool-name:string asset-id:string aqp-class:integer)
-    )
-    (defun AQP-POOL|C_AddScore:string
-        (patron:string executor:string pool-id:string score-id:string)
-    )
-    (defun AQP-POOL|C_RevokeScore:string
-        (patron:string executor:string pool-id:string score-id:string)
-    )
-    (defun AQP-POOL|C_DisablePoolStake:string
-        (patron:string executor:string pool-id:string)
-    )
-    (defun AQP-POOL|C_EnablePoolStake:string
-        (patron:string executor:string pool-id:string)
-    )
-    ;;
-    (defun AQP-POOL|CC_StakeSemiFungibleCollectable:string
-        (
-            patron:string
-            executor:string
-            executee:string
-            pool-id:string
-            collectable-id:string
-            nonces:[integer]
-        )
-    )
-    (defun AQP-POOL|CC_UnstakeSemiFungibleCollectable:string
-        (
-            patron:string
-            executor:string
-            executee:string
-            pool-id:string
-            collectable-id:string
-            nonces:[integer]
-            nonce-amounts:[integer]
-        )
-    )
-    (defun AQP-POOL|CC_StakeNonFungibleCollectable:string
-        (
-            patron:string
-            executor:string
-            executee:string
-            pool-id:string
-            collectable-id:string
-            nonces:[integer]
-        )
-    )
-    (defun AQP-POOL|CC_UnstakeNonFungibleCollectable:string
-        (
-            patron:string
-            executor:string
-            executee:string
-            pool-id:string
-            collectable-id:string
-            nonces:[integer]
-            nonce-amounts:[integer]
-        )
-    )
-    ;;
-    (defun AQP-POOL|CC_StakeTrueFungible:string
-        (patron:string executor:string executee:string pool-id:string dptf-id:string amount:decimal)
-    )
-    (defun AQP-POOL|CC_UnstakeTrueFungible:string
-        (patron:string executor:string executee:string pool-id:string dptf-id:string amount:decimal)
-    )
-    (defun AQP-POOL|CC_StakeOrtoFungible:string
-        (
-            patron:string
-            executor:string
-            executee:string
-            pool-id:string
-            dpof-id:string
-            nonces:[integer]
-        )
-    )
-    (defun AQP-POOL|CC_UnstakeOrtoFungible:string
-        (
-            patron:string
-            executor:string
-            executee:string
-            pool-id:string
-            dpof-id:string
-            nonces:[integer]
-        )
-    )
-    (defun AQP-POOL|C_SyncTrueFungibleAnchors:string
-        (patron:string executee:string dptf-id:string)
-    )
-    (defun AQP-POOL|C_SyncSemiFungibleAnchors:string
-        (patron:string executee:string dpsf-id:string)
-    )
-    (defun AQP-POOL|C_SyncNonFungibleAnchors:string
-        (patron:string executee:string dpnf-id:string)
-    )
-    (defun AQP-POOL|C_AbortVacate:string
-        (patron:string executor:string pool-id:string)
-    )
-    (defun AQP-POOL|C_FinalizeVacate:string (patron:string executor:string pool-id:string))
-    (defun AQP-POOL|CC_FullVacate:string (patron:string executor:string pool-id:string))
-    (defun AQP-POOL|CCp_BatchVacateTrueFungible:string
-        (patron:string pool-id:string dptf-id:string owner-ids:[string] beneficiary-ids:[string] amounts:[decimal]))
-    (defun AQP-POOL|CCp_BatchVacateOrtoFungible:string
-        (patron:string pool-id:string dpof-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]]))
-    (defun AQP-POOL|CCp_BatchVacateCollectables:string
-        (patron:string pool-id:string collectable-id:string son:bool owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]]))
-    (defun AQP-POOL|CCp_BatchDrainTrueFungible:string
-        (patron:string pool-id:string dptf-id:string owner-ids:[string] beneficiary-ids:[string] amounts:[decimal]))
-    (defun AQP-POOL|CCp_BatchDrainOrtoFungible:string
-        (patron:string pool-id:string dpof-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]]))
-    (defun AQP-POOL|CCp_BatchDrainCollectable:string
-        (patron:string pool-id:string collectable-id:string son:bool owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]]))
-    ;;
-    ;;  [AQP-FVT]
-    ;;
-    (defun AQP-FVT|C_Issue:string
-        (patron:string executor:string fvt-name:string fvt-class:integer common-denominator:string)
-    )
-    (defun AQP-FVT|C_IssueMultipletFamily:string
-        (
-            patron:string
-            executor:string
-            token-0-id:string
-            token-1-id:string
-            token-2-id:string
-            ats-0-1-id:string
-            ats-1-2-id:string
-        )
-    )
-    (defun AQP-FVT|C_AddScoreEntity:string
-        (patron:string executor:string fvt-id:string score-entity-type:integer score-entity-id:string)
-    )
-    (defun AQP-FVT|C_AddRewardLink:string
-        (patron:string executor:string fvt-id:string reward-dptf-id:string segmentation:bool multiplet-family-id:string)
-    )
-    (defun AQP-FVT|C_ToggleScoreEntityLink:string
-        (patron:string executor:string fvt-id:string score-entity-type:integer score-entity-id:string enabled:bool)
-    )
-    (defun AQP-FVT|C_ToggleRewardLink:string
-        (patron:string executor:string fvt-id:string reward-dptf-id:string enabled:bool)
-    )
-    (defun AQP-FVT|C_SetQualitySplit:string
-        (patron:string executor:string fvt-id:string reward-dptf-id:string mode:string bronze-split:[integer] silver-split:[integer] gold-split:[integer])
-    )
-    (defun AQP-FVT|C_Control:string
-        (patron:string executor:string fvt-id:string new-can-upgrade:bool new-can-change-owner:bool)
-    )
-    (defun AQP-FVT|C_RotateOwnership:string
-        (patron:string executor:string executee:string fvt-id:string)
-    )
-    (defun AQP-FVT|C_SetCommonDenominator:string
-        (patron:string executor:string fvt-id:string common-denominator:string)
-    )
-    (defun AQP-FVT|C_SetMosaic:string
-        (patron:string executor:string fvt-id:string mosaic:bool)
-    )
-    (defun AQP-FVT|C_SetSplitMode:string
-        (patron:string executor:string fvt-id:string split-mode:string)
-    )
-    (defun AQP-FVT|C_IssueGenericEarningVault:string
-        (patron:string executor:string vault-name:string stake-dptf-id:string reward-dptf-id:string)
-    )
-    (defun AQP-FVT|CC_InjectStream:string
-        (patron:string executor:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
-    )
-    (defun AQP-FVT|CC_Inject:string
-        (patron:string executor:string fvt-id:string reward-dptf-id:string amount:decimal)
-    )
-    (defun AQP-FVT|CCp_InjectFixChunk:string
-        (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
-    )
-    (defun AQP-FVT|CC_InjectFinalize:string
-        (patron:string executor:string fvt-id:string reward-dptf-id:string amount:decimal)
-    )
-    (defun AQP-FVT|CCp_UnstaleAll:string
-        (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
-    )
-    (defun MTX-AQP|2|CC_Inject:string
-        (patron:string executor:string fvt-id:string reward-dptf-id:string amount:decimal)
-    )
-    (defun MTX-AQP|2|CC_SweepRevokeAnchor:string
-        (patron:string executor:string anchor-id:string)
-    )
-    (defun AQP-FVT|CC_SweepRevokeAnchor:string
-        (patron:string executor:string anchor-id:string)
-    )
-    (defun AQP-FVT|CC_SweepBegin:string
-        (patron:string executor:string anchor-id:string)
-    )
-    (defun AQP-FVT|CCp_SweepRecomputeChunk:string
-        (patron:string anchor-id:string chunk:integer)
-    )
-    (defun AQP-FVT|CC_UnstaleMyScores:string
-        (patron:string executor:string fvt-ids:[string])
-    )
-    (defun AQP-FVT|CC_Collect:string
-        (patron:string executor:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
-    )
-    (defun AQP-DSA|C_DefineDelegationVault:string
-        (patron:string executor:string fvt-id:string model-id:string unit-score:integer)
-    )
-    (defun AQP-DSA|CC_OpenAgency:string
-        (patron:string executor:string fvt-id:string pool-id:string score-entity-id:string fee-per-mille:integer
-         collectable-id:string stake-nonces:[integer])
-    )
-    (defun AQP-DSA|C_RecomputeCapture:string
-        (patron:string fvt-id:string score-entity-id:string)
-    )
-    (defun AQP-DSA|C_SetOracleAuth:string
-        (patron:string executor:string fvt-id:string oracle-guard:guard)
-    )
-    (defun AQP-DSA|C_OracleWrite:string
-        (patron:string fvt-id:string score-entity-id:string nodes:integer uptime:integer)
-    )
-    (defun AQP-DSA|C_WithdrawRoyalty:string
-        (patron:string executor:string fvt-id:string reward-dptf-id:string)
-    )
-    (defun AQP-DSA|C_BurnRoyalty:string
-        (patron:string executor:string fvt-id:string reward-dptf-id:string)
-    )
-    (defun AQP-DSA|C_FuelRoyalty:string
-        (patron:string executor:string fvt-id:string reward-dptf-id:string swpair:string)
-    )
-    (defun AQP-DSA|C_SetAgencyFee:string
-        (patron:string executor:string fvt-id:string score-entity-id:string fee-per-mille:integer)
-    )
-    (defun AQP-DSA|A_ToggleExternalOracle:string (patron:string executor:string on:bool))
-    (defun AQP-DSA|A_SetOracleValidity:string (patron:string executor:string seconds:integer))
+    (defun C_Compress:object{IgnisCollectorV4.OutputCumulator} (executor:string ignis-amount:decimal))
+    (defun C_Fuel:object{IgnisCollectorV4.OutputCumulator} (patron:string ))
+    (defun C_Sublimate:object{IgnisCollectorV4.OutputCumulator} (executor:string executee:string ouro-amount:decimal))
+    ;;#23H fix: C_SublimateV2 was already live/actively-used (TS01-C2's ORBR|C_SublimateV2,
+    ;;TS01-C3's Firestarter path) but missing from its own interface. Cheaper alternative to
+    ;;C_Sublimate (freeze+C_WipeSlim+unfreeze instead of transfer+burn) - added here, no
+    ;;behavioral change, the module already implements this exact signature.
+    (defun C_SublimateV2:object{IgnisCollectorV4.OutputCumulator} (executor:string executee:string ouro-amount:decimal))
+    (defun C_WithdrawFees:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string executee:string id:string))
 
 )
 ;;
-(module TS02-C3 GOV
-    @doc "TALOS Stage 2 Client Functiones Part 3 - Acquisition Pools Functions"
+(module OUROBOROS GOV
+    @doc "OUROBOROS — the OURO token / exchange core at the top of the Stage 1 stack, \
+        \ implementing OuroborosV2. It compresses IGNIS gas into OURO and sublimates OURO \
+        \ back out (C_Compress, C_Sublimate/C_SublimateV2), fuels the liquid Stoa index, \
+        \ projects the Stoa liquindex and withdraws fees (C_Fuel, C_WithdrawFees). It acts \
+        \ as the protocol's gas-to-token sink and treasury exchange."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements TalosStageTwo_ClientThreeV2)
+    (implements OuroborosV3)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
     ;;{G1}  constants
     ;;
-    ;;Defaults for AQP-FVT|C_IssueGenericEarningVault. Named rather than inlined because each one
-    ;;is a class rule a caller would otherwise have to know: getting any of them wrong builds a
-    ;;vault that looks issued and cannot be staked.
-    (defconst GV|PRECISION:integer                      6)
-    (defconst GV|MX_FROZEN:decimal                      2.0)
-    (defconst GV|POOL_CLASS_TF:integer                  1)      ;;aqp-class 1 = non-LP true fungible
-    (defconst GV|FVT_CLASS_VAULT:integer                1)      ;;fvt-class 1 = Vault
-    (defconst GV|SCORE_ENTITY_SCORE:integer             1)
-    (defconst GV|COMMON_BAR:string                      "|")
-    (defconst GOV|MD_TS02-C3                            (keyset-ref-guard (GOV|Demiurgoi)))
+    (defconst GOV|MD_ORBR                               (keyset-ref-guard (GOV|Demiurgoi)))
+    (defconst GOV|SC_ORBR                               (keyset-ref-guard ORBR|SC_KEY))
     ;;{G2}  schemas
     ;;{G3}  tables
     ;;{G4}  capabilities
-    (defcap GOV ()                                      (compose-capability (GOV|TS02-C3_ADMIN)))
-    (defcap GOV|TS02-C3_ADMIN ()                        (enforce-guard GOV|MD_TS02-C3))
+    (defcap GOV ()                                      (compose-capability (GOV|ORBR_ADMIN)))
+    (defcap GOV|ORBR_ADMIN ()
+        (enforce-one
+            "ORBR Admin not satisfed"
+            [
+                (enforce-guard GOV|MD_ORBR)
+                (enforce-guard GOV|SC_ORBR)
+            ]
+        )
+    )
     ;;{G5}  functions
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
     )
+    (defun GOV|OuroborosKey ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+            )
+            (ref-DALOS::GOV|OuroborosKey)
+        )
+    )
+    (defun GOV|ORBR|SC_NAME ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+            )
+            (ref-DALOS::GOV|OUROBOROS|SC_NAME)
+        )
+    )
+    (defun GOV|ORBR|SC_STOA-NAME ()                     (create-principal (GOV|ORBR|GUARD)))
+    (defun GOV|ORBR|GUARD ()                            (create-capability-guard (ORBR|NATIVE-AUTOMATIC)))
 
     ;;<=========================================================================>
     ;;{2}  POLICY
@@ -442,25 +188,18 @@
     (deftable P|T:{OuronetPolicyV2.P|S})
     (deftable P|MT:{OuronetPolicyV2.P|MS})
     ;;{P4}  capabilities
-    (defcap P|TS ()
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (gap:bool (ref-DALOS::UR_GAP))
-            )
-            (enforce (not gap) "While Global Administrative Pause is online, no client Functions can be executed")
-            (compose-capability (P|TALOS-SUMMONER))
-        )
+    (defcap P|ORBR|CALLER ()
+        true
     )
-    (defcap P|TALOS-SUMMONER ()
-        @doc "Talos Summoner Capability"
+    (defcap P|DALOS|REMOTE-GOV ()
+        @doc "Dalos Remote Governor Capability"
         true
     )
     ;;{P5}  functions
     (defun P|Info ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::P|Info)
         )
@@ -495,7 +234,7 @@
         )
     )
     (defun P|A_Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|TS02-C3_ADMIN)
+        (with-capability (GOV|ORBR_ADMIN)
             (write P|T policy-name
                 {"policy" : policy-guard}
             )
@@ -505,7 +244,7 @@
         @doc "Registers <policy-guard> as a trusted inter-module caller of this module. \
             \ IDEMPOTENT: a guard already in the chain is left alone rather than appended \
             \ a second time. See OuronetPolicyV2 for why that is load-bearing."
-        (with-capability (GOV|TS02-C3_ADMIN)
+        (with-capability (GOV|ORBR_ADMIN)
             (let
                 (
                     (ref-U|LST:module{StringProcessorV2} U|LST)
@@ -531,7 +270,7 @@
         @doc "Revokes <policy-guard> from this module's guard chain. Removes EVERY occurrence, so \
             \ it doubles as the cleanup for duplicates left behind by the pre-idempotence append. \
             \ Refuses to drop this module's own SECURE seed -- see OuronetPolicyV2."
-        (with-capability (GOV|TS02-C3_ADMIN)
+        (with-capability (GOV|ORBR_ADMIN)
             (let
                 (
                     (ref-U|LST:module{StringProcessorV2} U|LST)
@@ -553,7 +292,7 @@
         @doc "Replaces this module's whole guard chain in one write -- the recovery hatch. \
             \ Deduplicates, and enforces that the module's own SECURE seed survives: without it \
             \ the module can no longer reach its own P|UEV_IMC-gated functions."
-        (with-capability (GOV|TS02-C3_ADMIN)
+        (with-capability (GOV|ORBR_ADMIN)
             (let
                 (
                     (dg:guard (create-capability-guard (SECURE)))
@@ -568,228 +307,132 @@
     (defun P|A_Define ()
         (let
             (
-                (ref-P|TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                (ref-P|ANK:module{OuronetPolicyV2} AQP-ANK)
-                (ref-P|SCR:module{OuronetPolicyV2} AQP-SCORE)
-                (ref-P|AQP:module{OuronetPolicyV2} AQP-POOL)
-                (ref-P|FVT:module{OuronetPolicyV2} AQP-FVT)
-                (ref-P|VCT:module{OuronetPolicyV2} AQP-VCT)
+                (ref-P|DALOS:module{OuronetPolicyV2} DALOS)
+                (ref-P|BRD:module{OuronetPolicyV2} BRD)
+                (ref-P|DPTF:module{OuronetPolicyV2} DPTF)
+                ;(ref-P|DPOF:module{OuronetPolicyV2} DPOF)
+                (ref-P|ATS:module{OuronetPolicyV2} ATS)
+                (ref-P|TFT:module{OuronetPolicyV2} TFT)
                 (ref-P|ATSU:module{OuronetPolicyV2} ATSU)
-                (ref-P|MTX-AQP:module{OuronetPolicyV2} MTX-AQP)
-                (ref-P|DSA:module{OuronetPolicyV2} AQP-DSA)
-                (ref-P|IGNIS:module{OuronetPolicyV2} IGNIS)
-                (mg:guard (create-capability-guard (P|TALOS-SUMMONER)))
+                (ref-P|VST:module{OuronetPolicyV2} VST)
+                (ref-P|LIQUID:module{OuronetPolicyV2} LIQUID)
+                (mg:guard (create-capability-guard (P|ORBR|CALLER)))
             )
-            (ref-P|TS01-A::P|A_AddIMP mg)
-            (ref-P|ANK::P|A_AddIMP mg)
-            (ref-P|SCR::P|A_AddIMP mg)
-            (ref-P|AQP::P|A_AddIMP mg)
-            (ref-P|FVT::P|A_AddIMP mg)
-            (ref-P|VCT::P|A_AddIMP mg)
+            (ref-P|DALOS::P|A_Add
+                "ORBR|RemoteDalosGov"
+                (create-capability-guard (P|DALOS|REMOTE-GOV))
+            )
+            (ref-P|DALOS::P|A_AddIMP mg)
+            (ref-P|BRD::P|A_AddIMP mg)
+            (ref-P|DPTF::P|A_AddIMP mg)
+            ;(ref-P|DPOF::P|A_AddIMP mg)
+            (ref-P|ATS::P|A_AddIMP mg)
+            (ref-P|TFT::P|A_AddIMP mg)
             (ref-P|ATSU::P|A_AddIMP mg)
-            ;; MTX-AQP defpact wrapper below — register the Talos summoner as an allowed IMC caller of MTX-AQP.
-            (ref-P|MTX-AQP::P|A_AddIMP mg)
-            ;; DSA vault/agency wrappers below — register the Talos summoner as an allowed IMC caller of AQP-DSA.
-            (ref-P|DSA::P|A_AddIMP mg)
-            ;;IGNIS RESTRUCTURE 2026-09-20: the collectors became protected X_ functions
-            ;;behind `P|UEV_IMC`, so every module that bills must be a registered IMP peer
-            ;;of IGNIS or the fee call dies with "None of the guards passed".
-            (ref-P|IGNIS::P|A_AddIMP mg)
+            (ref-P|VST::P|A_AddIMP mg)
+            (ref-P|LIQUID::P|A_AddIMP mg)
         )
     )
 
     ;;<=========================================================================>
     ;;{3}  CST
     ;;{3.1}  constants
+    ;;
+    (defconst ORBR|SC_KEY                               (GOV|OuroborosKey))
+    (defconst ORBR|SC_NAME                              (GOV|ORBR|SC_NAME))
+    (defconst ORBR|SC_STOA-NAME                         (GOV|ORBR|SC_STOA-NAME))
     (defconst BAR                                       (CT_Bar))
+    (defconst EOC                                       (CT_EmptyCumulator))
     ;;{3.2}  schemas
     ;;{3.3}  tables
 
     ;;<=========================================================================>
     ;;{4}  CAPABILITIES
     ;;{C1}  Trivial [bronze]
-    ;;
+    (defcap ORBR|GOV ()
+        @doc "Governor Capability for the Ouroboros Smart DALOS Account"
+        true
+    )
+    (defcap ORBR|NATIVE-AUTOMATIC ()
+        @doc "Autonomic management of <kadena-konto> of OUROBOROS Smart Account"
+        true
+    )
     ;;
     (defcap SECURE ()
         true
     )
     ;;{C2}  Simple
     ;;{C3}  Composed
-    (defcap AQP|C>STAKE-TRUE-FUNGIBLE
-        (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
-        @doc "AQP client event: stake TrueFungible. Composes P|TS only; sovereign recipe in FVT::CC_TrueFungibleStakeFlow."
+    (defcap LIQUIDFUEL|C>ADMIN_FUEL ()
         @event
-        (compose-capability (P|TS))
+        (compose-capability (ORBR|GOV))
+        (compose-capability (ORBR|NATIVE-AUTOMATIC))
+        (compose-capability (P|ORBR|CALLER))
     )
-    (defcap AQP|C>UNSTAKE-TRUE-FUNGIBLE
-        (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
-        @doc "AQP client event: unstake TrueFungible. Composes P|TS only; sovereign recipe in FVT::CC_TrueFungibleStakeFlow."
+    (defcap IGNIS|C>SUBLIMATE (client:string target:string)
         @event
-        (compose-capability (P|TS))
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+            )
+            (ref-DALOS::UEV_EnforceAccountType target false)
+            (compose-capability (IGNIS|C>CONVERT client))
+            (compose-capability (P|DALOS|REMOTE-GOV))
+        )
     )
-    (defcap AQP|C>STAKE-SPECIAL-CUSTODIAL
-        (patron:string pool-id:string owner-id:string beneficiary-id:string dpof-id:string
-         nonces:[integer] nonce-amounts:[decimal])
-        @doc "AQP client event: stake SLEEPING batches under pool custody. Composes P|TS only. \
-            \ Distinct from `AQP|C>STAKE-ORTO-FUNGIBLE` so the explorer can tell a custodial stake \
-            \ from an ordinary one -- they differ in who the tracker names as owner, which is \
-            \ exactly the fact an observer needs and cannot otherwise see."
+    (defcap IGNIS|C>COMPRESS (client:string)
         @event
-        (compose-capability (P|TS))
+        (compose-capability (IGNIS|C>CONVERT client))
     )
-    (defcap AQP|C>RELEASE-SPECIAL-CUSTODIAL
-        (patron:string pool-id:string beneficiary-id:string dpof-id:string nonce:integer)
-        @doc "AQP client event: release a MATURED custodial sleeping position. Composes P|TS only; \
-            \ maturity is enforced by VST and custody by AQP-FVT."
-        @event
-        (compose-capability (P|TS))
+    (defcap IGNIS|C>CONVERT(client:string)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+            )
+            (ref-DALOS::UEV_EnforceAccountType client false)
+            (UEV_Exchange)
+            (compose-capability (ORBR|GOV))
+            (compose-capability (P|ORBR|CALLER))
+        )
     )
-    (defcap AQP|C>STAKE-ORTO-FUNGIBLE
-        (patron:string pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal])
-        @doc "AQP client event: stake OrtoFungible. nonces and nonce-amounts are resolved before this cap \
-            \ (DPOF::UR_NoncesSupplies — whole nonce only) so the explorer records the exact legs moved."
-        @event
-        (compose-capability (P|TS))
+    (defcap IGNIS|XB>COMPRESS (client:string)
+        @doc "SC-account-tolerant compress authorization for INTERNAL module callers (registered OUROBOROS IMC — \
+            \ e.g. AQP-FVT normalizing an IGNIS royalty leg to OURO before disposal). Same conversion as \
+            \ IGNIS|C>COMPRESS but WITHOUT the standard-account restriction; the caller-module IMC gate (P|UEV_IMC in \
+            \ XB_Compress) is the trust boundary."
+        (compose-capability (IGNIS|XB>CONVERT client))
     )
-    (defcap AQP|C>UNSTAKE-ORTO-FUNGIBLE
-        (patron:string pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal])
-        @doc "AQP client event: unstake OrtoFungible. nonces and nonce-amounts resolved before this cap \
-            \ (DPOF::UR_NoncesSupplies — whole nonce only) for explorer visibility."
-        @event
-        (compose-capability (P|TS))
+    (defcap IGNIS|XB>CONVERT (client:string)
+        (UEV_Exchange)
+        (compose-capability (ORBR|GOV))
+        (compose-capability (P|ORBR|CALLER))
     )
-    (defcap AQP|C>STAKE-SEMI-FUNGIBLE-COLLECTABLE
-        (patron:string pool-id:string owner-id:string beneficiary-id:string collectable-id:string nonces:[integer] nonce-amounts:[integer])
-        @doc "AQP client event: stake DPSF collectable (son=true). Composes P|TS only."
+    (defcap OUROBOROS|C>WITHDRAW (executor:string id:string target:string)
+        @doc "ATTRIBUTION (patron/executor canon 2.2, 2026-09-21). HANDOFF 4g, fifth instance: \
+            \ <CAP_Owner id> proved the AUTHORITY -- the token owner may empty the fee purse -- \
+            \ while the only account in the signature was <target>, the RECIPIENT. Authority \
+            \ proven, actor unrecorded. <UEV_ExecutorIsKonto> supplies the missing half and the \
+            \ ownership enforce is KEPT, not replaced: one proves the right exists, the other \
+            \ proves who exercised it."
         @event
-        (compose-capability (P|TS))
-    )
-    (defcap AQP|C>UNSTAKE-SEMI-FUNGIBLE-COLLECTABLE
-        (patron:string pool-id:string owner-id:string beneficiary-id:string collectable-id:string nonces:[integer] nonce-amounts:[integer])
-        @doc "AQP client event: unstake DPSF collectable (son=true). Composes P|TS only."
-        @event
-        (compose-capability (P|TS))
-    )
-    (defcap AQP|C>STAKE-NON-FUNGIBLE-COLLECTABLE
-        (patron:string pool-id:string owner-id:string beneficiary-id:string collectable-id:string nonces:[integer] nonce-amounts:[integer])
-        @doc "AQP client event: stake DPNF collectable (son=false). Composes P|TS only."
-        @event
-        (compose-capability (P|TS))
-    )
-    (defcap AQP|C>UNSTAKE-NON-FUNGIBLE-COLLECTABLE
-        (patron:string pool-id:string owner-id:string beneficiary-id:string collectable-id:string nonces:[integer] nonce-amounts:[integer])
-        @doc "AQP client event: unstake DPNF collectable (son=false). Composes P|TS only."
-        @event
-        (compose-capability (P|TS))
-    )
-    (defcap AQP|C>UPDATE-SCORE-MULTIPLIERS
-        (patron:string executor:string score-id:string
-         mx-frozen:decimal mx-sleeping:decimal mx-hibernated:decimal)
-        @doc "AQP client event: re-set a score's frozen/sleeping multipliers. Composes P|TS only. \
-            \ THE TALOS MIRROR CARRIES NO VALIDATION, deliberately and like its siblings: acquiring \
-            \ it is what puts a registered inter-module guard in scope so the core client's \
-            \ `P|UEV_IMC` passes. The real conditions — the emptiness gate in AQP-POOL, and \
-            \ ownership plus the ordering invariant in AQP-SCORE — are enforced by the modules that \
-            \ can actually see what they are checking. Duplicating them here would be a second \
-            \ copy free to drift."
-        @event
-        (compose-capability (P|TS))
-    )
-    (defcap AQP|C>BEGIN-SCORE-REVOKE
-        (patron:string executor:string pool-id:string score-id:string slot-index:integer)
-        @doc "AQP client event: phase 1 of a score revoke — vacate the slot, freeze the pool. \
-            \ Composes P|TS only; the conditions live in AQP-POOL, which can see the slots."
-        @event
-        (compose-capability (P|TS))
-    )
-    (defcap AQP|C>DRAIN-SCORE-SLICE
-        (patron:string pool-id:string score-id:string accounts:[string])
-        @doc "AQP client event: phase 2 — one fed slice of a score drain. Composes P|TS only."
-        @event
-        (compose-capability (P|TS))
-    )
-    (defcap AQP|C>FINALIZE-SCORE-REVOKE
-        (patron:string executor:string pool-id:string score-id:string)
-        @doc "AQP client event: phase 3 — cut the aqpool-link once the drain is complete. \
-            \ Composes P|TS only."
-        @event
-        (compose-capability (P|TS))
-    )
-    (defcap AQP|C>REASSIGN-ORTO-BENEFICIARY
-        (patron:string owner:string pool-id:string dpof-id:string nonce:integer
-         current-beneficiary:string new-beneficiary:string)
-        @doc "AQP client event: redirect who earns from an already-staked orto position, custody \
-            \ or not. Composes P|TS only -- the conditions live in AQP-FVT, which can see the \
-            \ tracker row. Renamed from AQP|C>REASSIGN-CUSTODIAL-BENEFICIARY, 2026-10-11: custody \
-            \ is retired, so this now covers every staked sleeping position, not only one locked \
-            \ under the pool's name."
-        @event
-        (compose-capability (P|TS))
-    )
-    (defcap AQP|C>REASSIGN-COLLECTABLE-BENEFICIARY
-        (patron:string owner:string pool-id:string collectable-id:string son:bool nonce:integer
-         current-beneficiary:string new-beneficiary:string)
-        @doc "AQP client event: the NFT/SFT counterpart of AQP|C>REASSIGN-ORTO-BENEFICIARY. \
-            \ Composes P|TS only -- the conditions live in AQP-FVT."
-        @event
-        (compose-capability (P|TS))
-    )
-    (defcap AQP|C>REASSIGN-TRUE-FUNGIBLE-BENEFICIARY
-        (patron:string owner:string pool-id:string dptf-id:string amount:decimal
-         current-beneficiary:string new-beneficiary:string)
-        @doc "AQP client event: the TF counterpart of AQP|C>REASSIGN-ORTO-BENEFICIARY -- redirect \
-            \ who earns from an already-staked true-fungible position, native or frozen, in whole \
-            \ or in part. Composes P|TS only -- the conditions live in AQP-FVT, which can see the \
-            \ tracker row."
-        @event
-        (compose-capability (P|TS))
-    )
-    (defcap FVT|C>CLEAR-POOL-SWEEP
-        (patron:string pool-id:string)
-        @doc "AQP-FVT client event: release a pool's sweep freeze. Composes P|TS only. \
-            \ Mirrors AQP-FVT's cap, not AQP-POOL's: the release lives in AQP-FVT because the \
-            \ freeze has two owners and only that module can see both."
-        @event
-        (compose-capability (P|TS))
-    )
-    (defcap AQP|C>BACKFILL-SCORE-SLICE
-        (patron:string pool-id:string score-id:string beneficiaries:[string])
-        @doc "AQP client event: one fed slice of the score re-rate sweep. Composes P|TS only. \
-            \ No validation here, as for every mirror beside it — acquiring this is what puts a \
-            \ registered inter-module guard in scope so the core client's `P|UEV_IMC` passes, and \
-            \ the real conditions live in AQP-POOL, the only module that can see the tracker."
-        @event
-        (compose-capability (P|TS))
-    )
-    (defcap AQP|C>SYNC-TF-ANCHORS
-        (patron:string beneficiary-id:string dptf-id:string)
-        @doc "AQP client event: pool-agnostic TF anchor repair. Composes P|TS only."
-        @event
-        (compose-capability (P|TS))
-    )
-    (defcap AQP|C>SYNC-SEMI-FUNGIBLE-ANCHORS
-        (patron:string beneficiary-id:string dpsf-id:string)
-        @doc "AQP client event: pool-agnostic DPSF anchor repair. Composes P|TS only."
-        @event
-        (compose-capability (P|TS))
-    )
-    (defcap AQP|C>SYNC-NON-FUNGIBLE-ANCHORS
-        (patron:string beneficiary-id:string dpnf-id:string)
-        @doc "AQP client event: pool-agnostic DPNF anchor repair. Composes P|TS only."
-        @event
-        (compose-capability (P|TS))
-    )
-    (defcap AQP|C>ABORT-VACATE
-        (patron:string pool-id:string)
-        @doc "AQP client event: clear vacate-in-progress (stake stays disabled). Composes P|TS only."
-        @event
-        (compose-capability (P|TS))
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+            )
+            (ref-DALOS::UEV_EnforceAccountType target false)
+            (ref-DPTF::CAP_Owner id)
+            (ref-DPTF::UEV_ExecutorIsKonto executor id)
+            (compose-capability (ORBR|GOV))
+            (compose-capability (P|ORBR|CALLER))
+        )
     )
     ;;{C4}  Ownership [gold]
 
     ;;<=========================================================================>
     ;;{5}  FUNCTIONS
     ;;{5.1}  Construct [CT/UDC]
+    ;;
     (defun CT_Bar ()
         (let
             (
@@ -798,2442 +441,533 @@
             (ref-U|CT::CT_BAR)
         )
     )
-    ;;{5.2}  Compute [UC]
-    ;;
-    (defun UC_ShortAccount:string (account:string)
+    (defun CT_EmptyCumulator ()
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
-            (ref-I|OURONET::OI|UC_ShortAccount account)
+            (ref-IGNIS::UDC_EmptyOutputCumulatorV2)
         )
     )
-    (defun UC_FormatStakeTrueFungibleResult:string
-        (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
-        @doc "Stake success text: self-stake when owner=beneficiary; else names short owner and beneficiary."
-        (if (= owner-id beneficiary-id)
-            (format "Successfully staked TrueFungible {} amount {} into Pool {} (self-stake, {}). "
-                [dptf-id amount pool-id (UC_ShortAccount owner-id)]
-            )
-            (format "Successfully staked TrueFungible {} amount {} into Pool {} for beneficiary {} (owner {}). "
-                [dptf-id amount pool-id (UC_ShortAccount beneficiary-id) (UC_ShortAccount owner-id)]
-            )
-        )
-    )
-    (defun UC_FormatUnstakeTrueFungibleResult:string
-        (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
-        @doc "Unstake success text: self-stake when owner=beneficiary; else names short owner and beneficiary."
-        (if (= owner-id beneficiary-id)
-            (format "Successfully unstaked TrueFungible {} amount {} from Pool {} (self-stake, {}). "
-                [dptf-id amount pool-id (UC_ShortAccount owner-id)]
-            )
-            (format "Successfully unstaked TrueFungible {} amount {} from Pool {} for beneficiary {} (owner {}). "
-                [dptf-id amount pool-id (UC_ShortAccount beneficiary-id) (UC_ShortAccount owner-id)]
-            )
-        )
-    )
-    (defun UC_FormatStakeOrtoFungibleResult:string
-        (pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonce-count:integer)
-        @doc "Stake OF success text (whole-nonce Transfer)."
-        (if (= owner-id beneficiary-id)
-            (format "Successfully staked OrtoFungible {} ({} whole nonces) into Pool {} (self-stake, {}). "
-                [
-                    dpof-id
-                    nonce-count
-                    pool-id
-                    (UC_ShortAccount owner-id)
-                ]
-            )
-            (format "Successfully staked OrtoFungible {} ({} whole nonces) into Pool {} for beneficiary {} (owner {}). "
-                [
-                    dpof-id
-                    nonce-count
-                    pool-id
-                    (UC_ShortAccount beneficiary-id)
-                    (UC_ShortAccount owner-id)
-                ]
-            )
-        )
-    )
-    (defun UC_FormatUnstakeOrtoFungibleResult:string
-        (pool-id:string owner-id:string dpof-id:string nonce-count:integer)
-        @doc "Unstake OF success text; beneficiary resolved from tracker in sovereign phase 1."
-        (format "Successfully unstaked OrtoFungible {} ({} whole nonces) from Pool {} (owner {}). "
-            [
-                dpof-id
-                nonce-count
-                pool-id
-                (UC_ShortAccount owner-id)
-            ]
-        )
-    )
-    (defun UC_FormatStakeCollectableResult:string
-        (
-            pool-id:string
-            owner-id:string
-            beneficiary-id:string
-            collectable-id:string
-            son:bool
-            nonce-count:integer
-        )
-        @doc "Stake collectable success text."
-        (if (= owner-id beneficiary-id)
-            (format "Successfully staked {} {} ({} nonces) into Pool {} (self-stake, {}). "
-                [
-                    (if son "DPSF" "DPNF")
-                    collectable-id
-                    nonce-count
-                    pool-id
-                    (UC_ShortAccount owner-id)
-                ]
-            )
-            (format "Successfully staked {} {} ({} nonces) into Pool {} for beneficiary {} (owner {}). "
-                [
-                    (if son "DPSF" "DPNF")
-                    collectable-id
-                    nonce-count
-                    pool-id
-                    (UC_ShortAccount beneficiary-id)
-                    (UC_ShortAccount owner-id)
-                ]
-            )
-        )
-    )
-    (defun UC_FormatUnstakeCollectableResult:string
-        (pool-id:string owner-id:string collectable-id:string son:bool nonce-count:integer)
-        @doc "Unstake collectable success text."
-        (format "Successfully unstaked {} {} ({} nonces) from Pool {} (owner {}). "
-            [
-                (if son "DPSF" "DPNF")
-                collectable-id
-                nonce-count
-                pool-id
-                (UC_ShortAccount owner-id)
-            ]
-        )
-    )
-    (defun UC_FormatVacateCollectableResult:string
-        (
-            pool-id:string
-            owner-id:string
-            beneficiary-id:string
-            collectable-id:string
-            son:bool
-            nonce-count:integer
-        )
-        @doc "Vacate collectable success text (pool-owner forced unstake)."
-        (format "Successfully vacated {} {} ({} nonces) from Pool {} (owner {} → beneficiary {}). "
-            [
-                (if son "DPSF" "DPNF")
-                collectable-id
-                nonce-count
-                pool-id
-                (UC_ShortAccount owner-id)
-                (UC_ShortAccount beneficiary-id)
-            ]
-        )
-    )
+    ;;{5.2}  Compute [UC]
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    ;;ADDED 2026-09-19. The generic-vault cost reader. It lives HERE, under {5.3} Read, and not
-    ;;beside the client function it prices: URCi_ is a reader, and the canonical section order
-    ;;puts every UR/URC/URH/URCi/INFO in this block regardless of what consumes it.
-    (defun URCi_IssueGenericEarningVault:object{IgnisCollectorV3.OutputCumulator}
-        (owner-konto:string vault-name:string stake-dptf-id:string reward-dptf-id:string)
-        @doc "Cost reader for AQP-FVT|C_IssueGenericEarningVault: the six component cumulators, \
-            \ concatenated exactly as the operation concatenates them."
-        ;;WHY IT COMPOSES RATHER THAN NAMING A PRICE. The operation is six core calls; its cost is
-        ;;whatever those six cost. Writing a standalone price here would be a SECOND definition of
-        ;;the same number, free to drift from the first -- the failure this codebase has found in
-        ;;its own artefacts repeatedly. Concatenating the same six readers the operation's own
-        ;;cumulators come from means the preview cannot disagree with the charge by construction.
-        ;;
-        ;;The component readers live in four different modules, and two of them are on RPS rather
-        ;;than FVT (AddScoreEntity, AddRewardLink) -- which is worth knowing, because looking for
-        ;;them on FVT beside the ops they price finds nothing.
-        (let*
+    ;;
+    (defun URC_ProjectedStoaLiquindex:[decimal] ()
+        @doc "Computes the Projected STOA Liquindex, considering STOA amount in reserves ready to be used as Fuel"
+        (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                (ref-coin:module{stoa-ns.fungible-v1} coin)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-ATS:module{AutostakeV4} ATS)
+                (orb-sc ORBR|SC_NAME)
+                (present-stoa-balance:decimal (ref-coin::get-balance (ref-DALOS::UR_AccountStoa orb-sc)))
+                (w-stoa:string (ref-DALOS::UR_WrappedStoaID))
+                (w-stoa-as-rt:[string] (ref-DPTF::UR_RewardToken w-stoa))
+                (liquid-idx:string (at 0 w-stoa-as-rt))
+                (present-index-value:decimal (ref-ATS::URC_Index liquid-idx))
+
+                (p:integer (ref-ATS::UR_IndexDecimals liquid-idx))
+                (rs:decimal (ref-ATS::URC_ResidentSum liquid-idx))
+                (projected-sum:decimal (+ rs present-stoa-balance))
+                (rbt-supply:decimal (ref-ATS::URC_PairRBTSupply liquid-idx))
+                (projected-index-value:decimal
+                    (if
+                        (= rbt-supply 0.0)
+                        -1.0
+                        (floor (/ projected-sum rbt-supply) p)
+                    )
+                )
+            )
+            [present-index-value projected-index-value present-stoa-balance]
+        )
+    )
+    (defun URCv_Compress:[decimal] (ignis-amount:decimal)
+        (let
+            (
+                (ref-U|ATS:module{UtilityAtsV3} U|ATS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+            )
+            (enforce (= (floor ignis-amount 0) ignis-amount) "Only whole Units of GAS(Ignis) can be compressed")
+            (enforce (>= ignis-amount 1.00) "Only amounts greater than or equal to 1.0 can be used to compress gas")
+            (ref-DPTF::UEV_Amount (ref-DALOS::UR_IgnisID) ignis-amount)
+            (let
+                (
+                    (ouro-id:string (ref-DALOS::UR_OuroborosID))
+                    (ouro-price:decimal (ref-DALOS::UR_OuroborosPrice))
+                    (ouro-price-used:decimal (if (<= ouro-price 1.00) 1.00 ouro-price))
+                    (ouro-precision:integer (ref-DPTF::UR_Decimals ouro-id))
+                    (raw-ouro-amount:decimal (floor (/ ignis-amount (* ouro-price-used 100.0)) ouro-precision))
+                    (promile-split:[decimal] (ref-U|ATS::UC_PromilleSplit 15.0 raw-ouro-amount ouro-precision))
+                    (ouro-remainder-amount:decimal (floor (at 0 promile-split) ouro-precision))
+                    (ouro-fee-amount:decimal (at 1 promile-split))
+                )
+                [ouro-remainder-amount ouro-fee-amount]
+            )
+        )
+    )
+    (defun URCv_Sublimate:decimal (ouro-amount:decimal)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+            )
+            ;;NOTE: the constant is 0.99, not the 1.0 the message advertises. Pinned AS WRITTEN
+            ;;in REPL/modules/OUROBOROS.repl <<ORBR-G1>> (0.99 accepted, 0.98 refused) so the
+            ;;test states what the code does rather than what the text claims. Left as-is: the
+            ;;tolerance is deliberate (it absorbs a floor() at the caller), but the message is
+            ;;misleading and should say 0.99 the next time this interface is bumped.
+            (enforce (>= ouro-amount 0.99) "Only amounts greater than or equal to 1.0 can be used to make gas!")
+            (ref-DPTF::UEV_Amount (ref-DALOS::UR_OuroborosID) ouro-amount)
+            (let
+                (
+                    (ouro-price:decimal (ref-DALOS::UR_OuroborosPrice))
+                    (ouro-price-used:decimal (if (<= ouro-price 1.00) 1.00 ouro-price))
+                    (ignis-id:string (ref-DALOS::UR_IgnisID))
+                )
+                (enforce (!= ignis-id BAR) "Gas Token isnt properly set")
+                (let
+                    (
+                        (ignis-precision:integer (ref-DPTF::UR_Decimals ignis-id))
+                        (raw-ignis-amount-per-unit:decimal (floor (* ouro-price-used 100.0) ignis-precision))
+                        (raw-ignis-amount:decimal (floor (* raw-ignis-amount-per-unit ouro-amount) ignis-precision))
+                        (output-ignis-amount:decimal (floor raw-ignis-amount 0))
+                    )
+                    output-ignis-amount
+                )
+            )
+        )
+    )
+    ;;
+    (defun URCi_Compress:object{IgnisCollectorV4.OutputCumulator}
+        (client:string ignis-amount:decimal)
+        @doc "Cost preview for C_Compress (and cost-identical XB_Compress): client->ORBR IGNIS \
+            \ transfer + IGNIS burn + OURO mint + ORBR->client OURO transfer. Output == \
+            \ [ouro-remainder-amount], re-derived purely."
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
                 ;;
-                (score-name:string (concat [vault-name "Score"]))
-                (pool-name:string (concat [vault-name "Pool"]))
-                (fvt-name:string (concat [vault-name "Vault"]))
-                (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
-                (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
-                (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
+                (ouro-id:string (ref-DALOS::UR_OuroborosID))
+                (ignis-id:string (ref-DALOS::UR_IgnisID))
+                (ouro-remainder-amount:decimal (at 0 (URCv_Compress ignis-amount)))
             )
             (ref-IGNIS::UDC_ConcatenateOutputCumulators
                 [
-                    (ref-SCR::URCi_IssueScore owner-konto [score-id])
-                    (ref-AQP::URCi_Issue [pool-id])
-                    (ref-AQP::URCi_AddScore [pool-id score-id])
-                    (ref-FVT::URCi_Issue owner-konto [fvt-id])
-                    ;;THE LAST TWO ARE BUILT HERE RATHER THAN CALLED, and the reason is specific.
-                    ;;RPS::URCi_AddScoreEntity and URCi_AddRewardLink resolve their active-account
-                    ;;with `UR_FVT|OwnerKonto fvt-id` -- a READ of the FVT row. For a PREVIEW of a
-                    ;;vault that does not exist yet, that row is absent and the reader aborts:
-                    ;;  No value found in table RPS_FVT|T|RewardAggregate for key: <name>Vault-...
-                    ;;A cost preview for a CREATION operation cannot depend on reading the thing it
-                    ;;is about to create. (Found by running it; the RT-K family is about exactly
-                    ;;this class of preview/exec divergence.)
-                    ;;
-                    ;;The PRICE is not the problem -- it is static, from the same price-table keys
-                    ;;below. Only the active-account came from the row, and here it is `owner-konto`,
-                    ;;which the caller supplies. So these two use the identical UC_IgnisPrice keys
-                    ;;and substitute the account. No price is restated; nothing can drift.
-                    (ref-IGNIS::UDC_ConstructOutputCumulator
-                        (ref-IGNIS::UC_IgnisPrice "AQP-FVT|C_AddScoreEntity" "add-score-entity")
-                        owner-konto (ref-IGNIS::URC_IsVirtualGasZero) [fvt-id score-id])
-                    (ref-IGNIS::UDC_ConstructOutputCumulator
-                        (ref-IGNIS::UC_IgnisPrice "AQP-FVT|C_AddRewardLink" "add-reward-link")
-                        owner-konto (ref-IGNIS::URC_IsVirtualGasZero)
-                        [fvt-id reward-dptf-id GV|COMMON_BAR])
+                    (ref-TFT::URCi_Transfer ignis-id client ORBR|SC_NAME ignis-amount)
+                    (ref-DPTF::URCi_Burn ignis-id ORBR|SC_NAME)
+                    (ref-DPTF::URCi_Mint ouro-id ORBR|SC_NAME false)
+                    (ref-TFT::URCi_Transfer ouro-id ORBR|SC_NAME client ouro-remainder-amount)
                 ]
-                []
+                [ouro-remainder-amount]
             )
         )
     )
-
-
-    ;;{5.4}  Validate [UEV/CAP]
-    ;;{5.5}  Write [W]
-    ;;{5.6}  Aux/X
-    ;;{5.7}  User [A/C]
-    ;;Protection: Class 3 — Custom: P|TS
-    (defun AQP-POOL|CC_VacateTrueFungible:string
-        (patron:string executor:string pool-id:string)
-        @doc "Vacate rehaul — pool-owner vacate of a pool's TrueFungible leg only (one tx; used standalone or by \
-            \ the agnostic CC_FullVacate for a class-1 TF+OF pool). Owner enforced in VCT|C>VACATE; IGNIS on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron (ref-VCT::XB_VacateTrueFungible executor pool-id))
-                (format "Successfully vacated the TrueFungible leg of Pool {}." [pool-id])
-            )
-        )
-    )
-    ;;Protection: Class 3 — Custom: P|TS
-    (defun AQP-POOL|CC_VacateOrtoFungible:string
-        (patron:string executor:string pool-id:string dpof-id:string)
-        @doc "Vacate rehaul — pool-owner vacate of ONE OrtoFungible asset of a pool (one tx; standalone or per \
-            \ class-1 satellite). Owner enforced in VCT|C>VACATE; IGNIS on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron (ref-VCT::XB_VacateOrtoFungible patron executor pool-id dpof-id))
-                (format "Successfully vacated OrtoFungible {} of Pool {}." [dpof-id pool-id])
-            )
-        )
-    )
-    ;;Protection: Class 3 — Custom: P|TS
-    (defun AQP-POOL|CC_VacateSemiFungible:string
-        (patron:string executor:string pool-id:string dpsf-id:string)
-        @doc "Vacate rehaul — pool-owner vacate of the DPSF (semi-fungible) collection of a class-3 pool (one tx). \
-            \ Owner enforced in VCT|C>VACATE; IGNIS on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron (ref-VCT::XB_VacateSemiFungible executor pool-id dpsf-id))
-                (format "Successfully vacated SemiFungible {} of Pool {}." [dpsf-id pool-id])
-            )
-        )
-    )
-    ;;Protection: Class 3 — Custom: P|TS
-    (defun AQP-POOL|CC_VacateNonFungible:string
-        (patron:string executor:string pool-id:string dpnf-id:string)
-        @doc "Vacate rehaul — pool-owner vacate of the DPNF (non-fungible) collection of a class-4 pool (one tx). \
-            \ Owner enforced in VCT|C>VACATE; IGNIS on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron (ref-VCT::XB_VacateNonFungible executor pool-id dpnf-id))
-                (format "Successfully vacated NonFungible {} of Pool {}." [dpnf-id pool-id])
-            )
-        )
-    )
-    (defun AQP-DSA|C_DefineDelegationVault:string
-        (patron:string executor:string fvt-id:string model-id:string unit-score:integer)
-        @doc "DSA (Talos): bind a class-0 FVT as a delegation vault (score-entity model + unit-score); collects \
-            \ IGNIS on patron. Only the FVT owner may run it."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DSA:module{DsaV1} AQP-DSA)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-DSA::C_DefineDelegationVault patron executor fvt-id model-id unit-score)
-                    )
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                (format "DSA vault defined on FVT {} (model {}, unit-score {})." [fvt-id model-id unit-score])
-            )
-        )
-    )
-    (defun AQP-DSA|C_SetOracleAuth:string
-        (patron:string executor:string fvt-id:string oracle-guard:guard)
-        @doc "DSA (Talos): owner authorizes the delegated oracle key for a vault + arms the 25h capture expiry; \
-            \ collects IGNIS on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DSA:module{DsaV1} AQP-DSA)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-DSA::C_SetOracleAuth patron executor fvt-id oracle-guard)
-                    )
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                (format "Oracle authority set + oracle-on armed on FVT {}." [fvt-id])
-            )
-        )
-    )
-    (defun AQP-DSA|C_OracleWrite:string
-        (patron:string fvt-id:string score-entity-id:string nodes:integer uptime:integer)
-        @doc "DSA (Talos): the delegated oracle writes an agency's daily {nodes, uptime} + recomputes its capture \
-            \ (fresh oracle-ts); collects IGNIS on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DSA:module{DsaV1} AQP-DSA)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-DSA::C_OracleWrite patron fvt-id score-entity-id nodes uptime)
-                    )
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                (format "Oracle wrote nodes {} / uptime {}‰ for agency {}." [nodes uptime score-entity-id])
-            )
-        )
-    )
-    (defun AQP-DSA|C_WithdrawRoyalty:string
-        (patron:string executor:string fvt-id:string reward-dptf-id:string)
-        @doc "DSA (Talos): the FVT owner withdraws the whole royalty pool of <reward-dptf-id> on vault <fvt-id> to \
-            \ the owner konto; collects IGNIS on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DSA:module{DsaV1} AQP-DSA)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-DSA::C_WithdrawRoyalty patron executor fvt-id reward-dptf-id)
-                    )
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                (format "Royalty pool of {} on FVT {} withdrawn to the owner." [reward-dptf-id fvt-id])
-            )
-        )
-    )
-    (defun AQP-DSA|C_BurnRoyalty:string
-        (patron:string executor:string fvt-id:string reward-dptf-id:string)
-        @doc "DSA (Talos): the FVT owner BURNS the whole royalty pool of <reward-dptf-id> on vault <fvt-id>; \
-            \ collects IGNIS on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DSA:module{DsaV1} AQP-DSA)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-DSA::C_BurnRoyalty patron executor fvt-id reward-dptf-id)
-                    )
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                (format "Royalty pool of {} on FVT {} burned." [reward-dptf-id fvt-id])
-            )
-        )
-    )
-    (defun AQP-DSA|C_FuelRoyalty:string
-        (patron:string executor:string fvt-id:string reward-dptf-id:string swpair:string)
-        @doc "DSA (Talos): the FVT owner FUELS <swpair> with the whole royalty pool of <reward-dptf-id> on vault \
-            \ <fvt-id> (adds liquidity, no LP mint); collects IGNIS on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DSA:module{DsaV1} AQP-DSA)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-DSA::C_FuelRoyalty patron executor fvt-id reward-dptf-id swpair)
-                    )
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                (format "Royalty pool of {} on FVT {} fueled into swpair {}." [reward-dptf-id fvt-id swpair])
-            )
-        )
-    )
-    (defun AQP-DSA|C_SetAgencyFee:string
-        (patron:string executor:string fvt-id:string score-entity-id:string fee-per-mille:integer)
-        @doc "DSA (Talos): the FVT owner changes a delegation agency's operator fee (reprices only future injects); \
-            \ collects IGNIS on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DSA:module{DsaV1} AQP-DSA)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-DSA::C_SetAgencyFee patron executor fvt-id score-entity-id fee-per-mille)
-                    )
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                (format "Agency {} fee set to {} per-mille." [score-entity-id fee-per-mille])
-            )
-        )
-    )
-    (defun AQP-DSA|A_ToggleExternalOracle:string (patron:string executor:string on:bool)
-        @doc "DSA (Talos): MODULE ADMIN (GOV) flip of the SINGULAR GLOBAL external-oracle switch for ALL agencies. \
-            \ No IGNIS billing (pure governance, master-signed, no OutputCumulator)."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-DSA:module{DsaV1} AQP-DSA)
-                )
-                (ref-DSA::A_ToggleExternalOracle patron executor on)
-                (format "Global external-oracle switch set to {}." [on])
-            )
-        )
-    )
-    (defun AQP-DSA|A_SetOracleValidity:string (patron:string executor:string seconds:integer)
-        @doc "DSA (Talos): MODULE ADMIN (GOV) set of the GLOBAL oracle-validity window (freshness horizon, seconds). \
-            \ No IGNIS billing (pure governance, master-signed, no OutputCumulator)."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-DSA:module{DsaV1} AQP-DSA)
-                )
-                (ref-DSA::A_SetOracleValidity patron executor seconds)
-                (format "Global oracle-validity window set to {} seconds." [seconds])
-            )
-        )
-    )
-    ;;
-    (defun AQP-ANK|C_RevokeBoostClass:string
-        (patron:string executor:string boost-class-id:string)
-        @doc "Revokes an empty BoostClass."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ANK::C_RevokeBoostClass patron executor boost-class-id)
-                )
-                (format "Successfully revoked BoostClass {}." [boost-class-id])
-            )
-        )
-    )
-    (defun AQP-ANK|C_IssueTrueFungibleAnchor:string
-        (patron:string executor:string anchor-name:string dptf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dptf-amount:decimal)
-        @doc "Issues a DPTF Anchor. acnoi=true creates BoostClass inline (2x STOA); false links to existing (1x STOA)."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-ANK::C_IssueTrueFungibleAnchor 
-                            patron executor anchor-name dptf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dptf-amount
-                        )
-                    )
-                    (out:[string] (at "output" ico))
-                    (anchor-id:string (at 0 out))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                (ref-TS01-A::XB_DynamicFuelSTOA)
-                (if acnoi
-                    (format "Successfully issued TrueFungible Anchor {} (new BoostClass {}) for {}." [anchor-id (at 1 out) dptf-id])
-                    (format "Successfully issued TrueFungible Anchor {} for {}." [anchor-id dptf-id])
-                )
-            )
-        )
-    )
-    (defun AQP-ANK|C_IssueSemiFungibleAnchor:string
-        (patron:string executor:string anchor-name:string dpsf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpsf-nonce:integer)
-        @doc "Issues a DPSF Anchor. acnoi=true creates BoostClass inline (2x STOA); false links to existing (1x STOA)."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-ANK::C_IssueSemiFungibleAnchor 
-                            patron executor anchor-name dpsf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dpsf-nonce
-                        )
-                    )
-                    (out:[string] (at "output" ico))
-                    (anchor-id:string (at 0 out))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                (ref-TS01-A::XB_DynamicFuelSTOA)
-                (if acnoi
-                    (format "Successfully issued SemiFungible Anchor {} (new BoostClass {}) for {}." [anchor-id (at 1 out) dpsf-id])
-                    (format "Successfully issued SemiFungible Anchor {} for {}." [anchor-id dpsf-id])
-                )
-            )
-        )
-    )
-    (defun AQP-ANK|C_IssueNonFungibleAnchor:string
-        (patron:string executor:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-trait-key:string dpnf-trait-value:string)
-        @doc "Issues a DPNF trait-Anchor. acnoi=true creates BoostClass inline (2x STOA); false links to existing (1x STOA)."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-ANK::C_IssueNonFungibleAnchor 
-                            patron executor anchor-name dpnf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dpnf-trait-key dpnf-trait-value
-                        )
-                    )
-                    (out:[string] (at "output" ico))
-                    (anchor-id:string (at 0 out))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                (ref-TS01-A::XB_DynamicFuelSTOA)
-                (if acnoi
-                    (format "Successfully issued NonFungible Anchor {} (new BoostClass {}) for {}." [anchor-id (at 1 out) dpnf-id])
-                    (format "Successfully issued NonFungible Anchor {} for {}." [anchor-id dpnf-id])
-                )
-            )
-        )
-    )
-    (defun AQP-ANK|C_IssueNonFungibleSetAnchor:string
-        (patron:string executor:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-nonce-class:integer)
-        @doc "Issues a DPNF set-Anchor. acnoi=true creates BoostClass inline (2x STOA); false links to existing (1x STOA)."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-ANK::C_IssueNonFungibleSetAnchor
-                            patron executor anchor-name dpnf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dpnf-nonce-class
-                        )
-                    )
-                    (out:[string] (at "output" ico))
-                    (anchor-id:string (at 0 out))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                (ref-TS01-A::XB_DynamicFuelSTOA)
-                (if acnoi
-                    (format "Successfully issued NonFungible Set Anchor {} (new BoostClass {}) for {}." [anchor-id (at 1 out) dpnf-id])
-                    (format "Successfully issued NonFungible Set Anchor {} for {}." [anchor-id dpnf-id])
-                )
-            )
-        )
-    )
-    (defun AQP-ANK|C_RevokeAnchor:string (patron:string executor:string anchor-id:string)
-        @doc "Revokes an existing Anchor, removing it from its BoostClass and AssetAnchors bookkeeping."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron 
-                    (ref-ANK::C_RevokeAnchor patron executor anchor-id)
-                )
-                (format "Successfully revoked Anchor {}." [anchor-id])
-            )
-        )
-    )
-    (defun AQP-SCR|C_IssueLiquidityScore:string
-        (patron:string executor:string score-name:string precision:integer lp-denominator:string mx-frozen:decimal mx-sleeping:decimal)
-        @doc "Issues score-class 0 (LP) in AQP-SCORE and collects resulting IGNIS output on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-SCR::C_IssueLiquidityScore patron executor score-name precision lp-denominator mx-frozen mx-sleeping)
-                    )
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                ;;REPORTS THE GENERATED score-id, not `score-name`. The name is the caller's own
-                ;;INPUT -- echoing it tells them nothing they did not already type, while the id
-                ;;(`WonderCoach` -> `WonderCoach-nK4O_C00so9w`) is the only thing the transaction
-                ;;produced and the key every later op takes. The core already threaded it out via
-                ;;`URCi_IssueScore executor [score-id]`; this just stopped throwing it away.
-                ;;StoicSyntax 2.16.2.
-                (format "Successfully issued Liquidity Score {} for owner {}." [(at 0 (at "output" ico)) executor])
-            )
-        )
-    )
-    (defun AQP-SCR|C_IssueTrueFungibleScore:string
-        (patron:string executor:string score-name:string precision:integer mx-frozen:decimal)
-        @doc "Issues score-class 1 (DPTF) in AQP-SCORE and collects resulting IGNIS output on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-SCR::C_IssueTrueFungibleScore patron executor score-name precision mx-frozen)
-                    )
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                ;;REPORTS THE GENERATED score-id, not `score-name`. The name is the caller's own
-                ;;INPUT -- echoing it tells them nothing they did not already type, while the id
-                ;;(`WonderCoach` -> `WonderCoach-nK4O_C00so9w`) is the only thing the transaction
-                ;;produced and the key every later op takes. The core already threaded it out via
-                ;;`URCi_IssueScore executor [score-id]`; this just stopped throwing it away.
-                ;;StoicSyntax 2.16.2.
-                (format "Successfully issued TrueFungible Score {} for owner {}." [(at 0 (at "output" ico)) executor])
-            )
-        )
-    )
-    (defun AQP-SCR|C_IssueOrtoFungibleScore:string
-        (patron:string executor:string score-name:string precision:integer mx-sleeping:decimal mx-hibernated:decimal)
-        @doc "Issues score-class 2 (DPOF) in AQP-SCORE and collects resulting IGNIS output on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-SCR::C_IssueOrtoFungibleScore patron executor score-name precision mx-sleeping mx-hibernated)
-                    )
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                ;;REPORTS THE GENERATED score-id, not `score-name`. The name is the caller's own
-                ;;INPUT -- echoing it tells them nothing they did not already type, while the id
-                ;;(`WonderCoach` -> `WonderCoach-nK4O_C00so9w`) is the only thing the transaction
-                ;;produced and the key every later op takes. The core already threaded it out via
-                ;;`URCi_IssueScore executor [score-id]`; this just stopped throwing it away.
-                ;;StoicSyntax 2.16.2.
-                (format "Successfully issued OrtoFungible Score {} for owner {}." [(at 0 (at "output" ico)) executor])
-            )
-        )
-    )
-    (defun AQP-SCR|C_IssueSemiFungibleScore:string
-        (patron:string executor:string score-name:string precision:integer sft-equality:bool)
-        @doc "Issues score-class 3 (DPSF) in AQP-SCORE and collects resulting IGNIS output on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-SCR::C_IssueSemiFungibleScore patron executor score-name precision sft-equality)
-                    )
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                ;;REPORTS THE GENERATED score-id, not `score-name`. The name is the caller's own
-                ;;INPUT -- echoing it tells them nothing they did not already type, while the id
-                ;;(`WonderCoach` -> `WonderCoach-nK4O_C00so9w`) is the only thing the transaction
-                ;;produced and the key every later op takes. The core already threaded it out via
-                ;;`URCi_IssueScore executor [score-id]`; this just stopped throwing it away.
-                ;;StoicSyntax 2.16.2.
-                (format "Successfully issued SemiFungible Score {} for owner {}." [(at 0 (at "output" ico)) executor])
-            )
-        )
-    )
-    (defun AQP-SCR|C_IssueNonFungibleScore:string
-        (patron:string executor:string score-name:string precision:integer nft-score-model:integer)
-        @doc "Issues score-class 4 (DPNF) in AQP-SCORE and collects resulting IGNIS output on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-SCR::C_IssueNonFungibleScore patron executor score-name precision nft-score-model)
-                    )
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                ;;REPORTS THE GENERATED score-id, not `score-name`. The name is the caller's own
-                ;;INPUT -- echoing it tells them nothing they did not already type, while the id
-                ;;(`WonderCoach` -> `WonderCoach-nK4O_C00so9w`) is the only thing the transaction
-                ;;produced and the key every later op takes. The core already threaded it out via
-                ;;`URCi_IssueScore executor [score-id]`; this just stopped throwing it away.
-                ;;StoicSyntax 2.16.2.
-                (format "Successfully issued NonFungible Score {} for owner {}." [(at 0 (at "output" ico)) executor])
-            )
-        )
-    )
-    (defun AQP-SCR|C_RotateScoreOwnership:string (patron:string executor:string executee:string score-id:string)
-        @doc "Rotates score ownership in AQP-SCORE and collects resulting IGNIS output on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron (ref-SCR::C_RotateOwnership patron executor executee score-id))
-                (format "Successfully rotated ownership for score {} to {}." [score-id executee])
-            )
-        )
-    )
-    (defun AQP-SCR|C_ControlScore:string (patron:string executor:string score-id:string new-can-upgrade:bool new-can-change-owner:bool)
-        @doc "Updates score control flags in AQP-SCORE and collects resulting IGNIS output on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-SCR::C_Control patron executor score-id new-can-upgrade new-can-change-owner)
-                )
-                (format "Successfully updated control flags for score {}." [score-id])
-            )
-        )
-    )
-    (defun AQP-SCR|C_CreateScoreBoostClassLink:string (patron:string executor:string score-id:string boost-class-id:string)
-        @doc "Creates score -> boost-class link in AQP-SCORE and collects resulting IGNIS output on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron (ref-SCR::C_CreateBoostClassLink patron executor score-id boost-class-id))
-                (format "Successfully linked score {} to BoostClass {}." [score-id boost-class-id])
-            )
-        )
-    )
-    (defun AQP-SCR|C_CreateScoreBoostLink:string (patron:string executor:string score-id:string boost-score-id:string)
-        @doc "Creates score -> boost-score link in AQP-SCORE and collects resulting IGNIS output on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron (ref-SCR::C_CreateBoostLink patron executor score-id boost-score-id))
-                (format "Successfully linked score {} to boost score {}." [score-id boost-score-id])
-            )
-        )
-    )
-    (defun AQP-SCR|C_EnableDebBoost:string (patron:string executor:string score-id:string)
-        @doc "Enables irreversible DEB boost on the score row. Medium IGNIS cost; no native STOA."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron (ref-SCR::C_EnableDebBoost patron executor score-id))
-                (format "Successfully enabled DEB boost for score {}." [score-id])
-            )
-        )
-    )
-    (defun AQP-SCR|C_IssueTriplet:string
-        (patron:string executor:string bronze-score-id:string silver-score-id:string golden-score-id:string)
-        @doc "Issues SCR triplet bundle T|bronze|silver|golden and collects IGNIS on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-SCR::C_IssueTriplet patron executor bronze-score-id silver-score-id golden-score-id)
-                    )
-                    (out:[string] (at "output" ico))
-                    (triplet-id:string (at 0 out))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                (format "Successfully issued triplet {}." [triplet-id])
-            )
-        )
-    )
-    (defun AQP-SCR|C_IssueSingleScoreModel:string
-        (patron:string executor:string model-name:string score-class:integer collectable-id:string precision:integer nonces:[integer] nonce-score-values:[decimal] boost-class-id:string)
-        @doc "Defines a SINGLE score-entity model in AQP-SCORE and collects IGNIS on patron. Returns the model-id."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-SCR::C_IssueSingleScoreModel patron executor model-name score-class collectable-id precision nonces nonce-score-values boost-class-id)
-                    )
-                    (model-id:string (at 0 (at "output" ico)))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                (format "Successfully defined single score-entity model {}." [model-id])
-            )
-        )
-    )
-    (defun AQP-SCR|C_CombineTripletScoreModel:string
-        (patron:string executor:string model-name:string bronze-model-id:string silver-model-id:string golden-model-id:string)
-        @doc "Combines three single models into a TRIPLET score-entity model in AQP-SCORE and collects IGNIS on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-SCR::C_CombineTripletScoreModel patron executor model-name bronze-model-id silver-model-id golden-model-id)
-                    )
-                    (model-id:string (at 0 (at "output" ico)))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                (format "Successfully combined triplet score-entity model {}." [model-id])
-            )
-        )
-    )
-    (defun AQP-SCR|C_IssueScoreFromModel:string (patron:string executor:string model-id:string agency-name:string)
-        @doc "FACTORY (Talos): issue a conforming score entity from <model-id> for executor; collects IGNIS on \
-            \ patron. Returns the (score | triplet) id."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-SCR::C_IssueScoreFromModel patron executor model-id agency-name)
-                    )
-                    (entity-id:string (at 0 (at "output" ico)))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                (format "Successfully issued score entity {} from model {}." [entity-id model-id])
-            )
-        )
-    )
-    (defun AQP-SCR|C_IssueSemiFungibleScoreDefinition:string
-        (patron:string executor:string score-id:string dpsf-id:string nonces:[integer] nonce-score-values:[decimal])
-        @doc "Writes DPSF nonce score definitions in AQP-SCORE and collects resulting IGNIS output on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                )
-                ;;DEAD-DEFINITION GUARD (StoicSyntax 2.16, 2026-10-06). If this score is already
-                ;;employed by a pool, the collection being defined must be the one that pool
-                ;;stakes -- otherwise the rows save cleanly and score nothing forever. No-op
-                ;;while aqpool-link is BAR, which is the normal state at definition time.
-                ;;Here rather than in AQP-SCORE because the pool fact lives one module LATER in
-                ;;deploy order: AQP-SCORE cannot reference AQP-POOL, only the reverse.
-                (ref-AQP::UEV_ScoreDefinitionTargetMatchesPool score-id dpsf-id)
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-SCR::C_IssueSemiFungibleScoreDefinition patron executor score-id dpsf-id nonces nonce-score-values)
-                )
-                (format "Successfully issued SemiFungible score definitions for score {} and dpsf-id {}." [score-id dpsf-id])
-            )
-        )
-    )
-    (defun AQP-SCR|C_IssueNonFungibleScoreDefinition:string
-        (patron:string executor:string score-id:string dpnf-id:string trait-keys:[string] trait-values:[string] trait-score-values:[decimal])
-        @doc "Writes DPNF trait score definitions in AQP-SCORE and collects resulting IGNIS output on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                )
-                ;;DEAD-DEFINITION GUARD (StoicSyntax 2.16, 2026-10-06). If this score is already
-                ;;employed by a pool, the collection being defined must be the one that pool
-                ;;stakes -- otherwise the rows save cleanly and score nothing forever. No-op
-                ;;while aqpool-link is BAR, which is the normal state at definition time.
-                ;;Here rather than in AQP-SCORE because the pool fact lives one module LATER in
-                ;;deploy order: AQP-SCORE cannot reference AQP-POOL, only the reverse.
-                (ref-AQP::UEV_ScoreDefinitionTargetMatchesPool score-id dpnf-id)
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-SCR::C_IssueNonFungibleScoreDefinition patron executor score-id dpnf-id trait-keys trait-values trait-score-values)
-                )
-                (format "Successfully issued NonFungible score definitions for score {} and dpnf-id {}." [score-id dpnf-id])
-            )
-        )
-    )
-    (defun AQP-SCR|C_IssueNonFungibleSetScoreDefinition:string
-        (patron:string executor:string score-id:string dpnf-id:string dpnf-nonce-classes:[integer] class-score-values:[decimal])
-        @doc "Writes DPNF set-mode (nonce-class) score definitions in AQP-SCORE and collects resulting IGNIS output on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                )
-                ;;DEAD-DEFINITION GUARD (StoicSyntax 2.16, 2026-10-06). If this score is already
-                ;;employed by a pool, the collection being defined must be the one that pool
-                ;;stakes -- otherwise the rows save cleanly and score nothing forever. No-op
-                ;;while aqpool-link is BAR, which is the normal state at definition time.
-                ;;Here rather than in AQP-SCORE because the pool fact lives one module LATER in
-                ;;deploy order: AQP-SCORE cannot reference AQP-POOL, only the reverse.
-                (ref-AQP::UEV_ScoreDefinitionTargetMatchesPool score-id dpnf-id)
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-SCR::C_IssueNonFungibleSetScoreDefinition patron executor score-id dpnf-id dpnf-nonce-classes class-score-values)
-                )
-                (format "Successfully issued NonFungible set score definitions for score {} and dpnf-id {}." [score-id dpnf-id])
-            )
-        )
-    )
-    (defun AQP-POOL|C_Issue:string
-        (patron:string executor:string pool-name:string asset-id:string aqp-class:integer)
-        @doc "Issues an acquisition pool (aqp-class + canonical native asset-id) and collects IGNIS output on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-AQP::C_Issue patron executor pool-name asset-id aqp-class)
-                    )
-                    (out:[string] (at "output" ico))
-                    (pool-id:string (at 0 out))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                (ref-TS01-A::XB_DynamicFuelSTOA)
-                (format "Successfully issued Acquisition Pool {} (class {} for asset {})." [pool-id aqp-class asset-id])
-            )
-        )
-    )
-    (defun AQP-POOL|C_AddScore:string
-        (patron:string executor:string pool-id:string score-id:string)
-        @doc "Assigns score-id to the first free slot on pool-id; collects IGNIS output on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-AQP::C_AddScore patron executor pool-id score-id)
-                )
-                (ref-TS01-A::XB_DynamicFuelSTOA)
-                (format "Successfully assigned Score {} to Pool {}." [score-id pool-id])
-            )
-        )
-    )
-    (defun AQP-POOL|C_RevokeScore:string
-        (patron:string executor:string pool-id:string score-id:string)
-        @doc "Revokes score-id from pool-id (compact slots, clear aqpool-link); collects IGNIS output on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-AQP::C_RevokeScore patron executor pool-id score-id)
-                )
-                (ref-TS01-A::XB_DynamicFuelSTOA)
-                (format "Successfully revoked Score {} from Pool {}." [score-id pool-id])
-            )
-        )
-    )
-    (defun AQP-POOL|C_DisablePoolStake:string
-        (patron:string executor:string pool-id:string)
-        @doc "Pool owner pauses new stakes (stake-enabled → false); collects IGNIS output on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-AQP::C_DisablePoolStake patron executor pool-id)
-                )
-                (ref-TS01-A::XB_DynamicFuelSTOA)
-                (format "Successfully disabled staking on Pool {}." [pool-id])
-            )
-        )
-    )
-    (defun AQP-POOL|C_EnablePoolStake:string
-        (patron:string executor:string pool-id:string)
-        @doc "Pool owner re-enables new stakes (stake-enabled → true); collects IGNIS output on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-AQP::C_EnablePoolStake patron executor pool-id)
-                )
-                (ref-TS01-A::XB_DynamicFuelSTOA)
-                (format "Successfully enabled staking on Pool {}." [pool-id])
-            )
-        )
-    )
-    ;;
-    (defun AQP-POOL|CC_StakeTrueFungible:string
-        (patron:string executor:string executee:string pool-id:string dptf-id:string amount:decimal)
-        @doc "Stake DPTF (or native|F| LP) into pool-id. Talos client shell: event cap + FVT::CC_TrueFungibleStakeFlow direction=true."
-        (with-capability (AQP|C>STAKE-TRUE-FUNGIBLE patron pool-id executor executee dptf-id amount)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-FVT::CC_TrueFungibleStakeFlow patron executor executee pool-id dptf-id amount true)
-                )
-                (UC_FormatStakeTrueFungibleResult pool-id executor executee dptf-id amount)
-            )
-        )
-    )
-    (defun AQP-POOL|CC_UnstakeTrueFungible:string
-        (patron:string executor:string executee:string pool-id:string dptf-id:string amount:decimal)
-        @doc "Unstake DPTF from pool-id. Talos client shell: event cap + FVT::CC_TrueFungibleStakeFlow direction=false."
-        (with-capability (AQP|C>UNSTAKE-TRUE-FUNGIBLE patron pool-id executor executee dptf-id amount)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-FVT::CC_TrueFungibleStakeFlow patron executor executee pool-id dptf-id amount false)
-                )
-                (UC_FormatUnstakeTrueFungibleResult pool-id executor executee dptf-id amount)
-            )
-        )
-    )
-    (defun AQP-POOL|CCp_StakeSpecialCustodial:string
-        (
-            patron:string
-            executor:string
-            executee:string
-            pool-id:string
-            dpof-id:string
-            nonces:[integer]
-        )
-        @doc "Stake whole SLEEPING (Z|) nonces into a pool UNDER CUSTODY: the batches leave \
-            \ <executor>, but the tracker records the pool as their owner, so they cannot be \
-            \ withdrawn until the lock matures. Scores, rewards and claims still accrue to \
-            \ <executee> exactly as on an ordinary stake. \
-            \ \
-            \ Release with `AQP-POOL|CCp_ReleaseSpecialCustodial`, which is PERMISSIONLESS once \
-            \ the lock matures and can only pay the beneficiary -- so the time-lock is on the \
-            \ asset, not on the staker's ability to get it back. Talos shell → \
-            \ AQP-FVT::CCp_StakeSpecialCustodial."
+    (defun URCi_Fuel:object{IgnisCollectorV4.OutputCumulator} ()
+        @doc "Cost preview for C_Fuel: when wrapped-STOA exists and the ORBR STOA balance is \
+            \ positive, the wrap + ATSU fuel legs; otherwise EOC (no-op). Re-derived purely."
         (let
             (
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-                ;;
-                (nonce-count:integer (length nonces))
-                (nonce-amounts:[decimal] (ref-DPOF::UR_NoncesSupplies dpof-id nonces))
+                (ref-coin:module{stoa-ns.fungible-v1} coin)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-ATSU:module{AutostakeUsageV3} ATSU)
+                (ref-LIQUID:module{StoaLiquidStakingV3} LIQUID)
+                (orb-sc ORBR|SC_NAME)
+                (present-stoa-balance:decimal (ref-coin::get-balance (ref-DALOS::UR_AccountStoa orb-sc)))
+                (w-stoa:string (ref-DALOS::UR_WrappedStoaID))
             )
-            (with-capability
-                (AQP|C>STAKE-SPECIAL-CUSTODIAL patron pool-id executor executee dpof-id nonces nonce-amounts)
+            (if (and (!= w-stoa BAR) (> present-stoa-balance 0.0))
                 (let
                     (
-                        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                        (liquid-idx:string (at 0 (ref-DPTF::UR_RewardToken w-stoa)))
                     )
-                    (ref-IGNIS::XE_CollectIgnis patron
-                        (ref-FVT::CCp_StakeSpecialCustodial
-                            patron executor executee pool-id dpof-id nonces nonce-amounts
-                        )
-                    )
-                    (format "Staked {} sleeping nonce(s) of {} into pool {} under POOL CUSTODY for {}. Releasable only at maturity."
-                        [nonce-count dpof-id pool-id (UC_ShortAccount executee)]
-                    )
-                )
-            )
-        )
-    )
-    (defun AQP-POOL|CCp_ReleaseSpecialCustodial:string
-        (patron:string pool-id:string executee:string dpof-id:string nonce:integer)
-        @doc "Release a MATURED custodial sleeping position: unwind the score and tracker, dissolve \
-            \ the batch, and send the native counterpart to <executee>. Talos shell → \
-            \ AQP-FVT::CCp_ReleaseSpecialCustodial. \
-            \ \
-            \ PERMISSIONLESS BY DESIGN, and that is what makes custody safe to accept: the staker \
-            \ cannot trigger this themselves (the pool owns the tracker row), so if it needed the \
-            \ pool owner's signature an absent owner could hold a matured position forever. Anyone \
-            \ may call it and nobody can profit from doing so -- the native tokens go to the \
-            \ beneficiary recorded in the tracker, never to the caller. \
-            \ \
-            \ Refused before maturity by `VST|XE>UNSLEEP`, the same gate a user's own unsleep must \
-            \ pass."
-        (with-capability
-            (AQP|C>RELEASE-SPECIAL-CUSTODIAL patron pool-id executee dpof-id nonce)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-FVT::CCp_ReleaseSpecialCustodial patron pool-id executee dpof-id nonce)
-                )
-                (format "Released sleeping nonce {} of {} from pool {}: batch dissolved, native sent to {}."
-                    [nonce dpof-id pool-id (UC_ShortAccount executee)]
-                )
-            )
-        )
-    )
-    (defun AQP-POOL|CC_ReassignOrtoStakeBeneficiary:string
-        (
-            patron:string
-            owner:string
-            pool-id:string
-            dpof-id:string
-            nonce:integer
-            current-beneficiary:string
-            new-beneficiary:string
-        )
-        @doc "Redirect who earns from an already-staked orto position -- including a sleeping \
-            \ batch still inside its maturity lock -- without unstaking and restaking it. \
-            \ RENAMED from AQP-POOL|CCp_ReassignCustodialBeneficiary, 2026-10-11: custody is \
-            \ retired, <owner> stays the tracker owner throughout, and this works for any staked \
-            \ sleeping position, not only one locked under the pool's name. \
-            \ \
-            \ NO ASSET EVER MOVES HERE OR AT RELEASE -- the ordinary unstake always returns the \
-            \ position to <owner>, regardless of who the beneficiary was, so this is pure \
-            \ earnings bookkeeping and the token's transfer rules have nothing to say about it. \
-            \ \
-            \ Requires the OWNER's signature -- they are the one entitled to decide who earns. \
-            \ Talos shell → AQP-FVT::CC_ReassignOrtoStakeBeneficiary."
-        (with-capability
-            (AQP|C>REASSIGN-ORTO-BENEFICIARY
-                patron owner pool-id dpof-id nonce current-beneficiary new-beneficiary)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-FVT::CC_ReassignOrtoStakeBeneficiary
-                        patron owner pool-id dpof-id nonce current-beneficiary new-beneficiary
-                    )
-                )
-                (format "Nonce {} of {} in pool {} now earns for {} instead of {}; owner {} and the position are unchanged."
-                    [nonce dpof-id pool-id (UC_ShortAccount new-beneficiary)
-                     (UC_ShortAccount current-beneficiary) (UC_ShortAccount owner)]
-                )
-            )
-        )
-    )
-    (defun AQP-POOL|CC_ReassignCollectableStakeBeneficiary:string
-        (
-            patron:string
-            owner:string
-            pool-id:string
-            collectable-id:string
-            son:bool
-            nonce:integer
-            current-beneficiary:string
-            new-beneficiary:string
-        )
-        @doc "The NFT/SFT counterpart of AQP-POOL|CC_ReassignOrtoStakeBeneficiary. Collectables \
-            \ carry no maturity lock -- this redirects earnings on an already-staked nonce \
-            \ without an unstake/restake round trip. son=true DPSF, son=false DPNF. \
-            \ Talos shell → AQP-FVT::CC_ReassignCollectableStakeBeneficiary."
-        (with-capability
-            (AQP|C>REASSIGN-COLLECTABLE-BENEFICIARY
-                patron owner pool-id collectable-id son nonce current-beneficiary new-beneficiary)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-FVT::CC_ReassignCollectableStakeBeneficiary
-                        patron owner pool-id collectable-id son nonce current-beneficiary new-beneficiary
-                    )
-                )
-                (format "Nonce {} of {} in pool {} now earns for {} instead of {}; owner {} and the position are unchanged."
-                    [nonce collectable-id pool-id (UC_ShortAccount new-beneficiary)
-                     (UC_ShortAccount current-beneficiary) (UC_ShortAccount owner)]
-                )
-            )
-        )
-    )
-    (defun AQP-POOL|CC_ReassignTrueFungibleStakeBeneficiary:string
-        (
-            patron:string
-            owner:string
-            pool-id:string
-            dptf-id:string
-            amount:decimal
-            current-beneficiary:string
-            new-beneficiary:string
-        )
-        @doc "Redirect part or all of who earns from an already-staked true-fungible position -- \
-            \ native or its `F|` frozen counterpart -- without unstaking and restaking it. \
-            \ Unlike the OF/collectable reassigns, a TF position has no nonce, so <amount> may be \
-            \ any value up to the current balance: the owner may split a position across two \
-            \ beneficiaries, or move it whole. \
-            \ \
-            \ NO ASSET EVER MOVES -- the ordinary unstake always returns the position to <owner>, \
-            \ regardless of who the beneficiary was, so this is pure earnings bookkeeping. \
-            \ \
-            \ Requires the OWNER's signature -- they are the one entitled to decide who earns. \
-            \ Talos shell → AQP-FVT::CC_ReassignTrueFungibleStakeBeneficiary."
-        (with-capability
-            (AQP|C>REASSIGN-TRUE-FUNGIBLE-BENEFICIARY
-                patron owner pool-id dptf-id amount current-beneficiary new-beneficiary)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-FVT::CC_ReassignTrueFungibleStakeBeneficiary
-                        patron owner pool-id dptf-id amount current-beneficiary new-beneficiary
-                    )
-                )
-                (format "{} of {} in pool {} now earns for {} instead of {}; owner {} and the position are unchanged."
-                    [amount dptf-id pool-id (UC_ShortAccount new-beneficiary)
-                     (UC_ShortAccount current-beneficiary) (UC_ShortAccount owner)]
-                )
-            )
-        )
-    )
-    (defun AQP-POOL|CC_StakeOrtoFungible:string
-        (
-            patron:string
-            executor:string
-            executee:string
-            pool-id:string
-            dpof-id:string
-            nonces:[integer]
-        )
-        @doc "Stake whole DPOF nonces via C_Transfer. Poll DPOF::UR_NoncesSupplies, then @event cap with resolved legs."
-        (let
-            (
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-                ;;
-                (nonce-count:integer (length nonces))
-                (nonce-amounts:[decimal] (ref-DPOF::UR_NoncesSupplies dpof-id nonces))
-            )
-            (with-capability (AQP|C>STAKE-ORTO-FUNGIBLE patron pool-id executor executee dpof-id nonces nonce-amounts)
-                (let
-                    (
-                        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                    )
-                    (ref-IGNIS::XE_CollectIgnis patron
-                        (ref-FVT::CC_OrtoFungibleStakeFlow
-                            patron executor executee pool-id dpof-id nonces nonce-amounts true
-                        )
-                    )
-                    (UC_FormatStakeOrtoFungibleResult pool-id executor executee dpof-id nonce-count)
-                )
-            )
-        )
-    )
-    (defun AQP-POOL|CC_UnstakeOrtoFungible:string
-        (
-            patron:string
-            executor:string
-            executee:string
-            pool-id:string
-            dpof-id:string
-            nonces:[integer]
-        )
-        @doc "Unstake whole DPOF nonces via C_Transfer from the (owner, beneficiary) row. M5: executee is \
-            \ caller-supplied (self OR foreign) so the exact staked row is located — mirrors TF. Poll UR_NoncesSupplies, \
-            \ then @event cap with resolved legs."
-        (let
-            (
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-                ;;
-                (nonce-count:integer (length nonces))
-                (nonce-amounts:[decimal] (ref-DPOF::UR_NoncesSupplies dpof-id nonces))
-            )
-            (with-capability (AQP|C>UNSTAKE-ORTO-FUNGIBLE patron pool-id executor executee dpof-id nonces nonce-amounts)
-                (let
-                    (
-                        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                    )
-                    (ref-IGNIS::XE_CollectIgnis patron
-                        (ref-FVT::CC_OrtoFungibleStakeFlow
-                            patron executor executee pool-id dpof-id nonces nonce-amounts false
-                        )
-                    )
-                    (UC_FormatUnstakeOrtoFungibleResult pool-id executor dpof-id nonce-count)
-                )
-            )
-        )
-    )
-    ;;
-    (defun AQP-POOL|CC_StakeSemiFungibleCollectable:string
-        (
-            patron:string
-            executor:string
-            executee:string
-            pool-id:string
-            collectable-id:string
-            nonces:[integer]
-        )
-        @doc "Stake DPSF collectable (son=true). Poll DPDC::UR_AccountNoncesSupplies, then FVT::CC_CollectableStakeFlow."
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-                ;;
-                (nonce-count:integer (length nonces))
-                (nonce-amounts:[integer] (ref-DPDC::UR_AccountNoncesSupplies executor collectable-id true nonces))
-            )
-            (with-capability
-                (AQP|C>STAKE-SEMI-FUNGIBLE-COLLECTABLE
-                    patron pool-id executor executee collectable-id nonces nonce-amounts
-                )
-                (let
-                    (
-                        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                    )
-                    (ref-IGNIS::XE_CollectIgnis patron
-                        (ref-FVT::CC_CollectableStakeFlow
-                            patron executor executee pool-id collectable-id true nonces nonce-amounts true
-                        )
-                    )
-                    (UC_FormatStakeCollectableResult
-                        pool-id executor executee collectable-id true nonce-count
-                    )
-                )
-            )
-        )
-    )
-    (defun AQP-POOL|CC_UnstakeSemiFungibleCollectable:string
-        (
-            patron:string
-            executor:string
-            executee:string
-            pool-id:string
-            collectable-id:string
-            nonces:[integer]
-            nonce-amounts:[integer]
-        )
-        @doc "Unstake DPSF collectable (son=true) from the (owner, beneficiary) row. M5: executee caller-supplied \
-            \ (self OR foreign) so the exact staked row is located — mirrors TF."
-        (let
-            (
-                (nonce-count:integer (length nonces))
-            )
-            (with-capability
-                (AQP|C>UNSTAKE-SEMI-FUNGIBLE-COLLECTABLE
-                    patron pool-id executor executee collectable-id nonces nonce-amounts
-                )
-                (let
-                    (
-                        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                    )
-                    (ref-IGNIS::XE_CollectIgnis patron
-                        (ref-FVT::CC_CollectableStakeFlow
-                            patron executor executee pool-id collectable-id true nonces nonce-amounts false
-                        )
-                    )
-                    (UC_FormatUnstakeCollectableResult pool-id executor collectable-id true nonce-count)
-                )
-            )
-        )
-    )
-    (defun AQP-POOL|CC_StakeNonFungibleCollectable:string
-        (
-            patron:string
-            executor:string
-            executee:string
-            pool-id:string
-            collectable-id:string
-            nonces:[integer]
-        )
-        @doc "Stake DPNF collectable (son=false). Poll DPDC::UR_AccountNoncesSupplies, then FVT::CC_CollectableStakeFlow."
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-                ;;
-                (nonce-count:integer (length nonces))
-                (nonce-amounts:[integer] (ref-DPDC::UR_AccountNoncesSupplies executor collectable-id false nonces))
-            )
-            (with-capability
-                (AQP|C>STAKE-NON-FUNGIBLE-COLLECTABLE
-                    patron pool-id executor executee collectable-id nonces nonce-amounts
-                )
-                (let
-                    (
-                        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                    )
-                    (ref-IGNIS::XE_CollectIgnis patron
-                        (ref-FVT::CC_CollectableStakeFlow
-                            patron executor executee pool-id collectable-id false nonces nonce-amounts true
-                        )
-                    )
-                    (UC_FormatStakeCollectableResult
-                        pool-id executor executee collectable-id false nonce-count
-                    )
-                )
-            )
-        )
-    )
-    (defun AQP-POOL|CC_UnstakeNonFungibleCollectable:string
-        (
-            patron:string
-            executor:string
-            executee:string
-            pool-id:string
-            collectable-id:string
-            nonces:[integer]
-            nonce-amounts:[integer]
-        )
-        @doc "Unstake DPNF collectable (son=false) from the (owner, beneficiary) row. M5: executee caller-supplied \
-            \ (self OR foreign) so the exact staked row is located — mirrors TF."
-        (let
-            (
-                (nonce-count:integer (length nonces))
-            )
-            (with-capability
-                (AQP|C>UNSTAKE-NON-FUNGIBLE-COLLECTABLE
-                    patron pool-id executor executee collectable-id nonces nonce-amounts
-                )
-                (let
-                    (
-                        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                    )
-                    (ref-IGNIS::XE_CollectIgnis patron
-                        (ref-FVT::CC_CollectableStakeFlow
-                            patron executor executee pool-id collectable-id false nonces nonce-amounts false
-                        )
-                    )
-                    (UC_FormatUnstakeCollectableResult pool-id executor collectable-id false nonce-count)
-                )
-            )
-        )
-    )
-    ;;
-    ;; Vacate — Full (1 tx) or Stateless Legs (N txs; auto-begin; finalize on last)
-    ;;
-    (defun AQP-POOL|C_AbortVacate:string
-        (patron:string executor:string pool-id:string)
-        @doc "Clear vacate-in-progress; stake stays disabled. Talos → AQP-VCT::C_AbortVacate."
-        (with-capability (AQP|C>ABORT-VACATE patron pool-id)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VCT::C_AbortVacate patron executor pool-id)
-                )
-                (format "Successfully aborted vacate-in-progress on Pool {} (stake remains disabled)."
-                    [pool-id]
-                )
-            )
-        )
-    )
-    (defun AQP-POOL|C_FinalizeVacate:string
-        (patron:string executor:string pool-id:string)
-        @doc "Vacate-v2 FINALIZE (nuke) — after a pool has been fully drained via AQP-POOL|Cp_BatchDrain*, this \
-            \ bulk-zeroes every employed score + bumps their vacate-generation (lazily invalidating all per-user \
-            \ rows), then clears vacate-in-progress, re-enables stake, and unfreezes the pool's FVTs. Pool-owner + \
-            \ nns==0 gated in VCT; IGNIS on patron. The commit-forward terminal step of a v2 drain campaign."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron (ref-VCT::C_FinalizeVacate patron executor pool-id))
-                (format "Successfully finalized vacate on Pool {} — scores nuked, stake re-enabled." [pool-id])
-            )
-        )
-    )
-    (defun AQP-POOL|CC_FullVacate:string
-        (patron:string executor:string pool-id:string)
-        @doc "Vacate rehaul — pool-owner AGNOSTIC full vacate (one tx): input is JUST the pool-id. VCT reads the \
-            \ pool class + scans its inventory on-chain and vacates every asset type. Owner enforced in VCT|C>VACATE; \
-            \ collects IGNIS on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron (ref-VCT::CC_FullVacate patron executor pool-id))
-                (format "Successfully full-vacated Pool {} (all asset types)." [pool-id])
-            )
-        )
-    )
-    (defun AQP-POOL|CCp_BatchVacateTrueFungible:string
-        (patron:string pool-id:string dptf-id:string owner-ids:[string] beneficiary-ids:[string] amounts:[decimal])
-        @doc "One TF batch of a UI-sliced vacate campaign. The first successful batch freezes the pool + its FVTs; \
-            \ the batch that empties the pool auto-finalizes/unfreezes. Owner enforced in VCT; IGNIS on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VCT::CCp_BatchVacateTrueFungible pool-id dptf-id owner-ids beneficiary-ids amounts))
-                (format "Batch-vacated {} TF leg(s) on Pool {} (asset {})." [(length owner-ids) pool-id dptf-id])
-            )
-        )
-    )
-    (defun AQP-POOL|CCp_BatchDrainTrueFungible:string
-        (patron:string pool-id:string dptf-id:string owner-ids:[string] beneficiary-ids:[string] amounts:[decimal])
-        @doc "Vacate-v2 FAST-DRAIN — one TF batch that returns assets + preserves rewards WITHOUT touching scores \
-            \ and WITHOUT finalizing (cheaper than CCp_BatchVacateTrueFungible for large pools). First batch freezes \
-            \ the pool + its FVTs; the pool stays frozen until AQP-POOL|C_FinalizeVacate nukes the scores once \
-            \ empty. Owner enforced in VCT; IGNIS on patron. Commit-forward — CCp_BatchVacateTrueFungible is the \
-            \ abortable path."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VCT::CCp_BatchDrainTrueFungible pool-id dptf-id owner-ids beneficiary-ids amounts))
-                (format "Fast-drained {} TF leg(s) on Pool {} (asset {}) — scores untouched, awaiting finalize."
-                    [(length owner-ids) pool-id dptf-id])
-            )
-        )
-    )
-    (defun AQP-POOL|CCp_BatchDrainOrtoFungible:string
-        (patron:string pool-id:string dpof-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]])
-        @doc "Vacate-v2 FAST-DRAIN — one OF batch that returns nonces + preserves rewards WITHOUT touching scores \
-            \ and WITHOUT finalizing. Amounts resolved on-chain from the tracker. First batch freezes the pool + \
-            \ its FVTs; it stays frozen until AQP-POOL|C_FinalizeVacate nukes the scores once empty. Owner enforced \
-            \ in VCT; IGNIS on patron. Commit-forward — CCp_BatchVacateOrtoFungible is the abortable path."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VCT::CCp_BatchDrainOrtoFungible patron pool-id dpof-id owner-ids beneficiary-ids nonces-array))
-                (format "Fast-drained {} OF leg(s) on Pool {} (asset {}) — scores untouched, awaiting finalize."
-                    [(length owner-ids) pool-id dpof-id])
-            )
-        )
-    )
-    (defun AQP-POOL|CCp_BatchDrainCollectable:string
-        (patron:string pool-id:string collectable-id:string son:bool owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]])
-        @doc "Vacate-v2 FAST-DRAIN — one DPSF (son=true) / DPNF (son=false) batch that returns nonces + preserves \
-            \ rewards WITHOUT touching scores and WITHOUT finalizing. First batch freezes the pool + its FVTs; it \
-            \ stays frozen until AQP-POOL|C_FinalizeVacate nukes the scores once empty. Owner enforced in VCT; \
-            \ IGNIS on patron. Commit-forward — CCp_BatchVacateCollectables is the abortable path."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VCT::CCp_BatchDrainCollectable pool-id collectable-id son owner-ids beneficiary-ids nonces-array amounts-array))
-                (format "Fast-drained {} collectable leg(s) on Pool {} (asset {}, son {}) — scores untouched, awaiting finalize."
-                    [(length owner-ids) pool-id collectable-id son])
-            )
-        )
-    )
-    (defun AQP-POOL|CCp_BatchVacateOrtoFungible:string
-        (patron:string pool-id:string dpof-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]])
-        @doc "One OF batch of a UI-sliced vacate campaign (amounts resolved on-chain from the tracker). First batch \
-            \ freezes; the emptying batch auto-finalizes/unfreezes. Owner enforced in VCT; IGNIS on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VCT::CCp_BatchVacateOrtoFungible patron pool-id dpof-id owner-ids beneficiary-ids nonces-array))
-                (format "Batch-vacated {} OF leg(s) on Pool {} (asset {})." [(length owner-ids) pool-id dpof-id])
-            )
-        )
-    )
-    (defun AQP-POOL|CCp_BatchVacateCollectables:string
-        (patron:string pool-id:string collectable-id:string son:bool owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]])
-        @doc "One DPSF (son=true) / DPNF (son=false) batch of a UI-sliced vacate campaign. First batch freezes; the \
-            \ emptying batch auto-finalizes/unfreezes. Owner enforced in VCT; IGNIS on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VCT::CCp_BatchVacateCollectables pool-id collectable-id son owner-ids beneficiary-ids nonces-array amounts-array))
-                (format "Batch-vacated {} collectable leg(s) on Pool {} (asset {}, son {})."
-                    [(length owner-ids) pool-id collectable-id son])
-            )
-        )
-    )
-    (defun AQP-POOL|CC_UpdateScoreMultipliers:string
-        (patron:string executor:string score-id:string
-         mx-frozen:decimal mx-sleeping:decimal mx-hibernated:decimal)
-        @doc "Re-set a score's frozen/sleeping/hibernating multipliers. Talos shell → AQP-POOL::CC_UpdateScoreMultipliers. \
-            \ Refused while a frozen or sleeping position exists on the score; the result string says \
-            \ which rule a caller just satisfied, because `mx-sleeping` is a CEILING and reads like a \
-            \ factor."
-        ;;THE CAPABILITY IS ACQUIRED HERE, AND THAT IS WHAT MAKES THE CALL LEGAL. `P|UEV_IMC` on
-        ;;the core client asks whether a registered inter-module guard is in scope; acquiring the
-        ;;callee's own `AQP|C>...` from Talos is what puts one there. Calling the client directly
-        ;;fails with "None of the guards passed" from `U|G::UEV_Any`, several frames below the
-        ;;mistake -- which is exactly how this was found.
-        (with-capability
-            (AQP|C>UPDATE-SCORE-MULTIPLIERS patron executor score-id mx-frozen mx-sleeping mx-hibernated)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-AQP::CC_UpdateScoreMultipliers patron executor score-id mx-frozen mx-sleeping mx-hibernated)
-                )
-                (format "Score {} now frozen x{} (flat, a freeze is permanent), sleeping UP TO x{} (reached only at the full 25-year lock), hibernating x{} (flat, it asks no commitment)."
-                    [score-id mx-frozen mx-sleeping mx-hibernated]
-                )
-            )
-        )
-    )
-    (defun AQP-POOL|C_BeginScoreRevoke:string
-        (patron:string executor:string pool-id:string score-id:string)
-        @doc "PHASE 1 of 3 — begin retiring a score from a pool: vacate its slot and freeze the \
-            \ pool. Pool owner. Talos shell → AQP-POOL::C_BeginScoreRevoke. \
-            \ \
-            \ Use this when `AQP-POOL|C_RevokeScore` refuses because holders still carry weight \
-            \ for the score. Then drain with `AQP-POOL|Cp_DrainScoreSlice` until \
-            \ `URHC_AQP|ScoreDrainOutstanding` is empty, finalize, and clear the freeze."
-        ;;THE SLOT INDEX IS READ THROUGH THE MODREF, not by a dot call. `AQP-POOL.URC_...` would
-        ;;have PINNED AQP-POOL's code hash at this module's deploy time, adding a permanent
-        ;;(callee, caller) edge that forces Talos to redeploy with every AQP-POOL change -- and
-        ;;a stale dot caller of a table-owning callee does not go quietly stale, it aborts with
-        ;;"hash not blessed". `_dotpin.py --check` refused the first draft of this wrapper.
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-            )
-            (with-capability (AQP|C>BEGIN-SCORE-REVOKE patron executor pool-id score-id
-                                (ref-AQP::URC_ScoreSlotIndexForScore pool-id score-id))
-                (do
-                    (ref-IGNIS::XE_CollectIgnis patron
-                        (ref-AQP::C_BeginScoreRevoke patron executor pool-id score-id)
-                    )
-                    (format "Score {} unslotted from pool {}. Pool is FROZEN: drain its holders, finalize, then clear."
-                        [score-id pool-id]
-                    )
-                )
-            )
-        )
-    )
-    (defun AQP-POOL|Cp_DrainScoreSlice:string
-        (patron:string pool-id:string score-id:string accounts:[string])
-        @doc "PHASE 2 of 3 — retire one SLICE of the holders of a score that is mid-revoke. Talos \
-            \ shell → AQP-POOL::Cp_DrainScoreSlice. Permissionless and idempotent: send one per \
-            \ slice of `URHC_AQP|ScoreDrainOutstanding`, in any order, in parallel, as often as you \
-            \ like — an account already retired contributes a zero delta. Complete when that read \
-            \ returns []."
-        (with-capability (AQP|C>DRAIN-SCORE-SLICE patron pool-id score-id accounts)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-AQP::Cp_DrainScoreSlice patron pool-id score-id accounts)
-                )
-                (format "Retired {} holder(s) of score {} in pool {}. Drain is complete when URHC_AQP|ScoreDrainOutstanding returns []."
-                    [(length accounts) score-id pool-id]
-                )
-            )
-        )
-    )
-    (defun AQP-POOL|CC_FinalizeScoreRevoke:string
-        (patron:string executor:string pool-id:string score-id:string)
-        @doc "PHASE 3 of 3 — cut the score's aqpool-link now that no holder carries weight for it. \
-            \ Pool owner. Talos shell → AQP-POOL::CC_FinalizeScoreRevoke. Refused while a single \
-            \ holder remains. Does NOT release the pool freeze — `AQP-POOL|CC_ClearPoolSweep` does, \
-            \ and only when every score on the pool is clear."
-        (with-capability (AQP|C>FINALIZE-SCORE-REVOKE patron executor pool-id score-id)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-AQP::CC_FinalizeScoreRevoke patron executor pool-id score-id)
-                )
-                (format "Score {} fully retired from pool {}." [score-id pool-id])
-            )
-        )
-    )
-    (defun AQP-FVT|CC_ClearPoolSweep:string
-        (patron:string pool-id:string)
-        @doc "Release a pool's sweep freeze and return it to trading. Talos shell → \
-            \ AQP-FVT::CC_ClearPoolSweep. PERMISSIONLESS and self-proving: it succeeds only when \
-            \ every employed score is fully re-rated and no retired score still holds weight, so \
-            \ anybody may be the one to finish the job — including a holder who wants to exit."
-        (with-capability (FVT|C>CLEAR-POOL-SWEEP patron pool-id)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-FVT::CC_ClearPoolSweep patron pool-id)
-                )
-                (format "Pool {} released: no outstanding re-rate or drain work remains." [pool-id])
-            )
-        )
-    )
-    (defun AQP-POOL|CCp_BackfillScoreSlice:string
-        (patron:string pool-id:string score-id:string beneficiaries:[string])
-        @doc "Re-rate one SLICE of a score's holders to their canonical base. Talos shell → \
-            \ AQP-POOL::CCp_BackfillScoreSlice. Permissionless and idempotent: send one per slice \
-            \ of `URHC_AQP|ScoreBackfillOutstanding`, in any order, in parallel, as many times as \
-            \ you like — a holder already correctly rated contributes a zero delta. The sweep is \
-            \ complete when that read returns []."
-        (with-capability (AQP|C>BACKFILL-SCORE-SLICE patron pool-id score-id beneficiaries)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-AQP::CCp_BackfillScoreSlice patron pool-id score-id beneficiaries)
-                )
-                (format "Re-rated {} holder(s) of score {} in pool {}. The sweep is complete when URHC_AQP|ScoreBackfillOutstanding returns []."
-                    [(length beneficiaries) score-id pool-id]
-                )
-            )
-        )
-    )
-    (defun AQP-POOL|C_SyncTrueFungibleAnchors:string
-        (patron:string executee:string dptf-id:string)
-        @doc "Pool-agnostic TF anchor repair for beneficiary × dptf-id. Talos shell → AQP-POOL::C_SyncTrueFungibleAnchors."
-        (with-capability (AQP|C>SYNC-TF-ANCHORS patron executee dptf-id)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-AQP::C_SyncTrueFungibleAnchors patron executee dptf-id)
-                )
-                (format "Successfully synced TrueFungible anchors for beneficiary {} on {}."
-                    [(UC_ShortAccount executee) dptf-id]
-                )
-            )
-        )
-    )
-    (defun AQP-POOL|C_SyncSemiFungibleAnchors:string
-        (patron:string executee:string dpsf-id:string)
-        @doc "Pool-agnostic DPSF anchor repair. Talos shell → AQP-POOL::C_SyncCollectableAnchors son=true."
-        (with-capability (AQP|C>SYNC-SEMI-FUNGIBLE-ANCHORS patron executee dpsf-id)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-AQP::C_SyncCollectableAnchors patron executee dpsf-id true)
-                )
-                (format "Successfully synced SemiFungible anchors for beneficiary {} on {}."
-                    [(UC_ShortAccount executee) dpsf-id]
-                )
-            )
-        )
-    )
-    (defun AQP-POOL|C_SyncNonFungibleAnchors:string
-        (patron:string executee:string dpnf-id:string)
-        @doc "Pool-agnostic DPNF anchor repair. Talos shell → AQP-POOL::C_SyncCollectableAnchors son=false."
-        (with-capability (AQP|C>SYNC-NON-FUNGIBLE-ANCHORS patron executee dpnf-id)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-AQP::C_SyncCollectableAnchors patron executee dpnf-id false)
-                )
-                (format "Successfully synced NonFungible anchors for beneficiary {} on {}."
-                    [(UC_ShortAccount executee) dpnf-id]
-                )
-            )
-        )
-    )
-    ;;
-    ;; --- AQP-FVT lifecycle (Talos client shell → AQP-FVT::C_*) ---
-    (defun AQP-FVT|C_Issue:string
-        (patron:string executor:string fvt-name:string fvt-class:integer common-denominator:string)
-        @doc "Issues an FVT (farm/vault/treasury) and collects IGNIS output on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-FVT::C_Issue patron executor fvt-name fvt-class common-denominator)
-                    )
-                    (out:[string] (at "output" ico))
-                    (fvt-id:string (at 0 out))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                (ref-TS01-A::XB_DynamicFuelSTOA)
-                (format "Successfully issued FVT {} (class {})." [fvt-id fvt-class])
-            )
-        )
-    )
-    (defun AQP-FVT|C_IssueMultipletFamily:string
-        (
-            patron:string
-            executor:string
-            token-0-id:string
-            token-1-id:string
-            token-2-id:string
-            ats-0-1-id:string
-            ats-1-2-id:string
-        )
-        @doc "Issues chain-wide MultipletFamily F|t0|t1|t2 (rank 3) with ATS ladder validation."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-FVT::C_IssueMultipletFamily
-                            patron executor token-0-id token-1-id token-2-id ats-0-1-id ats-1-2-id
-                        )
-                    )
-                    (out:[string] (at "output" ico))
-                    (family-id:string (at 0 out))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                (ref-TS01-A::XB_DynamicFuelSTOA)
-                (format "Successfully issued MultipletFamily {}." [family-id])
-            )
-        )
-    )
-    (defun AQP-FVT|C_AddScoreEntity:string
-        (patron:string executor:string fvt-id:string score-entity-type:integer score-entity-id:string)
-        @doc "Admits score (type 1) or triplet (type 3) to fvt-id via ScoreEntityLink."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-FVT::C_AddScoreEntity patron executor fvt-id score-entity-type score-entity-id)
-                )
-                (ref-TS01-A::XB_DynamicFuelSTOA)
-                (format "Successfully added score-entity type {} id {} to FVT {}."
-                    [score-entity-type score-entity-id fvt-id]
-                )
-            )
-        )
-    )
-    (defun AQP-FVT|C_AddRewardLink:string
-        (patron:string executor:string fvt-id:string reward-dptf-id:string segmentation:bool multiplet-family-id:string)
-        @doc "Registers one reward DPTF on fvt-id (multiplet-family-id BAR for plain tokens). Collects IGNIS on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-FVT::C_AddRewardLink patron executor fvt-id reward-dptf-id segmentation multiplet-family-id)
-                )
-                (ref-TS01-A::XB_DynamicFuelSTOA)
-                (format "Successfully added reward link {} on FVT {} (family={})."
-                    [reward-dptf-id fvt-id multiplet-family-id]
-                )
-            )
-        )
-    )
-    (defun AQP-FVT|C_ToggleScoreEntityLink:string
-        (patron:string executor:string fvt-id:string score-entity-type:integer score-entity-id:string enabled:bool)
-        @doc "Toggles ScoreEntityLink.enabled and collects IGNIS output on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-FVT::C_ToggleScoreEntityLink patron executor fvt-id score-entity-type score-entity-id enabled)
-                )
-                (format "Successfully toggled score-entity type {} id {} on FVT {} to enabled={}."
-                    [score-entity-type score-entity-id fvt-id enabled]
-                )
-            )
-        )
-    )
-    (defun AQP-FVT|C_ToggleRewardLink:string
-        (patron:string executor:string fvt-id:string reward-dptf-id:string enabled:bool)
-        @doc "Toggles reward-enabled and collects IGNIS output on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-FVT::C_ToggleRewardLink patron executor fvt-id reward-dptf-id enabled)
-                )
-                (format "Successfully toggled reward link {} on FVT {} to enabled={}." [reward-dptf-id fvt-id enabled])
-            )
-        )
-    )
-    (defun AQP-FVT|C_SetQualitySplit:string
-        (patron:string executor:string fvt-id:string reward-dptf-id:string mode:string bronze-split:[integer] silver-split:[integer] gold-split:[integer])
-        @doc "Round B: set a MULTIPLET_BASE reward's quality-split MODE + heterogeneous MATRIX (owner-gated). \
-            \ HOMOGENEOUS routes each lane to its one ladder token; HETEROGENEOUS splits each lane across all 3 \
-            \ ladder tokens per its [to-t0 to-t1 to-t2] per-mille row. Collects IGNIS output on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-FVT::C_SetQualitySplit patron executor fvt-id reward-dptf-id mode bronze-split silver-split gold-split)
-                )
-                (format "Successfully set quality split mode={} on reward {} of FVT {}." [mode reward-dptf-id fvt-id])
-            )
-        )
-    )
-    (defun AQP-FVT|C_Control:string
-        (patron:string executor:string fvt-id:string new-can-upgrade:bool new-can-change-owner:bool)
-        @doc "Updates FVT control flags and collects IGNIS output on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-FVT::C_Control patron executor fvt-id new-can-upgrade new-can-change-owner)
-                )
-                (format "Successfully updated control flags for FVT {}." [fvt-id])
-            )
-        )
-    )
-    (defun AQP-FVT|C_RotateOwnership:string
-        (patron:string executor:string executee:string fvt-id:string)
-        @doc "Rotates FVT ownership and collects IGNIS output on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-FVT::C_RotateOwnership patron executor executee fvt-id)
-                )
-                (format "Successfully rotated ownership for FVT {} to {}." [fvt-id executee])
-            )
-        )
-    )
-    (defun AQP-FVT|C_SetCommonDenominator:string
-        (patron:string executor:string fvt-id:string common-denominator:string)
-        @doc "Sets farm common-denominator (before ScoreEntityLinks) and collects IGNIS on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-FVT::C_SetCommonDenominator patron executor fvt-id common-denominator)
-                )
-                (ref-TS01-A::XB_DynamicFuelSTOA)
-                (format "Successfully set common-denominator on FVT {} to {}." [fvt-id common-denominator])
-            )
-        )
-    )
-    (defun AQP-FVT|C_SetMosaic:string
-        (patron:string executor:string fvt-id:string mosaic:bool)
-        @doc "Sets mosaic membership policy when FVT has no member links; collects IGNIS on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-FVT::C_SetMosaic patron executor fvt-id mosaic)
-                )
-                (format "Successfully set mosaic on FVT {} to {}." [fvt-id mosaic])
-            )
-        )
-    )
-    (defun AQP-FVT|C_SetSplitMode:string
-        (patron:string executor:string fvt-id:string split-mode:string)
-        @doc "Sets a farm's reward-split mode (SPLIT|STAKED participation | SPLIT|TVL pool-size); collects IGNIS on patron. \
-            \ Freely mutable — re-weights only future injects."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-FVT::C_SetSplitMode patron executor fvt-id split-mode)
-                )
-                (format "Successfully set reward-split mode on farm {} to {}." [fvt-id split-mode])
-            )
-        )
-    )
-    (defun AQP-FVT|C_IssueGenericEarningVault:string
-        (patron:string executor:string vault-name:string stake-dptf-id:string reward-dptf-id:string)
-        @doc "Stand up a complete single-asset earning Vault in ONE transaction and ONE IGNIS \
-            \ collection: stake a true fungible, earn another true fungible. Composes the six core \
-            \ operations a Vault needs and concatenates their cumulators, so the caller pays once \
-            \ rather than six times."
-        ;; WHY THIS IS A TALOS ORCHESTRATOR AND NOT A CITIZEN HELPER
-        ;;   The same six steps written in a citizen module would call the six TS02-C3 wrappers,
-        ;;   and EVERY ONE OF THOSE COLLECTS IGNIS ON ITS OWN -- six collections for one logical
-        ;;   operation. Composing the CORE C_ functions here and concatenating their cumulators
-        ;;   collects once, which is the entire reason this belongs in Talos.
-        ;;
-        ;; WHAT A VAULT ACTUALLY NEEDS -- six operations, four class constants
-        ;;   1 score for the staked DPTF   score-class 1
-        ;;   2 pool it is staked into      aqp-class 1   (0 is reserved for LP)
-        ;;   3 score -> pool link          without it the pool scores nothing
-        ;;   4 the FVT entity              fvt-class 1 (Vault)
-        ;;   5 score admitted to the FVT   score-entity type 1
-        ;;   6 reward token registered     multiplet-family-id BAR (plain, not a laddered family)
-        ;;
-        ;;   Step 6 is not optional: an EMPLOYED score with no reward link makes every stake abort
-        ;;   in the FVT pipeline (05_FVT.pact:1210). Doing 1-5 without 6 builds a vault nobody can
-        ;;   use, which is a state this function makes unreachable.
-        ;;
-        ;; CLASS SAFETY
-        ;;   Two sovereign admission rules disagree about fvt-class for SF/NF
-        ;;   (URC_ScoreClassMatchesFvtClass vs URC_TripletCategoryMatchesFvtClass). They AGREE for
-        ;;   true fungibles: score-class 1 is admitted at fvt-class 1 by the first, and VAULT_TF
-        ;;   maps to 1 in the second. A TF-in/TF-out vault is the case both describe identically,
-        ;;   so this function does not depend on how that dispute is settled.
-        ;;
-        ;; NAMING -- one name in, three derived, and they MUST differ
-        ;;   UDC_Makeid is <name>-<block-hash> and ids collide across families because
-        ;;   BRD|BrandingTable is shared (DPDC audit #33M). Three entities minted from one name in
-        ;;   one transaction would produce three byte-identical ids and the second insert would
-        ;;   hard-abort. Hence <name>Score / <name>Pool / <name>Vault.
-        (with-capability (P|TS)
-            (let*
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                    ;;
-                    (score-name:string (concat [vault-name "Score"]))
-                    (pool-name:string (concat [vault-name "Pool"]))
-                    (fvt-name:string (concat [vault-name "Vault"]))
-                    ;;ids are derived in THIS transaction for entities minted in THIS transaction,
-                    ;;so UDC_Makeid returns exactly what the C_Issue calls below are about to make.
-                    (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
-                    (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
-                    (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
-                    ;;The POOL's executor is the STAKED ASSET's owner konto -- which is NOT
-                    ;;necessarily `executor`, the account that will own the score and vault.
-                    ;;A vault operator may stake a token somebody else issued. Derived, not assumed.
-                    (stake-asset-owner:string
-                        (ref-AQP::URC_AqpOwnerKontoFromClassAndAsset GV|POOL_CLASS_TF stake-dptf-id))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-IGNIS::UDC_ConcatenateOutputCumulators
                         [
-                            (ref-SCR::C_IssueTrueFungibleScore
-                                patron executor score-name GV|PRECISION GV|MX_FROZEN)
-                            (ref-AQP::C_Issue patron stake-asset-owner pool-name stake-dptf-id GV|POOL_CLASS_TF)
-                            (ref-AQP::C_AddScore patron stake-asset-owner pool-id score-id)
-                            (ref-FVT::C_Issue
-                                patron executor fvt-name GV|FVT_CLASS_VAULT GV|COMMON_BAR)
-                            ;;The FVT's executor here IS `executor` -- C_Issue two lines up
-                            ;;makes that account the vault's owner, so it is derived, not assumed.
-                            (ref-FVT::C_AddScoreEntity
-                                patron executor fvt-id GV|SCORE_ENTITY_SCORE score-id)
-                            (ref-FVT::C_AddRewardLink
-                                patron executor fvt-id reward-dptf-id false GV|COMMON_BAR)
+                            (ref-LIQUID::URCi_WrapStoa orb-sc present-stoa-balance)
+                            (ref-ATSU::URCi_Fuel orb-sc liquid-idx w-stoa present-stoa-balance)
                         ]
                         []
                     )
                 )
-                (ref-TS01-A::XB_DynamicFuelSTOA)
-                (format
-                    "Successfully issued Generic Earning Vault {}: stake {} earn {}. score={} pool={} fvt={}."
-                    [vault-name stake-dptf-id reward-dptf-id score-id pool-id fvt-id]
+                EOC
+            )
+        )
+    )
+    (defun URCi_Sublimate:object{IgnisCollectorV4.OutputCumulator}
+        (client:string target:string ouro-amount:decimal)
+        @doc "Cost preview for C_Sublimate: client->ORBR OURO transfer + OURO burn + IGNIS mint \
+            \ + ORBR->target IGNIS transfer. Output == [ignis-amount], re-derived purely."
+        (let
+            (
+                (ref-U|ATS:module{UtilityAtsV3} U|ATS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
+                ;;
+                (ignis-id:string (ref-DALOS::UR_IgnisID))
+                (ouro-id:string (ref-DALOS::UR_OuroborosID))
+                (ouro-precision:integer (ref-DPTF::UR_Decimals ouro-id))
+                ;;
+                (ouro-remainder-amount:decimal (at 0 (ref-U|ATS::UC_PromilleSplit 10.0 ouro-amount ouro-precision)))
+                (ignis-amount:decimal (URCv_Sublimate ouro-remainder-amount))
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                [
+                    (ref-TFT::URCi_Transfer ouro-id client ORBR|SC_NAME ouro-amount)
+                    (ref-DPTF::URCi_Burn ouro-id ORBR|SC_NAME)
+                    (ref-DPTF::URCi_Mint ignis-id ORBR|SC_NAME false)
+                    (ref-TFT::URCi_Transfer ignis-id ORBR|SC_NAME target ignis-amount)
+                ]
+                [ignis-amount]
+            )
+        )
+    )
+    (defun URCi_SublimateV2:object{IgnisCollectorV4.OutputCumulator}
+        (client:string target:string ouro-amount:decimal)
+        @doc "Cost preview for C_SublimateV2: (conditional) freeze client + wipe-slim the OURO \
+            \ + unfreeze + IGNIS mint + ORBR->target IGNIS transfer. Output == [ignis-amount], \
+            \ re-derived purely."
+        (let
+            (
+                (ref-U|ATS:module{UtilityAtsV3} U|ATS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
+                ;;
+                (ignis-id:string (ref-DALOS::UR_IgnisID))
+                (ouro-id:string (ref-DALOS::UR_OuroborosID))
+                (ouro-precision:integer (ref-DPTF::UR_Decimals ouro-id))
+                ;;
+                (ouro-remainder-amount:decimal (at 0 (ref-U|ATS::UC_PromilleSplit 10.0 ouro-amount ouro-precision)))
+                (ignis-amount:decimal (URCv_Sublimate ouro-remainder-amount))
+                (frozen-state:bool (ref-DPTF::UR_AccountFrozenState ouro-id client))
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                [
+                    (if (not frozen-state)
+                        (ref-DPTF::URCi_ToggleFreezeAccount ouro-id)
+                        EOC
+                    )
+                    (ref-DPTF::URCi_WipeSlim ouro-id)
+                    (ref-DPTF::URCi_ToggleFreezeAccount ouro-id)
+                    (ref-DPTF::URCi_Mint ignis-id ORBR|SC_NAME false)
+                    (ref-TFT::URCi_Transfer ignis-id ORBR|SC_NAME target ignis-amount)
+                ]
+                [ignis-amount]
+            )
+        )
+    )
+    (defun URCi_WithdrawFees:object{IgnisCollectorV4.OutputCumulator}
+        (id:string target:string)
+        @doc "Cost preview for C_WithdrawFees: the base token-issue IGNIS price + the ORBR-> \
+            \ target transfer of the accrued fee supply, re-derived purely."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
+                (withdraw-amount:decimal (ref-DPTF::UR_AccountSupply id ORBR|SC_NAME))
+                (price:decimal (ref-IGNIS::UC_IgnisDeter "fee-withdraw"))
+                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                [
+                    (ref-IGNIS::UDC_ConstructOutputCumulator price ORBR|SC_NAME trigger [])
+                    (ref-TFT::URCi_Transfer id ORBR|SC_NAME target withdraw-amount)
+                ]
+                []
+            )
+        )
+    )
+    ;;{5.4}  Validate [UEV/CAP]
+    (defun UEV_Exchange ()
+        ;;FIXED 2026-09-12: the two BAR checks are enforced in an OUTER let, above the role reads.
+        ;;They used to sit BELOW a single binding group that already did
+        ;;`(o-rm (UR_AccountRoleMint ouro-id orb-sc))`, and a `let` is EAGER -- so when ouro-id was
+        ;;still BAR that read raised `DPTF ID | does not exist` before either enforce was consulted.
+        ;;Setting OURO alone did not help: the gas-id read then aborted the same way. Both written
+        ;;sentences were unreachable on the only chain state where they mean anything -- the boot
+        ;;window, before the two ids are configured.
+        ;;Splitting the group is enough: the id reads depend on nothing, the ROLE reads depend on the
+        ;;ids, so the enforces go between them. Pinned by
+        ;;REPL/Stage_01/[4.0]_Sovereign-Executor.repl <<TX4.0-CONFIG>>.
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ouro-id:string (ref-DALOS::UR_OuroborosID))
+                (gas-id:string (ref-DALOS::UR_IgnisID))
+            )
+            (enforce (!= ouro-id BAR) "Ouroboros is not set")
+            (enforce (!= gas-id BAR) "Ignis is not set")
+        (let
+            (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (orb-sc ORBR|SC_NAME)
+
+                (o-rm:bool (ref-DPTF::UR_AccountRoleMint ouro-id orb-sc))
+                (o-rb:bool (ref-DPTF::UR_AccountRoleBurn ouro-id orb-sc))
+                (t1:bool (and o-rm o-rb))
+                (g-rm:bool (ref-DPTF::UR_AccountRoleMint gas-id orb-sc))
+                (g-rb:bool (ref-DPTF::UR_AccountRoleBurn gas-id orb-sc))
+                (t2:bool (and g-rm g-rb))
+                (t3:bool (and t1 t2))
+            )
+            ;;Checks Exchange Permission (the two BAR checks now live in the outer let above)
+            ;;t3 = t1 AND t2, over four reads of the shape (UR_AccountRoleMint <id> orb-sc). Each of
+            ;;those ends in
+            ;;    (or <the account's role flag> (DALOS::UR_AutonomicRoles account))
+            ;;and `UR_AutonomicRoles` is a PURE fold over a hardcoded list of smart-contract account
+            ;;names -- not a table read. `ORBR|SC_NAME` resolves to `DALOS::GOV|OUROBOROS|SC_NAME`,
+            ;;which IS one of the entries. So the right-hand side is a compile-time `true`, the `or`
+            ;;short-circuits, and t1/t2/t3 hold for every possible chain state. Writing the role flags
+            ;;with env-module-admin does not help -- they are ORed away.
+            ;;Both facts are asserted in REPL/modules/OUROBOROS.repl <<ORB-G1>>, so this annotation
+            ;;cannot rot silently: if the autonomic list ever drops OUROBOROS, that test goes red and
+            ;;this guard becomes live. Kept as a fail-closed backstop for exactly that day.
+            ;;UNREACHABLE BY CONSTRUCTION -- unlike the two BAR guards above (which were MUTE and were
+            ;;repaired by splitting the binding group), no STATE can reach this one at all.
+            (enforce t3 "Permission invalid for Ignis Exchange")
+        ))
+    )
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
+    (defun XB_Compress:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string client:string ignis-amount:decimal)
+        @doc "SC-account-tolerant IGNIS→OURO compress for INTERNAL module callers (registered OUROBOROS IMC). Same \
+            \ conversion + fee as C_Compress (98.5% efficiency), but authorized by IGNIS|XB>COMPRESS which OMITS the \
+            \ standard-account restriction — so a SMART account (e.g. AQP|SC_NAME custody) may normalize an IGNIS \
+            \ royalty leg to OURO before disposal. P|UEV_IMC gates the caller module. The <client>'s IGNIS→ORBR \
+            \ transfer is authorized by whatever cap the caller holds for <client> (e.g. P|FVT|REMOTE-GOV)."
+        (P|UEV_IMC)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
+                ;;
+                (ouro-id:string (ref-DALOS::UR_OuroborosID))
+                (ignis-id:string (ref-DALOS::UR_IgnisID))
+                (ignis-to-ouro:[decimal] (URCv_Compress ignis-amount))
+                (ouro-remainder-amount:decimal (at 0 ignis-to-ouro))
+            )
+            (with-capability (IGNIS|XB>COMPRESS client)
+                (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                    [
+                        (ref-TFT::C_Transfer patron client ORBR|SC_NAME ignis-id ignis-amount true)
+                        (ref-DPTF::C_Burn patron ORBR|SC_NAME ignis-id ignis-amount)
+                        (ref-DPTF::C_Mint patron ORBR|SC_NAME ouro-id ouro-remainder-amount false)
+                        (ref-TFT::C_Transfer patron ORBR|SC_NAME client ouro-id ouro-remainder-amount true)
+                    ]
+                    [ouro-remainder-amount]
+                )
+            )
+        )
+    )
+    ;;{5.7}  User [A/C]
+    (defun C_Compress:object{IgnisCollectorV4.OutputCumulator}
+        (executor:string ignis-amount:decimal)
+        (P|UEV_IMC)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
+                ;;
+                (ouro-id:string (ref-DALOS::UR_OuroborosID))
+                (ignis-id:string (ref-DALOS::UR_IgnisID))
+                (ignis-to-ouro:[decimal] (URCv_Compress ignis-amount))
+                (ouro-remainder-amount:decimal (at 0 ignis-to-ouro))
+                ;;#61L fix: removed the dead `total-ouro` binding (bound, never referenced
+                ;;anywhere in the function body - only `ouro-remainder-amount`, the first
+                ;;element, is actually minted/transferred). No functional change.
+            )
+            (with-capability (IGNIS|C>COMPRESS executor)
+                (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                    [
+                        ;;01]Client sends GAS(Ignis) <ignis-amount> to the Ouroboros Smart Ouronet Account
+                        (ref-TFT::C_Transfer executor executor ORBR|SC_NAME ignis-id ignis-amount true)
+                        ;;02]Ouroboros burns GAS(Ignis) <ignis-amount>
+                        (ref-DPTF::C_Burn executor ORBR|SC_NAME ignis-id ignis-amount)
+                        ;;03]Ouroboros mints OURO <ouro-remainder-amount>
+                        (ref-DPTF::C_Mint executor ORBR|SC_NAME ouro-id ouro-remainder-amount false)
+                        ;;04]Ouroboros transfers OURO <ouro-remainder-amount> to <executor>
+                        (ref-TFT::C_Transfer executor ORBR|SC_NAME executor ouro-id ouro-remainder-amount true)
+                    ]
+                    [ouro-remainder-amount]
+                )
+            )
+        )
+    )
+    (defun C_Fuel:object{IgnisCollectorV4.OutputCumulator} (patron:string )
+        (P|UEV_IMC)
+        (let
+            (
+                (ref-coin:module{stoa-ns.fungible-v1} coin)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-ATSU:module{AutostakeUsageV3} ATSU)
+                (ref-LIQUID:module{StoaLiquidStakingV3} LIQUID)
+                (orb-sc ORBR|SC_NAME)
+                (orb-stoa ORBR|SC_STOA-NAME)
+                (lq-stoa (ref-LIQUID::GOV|LIQUID|SC_STOA-NAME))
+                (present-stoa-balance:decimal (ref-coin::get-balance (ref-DALOS::UR_AccountStoa orb-sc)))
+                (w-stoa:string (ref-DALOS::UR_WrappedStoaID))
+            )
+            (if (!= w-stoa BAR)
+                (let
+                    (
+                        (w-stoa-as-rt:[string] (ref-DPTF::UR_RewardToken w-stoa))
+                        (liquid-idx:string (at 0 w-stoa-as-rt))
+                    )
+                    (if (> present-stoa-balance 0.0)
+                        (with-capability (LIQUIDFUEL|C>ADMIN_FUEL)
+                            (install-capability (ref-coin::TRANSFER orb-stoa lq-stoa present-stoa-balance))
+                            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                                [
+                                    (ref-LIQUID::C_WrapStoa patron orb-sc present-stoa-balance)
+                                    (ref-ATSU::C_Fuel patron orb-sc liquid-idx w-stoa present-stoa-balance)
+                                ]
+                                []
+                            )
+                        )
+                        EOC
+                    )
+                )
+                EOC
+            )
+        )
+    )
+    (defun C_Sublimate:object{IgnisCollectorV4.OutputCumulator}
+        (executor:string executee:string ouro-amount:decimal)
+        (P|UEV_IMC)
+        (let
+            (
+                (ref-U|ATS:module{UtilityAtsV3} U|ATS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
+                ;;
+                (ignis-id:string (ref-DALOS::UR_IgnisID))
+                (ouro-id:string (ref-DALOS::UR_OuroborosID))
+                (ouro-precision:integer (ref-DPTF::UR_Decimals ouro-id))
+                ;;
+                (ouro-split:[decimal] (ref-U|ATS::UC_PromilleSplit 10.0 ouro-amount ouro-precision))
+                (ouro-remainder-amount:decimal (at 0 ouro-split))
+                (ignis-amount:decimal (URCv_Sublimate ouro-remainder-amount))
+            )
+            (with-capability (IGNIS|C>SUBLIMATE executor executee)
+                (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                    [
+                        ;;01]Client sends OURO <ouro-amount> to the Ouroboros Smart Ouronet Account
+                        (ref-TFT::C_Transfer executor executor ORBR|SC_NAME ouro-id ouro-amount true)
+                        ;;02]Ouroboros burns OURO <ouro-amount>
+                        (ref-DPTF::C_Burn executor ORBR|SC_NAME ouro-id ouro-amount)
+                        ;;03]Ouroboros mints GAS(Ignis) <ignis-amount>
+                        (ref-DPTF::C_Mint executor ORBR|SC_NAME ignis-id ignis-amount false)
+                        ;;04]Ouroboros transfers GAS(Ignis) <ignis-amount> to <executee>
+                        (ref-TFT::C_Transfer executor ORBR|SC_NAME executee ignis-id ignis-amount true)
+                    ]
+                    [ignis-amount]
+                )
+            )
+        )
+    )
+    (defun C_SublimateV2:object{IgnisCollectorV4.OutputCumulator}
+        (executor:string executee:string ouro-amount:decimal)
+        (P|UEV_IMC)
+        (let
+            (
+                (ref-U|ATS:module{UtilityAtsV3} U|ATS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
+                ;;
+                (ignis-id:string (ref-DALOS::UR_IgnisID))
+                (ouro-id:string (ref-DALOS::UR_OuroborosID))
+                (ouro-precision:integer (ref-DPTF::UR_Decimals ouro-id))
+                ;;
+                (ouro-split:[decimal] (ref-U|ATS::UC_PromilleSplit 10.0 ouro-amount ouro-precision))
+                (ouro-remainder-amount:decimal (at 0 ouro-split))
+                (ignis-amount:decimal (URCv_Sublimate ouro-remainder-amount))
+                (frozen-state:bool (ref-DPTF::UR_AccountFrozenState ouro-id executor))
+            )
+            (with-capability (IGNIS|C>SUBLIMATE executor executee)
+                (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                    [
+                        ;;01]Freeze Client Account for Ouro if not already frozen
+                        (if (not frozen-state)
+                            (ref-DPTF::C_ToggleFreezeAccount executor (ref-DPTF::UR_Konto ouro-id) executor ouro-id true)
+                            EOC
+                        )
+                        ;;02]Partialy wipe the required OURO
+                        (ref-DPTF::C_WipeSlim executor (ref-DPTF::UR_Konto ouro-id) executor ouro-id ouro-amount)
+                        ;;03]Unfreeze Client Account
+                        (ref-DPTF::C_ToggleFreezeAccount executor (ref-DPTF::UR_Konto ouro-id) executor ouro-id false)
+                        ;;04]Ouroboros mints GAS(Ignis) <ignis-amount>
+                        (ref-DPTF::C_Mint executor ORBR|SC_NAME ignis-id ignis-amount false)
+                        ;;05]Ouroboros transfers GAS(Ignis) <ignis-amount> to <executee>
+                        (ref-TFT::C_Transfer executor ORBR|SC_NAME executee ignis-id ignis-amount true)
+                    ]
+                    [ignis-amount]
+                )
+            )
+        )
+    )
+    (defun C_WithdrawFees:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string executee:string id:string)
+        @doc "Withdraws the DPTF fees accrued on the OUROBOROS smart account for <id>. \
+            \ Executor: the TOKEN OWNER, proven in OUROBOROS|C>WITHDRAW by CAP_Owner + \
+            \ UEV_ExecutorIsKonto. Executee: the account CREDITED, enforced to be a standard \
+            \ (non-smart) account -- it is merely credited and needs no signature, the same \
+            \ conditional TFT::C_Transfer states for its own executee."
+        (P|UEV_IMC)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
+                (withdraw-amount:decimal (ref-DPTF::UR_AccountSupply id ORBR|SC_NAME))
+                (price:decimal (ref-IGNIS::UC_IgnisDeter "fee-withdraw"))
+                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+            )
+            (enforce (> withdraw-amount 0.0) (format "There are no {} fees to be withdrawn from {}" [id ORBR|SC_NAME]))
+            (with-capability (OUROBOROS|C>WITHDRAW executor id executee)
+                (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                    [
+                        ;;00]Compose base withdraw IGNIS Price
+                        (ref-IGNIS::UDC_ConstructOutputCumulator price ORBR|SC_NAME trigger [])
+                        ;;01]Fees move from the Ouroboros Smart DALOS Account to the executee's Normal Ouronet Account.
+                        ;;PROVISIONAL PATRON SLOT CLEARED (2026-09-21, _patronslots.py): this read
+                        ;;`C_Transfer target ...`, because at the time this module had no <patron>
+                        ;;parameter to thread and the recipient was the only account in scope. That
+                        ;;is invisible to _callarity (the arity was right) and to every assertion
+                        ;;(no swept callee read the slot), which is exactly why the registry
+                        ;;existed to remember it. It is now the real patron.
+                        (ref-TFT::C_Transfer patron ORBR|SC_NAME executee id withdraw-amount true)
+                    ]
+                    []
                 )
             )
         )
     )
 
-    (defun AQP-FVT|CC_InjectStream:string
-        (patron:string executor:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
-        @doc "Injects reward DPTF as a TIME-STREAM (linear vesting over `duration` seconds, 1h..365d) into fvt-id \
-            \ and collects IGNIS on patron. The DELAYED counterpart of AQP-FVT|CC_Inject (instant): the amount vests \
-            \ continuously and whoever is staked during each slice earns it (late stakers included). Independent \
-            \ overlapping streams, capped by the FVT owner konto's Elite tier. See Audit/STREAMED-INJECT-DESIGN.md."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-FVT::CC_InjectStream patron executor fvt-id reward-dptf-id amount duration)
-                )
-                (ref-TS01-A::XB_DynamicFuelSTOA)
-                (format "Successfully streamed {} {} into FVT {} over {}s." [amount reward-dptf-id fvt-id duration])
-            )
-        )
-    )
-    (defun AQP-FVT|CC_Inject:string
-        (patron:string executor:string fvt-id:string reward-dptf-id:string amount:decimal)
-        @doc "HEAVY enforced-FRESH inject for ANY FVT class (farm/vault/treasury; M3 #12): refreshes every stale \
-            \ staker's deb so the divisor is live before injecting, then injects + collects IGNIS on patron. Same \
-            \ shape as C_Inject. Farms are covered too — a mosaic farm's singular/non-true-triplet members are \
-            \ deb-stale-exposed via SCR|ScoreTotalDebScore just like a vault."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-FVT::CC_Inject patron executor fvt-id reward-dptf-id amount)
-                )
-                (ref-TS01-A::XB_DynamicFuelSTOA)
-                (format "Successfully FRESH-injected {} {} into FVT {}." [amount reward-dptf-id fvt-id])
-            )
-        )
-    )
-    (defun AQP-FVT|CCp_FvtFixSlice:string
-        (patron:string fvt-id:string reward-dptf-id:string users:[string])
-        @doc "PARALLEL fed slice of the enforced-fresh inject's fix phase: refresh exactly the \
-            \ LISTED stale stakers. Read `URH_FvtStalePresentUsers`, split it into DISJOINT slices, \
-            \ and send them together -- then `AQP-FVT|CC_InjectFinalize`. \
-            \ \
-            \ PREFER THIS OVER `AQP-FVT|CCp_InjectFixChunk` WHEN FANNING OUT. That one takes a \
-            \ chunk SIZE and takes the first N of the shared stale list, so two concurrent sends \
-            \ pick the SAME users -- duplicate work, and the 2e forced-fix penalty recorded twice \
-            \ against those holders. This one takes the accounts, and re-checks staleness inside \
-            \ the transaction, so an overlapping or replayed slice simply finds them fresh and \
-            \ skips them with no second penalty. \
-            \ \
-            \ WHEN A SLICE IS NEEDED: adding or revoking a score entity on an FVT makes its \
-            \ members deb-stale. That does NOT block stake or unstake -- a stale member mis-states \
-            \ reward SHARES, never the base -- but `CC_InjectFinalize` refuses to inject while any \
-            \ stale member remains, so the work has to be done before the next reward injection. \
-            \ Lives in AQP-FVT."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                )
-                (let
-                    (
-                        (r:string (ref-FVT::CCp_FvtFixSlice patron fvt-id reward-dptf-id users))
-                    )
-                    (ref-TS01-A::XB_DynamicFuelSTOA)
-                    r
-                )
-            )
-        )
-    )
-    (defun AQP-FVT|CCp_InjectFixChunk:string
-        (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
-        @doc "PAGE the enforced-fresh inject's fix phase — refresh up to `chunk` currently-stale stakers (penalized), \
-            \ the scalable prelude to AQP-FVT|CC_InjectFinalize for stale sets exceeding one tx. Repeat until none \
-            \ remain. `chunk` is the UI's simulated slice (bounded by AQP-FVT's loose INJECT-FIX-CHUNK-MAX). Lives \
-            \ in AQP-FVT."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                )
-                (let
-                    (
-                        (r:string (ref-FVT::CCp_InjectFixChunk patron fvt-id reward-dptf-id chunk))
-                    )
-                    (ref-TS01-A::XB_DynamicFuelSTOA)
-                    r
-                )
-            )
-        )
-    )
-    (defun AQP-FVT|CC_InjectFinalize:string
-        (patron:string executor:string fvt-id:string reward-dptf-id:string amount:decimal)
-        @doc "FINALIZE a paginated enforced-fresh inject: after CCp_InjectFixChunk pages left ZERO stale, inject on \
-            \ the fresh divisor + collect IGNIS on patron — same outcome as the single-tx AQP-FVT|CC_Inject. Lives \
-            \ in AQP-FVT."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-FVT::CC_InjectFinalize patron executor fvt-id reward-dptf-id amount)
-                )
-                (ref-TS01-A::XB_DynamicFuelSTOA)
-                (format "Successfully FRESH-injected {} {} into FVT {} (paginated)." [amount reward-dptf-id fvt-id])
-            )
-        )
-    )
-    (defun AQP-FVT|CCp_UnstaleAll:string
-        (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
-        @doc "OWNER mass deb-unstale — force-refresh up to `chunk` currently-stale present stakers (penalized, same \
-            \ 2e tag as an inject's fix) to make the FVT INJECTION-READY, WITHOUT injecting. Repeat until the report \
-            \ says injection-ready (or `all up to date` when nothing is stale), then run a light AQP-FVT|CC_Inject. \
-            \ Owner-gated in AQP-FVT::CCp_UnstaleAll. `chunk` is the UI's simulated slice (bounded by INJECT-FIX-CHUNK-MAX). \
-            \ Lives in AQP-FVT."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                )
-                (let
-                    (
-                        (r:string (ref-FVT::CCp_UnstaleAll patron fvt-id reward-dptf-id chunk))
-                    )
-                    (ref-TS01-A::XB_DynamicFuelSTOA)
-                    r
-                )
-            )
-        )
-    )
-    (defun MTX-AQP|2|CC_Inject:string
-        (patron:string executor:string fvt-id:string reward-dptf-id:string amount:decimal)
-        @doc "Starts the 2-step enforced-fresh inject defpact (MTX-AQP — spike fallback for AQP-FVT|CC_Inject when \
-            \ the stale set exceeds one tx). Step 0 runs here; advance with (continue-pact 1). Each defpact step \
-            \ collects its own IGNIS on patron, so this wrapper only summons the pact."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-MTX-AQP:module{AqpMtxV1} MTX-AQP)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                )
-                (let
-                    (
-                        (r:string (ref-MTX-AQP::C_2|Inject patron executor fvt-id reward-dptf-id amount))
-                    )
-                    (ref-TS01-A::XB_DynamicFuelSTOA)
-                    r
-                )
-            )
-        )
-    )
-    (defun MTX-AQP|2|CC_SweepRevokeAnchor:string
-        (patron:string executor:string anchor-id:string)
-        @doc "Starts the 2-step paginated re-score SWEEP defpact (MTX-AQP — spike fallback for \
-            \ AQP-FVT|CC_SweepRevokeAnchor when the recompute set exceeds one tx). Step 0 brackets (freeze + \
-            \ swept-revoke) + recomputes the first window here; advance with (continue-pact 1). The defpact is \
-            \ gas-only (no reward inject), so this wrapper just summons the pact and refuels."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-MTX-AQP:module{AqpMtxV1} MTX-AQP)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                )
-                (let
-                    (
-                        (r:string (ref-MTX-AQP::C_2|SweepRevokeAnchor patron executor anchor-id))
-                    )
-                    (ref-TS01-A::XB_DynamicFuelSTOA)
-                    r
-                )
-            )
-        )
-    )
-    (defun AQP-FVT|CC_SweepRevokeAnchor:string
-        (patron:string executor:string anchor-id:string)
-        @doc "Single-tx re-score SWEEP that retires an EMPLOYED anchor (H4 half-2): freezes the affected pools, \
-            \ removes the anchor (swept-revoke), recomputes every affected holder (aggregate/lane refold + deb), \
-            \ then unfreezes. Owner-initiated (patron = the anchored-asset owner). Lives in AQP-FVT."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                )
-                (let
-                    (
-                        (r:string (ref-FVT::CC_SweepRevokeAnchor patron executor anchor-id))
-                    )
-                    (ref-TS01-A::XB_DynamicFuelSTOA)
-                    r
-                )
-            )
-        )
-    )
-    (defun AQP-FVT|CC_SweepBegin:string
-        (patron:string executor:string anchor-id:string)
-        @doc "OPEN a paginated (defun+gate) re-score sweep — the scalable twin of AQP-FVT|CC_SweepRevokeAnchor for \
-            \ holder sets exceeding one tx: freezes the affected pools + swept-revokes the anchor, then defers the \
-            \ recompute to AQP-FVT|CCp_SweepRecomputeChunk calls under the held freeze. Owner-initiated. Lives in AQP-FVT."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                )
-                (let
-                    (
-                        (r:string (ref-FVT::CC_SweepBegin patron executor anchor-id))
-                    )
-                    (ref-TS01-A::XB_DynamicFuelSTOA)
-                    r
-                )
-            )
-        )
-    )
-    (defun AQP-FVT|CCp_SweepRecomputeChunk:string
-        (patron:string anchor-id:string chunk:integer)
-        @doc "PAGE an open re-score sweep: recompute the next `chunk` holders over the frozen global present set, \
-            \ advancing the cursor; the finalizing chunk (set exhausted) unfreezes the affected pools. `chunk` is \
-            \ the UI's simulated slice size (bounded by AQP-FVT's loose SWEEP-CHUNK-MAX backstop). Lives in AQP-FVT."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                )
-                (let
-                    (
-                        (r:string (ref-FVT::CCp_SweepRecomputeChunk patron anchor-id chunk))
-                    )
-                    (ref-TS01-A::XB_DynamicFuelSTOA)
-                    r
-                )
-            )
-        )
-    )
-    (defun AQP-FVT|CC_UnstaleMyScores:string
-        (patron:string executor:string fvt-ids:[string])
-        @doc "User self-service deb-unstale: the caller refreshes THEIR OWN stale scores across the listed FVTs \
-            \ (non-penalized — the cheap alternative to being force-fixed by an inject), then collects IGNIS on \
-            \ patron. The UI finds the FVT list via RPS.URC_FvtUserHasStaleMember per FVT the user stakes. \
-            \ Lives in AQP-FVT."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-FVT::CC_UnstaleMyScores patron executor fvt-ids)
-                )
-                (ref-TS01-A::XB_DynamicFuelSTOA)
-                (format "Refreshed your stale scores across {} FVT(s)." [(length fvt-ids)])
-            )
-        )
-    )
-    (defun AQP-FVT|CC_Collect:string
-        (patron:string executor:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
-        @doc "Collects pending reward DPTF for patron on one score-entity from fvt-id; collects IGNIS on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                    (bal-before:decimal (ref-DPTF::UR_AccountSupply reward-dptf-id patron))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-FVT::CC_Collect patron executor fvt-id score-entity-type score-entity-id reward-dptf-id)
-                )
-                (ref-TS01-A::XB_DynamicFuelSTOA)
-                (let
-                    (
-                        (bal-after:decimal (ref-DPTF::UR_AccountSupply reward-dptf-id patron))
-                        (payout:decimal (- bal-after bal-before))
-                    )
-                    (format "Successfully collected {} {} rewards from FVT {} for score-entity type {} id {}."
-                        [payout reward-dptf-id fvt-id score-entity-type score-entity-id]
-                    )
-                )
-            )
-        )
-    )
-    (defun AQP-DSA|CC_OpenAgency:string
-        (patron:string executor:string fvt-id:string pool-id:string score-entity-id:string fee-per-mille:integer
-         collectable-id:string stake-nonces:[integer])
-        @doc "DSA (Talos): open a delegation agency ATOMICALLY under P|TS — (1) admit the operator's BLANK triplet \
-            \ <score-entity-id> to vault <fvt-id> (AQP-DSA::C_AdmitAgency); (2) stake the operator's initial \
-            \ <collectable-id>/<stake-nonces> from <pool-id> (FVT::CC_CollectableStakeFlow — runs under P|TS so the \
-            \ deep DPDC custody transfer's IMC passes); (3) enforce the terminal quintessence >= unit-score/2 open \
-            \ gate (AQP-DSA::UEV_OpenGate — a short stake reverts the whole open). Collects both cumulators on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC:module{DpdcV2} DPDC)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                    (ref-DSA:module{DsaV1} AQP-DSA)
-                )
-                ;; (1) admit the blank triplet (fvt-links must be BAR) + record the agency
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DSA::C_AdmitAgency patron executor fvt-id score-entity-id fee-per-mille))
-                ;; (2) stake the operator's initial quintessence into the now-linked, reward-ready triplet
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-FVT::CC_CollectableStakeFlow
-                        patron executor executor pool-id collectable-id true
-                        stake-nonces (ref-DPDC::UR_AccountNoncesSupplies executor collectable-id true stake-nonces) true))
-                ;; (3) terminal atomic gate — after the stake, Q must clear unit-score/2 or the whole tx reverts
-                (ref-DSA::UEV_OpenGate fvt-id score-entity-id)
-                (format "Agency opened on FVT {} for score-entity {} (fee {} per-mille)." [fvt-id score-entity-id fee-per-mille])
-            )
-        )
-    )
-    (defun AQP-DSA|C_RecomputeCapture:string
-        (patron:string fvt-id:string score-entity-id:string)
-        @doc "DSA (Talos): permissionlessly recompute an agency's capture from its current quintessence (after a \
-            \ delegator stake/unstake changed Q); collects IGNIS on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DSA:module{DsaV1} AQP-DSA)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-DSA::C_RecomputeCapture patron fvt-id score-entity-id)
-                    )
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                (format "Capture recomputed for agency {} on FVT {}." [score-entity-id fvt-id])
-            )
-        )
-    )
 )
 
-;; --- tables for 04_TS02-C3.pact (2 defined) ---
+;; --- tables for 13_OUROBOROS.pact (2 defined) ---
 ;; UPGRADE MODE: this module is assumed already deployed, so its
 ;; tables already exist and (create-table) would ABORT the whole
 ;; transaction. They are listed here, commented, for reference.
@@ -3241,1918 +975,29 @@
 ;; (create-table P|T)
 ;; (create-table P|MT)
 
-;; ===== 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact =========
-;; ================================================================================
-;; AQP-INFO — pre-execution COST PREVIEW surface for the AQP modules.
-;;
-;; Each AQP-<MOD>|INFO_<Fn> is the read-only counterpart of a TS02-C3 execution
-;; wrapper. It returns object{OuronetInfoV2.ClientInfo} describing what the op does,
-;; which execution function runs it, and the EXACT IGNIS + STOA price for a given
-;; account (mirroring the execution's own cost logic byte-for-byte — same GAS| const,
-;; same UsagePrice tier, same multipliers/branches, same zero-gas toggle gate).
-;;
-;; Procedure: OuronetInformational/skills/aqp-info-module-procedure.md
-;; Surface  : OuronetInformational/skills/aqp-entrypoint-surface.md
-;; Deploys AFTER 01_ANK..07_DSA + TS02-C3 (reads their state + GAS| constants; never writes).
-;; No interface: this is a leaf read-only preview module — nothing references it via module{}.
-;; ================================================================================
-(module AQP-INFO GOV
-    @doc "Read-only pre-execution cost-preview module for the AQP family. Each INFO_ \
-        \ function mirrors a TS02-C3 execution wrapper and returns an \
-        \ OuronetInfoV2.ClientInfo describing the operation, its execution function, and the \
-        \ exact IGNIS+STOA price for an account — sourced from each AQP module's URCi_ cost \
-        \ readers so previews match execution byte-for-byte. A leaf module with no \
-        \ interface; never writes; deploys after all AQP cores and TS02-C3."
-
-    ;;<=========================================================================>
-    ;;{0}  IMPLEMENTERS
-
-    ;;<=========================================================================>
-    ;;{1}  GOVERNANCE
-    ;;{G1}  constants
-    ;;
-    (defconst GOV|MD_INFO|AQP                           (keyset-ref-guard (GOV|Demiurgoi)))
-    ;;{G2}  schemas
-    ;;{G3}  tables
-    ;;{G4}  capabilities
-    (defcap GOV ()                                      (compose-capability (GOV|INFO|AQP_ADMIN)))
-    (defcap GOV|INFO|AQP_ADMIN ()                       (enforce-guard GOV|MD_INFO|AQP))
-    ;;{G5}  functions
-    (defun GOV|Demiurgoi ()
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-            )
-            (ref-DALOS::GOV|Demiurgoi)
-        )
-    )
-
-    ;;<=========================================================================>
-    ;;{2}  POLICY
-    ;;{P1}  constants
-    ;;{P2}  schemas
-    ;;{P3}  tables
-    ;;{P4}  capabilities
-    ;;{P5}  functions
-
-    ;;<=========================================================================>
-    ;;{3}  CST
-    ;;{3.1}  constants
-    (defconst BAR                                       (CT_Bar))
-    ;;{3.2}  schemas
-    ;;{3.3}  tables
-
-    ;;<=========================================================================>
-    ;;{4}  CAPABILITIES
-    ;;{C1}  Trivial [bronze]
-    ;;{C2}  Simple
-    ;;{C3}  Composed
-    ;;{C4}  Ownership [gold]
-
-    ;;<=========================================================================>
-    ;;{5}  FUNCTIONS
-    ;;{5.1}  Construct [CT/UDC]
-    ;;
-    ;;
-    (defun CT_Bar ()
-        (let
-            (
-                (ref-U|CT:module{OuronetConstantsV2} U|CT)
-            )
-            (ref-U|CT::CT_BAR)
-        )
-    )
-    ;;{5.2}  Compute [UC]
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    ;;
-    ;;
-    ;;   (AQP-{ANK,SCORE,POOL,FVT,VCT,DSA}.URCi_*, via OI|UC_IfpFromOutputCumulator / OI|UDC_DynamicStoaCost),
-    ;;   so the local price-tier gates (UC_GasPrice / SIP|URC_* / SKP|URC_*) are no longer used here.
-    ;;
-    ;;[AQP-ANK] Anchors
-    (defun INFO_AQP-ANK|IssueTrueFungibleAnchor:object{OuronetInfoV2.ClientInfo}
-        (patron:string anchor-name:string dptf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dptf-amount:decimal)
-        @doc "Cost preview for AQP-ANK|C_IssueTrueFungibleAnchor. IGNIS 1000 (inline) + STOA 'standard' x(2 if acnoi else 1)."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Issue a True-Fungible (DPTF) anchor for pool boosting."
-                 (if acnoi "Creates a new BoostClass inline (2x STOA)." "Links to an existing BoostClass (1x STOA).")
-                 "Executes via TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor."]
-                [(format "Anchor '{}' issued on DPTF {}." [anchor-name dptf-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ANK::URCi_IssueAnchor "AQP-ANK|C_IssueTrueFungibleAnchor" [])))
-                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-ANK::URCi_IssueAnchorStoa acnoi))
-                []
-            )
-        )
-    )
-    (defun INFO_AQP-ANK|IssueSemiFungibleAnchor:object{OuronetInfoV2.ClientInfo}
-        (patron:string anchor-name:string dpsf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpsf-nonce:integer)
-        @doc "Cost preview for AQP-ANK|C_IssueSemiFungibleAnchor. IGNIS 1000 + STOA 'standard' x(2 if acnoi else 1)."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Issue a Semi-Fungible (DPSF) anchor for pool boosting."
-                 (if acnoi "Creates a new BoostClass inline (2x STOA)." "Links to an existing BoostClass (1x STOA).")
-                 "Executes via TS02-C3.AQP-ANK|C_IssueSemiFungibleAnchor."]
-                [(format "Anchor '{}' issued on DPSF {} nonce {}." [anchor-name dpsf-id dpsf-nonce])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ANK::URCi_IssueAnchor "AQP-ANK|C_IssueSemiFungibleAnchor" [])))
-                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-ANK::URCi_IssueAnchorStoa acnoi))
-                []
-            )
-        )
-    )
-    (defun INFO_AQP-ANK|IssueNonFungibleAnchor:object{OuronetInfoV2.ClientInfo}
-        (patron:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-trait-key:string dpnf-trait-value:string)
-        @doc "Cost preview for AQP-ANK|C_IssueNonFungibleAnchor. IGNIS 1000 + STOA 'standard' x(2 if acnoi else 1)."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Issue a Non-Fungible (DPNF) trait-anchor for pool boosting."
-                 (if acnoi "Creates a new BoostClass inline (2x STOA)." "Links to an existing BoostClass (1x STOA).")
-                 "Executes via TS02-C3.AQP-ANK|C_IssueNonFungibleAnchor."]
-                [(format "Anchor '{}' issued on DPNF {} trait {}={}." [anchor-name dpnf-id dpnf-trait-key dpnf-trait-value])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ANK::URCi_IssueAnchor "AQP-ANK|C_IssueNonFungibleAnchor" [])))
-                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-ANK::URCi_IssueAnchorStoa acnoi))
-                []
-            )
-        )
-    )
-    (defun INFO_AQP-ANK|IssueNonFungibleSetAnchor:object{OuronetInfoV2.ClientInfo}
-        (patron:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-nonce-class:integer)
-        @doc "Cost preview for AQP-ANK|C_IssueNonFungibleSetAnchor. IGNIS 1000 + STOA 'standard' x(2 if acnoi else 1)."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Issue a Non-Fungible (DPNF) set-anchor (by nonce-class) for pool boosting."
-                 (if acnoi "Creates a new BoostClass inline (2x STOA)." "Links to an existing BoostClass (1x STOA).")
-                 "Executes via TS02-C3.AQP-ANK|C_IssueNonFungibleSetAnchor."]
-                [(format "Anchor '{}' issued on DPNF {} nonce-class {}." [anchor-name dpnf-id dpnf-nonce-class])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ANK::URCi_IssueAnchor "AQP-ANK|C_IssueNonFungibleSetAnchor" [])))
-                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-ANK::URCi_IssueAnchorStoa acnoi))
-                []
-            )
-        )
-    )
-    (defun INFO_AQP-ANK|RevokeAnchor:object{OuronetInfoV2.ClientInfo}
-        (patron:string anchor-id:string)
-        @doc "Cost preview for AQP-ANK|C_RevokeAnchor. IGNIS 'ignis|biggest' tier; no STOA."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Revoke an anchor and update its BoostClass bookkeeping."
-                 "Executes via TS02-C3.AQP-ANK|C_RevokeAnchor."]
-                [(format "Anchor {} revoked." [anchor-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ANK::URCi_RevokeAnchor)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                []
-            )
-        )
-    )
-    (defun INFO_AQP-ANK|RevokeBoostClass:object{OuronetInfoV2.ClientInfo}
-        (patron:string boost-class-id:string)
-        @doc "Cost preview for AQP-ANK|C_RevokeBoostClass. IGNIS 'ignis|biggest' tier; no STOA."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Revoke an empty BoostClass."
-                 "Executes via TS02-C3.AQP-ANK|C_RevokeBoostClass."]
-                [(format "BoostClass {} revoked." [boost-class-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ANK::URCi_RevokeBoostClass)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                []
-            )
-        )
-    )
-    ;;
-    ;;[AQP-SCR] Scores
-    (defun INFO_AQP-SCR|IssueLiquidityScore:object{OuronetInfoV2.ClientInfo}
-        (patron:string owner-konto:string score-name:string precision:integer lp-denominator:string mx-frozen:decimal mx-sleeping:decimal)
-        @doc "Cost preview for AQP-SCR|C_IssueLiquidityScore. IGNIS GAS|ISSUE-SCORE + STOA 'smart'."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Create a class-0 (Liquidity) score." "Executes via TS02-C3.AQP-SCR|C_IssueLiquidityScore."]
-                [(format "Liquidity score '{}' issued for {}." [score-name owner-konto])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_IssueScore owner-konto [])))
-                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (AQP-SCORE.URCi_IssueScoreStoa))
-                [])
-        )
-    )
-    (defun INFO_AQP-SCR|IssueTrueFungibleScore:object{OuronetInfoV2.ClientInfo}
-        (patron:string owner-konto:string score-name:string precision:integer mx-frozen:decimal)
-        @doc "Cost preview for AQP-SCR|C_IssueTrueFungibleScore. IGNIS GAS|ISSUE-SCORE + STOA 'smart'."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Create a class-1 (True-Fungible) score." "Executes via TS02-C3.AQP-SCR|C_IssueTrueFungibleScore."]
-                [(format "True-Fungible score '{}' issued for {}." [score-name owner-konto])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_IssueScore owner-konto [])))
-                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (AQP-SCORE.URCi_IssueScoreStoa))
-                [])
-        )
-    )
-    (defun INFO_AQP-SCR|IssueOrtoFungibleScore:object{OuronetInfoV2.ClientInfo}
-        (patron:string owner-konto:string score-name:string precision:integer mx-sleeping:decimal mx-hibernated:decimal)
-        @doc "Cost preview for AQP-SCR|C_IssueOrtoFungibleScore. IGNIS GAS|ISSUE-SCORE + STOA 'smart'."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Create a class-2 (Orto-Fungible / special) score." "Executes via TS02-C3.AQP-SCR|C_IssueOrtoFungibleScore."]
-                [(format "Orto-Fungible score '{}' issued for {}." [score-name owner-konto])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_IssueScore owner-konto [])))
-                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (AQP-SCORE.URCi_IssueScoreStoa))
-                [])
-        )
-    )
-    (defun INFO_AQP-SCR|IssueSemiFungibleScore:object{OuronetInfoV2.ClientInfo}
-        (patron:string owner-konto:string score-name:string precision:integer sft-equality:bool)
-        @doc "Cost preview for AQP-SCR|C_IssueSemiFungibleScore. IGNIS GAS|ISSUE-SCORE + STOA 'smart'."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Create a class-3 (Semi-Fungible) score." "Executes via TS02-C3.AQP-SCR|C_IssueSemiFungibleScore."]
-                [(format "Semi-Fungible score '{}' issued for {}." [score-name owner-konto])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_IssueScore owner-konto [])))
-                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (AQP-SCORE.URCi_IssueScoreStoa))
-                [])
-        )
-    )
-    (defun INFO_AQP-SCR|IssueNonFungibleScore:object{OuronetInfoV2.ClientInfo}
-        (patron:string owner-konto:string score-name:string precision:integer nft-score-model:integer)
-        @doc "Cost preview for AQP-SCR|C_IssueNonFungibleScore. IGNIS GAS|ISSUE-SCORE + STOA 'smart'."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Create a class-4 (Non-Fungible) score." "Executes via TS02-C3.AQP-SCR|C_IssueNonFungibleScore."]
-                [(format "Non-Fungible score '{}' issued for {}." [score-name owner-konto])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_IssueScore owner-konto [])))
-                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (AQP-SCORE.URCi_IssueScoreStoa))
-                [])
-        )
-    )
-    (defun INFO_AQP-SCR|RotateScoreOwnership:object{OuronetInfoV2.ClientInfo}
-        (patron:string score-id:string new-owner-konto:string)
-        @doc "Cost preview for AQP-SCR|C_RotateScoreOwnership. IGNIS 'ignis|medium' tier; no STOA."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Transfer a score's owner-konto." "Executes via TS02-C3.AQP-SCR|C_RotateScoreOwnership."]
-                [(format "Score {} ownership moved to {}." [score-id new-owner-konto])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_RotateOwnership score-id)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-SCR|ControlScore:object{OuronetInfoV2.ClientInfo}
-        (patron:string score-id:string new-can-upgrade:bool new-can-change-owner:bool)
-        @doc "Cost preview for AQP-SCR|C_ControlScore. IGNIS 'ignis|medium' tier; no STOA."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Set a score's can-upgrade / can-change-owner flags." "Executes via TS02-C3.AQP-SCR|C_ControlScore."]
-                [(format "Score {} control flags updated." [score-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_Control score-id)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-SCR|CreateScoreBoostClassLink:object{OuronetInfoV2.ClientInfo}
-        (patron:string score-id:string boost-class-id:string)
-        @doc "Cost preview for AQP-SCR|C_CreateScoreBoostClassLink. IGNIS 'ignis|biggest' tier; no STOA."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Link a score to a BoostClass (once)." "Executes via TS02-C3.AQP-SCR|C_CreateScoreBoostClassLink."]
-                [(format "Score {} linked to BoostClass {}." [score-id boost-class-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_CreateBoostClassLink score-id)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-SCR|CreateScoreBoostLink:object{OuronetInfoV2.ClientInfo}
-        (patron:string score-id:string boost-score-id:string)
-        @doc "Cost preview for AQP-SCR|C_CreateScoreBoostLink. IGNIS 'ignis|biggest' tier; no STOA."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Link a score to a boost-score (once)." "Executes via TS02-C3.AQP-SCR|C_CreateScoreBoostLink."]
-                [(format "Score {} boost-linked to {}." [score-id boost-score-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_CreateBoostLink score-id)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-SCR|EnableDebBoost:object{OuronetInfoV2.ClientInfo}
-        (patron:string score-id:string)
-        @doc "Cost preview for AQP-SCR|C_EnableDebBoost. IGNIS 'ignis|medium' tier; no STOA. Irreversible."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Enable deb-boost on a score (irreversible)." "Executes via TS02-C3.AQP-SCR|C_EnableDebBoost."]
-                [(format "Score {} deb-boost enabled." [score-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_EnableDebBoost score-id)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-SCR|IssueTriplet:object{OuronetInfoV2.ClientInfo}
-        (patron:string bronze-score-id:string silver-score-id:string golden-score-id:string)
-        @doc "Cost preview for AQP-SCR|C_IssueTriplet. IGNIS GAS|ISSUE-TRIPLET; no STOA."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Bundle three scores into one triplet (T|bronze|silver|golden)." "Executes via TS02-C3.AQP-SCR|C_IssueTriplet."]
-                [(format "Triplet issued from {} / {} / {}." [bronze-score-id silver-score-id golden-score-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_IssueTriplet silver-score-id [])))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-SCR|IssueSingleScoreModel:object{OuronetInfoV2.ClientInfo}
-        (patron:string model-name:string score-class:integer collectable-id:string precision:integer nonces:[integer] nonce-score-values:[decimal])
-        @doc "Cost preview for AQP-SCR|C_IssueSingleScoreModel. IGNIS GAS|ISSUE-SCORE-MODEL; no STOA."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Define a SINGLE score-entity model." "Executes via TS02-C3.AQP-SCR|C_IssueSingleScoreModel."]
-                [(format "Single score model '{}' defined (class {})." [model-name score-class])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_IssueScoreModel "AQP-SCR|C_IssueSingleScoreModel" patron [])))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-SCR|CombineTripletScoreModel:object{OuronetInfoV2.ClientInfo}
-        (patron:string model-name:string bronze-model-id:string silver-model-id:string golden-model-id:string)
-        @doc "Cost preview for AQP-SCR|C_CombineTripletScoreModel. IGNIS GAS|ISSUE-SCORE-MODEL; no STOA."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Combine three SINGLE models into a TRIPLET model." "Executes via TS02-C3.AQP-SCR|C_CombineTripletScoreModel."]
-                [(format "Triplet score model '{}' combined." [model-name])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_CombineTripletModel patron [])))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-SCR|IssueScoreFromModel:object{OuronetInfoV2.ClientInfo}
-        (patron:string owner-konto:string model-id:string agency-name:string)
-        @doc "Cost preview for AQP-SCR|C_IssueScoreFromModel. IGNIS GAS|ISSUE-SCORE-MODEL; no STOA."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Issue a score/triplet entity conforming to a model." "Executes via TS02-C3.AQP-SCR|C_IssueScoreFromModel."]
-                [(format "Entity '{}' issued from model {} for {}." [agency-name model-id owner-konto])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_IssueScoreModel "AQP-SCR|C_IssueScoreFromModel" patron [])))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-SCR|IssueSemiFungibleScoreDefinition:object{OuronetInfoV2.ClientInfo}
-        (patron:string score-id:string dpsf-id:string nonces:[integer] nonce-score-values:[decimal])
-        @doc "Cost preview for AQP-SCR|C_IssueSemiFungibleScoreDefinition. IGNIS = count × 'ignis|big'; no STOA."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Write Semi-Fungible score definition rows (one per nonce)." "Executes via TS02-C3.AQP-SCR|C_IssueSemiFungibleScoreDefinition."]
-                [(format "Wrote {} SF score-definition rows on score {}." [(length nonces) score-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_IssueSemiFungibleScoreDefinition score-id nonces)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-SCR|IssueNonFungibleScoreDefinition:object{OuronetInfoV2.ClientInfo}
-        (patron:string score-id:string dpnf-id:string trait-keys:[string] trait-values:[string] trait-score-values:[decimal])
-        @doc "Cost preview for AQP-SCR|C_IssueNonFungibleScoreDefinition. IGNIS = count × 'ignis|biggest'; no STOA."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Write Non-Fungible trait-score definition rows (one per trait)." "Executes via TS02-C3.AQP-SCR|C_IssueNonFungibleScoreDefinition."]
-                [(format "Wrote {} NF trait-score rows on score {}." [(length trait-keys) score-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_IssueNonFungibleScoreDefinition score-id trait-keys)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-SCR|IssueNonFungibleSetScoreDefinition:object{OuronetInfoV2.ClientInfo}
-        (patron:string score-id:string dpnf-id:string dpnf-nonce-classes:[integer] class-score-values:[decimal])
-        @doc "Cost preview for AQP-SCR|C_IssueNonFungibleSetScoreDefinition. IGNIS = count × 'ignis|biggest'; no STOA."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Write Non-Fungible SET score definition rows (one per nonce-class)." "Executes via TS02-C3.AQP-SCR|C_IssueNonFungibleSetScoreDefinition."]
-                [(format "Wrote {} NF set score-definition rows on score {}." [(length dpnf-nonce-classes) score-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_IssueNonFungibleSetScoreDefinition score-id dpnf-nonce-classes)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    ;;
-    ;;[AQP-POOL] Pools (config)
-    (defun INFO_AQP-POOL|Issue:object{OuronetInfoV2.ClientInfo}
-        (patron:string pool-name:string asset-id:string aqp-class:integer)
-        @doc "Cost preview for AQP-POOL|C_Issue. IGNIS GAS|ISSUE-POOL + STOA 'smart'."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Create a new staking pool over an asset." "Executes via TS02-C3.AQP-POOL|C_Issue."]
-                [(format "Pool '{}' created over asset {} (class {})." [pool-name asset-id aqp-class])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-POOL.URCi_Issue [])))
-                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (AQP-POOL.URCi_IssueStoa))
-                [])
-        )
-    )
-    (defun INFO_AQP-POOL|AddScore:object{OuronetInfoV2.ClientInfo}
-        (patron:string pool-id:string score-id:string)
-        @doc "Cost preview for AQP-POOL|C_AddScore. IGNIS GAS|ADD-SCORE; no STOA."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Assign a score to the pool's first free slot." "Executes via TS02-C3.AQP-POOL|C_AddScore."]
-                [(format "Score {} added to pool {}." [score-id pool-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-POOL.URCi_AddScore [])))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-POOL|RevokeScore:object{OuronetInfoV2.ClientInfo}
-        (patron:string pool-id:string score-id:string)
-        @doc "Cost preview for AQP-POOL|C_RevokeScore. IGNIS GAS|REVOKE-SCORE; no STOA."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Clear a score from its pool slot." "Executes via TS02-C3.AQP-POOL|C_RevokeScore."]
-                [(format "Score {} revoked from pool {}." [score-id pool-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-POOL.URCi_RevokeScore [])))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-POOL|EnablePoolStake:object{OuronetInfoV2.ClientInfo}
-        (patron:string pool-id:string)
-        @doc "Cost preview for AQP-POOL|C_EnablePoolStake. IGNIS GAS|SET-POOL-STAKE; no STOA."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Re-enable new stakes on a pool." "Executes via TS02-C3.AQP-POOL|C_EnablePoolStake."]
-                [(format "Pool {} staking enabled." [pool-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-POOL.URCi_SetPoolStake [])))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-POOL|DisablePoolStake:object{OuronetInfoV2.ClientInfo}
-        (patron:string pool-id:string)
-        @doc "Cost preview for AQP-POOL|C_DisablePoolStake. IGNIS GAS|SET-POOL-STAKE; no STOA."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Pause new stakes on a pool." "Executes via TS02-C3.AQP-POOL|C_DisablePoolStake."]
-                [(format "Pool {} staking disabled." [pool-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-POOL.URCi_SetPoolStake [])))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-POOL|SyncTrueFungibleAnchors:object{OuronetInfoV2.ClientInfo}
-        (patron:string beneficiary-id:string dptf-id:string)
-        @doc "Cost preview for AQP-POOL|C_SyncTrueFungibleAnchors. FULL IGNIS: GAS|SYNC-TF-ANCHORS gas leg + \
-            \ state-dependent ANK anchor-repair (ignis|small x live TF anchors) + biggest-tier sync-count stamp; no STOA."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Repair a beneficiary's True-Fungible anchor slots after a stake."
-                 "Full IGNIS shown: gas + per-anchor repair + sync-count stamp (reconstructed byte-for-byte)."
-                 "Executes via TS02-C3.AQP-POOL|C_SyncTrueFungibleAnchors."]
-                [(format "TF anchors synced for {} on DPTF {}." [beneficiary-id dptf-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (AQP-POOL.URCi_SyncTrueFungibleAnchorsFull beneficiary-id dptf-id))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-POOL|SyncSemiFungibleAnchors:object{OuronetInfoV2.ClientInfo}
-        (patron:string beneficiary-id:string dpsf-id:string)
-        @doc "Cost preview for AQP-POOL|C_SyncSemiFungibleAnchors. FULL IGNIS: GAS|SYNC-COLLECTABLE-ANCHORS gas leg + \
-            \ state-dependent ANK anchor-repair (ignis|small x live SF anchors) + biggest-tier sync-count stamp; no STOA."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Repair a beneficiary's Semi-Fungible anchor slots after a stake."
-                 "Full IGNIS shown: gas + per-anchor repair + sync-count stamp (reconstructed byte-for-byte)."
-                 "Executes via TS02-C3.AQP-POOL|C_SyncSemiFungibleAnchors."]
-                [(format "SF anchors synced for {} on DPSF {}." [beneficiary-id dpsf-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (AQP-POOL.URCi_SyncCollectableAnchorsFull beneficiary-id dpsf-id))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-POOL|SyncNonFungibleAnchors:object{OuronetInfoV2.ClientInfo}
-        (patron:string beneficiary-id:string dpnf-id:string)
-        @doc "Cost preview for AQP-POOL|C_SyncNonFungibleAnchors. FULL IGNIS: GAS|SYNC-COLLECTABLE-ANCHORS gas leg + \
-            \ state-dependent ANK anchor-repair (ignis|small x live NF anchors) + biggest-tier sync-count stamp; no STOA."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Repair a beneficiary's Non-Fungible anchor slots after a stake."
-                 "Full IGNIS shown: gas + per-anchor repair + sync-count stamp (reconstructed byte-for-byte)."
-                 "Executes via TS02-C3.AQP-POOL|C_SyncNonFungibleAnchors."]
-                [(format "NF anchors synced for {} on DPNF {}." [beneficiary-id dpnf-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (AQP-POOL.URCi_SyncCollectableAnchorsFull beneficiary-id dpnf-id))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    ;;<---- stake / unstake (multi-leg reconstructed cost) ---->
-    (defun INFO_AQP-POOL|StakeTrueFungible:object{OuronetInfoV2.ClientInfo}
-        (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
-        @doc "Cost preview for AQP-POOL|CC_StakeTrueFungible. Full multi-leg IGNIS (transfer + tracker + rollup \
-            \ + RPS + anchor + score-delta + book + checkpoint); no STOA. Cost reconstructed byte-for-byte."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Stake a True-Fungible amount into the pool for a beneficiary."
-                 "Executes via TS02-C3.AQP-POOL|CC_StakeTrueFungible."]
-                [(format "Staked {} of {} into pool {} for {}." [amount dptf-id pool-id beneficiary-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
-                    (RPS.URCi_TrueFungibleStakeFlow pool-id owner-id beneficiary-id dptf-id amount true))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [amount])
-        )
-    )
-    (defun INFO_AQP-POOL|UnstakeTrueFungible:object{OuronetInfoV2.ClientInfo}
-        (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
-        @doc "Cost preview for AQP-POOL|CC_UnstakeTrueFungible. Same legs as stake with the custody transfer \
-            \ reversed (vault→owner); no STOA. Cost reconstructed byte-for-byte."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Unstake a True-Fungible amount from the pool."
-                 "Executes via TS02-C3.AQP-POOL|CC_UnstakeTrueFungible."]
-                [(format "Unstaked {} of {} from pool {} for {}." [amount dptf-id pool-id beneficiary-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
-                    (RPS.URCi_TrueFungibleStakeFlow pool-id owner-id beneficiary-id dptf-id amount false))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [amount])
-        )
-    )
-    (defun INFO_AQP-POOL|StakeOrtoFungible:object{OuronetInfoV2.ClientInfo}
-        (patron:string pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer])
-        @doc "Cost preview for AQP-POOL|CC_StakeOrtoFungible. Multi-leg IGNIS (transfer + tracker×|nonces| + RPS \
-            \ + class-matched score-delta + book + checkpoint); no STOA. Reconstructed byte-for-byte."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Stake whole Orto-Fungible nonces into the pool for a beneficiary."
-                 "Executes via TS02-C3.AQP-POOL|CC_StakeOrtoFungible."]
-                [(format "Staked {} nonces of {} into pool {} for {}." [(length nonces) dpof-id pool-id beneficiary-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
-                    (RPS.URCi_OrtoFungibleStakeFlow pool-id owner-id beneficiary-id dpof-id nonces true))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [(length nonces)])
-        )
-    )
-    (defun INFO_AQP-POOL|UnstakeOrtoFungible:object{OuronetInfoV2.ClientInfo}
-        (patron:string pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer])
-        @doc "Cost preview for AQP-POOL|CC_UnstakeOrtoFungible. Same legs as OF stake; no STOA. Reconstructed byte-for-byte."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Unstake whole Orto-Fungible nonces from the pool."
-                 "Executes via TS02-C3.AQP-POOL|CC_UnstakeOrtoFungible."]
-                [(format "Unstaked {} nonces of {} from pool {} for {}." [(length nonces) dpof-id pool-id beneficiary-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
-                    (RPS.URCi_OrtoFungibleStakeFlow pool-id owner-id beneficiary-id dpof-id nonces false))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [(length nonces)])
-        )
-    )
-    (defun INFO_AQP-POOL|StakeSpecialCustodial:object{OuronetInfoV2.ClientInfo}
-        (patron:string pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer])
-        @doc "Cost preview for AQP-POOL|CCp_StakeSpecialCustodial. \
-            \ IDENTICAL IGNIS TO AN ORDINARY ORTO STAKE, and that is a fact about the code rather \
-            \ than an approximation: custody runs the SAME phase chain (`XI_OrtoStakePhases`) and \
-            \ differs only in which account goes in the tracker's owner column. \
-            \ `URCi_OrtoFungibleStakeFlow` does not read that column -- its legs are the transfer, \
-            \ the per-nonce tracker write, the settle bundle, the score delta, the book and the \
-            \ checkpoint -- so the quote is exact, not a stand-in. No STOA."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Stake sleeping (Z|) LP nonces under POOL CUSTODY — held until the lock matures."
-                 "Scores and rewards still accrue to the beneficiary; release is permissionless once matured."
-                 "Executes via TS02-C3.AQP-POOL|CCp_StakeSpecialCustodial."]
-                [(format "Staked {} sleeping nonce(s) of {} into pool {} under custody for {}."
-                    [(length nonces) dpof-id pool-id beneficiary-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
-                    (RPS.URCi_OrtoFungibleStakeFlow pool-id owner-id beneficiary-id dpof-id nonces true))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [(length nonces)])
-        )
-    )
-    (defun INFO_AQP-POOL|ReleaseSpecialCustodial:object{OuronetInfoV2.ClientInfo}
-        (patron:string pool-id:string beneficiary-id:string dpof-id:string nonce:integer)
-        @doc "Cost preview for AQP-POOL|CCp_ReleaseSpecialCustodial. TWO LEGS, because the release \
-            \ does two things: it unwinds the stake (the orto flow in the UNSTAKE direction, over \
-            \ the single nonce) and it dissolves the batch through `VST::XE_Unsleep`. Both legs \
-            \ are reconstructed from the same cost readers the execution path calls. No STOA. \
-            \ \
-            \ PERMISSIONLESS, so the patron quoted here need not be the beneficiary -- anyone may \
-            \ pay to finish a matured release, and the native tokens still go to the staker."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Release a MATURED custodial sleeping position — dissolve the batch, send the native asset to the staker."
-                 "Permissionless once the lock has matured; refused before."
-                 "Executes via TS02-C3.AQP-POOL|CCp_ReleaseSpecialCustodial."]
-                [(format "Released nonce {} of {} from pool {} to {}." [nonce dpof-id pool-id beneficiary-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
-                    (AQP-FVT.URCi_ReleaseSpecialCustodial pool-id beneficiary-id dpof-id nonce))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [nonce])
-        )
-    )
-    (defun INFO_AQP-POOL|ReassignOrtoStakeBeneficiary:object{OuronetInfoV2.ClientInfo}
-        (patron:string pool-id:string owner:string current-beneficiary:string
-         new-beneficiary:string dpof-id:string nonce:integer)
-        @doc "Cost preview for AQP-POOL|CC_ReassignOrtoStakeBeneficiary. RENAMED from \
-            \ INFO_AQP-POOL|ReassignCustodialBeneficiary, 2026-10-11 -- custody is retired, \
-            \ this covers any staked sleeping position. The orto phase chain priced TWICE over \
-            \ one nonce, reconstructed from the same reader the execution path uses. No STOA. \
-            \ \
-            \ NO ASSET MOVES, but the quote still carries a transfer leg per run, because \
-            \ `URCi_OrtoFungibleStakeFlow` prices that leg direction-independently."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Redirect who earns from an already-staked sleeping position — the owner and the position are unchanged."
-                 "Requires the OWNER's signature — they decide who earns, as they did at the original stake."
-                 "Executes via TS02-C3.AQP-POOL|CC_ReassignOrtoStakeBeneficiary."]
-                [(format "Nonce {} of {} in pool {} now earns for {} instead of {}." [nonce dpof-id pool-id new-beneficiary current-beneficiary])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
-                    (AQP-FVT.URCi_ReassignOrtoStakeBeneficiary pool-id owner current-beneficiary new-beneficiary dpof-id nonce))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [nonce])
-        )
-    )
-    (defun INFO_AQP-POOL|ReassignCollectableStakeBeneficiary:object{OuronetInfoV2.ClientInfo}
-        (patron:string pool-id:string owner:string current-beneficiary:string
-         new-beneficiary:string collectable-id:string son:bool nonce:integer nonce-amount:integer)
-        @doc "Cost preview for AQP-POOL|CC_ReassignCollectableStakeBeneficiary -- the NFT/SFT \
-            \ counterpart of INFO_AQP-POOL|ReassignOrtoStakeBeneficiary. No maturity lock applies \
-            \ to a collectable; this previews redirecting earnings on an already-staked nonce. \
-            \ No STOA."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Redirect who earns from an already-staked NFT/SFT — the owner and the position are unchanged."
-                 "Requires the OWNER's signature — they decide who earns, as they did at the original stake."
-                 "Executes via TS02-C3.AQP-POOL|CC_ReassignCollectableStakeBeneficiary."]
-                [(format "Nonce {} of {} in pool {} now earns for {} instead of {}." [nonce collectable-id pool-id new-beneficiary current-beneficiary])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
-                    (AQP-FVT.URCi_ReassignCollectableStakeBeneficiary pool-id owner current-beneficiary new-beneficiary collectable-id son nonce nonce-amount))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [nonce])
-        )
-    )
-    (defun INFO_AQP-POOL|ReassignTrueFungibleStakeBeneficiary:object{OuronetInfoV2.ClientInfo}
-        (patron:string pool-id:string owner:string current-beneficiary:string
-         new-beneficiary:string dptf-id:string amount:decimal)
-        @doc "Cost preview for AQP-POOL|CC_ReassignTrueFungibleStakeBeneficiary -- the TF \
-            \ counterpart of INFO_AQP-POOL|ReassignOrtoStakeBeneficiary. The TF phase chain priced \
-            \ TWICE over <amount>, reconstructed from the same reader the execution path uses. \
-            \ No STOA. \
-            \ \
-            \ NO ASSET MOVES, but the quote still carries a transfer leg per run, because \
-            \ `URCi_TrueFungibleStakeFlow` prices that leg direction-independently."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Redirect who earns from an already-staked true-fungible position — the owner and the position are unchanged."
-                 "Requires the OWNER's signature — they decide who earns, as they did at the original stake."
-                 "Executes via TS02-C3.AQP-POOL|CC_ReassignTrueFungibleStakeBeneficiary."]
-                [(format "{} of {} in pool {} now earns for {} instead of {}." [amount dptf-id pool-id new-beneficiary current-beneficiary])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
-                    (AQP-FVT.URCi_ReassignTrueFungibleStakeBeneficiary pool-id owner current-beneficiary new-beneficiary dptf-id amount))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [amount])
-        )
-    )
-    (defun INFO_AQP-POOL|StakeSemiFungibleCollectable:object{OuronetInfoV2.ClientInfo}
-        (patron:string pool-id:string owner-id:string beneficiary-id:string collectable-id:string nonces:[integer])
-        @doc "Cost preview for AQP-POOL|CC_StakeSemiFungibleCollectable (DPSF, son=true / class-3). Multi-leg IGNIS \
-            \ (transfer + tracker×|nonces| + rollup×|nonces| + RPS + flat anchor + class-3 score-delta + book + checkpoint); no STOA."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Stake Semi-Fungible collectable nonces (DPSF) into the pool for a beneficiary."
-                 "Executes via TS02-C3.AQP-POOL|CC_StakeSemiFungibleCollectable."]
-                [(format "Staked {} DPSF nonces of {} into pool {} for {}." [(length nonces) collectable-id pool-id beneficiary-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
-                    (RPS.URCi_CollectableStakeFlow pool-id owner-id beneficiary-id collectable-id true nonces
-                        (DPDC.UR_AccountNoncesSupplies owner-id collectable-id true nonces) true))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [(length nonces)])
-        )
-    )
-    (defun INFO_AQP-POOL|UnstakeSemiFungibleCollectable:object{OuronetInfoV2.ClientInfo}
-        (patron:string pool-id:string owner-id:string beneficiary-id:string collectable-id:string nonces:[integer] nonce-amounts:[integer])
-        @doc "Cost preview for AQP-POOL|CC_UnstakeSemiFungibleCollectable (DPSF, son=true / class-3). Same legs as SF stake; \
-            \ nonce-amounts is caller-supplied (the staked quantities — owner no longer holds them). No STOA."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Unstake Semi-Fungible collectable nonces (DPSF) from the pool."
-                 "Executes via TS02-C3.AQP-POOL|CC_UnstakeSemiFungibleCollectable."]
-                [(format "Unstaked {} DPSF nonces of {} from pool {} for {}." [(length nonces) collectable-id pool-id beneficiary-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
-                    (RPS.URCi_CollectableStakeFlow pool-id owner-id beneficiary-id collectable-id true nonces nonce-amounts false))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [(length nonces)])
-        )
-    )
-    (defun INFO_AQP-POOL|StakeNonFungibleCollectable:object{OuronetInfoV2.ClientInfo}
-        (patron:string pool-id:string owner-id:string beneficiary-id:string collectable-id:string nonces:[integer])
-        @doc "Cost preview for AQP-POOL|CC_StakeNonFungibleCollectable (DPNF, son=false / class-4). Multi-leg IGNIS \
-            \ (transfer + tracker×|nonces| + rollup×|nonces| + RPS + flat anchor + class-4 score-delta + book + checkpoint); no STOA."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Stake Non-Fungible collectable nonces (DPNF) into the pool for a beneficiary."
-                 "Executes via TS02-C3.AQP-POOL|CC_StakeNonFungibleCollectable."]
-                [(format "Staked {} DPNF nonces of {} into pool {} for {}." [(length nonces) collectable-id pool-id beneficiary-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
-                    (RPS.URCi_CollectableStakeFlow pool-id owner-id beneficiary-id collectable-id false nonces
-                        (DPDC.UR_AccountNoncesSupplies owner-id collectable-id false nonces) true))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [(length nonces)])
-        )
-    )
-    (defun INFO_AQP-POOL|UnstakeNonFungibleCollectable:object{OuronetInfoV2.ClientInfo}
-        (patron:string pool-id:string owner-id:string beneficiary-id:string collectable-id:string nonces:[integer] nonce-amounts:[integer])
-        @doc "Cost preview for AQP-POOL|CC_UnstakeNonFungibleCollectable (DPNF, son=false / class-4). Same legs as NF stake; \
-            \ nonce-amounts is caller-supplied (the staked quantities — owner no longer holds them). No STOA."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Unstake Non-Fungible collectable nonces (DPNF) from the pool."
-                 "Executes via TS02-C3.AQP-POOL|CC_UnstakeNonFungibleCollectable."]
-                [(format "Unstaked {} DPNF nonces of {} from pool {} for {}." [(length nonces) collectable-id pool-id beneficiary-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
-                    (RPS.URCi_CollectableStakeFlow pool-id owner-id beneficiary-id collectable-id false nonces nonce-amounts false))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [(length nonces)])
-        )
-    )
-    ;;<---- vacate lifecycle (fixed-cost endpoints) ---->
-    (defun INFO_AQP-POOL|BatchVacateTrueFungible:object{OuronetInfoV2.ClientInfo}
-        (patron:string pool-id:string dptf-id:string legs:[object{AcquisitionSchemasV1.VCT|VacateTfLeg}])
-        @doc "Cost preview for AQP-POOL|CCp_BatchVacateTrueFungible. Multi-leg IGNIS (per-leg \
-            \ tracker-zero + per-beneficiary unwind + one bulk transfer); no STOA. Fed the same \
-            \ dirty-read <legs> slice the exec is fed."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Batch-vacate one DPTF asset's owner-legs out of the pool."
-                 "Executes via TS02-C3.AQP-POOL|CCp_BatchVacateTrueFungible."]
-                [(format "Batch-vacated {} legs of {} from pool {}." [(length legs) dptf-id pool-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
-                    (AQP-VCT.URCi_BatchVacateTrueFungible pool-id dptf-id legs))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-POOL|BatchVacateOrtoFungible:object{OuronetInfoV2.ClientInfo}
-        (patron:string pool-id:string dpof-id:string legs:[object{AcquisitionSchemasV1.VCT|VacateNonceLeg}])
-        @doc "Cost preview for AQP-POOL|CCp_BatchVacateOrtoFungible. Multi-leg IGNIS (bulk DPOF \
-            \ transfer + per-nonce tracker + per-beneficiary score unwind); no STOA. Fed the same \
-            \ dirty-read nonce <legs> slice the exec is fed."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Batch-vacate one DPOF asset's owner nonce-legs out of the pool."
-                 "Executes via TS02-C3.AQP-POOL|CCp_BatchVacateOrtoFungible."]
-                [(format "Batch-vacated {} nonce-legs of {} from pool {}." [(length legs) dpof-id pool-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
-                    (AQP-VCT.URCi_BatchVacateOrtoFungible pool-id dpof-id legs))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-POOL|BatchVacateCollectables:object{OuronetInfoV2.ClientInfo}
-        (patron:string pool-id:string collectable-id:string son:bool legs:[object{AcquisitionSchemasV1.VCT|VacateNonceLeg}])
-        @doc "Cost preview for AQP-POOL|CCp_BatchVacateCollectables (son=DPSF true / DPNF false). \
-            \ Multi-leg IGNIS (bulk transfer + per-nonce tracker + rollup + flat anchor + per- \
-            \ beneficiary class-matched score unwind); no STOA. Fed the dirty-read nonce <legs>."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Batch-vacate one collectable collection's owner nonce-legs out of the pool."
-                 "Executes via TS02-C3.AQP-POOL|CCp_BatchVacateCollectables."]
-                [(format "Batch-vacated {} nonce-legs of {} (son={}) from pool {}." [(length legs) collectable-id son pool-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
-                    (AQP-VCT.URCi_BatchVacateCollectables pool-id collectable-id son legs))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-POOL|BatchDrainTrueFungible:object{OuronetInfoV2.ClientInfo}
-        (patron:string pool-id:string dptf-id:string legs:[object{AcquisitionSchemasV1.VCT|VacateTfLeg}])
-        @doc "Cost preview for AQP-POOL|CCp_BatchDrainTrueFungible. Score-free drain: per-leg \
-            \ tracker-zero + rollup, settle-on-last-drain only for beneficiaries fully drained \
-            \ this round (live UserUnn), then one bulk transfer; no STOA. Fed the dirty-read legs."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Batch-drain one DPTF asset's owner-legs out of the pool (score-free)."
-                 "Executes via TS02-C3.AQP-POOL|CCp_BatchDrainTrueFungible."]
-                [(format "Batch-drained {} legs of {} from pool {}." [(length legs) dptf-id pool-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
-                    (AQP-VCT.URCi_BatchDrainTrueFungible pool-id dptf-id legs))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-POOL|BatchDrainOrtoFungible:object{OuronetInfoV2.ClientInfo}
-        (patron:string pool-id:string dpof-id:string legs:[object{AcquisitionSchemasV1.VCT|VacateNonceLeg}])
-        @doc "Cost preview for AQP-POOL|CCp_BatchDrainOrtoFungible. Score-free drain: bulk DPOF \
-            \ transfer + per-nonce tracker + settle-on-last-drain (no anchor); no STOA. Fed the legs."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Batch-drain one DPOF asset's owner nonce-legs out of the pool (score-free)."
-                 "Executes via TS02-C3.AQP-POOL|CCp_BatchDrainOrtoFungible."]
-                [(format "Batch-drained {} nonce-legs of {} from pool {}." [(length legs) dpof-id pool-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
-                    (AQP-VCT.URCi_BatchDrainOrtoFungible pool-id dpof-id legs))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-POOL|BatchDrainCollectable:object{OuronetInfoV2.ClientInfo}
-        (patron:string pool-id:string collectable-id:string son:bool legs:[object{AcquisitionSchemasV1.VCT|VacateNonceLeg}])
-        @doc "Cost preview for AQP-POOL|CCp_BatchDrainCollectable (son=DPSF true / DPNF false). \
-            \ Score-free drain: bulk transfer + per-leg tracker + rollup + flat anchor + settle- \
-            \ on-last-drain; no STOA. Fed the dirty-read nonce <legs>."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Batch-drain one collectable collection's owner nonce-legs out of the pool (score-free)."
-                 "Executes via TS02-C3.AQP-POOL|CCp_BatchDrainCollectable."]
-                [(format "Batch-drained {} nonce-legs of {} (son={}) from pool {}." [(length legs) collectable-id son pool-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
-                    (AQP-VCT.URCi_BatchDrainCollectable pool-id collectable-id son legs))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-POOL|VacateTrueFungible:object{OuronetInfoV2.ClientInfo}
-        (patron:string pool-id:string)
-        @doc "Cost preview for AQP-POOL|CC_VacateTrueFungible -- the pool's WHOLE TrueFungible \
-            \ side, every live DPTF lane including the F| frozen ones. No STOA. \
-            \ \
-            \ TAKES ONLY A POOL ID, unlike INFO_AQP-POOL|FullVacate, which is handed its lane \
-            \ plan because its caller has already scanned. `URCi_VacateTrueFungible` performs \
-            \ the same scan the exec does, so this is previewable from what the user has in \
-            \ front of them."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Vacate every TrueFungible lane of a pool, for all owners."
-                 "Executes via TS02-C3.AQP-POOL|CC_VacateTrueFungible."]
-                [(format "Vacated the TrueFungible side of Pool {}." [pool-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
-                    (AQP-VCT.URCi_VacateTrueFungible pool-id))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-POOL|VacateOrtoFungible:object{OuronetInfoV2.ClientInfo}
-        (patron:string pool-id:string dpof-id:string)
-        @doc "Cost preview for AQP-POOL|CC_VacateOrtoFungible -- ONE OrtoFungible satellite of a \
-            \ pool, not the pool. A class-1 pool has a TF leg plus one or more OF satellites; \
-            \ this prices one of them. No STOA."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Vacate ONE OrtoFungible satellite of a pool, for all owners."
-                 "Executes via TS02-C3.AQP-POOL|CC_VacateOrtoFungible."]
-                [(format "Vacated OrtoFungible {} of Pool {}." [dpof-id pool-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
-                    (AQP-VCT.URCi_VacateOrtoFungible pool-id dpof-id))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-POOL|VacateSemiFungible:object{OuronetInfoV2.ClientInfo}
-        (patron:string pool-id:string dpsf-id:string)
-        @doc "Cost preview for AQP-POOL|CC_VacateSemiFungible -- ONE DPSF collection of a pool. \
-            \ The DPSF and DPNF previews differ only in which side of the shared reader they \
-            \ select, so they are separate functions rather than one with a flag: a client that \
-            \ passed the wrong flag would quote the other asset's cost and never know."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Vacate ONE semi-fungible collection of a pool, for all owners."
-                 "Executes via TS02-C3.AQP-POOL|CC_VacateSemiFungible."]
-                [(format "Vacated SemiFungible {} of Pool {}." [dpsf-id pool-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
-                    (AQP-VCT.URCi_VacateSemiFungible pool-id dpsf-id))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-POOL|VacateNonFungible:object{OuronetInfoV2.ClientInfo}
-        (patron:string pool-id:string dpnf-id:string)
-        @doc "Cost preview for AQP-POOL|CC_VacateNonFungible -- ONE DPNF collection of a pool. \
-            \ See the DPSF sibling for why these are two functions and not one."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Vacate ONE non-fungible collection of a pool, for all owners."
-                 "Executes via TS02-C3.AQP-POOL|CC_VacateNonFungible."]
-                [(format "Vacated NonFungible {} of Pool {}." [dpnf-id pool-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
-                    (AQP-VCT.URCi_VacateNonFungible pool-id dpnf-id))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-POOL|FullVacate:object{OuronetInfoV2.ClientInfo}
-        (patron:string pool-id:string
-         tf-lanes:[object{AcquisitionSchemasV1.VCT|VacateTfLane}]
-         of-lanes:[object{AcquisitionSchemasV1.VCT|VacateNonceLane}]
-         coll-lanes:[object{AcquisitionSchemasV1.VCT|VacateNonceLane}]
-         coll-son:bool)
-        @doc "Cost preview for AQP-POOL|CC_FullVacate — the single-tx whole-pool vacate. Sums the \
-            \ per-asset vacate cost across every dirty-read lane (TF + OF satellites + collectables); \
-            \ no STOA. Fed the same lane plan the exec's phase-1 scan builds."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Fully vacate a pool in a single transaction (all assets, all owners)."
-                 "Executes via TS02-C3.AQP-POOL|CC_FullVacate."]
-                [(format "Fully vacated pool {} ({} TF + {} OF + {} collectable lanes)."
-                    [pool-id (length tf-lanes) (length of-lanes) (length coll-lanes)])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
-                    (AQP-VCT.URCi_FullVacate pool-id tf-lanes of-lanes coll-lanes coll-son))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-POOL|FinalizeVacate:object{OuronetInfoV2.ClientInfo}
-        (patron:string pool-id:string)
-        @doc "Cost preview for AQP-POOL|C_FinalizeVacate. IGNIS one flat 'ignis|medium' tier (05_VCT:3016); no STOA."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Finalize a vacate — nuke employed scores, unfreeze FVTs, re-enable stake."
-                 "Executes via TS02-C3.AQP-POOL|C_FinalizeVacate."]
-                [(format "Finalized vacate on pool {}." [pool-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-VCT.URCi_FinalizeVacate)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-POOL|AbortVacate:object{OuronetInfoV2.ClientInfo}
-        (patron:string pool-id:string)
-        @doc "Cost preview for AQP-POOL|C_AbortVacate. Empty cumulator (05_VCT:2989) — costs you nothing."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Abort an in-progress vacate (clear the in-progress flag; stake stays disabled)."
-                 "Costs you nothing."
-                 "Executes via TS02-C3.AQP-POOL|C_AbortVacate."]
-                [(format "Aborted vacate on pool {}." [pool-id])]
-                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    ;;
-    (defun INFO_AQP-POOL|UpdateScoreMultipliers:object{OuronetInfoV2.ClientInfo}
-        (patron:string score-id:string mx-frozen:decimal mx-sleeping:decimal mx-hibernated:decimal)
-        @doc "Cost preview for AQP-POOL|CC_UpdateScoreMultipliers. Flat 'setup' component — a \
-            \ settings write, priced with the other one-shot score settings. No STOA. \
-            \ \
-            \ THE OP IS REFUSED while any frozen or sleeping position exists on the score, and \
-            \ this quote does not try to predict that: a preview prices the transaction, and the \
-            \ emptiness gate is a condition the caller discovers by reading the pool. Quoting \
-            \ zero for a call that will abort would be worse than quoting its real price."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Re-set a score's frozen, sleeping and hibernating multipliers."
-                 "Refused while any frozen or sleeping position exists on the score."
-                 "Executes via TS02-C3.AQP-POOL|CC_UpdateScoreMultipliers."]
-                [(format "Score {} multipliers set to frozen={} sleeping={} hibernated={}."
-                    [score-id mx-frozen mx-sleeping mx-hibernated])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
-                    (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-POOL.URCi_UpdateScoreMultipliers [])))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-POOL|BackfillScoreSlice:object{OuronetInfoV2.ClientInfo}
-        (patron:string pool-id:string score-id:string beneficiaries:[string])
-        @doc "Cost preview for AQP-POOL|CCp_BackfillScoreSlice — one fed slice of the re-rate sweep. \
-            \ PRICED PER HOLDER, matching the execution path exactly: the transaction recomputes \
-            \ one target and writes one delta per account. So the quote SCALES with the slice the \
-            \ caller intends to send, which is what makes it usable for sizing -- a flat price \
-            \ would make a 1-account slice cost what a 40-account slice costs. No STOA."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Re-rate one slice of holders after a score was added to a pool."
-                 "Order-independent and replay-safe — fire slices in parallel; a converged holder is a no-op."
-                 "Executes via TS02-C3.AQP-POOL|CCp_BackfillScoreSlice."]
-                [(format "Re-rated {} holder(s) on score {} of pool {}." [(length beneficiaries) score-id pool-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
-                    (ref-I|OURONET::OI|UC_IfpFromOutputCumulator
-                        (AQP-POOL.URCi_BackfillScoreSlice beneficiaries [])))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [(length beneficiaries)])
-        )
-    )
-    (defun INFO_AQP-POOL|BeginScoreRevoke:object{OuronetInfoV2.ClientInfo}
-        (patron:string pool-id:string score-id:string slot-index:integer)
-        @doc "Cost preview for AQP-POOL|C_BeginScoreRevoke — phase 1 of 3. Flat 'setup' component: \
-            \ vacate the score's pool slot and freeze the pool. No STOA."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Begin revoking a score from a pool (phase 1/3 — vacate the slot, freeze the pool)."
-                 "Then drain with Cp_DrainScoreSlice, and finish with CC_FinalizeScoreRevoke."
-                 "Executes via TS02-C3.AQP-POOL|C_BeginScoreRevoke."]
-                [(format "Score {} vacated from slot {} of pool {}; pool frozen pending drain." [score-id slot-index pool-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
-                    (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-POOL.URCi_BeginScoreRevoke [])))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-POOL|DrainScoreSlice:object{OuronetInfoV2.ClientInfo}
-        (patron:string pool-id:string score-id:string accounts:[string])
-        @doc "Cost preview for AQP-POOL|Cp_DrainScoreSlice — phase 2 of 3, one fed slice. \
-            \ PRICED PER HOLDER for the same reason as the re-rate slice: one read and one delta \
-            \ write each, so the quote tracks the slice the caller means to send. No STOA."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Drain one slice of holders' bases for a score being revoked (phase 2/3)."
-                 "Order-independent and replay-safe — fire slices in parallel."
-                 "Executes via TS02-C3.AQP-POOL|Cp_DrainScoreSlice."]
-                [(format "Drained {} holder(s) of score {} on pool {}." [(length accounts) score-id pool-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
-                    (ref-I|OURONET::OI|UC_IfpFromOutputCumulator
-                        (AQP-POOL.URCi_DrainScoreSlice accounts [])))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [(length accounts)])
-        )
-    )
-    (defun INFO_AQP-POOL|FinalizeScoreRevoke:object{OuronetInfoV2.ClientInfo}
-        (patron:string pool-id:string score-id:string)
-        @doc "Cost preview for AQP-POOL|CC_FinalizeScoreRevoke — phase 3 of 3. Flat 'setup' \
-            \ component: cut the aqpool-link once the drain has reached zero. Refused while any \
-            \ holder still carries a base for the score. No STOA."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Finish revoking a score from a pool (phase 3/3 — cut the link, release the freeze)."
-                 "Refused while any holder still carries a base for the score."
-                 "Executes via TS02-C3.AQP-POOL|CC_FinalizeScoreRevoke."]
-                [(format "Score {} unlinked from pool {}." [score-id pool-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
-                    (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-POOL.URCi_FinalizeScoreRevoke [])))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    ;;
-    ;;[AQP-FVT] Farms / Vaults / Treasuries (config + rewards)
-    (defun INFO_AQP-FVT|Issue:object{OuronetInfoV2.ClientInfo}
-        (patron:string fvt-name:string owner-konto:string fvt-class:integer common-denominator:string)
-        @doc "Cost preview for AQP-FVT|C_Issue. IGNIS GAS|ISSUE-FVT + STOA 'smart'."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Create a Farm / Vault / Treasury." "Executes via TS02-C3.AQP-FVT|C_Issue."]
-                [(format "FVT '{}' created (class {}) for {}." [fvt-name fvt-class owner-konto])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-FVT.URCi_Issue owner-konto [])))
-                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (AQP-FVT.URCi_IssueStoa))
-                [])
-        )
-    )
-    (defun INFO_AQP-FVT|RotateOwnership:object{OuronetInfoV2.ClientInfo}
-        (patron:string fvt-id:string new-owner-konto:string)
-        @doc "Cost preview for AQP-FVT|C_RotateOwnership. IGNIS 'ignis|medium'; no STOA."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Transfer an FVT's owner-konto." "Executes via TS02-C3.AQP-FVT|C_RotateOwnership."]
-                [(format "FVT {} ownership moved to {}." [fvt-id new-owner-konto])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (RPS.URCi_RotateOwnership fvt-id)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-FVT|Control:object{OuronetInfoV2.ClientInfo}
-        (patron:string fvt-id:string new-can-upgrade:bool new-can-change-owner:bool)
-        @doc "Cost preview for AQP-FVT|C_Control. IGNIS 'ignis|medium'; no STOA."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Set an FVT's can-upgrade / can-change-owner flags." "Executes via TS02-C3.AQP-FVT|C_Control."]
-                [(format "FVT {} control flags updated." [fvt-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (RPS.URCi_Control fvt-id)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-FVT|SetCommonDenominator:object{OuronetInfoV2.ClientInfo}
-        (patron:string fvt-id:string common-denominator:string)
-        @doc "Cost preview for AQP-FVT|C_SetCommonDenominator. IGNIS GAS|SET-COMMON-DENOMINATOR; no STOA."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Set a farm's common-denominator (before any links)." "Executes via TS02-C3.AQP-FVT|C_SetCommonDenominator."]
-                [(format "FVT {} common-denominator set to {}." [fvt-id common-denominator])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (RPS.URCi_SetCommonDenominator fvt-id [])))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-FVT|SetMosaic:object{OuronetInfoV2.ClientInfo}
-        (patron:string fvt-id:string mosaic:bool)
-        @doc "Cost preview for AQP-FVT|C_SetMosaic. IGNIS GAS|SET-MOSAIC; no STOA."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Toggle a farm's mosaic membership policy." "Executes via TS02-C3.AQP-FVT|C_SetMosaic."]
-                [(format "FVT {} mosaic set to {}." [fvt-id mosaic])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (RPS.URCi_SetMosaic fvt-id [])))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-FVT|SetSplitMode:object{OuronetInfoV2.ClientInfo}
-        (patron:string fvt-id:string split-mode:string)
-        @doc "Cost preview for AQP-FVT|C_SetSplitMode. IGNIS GAS|SET-SPLIT-MODE; no STOA. Reports the farm's current \
-            \ reward-split mode alongside the requested one."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Set a farm's reward-split mode (SPLIT|STAKED participation | SPLIT|TVL pool-size)." "Executes via TS02-C3.AQP-FVT|C_SetSplitMode."]
-                [(format "Farm {} reward-split mode: {} -> {}." [fvt-id (RPS.UR_FVT|SplitMode fvt-id) split-mode])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (RPS.URCi_SetSplitMode fvt-id [])))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-FVT|AddScoreEntity:object{OuronetInfoV2.ClientInfo}
-        (patron:string fvt-id:string score-entity-type:integer score-entity-id:string)
-        @doc "Cost preview for AQP-FVT|C_AddScoreEntity. IGNIS GAS|ADD-SCORE-ENTITY; no STOA."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Register a score (type 1) or triplet (type 3) on an FVT." "Executes via TS02-C3.AQP-FVT|C_AddScoreEntity."]
-                [(format "Score-entity {} (type {}) registered on FVT {}." [score-entity-id score-entity-type fvt-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (RPS.URCi_AddScoreEntity fvt-id [])))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-FVT|ToggleScoreEntityLink:object{OuronetInfoV2.ClientInfo}
-        (patron:string fvt-id:string score-entity-type:integer score-entity-id:string enabled:bool)
-        @doc "Cost preview for AQP-FVT|C_ToggleScoreEntityLink. IGNIS GAS|TOGGLE-SCORE-ENTITY-LINK; no STOA."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Enable/disable a ScoreEntityLink on an FVT." "Executes via TS02-C3.AQP-FVT|C_ToggleScoreEntityLink."]
-                [(format "FVT {} score-entity {} enabled={}." [fvt-id score-entity-id enabled])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (RPS.URCi_ToggleScoreEntityLink fvt-id [])))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-FVT|IssueMultipletFamily:object{OuronetInfoV2.ClientInfo}
-        (patron:string token-0-id:string token-1-id:string token-2-id:string ats-0-1-id:string ats-1-2-id:string)
-        @doc "Cost preview for AQP-FVT|C_IssueMultipletFamily. IGNIS GAS|ISSUE-MULTIPLET-FAMILY; no STOA."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Issue a chain-wide MultipletFamily reward ladder." "Executes via TS02-C3.AQP-FVT|C_IssueMultipletFamily."]
-                [(format "MultipletFamily issued: {} -> {} -> {}." [token-0-id token-1-id token-2-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-FVT.URCi_IssueMultipletFamily patron [])))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-FVT|IssueGenericEarningVault:object{OuronetInfoV2.ClientInfo}
-        (patron:string owner-konto:string vault-name:string stake-dptf-id:string reward-dptf-id:string)
-        @doc "Cost preview for AQP-FVT|C_IssueGenericEarningVault -- the whole six-operation vault \
-            \ as ONE charge. IGNIS only; no STOA."
-        ;;The cost comes from TS02-C3.URCi_IssueGenericEarningVault, which concatenates the SAME six
-        ;;component readers the operation's own cumulators come from. Preview and charge therefore
-        ;;agree by construction rather than by a number kept in step by hand.
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Stand up a complete earning Vault in one transaction -- score, pool, pool-score link, FVT entity, score admission and reward link."
-                 "Executes via TS02-C3.AQP-FVT|C_IssueGenericEarningVault."]
-                [(format "Vault {}: stake {} to earn {}. Creates {}Score, {}Pool, {}Vault."
-                    [vault-name stake-dptf-id reward-dptf-id vault-name vault-name vault-name])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
-                    (ref-I|OURONET::OI|UC_IfpFromOutputCumulator
-                        (TS02-C3.URCi_IssueGenericEarningVault owner-konto vault-name stake-dptf-id reward-dptf-id)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-FVT|AddRewardLink:object{OuronetInfoV2.ClientInfo}
-        (patron:string fvt-id:string reward-dptf-id:string segmentation:bool multiplet-family-id:string)
-        @doc "Cost preview for AQP-FVT|C_AddRewardLink. IGNIS GAS|ADD-REWARD-LINK; no STOA."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Register a reward DPTF on an FVT." "Executes via TS02-C3.AQP-FVT|C_AddRewardLink."]
-                [(format "Reward {} linked on FVT {} (family {})." [reward-dptf-id fvt-id multiplet-family-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (RPS.URCi_AddRewardLink fvt-id [])))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-FVT|ToggleRewardLink:object{OuronetInfoV2.ClientInfo}
-        (patron:string fvt-id:string reward-dptf-id:string enabled:bool)
-        @doc "Cost preview for AQP-FVT|C_ToggleRewardLink. IGNIS GAS|TOGGLE-REWARD-LINK; no STOA."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Toggle a reward link's enabled flag." "Executes via TS02-C3.AQP-FVT|C_ToggleRewardLink."]
-                [(format "FVT {} reward {} enabled={}." [fvt-id reward-dptf-id enabled])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (RPS.URCi_ToggleRewardLink fvt-id [])))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-FVT|SetQualitySplit:object{OuronetInfoV2.ClientInfo}
-        (patron:string fvt-id:string reward-dptf-id:string mode:string bronze-split:[integer] silver-split:[integer] gold-split:[integer])
-        @doc "Cost preview for AQP-FVT|C_SetQualitySplit. IGNIS GAS|SET-QUALITY-SPLIT; no STOA."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Set a MULTIPLET_BASE reward's quality-split mode + matrix." "Executes via TS02-C3.AQP-FVT|C_SetQualitySplit."]
-                [(format "FVT {} reward {} quality-split mode={}." [fvt-id reward-dptf-id mode])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (RPS.URCi_SetQualitySplit fvt-id [])))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-FVT|InjectStream:object{OuronetInfoV2.ClientInfo}
-        (patron:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
-        @doc "Cost preview for AQP-FVT|CC_InjectStream. IGNIS GAS|INJECT; STOA none (custody transfer)."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Inject reward tokens as a linear time-stream over the given duration."
-                 "Executes via TS02-C3.AQP-FVT|CC_InjectStream."]
-                [(format "Streaming {} of {} into FVT {} over {}s." [amount reward-dptf-id fvt-id duration])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
-                    ;;MISSING LEG FIXED (2026-09-14) — same defect as INFO_AQP-FVT|Inject, same cause.
-                    ;;This quoted only RPS.URCi_Inject (the gas leg) while the exec also collects the
-                    ;;custody transfer of the reward principal: XIv_FvtAddStream PHASE 1 runs
-                    ;;`(ref-TFT::C_Transfer patron patron AQP|SC_NAME reward-dptf-id amount true)` ahead of the
-                    ;;gas leg, and that transfer carries its own cumulator. All FOUR members of the
-                    ;;inject family shared this. Measured and pinned for CC_Inject at
-                    ;;`Stage_02/[6.5.1]_AQP-INFO-GROUNDTRUTH.repl <<TX-INFO-GT-INJECT>>`; the other
-                    ;;three route through the identical core, so the same reader fixes them.
-                    (RPS.URCi_InjectFull "AQP-FVT|CC_InjectStream" patron fvt-id reward-dptf-id amount))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [amount])
-        )
-    )
-    (defun INFO_AQP-FVT|Inject:object{OuronetInfoV2.ClientInfo}
-        (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
-        @doc "Cost preview for AQP-FVT|CC_Inject (enforced-fresh single-tx inject). IGNIS GAS|INJECT; STOA none."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Enforced-fresh single-tx inject (fixes all stale members first)."
-                 "Executes via TS02-C3.AQP-FVT|CC_Inject."]
-                [(format "Fresh-injected {} of {} into FVT {}." [amount reward-dptf-id fvt-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
-                    ;;MISSING LEG FIXED (2026-09-14). This quoted only RPS.URCi_Inject -- the gas leg --
-                    ;;while CC_Inject also collects the custody transfer of the reward principal
-                    ;;(XI_FvtInjectCore PHASE 1, 04_RPS.pact). Measured short by exactly the transfer
-                    ;;cumulator. URCi_InjectFull counts both, matching how URCi_CollectFull and
-                    ;;URCi_TrueFungibleStakeFlow already count theirs. Pinned by
-                    ;;`Stage_02/[6.5.1]_AQP-INFO-GROUNDTRUTH.repl <<TX-INFO-GT-INJECT>>`.
-                    (RPS.URCi_InjectFull "AQP-FVT|CC_Inject" patron fvt-id reward-dptf-id amount))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [amount])
-        )
-    )
-    (defun INFO_AQP-FVT|InjectFinalize:object{OuronetInfoV2.ClientInfo}
-        (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
-        @doc "Cost preview for AQP-FVT|CC_InjectFinalize. IGNIS GAS|INJECT; STOA none."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Finalize a paginated fresh inject (zero-stale gate, then inject)."
-                 "Executes via TS02-C3.AQP-FVT|CC_InjectFinalize."]
-                [(format "Finalized fresh inject of {} of {} into FVT {}." [amount reward-dptf-id fvt-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
-                    ;;MISSING LEG FIXED (2026-09-14) — same defect as INFO_AQP-FVT|Inject, same cause.
-                    ;;This quoted only RPS.URCi_Inject (the gas leg) while the exec also collects the
-                    ;;custody transfer of the reward principal: XI_FvtInjectCore PHASE 1, via XE_XI_FvtInjectCore runs
-                    ;;`(ref-TFT::C_Transfer patron patron AQP|SC_NAME reward-dptf-id amount true)` ahead of the
-                    ;;gas leg, and that transfer carries its own cumulator. All FOUR members of the
-                    ;;inject family shared this. Measured and pinned for CC_Inject at
-                    ;;`Stage_02/[6.5.1]_AQP-INFO-GROUNDTRUTH.repl <<TX-INFO-GT-INJECT>>`; the other
-                    ;;three route through the identical core, so the same reader fixes them.
-                    (RPS.URCi_InjectFull "AQP-FVT|CC_InjectFinalize" patron fvt-id reward-dptf-id amount))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [amount])
-        )
-    )
-    (defun INFO_AQP-FVT|InjectFixChunk:object{OuronetInfoV2.ClientInfo}
-        (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
-        @doc "Cost preview for AQP-FVT|CCp_InjectFixChunk. Gas-station subsidised — no IGNIS/STOA to the patron."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Page the enforced-fresh FIX phase (up to `chunk` stale members)."
-                 "Gas-station subsidised — costs you nothing."
-                 "Executes via TS02-C3.AQP-FVT|CCp_InjectFixChunk."]
-                [(format "Fixed up to {} stale members on FVT {} reward {}." [chunk fvt-id reward-dptf-id])]
-                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-FVT|UnstaleAll:object{OuronetInfoV2.ClientInfo}
-        (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
-        @doc "Cost preview for AQP-FVT|CCp_UnstaleAll. Gas-station subsidised — no IGNIS/STOA to the patron."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Owner mass deb-unstale (make injection-ready; no inject)."
-                 "Gas-station subsidised — costs you nothing."
-                 "Executes via TS02-C3.AQP-FVT|CCp_UnstaleAll."]
-                [(format "Unstaled up to {} members on FVT {}." [chunk fvt-id])]
-                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-FVT|UnstaleMyScores:object{OuronetInfoV2.ClientInfo}
-        (patron:string fvt-ids:[string])
-        @doc "Cost preview for AQP-FVT|CC_UnstaleMyScores. IGNIS GAS|UNSTALE; no STOA."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Self-service deb-unstale of your own scores across FVTs." "Executes via TS02-C3.AQP-FVT|CC_UnstaleMyScores."]
-                [(format "Unstaled your scores across {} FVTs." [(length fvt-ids)])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-FVT.URCi_UnstaleMyScores patron [])))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-FVT|Collect:object{OuronetInfoV2.ClientInfo}
-        (patron:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
-        @doc "Cost preview for AQP-FVT|CC_Collect. FULL IGNIS: reward-payout leg (plain TFT transfer, or a \
-            \ MULTIPLET_BASE triplet Coil/Curl ladder) + Phase-7 forced-fix penalty + GAS|COLLECT; STOA none. \
-            \ Reconstructed on the current claimable state (exact for un-streamed / settled lanes)."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Collect your claimable reward from this FVT membership."
-                 "Full IGNIS shown: payout transfer/ladder + any forced-fix penalty + gas (reconstructed byte-for-byte)."
-                 "Executes via TS02-C3.AQP-FVT|CC_Collect."]
-                [(format "Collected reward token {} from score-entity {}." [reward-dptf-id score-entity-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (RPS.URCi_CollectFull patron fvt-id score-entity-type score-entity-id reward-dptf-id))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-FVT|SweepRevokeAnchor:object{OuronetInfoV2.ClientInfo}
-        (patron:string anchor-id:string)
-        @doc "Cost preview for AQP-FVT|CC_SweepRevokeAnchor. Gas-station subsidised — no IGNIS/STOA to the patron."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Single-tx re-score sweep retiring an employed anchor."
-                 "Gas-station subsidised — costs you nothing."
-                 "Executes via TS02-C3.AQP-FVT|CC_SweepRevokeAnchor."]
-                [(format "Swept + retired anchor {}." [anchor-id])]
-                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-FVT|SweepBegin:object{OuronetInfoV2.ClientInfo}
-        (patron:string anchor-id:string)
-        @doc "Cost preview for AQP-FVT|CC_SweepBegin. Gas-station subsidised — no IGNIS/STOA to the patron."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Open a paginated re-score sweep (freeze + swept-revoke + cursor)."
-                 "Gas-station subsidised — costs you nothing."
-                 "Executes via TS02-C3.AQP-FVT|CC_SweepBegin."]
-                [(format "Opened sweep on anchor {}." [anchor-id])]
-                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-FVT|SweepRecomputeChunk:object{OuronetInfoV2.ClientInfo}
-        (patron:string anchor-id:string chunk:integer)
-        @doc "Cost preview for AQP-FVT|CCp_SweepRecomputeChunk. Gas-station subsidised — no IGNIS/STOA to the patron."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Page a re-score sweep (recompute the next `chunk` holders; final page unfreezes)."
-                 "Gas-station subsidised — costs you nothing."
-                 "Executes via TS02-C3.AQP-FVT|CCp_SweepRecomputeChunk."]
-                [(format "Recomputed up to {} holders on anchor {}'s sweep." [chunk anchor-id])]
-                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    ;;
-    (defun INFO_AQP-FVT|ClearPoolSweep:object{OuronetInfoV2.ClientInfo}
-        (patron:string pool-id:string)
-        @doc "Cost preview for AQP-FVT|CC_ClearPoolSweep. Flat 'backfill' component — priced as \
-            \ sweep maintenance rather than a settings change, because it is the last step of a \
-            \ job ANYBODY may finish. No STOA. \
-            \ \
-            \ IT LIVES IN AQP-FVT, not AQP-POOL, and the preview sits here for the same reason: \
-            \ the pool's sweep flag has two owners (the add-score re-rate and the FVT anchor \
-            \ sweep) and AQP-FVT is the only module that can see both, so it is the only one that \
-            \ can refuse to lift a freeze whose other owner is still running."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Release a pool's sweep freeze once the outstanding work list is empty."
-                 "Permissionless — anyone may finish the job; refused while either owner still has work."
-                 "Executes via TS02-C3.AQP-FVT|CC_ClearPoolSweep."]
-                [(format "Sweep freeze lifted on pool {}." [pool-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
-                    (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-FVT.URCi_ClearPoolSweep [])))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-FVT|FvtFixSlice:object{OuronetInfoV2.ClientInfo}
-        (patron:string fvt-id:string accounts:[string])
-        @doc "Cost preview for AQP-FVT|CCp_FvtFixSlice. Gas-station subsidised — no IGNIS/STOA to \
-            \ the patron, exactly like the sequential fixer it parallelises. \
-            \ \
-            \ THE FED-SLICE FORM IS WHY IT EXISTS: the cursor pager takes a `chunk` and computes \
-            \ its own window, so two concurrent sends pick the SAME members and charge the \
-            \ forced-fix penalty twice. This one takes the accounts explicitly and re-checks \
-            \ staleness in-transaction, so an overlapping or replayed slice skips rather than \
-            \ re-penalising."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Fix one explicit slice of deb-stale FVT members (parallel-safe)."
-                 "Gas-station subsidised — costs you nothing."
-                 "Executes via TS02-C3.AQP-FVT|CCp_FvtFixSlice."]
-                [(format "Fixed up to {} stale member(s) on FVT {}." [(length accounts) fvt-id])]
-                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [(length accounts)])
-        )
-    )
-    ;;
-    ;;[AQP-DSA] Delegated Staking Agencies
-    (defun INFO_AQP-DSA|DefineDelegationVault:object{OuronetInfoV2.ClientInfo}
-        (patron:string fvt-id:string model-id:string unit-score:integer)
-        @doc "Cost preview for AQP-DSA|C_DefineDelegationVault. IGNIS GAS|DEFINE-VAULT; no STOA."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Bind a class-0 FVT as a DSA delegation vault." "Executes via TS02-C3.AQP-DSA|C_DefineDelegationVault."]
-                [(format "FVT {} bound as delegation vault (model {})." [fvt-id model-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-DSA.URCi_DefineDelegationVault patron [])))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-DSA|OpenAgency:object{OuronetInfoV2.ClientInfo}
-        (patron:string fvt-id:string pool-id:string score-entity-id:string fee-per-mille:integer collectable-id:string stake-nonces:[integer])
-        @doc "Cost preview for AQP-DSA|CC_OpenAgency. IGNIS GAS|OPEN-AGENCY base; the atomic open also stakes the \
-            \ operator's collateral (staking legs added at execution). No STOA."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Open a delegation agency (admit + operator-stake + terminal gate)."
-                 "Base IGNIS shown; the operator collateral stake adds its legs at execution."
-                 "Executes via TS02-C3.AQP-DSA|CC_OpenAgency."]
-                [(format "Agency {} opened on vault {} (fee {} per-mille)." [score-entity-id fvt-id fee-per-mille])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-DSA.URCi_OpenAgency patron [])))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-DSA|RecomputeCapture:object{OuronetInfoV2.ClientInfo}
-        (patron:string fvt-id:string score-entity-id:string)
-        @doc "Cost preview for AQP-DSA|C_RecomputeCapture. IGNIS GAS|RECOMPUTE-CAPTURE; no STOA."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Recompute an agency's capture (permissionless; preserves oracle-ts)." "Executes via TS02-C3.AQP-DSA|C_RecomputeCapture."]
-                [(format "Agency {} capture recomputed on vault {}." [score-entity-id fvt-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-DSA.URCi_RecomputeCapture patron [])))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-DSA|SetOracleAuth:object{OuronetInfoV2.ClientInfo}
-        (patron:string fvt-id:string oracle-guard:guard)
-        @doc "Cost preview for AQP-DSA|C_SetOracleAuth. IGNIS GAS|SET-ORACLE-AUTH; no STOA."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Authorize the delegated oracle key + arm the capture expiry." "Executes via TS02-C3.AQP-DSA|C_SetOracleAuth."]
-                [(format "Oracle authority set on vault {}." [fvt-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-DSA.URCi_SetOracleAuth patron [])))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-DSA|OracleWrite:object{OuronetInfoV2.ClientInfo}
-        (patron:string fvt-id:string score-entity-id:string nodes:integer uptime:integer)
-        @doc "Cost preview for AQP-DSA|C_OracleWrite. IGNIS GAS|ORACLE-WRITE; no STOA."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Oracle writes an agency's daily {nodes, uptime} + recomputes its capture." "Executes via TS02-C3.AQP-DSA|C_OracleWrite."]
-                [(format "Oracle wrote nodes {} / uptime {} for agency {}." [nodes uptime score-entity-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-DSA.URCi_OracleWrite patron [])))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-DSA|ToggleExternalOracle:object{OuronetInfoV2.ClientInfo}
-        (on:bool)
-        @doc "Cost preview for AQP-DSA|A_ToggleExternalOracle. Chain-wide GOV switch — no IGNIS/STOA."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Flip the SINGULAR GLOBAL external-oracle switch for ALL agencies (governance)."
-                 "Master-signed governance action — no gas."
-                 "Executes via TS02-C3.AQP-DSA|A_ToggleExternalOracle."]
-                [(format "Global external-oracle switch set to {}." [on])]
-                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-DSA|SetOracleValidity:object{OuronetInfoV2.ClientInfo}
-        (seconds:integer)
-        @doc "Cost preview for AQP-DSA|A_SetOracleValidity. Chain-wide GOV switch — no IGNIS/STOA."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Set the GLOBAL oracle-validity window (freshness horizon; governance)."
-                 "Master-signed governance action — no gas."
-                 "Executes via TS02-C3.AQP-DSA|A_SetOracleValidity."]
-                [(format "Global oracle-validity window set to {} seconds." [seconds])]
-                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-DSA|WithdrawRoyalty:object{OuronetInfoV2.ClientInfo}
-        (patron:string fvt-id:string reward-dptf-id:string)
-        @doc "Cost preview for AQP-DSA|C_WithdrawRoyalty. FULL IGNIS: GAS|WITHDRAW-ROYALTY gas leg + the state- \
-            \ dependent custody-move leg (normalize + TFT transfer of the live royalty pool to the FVT owner); STOA none."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Withdraw the whole royalty pool to the FVT owner."
-                 "Full IGNIS shown: gas + custody move (reconstructed from the live royalty balance)."
-                 "Executes via TS02-C3.AQP-DSA|C_WithdrawRoyalty."]
-                [(format "Royalty pool of reward {} on FVT {} withdrawn to owner." [reward-dptf-id fvt-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (AQP-DSA.URCi_WithdrawRoyaltyFull patron fvt-id reward-dptf-id))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-DSA|BurnRoyalty:object{OuronetInfoV2.ClientInfo}
-        (patron:string fvt-id:string reward-dptf-id:string)
-        @doc "Cost preview for AQP-DSA|C_BurnRoyalty. FULL IGNIS: GAS|BURN-ROYALTY gas leg + the state-dependent \
-            \ custody-burn leg (normalize + DPTF burn of the live royalty pool); STOA none."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Burn the whole royalty pool."
-                 "Full IGNIS shown: gas + custody burn (reconstructed from the live royalty balance)."
-                 "Executes via TS02-C3.AQP-DSA|C_BurnRoyalty."]
-                [(format "Royalty pool of reward {} on FVT {} burned." [reward-dptf-id fvt-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (AQP-DSA.URCi_BurnRoyaltyFull patron fvt-id reward-dptf-id))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-DSA|FuelRoyalty:object{OuronetInfoV2.ClientInfo}
-        (patron:string fvt-id:string reward-dptf-id:string swpair:string)
-        @doc "Cost preview for AQP-DSA|C_FuelRoyalty. FULL IGNIS: GAS|FUEL-ROYALTY gas leg + the state-dependent \
-            \ custody-fuel leg (normalize + SWPLC fuel of the live royalty pool into the swpair); STOA none."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Fuel a swap pair with the whole royalty pool (no LP mint)."
-                 "Full IGNIS shown: gas + custody fuel (reconstructed from the live royalty balance)."
-                 "Executes via TS02-C3.AQP-DSA|C_FuelRoyalty."]
-                [(format "Royalty pool of reward {} on FVT {} fueled into {}." [reward-dptf-id fvt-id swpair])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (AQP-DSA.URCi_FuelRoyaltyFull patron fvt-id reward-dptf-id swpair))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    (defun INFO_AQP-DSA|SetAgencyFee:object{OuronetInfoV2.ClientInfo}
-        (patron:string fvt-id:string score-entity-id:string fee-per-mille:integer)
-        @doc "Cost preview for AQP-DSA|C_SetAgencyFee. IGNIS GAS|SET-AGENCY-FEE; no STOA. O(1) reprice."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Change a delegation agency's operator fee (reprices only future injects)." "Executes via TS02-C3.AQP-DSA|C_SetAgencyFee."]
-                [(format "Agency {} fee set to {} per-mille." [score-entity-id fee-per-mille])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-DSA.URCi_SetAgencyFee patron [])))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    ;;
-    ;;[AQP-MTX] Matrix drivers (spike-fallback defpacts)
-    (defun INFO_AQP-MTX|2Inject:object{OuronetInfoV2.ClientInfo}
-        (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
-        @doc "Cost preview for MTX-AQP|2|CC_Inject (2-step enforced-fresh inject). IGNIS GAS|INJECT (inner XB_FvtInject); STOA none."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: 2-step enforced-fresh inject (spike fallback for CC_Inject on vault/treasury)."
-                 "Executes via TS02-C3.MTX-AQP|2|CC_Inject."]
-                [(format "2-step fresh-injected {} of {} into FVT {}." [amount reward-dptf-id fvt-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
-                    ;;MISSING LEG FIXED (2026-09-14) — same defect as INFO_AQP-FVT|Inject, same cause.
-                    ;;This quoted only RPS.URCi_Inject (the gas leg) while the exec also collects the
-                    ;;custody transfer of the reward principal: XI_FvtInjectCore PHASE 1, via XB_FvtInject runs
-                    ;;`(ref-TFT::C_Transfer patron patron AQP|SC_NAME reward-dptf-id amount true)` ahead of the
-                    ;;gas leg, and that transfer carries its own cumulator. All FOUR members of the
-                    ;;inject family shared this. Measured and pinned for CC_Inject at
-                    ;;`Stage_02/[6.5.1]_AQP-INFO-GROUNDTRUTH.repl <<TX-INFO-GT-INJECT>>`; the other
-                    ;;three route through the identical core, so the same reader fixes them.
-                    (RPS.URCi_InjectFull "MTX-AQP|2|CC_Inject" patron fvt-id reward-dptf-id amount))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [amount])
-        )
-    )
-    (defun INFO_AQP-MTX|2SweepRevokeAnchor:object{OuronetInfoV2.ClientInfo}
-        (patron:string anchor-id:string)
-        @doc "Cost preview for MTX-AQP|2|CC_SweepRevokeAnchor. Gas-station subsidised — no IGNIS/STOA to the patron."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: 2-step paginated sweep retiring an employed anchor (spike fallback for CC_SweepRevokeAnchor)."
-                 "Gas-station subsidised — costs you nothing."
-                 "Executes via TS02-C3.MTX-AQP|2|CC_SweepRevokeAnchor."]
-                [(format "2-step swept + retired anchor {}." [anchor-id])]
-                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [])
-        )
-    )
-    ;;{5.4}  Validate [UEV/CAP]
-    ;;{5.5}  Write [W]
-    ;;{5.6}  Aux/X
-    ;;{5.7}  User [A/C]
-
-)
-
-;; ===== 1_SOVEREIGN/STAGE_02/3_Talos/05_TS02-DPAD.pact ==============
+;; ===== 1_SOVEREIGN/STAGE_01/2_Core/14_SWPT.pact ====================
+;(namespace "n_9d612bcfe2320d6ecbbaa99b47aab60138a2adea")
 ;; Deploy: load THIS file — interface(s) + module ship together.
-;; History/shared registry: 1_SOVEREIGN/STAGE_02/0_Interfaces/03_Talos.pact
+;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact
 ;;
-;; SOVEREIGN launchpad Talos. Holds ONLY the sovereign DEMIPAD orchestration
-;; (asset registration/config + deposit/fuel/retrieve/withdraw). The per-sale
-;; CITIZEN user wrappers (SPARK|/SNAKES|/CUSTODIANS|/KPAY|/STOAICO|) live in the
-;; citizen Talos 2_CITIZEN/7_Launchpad/99_TS02-CPAD.pact, deployed AFTER the
-;; citizen sales. Deploy order: DEMIPAD core -> TS02-C1/C2/C3 -> THIS (sovereign)
-;; -> citizen sales -> TS02-CPAD (citizen Talos).
-;;
-;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface TalosStageTwo_DemiPadV2
-    @doc "Exposes Ouronet Stage Two Demipad SOVEREIGN Client Functions"
+;; net: v2   ·   dev: v3   ;; bumped by the StoicSyntax refactor — deploy v3 then set net: v3
+(interface SwapTracerV4
+    @doc "Exposes Tracer Functions, needed to compute Paths between Tokens existing on \
+        \ Liquidity Pools. \
+        \ \
+        \ #21H redesign (V1 -> V2): V1 stored adjacency keyed by PRINCIPAL identity — \
+        \ every swpair got filed under one Edges entry per principal it touched, at \
+        \ trace time. That broke the moment a principal was removed or replaced: every \
+        \ entry filed under the retired principal became permanently unreachable to \
+        \ every normal read path, silently, system-wide, for every token ever pooled \
+        \ against it — with no resync mechanism anywhere. It also duplicated storage \
+        \ (a swpair touching 2 principals got recorded twice) and grew read cost with \
+        \ every read via repeated concatenate-then-dedup over all principal buckets. \
+        \ \
+        \ V2 stores plain token-to-token adjacency instead — principal identity plays \
+        \ no role anywhere in this module's storage, keys, or reads. Principal changes \
+        \ (SWP::A_UpdatePrincipal or its future replacement-only successor) never touch \
+        \ this module at all; there is nothing here that could go stale."
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -5174,6 +1019,54 @@
     ;;{3}  CST
     ;;{3.1}  constants
     ;;{3.2}  schemas
+    (defschema NeighbourEdge
+        token:string
+        swpairs:[string]
+    )
+    (defschema PathCacheRow
+        @doc "#34 Phase 6/7: a cached route between two tokens, keyed by <token-a>|\
+            \ <token-b> in whichever direction was first registered — no \
+            \ canonicalization, readers check both directions and reverse on a miss in \
+            \ one of them. Stores only the route STRUCTURE, never a computed value — \
+            \ every real use re-derives the current value from live reserves, so a \
+            \ stale-but-structurally-valid entry can only ever point at the wrong-but- \
+            \ still-real edges, which per-edge validation on every read catches and \
+            \ falls back from. Same <nodes>/<edges> shape as <URC_ComputeGraphPath>'s \
+            \ own return (both endpoints included in <nodes>). Declared on this \
+            \ interface, not the module, since interface function signatures below \
+            \ reference it and interfaces load before module schemas exist. \
+            \ #65bL Phase 1 fix: added <topology-version>, the global topology-version \
+            \ counter's value at the moment this entry was written — WITHOUT it, \
+            \ 'first-write-wins, never overwritten' meant a cached entry could never be \
+            \ refreshed even after new pools made a better route possible; a reader \
+            \ now compares this against the live counter (<UR_TopologyVersion>) to tell \
+            \ a genuinely-current entry from a stale one, and a stale entry can be \
+            \ overwritten instead of permanently blocking any future improvement."
+        nodes:[string]
+        edges:[string]
+        topology-version:integer
+    )
+    (defschema TopologyVersionRow
+        @doc "#65bL Phase 1: single counter, bumped once per genuinely new token-pair \
+            \ connection or genuinely new parallel pool (see <XI_UpdatePair>'s own \
+            \ <did-change> logic) — never bumped on an idempotent replay (e.g. \
+            \ <A_RebuildGraph> re-running over already-registered pools). A coarse \
+            \ generation number, not an exact change-count: a single multi-token pool \
+            \ issuance bumps it once per ordered token-pair it introduces, not once per \
+            \ pool. That's fine — its only job is 'has anything changed since a given \
+            \ read', not precise counting."
+        version:integer
+    )
+    (defschema RawGraphNode
+        @doc "#65bL Phase 2: one token's raw, unfiltered neighbour data — exactly what \
+            \ <UR_Graph> returns for it, paired with its own name. The point of this \
+            \ shape is to let a caller read a whole node universe's raw rows ONCE \
+            \ (<URC_FetchRawGraph>) and reuse them across multiple best-of-K attempts \
+            \ via a purely in-memory filter (<UC_MakeGraphFromRaw>) instead of each \
+            \ attempt independently re-reading and rebuilding the whole graph."
+        node:string
+        neighbours:[object{NeighbourEdge}]
+    )
     ;;{3.3}  tables  ⟨cannot exist in an interface⟩
 
     ;;<=========================================================================>
@@ -5187,60 +1080,129 @@
     ;;{5}  FUNCTIONS
     ;;{5.1}  Construct [CT/UDC]
     ;;{5.2}  Compute [UC]
+    (defun UC_MakeGraphFromRaw:[object{BreadthFirstSearchV2.GraphNode}]
+        (input:string output:string swpairs:[string] raw-graph:[object{RawGraphNode}])
+    )
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    (defun UR_Graph:[object{NeighbourEdge}] (token:string))
+    (defun URC_TokenNeighbours:[string] (token:string))
+    (defun URC_Edges:[string] (t1:string t2:string))
+    (defun URC_EdgesActive:[string] (t1:string t2:string whitelist:[string]))
+    (defun URC_ComputeGraphPath:[string] (input:string output:string swpairs:[string]))
+    ;;#45L fix: renamed from URC_AllGraphPaths — misleading, doesn't return all
+    ;;paths (one shortest BFS chain per reached node, not every simple path).
+    (defun URC_ShortestChainPerNode:[[string]] (input:string output:string swpairs:[string]))
+    (defun URC_MakeGraph:[object{BreadthFirstSearchV2.GraphNode}] (input:string output:string swpairs:[string]))
+    ;;#65bL Phase 2: raw-fetch/pure-filter split, used by URC_ComputeAlternateRoutes/
+    ;;per transaction and reuse it across every best-of-K attempt, instead of each
+    ;;attempt calling URC_MakeGraph (a fresh read per node, every time).
+    (defun URC_FetchRawGraph:[object{RawGraphNode}] (nodes:[string]))
+    (defun URC_ShortestChainPerNodeFromRaw:[[string]]
+        (input:string output:string swpairs:[string] raw-graph:[object{RawGraphNode}])
+    )
+    (defun URC_ComputeGraphPathFromRaw:[string]
+        (input:string output:string swpairs:[string] raw-graph:[object{RawGraphNode}])
+    )
+    ;;#65bL Phase 7: one layer deeper than Phase 2's raw-fetch/pure-filter split — a
+    ;;caller making MULTIPLE Hopper queries against the SAME <swpairs> universe in one
+    ;;transaction (the STOA-repricing loop: one query per distinct pool touched, each a
+    ;;different source token but the same WSTOA destination) was still calling
+    ;;UC_MakeGraphFromRaw (a linear-scan-per-node graph BUILD) fresh on every query,
+    ;;even though that build's output is byte-identical every time for the same
+    ;;<raw-graph>/<swpairs> universe (UC_MakeGraphFromRaw is input/output-independent,
+    ;;same as UC_MakeGraphNodes underneath it — Phase 4's own finding). These let a
+    ;;caller build the [GraphNode] graph ONCE (UC_MakeGraphFromRaw) and reuse it across
+    ;;every query — only the BFS traversal itself (genuinely <input>-dependent) still
+    ;;runs per query.
+    (defun URC_ShortestChainPerNodeFromGraph:[[string]]
+        (input:string graph:[object{BreadthFirstSearchV2.GraphNode}])
+    )
+    (defun URC_ComputeGraphPathFromGraph:[string]
+        (input:string output:string graph:[object{BreadthFirstSearchV2.GraphNode}])
+    )
+    ;;#34M/M2 fix: additive — finds up to 3 edge-disjoint candidate routes instead
+    ;;of just the single first-found one; see the defun's own @doc for the full
+    ;;rationale.
+    (defun URC_ComputeAlternateRoutes:[[string]] (input:string output:string swpairs:[string]))
+    ;;#65bL Phase 4: URC_ComputeAlternateRoutes, sourcing its graph via an
+    ;;multiple unrelated best-of-K searches in one transaction (the STOA-repricing
+    ;;loop, one search per distinct pool) share ONE raw-graph fetch across all of them.
+    (defun URC_ComputeAlternateRoutesFromRaw:[[string]]
+        (input:string output:string swpairs:[string] raw-graph:[object{RawGraphNode}])
+    )
+    ;;#34 Phase 11 (the original #34 ask): generalizes URC_ComputeAlternateRoutes' fixed
+    ;;3-attempt cap into a real parameterized search — see the defun's own @doc for the
+    ;;full mechanics (early-exit, depth-cap filter, outer hard stop).
+    (defun URC_ComputeAllRoutes:[[string]] (input:string output:string swpairs:[string] max-attempts:integer))
+    ;;#34 Phase 7: dirty-read path-cache core functions — exists-only (structural) side.
+    ;;The active-required wrapper (adds SWP::UR_CanSwap per edge) lives in SWPI instead,
+    ;;same reason URC_EdgesActive's own whitelist check couldn't live here either — SWPT
+    ;;deploys before SWP, can't reach it.
+    (defun URC_ReadPathCache:object{PathCacheRow} (token-a:string token-b:string))
+    ;;#65bL Phase 1: current global topology-version counter — one point read.
+    (defun UR_TopologyVersion:integer ())
+    ;;#65bL Phase 1: URC_ReadPathCache, additionally collapsing a STALE entry (its
+    ;;topology-version behind the current one) to the same [BAR] miss sentinel a
+    ;;genuinely-absent entry already returns — callers never need to know the
+    ;;difference between "never cached" and "cached but outdated."
+    (defun URC_ReadPathCacheFresh:object{PathCacheRow} (token-a:string token-b:string))
+    (defun URC_EdgeConnects:bool (i-id:string o-id:string swpair:string))
+    (defun URC_ValidatePathStructure:bool (nodes:[string] edges:[string]))
     ;;{5.4}  Validate [UEV/CAP]
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
+    (defun XI_RegisterPath (token-a:string token-b:string nodes:[string] edges:[string]))
+    ;;#34 Phase 8: forward-module entrypoint for XI_RegisterPath — mirrors XE_UpdateGraph
+    ;;exactly (P|UEV_IMC gate + internal SECURE composition). Cross-module callers (SWPU)
+    ;;must go through this, never grant SWPT.SECURE directly themselves — SECURE's body
+    ;;is unconditionally true, so a caller-side `(with-capability (SWPT.SECURE) ...)`
+    ;;would grant it to literally anyone, not just legitimate Ouronet modules (confirmed
+    ;;against this exact class of issue in this codebase's own ATS audit findings).
+    (defun XE_RegisterPath (token-a:string token-b:string nodes:[string] edges:[string]))
+    (defun XE_UpdateGraph (swpair:string))
     ;;{5.7}  User [A/C]
-    ;;
-    ;;  [A]
-    ;;
-    (defun A_RegisterAssetToLaunchpad (patron:string executor:string asset-id:string fungibility:[bool]))
-    (defun A_ToggleOpenForBusiness (executor:string asset-id:string toggle:bool))
-    (defun A_DefinePrice (executor:string asset-id:string price:object))
-    (defun A_ToggleRetrieval (executor:string asset-id:string toggle:bool))
-    ;;
-    ;;  [C]
-    ;;
-    (defun DEMIPAD|C_Deposit (patron:string executor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool max-cost:decimal))
-    ;;
-    (defun DEMIPAD|C_Withdraw (patron:string executor:string asset-id:string type:integer destination:string))
-    ;;
-    (defun DEMIPAD|C_FuelTrueFungible (patron:string executor:string asset-id:string amount:decimal))
-    (defun DEMIPAD|C_FuelOrtoFungible (patron:string executor:string asset-id:string nonces:[integer]))
-    (defun DEMIPAD|C_FuelSemiFungible (patron:string executor:string asset-id:string nonces:[integer] amounts:[integer]))
-    (defun DEMIPAD|C_FuelNonFungible (patron:string executor:string asset-id:string nonces:[integer] amounts:[integer]))
-    (defun DEMIPAD|C_RetrieveTrueFungible (patron:string executor:string asset-id:string amount:decimal))
-    (defun DEMIPAD|C_RetrieveOrtoFungible (patron:string executor:string asset-id:string nonces:[integer]))
-    (defun DEMIPAD|C_RetrieveSemiFungible (patron:string executor:string asset-id:string nonces:[integer] amounts:[integer]))
-    (defun DEMIPAD|C_RetrieveNonFungible (patron:string executor:string asset-id:string nonces:[integer] amounts:[integer]))
 
+
+    ;;<=========================================================================>
+    ;; ADDED 2026-10-12 -- interface-membership sweep (StoicSyntax-Prefixes.md Sec5,
+    ;; owner ruling). Every one of these was already live in the module body; this
+    ;; closes the gap between what the module DOES and what its interface SAYS it does.
+    ;;<=========================================================================>
+    (defun UC_ExcludeEdges:[string] (swpairs:[string] exclude:[string]))
+    (defun UC_FindNeighbourIndex:[integer] (neighbours:[object{NeighbourEdge}] token:string))
+    (defun UR_PathCacheRaw:object{PathCacheRow} (key:string))
 )
 ;;
-(module TS02-DPAD GOV
-    @doc "TALOS Stage 2 Demiourgos Launchpad SOVEREIGN Functions"
+(module SWPT GOV
+    @doc "SWPT (SwapTracerV3) is the swap-graph tracer for the SWP liquidity-pool family. It \
+        \ stores plain token-to-token adjacency (SWPT|Graph), a first-write path cache \
+        \ (SWPT|PathCache), and a global topology-version counter, and exposes BFS-based \
+        \ routing helpers (URC_ComputeGraphPath, alternate/exhaustive route discovery, \
+        \ raw-graph fetch/filter variants) plus XE_/XI_ entrypoints to register paths and \
+        \ update the graph. It computes multi-hop swap routes between tokens without holding \
+        \ value data, so every real swap re-derives outputs from live reserves."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements TalosStageTwo_DemiPadV2)
+    (implements SwapTracerV4)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
     ;;{G1}  constants
     ;;
-    (defconst GOV|MD_TS02-DPAD                          (keyset-ref-guard (GOV|Demiurgoi)))
+    (defconst GOV|MD_SWPT                               (keyset-ref-guard (GOV|Demiurgoi)))
     ;;{G2}  schemas
     ;;{G3}  tables
     ;;{G4}  capabilities
-    (defcap GOV ()                                      (compose-capability (GOV|TS02-DPAD_ADMIN)))
-    (defcap GOV|TS02-DPAD_ADMIN ()                      (enforce-guard GOV|MD_TS02-DPAD))
+    (defcap GOV ()                                      (compose-capability (GOV|SWPT_ADMIN)))
+    (defcap GOV|SWPT_ADMIN ()                           (enforce-guard GOV|MD_SWPT))
     ;;{G5}  functions
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -5253,28 +1215,17 @@
     ;;{P2}  schemas
     ;;{P3}  tables
     ;;
-    (deftable P|T:{OuronetPolicyV2.P|S})
-    (deftable P|MT:{OuronetPolicyV2.P|MS})
+    (deftable P|T:{OuronetPolicyV2.P|S})                        ;;Key = <policy-name>
+    (deftable P|MT:{OuronetPolicyV2.P|MS})                      ;;Key = P|I (module-identity singleton constant)
     ;;{P4}  capabilities
-    (defcap P|TS ()
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (gap:bool (ref-DALOS::UR_GAP))
-            )
-            (enforce (not gap) "While Global Administrative Pause is online, no executor Functions can be executed")
-            (compose-capability (P|TALOS-SUMMONER))
-        )
-    )
-    (defcap P|TALOS-SUMMONER ()
-        @doc "Talos Summoner Capability"
+    (defcap P|SWPT|CALLER ()
         true
     )
     ;;{P5}  functions
     (defun P|Info ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::P|Info)
         )
@@ -5309,7 +1260,7 @@
         )
     )
     (defun P|A_Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|TS02-DPAD_ADMIN)
+        (with-capability (GOV|SWPT_ADMIN)
             (write P|T policy-name
                 {"policy" : policy-guard}
             )
@@ -5319,7 +1270,7 @@
         @doc "Registers <policy-guard> as a trusted inter-module caller of this module. \
             \ IDEMPOTENT: a guard already in the chain is left alone rather than appended \
             \ a second time. See OuronetPolicyV2 for why that is load-bearing."
-        (with-capability (GOV|TS02-DPAD_ADMIN)
+        (with-capability (GOV|SWPT_ADMIN)
             (let
                 (
                     (ref-U|LST:module{StringProcessorV2} U|LST)
@@ -5345,7 +1296,7 @@
         @doc "Revokes <policy-guard> from this module's guard chain. Removes EVERY occurrence, so \
             \ it doubles as the cleanup for duplicates left behind by the pre-idempotence append. \
             \ Refuses to drop this module's own SECURE seed -- see OuronetPolicyV2."
-        (with-capability (GOV|TS02-DPAD_ADMIN)
+        (with-capability (GOV|SWPT_ADMIN)
             (let
                 (
                     (ref-U|LST:module{StringProcessorV2} U|LST)
@@ -5367,7 +1318,7 @@
         @doc "Replaces this module's whole guard chain in one write -- the recovery hatch. \
             \ Deduplicates, and enforces that the module's own SECURE seed survives: without it \
             \ the module can no longer reach its own P|UEV_IMC-gated functions."
-        (with-capability (GOV|TS02-DPAD_ADMIN)
+        (with-capability (GOV|SWPT_ADMIN)
             (let
                 (
                     (dg:guard (create-capability-guard (SECURE)))
@@ -5380,41 +1331,66 @@
         )
     )
     (defun P|A_Define ()
-        @doc "Registers THIS sovereign launchpad Talos' summoner guard as a trusted IMP peer of the \
-            \ sovereign modules it drives (DEMIPAD core + DPDC for direct XB_DeployAccount). The \
-            \ per-sale CITIZEN modules are registered by the citizen Talos (TS02-CPAD)."
         (let
             (
-                (ref-P|TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                (ref-P|DPAD:module{OuronetPolicyV2} DEMIPAD)
-                (ref-P|DPDC:module{OuronetPolicyV2} DPDC)
-                (ref-P|IGNIS:module{OuronetPolicyV2} IGNIS)
-                (mg:guard (create-capability-guard (P|TALOS-SUMMONER)))
+                (ref-P|DALOS:module{OuronetPolicyV2} DALOS)
+                (ref-P|BRD:module{OuronetPolicyV2} BRD)
+                (ref-P|DPTF:module{OuronetPolicyV2} DPTF)
+                ;(ref-P|DPOF:module{OuronetPolicyV2} DPOF)
+                (ref-P|ATS:module{OuronetPolicyV2} ATS)
+                (ref-P|TFT:module{OuronetPolicyV2} TFT)
+                (ref-P|ATSU:module{OuronetPolicyV2} ATSU)
+                (ref-P|VST:module{OuronetPolicyV2} VST)
+                (ref-P|LIQUID:module{OuronetPolicyV2} LIQUID)
+                (ref-P|ORBR:module{OuronetPolicyV2} OUROBOROS)
+                (mg:guard (create-capability-guard (P|SWPT|CALLER)))
             )
-            (ref-P|TS01-A::P|A_AddIMP mg)
-            (ref-P|DPAD::P|A_AddIMP mg)
-            ;;DPDC Audit #35M: TS02-DPAD calls DPDC::XBv_DeployAccountSFT/NFT directly (the removed
-            ;;DPSF|C_DeployAccount/DPNF|C_DeployAccount Talos wrappers previously carried TS02-C1/C2's
-            ;;own registered guard through the call chain instead) -- register this module's own guard
-            ;;as a trusted DPDC peer so P|UEV_IMC recognizes the direct call.
-            (ref-P|DPDC::P|A_AddIMP mg)
-            ;;IGNIS RESTRUCTURE 2026-09-20: the collectors became protected X_ functions
-            ;;behind `P|UEV_IMC`, so every module that bills must be a registered IMP peer
-            ;;of IGNIS or the fee call dies with "None of the guards passed".
-            (ref-P|IGNIS::P|A_AddIMP mg)
+            (ref-P|DALOS::P|A_AddIMP mg)
+            (ref-P|BRD::P|A_AddIMP mg)
+            (ref-P|DPTF::P|A_AddIMP mg)
+            ;(ref-P|DPOF::P|A_AddIMP mg)
+            (ref-P|ATS::P|A_AddIMP mg)
+            (ref-P|TFT::P|A_AddIMP mg)
+            (ref-P|ATSU::P|A_AddIMP mg)
+            (ref-P|VST::P|A_AddIMP mg)
+            (ref-P|LIQUID::P|A_AddIMP mg)
+            (ref-P|ORBR::P|A_AddIMP mg)
         )
     )
 
     ;;<=========================================================================>
     ;;{3}  CST
     ;;{3.1}  constants
+    (defconst BAR                                       (CT_Bar))
+    ;;#65bL Phase 1: singleton key for SWPT|TopologyVersion — same pattern as this
+    ;;codebase's other singleton-row tables (e.g. policy's P|I).
+    (defconst TOPOLOGY_VERSION_KEY                      "topology-version")
+    ;;#34 Phase 11: P0.4's depth cap (7 tokens / 6 hops, "the sexy number 7") — same
+    ;;value URC_ValidatePathStructure already enforces on submitted bundles, reused
+    ;;here as a post-discovery filter in URC_ComputeAllRoutes (see that function's own
+    ;;doc for why post-filter, not baked into U|BFS's traversal itself).
+    (defconst MAX_ROUTE_NODES                           7)
+    ;;#34 Phase 11: P0.2's genuine outer hard stop on max-attempts, independent of
+    ;;whatever a caller requests — placeholder value, not researched/considered,
+    ;;owner may override. URC_ComputeAllRoutes clamps to this regardless of the
+    ;;caller's own max-attempts argument.
+    (defconst MAX_ATTEMPTS_HARD_CAP                     50000)
     ;;{3.2}  schemas
+    ;;
+    (defschema SWPT|GraphSchema
+        neighbours:[object{SwapTracerV4.NeighbourEdge}]
+    )
     ;;{3.3}  tables
+    (deftable SWPT|Graph:{SWPT|GraphSchema})                    ;;Key = <token>
+    (deftable SWPT|PathCache:{SwapTracerV4.PathCacheRow})       ;;Key = <token-a>|<token-b> (insertion-order, reversed-lookup at read time)
+    ;;#65bL Phase 1: own table per this codebase's storage-pattern rule (never
+    ;;co-locate a row read for other reasons — segregated so only the path that
+    ;;needs the counter pays to deserialize it).
+    (deftable SWPT|TopologyVersion:{SwapTracerV4.TopologyVersionRow})  ;;Key = TOPOLOGY_VERSION_KEY (singleton)
 
     ;;<=========================================================================>
     ;;{4}  CAPABILITIES
     ;;{C1}  Trivial [bronze]
-    ;;
     ;;
     (defcap SECURE ()
         true
@@ -5426,284 +1402,3430 @@
     ;;<=========================================================================>
     ;;{5}  FUNCTIONS
     ;;{5.1}  Construct [CT/UDC]
-    ;;{5.2}  Compute [UC]
-    ;;
-    (defun UC_ShortAccount:string (account:string)
+    (defun CT_Bar ()
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
             )
-            (ref-I|OURONET::OI|UC_ShortAccount account)
+            (ref-U|CT::CT_BAR)
         )
     )
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    ;;{5.4}  Validate [UEV/CAP]
-    ;;{5.5}  Write [W]
-    ;;{5.6}  Aux/X
-    ;;{5.7}  User [A/C]
+    ;;{5.2}  Compute [UC]
     ;;
-    (defun A_RegisterAssetToLaunchpad (patron:string executor:string asset-id:string fungibility:[bool])
-        @doc "Registers an Asset to Launchpad; \
-            \ An Asset can be a DPTF, DPMF, DPSF or DPNF \
-            \   Asset-type can be designated via the double-boolean <fungibility> \
-            \   \
-            \   DPFT >> [true true] \
-            \   DPMF >> [true false] \
-            \   DPSF >> [false true] \
-            \   DPNF >> [false false]"
-        (with-capability (P|TALOS-SUMMONER)
-            (let
-                (
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-DPDC:module{DpdcV2} DPDC)
-                    (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                    (lpad:string (ref-DEMIPAD::GOV|DEMIPAD|SC_NAME))
-                    (tf:[bool] [true true])
-                    (of:[bool] [true false])
-                    (sf:[bool] [false true])
-                    (nf:[bool] [false false])
-                    (f:bool false)
-                )
-                (ref-DEMIPAD::A_RegisterAssetToLaunchpad patron executor asset-id fungibility)
-                ;;Reconciles two audits' DeployAccount hardening (dptf-dpof #N2 + DPDC #35M):
-                ;; #N2: lpad is DEMIPAD's own system smart account (not patron's) — tf/of use the ADMIN
-                ;;   variant (TS01-A, no ownership check on <account>); the self-service C_ variant now
-                ;;   requires the caller to own <account>, which they don't for lpad.
-                ;; #35M: the public DPSF|C_DeployAccount/DPNF|C_DeployAccount Talos wrappers were REMOVED
-                ;;   (any signer could force any account onto any collection); sf/nf now call
-                ;;   DPDC::XBv_DeployAccountSFT/NFT directly, module-to-module — the pattern every
-                ;;   legitimate internal caller (DPDC-C/DPDC-F/DPDC-R/DPDC-S) already uses.
-                ;;PROVISIONAL EXECUTOR SLOTS (HANDOFF 4e, 2026-09-22). 01_TS01-A's turn gave the
-                ;;two admin DeployAccount wrappers an <executor>, proven by
-                ;;CAP_EnforceAccountOwnership, and an <executee> -- the account deployed FOR,
-                ;;which is <lpad> here. This module's own turn has not come, so there is no
-                ;;<executor> parameter to thread and the rule is to pass the account that
-                ;;actually initiates. That is <patron>: the @doc above records that running this
-                ;;requires TS01-A's admin keyset, so the caller IS the admin and the admin is
-                ;;paying. Correct today, and it must become this module's own <executor> at its
-                ;;turn -- `executor = patron` is a considered choice here, never a default.
-                (cond
-                    ((= fungibility tf) (ref-TS01-A::DPTF|A_DeployAccount patron patron lpad asset-id))
-                    ((= fungibility of) (ref-TS01-A::DPOF|A_DeployAccount patron patron lpad asset-id))
-                    ((= fungibility sf) (ref-DPDC::XBv_DeployAccountSFT lpad asset-id f f f f f f f f f f f))
-                    ((= fungibility nf) (ref-DPDC::XBv_DeployAccountNFT lpad asset-id f f f f f f f f f f))
-                    true
+    (defun UC_FindNeighbourIndex:[integer] (neighbours:[object{SwapTracerV4.NeighbourEdge}] token:string)
+        @doc "Returns [idx] of the entry in <neighbours> whose token field matches \
+            \ <token>, or [] if no such entry exists yet."
+        (let
+            (
+                (l:integer (length neighbours))
+            )
+            (if (= l 0)
+                []
+                (fold
+                    (lambda
+                        (acc:[integer] idx:integer)
+                        (if (!= acc [])
+                            acc
+                            (if (= (at "token" (at idx neighbours)) token) [idx] [])
+                        )
+                    )
+                    []
+                    (enumerate 0 (- l 1))
                 )
             )
         )
     )
-    (defun A_ToggleOpenForBusiness (executor:string asset-id:string toggle:bool)
-        @doc "Toggle Open For Bussines. Must be on to acquire Assets"
-        (with-capability (P|TALOS-SUMMONER)
-            (let
-                (
-                    (ref-DALOS-G:module{OuronetDalosV2} DALOS)
-                    (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                )
-                ;;GASLESS admin path: this Talos A_ wrapper takes no patron, so the core's patron
-                ;;slot carries the Ouronet system account, read from the same source
-                ;;TS01-A's GASLESS-PATRON constant resolves to. The EXECUTOR is threaded: the
-                ;;admin keyset says the call MAY happen, the executor says who made it happen.
-                (ref-DEMIPAD::A_ToggleOpenForBusiness (ref-DALOS-G::GOV|DALOS|SC_NAME) executor asset-id toggle)
-            )
-        )
+    (defun UC_ExcludeEdges:[string] (swpairs:[string] exclude:[string])
+        @doc "Removes every entry of <exclude> from <swpairs> — pure list-difference. \
+            \ Used to build a reduced routing universe for #34M/M2's best-of-K \
+            \ alternate-route search: each retry excludes the edges of every route \
+            \ already found, forcing a genuinely different one instead of \
+            \ rediscovering the same route."
+        (filter (lambda (s:string) (not (contains s exclude))) swpairs)
     )
-    (defun A_DefinePrice (executor:string asset-id:string price:object)
-        @doc "Updates Price Object for an Asset"
-        (with-capability (P|TALOS-SUMMONER)
-            (let
-                (
-                    (ref-DALOS-G:module{OuronetDalosV2} DALOS)
-                    (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                )
-                ;;GASLESS admin path: this Talos A_ wrapper takes no patron, so the core's patron
-                ;;slot carries the Ouronet system account, read from the same source
-                ;;TS01-A's GASLESS-PATRON constant resolves to. The EXECUTOR is threaded: the
-                ;;admin keyset says the call MAY happen, the executor says who made it happen.
-                (ref-DEMIPAD::A_DefinePrice (ref-DALOS-G::GOV|DALOS|SC_NAME) executor asset-id price)
+    (defun UC_MakeGraphFromRaw:[object{BreadthFirstSearchV2.GraphNode}]
+        (input:string output:string swpairs:[string] raw-graph:[object{RawGraphNode}])
+        @doc "#65bL Phase 2: pure (zero table reads) equivalent of <URC_MakeGraph> — \
+            \ builds the identical active-filtered [GraphNode] shape, but derives \
+            \ every node's links from an ALREADY-FETCHED <raw-graph> \
+            \ (<URC_FetchRawGraph>) instead of re-reading SWPT|Graph per node, and \
+            \ also skips the double-read <URC_MakeGraph> itself has (one read via \
+            \ <URC_TokenNeighbours> to list neighbour tokens, another via \
+            \ <URC_EdgesActive>/<URC_Edges> per neighbour to re-derive the exact \
+            \ same swpairs already sitting in that first read's result) — the \
+            \ per-neighbour <swpairs> field is already right there on each \
+            \ <NeighbourEdge>, filtered directly, no re-read or re-derivation \
+            \ needed either way. <raw-graph> must cover every node <swpairs> could \
+            \ ever produce here — always true when it was fetched against a \
+            \ swpairs universe that's a SUPERSET of this one (e.g. the original, \
+            \ unshrunk universe a best-of-K search started from, reused unchanged \
+            \ across every attempt's own shrinking exclusion universe)."
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                (ref-U|SWP:module{UtilitySwpV3} U|SWP)
+                (nodes:[string] (ref-U|SWP::UC_MakeGraphNodes input output swpairs))
             )
-        )
-    )
-    (defun A_ToggleRetrieval (executor:string asset-id:string toggle:bool)
-        @doc "Retrieval ON allows Asset Owners to retrieve their Asssets that still exist on the Launchpad"
-        (with-capability (P|TALOS-SUMMONER)
-            (let
-                (
-                    (ref-DALOS-G:module{OuronetDalosV2} DALOS)
-                    (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                )
-                ;;GASLESS admin path: this Talos A_ wrapper takes no patron, so the core's patron
-                ;;slot carries the Ouronet system account, read from the same source
-                ;;TS01-A's GASLESS-PATRON constant resolves to. The EXECUTOR is threaded: the
-                ;;admin keyset says the call MAY happen, the executor says who made it happen.
-                (ref-DEMIPAD::A_ToggleRetrieval (ref-DALOS-G::GOV|DALOS|SC_NAME) executor asset-id toggle)
-            )
-        )
-    )
-    (defun DEMIPAD|C_Deposit (patron:string executor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool max-cost:decimal)
-        @doc "Sovereign launchpad DEPOSIT Talos op — the citizen sales call this to move a buyer's \
-            \ STOA/OURS working-token into the Launchpad against <asset-id>. <type> 0 = Native STOA \
-            \ (wrapped), 1 = OWS; <max-cost> is the buyer's dollar slippage ceiling (sentinel < 0 = \
-            \ slippage off). IGNIS billed on patron here; the sale composes it Sigma-wise with its \
-            \ asset-transfer Talos op."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                    (sd:string (ref-I|OURONET::OI|UC_ShortAccount executor))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DEMIPAD::C_Deposit patron executor asset-id amount-in-dollars type direct-injection max-cost)
-                )
-                (format "Succesfuly deposited {} $ worth against {} into Demipad from {}." [amount-in-dollars asset-id sd])
-            )
-        )
-    )
-    ;;
-    (defun DEMIPAD|C_Withdraw (patron:string executor:string asset-id:string type:integer destination:string)
-        @doc "Withdraws all cumulated Tokens in the Launchpad, gathered through sale \
-            \ Type 1 = WSTOA \
-            \ Type 2 = SSTOA \
-            \ Type 3 = OURO "
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                    (retrieval-amount:decimal (ref-DEMIPAD::URv_Funds asset-id type))
-                    (working-id:string
-                        (if (= type 1)
-                            (ref-DALOS::UR_WrappedStoaID)
-                            (if (= type 2)
-                                (ref-DALOS::UR_SilverStoaID)
-                                (ref-DALOS::UR_OuroborosID)
+            (if (= 0 (length nodes))
+                []
+                (fold
+                    (lambda
+                        (acc:[object{BreadthFirstSearchV2.GraphNode}] idx:integer)
+                        (let*
+                            (
+                                (this-node:string (at idx nodes))
+                                ;;#65bL Phase 3 investigated a binary-search replacement for
+                                ;;this scan (see URC_FetchRawGraph's own doc) — measured as a
+                                ;;real regression on the actual integrated call, not shipped.
+                                ;;Linear filter stays, unchanged from Phase 2.
+                                (raw-matches:[object{RawGraphNode}]
+                                    (filter (lambda (rg:object{RawGraphNode}) (= (at "node" rg) this-node)) raw-graph)
+                                )
+                                (neighbours:[object{NeighbourEdge}]
+                                    (if (= 0 (length raw-matches)) [] (at "neighbours" (at 0 raw-matches)))
+                                )
+                            )
+                            (ref-U|LST::UC_AppL
+                                acc
+                                {
+                                    "node": this-node,
+                                    "links":
+                                        (map (at "token")
+                                            (filter
+                                                (lambda (ne:object{NeighbourEdge})
+                                                    (!=
+                                                        (filter
+                                                            (lambda (sp:string) (contains sp swpairs))
+                                                            (at "swpairs" ne)
+                                                        )
+                                                        []
+                                                    )
+                                                )
+                                                neighbours
+                                            )
+                                        )
+                                }
                             )
                         )
                     )
-                    (sd:string (ref-I|OURONET::OI|UC_ShortAccount destination))
+                    []
+                    (enumerate 0 (- (length nodes) 1))
                 )
-                (ref-DEMIPAD::C_Withdraw patron executor asset-id type destination)
-                (format "Succesfuly withdrawn {} {} from Demipad to {}." [retrieval-amount working-id sd])
             )
         )
     )
-    ;;
-    (defun DEMIPAD|C_FuelTrueFungible (patron:string executor:string asset-id:string amount:decimal)
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                )
-                (ref-DEMIPAD::C_TransmitTrueFungible patron executor asset-id amount true)
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    (defun UR_Graph:[object{SwapTracerV4.NeighbourEdge}] (token:string)
+        (with-default-read SWPT|Graph token
+            {"neighbours" : []}
+            {"neighbours" := n}
+            n
+        )
+    )
+    (defun UR_PathCacheRaw:object{SwapTracerV4.PathCacheRow} (key:string)
+        @doc "#34 Phase 7: raw keyed read against SWPT|PathCache, [BAR]-sentinel default \
+            \ for a missing row. Internal — callers go through <URC_ReadPathCache> for the \
+            \ reversed-lookup logic, never this directly. \
+            \ #65bL Phase 1: default <topology-version> is -1 — always older than any \
+            \ real counter value (starts at 0, only ever increases), so a missing row \
+            \ is automatically treated as stale by any freshness check, same as a \
+            \ genuinely-absent entry always was structurally."
+        (with-default-read SWPT|PathCache key
+            {"nodes" : [BAR], "edges" : [], "topology-version" : -1}
+            {"nodes" := n, "edges" := e, "topology-version" := tv}
+            {"nodes" : n, "edges" : e, "topology-version" : tv}
+        )
+    )
+    (defun UR_TopologyVersion:integer ()
+        @doc "#65bL Phase 1: current global topology-version counter — one point read, \
+            \ default 0 for the pre-first-bump state."
+        (with-default-read SWPT|TopologyVersion TOPOLOGY_VERSION_KEY
+            {"version" : 0}
+            {"version" := v}
+            v
+        )
+    )
+    (defun URC_TokenNeighbours:[string] (token:string)
+        (map (at "token") (UR_Graph token))
+    )
+    (defun URC_Edges:[string] (t1:string t2:string)
+        @doc "All swpairs directly connecting <t1> and <t2> — regardless of can-swap \
+            \ state. Direct keyed lookup against <t1>'s own row; O(deg(t1)), never a \
+            \ table scan."
+        (let*
+            (
+                (neighbours:[object{SwapTracerV4.NeighbourEdge}] (UR_Graph t1))
+                (idx:[integer] (UC_FindNeighbourIndex neighbours t2))
+            )
+            (if (= (length idx) 0)
+                []
+                (at "swpairs" (at (at 0 idx) neighbours))
             )
         )
     )
-    (defun DEMIPAD|C_FuelOrtoFungible (patron:string executor:string asset-id:string nonces:[integer])
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
+    (defun URC_EdgesActive:[string] (t1:string t2:string whitelist:[string])
+        @doc "Same as <URC_Edges>, but the result is restricted to swpairs also \
+            \ present in <whitelist> (e.g. <SWP::URC_ActiveSwpairs>) — so a disabled \
+            \ parallel pool between the same token pair is never offered as an edge \
+            \ candidate to <SWPI::URC_BestEdgeFiltered>. #19H fix, carried over \
+            \ unchanged by the #21H storage redesign."
+        (filter (lambda (swpair:string) (contains swpair whitelist)) (URC_Edges t1 t2))
+    )
+    (defun URCx_ShortestChainToTarget:[[string]] (input:string output:string swpairs:[string])
+        @doc "#65hL: <URC_ShortestChainPerNode>, but stops doing real BFS-expansion \
+            \ work once <output> is reached, via <U|BFS::UC_BFSTargeted> — see that \
+            \ function's own doc for the full rationale and correctness argument \
+            \ (a node's shortest chain is fixed the first time BFS visits it, so \
+            \ stopping early never changes <output>'s own chain, only skips \
+            \ recording chains for nodes the caller's post-filter would have \
+            \ discarded anyway). Internal only, used exclusively by \
+            \ <URC_ComputeGraphPath> — <URC_ShortestChainPerNode> itself is \
+            \ unchanged, still available for any caller genuinely wanting chains to \
+            \ every reachable node, not just one target."
+        (let
+            (
+                (ref-U|BFS:module{BreadthFirstSearchV2} U|BFS)
+                (graph:[object{BreadthFirstSearchV2.GraphNode}] (URC_MakeGraph input output swpairs))
+                (bfs-obj:object{BreadthFirstSearchV2.BFS} (ref-U|BFS::UC_BFSTargeted graph input output))
+            )
+            (at "chains" bfs-obj)
+        )
+    )
+    (defun URC_ComputeGraphPath:[string] (input:string output:string swpairs:[string])
+        @doc "Computes the path between an <input> and <output> using BFS via \
+        \ <URC_ShortestChainPerNode> from a passed down list of existing <swpairs>. \
+        \ #20H fix: returns the clean [BAR] sentinel — never a bare out-of-bounds \
+        \ <at> crash — whenever no chain reaches <output>, including the case of a \
+        \ genuinely disconnected pair once <swpairs> has been narrowed upstream \
+        \ (e.g. to active-only pools, #19H). \
+        \ #65hL fix: sources its chains via <URCx_ShortestChainToTarget> instead of \
+        \ <URC_ShortestChainPerNode> — same post-filter-down-to-<output> logic \
+        \ below, unchanged, just fed from a BFS that stops once <output> is \
+        \ actually found instead of exploring the whole reachable set first."
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                (shortest-chains:[[string]] (URCx_ShortestChainToTarget input output swpairs))
+
+            )
+            (if (!= shortest-chains [[BAR]])
+                (let
+                    (
+                        (fp:[[string]]
+                            (fold
+                                (lambda
+                                    (acc:[[string]] idx:integer)
+                                    (let
+                                        (
+                                            (e:[string] (at idx shortest-chains))
+                                            (l:string (at 0 (take -1 e)))
+                                            (check:bool (= l output))
+                                        )
+                                        (if (not check)
+                                            (ref-U|LST::UC_RemoveItem acc e)
+                                            acc
+                                        )
+                                    )
+                                )
+                                shortest-chains
+                                (enumerate 0 (- (length shortest-chains) 1))
+                            )
+                        )
+                    )
+                    ;;#20H fix: guard against fp coming back empty (no chain
+                    ;;reached output — e.g. a genuinely disconnected pair after
+                    ;;active-only filtering) instead of a bare out-of-bounds `at`.
+                    (if (> (length fp) 0) (at 0 fp) [BAR])
                 )
-                (ref-DEMIPAD::C_TransmitOrtoFungible patron executor asset-id nonces true)
+                [BAR]
             )
         )
     )
-    (defun DEMIPAD|C_FuelSemiFungible (patron:string executor:string asset-id:string nonces:[integer] amounts:[integer])
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                    (c:string (ref-I|OURONET::OI|UC_ShortAccount executor))
+    (defun URC_ShortestChainPerNode:[[string]] (input:string output:string swpairs:[string])
+        @doc "#45L fix: renamed from URC_AllGraphPaths — the old name claimed 'all paths' \
+            \ but this runs a single BFS traversal from <input> and keeps exactly one \
+            \ shortest chain per node BFS reaches, not every simple path through the \
+            \ graph (that's <URC_ComputeAllRoutes>, a different function entirely, added \
+            \ in #34 Phase 11). <output> is accepted for signature symmetry with its only \
+            \ caller (<URC_ComputeGraphPath>, which post-filters this result down to \
+            \ chains actually ending at <output>) — it plays no role in the BFS itself, \
+            \ which explores every reachable node from <input> regardless of <output>."
+        (let
+            (
+                (ref-U|BFS:module{BreadthFirstSearchV2} U|BFS)
+                (graph:[object{BreadthFirstSearchV2.GraphNode}] (URC_MakeGraph input output swpairs))
+                (bfs-obj:object{BreadthFirstSearchV2.BFS} (ref-U|BFS::UC_BFS graph input))
+            )
+            (at "chains" bfs-obj)
+        )
+    )
+    (defun URC_RouteEdges:[string] (nodes:[string] swpairs:[string])
+        @doc "For a <nodes> path (as returned by <URC_ComputeGraphPath>), returns the \
+            \ union of every swpair actually usable to traverse it within <swpairs>'s \
+            \ universe — one <URC_EdgesActive> lookup per hop. Used to build the \
+            \ exclusion set for #34M/M2's best-of-K route comparison."
+        (if (or (= nodes [BAR]) (< (length nodes) 2))
+            []
+            (fold
+                (lambda
+                    (acc:[string] idx:integer)
+                    (+ acc (URC_EdgesActive (at idx nodes) (at (+ idx 1) nodes) swpairs))
                 )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DEMIPAD::C_TransmitSemiFungibles patron executor asset-id nonces amounts true)
-                )
-                (format "Succesfuly fueled {} Nonces {} with Amounts {} to Demiourgos Launchpad from Account {}" [asset-id nonces amounts c])
+                []
+                (enumerate 0 (- (length nodes) 2))
             )
         )
     )
-    (defun DEMIPAD|C_FuelNonFungible (patron:string executor:string asset-id:string nonces:[integer] amounts:[integer])
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                    (c:string (ref-I|OURONET::OI|UC_ShortAccount executor))
+    (defun URC_ComputeAlternateRoutes:[[string]] (input:string output:string swpairs:[string])
+        @doc "#34M/M2 fix: <URC_ComputeGraphPath> alone only ever returns the single \
+            \ first-discovered route — BFS's global once-per-node visited marking \
+            \ means an equally valid alternate route (e.g. a diamond A->{B,C}->D \
+            \ graph) is silently lost, and nothing ever compared candidate routes by \
+            \ value anyway. This finds up to 3 edge-disjoint candidate routes by \
+            \ re-running <URC_ComputeGraphPath> with each previously-found route's \
+            \ edges excluded from the universe, forcing genuinely different routes \
+            \ rather than the same route with a different parallel pool (that choice \
+            \ is already optimal per-hop via <URC_BestEdgeFiltered>/<URC_BestEdgeOf>'s \
+            \ own argmax, so re-exploring it would be wasted work). \
+            \ Fixed cap of 3 attempts — Pact has no dynamic-length/convergence loops, \
+            \ so the count must be a number decided in advance, not a runtime \
+            \ condition; measured sufficient against this codebase's actual pool \
+            \ topology (see the SWP audit's adversarial REPL proof for #34M/M2). \
+            \ Returns only the routes genuinely found (drops [BAR] no-route results), \
+            \ so the result can have 0-3 entries; the caller picks the best by value. \
+            \ #65bL Phase 4 fix: now a thin wrapper — fetches the raw graph for this \
+            \ call's own node universe, then delegates to \
+            \ <URC_ComputeAlternateRoutesFromRaw>. A caller who's already fetched a \
+            \ raw graph covering this <swpairs> universe (e.g. the STOA-repricing \
+            \ loop, sharing one fetch across many unrelated calls) should call that \
+            \ function directly instead, to skip this self-fetch."
+        (let*
+            (
+                (ref-U|SWP:module{UtilitySwpV3} U|SWP)
+                (full-nodes:[string] (ref-U|SWP::UC_MakeGraphNodes input output swpairs))
+                (raw-graph:[object{RawGraphNode}] (URC_FetchRawGraph full-nodes))
+            )
+            (URC_ComputeAlternateRoutesFromRaw input output swpairs raw-graph)
+        )
+    )
+    (defun URC_ComputeAlternateRoutesFromRaw:[[string]]
+        (input:string output:string swpairs:[string] raw-graph:[object{RawGraphNode}])
+        @doc "#65bL Phase 2/4 fix: <URC_ComputeAlternateRoutes>'s real logic, \
+            \ parameterized on an ALREADY-FETCHED <raw-graph> instead of fetching its \
+            \ own — see <URC_ComputeAlternateRoutes>'s own doc for the full best-of-3 \
+            \ rationale (unchanged here) and <URCx_HopperFromRaw>'s doc for why one \
+            \ fetch can safely serve many different (input,output) queries against \
+            \ the same <swpairs> universe (<UC_MakeGraphNodes> is input/output- \
+            \ independent by construction). An exhausted-universe guard (empty \
+            \ <swpairsN>) short-circuits to [BAR] instead of calling \
+            \ <URC_ComputeGraphPathFromRaw> — that function's own downstream \
+            \ graph-building (M3, a separate tracked finding) crashes rather than \
+            \ cleanly returning no-route on an empty list, and this is the first \
+            \ caller able to legitimately produce one (a fully-excluded, single-pool \
+            \ universe after route1/route2 already claimed it)."
+        (let*
+            (
+                (route1:[string]
+                    (if (= swpairs []) [BAR] (URC_ComputeGraphPathFromRaw input output swpairs raw-graph))
                 )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DEMIPAD::C_TransmitNonFungibles patron executor asset-id nonces amounts true)
+                (swpairs2:[string]
+                    (if (= route1 [BAR])
+                        swpairs
+                        (UC_ExcludeEdges swpairs (URC_RouteEdges route1 swpairs))
+                    )
                 )
-                (format "Succesfuly fueled {} Nonces {} with Amounts {} to Demiourgos Launchpad from Account {}" [asset-id nonces amounts c])
+                (route2:[string]
+                    (if (or (= route1 [BAR]) (= swpairs2 []))
+                        [BAR]
+                        (URC_ComputeGraphPathFromRaw input output swpairs2 raw-graph)
+                    )
+                )
+                (swpairs3:[string]
+                    (if (= route2 [BAR])
+                        swpairs2
+                        (UC_ExcludeEdges swpairs2 (URC_RouteEdges route2 swpairs2))
+                    )
+                )
+                (route3:[string]
+                    (if (or (= route2 [BAR]) (= swpairs3 []))
+                        [BAR]
+                        (URC_ComputeGraphPathFromRaw input output swpairs3 raw-graph)
+                    )
+                )
+            )
+            (filter (lambda (r:[string]) (!= r [BAR])) [route1 route2 route3])
+        )
+    )
+    (defun URC_ComputeAllRoutes:[[string]]
+        (input:string output:string swpairs:[string] max-attempts:integer)
+        @doc "#34 Phase 11 — the original #34 ask: genuine exhaustive route discovery, \
+            \ not the fixed best-of-3 approximation URC_ComputeAlternateRoutes settled \
+            \ for. Generalizes that function's hardcoded 3-attempt let* chain into a \
+            \ real fold over up to <max-attempts> attempts, same edge-exclusion-per-\
+            \ found-route mechanism (URC_RouteEdges + UC_ExcludeEdges), same \
+            \ early-exit-once-empty short-circuit already proven correct in that \
+            \ function. Meant to be called via off-chain dirty read only (P3 — this is \
+            \ what fills a SmartSwapPathBundle's swap-route component before \
+            \ submission), never on the paid execution path; the whole point of the \
+            \ #34/#34M redesign is to remove exactly this kind of search from paid \
+            \ transactions. \
+            \ P0.2's max-attempts escalation (try 1000, then 2000, then 3000... flat \
+            \ +1000 steps, no doubling) is a CALLER-side retry pattern — this function \
+            \ takes a fixed <max-attempts> and does exactly that many attempts (or \
+            \ fewer, via early-exit), it does not escalate itself. A caller who gets \
+            \ back exactly <max-attempts> routes with no natural exhaustion should \
+            \ retry with a larger <max-attempts>; fewer than requested means the \
+            \ search is genuinely exhausted (every route already found). \
+            \ P0.2's outer hard stop (MAX_ATTEMPTS_HARD_CAP) is enforced here \
+            \ regardless of what the caller requests — a caller cannot force an \
+            \ unbounded search by passing an enormous <max-attempts>. \
+            \ P0.4's depth cap (MAX_ROUTE_NODES, 7 tokens / 6 hops) is enforced as a \
+            \ POST-DISCOVERY filter here, not baked into <U|BFS>'s own traversal — a \
+            \ deliberate, documented deviation from P0.4's stated preference \
+            \ ('ideally baked into the BFS/graph-walk itself... rather than only as a \
+            \ post-discovery filter, wasteful'). Reasoning: baking a depth bound into \
+            \ <U|BFS> would mean modifying a SHARED lower-layer utility module with \
+            \ callers beyond this one feature, a broader and riskier change than this \
+            \ phase's scope justifies; the 'wasteful — pay to explore and discard' \
+            \ downside the preference is guarding against does not actually apply here, \
+            \ since this function is dirty-read-only (free off-chain compute, never \
+            \ paid gas) — the efficiency concern the baked-in preference exists for is \
+            \ moot in this function's real deployment context. An over-cap route still \
+            \ has its edges excluded from the remaining search universe before the next \
+            \ attempt (without this, the deterministic BFS would just rediscover the \
+            \ exact same over-cap route every remaining attempt, wasting the whole \
+            \ budget making zero progress) — only whether it's ADDED to the returned \
+            \ results is filtered. \
+            \ Reuses the already-shipped URCx_HopperForNodes/UC_BestHopper unchanged \
+            \ for picking the best candidate by actual computed output value (P1.8's \
+            \ requirement) — that value-computation logic lives in SWPI (16_SWPI.pact), \
+            \ not here; this function only discovers node-path candidates, same \
+            \ division of labor URC_ComputeAlternateRoutes already established."
+        (let
+            (
+                (capped-attempts:integer (if (> max-attempts MAX_ATTEMPTS_HARD_CAP) MAX_ATTEMPTS_HARD_CAP max-attempts))
+            )
+            (if (or (= swpairs []) (<= capped-attempts 0))
+                []
+                (at 0
+                    (fold
+                        (lambda
+                            (acc:list idx:integer)
+                            ;;acc = [routes-found:[[string]] remaining-universe:[string] stopped:bool]
+                            (if (at 2 acc)
+                                acc
+                                (let*
+                                    (
+                                        (remaining:[string] (at 1 acc))
+                                        (route:[string]
+                                            (if (= remaining [])
+                                                [BAR]
+                                                (URC_ComputeGraphPath input output remaining)
+                                            )
+                                        )
+                                    )
+                                    (if (= route [BAR])
+                                        ;;Genuinely exhausted — no route findable in the
+                                        ;;remaining universe. Stop; every further attempt
+                                        ;;would find the identical nothing.
+                                        [(at 0 acc) remaining true]
+                                        (let*
+                                            (
+                                                (route-edges:[string] (URC_RouteEdges route remaining))
+                                                (new-remaining:[string] (UC_ExcludeEdges remaining route-edges))
+                                                (within-depth-cap:bool (<= (length route) MAX_ROUTE_NODES))
+                                                (new-routes:[[string]]
+                                                    (if within-depth-cap
+                                                        (+ (at 0 acc) [route])
+                                                        (at 0 acc)
+                                                    )
+                                                )
+                                            )
+                                            [new-routes new-remaining false]
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                        [[] swpairs false]
+                        (enumerate 0 (- capped-attempts 1))
+                    )
+                )
             )
         )
     )
-    ;;
-    (defun DEMIPAD|C_RetrieveTrueFungible (patron:string executor:string asset-id:string amount:decimal)
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
+    (defun URC_MakeGraph:[object{BreadthFirstSearchV2.GraphNode}] (input:string output:string swpairs:[string])
+        @doc "#13C fix + #19H fix, carried over unchanged by the #21H storage redesign: \
+            \ a node's links must be genuine active edges (<URC_EdgesActive> non-empty), \
+            \ not just 'is this token a valid node somewhere' — a neighbor token can be \
+            \ a perfectly valid node overall while the ONLY swpair directly connecting \
+            \ it to THIS node is outside <swpairs> (e.g. disabled). Requiring a real \
+            \ <URC_EdgesActive> match subsumes plain node-membership (a real active edge \
+            \ implies both endpoints are already valid nodes) and closes both problems \
+            \ with one condition. \
+            \ #37M/M3 fix: <nodes> can genuinely be [] (e.g. <swpairs> is [] \
+            \ before the first pool is ever issued) — previously unguarded here, \
+            \ a case not named by the original finding but sharing its exact \
+            \ <enumerate 0 -1> / <at 0 []> root cause, directly downstream of \
+            \ <UC_MakeGraphNodes>. Short-circuits to [] instead of crashing."
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                (ref-U|SWP:module{UtilitySwpV3} U|SWP)
+                (nodes:[string] (ref-U|SWP::UC_MakeGraphNodes input output swpairs))
+            )
+            (if (= 0 (length nodes))
+                []
+                (fold
+                    (lambda
+                        (acc:[object{BreadthFirstSearchV2.GraphNode}] idx:integer)
+                        (ref-U|LST::UC_AppL
+                            acc
+                            {
+                                "node": (at idx nodes),
+                                "links":
+                                    (filter
+                                        (lambda (n:string) (!= (URC_EdgesActive (at idx nodes) n swpairs) []))
+                                        (URC_TokenNeighbours (at idx nodes))
+                                    )
+                            }
+                        )
+                    )
+                    []
+                    (enumerate 0 (- (length nodes) 1))
                 )
-                (ref-DEMIPAD::C_TransmitTrueFungible patron executor asset-id amount false)
             )
         )
     )
-    (defun DEMIPAD|C_RetrieveOrtoFungible (patron:string executor:string asset-id:string nonces:[integer])
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
+    (defun URC_FetchRawGraph:[object{RawGraphNode}] (nodes:[string])
+        @doc "#65bL Phase 2: reads each of <nodes>'s SWPT|Graph row exactly once — \
+            \ the read-fetch half of the raw-fetch/pure-filter split. A caller doing \
+            \ multiple best-of-K attempts over the SAME node universe calls this \
+            \ ONCE, then reuses the result via <UC_MakeGraphFromRaw> for every \
+            \ attempt instead of each attempt independently re-reading and \
+            \ rebuilding the whole graph the way <URC_MakeGraph> does. \
+            \ #65bL Phase 3 investigated: a sorted-list + binary-search lookup was \
+            \ built and measured against the linear scan <UC_MakeGraphFromRaw> uses \
+            \ — an isolated synthetic benchmark showed binary search winning at \
+            \ 100-300 elements, but the REAL integrated measurement (this exact \
+            \ function, the real P2-scale 143-node universe) showed it as a net \
+            \ REGRESSION (+27,527 gas on the SWP|TX 032z2 checkpoint), isolated and \
+            \ confirmed by reverting only the lookup call. Trusted the real \
+            \ measurement over the synthetic one and dropped it — recorded in \
+            \ ROUND-01-OWNER-FEEDBACK.md as a real, deliberately-not-shipped result, \
+            \ not silently discarded."
+        (map
+            (lambda (n:string) {"node": n, "neighbours": (UR_Graph n)})
+            nodes
+        )
+    )
+    (defun URC_ShortestChainPerNodeFromRaw:[[string]]
+        (input:string output:string swpairs:[string] raw-graph:[object{RawGraphNode}])
+        @doc "#65bL Phase 2: <URC_ShortestChainPerNode>, sourcing its graph via \
+            \ <UC_MakeGraphFromRaw> (an already-fetched <raw-graph>) instead of \
+            \ <URC_MakeGraph> (a fresh read per node, every call)."
+        (let
+            (
+                (ref-U|BFS:module{BreadthFirstSearchV2} U|BFS)
+                (graph:[object{BreadthFirstSearchV2.GraphNode}]
+                    (UC_MakeGraphFromRaw input output swpairs raw-graph)
                 )
-                (ref-DEMIPAD::C_TransmitOrtoFungible patron executor asset-id nonces false)
+                (bfs-obj:object{BreadthFirstSearchV2.BFS} (ref-U|BFS::UC_BFS graph input))
+            )
+            (at "chains" bfs-obj)
+        )
+    )
+    (defun URCx_ShortestChainToTargetFromRaw:[[string]]
+        (input:string output:string swpairs:[string] raw-graph:[object{RawGraphNode}])
+        @doc "#65hL: <URCx_ShortestChainToTarget>, sourcing its graph via an \
+            \ ALREADY-FETCHED <raw-graph> instead of a fresh self-fetch — same \
+            \ early-exit-on-<output> shape as <UC_BFSTargeted>, mirroring \
+            \ <URC_ShortestChainPerNodeFromRaw>'s own raw-graph sourcing. Internal \
+            \ only, used exclusively by <URC_ComputeGraphPathFromRaw>."
+        (let
+            (
+                (ref-U|BFS:module{BreadthFirstSearchV2} U|BFS)
+                (graph:[object{BreadthFirstSearchV2.GraphNode}]
+                    (UC_MakeGraphFromRaw input output swpairs raw-graph)
+                )
+                (bfs-obj:object{BreadthFirstSearchV2.BFS} (ref-U|BFS::UC_BFSTargeted graph input output))
+            )
+            (at "chains" bfs-obj)
+        )
+    )
+    (defun URC_ComputeGraphPathFromRaw:[string]
+        (input:string output:string swpairs:[string] raw-graph:[object{RawGraphNode}])
+        @doc "#65bL Phase 2: <URC_ComputeGraphPath>, sourcing its graph via \
+            \ <URC_ShortestChainPerNodeFromRaw> instead of \
+            \ <URC_ShortestChainPerNode> — same post-filter-down-to-<output> logic, \
+            \ unchanged, just fed from an already-fetched raw graph. \
+            \ #65hL fix: now sources its chains via \
+            \ <URCx_ShortestChainToTargetFromRaw> instead — same raw-graph sourcing, \
+            \ but stops once <output> is actually found instead of exploring the \
+            \ whole reachable set first."
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                (shortest-chains:[[string]]
+                    (URCx_ShortestChainToTargetFromRaw input output swpairs raw-graph)
+                )
+            )
+            (if (!= shortest-chains [[BAR]])
+                (let
+                    (
+                        (fp:[[string]]
+                            (fold
+                                (lambda
+                                    (acc:[[string]] idx:integer)
+                                    (let
+                                        (
+                                            (e:[string] (at idx shortest-chains))
+                                            (l:string (at 0 (take -1 e)))
+                                            (check:bool (= l output))
+                                        )
+                                        (if (not check)
+                                            (ref-U|LST::UC_RemoveItem acc e)
+                                            acc
+                                        )
+                                    )
+                                )
+                                shortest-chains
+                                (enumerate 0 (- (length shortest-chains) 1))
+                            )
+                        )
+                    )
+                    (if (> (length fp) 0) (at 0 fp) [BAR])
+                )
+                [BAR]
             )
         )
     )
-    (defun DEMIPAD|C_RetrieveSemiFungible (patron:string executor:string asset-id:string nonces:[integer] amounts:[integer])
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                    (c:string (ref-I|OURONET::OI|UC_ShortAccount executor))
+    (defun URC_ShortestChainPerNodeFromGraph:[[string]]
+        (input:string graph:[object{BreadthFirstSearchV2.GraphNode}])
+        @doc "#65bL Phase 7: <URC_ShortestChainPerNodeFromRaw>, sourcing an \
+            \ ALREADY-BUILT <graph> (<UC_MakeGraphFromRaw>) instead of building it \
+            \ fresh from <raw-graph>/<swpairs> on every call — for a caller making \
+            \ MULTIPLE Hopper queries against the SAME <swpairs> universe in one \
+            \ transaction (the STOA-repricing loop), who builds the graph ONCE and \
+            \ reuses it across every query. Safe per the same input/output- \
+            \ independence <UC_MakeGraphFromRaw>'s own doc records — one graph \
+            \ built against a given <swpairs> universe is valid for EVERY query \
+            \ against that same universe, not just the one it happened to be built \
+            \ for. Only the BFS traversal itself (genuinely <input>-dependent) \
+            \ still runs per query."
+        (let
+            (
+                (ref-U|BFS:module{BreadthFirstSearchV2} U|BFS)
+                (bfs-obj:object{BreadthFirstSearchV2.BFS} (ref-U|BFS::UC_BFS graph input))
+            )
+            (at "chains" bfs-obj)
+        )
+    )
+    (defun URCx_ShortestChainToTargetFromGraph:[[string]]
+        (input:string output:string graph:[object{BreadthFirstSearchV2.GraphNode}])
+        @doc "#65hL: <URCx_ShortestChainToTargetFromRaw>, sourcing an ALREADY-BUILT \
+            \ <graph> instead of rebuilding it from <raw-graph>/<swpairs> — same \
+            \ early-exit-on-<output> shape, mirroring \
+            \ <URC_ShortestChainPerNodeFromGraph>'s own already-built-graph sourcing. \
+            \ Internal only, used exclusively by <URC_ComputeGraphPathFromGraph>."
+        (let
+            (
+                (ref-U|BFS:module{BreadthFirstSearchV2} U|BFS)
+                (bfs-obj:object{BreadthFirstSearchV2.BFS} (ref-U|BFS::UC_BFSTargeted graph input output))
+            )
+            (at "chains" bfs-obj)
+        )
+    )
+    (defun URC_ComputeGraphPathFromGraph:[string]
+        (input:string output:string graph:[object{BreadthFirstSearchV2.GraphNode}])
+        @doc "#65bL Phase 7: <URC_ComputeGraphPathFromRaw>, sourcing its graph via \
+            \ <URC_ShortestChainPerNodeFromGraph> (an already-built <graph>) \
+            \ instead of rebuilding it from <raw-graph>/<swpairs> on every call — \
+            \ same post-filter-down-to-<output> logic, unchanged. \
+            \ #65hL fix: now sources its chains via \
+            \ <URCx_ShortestChainToTargetFromGraph> instead — same already-built- \
+            \ graph sourcing, but stops once <output> is actually found instead of \
+            \ exploring the whole reachable set first."
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                (shortest-chains:[[string]]
+                    (URCx_ShortestChainToTargetFromGraph input output graph)
                 )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DEMIPAD::C_TransmitSemiFungibles patron executor asset-id nonces amounts false)
+            )
+            (if (!= shortest-chains [[BAR]])
+                (let
+                    (
+                        (fp:[[string]]
+                            (fold
+                                (lambda
+                                    (acc:[[string]] idx:integer)
+                                    (let
+                                        (
+                                            (e:[string] (at idx shortest-chains))
+                                            (l:string (at 0 (take -1 e)))
+                                            (check:bool (= l output))
+                                        )
+                                        (if (not check)
+                                            (ref-U|LST::UC_RemoveItem acc e)
+                                            acc
+                                        )
+                                    )
+                                )
+                                shortest-chains
+                                (enumerate 0 (- (length shortest-chains) 1))
+                            )
+                        )
+                    )
+                    (if (> (length fp) 0) (at 0 fp) [BAR])
                 )
-                (format "Succesfuly retrieved {} Nonces {} with Amounts {} from Demiourgos Launchpad to Account {}" [asset-id nonces amounts c])
+                [BAR]
             )
         )
     )
-    (defun DEMIPAD|C_RetrieveNonFungible (patron:string executor:string asset-id:string nonces:[integer] amounts:[integer])
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                    (c:string (ref-I|OURONET::OI|UC_ShortAccount executor))
+    ;;#34 Phase 7: dirty-read path-cache core functions.
+    (defun URC_ReadPathCache:object{SwapTracerV4.PathCacheRow} (token-a:string token-b:string)
+        @doc "Reversed-lookup read: checks <token-a>|<token-b> first, then \
+            \ <token-b>|<token-a> reversed (the graph is confirmed bidirectional — \
+            \ XI_UpdateGraphForSwpair's symmetric i×j registration), before concluding \
+            \ no cached path exists. Returns {nodes:[BAR], edges:[], topology-version:-1} \
+            \ on a genuine miss in both directions — never a crash, always a clean \
+            \ sentinel. No trust implied: every caller still runs \
+            \ <URC_ValidatePathStructure> (or SWPI's active-required wrapper) on \
+            \ whatever this returns before using it — a hit here is not itself proof of \
+            \ current validity, only of prior registration. Raw registration status \
+            \ only — callers wanting freshness too go through \
+            \ <URC_ReadPathCacheFresh> instead (#65bL Phase 1)."
+        (let*
+            (
+                (key-fwd:string (+ (+ token-a "|") token-b))
+                (row-fwd:object{SwapTracerV4.PathCacheRow} (UR_PathCacheRaw key-fwd))
+            )
+            (if (!= (at "nodes" row-fwd) [BAR])
+                row-fwd
+                (let*
+                    (
+                        (key-rev:string (+ (+ token-b "|") token-a))
+                        (row-rev:object{SwapTracerV4.PathCacheRow} (UR_PathCacheRaw key-rev))
+                    )
+                    (if (!= (at "nodes" row-rev) [BAR])
+                        {
+                            "nodes" : (reverse (at "nodes" row-rev)),
+                            "edges" : (reverse (at "edges" row-rev)),
+                            "topology-version" : (at "topology-version" row-rev)
+                        }
+                        {"nodes" : [BAR], "edges" : [], "topology-version" : -1}
+                    )
                 )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DEMIPAD::C_TransmitNonFungibles patron executor asset-id nonces amounts false)
-                )
-                (format "Succesfuly retrieved {} Nonces {} with Amounts {} from Demiourgos Launchpad to Account {}" [asset-id nonces amounts c])
             )
         )
     )
+    (defun URC_ReadPathCacheFresh:object{SwapTracerV4.PathCacheRow} (token-a:string token-b:string)
+        @doc "#65bL Phase 1: <URC_ReadPathCache>, additionally collapsing a STALE entry \
+            \ (its <topology-version> behind the live counter) to the same [BAR] miss \
+            \ sentinel a genuinely-absent entry already returns. Callers never need to \
+            \ distinguish 'never cached' from 'cached but topology has moved on since' — \
+            \ both mean 'don't trust this, go search live instead'."
+        (let*
+            (
+                (row:object{SwapTracerV4.PathCacheRow} (URC_ReadPathCache token-a token-b))
+                (current-version:integer (UR_TopologyVersion))
+            )
+            (if (< (at "topology-version" row) current-version)
+                {"nodes" : [BAR], "edges" : [], "topology-version" : -1}
+                row
+            )
+        )
+    )
+    (defun URC_EdgeConnects:bool (i-id:string o-id:string swpair:string)
+        @doc "Structural legitimacy check for ONE claimed hop: is <swpair> a real, \
+            \ registered edge that actually connects <i-id> to <o-id> — not just some \
+            \ active pool that happens to exist somewhere. Prevents a submitted bundle \
+            \ from containing genuinely-real-but-unrelated edges that don't actually \
+            \ form a connected path."
+        (contains swpair (URC_Edges i-id o-id))
+    )
+    (defun URC_ValidatePathStructure:bool (nodes:[string] edges:[string])
+        @doc "Exists-only structural validation (P3.1): every claimed hop genuinely \
+            \ connects its claimed node pair, and the whole path respects the P0.4 depth \
+            \ cap (7 tokens / 6 hops) — checked here directly rather than assumed of the \
+            \ off-chain search that produced it, since a malformed or adversarial bundle \
+            \ could otherwise submit a structurally-valid-per-hop but far-too-long route. \
+            \ [BAR] (the 'no path found' sentinel) is explicitly rejected, not treated as \
+            \ a trivial 1-node path. Does NOT check can-swap — SWPI wraps this with that \
+            \ additional check for the active-required (real execution) case; this \
+            \ module can't reach SWP to check it directly (deploy order)."
+        (if (= nodes [BAR])
+            false
+            (if
+                ;;Pact 5's <or> is strictly binary, not variadic — 3+ conditions need
+                ;;fold, per this codebase's own documented convention (same class of
+                ;;gotcha as the #26M/M9 single-arg <and> bug found earlier this session).
+                (fold (or) false
+                    [
+                        (> (length nodes) 7)
+                        (> (length edges) 6)
+                        (!= (length edges) (- (length nodes) 1))
+                    ]
+                )
+                false
+                ;;#20H-style guard: (enumerate 0 -1) is [0 -1], NOT empty, in Pact 5 — a
+                ;;0-hop path (single-node, edges=[]) would otherwise crash on an
+                ;;out-of-bounds <at>. Explicit empty-edges short-circuit avoids it.
+                (if (= (length edges) 0)
+                    true
+                    (fold
+                        (lambda
+                            (acc:bool idx:integer)
+                            (and acc (URC_EdgeConnects (at idx nodes) (at (+ idx 1) nodes) (at idx edges)))
+                        )
+                        true
+                        (enumerate 0 (- (length edges) 1))
+                    )
+                )
+            )
+        )
+    )
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
+    (defun XE_UpdateGraph (swpair:string)
+        @doc "Records <swpair> in the adjacency graph: every token in <swpair> gets \
+            \ every OTHER token in <swpair> appended to its neighbour list (idempotent \
+            \ — safe to call more than once for the same swpair). Called once at \
+            \ issuance from both SWPI::C_Issue and the MTX-SWP defpact path."
+        (P|UEV_IMC)
+        (with-capability (SECURE)
+            (XI_UpdateGraphForSwpair swpair)
+        )
+    )
+    ;;Protection: Class 2 — SECURE
+    (defun XI_UpdateGraphForSwpair (swpair:string)
+        (require-capability (SECURE))
+        (let*
+            (
+                (ref-U|SWP:module{UtilitySwpV3} U|SWP)
+                (tokens:[string] (ref-U|SWP::UC_TokensFromSwpairString swpair))
+                (n:integer (length tokens))
+            )
+            (map
+                (lambda (i:integer)
+                    (map
+                        (lambda (j:integer)
+                            (if (= i j)
+                                BAR
+                                (XI_UpdatePair (at i tokens) (at j tokens) swpair)
+                            )
+                        )
+                        (enumerate 0 (- n 1))
+                    )
+                )
+                (enumerate 0 (- n 1))
+            )
+        )
+    )
+    ;;Protection: Class 2 — SECURE
+    (defun XI_UpdatePair (from:string to:string swpair:string)
+        @doc "Adds <to> as a neighbour of <from> via <swpair>, creating the neighbour \
+            \ entry if this is the first connection between them, or appending \
+            \ <swpair> to the existing entry's swpairs list if not already present. \
+            \ #65bL Phase 1 fix: also bumps the global topology-version counter, but \
+            \ ONLY when this call genuinely changes something — a new token-pair \
+            \ connection, or a new parallel pool on an already-connected pair — never \
+            \ on an idempotent replay of an already-registered pair+swpair (e.g. \
+            \ A_RebuildGraph re-running over every existing pool). <did-change> below \
+            \ is exactly the same condition the pre-existing branching already computed \
+            \ implicitly; this just names it so it can also gate the version bump."
+        (require-capability (SECURE))
+        (let*
+            (
+                (existing:[object{SwapTracerV4.NeighbourEdge}] (UR_Graph from))
+                (idx:[integer] (UC_FindNeighbourIndex existing to))
+                (is-new-pair:bool (= (length idx) 0))
+                (old-swpairs:[string]
+                    (if is-new-pair
+                        []
+                        (at "swpairs" (at (at 0 idx) existing))
+                    )
+                )
+                (is-new-swpair:bool (not (contains swpair old-swpairs)))
+                (did-change:bool (or is-new-pair is-new-swpair))
+                (new-neighbours:[object{SwapTracerV4.NeighbourEdge}]
+                    (if is-new-pair
+                        (+ existing [{"token": to, "swpairs": [swpair]}])
+                        (let*
+                            (
+                                (i:integer (at 0 idx))
+                                (new-swpairs:[string]
+                                    (if is-new-swpair
+                                        (+ old-swpairs [swpair])
+                                        old-swpairs
+                                    )
+                                )
+                            )
+                            (+ (+ (take i existing) [{"token": to, "swpairs": new-swpairs}]) (drop (+ i 1) existing))
+                        )
+                    )
+                )
+            )
+            (write SWPT|Graph from {"neighbours": new-neighbours})
+            (if did-change (XI_BumpTopologyVersion) "no-op")
+        )
+    )
+    ;;Protection: Class 2 — SECURE
+    (defun XI_BumpTopologyVersion ()
+        @doc "#65bL Phase 1: increments the global topology-version counter by 1. \
+            \ Called only from <XI_UpdatePair> when it detects a genuine change — \
+            \ never unconditionally."
+        (require-capability (SECURE))
+        (write SWPT|TopologyVersion TOPOLOGY_VERSION_KEY
+            {"version": (+ (UR_TopologyVersion) 1)}
+        )
+    )
+    ;;Protection: Class 2 — SECURE
+    (defun XI_RegisterPath (token-a:string token-b:string nodes:[string] edges:[string])
+        @doc "#34 Phase 7: registration into SWPT|PathCache. Self-verifying (owner's \
+            \ final-check catch, 2026-08-21) — checks whether a row already exists in \
+            \ EITHER direction before writing, rather than trusting a caller's is-new \
+            \ claim as the write authority. Structural validation is the CALLER's \
+            \ responsibility (URC_ValidatePathStructure/SWPI's active-required wrapper) \
+            \ — this function only handles the write-safety half, matching this \
+            \ codebase's XI_* convention of writes-only, no enforce/validation here. \
+            \ #65bL Phase 1 fix: was strictly first-write-wins/insert-only, meaning a \
+            \ cached entry could never be refreshed even after new topology made a \
+            \ better route possible — permanent staleness by construction. Now \
+            \ version-checked: a genuinely absent entry still inserts; an existing \
+            \ entry only gets overwritten if its own <topology-version> is behind the \
+            \ current counter (topology has moved on since it was cached), otherwise \
+            \ still a no-op — never a redundant write for an already-current entry."
+        (require-capability (SECURE))
+        (let*
+            (
+                (key-fwd:string (+ (+ token-a "|") token-b))
+                (key-rev:string (+ (+ token-b "|") token-a))
+                (row-fwd:object{SwapTracerV4.PathCacheRow} (UR_PathCacheRaw key-fwd))
+                (row-rev:object{SwapTracerV4.PathCacheRow} (UR_PathCacheRaw key-rev))
+                (already-fwd:bool (!= (at "nodes" row-fwd) [BAR]))
+                (already-rev:bool (!= (at "nodes" row-rev) [BAR]))
+                (current-version:integer (UR_TopologyVersion))
+                (new-row:object{SwapTracerV4.PathCacheRow}
+                    {"nodes": nodes, "edges": edges, "topology-version": current-version}
+                )
+            )
+            (if (and (not already-fwd) (not already-rev))
+                (insert SWPT|PathCache key-fwd new-row)
+                (if already-fwd
+                    (if (< (at "topology-version" row-fwd) current-version)
+                        (write SWPT|PathCache key-fwd new-row)
+                        "already fresh, no-op"
+                    )
+                    (if (< (at "topology-version" row-rev) current-version)
+                        (write SWPT|PathCache key-rev new-row)
+                        "already fresh, no-op"
+                    )
+                )
+            )
+        )
+    )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
+    (defun XE_RegisterPath (token-a:string token-b:string nodes:[string] edges:[string])
+        @doc "#34 Phase 8: forward-module entrypoint for XI_RegisterPath, mirroring \
+            \ XE_UpdateGraph exactly — P|UEV_IMC gate, then internal SECURE composition. \
+            \ Cross-module callers (SWPU::C_SmartSwap, once wired) go through THIS, never \
+            \ a caller-side (with-capability (SWPT.SECURE) ...) directly — SECURE's own \
+            \ body is unconditionally true, so a direct outside grant would hand it to \
+            \ any caller at all, not just legitimate Ouronet modules (this exact class of \
+            \ issue is already documented, empirically, in this codebase's own ATS audit \
+            \ findings)."
+        (P|UEV_IMC)
+        (with-capability (SECURE)
+            (XI_RegisterPath token-a token-b nodes edges)
+        )
+    )
+    ;;{5.7}  User [A/C]
 
 )
 
-;; --- tables for 05_TS02-DPAD.pact (2 defined) ---
+;; --- tables for 14_SWPT.pact (5 defined) ---
 ;; UPGRADE MODE: this module is assumed already deployed, so its
 ;; tables already exist and (create-table) would ABORT the whole
 ;; transaction. They are listed here, commented, for reference.
 ;; If any of these is NEW since the last deploy, uncomment JUST it.
 ;; (create-table P|T)
 ;; (create-table P|MT)
+;; (create-table SWPT|Graph)
+;; (create-table SWPT|PathCache)
+;; (create-table SWPT|TopologyVersion)
+
+;; ===== 1_SOVEREIGN/STAGE_01/2_Core/15_SWP.pact =====================
+;(namespace "n_9d612bcfe2320d6ecbbaa99b47aab60138a2adea")
+;; Deploy: load THIS file — interface(s) + module ship together.
+;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact
+;;
+;; net: v3   ·   dev: v4   ;; bumped by the StoicSyntax refactor — deploy v4 then set net: v4
+(interface SwapperV5
+    @doc "Swapper forward surface for module SWP (successor to SwapperV4). \
+        \ Row shapes use this interface's PoolTokens and FeeSplit schemas (field-compatible with SwapperV4). \
+        \ V3: UR_StoaValue and XE_UpdateStoaValue for STOA pool ledger on SWP|Pairs."
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables  ⟨cannot exist in an interface⟩
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables  ⟨cannot exist in an interface⟩
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;
+    (defschema PoolTokens
+        token-id:string
+        token-supply:decimal
+    )
+    (defschema FeeSplit
+        target:string
+        value:integer
+    )
+    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;
+    (defun CT_Info ())
+    ;;{5.2}  Compute [UC]
+    ;;
+    ;;
+    (defun UC_ExtractTokens:[string] (input:[object{PoolTokens}]))
+    (defun UC_ExtractTokenSupplies:[decimal] (input:[object{PoolTokens}]))
+    (defun UC_CustomSpecialFeeTargets:[string] (io:[object{FeeSplit}]))
+    (defun UC_CustomSpecialFeeTargetsProportions:[decimal] (io:[object{FeeSplit}]))
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;
+    (defun UR_Asymetric:bool ())
+    (defun UR_Principals:[string] ())
+    (defun UR_PrimordialPool:string ())
+    (defun UR_LiquidBoost:bool ())
+    (defun UR_SpawnLimit:decimal ())
+    (defun UR_InactiveLimit:decimal ())
+        ;;
+    (defun UR_OwnerKonto:string (swpair:string))
+    (defun UR_CanChangeOwner:bool (swpair:string))
+    (defun UR_CanAdd:bool (swpair:string))
+    (defun UR_CanSwap:bool (swpair:string))
+    (defun UR_GenesisWeigths:[decimal] (swpair:string))
+    (defun UR_Weigths:[decimal] (swpair:string))
+    (defun UR_GenesisRatio:[object{PoolTokens}] (swpair:string))
+    (defun UR_PoolTokenObject:[object{PoolTokens}] (swpair:string))
+    (defun UR_TokenLP:string (swpair:string))
+    (defun UR_FeeLP:decimal (swpair:string))
+    (defun UR_FeeSP:decimal (swpair:string))
+    (defun UR_FeeSPT:[object{FeeSplit}] (swpair:string))
+    (defun UR_FeeLock:bool (swpair:string))
+    (defun UR_FeeUnlocks:integer (swpair:string))
+    (defun UR_Amplifier:decimal (swpair:string))
+    (defun UR_Primality:bool (swpair:string))
+    (defun UR_IzFrozenLP:bool (swpair:string))
+    (defun UR_IzSleepingLP:bool (swpair:string))
+    (defun UR_StoaValue:decimal (swpair:string))
+    (defun UR_Pools:[string] (pool-category:string))
+        ;;
+    (defun UR_PoolTokens:[string] (swpair:string))
+    (defun UR_GetLpSwpair:string (lp-id:string))
+    (defun UR_PoolTokenSupplies:[decimal] (swpair:string))
+    (defun UR_PoolGenesisSupplies:[decimal] (swpair:string))
+    (defun URv_PoolTokenPosition:integer (swpair:string id:string))
+    (defun UR_PoolTokenSupply:decimal (swpair:string id:string))
+    (defun UR_PoolTokenPrecisions:[integer] (swpair:string))
+    (defun UR_SpecialFeeTargets:[string] (swpair:string))
+    (defun UR_SpecialFeeTargetsProportions:[decimal] (swpair:string))
+    ;;
+    ;;#65eL: "major" principal = currently a member of the primordial pool's own
+    ;;token list (always exactly OURO/WSTOA/SSTOA in practice, enforced at
+    ;;A_DefinePrimordialPool's own capability gate) — fixed, never
+    ;;removable/rotatable via A_UpdatePrincipal/A_RotatePrincipal. Any other
+    ;;principal is "minor" and unaffected by this distinction.
+    (defun URC_IsMajorPrincipal:bool (token:string))
+    (defun URC_LpCapacity:decimal (swpair:string))
+    (defun URC_CheckID:bool (swpair:string))
+    (defun URC_PoolTotalFee:decimal (swpair:string))
+    (defun URC_LiquidityFee:decimal (swpair:string))
+    (defun URC_AllPoolTokens:[string] ())
+    (defun URC_Swpairs:[string] ())
+    (defun URC_LpComposer:[string] (pool-tokens:[object{PoolTokens}] weights:[decimal] amp:decimal))
+    ;;
+    (defun URH_OwnedSwapPairs:[string] (account:string))
+    ;;  [URCi] cost readers — single source per op (EnableFrozen/Sleeping/ToggleAddOrSwap composers -> Phase 1.2)
+    (defun URCi_UpdatePendingBranding:object{IgnisCollectorV4.OutputCumulator} (entity-id:string))
+    (defun URCi_ChangeOwnership:object{IgnisCollectorV4.OutputCumulator} (swpair:string))
+    (defun URCi_ModifyCanChangeOwner:object{IgnisCollectorV4.OutputCumulator} (swpair:string))
+    (defun URCi_ModifyWeights:object{IgnisCollectorV4.OutputCumulator} (swpair:string))
+    (defun URCi_UpdateAmplifier:object{IgnisCollectorV4.OutputCumulator} (swpair:string))
+    (defun URCi_UpdateFee:object{IgnisCollectorV4.OutputCumulator} (swpair:string))
+    (defun URCi_UpdateSpecialFeeTargets:object{IgnisCollectorV4.OutputCumulator} (swpair:string))
+    (defun URCi_ToggleFeeLock:object{IgnisCollectorV4.OutputCumulator} (swpair:string toggle:bool))
+    (defun URCi_ToggleFeeLockStoa:decimal (swpair:string toggle:bool))
+    (defun URCi_EnableFrozenLP:object{IgnisCollectorV4.OutputCumulator} (patron:string swpair:string))
+    (defun URCi_EnableSleepingLP:object{IgnisCollectorV4.OutputCumulator} (patron:string swpair:string))
+    (defun URCi_ToggleAddOrSwap:object{IgnisCollectorV4.OutputCumulator} (swpair:string toggle:bool add-or-swap:bool))
+    (defun URCi_UpgradeBranding:decimal (months:integer))
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;
+    (defun UEV_ExecutorIsOwnerKonto (executor:string entity-id:string))
+    (defun UEV_FeeSplit (input:object{FeeSplit}))
+    (defun UEV_id (swpair:string))
+    (defun UEV_CanChangeOwnerON (swpair:string))
+    (defun UEV_FeeLockState (swpair:string state:bool))
+    (defun UEV_PoolFee (fee:decimal))
+    (defun UEV_New (t-ids:[string] w:[decimal] amp:decimal))
+    (defun UEV_CheckTwo (token-ids:[string] w:[decimal] amp:decimal))
+    (defun UEV_CheckAgainstMass:bool (token-ids:[string] present-pools:[string]))
+    (defun UEV_CheckAgainst:bool (token-ids:[string] pool-tokens:[string]))
+    (defun UEV_FrozenLP (swpair:string state:bool))
+    (defun UEV_SleepingLP (swpair:string state:bool))
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    (defun XE_AddLPTracker (lp-id:string swpair:string))
+    ;;
+    (defun XB_ModifyWeights (swpair:string new-weights:[decimal]))
+    ;;
+    (defun XE_UpdateSupplies (swpair:string new-supplies:[decimal]))
+    (defun XE_UpdateSupply (swpair:string id:string new-supply:decimal))
+    (defun XE_UpdateStoaValue (swpair:string new-stoa-value:decimal))
+    (defun XE_Issue:string (account:string pool-tokens:[object{PoolTokens}] token-lp:string fee-lp:decimal weights:[decimal] amp:decimal p:bool))
+    (defun XE_CanAddOrSwapToggle (swpair:string toggle:bool add-or-swap:bool))
+    ;;{5.7}  User [A/C]
+    ;;
+    ;;
+    (defun A_UpdatePrincipal (patron:string executor:string principal:string add-or-remove:bool))
+    (defun A_RotatePrincipal (patron:string executor:string old:string new:string))
+    (defun A_UpdateLimit (patron:string executor:string limit:decimal spawn:bool))
+    (defun A_UpdateLiquidBoost (patron:string executor:string new-boost-variable:bool))
+    (defun A_DefinePrimordialPool (patron:string executor:string primordial-pool:string))
+    (defun A_ToggleAsymetricLiquidityAddition (patron:string executor:string toggle:bool))
+    ;;
+    (defun C_ChangeOwnership:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string executee:string swpair:string))
+    (defun C_EnableFrozenLP:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string swpair:string))
+    (defun C_EnableSleepingLP:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string swpair:string))
+    (defun C_ModifyCanChangeOwner:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string swpair:string new-boolean:bool))
+    (defun C_ModifyWeights:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string swpair:string new-weights:[decimal]))
+    (defun C_ToggleAddOrSwap:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string swpair:string toggle:bool add-or-swap:bool))
+    (defun C_ToggleFeeLock:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string swpair:string toggle:bool))
+    (defun C_UpdateAmplifier:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string swpair:string amp:decimal))
+    (defun C_UpdateFee:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string swpair:string new-fee:decimal lp-or-special:bool))
+    (defun C_UpdateSpecialFeeTargets:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string swpair:string targets:[object{FeeSplit}]))
+
+
+    ;;<=========================================================================>
+    ;; ADDED 2026-10-12 -- interface-membership sweep (StoicSyntax-Prefixes.md Sec5,
+    ;; owner ruling). Every one of these was already live in the module body; this
+    ;; closes the gap between what the module DOES and what its interface SAYS it does.
+    ;;<=========================================================================>
+    (defun CAP_Owner (swpair:string))
+    (defun UC_PoolTokenPrecisions:[integer] (swpair:string))
+    (defun UEV_AsymetricState (state:bool))
+)
+;;
+(module SWP GOV
+    @doc "SWP (SwapperV4) is the core swapper/liquidity-pool module holding all per-pool \
+        \ state in SWP|Pairs (owner, weights, token supplies, fees, amplifier, STOA value, \
+        \ flags) plus global properties (principals, primordial pool, limits) and pool/LP \
+        \ indexes. It provides the pool read surface (UR_/URC_ for tokens, supplies, fees, \
+        \ LP capacity, swpairs) and admin/owner client ops: change ownership, modify \
+        \ weights/amplifier/fees/special-fee targets, toggle add-or-swap, enable \
+        \ frozen/sleeping LP, and manage principals and the primordial pool. Serves Stable, \
+        \ Weighted, and standard pool curves."
+
+    ;;<=========================================================================>
+    ;;{0}  IMPLEMENTERS
+    ;;
+    (implements OuronetPolicyV2)
+    (implements BrandingUsagePrimaryV3)
+    (implements SwapperV5)
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    (defconst GOV|MD_SWP                                (keyset-ref-guard (GOV|Demiurgoi)))
+    (defconst GOV|SC_SWP                                (keyset-ref-guard SWP|SC_KEY))
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    (defcap GOV ()                                      (compose-capability (GOV|SWP_ADMIN)))
+    (defcap GOV|SWP_ADMIN ()
+        (enforce-one
+            "SWP Swapper Admin not satisfed"
+            [
+                (enforce-guard GOV|MD_SWP)
+                (enforce-guard GOV|SC_SWP)
+            ]
+        )
+    )
+    ;;{G5}  functions
+    ;;
+    (defun GOV|Demiurgoi ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+            )
+            (ref-DALOS::GOV|Demiurgoi)
+        )
+    )
+    (defun GOV|SwapKey ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+            )
+            (ref-DALOS::GOV|SwapKey)
+        )
+    )
+    (defun GOV|SWP|SC_NAME ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+            )
+            (ref-DALOS::GOV|SWP|SC_NAME)
+        )
+    )
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    (defconst P|I                                       (P|Info))
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;
+    (deftable P|T:{OuronetPolicyV2.P|S})                        ;;Key = <policy-name>
+    (deftable P|MT:{OuronetPolicyV2.P|MS})                      ;;Key = P|I (module-identity singleton constant)
+    ;;{P4}  capabilities
+    (defcap P|SWP|CALLER ()
+        true
+    )
+    (defcap P|SECURE-CALLER ()
+        (compose-capability (P|SWP|CALLER))
+        (compose-capability (SECURE))
+    )
+    (defcap P|GOVERNING-CALLER ()
+        (compose-capability (P|SWP|CALLER))
+        (compose-capability (SWP|GOV))
+    )
+    ;;{P5}  functions
+    (defun P|Info ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+            )
+            (ref-DALOS::P|Info)
+        )
+    )
+    (defun P|UR:guard (policy-name:string)
+        (at "policy" (read P|T policy-name ["policy"]))
+    )
+    (defun P|UR_IMP:[guard] ()
+        ;;DEFAULT ADDED 2026-09-14 (owner ruling). This was a bare `read`, which RAISES
+        ;;`No value found in table <M>_P|MT for key: InterModulePolicies` when the row does not
+        ;;exist -- i.e. before ANY module has registered. P|UEV_IMC is built on this, so in that
+        ;;window the inter-module gate answered with a raw table error naming a row key instead of
+        ;;refusing cleanly. Surfaced by the X-01 repair, which removed the harness registration
+        ;;that had been creating the row as a side effect.
+        ;;
+        ;;The default is the module's OWN SECURE capability guard, which is exactly what
+        ;;P|A_AddIMP already seeds the row with. So reader and writer now agree on what an
+        ;;unregistered policy list contains, and the gate's answer is the same before and after
+        ;;the first registration: satisfiable only from inside this module.
+        (with-default-read P|MT P|I
+            {"m-policies" : [(create-capability-guard (SECURE))]}
+            {"m-policies" := mp}
+            mp
+        )
+    )
+    (defun P|UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV2} U|G)
+                (mp:[guard] (P|UR_IMP))
+                (g:guard (ref-U|G::UEV_GuardOfAny mp))
+            )
+            (enforce-guard g)
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|SWP_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        @doc "Registers <policy-guard> as a trusted inter-module caller of this module. \
+            \ IDEMPOTENT: a guard already in the chain is left alone rather than appended \
+            \ a second time. See OuronetPolicyV2 for why that is load-bearing."
+        (with-capability (GOV|SWP_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
+                    ;;
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" :
+                            (if (contains policy-guard mp)
+                                mp
+                                (ref-U|LST::UC_AppL mp policy-guard)
+                            )
+                        }
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_RemoveIMP (policy-guard:guard)
+        @doc "Revokes <policy-guard> from this module's guard chain. Removes EVERY occurrence, so \
+            \ it doubles as the cleanup for duplicates left behind by the pre-idempotence append. \
+            \ Refuses to drop this module's own SECURE seed -- see OuronetPolicyV2."
+        (with-capability (GOV|SWP_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
+                    ;;
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (enforce (!= policy-guard dg) "The module's own SECURE seed cannot be revoked")
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_RemoveItem mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_SetIMP (policy-guards:[guard])
+        @doc "Replaces this module's whole guard chain in one write -- the recovery hatch. \
+            \ Deduplicates, and enforces that the module's own SECURE seed survives: without it \
+            \ the module can no longer reach its own P|UEV_IMC-gated functions."
+        (with-capability (GOV|SWP_ADMIN)
+            (let
+                (
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (enforce (contains dg policy-guards) "The module's own SECURE seed must be present")
+                (write P|MT P|I
+                    {"m-policies" : (distinct policy-guards)}
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        (let
+            (
+                (ref-P|DALOS:module{OuronetPolicyV2} DALOS)
+                (ref-P|BRD:module{OuronetPolicyV2} BRD)
+                (ref-P|DPTF:module{OuronetPolicyV2} DPTF)
+                ;(ref-P|DPOF:module{OuronetPolicyV2} DPOF)
+                (ref-P|ATS:module{OuronetPolicyV2} ATS)
+                (ref-P|TFT:module{OuronetPolicyV2} TFT)
+                (ref-P|ATSU:module{OuronetPolicyV2} ATSU)
+                (ref-P|VST:module{OuronetPolicyV2} VST)
+                (ref-P|LIQUID:module{OuronetPolicyV2} LIQUID)
+                (ref-P|ORBR:module{OuronetPolicyV2} OUROBOROS)
+                (ref-P|SWPT:module{OuronetPolicyV2} SWPT)
+                (ref-P|IGNIS:module{OuronetPolicyV2} IGNIS)
+                (mg:guard (create-capability-guard (P|SWP|CALLER)))
+            )
+            (ref-P|DALOS::P|A_AddIMP mg)
+            (ref-P|BRD::P|A_AddIMP mg)
+            (ref-P|DPTF::P|A_AddIMP mg)
+            ;(ref-P|DPOF::P|A_AddIMP mg)
+            (ref-P|ATS::P|A_AddIMP mg)
+            (ref-P|TFT::P|A_AddIMP mg)
+            (ref-P|ATSU::P|A_AddIMP mg)
+            (ref-P|VST::P|A_AddIMP mg)
+            (ref-P|LIQUID::P|A_AddIMP mg)
+            (ref-P|ORBR::P|A_AddIMP mg)
+            (ref-P|SWPT::P|A_AddIMP mg)
+            (ref-P|IGNIS::P|A_AddIMP mg)
+        )
+    )
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;
+    (defconst SWP|SC_KEY                                (GOV|SwapKey))
+    (defconst SWP|SC_NAME                               (GOV|SWP|SC_NAME))
+    (defconst BAR                                       (CT_Bar))
+    (defconst EOC                                       (CT_EmptyCumulator))
+    (defconst SWP|INFO                                  (CT_Info))
+    (defconst P2 "P2")
+    (defconst P3 "P3")
+    (defconst P4 "P4")
+    (defconst P5 "P5")
+    (defconst P6 "P6")
+    (defconst P7 "P7")
+    (defconst S2 "S2")
+    (defconst S3 "S3")
+    (defconst S4 "S4")
+    (defconst S5 "S5")
+    (defconst S6 "S6")
+    (defconst S7 "S7")
+    (defconst SWP|EMPTY-TARGET
+        { "target": BAR
+        , "value": 1 }
+    )
+    ;;{3.2}  schemas
+    ;;
+    (defschema SWP|PropertiesSchema
+        principals:[string]
+        primordial-pool:string
+        liquid-boost:bool
+        spawn-limit:decimal
+        inactive-limit:decimal
+    )
+    (defschema SWP|PairsSchemaV3
+        @doc "Per liquidity pool. Table row key is <swpair> (see UC_PoolID in UtilitySwpV2); \
+            \ stored <id> equals that key. V3 adds stoa-value for STOA ledger attribution on \
+            \ the pool; legacy V2 rows omit the column until UR_StoaValue backfills 0.0."
+        ;;
+        ;;Management
+        owner-konto:string                              ;;[M]   Pool owner konto
+        can-change-owner:bool                           ;;[M]
+        can-add:bool                                    ;;[M]
+        can-swap:bool                                   ;;[M]
+        ;;
+        ;;Weights and token composition
+        genesis-weights:[decimal]                       ;;[.]   Weights at issue
+        weights:[decimal]                               ;;[M]   Current weights
+        genesis-ratio:[object{SwapperV5.PoolTokens}]    ;;[.]   Token supplies at issue
+        pool-tokens:[object{SwapperV5.PoolTokens}]      ;;[M]   Current per-token supplies
+        token-lp:string                                 ;;[.]   LP DPTF id for this pool
+        ;;
+        ;;Fees
+        fee-lp:decimal                                  ;;[M]   LP fee (promille semantics per module)
+        fee-special:decimal                             ;;[M]
+        fee-special-targets:[object{SwapperV5.FeeSplit}];;[M]
+        fee-lock:bool                                   ;;[M]
+        unlocks:integer                                 ;;[M]   Fee-target edit generation counter
+        ;;
+        ;;Curve / flags
+        amplifier:decimal                               ;;[M]
+        primality:bool                                  ;;[.]   Pool construction (primality) at issue
+        frozen-lp:bool                                  ;;[.]   Once true, frozen LP path enabled
+        sleeping-lp:bool                                ;;[.]   Once true, sleeping LP path enabled
+        ;;
+        ;;STOA (V3)
+        stoa-value:decimal                              ;;[M]   STOA amount attributed to this pool; 0.0 at issue
+        ;;
+        ;;Select Keys
+        id:string                                       ;;[.]   Pool id (= SWP|Pairs row key <swpair>)
+    )
+    (defschema SWP|PoolsSchema
+        pools:[string]
+    )
+    (defschema SWP|AsymmetrySchema
+        asymmetric:bool
+    )
+    (defschema SWP|LpTracker
+        swpair:string
+    )
+    ;;{3.3}  tables
+    (deftable SWP|Properties:{SWP|PropertiesSchema})    ;;Key = SWP|INFO
+    (deftable SWP|Pairs:{SWP|PairsSchemaV3})            ;;Key = <swpair>
+    (deftable SWP|Pools:{SWP|PoolsSchema})              ;;Key = <pool-category>
+    (deftable SWP|Asymmetry:{SWP|AsymmetrySchema})      ;;Key = SWP|INFO
+    (deftable SWP|LP:{SWP|LpTracker})                   ;;Key = <LP-string>
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    (defcap SWP|GOV ()
+        @doc "Governor Capability for the Swapper Smart DALOS Account"
+        true
+    )
+    ;;UNUSED -- a leftover of a pattern SWP did not adopt. DALOS, LIQUID and OUROBOROS each pair
+    ;;an X|NATIVE-AUTOMATIC cap with a GOV|X|GUARD that turns it into the smart account's guard via
+    ;;<create-capability-guard>. SWP has no such guard function: it builds its account guards from
+    ;;(create-capability-guard (SECURE)) and (create-capability-guard (P|SWP|CALLER)) instead, so
+    ;;nothing ever reaches this cap. Left in place rather than deleted -- unlike ATS's orphan
+    ;;(ATS|S>CONTROL-DIRECT-RECOVERY) it guards nothing and its removal changes no behaviour, but
+    ;;it is also not evidence of a gap. Flagged 2026-09-10.
+    (defcap SWP|NATIVE-AUTOMATIC ()
+        @doc "Autonomic management of <kadena-konto> of SWAPPER Smart Account"
+        true
+    )
+    (defcap SECURE ()
+        true
+    )
+    ;;{C2}  Simple
+    (defcap SWP|S>RT_OWN (swpair:string new-owner:string)
+        @event
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                ;;
+                (current-owner:string (UR_OwnerKonto swpair))
+                (current-special-targets:integer (length (UR_FeeSPT swpair)))
+                (major:integer (ref-DALOS::UR_Elite-Tier-Major new-owner))
+                (max-new-owner:integer
+                    (cond
+                        ((= major 2) 2)
+                        ((= major 3) 3)
+                        ((= major 4) 4)
+                        ((fold (or) true [(= major 5)(= major 6)(= major 7)]) 7)
+                        1
+                    )
+                )
+            )
+            (enforce 
+                (>= max-new-owner current-special-targets) 
+                (format "Insufficient Major Elite Tier for NewOwner to support CurrentOwner \
+                        \existing SpecialFeeTargets of {}" [current-special-targets])
+            )
+            (ref-DALOS::UEV_SenderWithReceiver (UR_OwnerKonto swpair) new-owner)
+            (ref-DALOS::UEV_EnforceAccountExists new-owner)
+            (UEV_CanChangeOwnerON swpair)
+            (CAP_Owner swpair)
+        )
+    )
+    (defcap SWP|S>RT_CAN-CHANGE (swpair:string new-boolean:bool)
+        @event
+        (let
+            (
+                (current:bool (UR_CanChangeOwner swpair))
+            )
+            (enforce (!= current new-boolean) "Similar boolean unallowed for <can-change-owner>")
+            (CAP_Owner swpair)
+        )
+    )
+    (defcap SWP|S>WEIGHTS (swpair:string new-weights:[decimal])
+        @event
+        (let
+            (
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
+                (ref-U|INT:module{OuronetIntegersV2} U|INT)
+                (pp:string (take 1 swpair))
+                (ws:decimal (fold (+) 0.0 new-weights))
+                (fee-precision:integer (ref-U|CT::CT_FEE_PRECISION))
+                (l0:integer (length (UR_PoolTokens swpair)))
+                (l1:integer (length new-weights))
+            )
+            ;;C7 fix: length-parity, mirroring the sibling SWP|S>UPDATE-SUPPLIES cap.
+            (ref-U|INT::UEV_UniformList [l0 l1])
+            ;;C7 fix: real per-weight enforce inside the map lambda (the original code computed this exact
+            ;;check via `=` and threw the result away — matching UEV_UniformList's working idiom, not the
+            ;;original dead-map one). Combines the precision check with a >= 0.1 floor per weight (also
+            ;;rules out negative weights) into a single `enforce` per element.
+            (map
+                (lambda
+                    (w:decimal)
+                    (enforce
+                        (fold (and) true [(= (floor w fee-precision) w) (>= w 0.1)])
+                        (format "Weight {} must respect fee precision and be at least 0.1" [w])
+                    )
+                )
+                new-weights
+            )
+            (enforce (= pp "W") "Changing weights available only for weighted Pools")
+            (enforce (= ws 1.0) "All weights must add to exactly 1.0")
+            (CAP_Owner swpair)
+        )
+    )
+    (defcap SWP|S>UPDATE-SUPPLIES (swpair:string new-supplies:[decimal])
+        (let
+            (
+                (ref-U|INT:module{OuronetIntegersV2} U|INT)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (pool-tokens:[string] (UR_PoolTokens swpair))
+                (l0:integer (length pool-tokens))
+                (l1:integer (length new-supplies))
+                (lengths:[integer] [l0 l1])
+            )
+            (UEV_id swpair)
+            (ref-U|INT::UEV_UniformList lengths)
+            ;;H12 fix: the old code only validated a new supply when it was already > 0.0, silently
+            ;;skipping any check at all for <= 0.0 (letting a negative supply persist unenforced). Added
+            ;;an unconditional non-negativity enforce inside the lambda, real-guard-style (matches the
+            ;;C7/UEV_UniformList idiom), on top of the pre-existing positive-value precision check.
+            (map
+                (lambda
+                    (idx:integer)
+                    (let
+                        (
+                            (val:decimal (at idx new-supplies))
+                        )
+                        (enforce
+                            (>= val 0.0)
+                            (format "New supply {} for pool token {} cannot be negative" [val (at idx pool-tokens)])
+                        )
+                        (if (> val 0.0)
+                            (ref-DPTF::UEV_Amount (at idx pool-tokens) val)
+                            true
+                        )
+                    )
+                )
+                (enumerate 0 (- l0 1))
+            )
+        )
+    )
+    (defcap SWP|S>UPDATE-SUPPLY (swpair:string id:string new-supply:decimal)
+        (let
+            (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+            )
+            (ref-DPTF::UEV_Amount id new-supply)
+            (UEV_id swpair)
+        )
+    )
+    (defcap SWP|S>UPDATE-FEE (swpair:string new-fee:decimal )
+        @event
+        (UEV_FeeLockState swpair false)
+        (UEV_PoolFee new-fee)
+        (CAP_Owner swpair)
+    )
+    (defcap SWP|S>UPDATE-AMPLIFIER (swpair:string new-amplifier:decimal)
+        @event
+        (CAP_Owner swpair)
+        (let
+            (
+                (current-amp:decimal (UR_Amplifier swpair))
+            )
+            (enforce (> current-amp 0.0) "Amplifier can only be updated for Stable Pools")
+            ;;C8 fix: <new-amplifier> was never validated at all — no bound, and critically no exclusion
+            ;;of the module's own -1.0 "not a stable pool" sentinel. Mirrors UEV_Issue's own >= 1.0 floor
+            ;;at creation (16_SWPI.pact:1267); ceiling of 2000.0 is evidence-backed, not arbitrary — REPL-
+            ;;verified: round-trip convergence on a skewed pool stays excellent (~1e-13) through the low
+            ;;hundreds, then measurably degrades (~1e-7 by A=5000+) because the Newton solver's fixed
+            ;;11-iteration limit (H1, separately tracked, still open) stops fully converging at high A on
+            ;;skewed reserves. 2000.0 covers realistic real-world stable-pool ranges with margin to spare
+            ;;below that degradation. A single range check also excludes -1.0/0.0/negatives with no
+            ;;separate sentinel check needed.
+            (enforce
+                (and (>= new-amplifier 1.0) (<= new-amplifier 2000.0))
+                (format "Amplifier {} must be between 1.0 and 2000.0" [new-amplifier])
+            )
+        )
+    )
+    (defcap SPW|S>UPDATE_SPECIAL-FEE-TARGETS (swpair:string targets:[object{SwapperV5.FeeSplit}])
+        @event
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (target-no:integer (length targets))
+                (owner:string (UR_OwnerKonto swpair))
+                (major:integer (ref-DALOS::UR_Elite-Tier-Major owner))
+                (max:integer
+                    (cond
+                        ((= major 2) 2)
+                        ((= major 3) 3)
+                        ((= major 4) 4)
+                        ((fold (or) true [(= major 5)(= major 6)(= major 7)]) 7)
+                        1
+                    )
+                )
+            )
+            (enforce (and (>= target-no 1) (<= target-no max)) "Increase Major Elite Tier to add more Special Targets")
+            (CAP_Owner swpair)
+            (map
+                (lambda
+                    (obj:object{SwapperV5.FeeSplit})
+                    (UEV_FeeSplit obj)
+                )
+                targets
+            )
+        )
+    )
+    (defcap SWP|C>ADD-OR-SWAP (swpair:string toggle:bool add-or-swap:bool)
+        @event
+        (let
+            (
+                (add:bool (UR_CanAdd swpair))
+                (swap:bool (UR_CanSwap swpair))
+            )
+            (if add-or-swap
+                (enforce (!= add toggle) "Similar boolean unallowed for <can-add> or <can-swap>")
+                (enforce (!= swap toggle) "Similar boolean unallowed for <can-add> or <can-swap>")
+            )
+            (CAP_Owner swpair)
+        )
+    )
+    ;;{C3}  Composed
+    ;;
+    ;;
+    (defcap AHU ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ah:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership ah)
+            (compose-capability (SECURE))
+        )
+    )
+    ;{C3}
+    ;{C4}
+    (defcap SWP|C>UPDATE-BRD (swpair:string)
+        @event
+        (CAP_Owner swpair)
+        (compose-capability (P|SWP|CALLER))
+    )
+    (defcap SWP|C>UPGRADE-BRD (swpair:string)
+        @event
+        (CAP_Owner swpair)
+        (compose-capability (P|SWP|CALLER))
+    )
+    (defcap SWP|C>PRINCIPAL (principal:string add-or-remove:bool)
+        @doc "Adds are capped at 7 total and must not duplicate an existing \
+            \ principal. Removes must leave at least 2 principals defined — SWPT's \
+            \ storage is principal-agnostic (#21H), so removal itself is safe; the \
+            \ floor exists so issuance-time principal-anchoring validation \
+            \ (SWPI::UEV_Issue) always has somewhere real to anchor a new W/P pool. \
+            \ #65eL: removal also rejects a 'major' principal (currently a member \
+            \ of the primordial pool — URC_IsMajorPrincipal) outright, regardless \
+            \ of the floor — major principals are fixed, retirable only by \
+            \ redefining the primordial pool itself (SWP|C>DEFINE-PRIMORDIAL-POOL), \
+            \ never by this function. A 'minor' principal is unaffected. Gated by \
+            \ the same GOV|SWP_ADMIN admin capability as SWP|C>ROTATE-PRINCIPAL."
+        @event
+        (compose-capability (GOV|SWP_ADMIN))
+        (let
+            (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (current:[string] (UR_Principals))
+                (current-count:integer (if (= current [BAR]) 0 (length current)))
+            )
+            (ref-DPTF::UEV_id principal)
+            (if add-or-remove
+                (and
+                    (enforce (not (contains principal current)) (format "{} is already a principal" [principal]))
+                    (enforce (< current-count 7) (format "Cannot add principal — {} of 7 maximum already defined" [current-count]))
+                )
+                (and
+                    (enforce (contains principal current) (format "{} is not currently a principal" [principal]))
+                    (and
+                        (enforce (> current-count 2) (format "Cannot remove principal — at least 2 must remain defined ({} currently)" [current-count]))
+                        (enforce (not (URC_IsMajorPrincipal principal)) (format "{} is a major (primordial-pool) principal — cannot be removed" [principal]))
+                    )
+                )
+            )
+        )
+    )
+    (defcap SWP|C>ROTATE-PRINCIPAL (old:string new:string)
+        @doc "Validates an atomic principal replacement. Each rejection reason gets \
+            \ its own distinct enforce, not a combined boolean, since they're \
+            \ separate concerns with separate causes: <old> must currently be a \
+            \ principal, <old> must not be a 'major' (primordial-pool) principal \
+            \ (#65eL — majors are fixed, retirable only by redefining the \
+            \ primordial pool itself, never by rotation), <new> must not already \
+            \ be one, and rotating a principal into itself is never allowed \
+            \ regardless of whether it's already a principal (it always would be, \
+            \ since <old> = <new>). Count-preserving — never interacts with the \
+            \ 7-principal cap. Gated by the same GOV|SWP_ADMIN admin capability as \
+            \ SWP|C>PRINCIPAL."
+        @event
+        (compose-capability (GOV|SWP_ADMIN))
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (current:[string] (UR_Principals))
+            )
+            (ref-DPTF::UEV_id new)
+            (ref-U|LST::UEV_StringPresence old current)
+            (enforce (not (URC_IsMajorPrincipal old)) (format "{} is a major (primordial-pool) principal — cannot be rotated" [old]))
+            (enforce (!= old new) "Cannot rotate a principal into itself")
+            (enforce (not (contains new current)) (format "{} is already a principal" [new]))
+        )
+    )
+    (defcap SWP|C>LQBOOST (new-boost-variable:bool)
+        @event
+        (compose-capability (GOV|SWP_ADMIN))
+        (let
+            (
+                (lqb:bool (UR_LiquidBoost))
+            )
+            (enforce (!= new-boost-variable lqb) (format "Liquid Boost already set to {}" [new-boost-variable]))
+        )
+    )
+    (defcap SWP|C>LIMIT ()
+        @event
+        (compose-capability (GOV|SWP_ADMIN))
+    )
+    (defcap SWP|C>TG_FEE-LOCK (swpair:string toggle:bool)
+        @event
+        (UEV_FeeLockState swpair (not toggle))
+        (CAP_Owner swpair)
+        (compose-capability (SECURE))
+    )
+    (defcap SWP|C>ENABLE-FROZEN (swpair:string)
+        @event
+        ;;#31M/M7 fix: was missing CAP_Owner — any caller routed through
+        ;;P|GOVERNING-CALLER could permanently enable Frozen LP on any pool,
+        ;;not just their own. Only the pool's own owner may trigger this
+        ;;(and it's irreversible by design — no XI ever writes it back to
+        ;;false).
+        (UEV_FrozenLP swpair false)
+        (CAP_Owner swpair)
+        (compose-capability (P|GOVERNING-CALLER))
+    )
+    (defcap SWP|C>ENABLE-SLEEPING (swpair:string)
+        @event
+        ;;#31M/M7 fix: same as SWP|C>ENABLE-FROZEN above — owner-only,
+        ;;irreversible.
+        (UEV_SleepingLP swpair false)
+        (CAP_Owner swpair)
+        (compose-capability (P|GOVERNING-CALLER))
+    )
+    (defcap SWP|C>DEFINE-PRIMORDIAL-POOL (primordial-pool:string)
+        (compose-capability (GOV|SWP_ADMIN))
+        (let
+            (
+                (ref-U|SWP:module{UtilitySwpV3} U|SWP)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                ;;
+                (primality:bool (UR_Primality primordial-pool))
+                (pt:[string] (UR_PoolTokens primordial-pool))
+                (ouro:string (ref-DALOS::UR_OuroborosID))
+                (wstoa:string (ref-DALOS::UR_WrappedStoaID))
+                (sstoa:string (ref-DALOS::UR_SilverStoaID))
+                (pool-type:string (ref-U|SWP::UC_PoolType primordial-pool))
+                (iz-weigthed:bool (= pool-type "W"))
+                (has-ouro:bool (contains ouro pt))
+                (has-wstoa:bool (contains wstoa pt))
+                (has-sstoa:bool (contains sstoa pt))
+                (iz-three:bool (= (length pt) 3))
+            )
+            ;;H6 fix: <primality> was bound above but never included in this fold, so the only checks
+            ;;actually enforced were the 5 composable "does it look like the right shape" conditions —
+            ;;the issuance-time eligibility flag that's supposed to gate this (owner: also means exempt
+            ;;from low-liquidity gates / never autonomously disabled) was read and silently unused.
+            (enforce (fold (and) true [iz-weigthed has-ouro has-wstoa has-sstoa iz-three primality]) "Pool is not the primordial pool")
+        )
+    )
+    (defcap SWP|C>TG-ASYMETRIC-LQ (toggle:bool)
+        (compose-capability (GOV|SWP_ADMIN))
+        (let
+            (
+                (pp:string (UR_PrimordialPool))
+            )
+            (enforce (!= pp BAR) "PrimordialPool must be set for this operation")
+            (UEV_AsymetricState (not toggle))
+            (compose-capability (P|SWP|CALLER))
+        )
+    )
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    (defun CT_Bar ()
+        (let
+            (
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
+            )
+            (ref-U|CT::CT_BAR)
+        )
+    )
+    (defun CT_EmptyCumulator ()
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+            )
+            (ref-IGNIS::UDC_EmptyOutputCumulatorV2)
+        )
+    )
+    (defun CT_Info ()                                   (at 0 ["SwapperInformation"]))
+    ;;{5.2}  Compute [UC]
+    (defun UC_ExtractTokens:[string] (input:[object{SwapperV5.PoolTokens}])
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+            )
+            (fold
+                (lambda
+                    (acc:[string] item:object{SwapperV5.PoolTokens})
+                    (ref-U|LST::UC_AppL acc (at "token-id" item))
+                )
+                []
+                input
+            )
+        )
+    )
+    (defun UC_ExtractTokenSupplies:[decimal] (input:[object{SwapperV5.PoolTokens}])
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+            )
+            (fold
+                (lambda
+                    (acc:[decimal] item:object{SwapperV5.PoolTokens})
+                    (ref-U|LST::UC_AppL acc (at "token-supply" item))
+                )
+                []
+                input
+            )
+        )
+    )
+    (defun UC_CustomSpecialFeeTargets:[string] (io:[object{SwapperV5.FeeSplit}])
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+            )
+            (fold
+                (lambda
+                    (acc:[string] idx:integer)
+                    (ref-U|LST::UC_AppL
+                        acc
+                        (at "target" (at idx io))
+                    )
+                )
+                []
+                (enumerate 0 (- (length io) 1))
+            )
+        )
+    )
+    (defun UC_CustomSpecialFeeTargetsProportions:[decimal] (io:[object{SwapperV5.FeeSplit}])
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+            )
+            (fold
+                (lambda
+                    (acc:[decimal] idx:integer)
+                    (ref-U|LST::UC_AppL
+                        acc
+                        (dec (at "value" (at idx io)))
+                    )
+                )
+                []
+                (enumerate 0 (- (length io) 1))
+            )
+        )
+    )
+    (defun UCv_PoolTokenPosition:integer (swpair:string id:string)
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                (ref-U|SWP:module{UtilitySwpV3} U|SWP)
+                ;;
+                (pool-tokens:[string] (ref-U|SWP::UC_TokensFromSwpairString swpair))
+                (iz-on-pool:bool (contains id pool-tokens))
+            )
+            (enforce iz-on-pool (format "Token {} is not part of the Pool String {}" [id swpair]))
+            (at 0 (ref-U|LST::UC_Search pool-tokens id))
+        )
+    )
+    (defun UC_PoolTokenPrecisions:[integer] (swpair:string)
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                (ref-U|SWP:module{UtilitySwpV3} U|SWP)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                ;;
+                (pool-tokens:[string] (ref-U|SWP::UC_TokensFromSwpairString swpair))
+                (l:integer (length pool-tokens))
+                (Xp:[integer]
+                    (fold
+                        (lambda
+                            (acc:[integer] idx:integer)
+                            (ref-U|LST::UC_AppL
+                                acc
+                                (ref-DPTF::UR_Decimals (at idx pool-tokens))
+                            )
+                        )
+                        []
+                        (enumerate 0 (- l 1))
+                    )
+                )
+            )
+            Xp
+        )
+    )
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    (defun UR_Asymetric:bool ()
+        (at "asymmetric" (read SWP|Asymmetry SWP|INFO ["asymmetric"]))
+    )
+    (defun UR_Principals:[string] ()
+        (at "principals" (read SWP|Properties SWP|INFO ["principals"]))
+    )
+    (defun UR_PrimordialPool:string ()
+        (at "primordial-pool" (read SWP|Properties SWP|INFO ["primordial-pool"]))
+    )
+    (defun UR_LiquidBoost:bool ()
+        (at "liquid-boost" (read SWP|Properties SWP|INFO ["liquid-boost"]))
+    )
+    (defun UR_SpawnLimit:decimal ()
+        (at "spawn-limit" (read SWP|Properties SWP|INFO ["spawn-limit"]))
+    )
+    (defun UR_InactiveLimit:decimal ()
+        (at "inactive-limit" (read SWP|Properties SWP|INFO ["inactive-limit"]))
+    )
+    ;;
+    (defun UR_OwnerKonto:string (swpair:string)
+        (at "owner-konto" (read SWP|Pairs swpair ["owner-konto"]))
+    )
+    (defun UR_CanChangeOwner:bool (swpair:string)
+        (at "can-change-owner" (read SWP|Pairs swpair ["can-change-owner"]))
+    )
+    (defun UR_CanAdd:bool (swpair:string)
+        (at "can-add" (read SWP|Pairs swpair ["can-add"]))
+    )
+    (defun UR_CanSwap:bool (swpair:string)
+        (at "can-swap" (read SWP|Pairs swpair ["can-swap"]))
+    )
+    (defun UR_GenesisWeigths:[decimal] (swpair:string)
+        (at "genesis-weights" (read SWP|Pairs swpair ["genesis-weights"]))
+    )
+    (defun UR_Weigths:[decimal] (swpair:string)
+        (at "weights" (read SWP|Pairs swpair ["weights"]))
+    )
+    (defun UR_GenesisRatio:[object{SwapperV5.PoolTokens}] (swpair:string)
+        (at "genesis-ratio" (read SWP|Pairs swpair ["genesis-ratio"]))
+    )
+    (defun UR_PoolTokenObject:[object{SwapperV5.PoolTokens}] (swpair:string)
+        (at "pool-tokens" (read SWP|Pairs swpair ["pool-tokens"]))
+    )
+    (defun UR_TokenLP:string (swpair:string)
+        (at "token-lp" (read SWP|Pairs swpair ["token-lp"]))
+    )
+    (defun UR_FeeLP:decimal (swpair:string)
+        (at "fee-lp" (read SWP|Pairs swpair ["fee-lp"]))
+    )
+    (defun UR_FeeSP:decimal (swpair:string)
+        (at "fee-special" (read SWP|Pairs swpair ["fee-special"]))
+    )
+    (defun UR_FeeSPT:[object{SwapperV5.FeeSplit}] (swpair:string)
+        (at "fee-special-targets" (read SWP|Pairs swpair ["fee-special-targets"]))
+    )
+    (defun UR_FeeLock:bool (swpair:string)
+        (at "fee-lock" (read SWP|Pairs swpair ["fee-lock"]))
+    )
+    (defun UR_FeeUnlocks:integer (swpair:string)
+        (at "unlocks" (read SWP|Pairs swpair ["unlocks"]))
+    )
+    (defun UR_Amplifier:decimal (swpair:string)
+        (at "amplifier" (read SWP|Pairs swpair ["amplifier"]))
+    )
+    (defun UR_Primality:bool (swpair:string)
+        (at "primality" (read SWP|Pairs swpair ["primality"]))
+    )
+    (defun UR_IzFrozenLP:bool (swpair:string)
+        (at "frozen-lp" (read SWP|Pairs swpair ["frozen-lp"]))
+    )
+    (defun UR_IzSleepingLP:bool (swpair:string)
+        (at "sleeping-lp" (read SWP|Pairs swpair ["sleeping-lp"]))
+    )
+    (defun UR_StoaValue:decimal (swpair:string)
+        @doc "STOA pool ledger scalar. Same row existence semantics as other UR_* on SWP|Pairs: \
+            \ <read SWP|Pairs swpair …> fails if <swpair> is not a pool. Legacy V2 rows without \
+            \ stoa-value (narrow read returns {}) return 0.0 directly, computed fresh on every \
+            \ read — never persisted here. \
+            \ #50L fix: this used to backfill 0.0 into storage on first read as a migration \
+            \ artifact/optimization — a real ungated write as a side effect of a nominal UR_* \
+            \ read, at the caller's own gas expense. Confirmed safe to drop: traced every read \
+            \ of \"stoa-value\" anywhere in the codebase (including cross-module, AQP's FVT) — \
+            \ this function is the only one that ever reads the field directly, so nothing \
+            \ depends on it being physically present in storage. A real price update \
+            \ (<XE_UpdateStoaValue>) still writes the genuine value whenever one actually \
+            \ occurs; genesis pools already seed the field from day one, so this only ever \
+            \ applied to pre-V3 legacy rows anyway."
+        (let
+            (
+                (temp (read SWP|Pairs swpair ["stoa-value"]))
+            )
+            (if (= temp {}) 0.0 (at "stoa-value" temp))
+        )
+    )
+    (defun UR_Pools:[string] (pool-category:string)
+        (at "pools" (read SWP|Pools pool-category ["pools"]))
+    )
+    (defun UR_PoolTokens:[string] (swpair:string)
+        (UC_ExtractTokens (UR_PoolTokenObject swpair))
+    )
+    (defun UR_PoolTokenSupplies:[decimal] (swpair:string)
+        (UC_ExtractTokenSupplies (UR_PoolTokenObject swpair))
+    )
+    (defun UR_PoolGenesisSupplies:[decimal] (swpair:string)
+        (UC_ExtractTokenSupplies (UR_GenesisRatio swpair))
+    )
+    (defun URv_PoolTokenPosition:integer (swpair:string id:string)
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                ;;
+                (pool-tokens:[string] (UR_PoolTokens swpair))
+                (iz-on-pool:bool (contains id pool-tokens))
+            )
+            (enforce iz-on-pool (format "Token {} is not part of Pool {}" [id swpair]))
+            (at 0 (ref-U|LST::UC_Search pool-tokens id))
+        )
+    )
+    (defun UR_PoolTokenSupply:decimal (swpair:string id:string)
+        (at (URv_PoolTokenPosition swpair id) (UR_PoolTokenSupplies swpair))
+    )
+    (defun UR_PoolTokenPrecisions:[integer] (swpair:string)
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                ;;
+                (pool-tokens:[string] (UR_PoolTokens swpair))
+                (l:integer (length pool-tokens))
+                (Xp:[integer]
+                    (fold
+                        (lambda
+                            (acc:[integer] idx:integer)
+                            (ref-U|LST::UC_AppL
+                                acc
+                                (ref-DPTF::UR_Decimals (at idx pool-tokens))
+                            )
+                        )
+                        []
+                        (enumerate 0 (- l 1))
+                    )
+                )
+            )
+            Xp
+        )
+    )
+    (defun UR_SpecialFeeTargets:[string] (swpair:string)
+        (UC_CustomSpecialFeeTargets (UR_FeeSPT swpair))
+    )
+    (defun UR_SpecialFeeTargetsProportions:[decimal] (swpair:string)
+        (UC_CustomSpecialFeeTargetsProportions (UR_FeeSPT swpair))
+    )
+    (defun UR_GetLpSwpair:string (lp-id:string)
+        (at "swpair" (read SWP|LP lp-id ["swpair"]))
+    )
+    (defun URC_IsMajorPrincipal:bool (token:string)
+        @doc "True if <token> is currently a member of the primordial pool's own \
+            \ token list — the 'major principal' concept: fixed, always exactly \
+            \ OURO/WSTOA/SSTOA in practice (A_DefinePrimordialPool's own capability \
+            \ gate enforces exactly these 3 tokens, always, regardless of which \
+            \ physical pool backs it), never removable or rotatable-away via \
+            \ A_UpdatePrincipal/A_RotatePrincipal — as opposed to any other \
+            \ ('minor') principal, which both freely allow. Returns false (never \
+            \ major) if no primordial pool has been defined yet, or if <token> \
+            \ isn't currently a member of the one that has been — this doesn't \
+            \ require <token> to already be a registered principal at all, callers \
+            \ combine that check separately where it matters."
+        (let
+            (
+                (pp:string (UR_PrimordialPool))
+            )
+            (if (= pp BAR)
+                false
+                (contains token (UR_PoolTokens pp))
+            )
+        )
+    )
+    (defun URC_LpCapacity:decimal (swpair:string)
+        @doc "Computes the LP Capacity of a Given Swap Pair"
+        (let
+            (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+            )
+            (ref-DPTF::UR_Supply (UR_TokenLP swpair))
+        )
+    )
+    (defun URC_CheckID:bool (swpair:string)
+        (with-default-read SWP|Pairs swpair
+            { "unlocks" : -1 }
+            { "unlocks" := u }
+            (if (< u 0)
+                false
+                true
+            )
+        )
+    )
+    (defun URC_PoolTotalFee:decimal (swpair:string)
+        @doc "Computes Total Pool Fee in Promille"
+        (let
+            (
+                (lb:bool (UR_LiquidBoost))
+                (current-fee-lp:decimal (UR_FeeLP swpair))
+                (current-fee-special:decimal (UR_FeeSP swpair))
+                (tf1:decimal (+ current-fee-lp current-fee-special))
+                (tf2:decimal (+ (* current-fee-lp 2.0) current-fee-special))
+            )
+            (if lb
+                tf2
+                tf1
+            )
+        )
+    )
+    (defun URC_LiquidityFee:decimal (swpair:string)
+        (let
+            (
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
+                (n:decimal (dec (length (UR_PoolTokens swpair))))
+                (swap-fee:decimal (URC_PoolTotalFee swpair))
+            )
+            (floor (/ (* n swap-fee) (* 4.0 (- n 1.0))) (ref-U|CT::CT_FEE_PRECISION))
+        )
+    )
+    (defun URC_AllPoolTokens:[string] ()
+        @doc "Outputs all unique tokens existing across all Swap Pools"
+        (let
+            (
+                (ref-U|SWP:module{UtilitySwpV3} U|SWP)
+            )
+            (ref-U|SWP::UC_UniqueTokens (URC_Swpairs))
+        )
+    )
+    (defun URC_Swpairs:[string] ()
+        @doc "Outputs all current Existing Swpairs. Cheaper than <keys SWP|Pairs>"
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                (pl:[string] [P2 P3 P4 P5 P6 P7 S2 S3 S4 S5 S6 S7])
+                (fl:[[string]]
+                    (fold
+                        (lambda
+                            (acc:[[string]] idx:integer)
+                            (ref-U|LST::UC_AppL
+                                acc
+                                (UR_Pools (at idx pl))
+                            )
+                        )
+                        []
+                        (enumerate 0 (- (length pl) 1))
+                    )
+                )
+            )
+            (fold (+) [] (ref-U|LST::UC_RemoveItem fl [BAR]))
+        )
+    )
+    (defun URC_ActiveSwpairs:[string] ()
+        @doc "Outputs all current Existing Swpairs where <can-swap> = true. Used by \
+            \ routing (<SWPI::URC_Hopper>) so a disabled pool never enters the BFS \
+            \ graph as a hop candidate in the first place, instead of being picked \
+            \ by BFS and only rejected afterwards deep inside \
+            \ <SPWU|X>SMART-SWAP> with no fallback. Audit ref: #19H."
+        (filter (lambda (swpair:string) (UR_CanSwap swpair)) (URC_Swpairs))
+    )
+    (defun URC_LpComposer:[string] (pool-tokens:[object{SwapperV5.PoolTokens}] weights:[decimal] amp:decimal)
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                (ref-U|SWP:module{UtilitySwpV3} U|SWP)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (pool-token-ids:[string] (UC_ExtractTokens pool-tokens))
+                (l:integer (length pool-token-ids))
+                (pool-token-names:[string]
+                    (fold
+                        (lambda
+                            (acc:[string] idx:integer)
+                            (ref-U|LST::UC_AppL
+                                acc
+                                (ref-DPTF::UR_Name (at idx pool-token-ids))
+                            )
+                        )
+                        []
+                        (enumerate 0 (- l 1))
+                    )
+                )
+                (pool-token-tickers:[string]
+                    (fold
+                        (lambda
+                            (acc:[string] idx:integer)
+                            (ref-U|LST::UC_AppL
+                                acc
+                                (ref-DPTF::UR_Ticker (at idx pool-token-ids))
+                            )
+                        )
+                        []
+                        (enumerate 0 (- l 1))
+                    )
+                )
+            )
+            (ref-U|SWP::UC_LpID pool-token-names pool-token-tickers weights amp)
+        )
+    )
+    ;;
+    ;;  [URD]
+    ;;
+    ;;1]Returns a List of SWPPairs that are owned by a given Account for Management Purposes
+    (defun URH_OwnedSwapPairs:[string] (account:string)
+        @doc "Returns all SWPPairs that can be managed by the given <account>"
+        (map (at "id")
+            (select SWP|Pairs ["id"]
+                (where "owner-konto" (= account))
+            )
+        )
+    )
+    ;;
+    ;;[URCi] cost readers — single cost source per op. Enable*/ToggleAddOrSwap composers -> Phase 1.2.
+    (defun URCi_UpdatePendingBranding:object{IgnisCollectorV4.OutputCumulator} (entity-id:string)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+            )
+            (ref-IGNIS::UDC_BrandingCumulator (UR_OwnerKonto entity-id) 4.0)
+        )
+    )
+    (defun URCi_ChangeOwnership:object{IgnisCollectorV4.OutputCumulator} (swpair:string)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "SWP|C_ChangeOwnership" "auth")
+                (UR_OwnerKonto swpair) (ref-IGNIS::URC_IsVirtualGasZero) [])
+        )
+    )
+    (defun URCi_ModifyCanChangeOwner:object{IgnisCollectorV4.OutputCumulator} (swpair:string)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "SWP|C_ModifyCanChangeOwner" "auth")
+                (UR_OwnerKonto swpair) (ref-IGNIS::URC_IsVirtualGasZero) [])
+        )
+    )
+    (defun URCi_ModifyWeights:object{IgnisCollectorV4.OutputCumulator} (swpair:string)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "SWP|C_ModifyWeights" "fee")
+                (UR_OwnerKonto swpair) (ref-IGNIS::URC_IsVirtualGasZero) [])
+        )
+    )
+    (defun URCi_UpdateAmplifier:object{IgnisCollectorV4.OutputCumulator} (swpair:string)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "SWP|C_UpdateAmplifier" "fee")
+                (UR_OwnerKonto swpair) (ref-IGNIS::URC_IsVirtualGasZero) [])
+        )
+    )
+    (defun URCi_UpdateFee:object{IgnisCollectorV4.OutputCumulator} (swpair:string)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "SWP|C_UpdateFee" "fee")
+                (UR_OwnerKonto swpair) (ref-IGNIS::URC_IsVirtualGasZero) [])
+        )
+    )
+    (defun URCi_UpdateSpecialFeeTargets:object{IgnisCollectorV4.OutputCumulator} (swpair:string)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "SWP|C_UpdateSpecialFeeTargets" "fee")
+                (UR_OwnerKonto swpair) (ref-IGNIS::URC_IsVirtualGasZero) [])
+        )
+    )
+    (defun URCi_ToggleFeeLock:object{IgnisCollectorV4.OutputCumulator} (swpair:string toggle:bool)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (unlock-costs:[decimal] (if toggle [0.0 0.0] (ref-IGNIS::UC_FeeUnlockPrice)))
+                (gas-costs:decimal (+ (ref-IGNIS::UC_IgnisLeg "tier-small") (at 0 unlock-costs)))
+                (output:bool (> (at 1 unlock-costs) 0.0))
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator gas-costs (UR_OwnerKonto swpair) (ref-IGNIS::URC_IsVirtualGasZero) [output])
+        )
+    )
+    (defun URCi_ToggleFeeLockStoa:decimal (swpair:string toggle:bool)
+        @doc "STOA leg of a fee-lock toggle: locking is free, unlocking costs the fee-unlock \
+            \ price. Read-only twin of the <XI_ToggleFeeLock> return that <C_ToggleFeeLock> \
+            \ hands to <XE_CollectStoa>, so the INFO_ preview and the charge move as one. \
+            \ Mirrors DPTF's <URCi_ToggleFeeLockStoa>."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+            )
+            (if toggle 0.0 (at 1 (ref-IGNIS::UC_FeeUnlockPrice)))
+        )
+    )
+    (defun URCi_UpgradeBranding:decimal (months:integer)
+        (let
+            (
+                (ref-BRD:module{BrandingV3} BRD)
+            )
+            (ref-BRD::URCi_UpgradeBranding months)
+        )
+    )
+    (defun URCi_EnableFrozenLP:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string swpair:string)
+        @doc "Cost preview for C_EnableFrozenLP: if no frozen link exists yet, the VST \
+            \ create-frozen-link cost; otherwise the medium IGNIS price on the pool owner \
+            \ (output == existing link). Re-derived purely (XI_EnableFrozenLP is a free write)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-VST:module{VestingV3} VST)
+                (lp-id:string (UR_TokenLP swpair))
+                (current-frozen-link:string (ref-DPTF::UR_Frozen lp-id))
+            )
+            (if (= current-frozen-link BAR)
+                (ref-VST::URCi_CreateSpecialTrueFungibleLink lp-id)
+                (ref-IGNIS::UDC_ConstructOutputCumulator
+                    (ref-IGNIS::UC_IgnisLeg "tier-medium")
+                    (UR_OwnerKonto swpair)
+                    (ref-IGNIS::URC_IsVirtualGasZero)
+                    [current-frozen-link]
+                )
+            )
+        )
+    )
+    (defun URCi_EnableSleepingLP:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string swpair:string)
+        @doc "Cost preview for C_EnableSleepingLP: if no sleeping link exists yet, the VST \
+            \ create-sleeping-link (vzh-tag 2) cost; otherwise the medium IGNIS price on the \
+            \ pool owner (output == existing link). Re-derived purely."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-VST:module{VestingV3} VST)
+                (lp-id:string (UR_TokenLP swpair))
+                (current-sleeping-link:string (ref-DPTF::UR_Sleeping lp-id))
+            )
+            (if (= current-sleeping-link BAR)
+                (ref-VST::URCi_CreateSpecialOrtoFungibleLink lp-id 2)
+                (ref-IGNIS::UDC_ConstructOutputCumulator
+                    (ref-IGNIS::UC_IgnisLeg "tier-medium")
+                    (UR_OwnerKonto swpair)
+                    (ref-IGNIS::URC_IsVirtualGasZero)
+                    [current-sleeping-link]
+                )
+            )
+        )
+    )
+    (defun URCi_ToggleAddOrSwap:object{IgnisCollectorV4.OutputCumulator}
+        (swpair:string toggle:bool add-or-swap:bool)
+        @doc "Cost preview for C_ToggleAddOrSwap: the base 5x-biggest IGNIS price (ico0) plus, \
+            \ when enabling add-liquidity (toggle), the one-time LP burn/mint + per-pool-token \
+            \ fee-exemption role bootstrap that only bills for roles not already set (ico1). \
+            \ Role costs use DPTF's own toggle-role cumulators; XE_CanAddOrSwapToggle is a free \
+            \ write. Re-derived purely from the live role states."
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (biggest:decimal (ref-IGNIS::UC_IgnisLeg "tier-biggest"))
+                (price:decimal (* 5.0 biggest))
+                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                (ico0:object{IgnisCollectorV4.OutputCumulator}
+                    (ref-IGNIS::UDC_ConstructOutputCumulator price (UR_OwnerKonto swpair) trigger [])
+                )
+                (ico1:object{IgnisCollectorV4.OutputCumulator}
+                    (if toggle
+                        (let
+                            (
+                                (pt-ids:[string] (UR_PoolTokens swpair))
+                                (amp:decimal (UR_Amplifier swpair))
+                                (ptts:[string]
+                                    (if (= amp -1.0)
+                                        (drop 1 pt-ids)
+                                        pt-ids
+                                    )
+                                )
+                                (lp-id:string (UR_TokenLP swpair))
+                                (lp-burn-role:bool (ref-DPTF::UR_AccountRoleBurn lp-id SWP|SC_NAME))
+                                (lp-mint-role:bool (ref-DPTF::UR_AccountRoleMint lp-id SWP|SC_NAME))
+                                (ico2:object{IgnisCollectorV4.OutputCumulator}
+                                    (if (not lp-burn-role)
+                                        (ref-DPTF::URCi_ToggleBurnRole lp-id)
+                                        EOC
+                                    )
+                                )
+                                (ico3:object{IgnisCollectorV4.OutputCumulator}
+                                    (if (not lp-mint-role)
+                                        (ref-DPTF::URCi_ToggleMintRole lp-id)
+                                        EOC
+                                    )
+                                )
+                                (folded-obj:[object{IgnisCollectorV4.OutputCumulator}]
+                                    (fold
+                                        (lambda
+                                            (acc:[object{IgnisCollectorV4.OutputCumulator}] idx:integer)
+                                            (ref-U|LST::UC_AppL
+                                                acc
+                                                (if (not (ref-DPTF::UR_AccountRoleFeeExemption (at idx ptts) SWP|SC_NAME))
+                                                    (ref-DPTF::URCi_ToggleFeeExemptionRole (at idx ptts))
+                                                    EOC
+                                                )
+                                            )
+                                        )
+                                        []
+                                        (enumerate 0 (- (length ptts) 1))
+                                    )
+                                )
+                                (ico4:object{IgnisCollectorV4.OutputCumulator}
+                                    (ref-IGNIS::UDC_ConcatenateOutputCumulators folded-obj [])
+                                )
+                            )
+                            (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico2 ico3 ico4] [])
+                        )
+                        EOC
+                    )
+                )
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico0 ico1] [])
+        )
+    )
+    ;;{5.4}  Validate [UEV/CAP]
+    (defun UEV_FeeSplit (input:object{SwapperV5.FeeSplit})
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (tg:string (at "target" input))
+                (v:integer (at "value" input))
+            )
+            (ref-DALOS::UEV_EnforceAccountExists tg)
+            (enforce (and (>= v 1)(<= v 100000)) "Invalid Splitting Value in Split Object")
+        )
+    )
+    (defun UEV_id (swpair:string)
+        (with-default-read SWP|Pairs swpair
+            { "unlocks" : -1 }
+            { "unlocks" := u }
+            (enforce
+                (>= u 0)
+                (format "SWP-Pair {} does not exist." [swpair])
+            )
+        )
+    )
+    (defun UEV_CanChangeOwnerON (swpair:string)
+        (UEV_id swpair)
+        (let
+            (
+                (x:bool (UR_CanChangeOwner swpair))
+            )
+            (enforce (= x true) (format "SWP Pair {} ownership cannot be changed" [swpair]))
+        )
+    )
+    (defun UEV_AsymetricState (state:bool)
+        (let
+            (
+                (x:bool (UR_Asymetric))
+            )
+            (enforce (= x state) (format "Asymetric Liquidity must be set to {} for this operation" [state]))
+        )
+    )
+    (defun UEV_FeeLockState (swpair:string state:bool)
+        (let
+            (
+                (x:bool (UR_FeeLock swpair))
+            )
+            (enforce (= x state) (format "Fee-lock for SWP Pair {} must be set to {} for this operation" [swpair state]))
+        )
+    )
+    (defun UEV_PoolFee (fee:decimal)
+        @doc "Enforces <fee> is a valid pool fee amount. \
+            \ #53L fix: units are per-mille (parts per 1000) — the actual swap math \
+            \ (16_SWPI.pact's <fselp>/<ofs>) treats 1000.0 as the full-fee basis, so \
+            \ e.g. fee=10.0 means 1%. The 320.0 max (32%) is deliberate, not arbitrary: \
+            \ this same bound gates all three fee components a pool can carry — LP fee, \
+            \ special-target fee, and liquid-boost fee — mirrored to the identical cap, \
+            \ so their combined worst case is 320.0*3 = 960 promille, always leaving at \
+            \ least 40 promille (4%) of every swap that fees can never fully consume."
+        (let
+            (
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
+                (fee-prec:integer (ref-U|CT::CT_FEE_PRECISION))
+            )
+            (enforce
+                (= (floor fee fee-prec) fee)
+                (format "SWP Pool Fee amount of {} is invalid decimal wise" [fee])
+            )
+            (enforce (and (>= fee 0.0001) (<= fee 320.0)) (format "SWP Pool Fee amount of {} is invalid size wise" [fee]))
+        )
+    )
+    (defun UEV_New (t-ids:[string] w:[decimal] amp:decimal)
+        (let
+            (
+                (n:integer (length t-ids))
+                (SP3:[string] (if (= amp -1.0) (UR_Pools P3) (UR_Pools S3)))
+                (SP4:[string] (if (= amp -1.0) (UR_Pools P4) (UR_Pools S4)))
+                (SP5:[string] (if (= amp -1.0) (UR_Pools P5) (UR_Pools S5)))
+                (SP6:[string] (if (= amp -1.0) (UR_Pools P6) (UR_Pools S6)))
+                (SP7:[string] (if (= amp -1.0) (UR_Pools P7) (UR_Pools S7)))
+                (msg:string "Pool already exists for given Tokens!")
+            )
+            (cond
+                ((= n 2) (UEV_CheckTwo t-ids w amp))
+                ((= n 3) (enforce (not (UEV_CheckAgainstMass t-ids SP3)) msg))
+                ((= n 4) (enforce (not (UEV_CheckAgainstMass t-ids SP4)) msg))
+                ((= n 5) (enforce (not (UEV_CheckAgainstMass t-ids SP5)) msg))
+                ((= n 6) (enforce (not (UEV_CheckAgainstMass t-ids SP6)) msg))
+                ((= n 7) (enforce (not (UEV_CheckAgainstMass t-ids SP7)) msg))
+                true
+            )
+        )
+    )
+    (defun UEV_CheckTwo (token-ids:[string] w:[decimal] amp:decimal)
+        (let
+            (
+                (ref-U|SWP:module{UtilitySwpV3} U|SWP)
+                (e0:string (at 0 token-ids))
+                (e1:string (at 1 token-ids))
+                (swp1:string (ref-U|SWP::UC_PoolID token-ids w amp))
+                (swp2:string (ref-U|SWP::UC_PoolID [e1 e0] w amp))
+                (t1:bool (URC_CheckID swp1))
+                (t2:bool (URC_CheckID swp2))
+            )
+            (enforce (not t1) (format "Pair {} must not exist" [swp1]))
+            (enforce (not t2) (format "Pair {} must not exist" [swp2]))
+        )
+    )
+    (defun UEV_CheckAgainstMass:bool (token-ids:[string] present-pools:[string])
+        (let
+            (
+                (ref-U|SWP:module{UtilitySwpV3} U|SWP)
+            )
+            (fold
+                (lambda
+                    (acc:bool idx:integer)
+                    (or
+                        acc
+                        (UEV_CheckAgainst token-ids (ref-U|SWP::UC_TokensFromSwpairString (at idx present-pools)))
+                    )
+                )
+                false
+                (enumerate 0 (- (length present-pools) 1))
+            )
+        )
+    )
+    (defun UEV_CheckAgainst:bool (token-ids:[string] pool-tokens:[string])
+        (fold
+            (lambda
+                (acc:bool idx:integer)
+                (and acc (contains (at idx token-ids) pool-tokens))
+            )
+            true
+            (enumerate 0 (- (length token-ids) 1))
+        )
+    )
+    (defun UEV_FrozenLP (swpair:string state:bool)
+        (let
+            (
+                (frozen-lp:bool (UR_IzFrozenLP swpair))
+            )
+            (enforce (= state frozen-lp) (format "Swpair {} must have its Frozen-LP set to {} for this operation" [swpair state]))
+        )
+    )
+    (defun UEV_SleepingLP (swpair:string state:bool)
+        (let
+            (
+                (sleeping-lp:bool (UR_IzSleepingLP swpair))
+            )
+            (enforce (= state sleeping-lp) (format "Swpair {} must have its Sleeping-LP set to {} for this operation" [swpair state]))
+        )
+    )
+    (defun CAP_Owner (swpair:string)
+        @doc "Enforces SWPair Ownership"
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership (UR_OwnerKonto swpair))
+        )
+    )
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          SWP|S>WEIGHTS
+    (defun XB_ModifyWeights (swpair:string new-weights:[decimal])
+        (P|UEV_IMC)
+        (with-capability (SWP|S>WEIGHTS swpair new-weights)
+            (update SWP|Pairs swpair
+                {"weights"  : new-weights}
+            )
+        )
+    )
+    ;;
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          SWP|S>UPDATE-SUPPLIES
+    (defun XE_UpdateSupplies (swpair:string new-supplies:[decimal])
+        (P|UEV_IMC)
+        (with-capability (SWP|S>UPDATE-SUPPLIES swpair new-supplies)
+            (let
+                (
+                    (pool-tokens:[string] (UR_PoolTokens swpair))
+                    (new-pool-tokens:[object{SwapperV5.PoolTokens}]
+                        (zip (lambda (x:string y:decimal) { "token-id": x, "token-supply": y }) pool-tokens new-supplies)
+                    )
+                )
+                (update SWP|Pairs swpair
+                    {"pool-tokens" : new-pool-tokens}
+                )
+            )
+        )
+    )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
+    (defun XE_UpdateSupply (swpair:string id:string new-supply:decimal)
+        (P|UEV_IMC)
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                (current-pool-tokens:[object{SwapperV5.PoolTokens}] (UR_PoolTokenObject swpair))
+                (id-pos:integer (URv_PoolTokenPosition swpair id))
+                (new:object{SwapperV5.PoolTokens} { "token-id" : id, "token-supply" : new-supply})
+                (new-pool-tokens:[object{SwapperV5.PoolTokens}] (ref-U|LST::UC_ReplaceAt current-pool-tokens id-pos new))
+            )
+            (with-capability (SWP|S>UPDATE-SUPPLY swpair id new-supply)
+                (update SWP|Pairs swpair
+                    {"pool-tokens" : new-pool-tokens}
+                )
+            )
+        )
+    )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
+    (defun XE_UpdateStoaValue (swpair:string new-stoa-value:decimal)
+        @doc "Forward writer: sets stoa-value on SWP|Pairs. Requires P|UEV_IMC; pool row must exist (UEV_id)."
+        (P|UEV_IMC)
+        (update SWP|Pairs swpair
+            {"stoa-value" : new-stoa-value}
+        )
+    )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
+    (defun XE_Issue:string (account:string pool-tokens:[object{SwapperV5.PoolTokens}] token-lp:string fee-lp:decimal weights:[decimal] amp:decimal p:bool)
+        @doc "Forward writer: inserts the new SWP|Pairs row, registers the LP tracker \
+            \ (C9 fix), saves the pool, and deploys token accounts. \
+            \ #52L fix (R4): returns the newly-constructed <swpair> ID — callers \
+            \ (e.g. SWPI::C_Issue, MTX-SWP::MTX|C_Issue) need it back to finish \
+            \ building their own response/continue the issuance flow."
+        (P|UEV_IMC)
+        (let
+            (
+                (ref-U|SWP:module{UtilitySwpV3} U|SWP)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (n:integer (length pool-tokens))
+                (what:bool (if (= amp -1.0) true false))
+                (pool-token-ids:[string] (UC_ExtractTokens pool-tokens))
+                (swpair:string (ref-U|SWP::UC_PoolID pool-token-ids weights amp))
+                (ptte:[string]
+                    (if (= amp -1.0)
+                        (drop 1 pool-token-ids)
+                        pool-token-ids
+                    )
+                )
+            )
+            (insert SWP|Pairs swpair
+                {"id"                   : swpair
+                ,"owner-konto"          : account
+                ,"can-change-owner"     : true
+                ,"can-add"              : false
+                ,"can-swap"             : false
+
+                ,"genesis-weights"      : weights
+                ,"weights"              : weights
+                ,"genesis-ratio"        : pool-tokens
+                ,"pool-tokens"          : pool-tokens
+                ,"token-lp"             : token-lp
+
+                ,"fee-lp"               : fee-lp
+                ,"fee-special"          : 0.0
+                ,"fee-special-targets"  : [SWP|EMPTY-TARGET]
+                ,"fee-lock"             : false
+                ,"unlocks"              : 0
+
+                ,"amplifier"            : amp
+                ,"primality"            : p
+                ,"frozen-lp"            : false
+                ,"sleeping-lp"          : false
+                ,"stoa-value"           : 0.0
+                }
+            )
+            ;;C9 fix: SWP|LP must be populated by EVERY issuance path. Folded here (both <token-lp> and
+            ;;<swpair> are already in scope) instead of leaving it a standalone call each caller must
+            ;;remember — 16_SWPI.pact::C_Issue did remember; 20_MTX-SWP.pact::MTX|C_Issue (the defpact
+            ;;path, which also calls XE_Issue) never did, so every pool issued through it had an LP token
+            ;;that could never be resolved back to its swpair (UR_GetLpSwpair hard-aborts on the missing
+            ;;row), permanently blocking AQP LP-stake admission for that pool.
+            (XE_AddLPTracker token-lp swpair)
+            (with-capability (P|SECURE-CALLER)
+                (XI_SavePool n what swpair)
+                (ref-DPTF::XBv_DeployAccount token-lp account)
+                (map
+                    (lambda
+                        (id:string)
+                        (ref-DPTF::XBv_DeployAccount id SWP|SC_NAME)
+                    )
+                    ptte
+                )
+                swpair
+            )
+        )
+    )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
+    (defun XE_CanAddOrSwapToggle (swpair:string toggle:bool add-or-swap:bool)
+        @doc "#55L fix: removed a redundant second guard check that used to sit here — \
+            \ it re-ran UEV_Any against [local-guard] + (P|UR_IMP), the exact same list \
+            \ P|UEV_IMC (above) already checked, plus one extra local guard. Since P|UEV_IMC \
+            \ is a bare statement (not wrapped in try) and aborts the whole tx on \
+            \ failure, reaching this point already proves (P|UR_IMP) alone contains a \
+            \ passing guard — adding local-guard to an already-guaranteed-passing OR-set \
+            \ can never change the outcome. Pure dead weight, safely removed."
+        (P|UEV_IMC)
+        (if add-or-swap
+            (update SWP|Pairs swpair
+                {"can-add"                      : toggle}
+            )
+            (update SWP|Pairs swpair
+                {"can-swap"                     : toggle}
+            )
+        )
+    )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
+    (defun XE_AddLPTracker (lp-id:string swpair:string)
+        (P|UEV_IMC)
+        (insert SWP|LP lp-id
+            {"swpair"                           : swpair}
+        )
+    )
+    ;;
+    ;;Protection: Class 3 — Custom: SWP|S>RT_OWN
+    (defun XI_ChangeOwnership (swpair:string new-owner:string)
+        (require-capability (SWP|S>RT_OWN swpair new-owner))
+        (update SWP|Pairs swpair
+            {"owner-konto"                      : new-owner}
+        )
+    )
+    ;;Protection: Class 2 — SECURE
+    (defun XI_IncrementFeeUnlocks (swpair:string)
+        (require-capability (SECURE))
+        (with-read SWP|Pairs swpair
+            { "unlocks" := u }
+            (update SWP|Pairs swpair
+                {"unlocks" : (+ u 1)}
+            )
+        )
+    )
+    ;;Protection: Class 3 — Custom: SWP|S>RT_CAN-CHANGE
+    (defun XI_ModifyCanChangeOwner (swpair:string new-boolean:bool)
+        (require-capability (SWP|S>RT_CAN-CHANGE swpair new-boolean))
+        (update SWP|Pairs swpair
+            {"can-change-owner"                 : new-boolean}
+        )
+    )
+    ;;Protection: Class 2 — SECURE
+    (defun XI_SavePool (n:integer what:bool swpair:string)
+        (require-capability (SECURE))
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                (vars
+                    (cond
+                        ((= n 2) (if what [(UR_Pools P2) P2] [(UR_Pools S2) S2]))
+                        ((= n 3) (if what [(UR_Pools P3) P3] [(UR_Pools S3) S3]))
+                        ((= n 4) (if what [(UR_Pools P4) P4] [(UR_Pools S4) S4]))
+                        ((= n 5) (if what [(UR_Pools P5) P5] [(UR_Pools S5) S5]))
+                        ((= n 6) (if what [(UR_Pools P6) P6] [(UR_Pools S6) S6]))
+                        ((= n 7) (if what [(UR_Pools P7) P7] [(UR_Pools S7) S7]))
+                        true
+                    )
+                )
+                (sp-n:[string] (at 0 vars))
+                (SPN:string (at 1 vars))
+            )
+            (if (= sp-n [BAR])
+                (update SWP|Pools SPN
+                    {"pools" : [swpair]}
+                )
+                (update SWP|Pools SPN
+                    {"pools" : (ref-U|LST::UC_AppL sp-n swpair)}
+                )
+            )
+        )
+    )
+    ;;Protection: Class 3 — Custom: SWP|C>TG_FEE-LOCK
+    (defun XI_ToggleFeeLock:[decimal] (swpair:string toggle:bool)
+        @doc "Writes the new fee-lock state. \
+            \ #52L fix (R4): returns [virtual-gas-cost(IGNIS) native-gas-cost(STOA)] — \
+            \ [0.0 0.0] when locking (toggle=true, free); the unlock price when unlocking \
+            \ (toggle=false). The caller (C_ToggleFeeLock) bills this back to the patron. \
+            \ NOT scaled by <UR_FeeUnlocks>: the escalating ladder was retired 2026-09-06 for \
+            \ a FLAT IGNIS::UC_FeeUnlockPrice, and this doc described the dead model."
+        (require-capability (SWP|C>TG_FEE-LOCK swpair toggle))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+            )
+            (update SWP|Pairs swpair
+                { "fee-lock" : toggle}
+            )
+            (if (= toggle true)
+                [0.0 0.0]
+                (ref-IGNIS::UC_FeeUnlockPrice)
+            )
+        )
+    )
+    ;;Protection: Class 3 — Custom: SWP|S>UPDATE-AMPLIFIER
+    (defun XI_UpdateAmplifier (swpair:string new-amplifier:decimal)
+        (with-capability (SWP|S>UPDATE-AMPLIFIER swpair new-amplifier)
+            (update SWP|Pairs swpair
+                {"amplifier" : new-amplifier}
+            )
+        )
+    )
+    ;;Protection: Class 3 — Custom: SWP|S>UPDATE-FEE
+    (defun XI_UpdateFee (swpair:string new-fee:decimal lp-or-special:bool)
+        (require-capability (SWP|S>UPDATE-FEE swpair new-fee))
+        (if lp-or-special
+            (update SWP|Pairs swpair
+                {"fee-lp"                         : new-fee}
+            )
+            (update SWP|Pairs swpair
+                {"fee-special"                    : new-fee}
+            )
+        )
+    )
+    ;;Protection: Class 3 — Custom: SPW|S>UPDATE_SPECIAL-FEE-TARGETS
+    (defun XI_UpdateSpecialFeeTargets (swpair:string targets:[object{SwapperV5.FeeSplit}])
+        (require-capability (SPW|S>UPDATE_SPECIAL-FEE-TARGETS swpair targets))
+        (update SWP|Pairs swpair
+            {"fee-special-targets"                : targets}
+        )
+    )
+    ;;Protection: Class 3 — Custom: SWP|C>ENABLE-FROZEN
+    (defun XI_EnableFrozenLP (swpair:string)
+        (require-capability (SWP|C>ENABLE-FROZEN swpair))
+        (update SWP|Pairs swpair
+            {"frozen-lp"    : true}
+        )
+    )
+    ;;Protection: Class 3 — Custom: SWP|C>ENABLE-SLEEPING
+    (defun XI_EnableSleepingLP (swpair:string)
+        (require-capability (SWP|C>ENABLE-SLEEPING swpair))
+        (update SWP|Pairs swpair
+            {"sleeping-lp"    : true}
+        )
+    )
+    ;;{5.7}  User [A/C]
+    ;;
+    (defun A_UpdatePrincipal (patron:string executor:string principal:string add-or-remove:bool)
+        @doc "Adds <principal> (while under the 7 maximum) or removes it (while at \
+            \ least 2 would remain defined, AND <principal> isn't currently a \
+            \ 'major' principal — #65eL, URC_IsMajorPrincipal). SWPT's storage is \
+            \ principal-agnostic (#21H), so removal of a minor principal is safe \
+            \ — it only affects future SWPI::UEV_Issue principal-anchoring \
+            \ validation, never existing routing. Major principals (currently a \
+            \ member of the primordial pool — always OURO/WSTOA/SSTOA in practice) are \
+            \ never removable here regardless of the floor; retiring one requires \
+            \ redefining the primordial pool itself (SWP|A_DefinePrimordialPool). \
+            \ A_RotatePrincipal remains available as an atomic, count-preserving \
+            \ alternative for minor principals — it never touches the floor or \
+            \ cap, but is equally blocked from rotating a major principal away."
+        (P|UEV_IMC)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership executor)
+        )
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+            )
+            (with-read SWP|Properties SWP|INFO
+                { "principals" := pp }
+                (with-capability (SWP|C>PRINCIPAL principal add-or-remove)
+                    (if add-or-remove
+                        (if (= pp [BAR])
+                            (update SWP|Properties SWP|INFO
+                                {"principals" : [principal]}
+                            )
+                            (update SWP|Properties SWP|INFO
+                                {"principals" : (ref-U|LST::UC_AppL pp principal)}
+                            )
+                        )
+                        (let
+                            (
+                                (pp-position:integer (at 0 (ref-U|LST::UC_Search pp principal)))
+                            )
+                            (update SWP|Properties SWP|INFO
+                                {"principals" : (ref-U|LST::UC_RemoveItem pp (at pp-position pp))}
+                            )
+                        )
+                    )
+                )
+            )
+        )
+    )
+    (defun A_RotatePrincipal (patron:string executor:string old:string new:string)
+        @doc "Atomically replaces principal <old> with <new> in one call — the \
+            \ count-preserving alternative to a separate remove-then-add via \
+            \ A_UpdatePrincipal (Fix #14/#21H second follow-up re-allowed standalone \
+            \ removal, floor-gated at 2 remaining; this doc previously claimed \
+            \ removal was disabled entirely, stale since that fix — #65dL). Never \
+            \ interacts with the 7-principal cap either way. Safe with respect to \
+            \ SWPT's routing graph (#21H fix) — SWPT's storage is principal-agnostic, \
+            \ so rotating (or removing) a MINOR principal never orphans anything \
+            \ there; the only effect is on future SWPI::UEV_Issue principal- \
+            \ anchoring validation. <old> being a 'major' principal (currently a \
+            \ member of the primordial pool — always OURO/WSTOA/SSTOA in practice) is \
+            \ rejected outright regardless of everything else (#65eL, \
+            \ URC_IsMajorPrincipal) — majors are fixed, retirable only by \
+            \ redefining the primordial pool itself (SWP|A_DefinePrimordialPool)."
+        (P|UEV_IMC)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership executor)
+        )
+        (with-read SWP|Properties SWP|INFO
+            { "principals" := pp }
+            (with-capability (SWP|C>ROTATE-PRINCIPAL old new)
+                (let
+                    (
+                        (ref-U|LST:module{StringProcessorV2} U|LST)
+                        (pos:integer (at 0 (ref-U|LST::UC_Search pp old)))
+                    )
+                    (update SWP|Properties SWP|INFO
+                        {"principals" : (ref-U|LST::UC_ReplaceAt pp pos new)}
+                    )
+                )
+            )
+        )
+    )
+    (defun A_UpdateLimit (patron:string executor:string limit:decimal spawn:bool)
+        (P|UEV_IMC)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership executor)
+        )
+        (with-capability (SWP|C>LIMIT)
+            (if spawn
+                (update SWP|Properties SWP|INFO
+                    {"spawn-limit" : limit}
+                )
+                (update SWP|Properties SWP|INFO
+                    {"inactive-limit" : limit}
+                )
+            )
+        )
+    )
+    (defun A_UpdateLiquidBoost (patron:string executor:string new-boost-variable:bool)
+        (P|UEV_IMC)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership executor)
+        )
+        (with-capability (SWP|C>LQBOOST new-boost-variable)
+            (update SWP|Properties SWP|INFO
+                {"liquid-boost" : new-boost-variable}
+            )
+        )
+    )
+    (defun A_DefinePrimordialPool (patron:string executor:string primordial-pool:string)
+        (P|UEV_IMC)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership executor)
+        )
+        (with-capability (SWP|C>DEFINE-PRIMORDIAL-POOL primordial-pool)
+            (update SWP|Properties SWP|INFO
+                {"primordial-pool" : primordial-pool}
+            )
+        )
+    )
+    (defun A_ToggleAsymetricLiquidityAddition (patron:string executor:string toggle:bool)
+        (P|UEV_IMC)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership executor)
+        )
+        (with-capability (SWP|C>TG-ASYMETRIC-LQ toggle)
+            (let
+                (
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                    ;;
+                    (ignis-id:string (ref-DALOS::UR_IgnisID))
+                    (ouro-id:string (ref-DALOS::UR_OuroborosID))
+                    (vst-sc:string (ref-DALOS::GOV|VST|SC_NAME))
+                    ;;
+                    (ignis-burn-role:bool (ref-DPTF::UR_AccountRoleBurn ignis-id SWP|SC_NAME))
+                    (ouro-mint-role:bool (ref-DPTF::UR_AccountRoleMint ouro-id SWP|SC_NAME))
+                    (ignis-fee-exemption-role:bool (ref-DPTF::UR_AccountRoleFeeExemption ignis-id SWP|SC_NAME))
+                    (ignis-fee-exemption-roleV2:bool (ref-DPTF::UR_AccountRoleFeeExemption ignis-id vst-sc))
+                )
+                (if (not ignis-burn-role)
+                    (ref-DPTF::C_ToggleBurnRole patron (ref-DPTF::UR_Konto ignis-id) SWP|SC_NAME ignis-id true)
+                    true
+                )
+                (if (not ouro-mint-role)
+                    (ref-DPTF::C_ToggleMintRole patron (ref-DPTF::UR_Konto ouro-id) SWP|SC_NAME ouro-id true)
+                    true
+                )
+                (if (not ignis-fee-exemption-role)
+                    (ref-DPTF::C_ToggleFeeExemptionRole patron (ref-DPTF::UR_Konto ignis-id) SWP|SC_NAME ignis-id true)
+                    true
+                )
+                ;;BUG FIX 2026-09-21 (found during the executor sweep, by a subagent reading
+                ;;this block for its patron/executor slots). This guard read
+                ;;<ignis-fee-exemption-role> -- the exemption of SWP|SC_NAME -- while the call it
+                ;;guards grants the exemption to <vst-sc>. The correctly-named binding for that,
+                ;;<ignis-fee-exemption-roleV2>, was declared four lines up and NEVER READ, which
+                ;;is what gave the typo away: a dead `let` binding beside a repeated one is a
+                ;;copy-paste that lost its edit.
+                ;;
+                ;;It is not cosmetic, because DPTF|C>X_TOGGLE-FEE-EXEMPTION-ROLE enforces
+                ;;<UEV_AccountFeeExemptionState id account (not toggle)> -- granting a role an
+                ;;account ALREADY holds ABORTS. So whenever the two accounts diverge:
+                ;;  * SWP exempt, VST not  -> this block is skipped and VST silently never gets
+                ;;    its exemption, paying IGNIS fees it is meant to be exempt from;
+                ;;  * SWP not exempt, VST exempt -> this block RUNS against an account that
+                ;;    already holds the role, the enforce fires, and the whole entrypoint becomes
+                ;;    UNCALLABLE -- asymmetric liquidity addition can never be toggled again.
+                ;;They do not diverge on a fresh chain (the first call finds both false and grants
+                ;;both), which is exactly why no test caught it. Pinned by <<SWP-G28>>.
+                (if (not ignis-fee-exemption-roleV2)
+                    (ref-DPTF::C_ToggleFeeExemptionRole patron (ref-DPTF::UR_Konto ignis-id) vst-sc ignis-id true)
+                    true
+                )
+                (update SWP|Asymmetry SWP|INFO
+                    {"asymmetric" : toggle}
+                )
+            )
+        )
+    )
+    (defun UEV_ExecutorIsOwnerKonto (executor:string entity-id:string)
+        @doc "BINDS <executor> to <entity-id>'s owner. Ownership is proven INDIRECTLY by the \
+            \ branding capability; this supplies the other half -- that the account the caller \
+            \ NAMED is that owner. (patron/executor canon 2.2, indirect route named.)"
+        (enforce (= executor (UR_OwnerKonto entity-id)) "Executor is not the Entity Owner")
+    )
+    (defun C_UpdatePendingBranding:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV3.SocialSchema}])
+        @doc "Updates <entity-id>'s pending branding. <executor> is bound to the entity OWNER; \
+            \ ownership itself is proven by SWP|C>UPDATE-BRD. The binding is what keeps the \
+            \ parameter from being a name nobody reads."
+        (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor entity-id)
+        (let
+            (
+                (ref-BRD:module{BrandingV3} BRD)
+            )
+            (with-capability (SWP|C>UPDATE-BRD entity-id)
+                (ref-BRD::XE_UpdatePendingBranding entity-id logo description website social)
+                (URCi_UpdatePendingBranding entity-id)
+            )
+        )
+    )
+    (defun C_UpgradeBranding (patron:string executor:string entity-id:string months:integer)
+        (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor entity-id)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-BRD:module{BrandingV3} BRD)
+            )
+            ;;Perform the branding upgrade (side effect); bill the STOA via the URCi (== XE_UpgradeBranding's price)
+            (with-capability (SWP|C>UPGRADE-BRD entity-id)
+                (ref-BRD::XE_UpgradeBranding entity-id executor months)
+            )
+            (ref-IGNIS::XB_CollectStoaWithTrigger patron (URCi_UpgradeBranding months) false)
+        )
+    )
+    ;;
+    (defun C_ChangeOwnership:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string executee:string swpair:string)
+        (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor swpair)
+        (with-capability (SWP|S>RT_OWN swpair executee)
+            (XI_ChangeOwnership swpair executee)
+            (URCi_ChangeOwnership swpair)
+        )
+    )
+    (defun C_EnableFrozenLP:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string swpair:string)
+        (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor swpair)
+        (with-capability (SWP|C>ENABLE-FROZEN swpair)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                    (ref-VST:module{VestingV3} VST)
+                    (lp-id:string (UR_TokenLP swpair))
+                    (current-frozen-link:string (ref-DPTF::UR_Frozen lp-id))
+                )
+                (XI_EnableFrozenLP swpair)
+                (if (= current-frozen-link BAR)
+                    ;;RESOLVED AT 15_SWP'S OWN TURN (2026-09-21) -- and the resolution is that
+                    ;;this expression STAYS. The slot was registered PROVISIONAL on the assumption
+                    ;;that SWP's own `executor` would replace it. It must not: SWP's executor is
+                    ;;the POOL owner (UR_OwnerKonto swpair), and VST's binder enforces
+                    ;;executor == (UR_Konto lp-id), the LP TOKEN's owner, which is a SMART
+                    ;;account. Threading the new parameter here would reintroduce exactly the
+                    ;;refusal the twin below records. A provisional slot can clear by being
+                    ;;CONFIRMED, not only by being re-pointed.
+                    (ref-VST::C_CreateFrozenLink patron (ref-DPTF::UR_Konto lp-id) lp-id)
+                    (ref-IGNIS::UDC_ConstructOutputCumulator
+                        (ref-IGNIS::UC_IgnisLeg "tier-medium")
+                        (UR_OwnerKonto swpair)
+                        (ref-IGNIS::URC_IsVirtualGasZero)
+                        [current-frozen-link]
+                    )
+                )
+            )
+        )
+    )
+    (defun C_EnableSleepingLP:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string swpair:string)
+        (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor swpair)
+        (with-capability (SWP|C>ENABLE-SLEEPING swpair)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                    (ref-VST:module{VestingV3} VST)
+                    (lp-id:string (UR_TokenLP swpair))
+                    (current-sleeping-link:string (ref-DPTF::UR_Sleeping lp-id))
+                )
+                (XI_EnableSleepingLP swpair)
+                (if (= current-sleeping-link BAR)
+                    ;;RESOLVED AT 15_SWP'S OWN TURN (2026-09-21): this expression STAYS, and the
+                    ;;module now HAS an `executor` that must NOT be threaded here. The rule is to
+                    ;;pass the account that actually INITIATES, never a placeholder: that is the
+                    ;;LP TOKEN's owner. NOT the pool owner -- that was the first guess and the
+                    ;;suite refused it with "Executor is not the Token Owner": VST's binder
+                    ;;enforces executor == (UR_Konto lp-id), and an LP token is held by a SMART
+                    ;;account while the swpair's owner-konto is the human. Exactly the handoff's
+                    ;;"executor = patron is not a safe default" warning, one level along.
+                    ;;Re-pointed at 15_SWP's turn; listed in AUDIT-V2-DELTA.
+                    (ref-VST::C_CreateSleepingLink patron (ref-DPTF::UR_Konto lp-id) lp-id)
+                    (ref-IGNIS::UDC_ConstructOutputCumulator
+                        (ref-IGNIS::UC_IgnisLeg "tier-medium")
+                        (UR_OwnerKonto swpair)
+                        (ref-IGNIS::URC_IsVirtualGasZero)
+                        [current-sleeping-link]
+                    )
+                )
+            )
+        )
+    )
+    (defun C_ModifyCanChangeOwner:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string swpair:string new-boolean:bool)
+        (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor swpair)
+        (with-capability (SWP|S>RT_CAN-CHANGE swpair new-boolean)
+            (XI_ModifyCanChangeOwner swpair new-boolean)
+            (URCi_ModifyCanChangeOwner swpair)
+        )
+    )
+    (defun C_ModifyWeights:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string swpair:string new-weights:[decimal])
+        (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor swpair)
+        (with-capability (SECURE)
+            (XB_ModifyWeights swpair new-weights)
+            (URCi_ModifyWeights swpair)
+        )
+    )
+    (defun C_ToggleAddOrSwap:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string swpair:string toggle:bool add-or-swap:bool)
+        @doc "#71L: called directly (cross-module C_->C_) by SWPU::C_ToggleSwapCapability and \
+            \ SWPLC::C_ToggleAddLiquidity, instead of through an XE_* forward entrypoint — \
+            \ intentional, DESIGN-accepted, not an oversight. This function is not a plain \
+            \ toggle write: it bills real IGNIS (ico0), bootstraps LP burn/mint/fee-exemption \
+            \ roles the first time add-liquidity is enabled (ico1-ico4), and — critically — is \
+            \ the ONLY place in this call chain that enforces pool ownership, via \
+            \ SWP|C>ADD-OR-SWAP's composed CAP_Owner. The existing XE_CanAddOrSwapToggle does \
+            \ none of that (only P|UEV_IMC + a raw update, no ownership check) and would need to \
+            \ replicate all of the above to be a safe drop-in replacement for either caller — \
+            \ neither SWPU::SPWU|C>TOGGLE-SWAP nor SWPLC::P|SWPLC|CALLER re-derives ownership \
+            \ independently, so rerouting through the bare XE_* today would silently strip \
+            \ authorization. Left as-is; a properly-capped XE_* replacement is real design work, \
+            \ not a mechanical rename — deferred, not attempted here."
+        (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor swpair)
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (biggest:decimal (ref-IGNIS::UC_IgnisLeg "tier-biggest"))
+                (price:decimal (* 5.0 biggest))
+                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                (ico0:object{IgnisCollectorV4.OutputCumulator}
+                    (ref-IGNIS::UDC_ConstructOutputCumulator price (UR_OwnerKonto swpair) trigger [])
+                )
+                (ico1:object{IgnisCollectorV4.OutputCumulator}
+                    (with-capability (P|GOVERNING-CALLER)
+                        (if toggle
+                            (let
+                                (
+                                    (pt-ids:[string] (UR_PoolTokens swpair))
+                                    (amp:decimal (UR_Amplifier swpair))
+                                    (ptts:[string]
+                                        (if (= amp -1.0)
+                                            (drop 1 pt-ids)
+                                            pt-ids
+                                        )
+                                    )
+                                    (lp-id:string (UR_TokenLP swpair))
+                                    (lp-burn-role:bool (ref-DPTF::UR_AccountRoleBurn lp-id SWP|SC_NAME))
+                                    (lp-mint-role:bool (ref-DPTF::UR_AccountRoleMint lp-id SWP|SC_NAME))
+                                    (ico2:object{IgnisCollectorV4.OutputCumulator}
+                                        (if (not lp-burn-role)
+                                            (ref-DPTF::C_ToggleBurnRole patron (ref-DPTF::UR_Konto lp-id) SWP|SC_NAME lp-id true)
+                                            EOC
+                                        )
+                                    )
+                                    (ico3:object{IgnisCollectorV4.OutputCumulator}
+                                        (if (not lp-mint-role)
+                                            (ref-DPTF::C_ToggleMintRole patron (ref-DPTF::UR_Konto lp-id) SWP|SC_NAME lp-id true)
+                                            EOC
+                                        )
+                                    )
+                                    (folded-obj:[object{IgnisCollectorV4.OutputCumulator}]
+                                        (fold
+                                            (lambda
+                                                (acc:[object{IgnisCollectorV4.OutputCumulator}] idx:integer)
+                                                (ref-U|LST::UC_AppL
+                                                    acc
+                                                    (if (not (ref-DPTF::UR_AccountRoleFeeExemption (at idx ptts) SWP|SC_NAME))
+                                                        (ref-DPTF::C_ToggleFeeExemptionRole patron (ref-DPTF::UR_Konto (at idx ptts)) SWP|SC_NAME (at idx ptts) true)
+                                                        EOC
+                                                    )
+                                                )
+                                            )
+                                            []
+                                            (enumerate 0 (- (length ptts) 1))
+                                        )
+                                    )
+                                    (ico4:object{IgnisCollectorV4.OutputCumulator}
+                                        (ref-IGNIS::UDC_ConcatenateOutputCumulators folded-obj [])
+                                    )
+                                )
+                                (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico2 ico3 ico4] [])
+                            )
+                            EOC
+                        )
+                    )
+                )
+            )
+            (with-capability (SWP|C>ADD-OR-SWAP swpair toggle add-or-swap)
+                (XE_CanAddOrSwapToggle swpair toggle add-or-swap)
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico0 ico1] [])
+        )
+    )
+    (defun C_ToggleFeeLock:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string swpair:string toggle:bool)
+        (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor swpair)
+        (with-capability (SWP|C>TG_FEE-LOCK swpair toggle)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (toggle-costs:[decimal] (XI_ToggleFeeLock swpair toggle))
+                    (stoa-costs:decimal (at 1 toggle-costs))
+                    ;;URCi computed HERE — reads fee-unlocks BEFORE XI_IncrementFeeUnlocks below mutates it
+                    (cumulator:object{IgnisCollectorV4.OutputCumulator} (URCi_ToggleFeeLock swpair toggle))
+                )
+                (if (> stoa-costs 0.0)
+                    (do
+                        (XI_IncrementFeeUnlocks swpair)
+                        (ref-IGNIS::XE_CollectStoa patron stoa-costs)
+                    )
+                    true
+                )
+                cumulator
+            )
+        )
+    )
+    (defun C_UpdateAmplifier:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string swpair:string amp:decimal)
+        (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor swpair)
+        (with-capability (SWP|S>UPDATE-AMPLIFIER swpair amp)
+            (XI_UpdateAmplifier swpair amp)
+            (URCi_UpdateAmplifier swpair)
+        )
+    )
+    (defun C_UpdateFee:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string swpair:string new-fee:decimal lp-or-special:bool)
+        (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor swpair)
+        (with-capability (SWP|S>UPDATE-FEE swpair new-fee)
+            (XI_UpdateFee swpair new-fee lp-or-special)
+            (URCi_UpdateFee swpair)
+        )
+    )
+    (defun C_UpdateSpecialFeeTargets:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string swpair:string targets:[object{SwapperV5.FeeSplit}])
+        (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor swpair)
+        (with-capability (SPW|S>UPDATE_SPECIAL-FEE-TARGETS swpair targets)
+            (XI_UpdateSpecialFeeTargets swpair targets)
+            (URCi_UpdateSpecialFeeTargets swpair)
+        )
+    )
+    (defun AU_SwapPairs (ids:[string])
+        @doc "Get <ids> with <(keys SWP|Pairs)>, or update one a time"
+        (with-capability (AHU)
+            (map (AU_SwapPair) ids)
+        )
+    )
+    (defun AU_SwapPair (id:string)
+        (require-capability (SECURE))
+        (update SWP|Pairs id
+            {"id"       : id}
+        )
+    )
+
+)
+
+;; --- tables for 15_SWP.pact (7 defined) ---
+;; UPGRADE MODE: this module is assumed already deployed, so its
+;; tables already exist and (create-table) would ABORT the whole
+;; transaction. They are listed here, commented, for reference.
+;; If any of these is NEW since the last deploy, uncomment JUST it.
+;; (create-table P|T)
+;; (create-table P|MT)
+;; (create-table SWP|Properties)
+;; (create-table SWP|Asymmetry)
+;; (create-table SWP|Pairs)
+;; (create-table SWP|Pools)
+;; (create-table SWP|LP)
 

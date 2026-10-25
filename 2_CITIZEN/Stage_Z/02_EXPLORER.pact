@@ -27,7 +27,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -113,7 +113,7 @@
         @doc "Patron IGNIS client-op counter (proxies DALOS|UR_AccountNonce)."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::UR_AccountNonce account)
         )
@@ -122,10 +122,10 @@
         @doc "Explorer landing: global z3 stats, OURO/AURYN/ELITEAURYN/IGNIS supplies, Auryn index pair."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-ATS:module{AutostakeV3} ATS)
-                (ref-SWP:module{SwapperV4} SWP)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-ATS:module{AutostakeV4} ATS)
+                (ref-SWP:module{SwapperV5} SWP)
                 ;;
                 (ouro-id:string (ref-DALOS::UR_OuroborosID))
                 (ignis-id:string (ref-DALOS::UR_IgnisID))

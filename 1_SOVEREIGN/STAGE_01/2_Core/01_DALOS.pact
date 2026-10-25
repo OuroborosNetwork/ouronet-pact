@@ -120,7 +120,7 @@
 )
 
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface OuronetDalosV2
+(interface OuronetDalosV3
     @doc "Interface exposing the DALOS public API — the sovereign identity, account and \
         \ ledger core. Declares the account and ledger readers, account-ownership \
         \ enforcement, virtual-gas and action-price readers, and the governance hooks \
@@ -371,6 +371,16 @@
     (defun C_RotateStoa (patron:string executor:string stoa:string))
     (defun C_RotateSovereign (patron:string executor:string new-sovereign:string))
 
+
+    ;;<=========================================================================>
+    ;; ADDED 2026-10-12 -- interface-membership sweep (StoicSyntax-Prefixes.md Sec5,
+    ;; owner ruling). Every one of these was already live in the module body; this
+    ;; closes the gap between what the module DOES and what its interface SAYS it does.
+    ;;<=========================================================================>
+    (defun UC_GuardProtocol:string (g:guard))
+    (defun UEV_EnforceGuardProtocol (g:guard is-keyset-based:bool))
+    (defun UEV_enforce-notional-at-floor:bool ())
+    (defun URH_AccountCounter ())
 )
 ;;
 (module DALOS GOV
@@ -386,7 +396,7 @@
     ;;
     (implements stoa-ns.gas-payer-v1)
     (implements OuronetPolicyV2)
-    (implements OuronetDalosV2)
+    (implements OuronetDalosV3)
 
     ;;<=========================================================================>
     ;;{#}  GASSTATION
@@ -833,8 +843,8 @@
         ;;
         nonce:integer
         elite:object{DALOS|EliteSchema}
-        ouroboros:object{OuronetDalosV2.DPTF|BalanceSchema}
-        ignis:object{OuronetDalosV2.DPTF|BalanceSchema}
+        ouroboros:object{OuronetDalosV3.DPTF|BalanceSchema}
+        ignis:object{OuronetDalosV3.DPTF|BalanceSchema}
     )
     (defschema DALOS|EliteSchema
         class:string
@@ -913,7 +923,7 @@
     (defcap AHU ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (ah:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
             )
             (ref-DALOS::CAP_EnforceAccountOwnership ah)
@@ -1047,7 +1057,7 @@
     )
     (defun CT_Info ()                                   (at 0 ["DalosInformation"]))
     ;;
-    (defun UDC_TrueFungibleAccount:object{OuronetDalosV2.DPTF|BalanceSchema}
+    (defun UDC_TrueFungibleAccount:object{OuronetDalosV3.DPTF|BalanceSchema}
         (a:decimal b:bool c:bool d:bool e:bool f:bool g:string h:string)
         {"balance"              : a
         ,"frozen"               : b
@@ -1058,7 +1068,7 @@
         ,"id"                   : g
         ,"account"              : h}
     )
-    (defun UDC_BlankTrueFungible:object{OuronetDalosV2.DPTF|BalanceSchema} (account:string)
+    (defun UDC_BlankTrueFungible:object{OuronetDalosV3.DPTF|BalanceSchema} (account:string)
         (UDC_TrueFungibleAccount 0.0 false false false false false BAR account)
     )
     ;;{5.2}  Compute [UC]
@@ -1115,7 +1125,7 @@
     (defun UR_SilverStoaID:string ()
         (at "silver-stoa-id" (read DALOS|PropertiesTable DALOS|INFO ["silver-stoa-id"]))
     )
-    (defun UR_CanonicalStoaIds:object{OuronetDalosV2.CanonicalStoaIds} ()
+    (defun UR_CanonicalStoaIds:object{OuronetDalosV3.CanonicalStoaIds} ()
         @doc "#65fL Phase 8b: OURO/WSTOA/SSTOA together in ONE read, for a caller that \
             \ needs all 3 identities to check against a single <id> (e.g. \
             \ SWPI::URC_WorthWSTOA's 3-way WSTOA/SSTOA/OURO shortcut dispatch) — replaces \
@@ -1165,11 +1175,31 @@
     (defun UR_AccountCreationStoa:bool ()
         @doc "Is STOA collected on Ouronet account creation? Independent of the global STOA \
             \ toggle (UR_NativeToggle) so onboarding can stay free while global STOA is ON. \
-            \ Defaults FALSE for rows written before this flag existed."
-        (with-default-read DALOS|GasManagementTable DALOS|VGD
-            {"account-creation-stoa" : false}
-            {"account-creation-stoa" := t}
-            t
+            \ Defaults FALSE when the FIELD is absent from an existing row. \
+            \ \
+            \ CORRECTED 2026-10-15. This used `with-default-read` and claimed it `Defaults \
+            \ FALSE for rows written before this flag existed`. It does not. That default \
+            \ applies only when the ROW IS MISSING; when the row exists but lacks the field, \
+            \ the binding form throws `Key account-creation-stoa not found in object`. \
+            \ DALOS|VGD is written at genesis and this flag was added later, so EVERY call \
+            \ threw -- verified on mainnet against an arbitrary account, which failed \
+            \ identically. That broke INFO_DALOS|DeployStandardAccount (the activate-account \
+            \ cost preview never resolved) and would have broken the exec path too the moment \
+            \ native STOA collection was switched on, since TS01-C1 reads the same price \
+            \ behind (not URC_IsNativeGasZero). \
+            \ \
+            \ It was also UNFIXABLE BY TRANSACTION: the only writer of the field is \
+            \ XI_ToggleAccountCreationStoa, whose defcap enforces against this very read, so \
+            \ the toggle that would populate the row could not itself run."
+        (let
+            (
+                (row:object{DALOS|GasManagementSchema}
+                    (read DALOS|GasManagementTable DALOS|VGD))
+            )
+            (if (contains "account-creation-stoa" row)
+                (at "account-creation-stoa" row)
+                false
+            )
         )
     )
     (defun UR_NativeSpent:decimal ()
@@ -1252,7 +1282,7 @@
         (at "deb" (UR_Elite account))
     )
     ;;[4.2] TrueFungible INFO
-    (defun UR_TrueFungible:object{OuronetDalosV2.DPTF|BalanceSchema}
+    (defun UR_TrueFungible:object{OuronetDalosV3.DPTF|BalanceSchema}
         (account:string snake-or-gas:bool)
         (if snake-or-gas
             (with-default-read DALOS|AccountTable account
@@ -1741,7 +1771,7 @@
         )
     )
     ;;Protection: Class 2 — SECURE
-    (defun XI_UpdateTF (account:string snake-or-gas:bool new-obj:object{OuronetDalosV2.DPTF|BalanceSchema})
+    (defun XI_UpdateTF (account:string snake-or-gas:bool new-obj:object{OuronetDalosV3.DPTF|BalanceSchema})
         (require-capability (SECURE))
         (if snake-or-gas
             (update DALOS|AccountTable account
@@ -1997,7 +2027,7 @@
             ,"ignis"        : (AUx_UpdateTrueFungibleObject (UR_TrueFungible account false) account)}
         )
     )
-    (defun AUx_UpdateTrueFungibleObject:object{OuronetDalosV2.DPTF|BalanceSchema}
+    (defun AUx_UpdateTrueFungibleObject:object{OuronetDalosV3.DPTF|BalanceSchema}
         (input-obj:object account:string)
         (let
             (

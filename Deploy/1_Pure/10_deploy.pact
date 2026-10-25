@@ -1,8 +1,8 @@
 ;; ---------------------------------------------------------------------------
-;; OURONET DEPLOY -- file 10 of 24
-;; This is STEP 10 of 25 in the full sequence (see Deploy/MANIFEST.md).
+;; OURONET DEPLOY -- file 10 of 25
+;; This is STEP 10 of 26 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-9 must have run first, including the init steps between deploys.
-;; 5 source file(s), 228,598 gas measured in the REPL gas model, 204,926 bytes
+;; 5 source file(s), 245,032 gas measured in the REPL gas model, 204,926 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/3_Talos/03_TS01-C2.pact
@@ -14,22 +14,22 @@
 ;; TOTAL: 4 interface(s), 5 module(s), 8 table(s)
 ;; What it DEPLOYS, in load order:
 ;;   -- 1_SOVEREIGN/STAGE_01/3_Talos/03_TS01-C2.pact
-;;      interface  TalosStageOne_ClientTwoV2
+;;      interface  TalosStageOne_ClientTwoV3
 ;;      module     TS01-C2
 ;;      table      P|T
 ;;      table      P|MT
 ;;   -- 1_SOVEREIGN/STAGE_01/3_Talos/04_TS01-C3.pact
-;;      interface  TalosStageOne_ClientThreeV4
+;;      interface  TalosStageOne_ClientThreeV5
 ;;      module     TS01-C3
 ;;      table      P|T
 ;;      table      P|MT
 ;;   -- 1_SOVEREIGN/STAGE_01/3_Talos/06_TS01-C4.pact
-;;      interface  TalosStageOne_ClientFourV8
+;;      interface  TalosStageOne_ClientFourV9
 ;;      module     TS01-C4
 ;;      table      P|T
 ;;      table      P|MT
 ;;   -- 1_SOVEREIGN/STAGE_01/3_Talos/05_TS01-P.pact
-;;      interface  TalosStageOne_ClientPactsV4
+;;      interface  TalosStageOne_ClientPactsV5
 ;;      module     TS01-CP
 ;;      table      P|T
 ;;      table      P|MT
@@ -47,7 +47,7 @@
 ;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/03_Talos.pact
 ;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface TalosStageOne_ClientTwoV2
+(interface TalosStageOne_ClientTwoV3
     @doc "Exposes Ouronet Stage One Second Batch of Client Functions \
         \ Modules: ATS, VST, LQD and ORBR are included in the Second Batch"
 
@@ -90,11 +90,11 @@
     ;;{5.6}  Aux/X
     ;;{5.7}  User [A/C]
     ;;
-    (defun ATS|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
+    (defun ATS|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV3.SocialSchema}]))
     (defun ATS|C_UpgradeBranding (patron:string executor:string entity-id:string months:integer))
     ;;
     ;;Hot Rbt Management
-    (defun ATS|HOT-RBT|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
+    (defun ATS|HOT-RBT|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV3.SocialSchema}]))
     (defun ATS|HOT-RBT|C_UpgradeBranding (patron:string executor:string entity-id:string months:integer))
     (defun ATS|HOT-RBT|C_Repurpose (patron:string executor:string executee:string hot-rbt:string nonce:integer))
         ;;
@@ -201,7 +201,7 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements TalosStageOne_ClientTwoV2)
+    (implements TalosStageOne_ClientTwoV3)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -217,7 +217,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -236,7 +236,7 @@
     (defcap P|TS ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (gap:bool (ref-DALOS::UR_GAP))
             )
             (enforce (not gap) "While Global Administrative Pause is online, no client Functions can be executed")
@@ -251,7 +251,7 @@
     (defun P|Info ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::P|Info)
         )
@@ -432,13 +432,13 @@
     ;;
     ;;
     ;;  [ATS_Client]
-    (defun ATS|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
+    (defun ATS|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV3.SocialSchema}])
         @doc "Updates <pending-branding> for ATSPair <entity-id> costing 500 IGNIS"
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-B|ATS:module{BrandingUsagePrimaryV2} ATS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-B|ATS:module{BrandingUsagePrimaryV3} ATS)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-B|ATS::C_UpdatePendingBranding patron executor entity-id logo description website social)
@@ -451,7 +451,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-B|ATS:module{BrandingUsagePrimaryV2} ATS)
+                    (ref-B|ATS:module{BrandingUsagePrimaryV3} ATS)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                 )
                 (ref-B|ATS::C_UpgradeBranding patron executor entity-id months)
@@ -460,13 +460,13 @@
         )
     )
     ;;
-    (defun ATS|HOT-RBT|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
+    (defun ATS|HOT-RBT|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV3.SocialSchema}])
         @doc "Updates <pending-branding> for a HOT-RBT <entity-id> costing 150 IGNIS (Standard DPOF Costs)"
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATS:module{AutostakeV3} ATS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-ATS:module{AutostakeV4} ATS)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-ATS::HOT-RBT|C_UpdatePendingBranding patron executor entity-id logo description website social)
@@ -479,7 +479,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-ATS:module{AutostakeV3} ATS)
+                    (ref-ATS:module{AutostakeV4} ATS)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                 )
                 (ref-ATS::HOT-RBT|C_UpgradeBranding patron executor entity-id months)
@@ -492,9 +492,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-ATS:module{AutostakeV3} ATS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-ATS:module{AutostakeV4} ATS)
                     (srt:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -510,10 +510,10 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATS:module{AutostakeV3} ATS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-ATS:module{AutostakeV4} ATS)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-ATS::C_Issue patron executor ats index-decimals reward-token rt-nfr reward-bearing-token rbt-nfr)
                     )
                 )
@@ -528,8 +528,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATS:module{AutostakeV3} ATS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-ATS:module{AutostakeV4} ATS)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-ATS::C_RotateOwnership patron executor executee ats)
@@ -543,8 +543,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATS:module{AutostakeV3} ATS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-ATS:module{AutostakeV4} ATS)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-ATS::C_Control patron executor ats can-change-owner syphoning hibernate)
@@ -558,8 +558,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATS:module{AutostakeV3} ATS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-ATS:module{AutostakeV4} ATS)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-ATS::C_UpdateRoyalty patron executor ats royalty)
@@ -573,8 +573,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATS:module{AutostakeV3} ATS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-ATS:module{AutostakeV4} ATS)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-ATS::C_UpdateSyphon patron executor ats syphon)
@@ -588,8 +588,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATS:module{AutostakeV3} ATS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-ATS:module{AutostakeV4} ATS)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-ATS::C_SetHibernationFees patron executor ats peak decay)
@@ -604,10 +604,10 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATS:module{AutostakeV3} ATS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-ATS:module{AutostakeV4} ATS)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-ATS::C_ToggleParameterLock patron executor ats toggle)
                     )
                     (collect:bool (at 0 (at "output" ico)))
@@ -622,8 +622,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATS:module{AutostakeV3} ATS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-ATS:module{AutostakeV4} ATS)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-ATS::C_AddSecondary patron executor ats reward-token rt-nfr)
@@ -642,8 +642,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATS:module{AutostakeV3} ATS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-ATS:module{AutostakeV4} ATS)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-ATS::C_ControlColdRecoveryFees patron executor ats c-nfr c-fr)
@@ -658,8 +658,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATS:module{AutostakeV3} ATS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-ATS:module{AutostakeV4} ATS)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-ATS::C_SetColdRecoveryFees patron executor ats fee-positions fee-thresholds fee-array)
@@ -674,8 +674,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATS:module{AutostakeV3} ATS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-ATS:module{AutostakeV4} ATS)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-ATS::C_SetColdRecoveryDuration patron executor ats soft-or-hard base growth)
@@ -690,8 +690,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATS:module{AutostakeV3} ATS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-ATS:module{AutostakeV4} ATS)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-ATS::C_ToggleElite patron executor ats toggle)
@@ -710,8 +710,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATS:module{AutostakeV3} ATS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-ATS:module{AutostakeV4} ATS)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-ATS::C_ToggleUpgrade patron executor ats toggle)
@@ -728,8 +728,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATS:module{AutostakeV3} ATS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-ATS:module{AutostakeV4} ATS)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-ATS::C_SwitchColdRecovery patron executor ats toggle)
@@ -750,8 +750,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATS:module{AutostakeV3} ATS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-ATS:module{AutostakeV4} ATS)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-ATS::C_AddHotRBT patron executor ats hot-rbt)
@@ -765,8 +765,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATS:module{AutostakeV3} ATS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-ATS:module{AutostakeV4} ATS)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-ATS::C_ControlHotRecoveryFee patron executor ats h-fr)
@@ -780,8 +780,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATS:module{AutostakeV3} ATS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-ATS:module{AutostakeV4} ATS)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-ATS::C_SetHotRecoveryFees patron executor ats promile decay)
@@ -795,8 +795,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATS:module{AutostakeV3} ATS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-ATS:module{AutostakeV4} ATS)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-ATS::C_SwitchHotRecovery patron executor ats toggle)
@@ -815,8 +815,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATS:module{AutostakeV3} ATS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-ATS:module{AutostakeV4} ATS)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-ATS::C_SetDirectRecoveryFee patron executor ats promile)
@@ -830,8 +830,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATS:module{AutostakeV3} ATS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-ATS:module{AutostakeV4} ATS)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-ATS::C_SwitchDirectRecovery patron executor ats toggle)
@@ -851,8 +851,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATSU:module{AutostakeUsageV2} ATSU)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-ATSU:module{AutostakeUsageV3} ATSU)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-ATSU::CC_RemoveSecondary patron executor ats reward-token)
@@ -866,9 +866,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-ATSU:module{AutostakeUsageV2} ATSU)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-ATSU:module{AutostakeUsageV3} ATSU)
                     (st:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -884,9 +884,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATSU:module{AutostakeUsageV2} ATSU)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-ATSU:module{AutostakeUsageV3} ATSU)
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-ATSU::C_KickStart patron executor ats rt-amounts rbt-request-amount)
                     )
                 )
@@ -900,9 +900,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATS:module{AutostakeV3} ATS)
-                    (ref-ATSU:module{AutostakeUsageV2} ATSU)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-ATS:module{AutostakeV4} ATS)
+                    (ref-ATSU:module{AutostakeUsageV3} ATSU)
                     (prev-index:decimal (ref-ATS::URC_Index ats))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -920,9 +920,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATSU:module{AutostakeUsageV2} ATSU)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-ATSU:module{AutostakeUsageV3} ATSU)
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-ATSU::C_Coil patron executor ats rt amount)
                     )
                 )
@@ -938,9 +938,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATSU:module{AutostakeUsageV2} ATSU)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-ATSU:module{AutostakeUsageV3} ATSU)
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-ATSU::C_Curl patron executor ats1 ats2 rt amount)
                     )
                 )
@@ -963,12 +963,12 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATS:module{AutostakeV3} ATS)
-                    (ref-ATSU:module{AutostakeUsageV2} ATSU)
-                    (ref-VST:module{VestingV2} VST)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-ATS:module{AutostakeV4} ATS)
+                    (ref-ATSU:module{AutostakeUsageV3} ATSU)
+                    (ref-VST:module{VestingV3} VST)
                     ;;
-                    (coil-data:object{AutostakeV3.CoilData} 
+                    (coil-data:object{AutostakeV4.CoilData} 
                         (ref-ATS::URC_RewardBearingTokenAmounts ats coil-token amount)
                     )
                     (c-rbt:string (at "rbt-id" coil-data))
@@ -998,15 +998,15 @@
         (with-capability (P|TS)
             (let*
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATS:module{AutostakeV3} ATS)
-                    (ref-ATSU:module{AutostakeUsageV2} ATSU)
-                    (ref-VST:module{VestingV2} VST)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-ATS:module{AutostakeV4} ATS)
+                    (ref-ATSU:module{AutostakeUsageV3} ATSU)
+                    (ref-VST:module{VestingV3} VST)
                     ;;
-                    (coil1-data:object{AutostakeV3.CoilData} 
+                    (coil1-data:object{AutostakeV4.CoilData} 
                         (ref-ATS::URC_RewardBearingTokenAmounts ats1 curl-token amount)
                     )
-                    (coil2-data:object{AutostakeV3.CoilData} 
+                    (coil2-data:object{AutostakeV4.CoilData} 
                         (ref-ATS::URC_RewardBearingTokenAmounts ats2 (at "rbt-id" coil1-data) (at "rbt-amount" coil1-data))
                     )
                     (c-rbt2-amount:decimal (at "rbt-amount" coil2-data))
@@ -1032,9 +1032,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-VST:module{VestingV3} VST)
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-VST::C_Constrict patron executor ats rt amount dayz)
                     )
                 )
@@ -1052,9 +1052,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-VST:module{VestingV3} VST)
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-VST::C_Brumate patron executor ats1 ats2 rt amount dayz)
                     )
                 )
@@ -1071,9 +1071,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-ATSU:module{AutostakeUsageV2} ATSU)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-ATSU:module{AutostakeUsageV3} ATSU)
                     (st:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -1090,8 +1090,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATSU:module{AutostakeUsageV2} ATSU)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-ATSU:module{AutostakeUsageV3} ATSU)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-ATSU::C_ColdRecovery patron executor ats ra)
@@ -1108,9 +1108,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATSU:module{AutostakeUsageV2} ATSU)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-ATSU:module{AutostakeUsageV3} ATSU)
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-ATSU::C_Cull patron executor ats)
                     )
                     (cw:[decimal] (at "output" ico))
@@ -1131,8 +1131,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATSU:module{AutostakeUsageV2} ATSU)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-ATSU:module{AutostakeUsageV3} ATSU)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-ATSU::C_HotRecovery patron executor ats ra)
@@ -1147,9 +1147,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-                    (ref-ATSU:module{AutostakeUsageV2} ATSU)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+                    (ref-ATSU:module{AutostakeUsageV3} ATSU)
                     (ats:string (ref-DPOF::UR_RewardBearingToken id))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -1164,9 +1164,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-                    (ref-ATSU:module{AutostakeUsageV2} ATSU)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+                    (ref-ATSU:module{AutostakeUsageV3} ATSU)
                     (ats:string (ref-DPOF::UR_RewardBearingToken id))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -1182,8 +1182,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATSU:module{AutostakeUsageV2} ATSU)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-ATSU:module{AutostakeUsageV3} ATSU)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-ATSU::C_DirectRecovery patron executor ats ra)
@@ -1214,10 +1214,10 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-VST:module{VestingV3} VST)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-VST::C_CreateFrozenLink patron executor dptf)
                     )
                     (output-id:string (at 0 (at "output" ico)))
@@ -1254,10 +1254,10 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-VST:module{VestingV3} VST)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-VST::C_CreateReservationLink patron executor dptf)
                     )
                     (output-id:string (at 0 (at "output" ico)))
@@ -1293,10 +1293,10 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-VST:module{VestingV3} VST)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-VST::C_CreateVestingLink patron executor dptf)
                     )
                     (output-id:string (at 0 (at "output" ico)))
@@ -1332,10 +1332,10 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-VST:module{VestingV3} VST)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-VST::C_CreateSleepingLink patron executor dptf)
                     )
                     (output-id:string (at 0 (at "output" ico)))
@@ -1368,10 +1368,10 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-VST:module{VestingV3} VST)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-VST::C_CreateHibernatingLink patron executor dptf)
                     )
                     (output-id:string (at 0 (at "output" ico)))
@@ -1393,9 +1393,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-VST:module{VestingV3} VST)
                     (sfa:string (ref-I|OURONET::OI|UC_ShortAccount freeze-output))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -1410,9 +1410,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-VST:module{VestingV3} VST)
                     (srf:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                     (srt:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
                 )
@@ -1428,8 +1428,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-VST:module{VestingV3} VST)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-VST::C_ToggleTransferRoleFrozenDPTF patron executor s-dptf target toggle)
@@ -1444,9 +1444,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-VST:module{VestingV3} VST)
                     (sr:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -1461,9 +1461,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-VST:module{VestingV3} VST)
                     (su:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -1478,9 +1478,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-VST:module{VestingV3} VST)
                     (srf:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                     (srt:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
                 )
@@ -1496,8 +1496,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-VST:module{VestingV3} VST)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-VST::C_ToggleTransferRoleReservedDPTF patron executor s-dptf target toggle)
@@ -1512,9 +1512,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-VST:module{VestingV3} VST)
                     (sv:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                     (sta:string (ref-I|OURONET::OI|UC_ShortAccount target-account))
                 )
@@ -1530,9 +1530,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-VST:module{VestingV3} VST)
                     (su:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -1547,9 +1547,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-VST:module{VestingV3} VST)
                     (srf:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                     (srt:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
                 )
@@ -1566,9 +1566,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-VST:module{VestingV3} VST)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                     (sta:string (ref-I|OURONET::OI|UC_ShortAccount target-account))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -1583,9 +1583,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-VST:module{VestingV3} VST)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                     (su:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -1602,9 +1602,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-VST:module{VestingV3} VST)
                     (sm:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -1619,9 +1619,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-VST:module{VestingV3} VST)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                     (srf:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                     (srt:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
                 )
@@ -1639,9 +1639,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-VST:module{VestingV3} VST)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                     (srf:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                     (srt:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
                 )
@@ -1659,8 +1659,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-VST:module{VestingV3} VST)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-VST::C_ToggleTransferRoleSleepingDPOF patron executor s-dpof target toggle)
@@ -1675,9 +1675,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-VST:module{VestingV3} VST)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                     (sta:string (ref-I|OURONET::OI|UC_ShortAccount target-account))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -1692,11 +1692,11 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-VST:module{VestingV3} VST)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount executor))
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-VST::C_Awake patron executor dpof nonce)
                     )
                     (output:list (at "output" ico))
@@ -1719,9 +1719,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-VST:module{VestingV3} VST)
                     (sm:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -1736,9 +1736,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-VST:module{VestingV3} VST)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                     (srf:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                     (srt:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
                 )
@@ -1756,9 +1756,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-VST:module{VestingV3} VST)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                     (srf:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                     (srt:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
                 )
@@ -1776,8 +1776,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-VST:module{VestingV3} VST)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-VST::C_ToggleTransferRoleHibernatingDPOF patron executor s-dpof target toggle)
@@ -1792,9 +1792,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-LIQUID:module{StoaLiquidStakingV2} LIQUID)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-LIQUID:module{StoaLiquidStakingV3} LIQUID)
                     (su:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -1809,9 +1809,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-LIQUID:module{StoaLiquidStakingV2} LIQUID)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-LIQUID:module{StoaLiquidStakingV3} LIQUID)
                     (sw:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -1833,9 +1833,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-LIQUID:module{StoaLiquidStakingV2} LIQUID)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-LIQUID:module{StoaLiquidStakingV3} LIQUID)
                     (su:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -1857,9 +1857,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-LIQUID:module{StoaLiquidStakingV2} LIQUID)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-LIQUID:module{StoaLiquidStakingV3} LIQUID)
                     (sw:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -1878,8 +1878,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-ORBR:module{OuroborosV2} OUROBOROS)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ref-ORBR:module{OuroborosV3} OUROBOROS)
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-ORBR::C_Compress executor ignis-amount)
                     )
                 )
@@ -1896,8 +1896,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-ORBR:module{OuroborosV2} OUROBOROS)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ref-ORBR:module{OuroborosV3} OUROBOROS)
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-ORBR::C_Sublimate executor executee ouro-amount)
                     )
                 )
@@ -1914,8 +1914,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-ORBR:module{OuroborosV2} OUROBOROS)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ref-ORBR:module{OuroborosV3} OUROBOROS)
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-ORBR::C_SublimateV2 executor executee ouro-amount)
                     )
                 )
@@ -1931,9 +1931,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ORBR:module{OuroborosV2} OUROBOROS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-ORBR:module{OuroborosV3} OUROBOROS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                     (st:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -1962,7 +1962,7 @@
 ;; retired the frozen-copy convention in favour of git history. The comment that claimed the
 ;; archive was 'frozen here' outlived the archive by two weeks — documentation that survives
 ;; what it describes is indistinguishable from correct, from the outside. See DEFECT-LEDGER §8.6.
-(interface TalosStageOne_ClientThreeV4
+(interface TalosStageOne_ClientThreeV5
     @doc "Exposes Ouronet Stage One Third Batch of Client Functions \
         \ Modules: SWP are included in the Second Batch\
         \ V2: Added Smart Swap entry points - SWP|CC_SmartSwapWithSlippage and SWP|CC_SmartSwapNoSlippage \
@@ -2011,18 +2011,18 @@
     ;;{5.6}  Aux/X
     ;;{5.7}  User [A/C]
     ;;
-    (defun SWP|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
+    (defun SWP|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV3.SocialSchema}]))
     (defun SWP|C_UpgradeBranding (patron:string executor:string entity-id:string months:integer))
-    (defun SWP|C_UpdatePendingBrandingLPs (patron:string executor:string swpair:string entity-pos:integer logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
+    (defun SWP|C_UpdatePendingBrandingLPs (patron:string executor:string swpair:string entity-pos:integer logo:string description:string website:string social:[object{BrandingV3.SocialSchema}]))
     (defun SWP|C_UpgradeBrandingLPs (patron:string executor:string swpair:string entity-pos:integer months:integer))
     ;;
     (defun SWP|C_ChangeOwnership (patron:string executor:string executee:string swpair:string))
     (defun SWP|C_EnableFrozenLP:string (patron:string executor:string swpair:string))
     (defun SWP|C_EnableSleepingLP:string (patron:string executor:string swpair:string))
     ;;Issue
-    (defun SWP|C_IssueStable:list (patron:string executor:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal amp:decimal p:bool))
-    (defun SWP|C_IssueStandard:list (patron:string executor:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal p:bool))
-    (defun SWP|C_IssueWeighted:list (patron:string executor:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool))
+    (defun SWP|C_IssueStable:list (patron:string executor:string pool-tokens:[object{SwapperV5.PoolTokens}] fee-lp:decimal amp:decimal p:bool))
+    (defun SWP|C_IssueStandard:list (patron:string executor:string pool-tokens:[object{SwapperV5.PoolTokens}] fee-lp:decimal p:bool))
+    (defun SWP|C_IssueWeighted:list (patron:string executor:string pool-tokens:[object{SwapperV5.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool))
     ;;Management
     (defun SWP|C_ModifyCanChangeOwner (patron:string executor:string swpair:string new-boolean:bool))
     (defun SWP|C_ModifyWeights (patron:string executor:string swpair:string new-weights:[decimal]))
@@ -2031,7 +2031,7 @@
     (defun SWP|C_ToggleFeeLock (patron:string executor:string swpair:string toggle:bool))
     (defun SWP|C_UpdateAmplifier (patron:string executor:string swpair:string amp:decimal))
     (defun SWP|C_UpdateFee (patron:string executor:string swpair:string new-fee:decimal lp-or-special:bool))
-    (defun SWP|C_UpdateSpecialFeeTargets (patron:string executor:string swpair:string targets:[object{SwapperV4.FeeSplit}]))
+    (defun SWP|C_UpdateSpecialFeeTargets (patron:string executor:string swpair:string targets:[object{SwapperV5.FeeSplit}]))
     ;;Liquidity
     (defun SWP|C_AddLiquidity:string (patron:string executor:string swpair:string input-amounts:[decimal]))
     (defun SWP|C_AddIcedLiquidity:string (patron:string executor:string swpair:string input-amounts:[decimal]))
@@ -2045,22 +2045,22 @@
     (defun SWP|C_Fuel (patron:string executor:string swpair:string input-amounts:[decimal]))
     (defun SWP|C_Firestarter (executor:string))
     ;;Smart Swap
-    (defun SWP|CC_SmartSwapWithSlippage (patron:string executor:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV3.Slippage}))
+    (defun SWP|CC_SmartSwapWithSlippage (patron:string executor:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV4.Slippage}))
     (defun SWP|CC_SmartSwapNoSlippage (patron:string executor:string input-id:string input-amount:decimal output-id:string))
     ;;#34 Phase 8: bundle-based, dirty-read-injected Smart Swap — built alongside, not
     ;;replacing, SWP|CC_SmartSwap{With,No}Slippage above, for direct gas comparison.
     (defun SWP|C_SmartSwapWithSlippage
         (patron:string executor:string input-id:string input-amount:decimal output-id:string
-         slippage-bounds:object{SwapperUsageV3.Slippage} bundle:object{SwapperUsageV3.SmartSwapPathBundle})
+         slippage-bounds:object{SwapperUsageV4.Slippage} bundle:object{SwapperUsageV4.SmartSwapPathBundle})
     )
     (defun SWP|C_SmartSwapNoSlippage
         (patron:string executor:string input-id:string input-amount:decimal output-id:string
-         bundle:object{SwapperUsageV3.SmartSwapPathBundle})
+         bundle:object{SwapperUsageV4.SmartSwapPathBundle})
     )
     ;;Swap
-    (defun SWP|C_SingleSwapWithSlippage (patron:string executor:string swpair:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV3.Slippage}))
+    (defun SWP|C_SingleSwapWithSlippage (patron:string executor:string swpair:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV4.Slippage}))
     (defun SWP|C_SingleSwapNoSlippage (patron:string executor:string swpair:string input-id:string input-amount:decimal output-id:string))
-    (defun SWP|C_MultiSwapWithSlippage (patron:string executor:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage-bounds:object{SwapperUsageV3.Slippage}))
+    (defun SWP|C_MultiSwapWithSlippage (patron:string executor:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage-bounds:object{SwapperUsageV4.Slippage}))
     (defun SWP|C_MultiSwapNoSlippage (patron:string executor:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string))
 
 )
@@ -2072,7 +2072,7 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements TalosStageOne_ClientThreeV4)
+    (implements TalosStageOne_ClientThreeV5)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -2088,7 +2088,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -2107,7 +2107,7 @@
     (defcap P|TS ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (gap:bool (ref-DALOS::UR_GAP))
             )
             (enforce (not gap) "While Global Administrative Pause is online, no client Functions can be executed")
@@ -2122,7 +2122,7 @@
     (defun P|Info ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::P|Info)
         )
@@ -2295,13 +2295,13 @@
     ;;
     ;;
     ;;  [Swapper_Client]
-    (defun SWP|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
+    (defun SWP|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV3.SocialSchema}])
         @doc "Updates <pending-branding> for SWPair Token <entity-id> costing 400 IGNIS"
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-B|SWP:module{BrandingUsagePrimaryV2} SWP)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-B|SWP:module{BrandingUsagePrimaryV3} SWP)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-B|SWP::C_UpdatePendingBranding patron executor entity-id logo description website social)
@@ -2314,7 +2314,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-B|SWP:module{BrandingUsagePrimaryV2} SWP)
+                    (ref-B|SWP:module{BrandingUsagePrimaryV3} SWP)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                 )
                 (ref-B|SWP::C_UpgradeBranding patron executor entity-id months)
@@ -2322,7 +2322,7 @@
             )
         )
     )
-    (defun SWP|C_UpdatePendingBrandingLPs (patron:string executor:string swpair:string entity-pos:integer logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
+    (defun SWP|C_UpdatePendingBrandingLPs (patron:string executor:string swpair:string entity-pos:integer logo:string description:string website:string social:[object{BrandingV3.SocialSchema}])
         @doc "Updates <pending-branding> for SWPair LPs (Native LP, Frozen LP or Sleeping LP) Token <entity-id> costing 200 IGNIS \
             \ <entity-pos> 1 = LP Token will be used \
             \ <entity-pos> 2 = Frozen-LP Token will be used \
@@ -2330,8 +2330,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-B|SWPLC:module{BrandingUsageSecondaryV2} SWPLC)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-B|SWPLC:module{BrandingUsageSecondaryV3} SWPLC)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-B|SWPLC::C_UpdatePendingBrandingLPs patron executor swpair entity-pos logo description website social)
@@ -2344,7 +2344,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-B|SWPLC:module{BrandingUsageSecondaryV2} SWPLC)
+                    (ref-B|SWPLC:module{BrandingUsageSecondaryV3} SWPLC)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                 )
                 (ref-B|SWPLC::C_UpgradeBrandingLPs patron executor swpair entity-pos months)
@@ -2357,8 +2357,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SWP:module{SwapperV4} SWP)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-SWP:module{SwapperV5} SWP)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-SWP::C_ChangeOwnership patron executor executee swpair)
@@ -2372,14 +2372,14 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                    (ref-SWP:module{SwapperV4} SWP)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                    (ref-SWP:module{SwapperV5} SWP)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                     ;;
                     (lp-id:string (ref-SWP::UR_TokenLP swpair))
                     (current-frozen-link:string (ref-DPTF::UR_Frozen lp-id))
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-SWP::C_EnableFrozenLP patron executor swpair)
                     )
                     (issued-frozen-lp-id:string (at 0 (at "output" ico)))
@@ -2403,14 +2403,14 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                    (ref-SWP:module{SwapperV4} SWP)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                    (ref-SWP:module{SwapperV5} SWP)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                     ;;
                     (lp-id:string (ref-SWP::UR_TokenLP swpair))
                     (current-sleeping-link:string (ref-DPTF::UR_Sleeping lp-id))
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-SWP::C_EnableSleepingLP patron executor swpair)
                     )
                     (issued-sleeping-lp-id:string (at 0 (at "output" ico)))
@@ -2429,7 +2429,7 @@
             )
         )
     )
-    (defun SWP|C_IssueStable:list (patron:string executor:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal amp:decimal p:bool)
+    (defun SWP|C_IssueStable:list (patron:string executor:string pool-tokens:[object{SwapperV5.PoolTokens}] fee-lp:decimal amp:decimal p:bool)
         @doc "Issues a Stable Liquidity Pool. First Token in the liquidity Pool must have a connection to a principal Token \
             \ Stable Pools have the S designation. \
             \ Stable Pools can be created with up to 7 Tokens, and have by design equal weighting. \
@@ -2438,11 +2438,11 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SWPI:module{SwapperIssueV4} SWPI)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-SWPI:module{SwapperIssueV5} SWPI)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                     (weights:[decimal] (make-list (length pool-tokens) 1.0))
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-SWPI::C_Issue patron executor pool-tokens fee-lp weights amp p)
                     )
                 )
@@ -2452,7 +2452,7 @@
             )
         )
     )
-    (defun SWP|C_IssueStandard:list (patron:string executor:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal p:bool)
+    (defun SWP|C_IssueStandard:list (patron:string executor:string pool-tokens:[object{SwapperV5.PoolTokens}] fee-lp:decimal p:bool)
         @doc "Issues a Standard, Constant Product Pool. \
             \ Constant Product Pools have the P Designation, and they are by design equal weigthed \
             \ Can also be created with up to 7 Tokens, also the <p> boolean determines if its a Principal Pool or not \
@@ -2471,7 +2471,7 @@
             \ (patron/executor canon 2.2, indirect route named, 2026-09-22.)"
         (SWP|C_IssueStable patron executor pool-tokens fee-lp -1.0 p)
     )
-    (defun SWP|C_IssueWeighted:list (patron:string executor:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool)
+    (defun SWP|C_IssueWeighted:list (patron:string executor:string pool-tokens:[object{SwapperV5.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool)
         @doc "Issues a Weigthed Constant Liquidity Pool \
             \ Weigthed Pools have the W Designation, and the weights can be changed at will. \
             \ Can also be created with up to 7 Tokens, <p> boolean determines if its a Principal Pool or not \
@@ -2479,10 +2479,10 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SWPI:module{SwapperIssueV4} SWPI)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-SWPI:module{SwapperIssueV5} SWPI)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-SWPI::C_Issue patron executor pool-tokens fee-lp weights -1.0 p)
                     )
                 )
@@ -2497,8 +2497,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SWP:module{SwapperV4} SWP)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-SWP:module{SwapperV5} SWP)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-SWP::C_ModifyCanChangeOwner patron executor swpair new-boolean)
@@ -2512,8 +2512,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SWP:module{SwapperV4} SWP)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-SWP:module{SwapperV5} SWP)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-SWP::C_ModifyWeights patron executor swpair new-weights)
@@ -2535,8 +2535,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-SWPLC:module{SwapperLiquidityClientV3} SWPLC)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-SWPLC::C_ToggleAddLiquidity patron executor swpair toggle)
@@ -2555,8 +2555,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SWPU:module{SwapperUsageV3} SWPU)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-SWPU:module{SwapperUsageV4} SWPU)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-SWPU::C_ToggleSwapCapability patron executor swpair toggle)
@@ -2571,10 +2571,10 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SWP:module{SwapperV4} SWP)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-SWP:module{SwapperV5} SWP)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-SWP::C_ToggleFeeLock patron executor swpair toggle)
                     )
                     (collect:bool (at 0 (at "output" ico)))
@@ -2590,8 +2590,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SWP:module{SwapperV4} SWP)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-SWP:module{SwapperV5} SWP)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-SWP::C_UpdateAmplifier patron executor swpair amp)
@@ -2612,8 +2612,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SWP:module{SwapperV4} SWP)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-SWP:module{SwapperV5} SWP)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-SWP::C_UpdateFee patron executor swpair new-fee lp-or-special)
@@ -2622,13 +2622,13 @@
             )
         )
     )
-    (defun SWP|C_UpdateSpecialFeeTargets (patron:string executor:string swpair:string targets:[object{SwapperV4.FeeSplit}])
+    (defun SWP|C_UpdateSpecialFeeTargets (patron:string executor:string swpair:string targets:[object{SwapperV5.FeeSplit}])
         @doc "Updates the Special Fee Targets, along with their Split, for an SWPair"
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SWP:module{SwapperV4} SWP)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-SWP:module{SwapperV5} SWP)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-SWP::C_UpdateSpecialFeeTargets patron executor swpair targets)
@@ -2646,10 +2646,10 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
-                    (ref-SWP:module{SwapperV4} SWP)
-                    (ref-SWPI:module{SwapperIssueV4} SWPI)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-SWPLC:module{SwapperLiquidityClientV3} SWPLC)
+                    (ref-SWP:module{SwapperV5} SWP)
+                    (ref-SWPI:module{SwapperIssueV5} SWPI)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-SWPLC::C_Fuel patron executor swpair input-amounts true true)
@@ -2677,12 +2677,12 @@
             (let
                 (
                     (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
-                    (ref-SWP:module{SwapperV4} SWP)
-                    (ref-SWPI:module{SwapperIssueV4} SWPI)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-SWPLC:module{SwapperLiquidityClientV3} SWPLC)
+                    (ref-SWP:module{SwapperV5} SWP)
+                    (ref-SWPI:module{SwapperIssueV5} SWPI)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-SWPLC::STOA-PID|C_AddStandardLiquidity patron executor swpair input-amounts stoa-pid)
                     )
                 )
@@ -2710,12 +2710,12 @@
             (let
                 (
                     (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
-                    (ref-SWP:module{SwapperV4} SWP)
-                    (ref-SWPI:module{SwapperIssueV4} SWPI)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-SWPLC:module{SwapperLiquidityClientV3} SWPLC)
+                    (ref-SWP:module{SwapperV5} SWP)
+                    (ref-SWPI:module{SwapperIssueV5} SWPI)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-SWPLC::STOA-PID|C_AddIcedLiquidity patron executor swpair input-amounts stoa-pid)
                     )
                 )
@@ -2741,12 +2741,12 @@
             (let
                 (
                     (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
-                    (ref-SWP:module{SwapperV4} SWP)
-                    (ref-SWPI:module{SwapperIssueV4} SWPI)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-SWPLC:module{SwapperLiquidityClientV3} SWPLC)
+                    (ref-SWP:module{SwapperV5} SWP)
+                    (ref-SWPI:module{SwapperIssueV5} SWPI)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-SWPLC::STOA-PID|C_AddGlacialLiquidity patron executor swpair input-amounts stoa-pid)
                     )
                 )
@@ -2771,12 +2771,12 @@
             (let
                 (
                     (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
-                    (ref-SWP:module{SwapperV4} SWP)
-                    (ref-SWPI:module{SwapperIssueV4} SWPI)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-SWPLC:module{SwapperLiquidityClientV3} SWPLC)
+                    (ref-SWP:module{SwapperV5} SWP)
+                    (ref-SWPI:module{SwapperIssueV5} SWPI)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-SWPLC::STOA-PID|C_AddFrozenLiquidity patron executor swpair frozen-dptf input-amount stoa-pid)
                     )
                 )
@@ -2801,12 +2801,12 @@
             (let
                 (
                     (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
-                    (ref-SWP:module{SwapperV4} SWP)
-                    (ref-SWPI:module{SwapperIssueV4} SWPI)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-SWPLC:module{SwapperLiquidityClientV3} SWPLC)
+                    (ref-SWP:module{SwapperV5} SWP)
+                    (ref-SWPI:module{SwapperIssueV5} SWPI)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-SWPLC::STOA-PID|C_AddSleepingLiquidity patron executor swpair sleeping-dpof nonce stoa-pid)
                     )
                 )
@@ -2825,11 +2825,11 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
-                    (ref-SWP:module{SwapperV4} SWP)
-                    (ref-SWPI:module{SwapperIssueV4} SWPI)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-SWPLC:module{SwapperLiquidityClientV3} SWPLC)
+                    (ref-SWP:module{SwapperV5} SWP)
+                    (ref-SWPI:module{SwapperIssueV5} SWPI)
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-SWPLC::C_RemoveLiquidity patron executor swpair lp-amount)
                     )
                 )
@@ -2846,12 +2846,12 @@
             (let
                 (
                     (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                    (ref-LIQUID:module{StoaLiquidStakingV2} LIQUID)
-                    (ref-ORBR:module{OuroborosV2} OUROBOROS)
-                    (ref-SWP:module{SwapperV4} SWP)
-                    (ref-SWPU:module{SwapperUsageV3} SWPU)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                    (ref-LIQUID:module{StoaLiquidStakingV3} LIQUID)
+                    (ref-ORBR:module{OuroborosV3} OUROBOROS)
+                    (ref-SWP:module{SwapperV5} SWP)
+                    (ref-SWPU:module{SwapperUsageV4} SWPU)
                     ;;
                     (ouro:string (ref-DALOS::UR_OuroborosID))
                     (ignis:string (ref-DALOS::UR_IgnisID))
@@ -2873,21 +2873,21 @@
                     (
                         (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                         (wstoa:string (ref-DALOS::UR_WrappedStoaID))
-                        (ref-SWPI:module{SwapperIssueV4} SWPI)
-                        (ico1:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-SWPI:module{SwapperIssueV5} SWPI)
+                        (ico1:object{IgnisCollectorV4.OutputCumulator}
                             (ref-LIQUID::C_WrapStoa executor executor 10.0)
                         )
-                        (slippage-bounds:object{SwapperUsageV3.Slippage}
+                        (slippage-bounds:object{SwapperUsageV4.Slippage}
                             (ref-SWPU::UDC_SpawnSlippageBounds primordial [wstoa] [10.0] ouro -1.0)
                         )
-                        (ico2:object{IgnisCollectorV3.OutputCumulator}
+                        (ico2:object{IgnisCollectorV4.OutputCumulator}
                             (ref-SWPU::C_Swap 
                                 executor executor primordial [wstoa] [10.0] ouro 
                                 -1.0 stoa-pid slippage-bounds
                             )
                         )
                         (gained-ouro:decimal (at 0 (at "output" ico2)))
-                        (ico3:object{IgnisCollectorV3.OutputCumulator}
+                        (ico3:object{IgnisCollectorV4.OutputCumulator}
                             (ref-ORBR::C_SublimateV2 executor executor gained-ouro)
                         )
                     )
@@ -2904,7 +2904,7 @@
             input-id:string
             input-amount:decimal
             output-id:string
-            slippage-bounds:object{SwapperUsageV3.Slippage}
+            slippage-bounds:object{SwapperUsageV4.Slippage}
         )
         @doc "Executes a Smart Swap from <input-id> to <output-id> with slippage protection. \
             \ Path is traced automatically via BFS across all pool bases. \
@@ -2927,15 +2927,15 @@
             (let
                 (
                     (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SWP:module{SwapperV4} SWP)
-                    (ref-SWPI:module{SwapperIssueV4} SWPI)
-                    (ref-SWPU:module{SwapperUsageV3} SWPU)
-                    (ref-SWPT:module{SwapTracerV3} SWPT)
-                    (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-SWP:module{SwapperV5} SWP)
+                    (ref-SWPI:module{SwapperIssueV5} SWPI)
+                    (ref-SWPU:module{SwapperUsageV4} SWPU)
+                    (ref-SWPT:module{SwapTracerV4} SWPT)
+                    (ref-U|SWP:module{UtilitySwpV3} U|SWP)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                     (slippage:decimal (at "slippage-percent" slippage-bounds))
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-SWPU::CC_SmartSwap
                             patron executor input-id input-amount output-id
                             slippage stoa-pid slippage-bounds
@@ -2954,7 +2954,7 @@
                     ;;still happen live, inside the loop, per pool, as before.
                     (all-swpairs:[string] (ref-SWP::URC_Swpairs))
                     (all-nodes:[string] (ref-U|SWP::UC_MakeGraphNodes BAR BAR all-swpairs))
-                    (raw-graph:[object{SwapTracerV3.RawGraphNode}] (ref-SWPT::URC_FetchRawGraph all-nodes))
+                    (raw-graph:[object{SwapTracerV4.RawGraphNode}] (ref-SWPT::URC_FetchRawGraph all-nodes))
                     ;;#65bL Phase 7: built ONCE here too — every URC_PoolValueFromGraph
                     ;;call below reused to share the graph-BUILD step, not just the raw
                     ;;read Phase 4 already shared. See URC_HopperFromGraph's own doc.
@@ -3003,17 +3003,17 @@
             (let
                 (
                     (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SWP:module{SwapperV4} SWP)
-                    (ref-SWPI:module{SwapperIssueV4} SWPI)
-                    (ref-SWPU:module{SwapperUsageV3} SWPU)
-                    (ref-SWPT:module{SwapTracerV3} SWPT)
-                    (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-SWP:module{SwapperV5} SWP)
+                    (ref-SWPI:module{SwapperIssueV5} SWPI)
+                    (ref-SWPU:module{SwapperUsageV4} SWPU)
+                    (ref-SWPT:module{SwapTracerV4} SWPT)
+                    (ref-U|SWP:module{UtilitySwpV3} U|SWP)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
-                    (slippage-bounds:object{SwapperUsageV3.Slippage}
+                    (slippage-bounds:object{SwapperUsageV4.Slippage}
                         (ref-SWPU::UDC_SpawnSmartSwapSlippageBounds input-id input-amount output-id -1.0)
                     )
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-SWPU::CC_SmartSwap
                             patron executor input-id input-amount output-id
                             -1.0 stoa-pid slippage-bounds
@@ -3036,7 +3036,7 @@
                     ;;still happen live, inside the loop, per pool, as before.
                     (all-swpairs:[string] (ref-SWP::URC_Swpairs))
                     (all-nodes:[string] (ref-U|SWP::UC_MakeGraphNodes BAR BAR all-swpairs))
-                    (raw-graph:[object{SwapTracerV3.RawGraphNode}] (ref-SWPT::URC_FetchRawGraph all-nodes))
+                    (raw-graph:[object{SwapTracerV4.RawGraphNode}] (ref-SWPT::URC_FetchRawGraph all-nodes))
                     ;;#65bL Phase 7: built ONCE here too — every URC_PoolValueFromGraph
                     ;;call below reused to share the graph-BUILD step, not just the raw
                     ;;read Phase 4 already shared. See URC_HopperFromGraph's own doc.
@@ -3074,8 +3074,8 @@
             input-id:string
             input-amount:decimal
             output-id:string
-            slippage-bounds:object{SwapperUsageV3.Slippage}
-            bundle:object{SwapperUsageV3.SmartSwapPathBundle}
+            slippage-bounds:object{SwapperUsageV4.Slippage}
+            bundle:object{SwapperUsageV4.SmartSwapPathBundle}
         )
         @doc "#34 Phase 8: bundle-based Smart Swap with slippage protection — the route, \
             \ boost-path and stoa-paths are all supplied by <bundle> (assembled \
@@ -3088,9 +3088,9 @@
             (let
                 (
                     (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SWP:module{SwapperV4} SWP)
-                    (ref-SWPU:module{SwapperUsageV3} SWPU)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-SWP:module{SwapperV5} SWP)
+                    (ref-SWPU:module{SwapperUsageV4} SWPU)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                     (slippage:decimal (at "slippage-percent" slippage-bounds))
                     (result:list
@@ -3099,7 +3099,7 @@
                             slippage stoa-pid slippage-bounds bundle
                         )
                     )
-                    (ico:object{IgnisCollectorV3.OutputCumulator} (at 0 result))
+                    (ico:object{IgnisCollectorV4.OutputCumulator} (at 0 result))
                     (stoa-results:list (at 1 result))
                     (out:list (at "output" ico))
                 )
@@ -3122,7 +3122,7 @@
             input-id:string
             input-amount:decimal
             output-id:string
-            bundle:object{SwapperUsageV3.SmartSwapPathBundle}
+            bundle:object{SwapperUsageV4.SmartSwapPathBundle}
         )
         @doc "#34 Phase 8: bundle-based Smart Swap without slippage protection. Unlike \
             \ SWP|CC_SmartSwapNoSlippage above, the dummy slippage-bounds object is built \
@@ -3133,18 +3133,18 @@
             (let
                 (
                     (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SWP:module{SwapperV4} SWP)
-                    (ref-SWPU:module{SwapperUsageV3} SWPU)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-SWP:module{SwapperV5} SWP)
+                    (ref-SWPU:module{SwapperUsageV4} SWPU)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
-                    (slippage-bounds:object{SwapperUsageV3.Slippage} (ref-SWPU::UDC_Slippage 0.0 0 0.0))
+                    (slippage-bounds:object{SwapperUsageV4.Slippage} (ref-SWPU::UDC_Slippage 0.0 0 0.0))
                     (result:list
                         (ref-SWPU::C_SmartSwap
                             patron executor input-id input-amount output-id
                             -1.0 stoa-pid slippage-bounds bundle
                         )
                     )
-                    (ico:object{IgnisCollectorV3.OutputCumulator} (at 0 result))
+                    (ico:object{IgnisCollectorV4.OutputCumulator} (at 0 result))
                     (stoa-results:list (at 1 result))
                     (out:list (at "output" ico))
                 )
@@ -3168,20 +3168,20 @@
             input-id:string
             input-amount:decimal
             output-id:string
-            slippage-bounds:object{SwapperUsageV3.Slippage}
+            slippage-bounds:object{SwapperUsageV4.Slippage}
         )
         @doc "Executes A Swap from <input-id> with <input-amount> to <output-id> with <slippage>"
         (with-capability (P|TS)
             (let
                 (
                     (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SWP:module{SwapperV4} SWP)
-                    (ref-SWPI:module{SwapperIssueV4} SWPI)
-                    (ref-SWPU:module{SwapperUsageV3} SWPU)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-SWP:module{SwapperV5} SWP)
+                    (ref-SWPI:module{SwapperIssueV5} SWPI)
+                    (ref-SWPU:module{SwapperUsageV4} SWPU)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                     (slippage:decimal (at "slippage-percent" slippage-bounds))
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-SWPU::C_Swap 
                             patron executor swpair [input-id] [input-amount] output-id 
                             slippage stoa-pid slippage-bounds
@@ -3217,15 +3217,15 @@
             (let
                 (
                     (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SWP:module{SwapperV4} SWP)
-                    (ref-SWPI:module{SwapperIssueV4} SWPI)
-                    (ref-SWPU:module{SwapperUsageV3} SWPU)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-SWP:module{SwapperV5} SWP)
+                    (ref-SWPI:module{SwapperIssueV5} SWPI)
+                    (ref-SWPU:module{SwapperUsageV4} SWPU)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
-                    (slippage-bounds:object{SwapperUsageV3.Slippage}
+                    (slippage-bounds:object{SwapperUsageV4.Slippage}
                         (ref-SWPU::UDC_SpawnSlippageBounds swpair [input-id] [input-amount] output-id -1.0)
                     )
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-SWPU::C_Swap 
                             patron executor swpair [input-id] [input-amount] output-id 
                             -1.0 stoa-pid slippage-bounds
@@ -3246,20 +3246,20 @@
             input-ids:[string]
             input-amounts:[decimal]
             output-id:string
-            slippage-bounds:object{SwapperUsageV3.Slippage}
+            slippage-bounds:object{SwapperUsageV4.Slippage}
         )
         @doc "Executes A Swap from <input-ids> with <input-amounts> to <output-id> with <slippage>"
         (with-capability (P|TS)
             (let
                 (
                     (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SWP:module{SwapperV4} SWP)
-                    (ref-SWPI:module{SwapperIssueV4} SWPI)
-                    (ref-SWPU:module{SwapperUsageV3} SWPU)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-SWP:module{SwapperV5} SWP)
+                    (ref-SWPI:module{SwapperIssueV5} SWPI)
+                    (ref-SWPU:module{SwapperUsageV4} SWPU)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                     (slippage:decimal (at "slippage-percent" slippage-bounds))
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-SWPU::C_Swap 
                             patron executor swpair input-ids input-amounts output-id 
                             slippage stoa-pid slippage-bounds
@@ -3295,15 +3295,15 @@
             (let
                 (
                     (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SWP:module{SwapperV4} SWP)
-                    (ref-SWPI:module{SwapperIssueV4} SWPI)
-                    (ref-SWPU:module{SwapperUsageV3} SWPU)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-SWP:module{SwapperV5} SWP)
+                    (ref-SWPI:module{SwapperIssueV5} SWPI)
+                    (ref-SWPU:module{SwapperUsageV4} SWPU)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
-                    (slippage-bounds:object{SwapperUsageV3.Slippage}
+                    (slippage-bounds:object{SwapperUsageV4.Slippage}
                         (ref-SWPU::UDC_SpawnSlippageBounds swpair input-ids input-amounts output-id -1.0)
                     )
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-SWPU::C_Swap 
                             patron executor swpair input-ids input-amounts output-id 
                             -1.0 stoa-pid slippage-bounds)
@@ -3336,7 +3336,7 @@
 ;; REPL: REPL/Stage_01/[6.10]_PYTHIA.repl
 ;;
 ;; net: v7   ·   dev: v8   ;; bumped by the StoicSyntax refactor — deploy v8 then set net: v8
-(interface TalosStageOne_ClientFourV8
+(interface TalosStageOne_ClientFourV9
     @doc "Talos Stage One Client Four V7 — patronless Cronoton A_RevokeLink (no IGNIS); C_RevokeLink still 1 IGNIS."
 
     ;;<=========================================================================>
@@ -3422,7 +3422,7 @@
         ))
     (defun PYTHIA|A_RevokeLink:string (executor:string dual-link-key:string))
     (defun PYTHIA|A_Flush:string
-        (executor:string entries:[object{PythiaLedgerV3.PYTHIA|S|PythFlushEntry}]))
+        (executor:string entries:[object{PythiaLedgerV4.PYTHIA|S|PythFlushEntry}]))
     ;;#17H fix: PYTHIA|A_UpdateDeployPrice/A_UpdateRenamePrice were never wired into any Talos
     ;;module - the core PYTHIA functions (GOV|PYTHIA_ADMIN-gated) existed but had no reachable
     ;;client path, permanently frozen at their hardcoded defaults for anyone, even the admin.
@@ -3438,7 +3438,7 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements TalosStageOne_ClientFourV8)
+    (implements TalosStageOne_ClientFourV9)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -3454,7 +3454,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -3473,7 +3473,7 @@
     (defcap P|TS ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (gap:bool (ref-DALOS::UR_GAP))
             )
             (enforce (not gap) "While Global Administrative Pause is online, no client Functions can be executed")
@@ -3488,7 +3488,7 @@
     (defun P|Info ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::P|Info)
         )
@@ -3660,8 +3660,8 @@
         (with-capability (P|TS)
             (let 
                 (
-                    (ref-CODEX:module{CodexV2} CODEX)
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (ref-CODEX:module{CodexV3} CODEX)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
                 )
                 ;;THE GASLESS PATRON, RESOLVED LOCALLY. `GASLESS-PATRON` is a defconst in
                 ;;01_TS01-A, not something every Talos module has -- writing the bare name here
@@ -3681,8 +3681,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-PYTHIA:module{PythiaV5} PYTHIA)
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (ref-PYTHIA:module{PythiaV6} PYTHIA)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
                 )
                 (ref-PYTHIA::A_LinkDualApiKey (ref-DALOS::GOV|DALOS|SC_NAME) executor standard-apollo smart-apollo)
             )
@@ -3693,21 +3693,21 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-PYTHIA:module{PythiaV5} PYTHIA)
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (ref-PYTHIA:module{PythiaV6} PYTHIA)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
                 )
                 (ref-PYTHIA::A_RevokeDualLink (ref-DALOS::GOV|DALOS|SC_NAME) executor dual-link-key)
             )
         )
     )
     (defun PYTHIA|A_Flush:string
-        (executor:string entries:[object{PythiaLedgerV3.PYTHIA|S|PythFlushEntry}])
+        (executor:string entries:[object{PythiaLedgerV4.PYTHIA|S|PythFlushEntry}])
         @doc "Khronoton batch Pyth ledger flush (order-independent day entries; no fee)."
         (with-capability (P|TS)
             (let
                 (
-                    (ref-LEDGER:module{PythiaLedgerV3} PYTHIA)
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (ref-LEDGER:module{PythiaLedgerV4} PYTHIA)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
                 )
                 (ref-LEDGER::A_Flush (ref-DALOS::GOV|DALOS|SC_NAME) executor entries)
             )
@@ -3718,8 +3718,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-PYTHIA:module{PythiaV5} PYTHIA)
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (ref-PYTHIA:module{PythiaV6} PYTHIA)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
                 )
                 (ref-PYTHIA::A_UpdateDeployPrice (ref-DALOS::GOV|DALOS|SC_NAME) executor new-price)
             )
@@ -3730,8 +3730,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-PYTHIA:module{PythiaV5} PYTHIA)
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (ref-PYTHIA:module{PythiaV6} PYTHIA)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
                 )
                 (ref-PYTHIA::A_UpdateRenamePrice (ref-DALOS::GOV|DALOS|SC_NAME) executor new-price)
             )
@@ -3742,8 +3742,8 @@
         (with-capability (P|TS)
             (let 
                 (
-                    (ref-CODEX:module{CodexV2} CODEX)
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-CODEX:module{CodexV3} CODEX)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 )
                 (let ((msg:string (ref-CODEX::C_RotateCodexGuard patron executor codex-id new-codex-guard)))
                     (ref-IGNIS::XE_CollectIgnis patron (ref-CODEX::URCi_RotateCodexGuard patron))
@@ -3757,8 +3757,8 @@
         (with-capability (P|TS)
             (let 
                 (
-                    (ref-CODEX:module{CodexV2} CODEX)
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-CODEX:module{CodexV3} CODEX)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 )
                 (let ((msg:string (ref-CODEX::C_RecordArweaveUpload patron executor codex-id arweave-tx-id uploaded-bytes)))
                     (ref-IGNIS::XE_CollectIgnis patron (ref-CODEX::URCi_RecordArweaveUpload patron))
@@ -3772,8 +3772,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-CODEX:module{CodexV2} CODEX)
-                    (ref-IGNIS|V2:module{IgnisCollectorV3} IGNIS)
+                    (ref-CODEX:module{CodexV3} CODEX)
+                    (ref-IGNIS|V2:module{IgnisCollectorV4} IGNIS)
                     (stoa-fee:decimal (ref-CODEX::URCi_RegisterStoicTag tag-name))
                     (msg:string
                         (ref-CODEX::C_RegisterStoicTag patron executor tag-name)
@@ -3789,8 +3789,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-CODEX:module{CodexV2} CODEX)
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-CODEX:module{CodexV3} CODEX)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (tag-fee:decimal (ref-CODEX::URCi_ReleaseStoicTag tag-name))
                     (msg:string (ref-CODEX::C_ReleaseStoicTag patron executor tag-name))
                 )
@@ -3815,8 +3815,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-PYTHIA:module{PythiaV5} PYTHIA)
-                    (ref-IGNIS|V2:module{IgnisCollectorV3} IGNIS)
+                    (ref-PYTHIA:module{PythiaV6} PYTHIA)
+                    (ref-IGNIS|V2:module{IgnisCollectorV4} IGNIS)
                     (deploy-fee:decimal (ref-PYTHIA::URCi_DeployApiKey))
                     (fee-anchor:string (ref-PYTHIA::UC_FeeDiscountAnchor))
                     (msg:string
@@ -3839,8 +3839,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-PYTHIA:module{PythiaV5} PYTHIA)
-                    (ref-IGNIS|V2:module{IgnisCollectorV3} IGNIS)
+                    (ref-PYTHIA:module{PythiaV6} PYTHIA)
+                    (ref-IGNIS|V2:module{IgnisCollectorV4} IGNIS)
                     (rename-fee:decimal (ref-PYTHIA::URCi_UpdateDualConsumerLane))
                     (fee-anchor:string (ref-PYTHIA::UC_FeeDiscountAnchor))
                     (msg:string
@@ -3863,7 +3863,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-PYTHIA:module{PythiaV5} PYTHIA)
+                    (ref-PYTHIA:module{PythiaV6} PYTHIA)
                 )
                 (ref-PYTHIA::C_LinkDualApiKey executor standard-apollo smart-apollo consumer-lane)
             )
@@ -3877,8 +3877,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-PYTHIA:module{PythiaV5} PYTHIA)
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-PYTHIA:module{PythiaV6} PYTHIA)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (revoke-fee:decimal (ref-PYTHIA::URCi_RevokeLink))
                     (msg:string
                         (ref-PYTHIA::C_RevokeDualLink patron executor dual-link-key)
@@ -3915,7 +3915,7 @@
 ;; retired the frozen-copy convention in favour of git history. The comment that claimed the
 ;; archive was 'frozen here' outlived the archive by two weeks — documentation that survives
 ;; what it describes is indistinguishable from correct, from the outside. See DEFECT-LEDGER §8.6.
-(interface TalosStageOne_ClientPactsV4
+(interface TalosStageOne_ClientPactsV5
     @doc "Exposes Ouronet Stage One Client Multistep Functions \
         \ Currently including functions from SWP Module. \
         \ V3: pooled issue caps use SwapperV4.PoolTokens (interface bump per versioning rule)."
@@ -3961,9 +3961,9 @@
     ;;
     ;;
     ;;Issue
-    (defun SWP|C_IssueStablePool (patron:string executor:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal amp:decimal p:bool))
-    (defun SWP|C_IssueWeightedPool (patron:string executor:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool))
-    (defun SWP|C_IssueStandardPool (patron:string executor:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal p:bool))
+    (defun SWP|C_IssueStablePool (patron:string executor:string pool-tokens:[object{SwapperV5.PoolTokens}] fee-lp:decimal amp:decimal p:bool))
+    (defun SWP|C_IssueWeightedPool (patron:string executor:string pool-tokens:[object{SwapperV5.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool))
+    (defun SWP|C_IssueStandardPool (patron:string executor:string pool-tokens:[object{SwapperV5.PoolTokens}] fee-lp:decimal p:bool))
     ;;
     (defun SWP|C_AddStandardLiquidity (patron:string executor:string swpair:string input-amounts:[decimal]))
     (defun SWP|C_AddIcedLiquidity (patron:string executor:string swpair:string input-amounts:[decimal]))
@@ -3980,7 +3980,7 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements TalosStageOne_ClientPactsV4)
+    (implements TalosStageOne_ClientPactsV5)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -3996,7 +3996,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -4015,7 +4015,7 @@
     (defcap P|TS ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (gap:bool (ref-DALOS::UR_GAP))
             )
             (enforce (not gap) "While Global Administrative Pause is online, no client Functions can be executed")
@@ -4030,7 +4030,7 @@
     (defun P|Info ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::P|Info)
         )
@@ -4175,7 +4175,7 @@
     ;;
     ;;
     ;;  [SWP PactStarters]
-    (defun SWP|C_IssueStablePool (patron:string executor:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal amp:decimal p:bool)
+    (defun SWP|C_IssueStablePool (patron:string executor:string pool-tokens:[object{SwapperV5.PoolTokens}] fee-lp:decimal amp:decimal p:bool)
         @doc "Similar outcome to <ref-TS01-C2::SWP|C_IssueStable>, but over 3 <steps> (0|1|2) via <defpact> \
             \ Calling this function runs the Step 0 of 2. To finalize SWPair creation, Steps 1 and 2 must also be executed \
             \ \
@@ -4186,29 +4186,29 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-MTX-SWP:module{SwapperMtxV4} MTX-SWP)
+                    (ref-MTX-SWP:module{SwapperMtxV5} MTX-SWP)
                 )
                 (ref-MTX-SWP::C_IssueStablePool patron executor pool-tokens fee-lp amp p)
             )
         )
     )
-    (defun SWP|C_IssueWeightedPool (patron:string executor:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool)
+    (defun SWP|C_IssueWeightedPool (patron:string executor:string pool-tokens:[object{SwapperV5.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool)
         @doc "Similar to <SWP|C_IssueStableMultiStep>, but issues a W (Weighted) Pool"
         (with-capability (P|TS)
             (let
                 (
-                    (ref-MTX-SWP:module{SwapperMtxV4} MTX-SWP)
+                    (ref-MTX-SWP:module{SwapperMtxV5} MTX-SWP)
                 )
                 (ref-MTX-SWP::C_IssueWeightedPool patron executor pool-tokens fee-lp weights p)
             )
         )
     )
-    (defun SWP|C_IssueStandardPool (patron:string executor:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal p:bool)
+    (defun SWP|C_IssueStandardPool (patron:string executor:string pool-tokens:[object{SwapperV5.PoolTokens}] fee-lp:decimal p:bool)
         @doc "Similar to <SWP|C_IssueStableMultiStep>, but issues a P (Standard) Pool"
         (with-capability (P|TS)
             (let
                 (
-                    (ref-MTX-SWP:module{SwapperMtxV4} MTX-SWP)
+                    (ref-MTX-SWP:module{SwapperMtxV5} MTX-SWP)
                 )
                 (ref-MTX-SWP::C_IssueStandardPool patron executor pool-tokens fee-lp p)
             )
@@ -4222,7 +4222,7 @@
                 (
                     (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
-                    (ref-MTX-SWP:module{SwapperMtxV4} MTX-SWP)
+                    (ref-MTX-SWP:module{SwapperMtxV5} MTX-SWP)
                 )
                 (ref-MTX-SWP::C_AddStandardLiquidity 
                     patron executor swpair input-amounts stoa-pid
@@ -4237,7 +4237,7 @@
                 (
                     (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
-                    (ref-MTX-SWP:module{SwapperMtxV4} MTX-SWP)
+                    (ref-MTX-SWP:module{SwapperMtxV5} MTX-SWP)
                 )
                 (ref-MTX-SWP::C_AddIcedLiquidity 
                     patron executor swpair input-amounts stoa-pid
@@ -4252,7 +4252,7 @@
                 (
                     (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
-                    (ref-MTX-SWP:module{SwapperMtxV4} MTX-SWP)
+                    (ref-MTX-SWP:module{SwapperMtxV5} MTX-SWP)
                 )
                 (ref-MTX-SWP::C_AddGlacialLiquidity 
                     patron executor swpair input-amounts stoa-pid
@@ -4267,7 +4267,7 @@
                 (
                     (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
-                    (ref-MTX-SWP:module{SwapperMtxV4} MTX-SWP)
+                    (ref-MTX-SWP:module{SwapperMtxV5} MTX-SWP)
                 )
                 (ref-MTX-SWP::C_AddFrozenLiquidity
                     patron executor swpair frozen-dptf input-amount stoa-pid
@@ -4282,7 +4282,7 @@
                 (
                     (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
-                    (ref-MTX-SWP:module{SwapperMtxV4} MTX-SWP)
+                    (ref-MTX-SWP:module{SwapperMtxV5} MTX-SWP)
                 )
                 (ref-MTX-SWP::C_AddSleepingLiquidity
                     patron executor swpair sleeping-dpof nonce stoa-pid
@@ -4316,7 +4316,7 @@
 ;;     OI|UDC_*IgnisCosts / *StoaCosts, OI|UC_IfpFromOutputCumulator, …) was
 ;;     RELOCATED into the IGNIS module (02_IGNIS.pact) — the pre-Talos cost hub,
 ;;     so Talos + every cost module + the Z_Reads presentation layer can reach it.
-;;     Callers now bind `module{OuronetInfoV2} IGNIS`.
+;;     Callers now bind `module{OuronetInfoV3} IGNIS`.
 ;;   - Phase 1.2 (INFO consolidation): the 9 DALOS client-op previews that then
 ;;     lived here (DALOS-INFO|URC_ControlSmartAccount / DeploySmartAccount /
 ;;     DeployStandardAccount / RotateGovernor / RotateGuard / RotateStoa /
@@ -4348,7 +4348,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )

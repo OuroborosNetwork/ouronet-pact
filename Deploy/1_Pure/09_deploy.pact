@@ -1,8 +1,8 @@
 ;; ---------------------------------------------------------------------------
-;; OURONET DEPLOY -- file 9 of 24
-;; This is STEP 9 of 25 in the full sequence (see Deploy/MANIFEST.md).
+;; OURONET DEPLOY -- file 9 of 25
+;; This is STEP 9 of 26 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-8 must have run first, including the init steps between deploys.
-;; 4 source file(s), 252,440 gas measured in the REPL gas model, 266,871 bytes
+;; 4 source file(s), 273,937 gas measured in the REPL gas model, 269,636 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/21_CODEX.pact
@@ -10,10 +10,10 @@
 ;;   1_SOVEREIGN/STAGE_01/3_Talos/01_TS01-A.pact
 ;;   1_SOVEREIGN/STAGE_01/3_Talos/02_TS01-C1.pact
 ;;
-;; TOTAL: 5 interface(s), 4 module(s), 18 table(s)
+;; TOTAL: 4 interface(s), 4 module(s), 18 table(s)
 ;; What it DEPLOYS, in load order:
 ;;   -- 1_SOVEREIGN/STAGE_01/2_Core/21_CODEX.pact
-;;      interface  CodexV2
+;;      interface  CodexV3
 ;;      module     CODEX
 ;;      table      P|T
 ;;      table      P|MT
@@ -22,8 +22,8 @@
 ;;      table      CODEX|T|StoicTags
 ;;      table      CODEX|T|StoicTagsByAccount
 ;;   -- 1_SOVEREIGN/STAGE_01/2_Core/22_PYTHIA.pact
-;;      interface  PythiaV5
-;;      interface  PythiaLedgerV3
+;;      interface  PythiaV6
+;;      interface  PythiaLedgerV4
 ;;      module     PYTHIA
 ;;      table      P|T
 ;;      table      P|MT
@@ -34,12 +34,11 @@
 ;;      table      PYTHIA|T|PythDaily
 ;;      table      PYTHIA|T|PythTotal
 ;;   -- 1_SOVEREIGN/STAGE_01/3_Talos/01_TS01-A.pact
-;;      interface  TalosStageOne_AdminV2
 ;;      module     TS01-A
 ;;      table      P|T
 ;;      table      P|MT
 ;;   -- 1_SOVEREIGN/STAGE_01/3_Talos/02_TS01-C1.pact
-;;      interface  TalosStageOne_ClientOneV2
+;;      interface  TalosStageOne_ClientOneV3
 ;;      module     TS01-C1
 ;;      table      P|T
 ;;      table      P|MT
@@ -58,7 +57,7 @@
 ;; Mnemosyne operator: ouronet-ns.codex-keyset (define before A_RegisterCodexIdentity).
 ;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface CodexV2
+(interface CodexV3
     @doc "CodexV2 is the interface for the CODEX module — the on-chain Codex Identity \
         \ registry, Arweave upload audit log, and StoicTag name registry. It declares UC \
         \ validators (Apollo composite id, Arweave tx-id, StoicTag name/fee), UR field \
@@ -116,8 +115,8 @@
     ;; consumed by BOTH the TS01-C4 exec collect and the INFO preview layer.
     (defun URCi_RegisterStoicTag:decimal (tag-name:string))
     (defun URCi_ReleaseStoicTag:decimal (tag-name:string))
-    (defun URCi_RotateCodexGuard:object{IgnisCollectorV3.OutputCumulator} (patron:string))
-    (defun URCi_RecordArweaveUpload:object{IgnisCollectorV3.OutputCumulator} (patron:string))
+    (defun URCi_RotateCodexGuard:object{IgnisCollectorV4.OutputCumulator} (patron:string))
+    (defun URCi_RecordArweaveUpload:object{IgnisCollectorV4.OutputCumulator} (patron:string))
     ;;
     ;; [UR] CODEX|S|Identity — field accessors + DataOrNull (UR_CIX|Data is module-only; schema not in interface)
     (defun UR_CIX|CodexIdStandard:string (codex-id:string))
@@ -169,7 +168,7 @@
           codex-guard:guard
           registered-by:string ))
     ;;
-    ;;#24H fix: these four were already live/actively-called via TS01-C4's module{CodexV2}-typed
+    ;;#24H fix: these four were already live/actively-called via TS01-C4's module{CodexV3}-typed
     ;;ref, but missing from the interface itself. Added here, purely additive - the module already
     ;;implements all four with matching signatures.
     ;; [C]
@@ -178,6 +177,20 @@
     (defun C_RegisterStoicTag:string (patron:string executor:string tag-name:string))
     (defun C_ReleaseStoicTag:string (patron:string executor:string tag-name:string))
 
+
+    ;;<=========================================================================>
+    ;; ADDED 2026-10-12 -- interface-membership sweep (StoicSyntax-Prefixes.md Sec5,
+    ;; owner ruling). Every one of these was already live in the module body; this
+    ;; closes the gap between what the module DOES and what its interface SAYS it does.
+    ;;<=========================================================================>
+    (defun UC_IsBase64urlChar:bool (c:string))
+    (defun UDC_AWT|EmptyLatest:object (codex-id:string))
+    (defun UDC_CIX|GuardUpdate:object (new-codex-guard:guard))
+    (defun UDC_CIX|Unregistered:object ())
+    (defun UDC_STBA|IzActiveUpdate:object (iz-active:bool))
+    (defun UDC_STBA|Unregistered:object ())
+    (defun UDC_STG|IzActiveUpdate:object (iz-active:bool))
+    (defun UDC_STG|Unregistered:object ())
 )
 
 (module CODEX GOV
@@ -187,7 +200,7 @@
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
-    (implements CodexV2)
+    (implements CodexV3)
     (implements OuronetPolicyV2)
 
     ;;<=========================================================================>
@@ -204,7 +217,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -228,7 +241,7 @@
     (defun P|Info ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::P|Info)
         )
@@ -507,7 +520,7 @@
         (let
             (
                 (ref-U|DALOS:module{UtilityDalosGlyphsV3} U|DALOS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 ;;
                 (tag-row-found:bool (not (= (try false (UR_STG|Data tag-name)) false)))
                 (tag-iz-active:bool
@@ -571,7 +584,7 @@
         @doc "Caller controls the Ouronet (DALOS) account — Standard or Smart, not Stoa coin.details."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership account-address)
         )
@@ -767,27 +780,27 @@
             \ so this returns the pre-discount amount. Consumed by TS01-C4 exec + INFO."
         (UC_StoicTagStoaFee tag-name)
     )
-    (defun URCi_RotateCodexGuard:object{IgnisCollectorV3.OutputCumulator} (patron:string)
+    (defun URCi_RotateCodexGuard:object{IgnisCollectorV4.OutputCumulator} (patron:string)
         @doc "Cost single-source for CODEX|C_RotateCodexGuard — deter(usage) + components, on the \
             \ patron (the codex row carries no konto of its own). USAGE tier (deterrence 1x, owner \
             \ 2026-09-07): CODEX ops pay what they structurally cost and carry no deterrent premium. \
             \ Consumed by the TS01-C4 exec path + INFO, so the two cannot drift."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisPrice "CODEX|C_RotateCodexGuard" "usage")
                 patron (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_RecordArweaveUpload:object{IgnisCollectorV3.OutputCumulator} (patron:string)
+    (defun URCi_RecordArweaveUpload:object{IgnisCollectorV4.OutputCumulator} (patron:string)
         @doc "Cost single-source for CODEX|C_RecordArweaveUpload — deter(usage) + components, on \
             \ the patron. USAGE tier: recording an upload is routine activity, not a config \
             \ change. Consumed by the TS01-C4 exec path + INFO."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisPrice "CODEX|C_RecordArweaveUpload" "usage")
@@ -937,12 +950,12 @@
         )
     )
     ;;
-    (defun INFO_CODEX|RegisterStoicTag:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_CODEX|RegisterStoicTag:object{OuronetInfoV3.ClientInfo}
         (patron:string tag-name:string account-address:string)
         @doc "ClientInfo preview for TS01-C4 CODEX|C_RegisterStoicTag — STOA from patron; Elite discount on account-address."
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 ;;single-source: the SAME reader the TS01-C4 exec path collects from
                 (stoa-fee:decimal (URCi_RegisterStoicTag tag-name))
                 (glyph-count:integer (length tag-name))
@@ -960,12 +973,12 @@
             )
         )
     )
-    (defun INFO_CODEX|RotateCodexGuard:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_CODEX|RotateCodexGuard:object{OuronetInfoV3.ClientInfo}
         (patron:string codex-id:string)
         
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Rotate the Codex Guard of Codex {}." [codex-id])]
@@ -977,14 +990,14 @@
             )
         )
     )
-    (defun INFO_CODEX|RecordArweaveUpload:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_CODEX|RecordArweaveUpload:object{OuronetInfoV3.ClientInfo}
         (patron:string codex-id:string arweave-tx-id:string uploaded-bytes:integer)
         @doc "ClientInfo preview for TS01-C4 CODEX|C_RecordArweaveUpload — deter(usage) + \
             \ components via URCi_RecordArweaveUpload, so preview and execution cannot drift. \
             \ Records the Arweave transaction id and the uploaded byte count."
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Record Arweave upload {} ({} bytes) for Codex {}."
@@ -997,13 +1010,13 @@
             )
         )
     )
-    (defun INFO_CODEX|ReleaseStoicTag:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_CODEX|ReleaseStoicTag:object{OuronetInfoV3.ClientInfo}
         (patron:string tag-name:string)
         @doc "ClientInfo preview for TS01-C4 CODEX|C_ReleaseStoicTag (IGNIS = UC_StoicTagStoaFee per glyph)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 ;;single-source: the SAME reader the TS01-C4 exec path collects from
                 (tag-fee:decimal (URCi_ReleaseStoicTag tag-name))
                 (glyph-count:integer (length tag-name))
@@ -1138,7 +1151,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership executor)
         )
@@ -1162,7 +1175,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership executor)
         )
@@ -1181,7 +1194,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership executor)
         )
@@ -1267,7 +1280,7 @@
 ;; If PYTHIA were already on-chain at V3, only PythDaily + PythTotal are additive create-tables.
 ;;
 ;; net: v4   ·   dev: v5   ;; bumped by the StoicSyntax refactor — deploy v5 then set net: v5
-(interface PythiaV5
+(interface PythiaV6
     @doc "PYTHIA V4 — V3 dual-Apollo + Config UR prices; select-based inventory is URH_."
 
     ;;<=========================================================================>
@@ -1387,9 +1400,37 @@
             new-name:string
         ))
 
+
+    ;;<=========================================================================>
+    ;; ADDED 2026-10-12 -- interface-membership sweep (StoicSyntax-Prefixes.md Sec5,
+    ;; owner ruling). Every one of these was already live in the module body; this
+    ;; closes the gap between what the module DOES and what its interface SAYS it does.
+    ;;<=========================================================================>
+    (defun UC_AutonomousConsumerLane:string ())
+    (defun UDC_AKY|Unregistered:object ())
+    (defun UDC_DLK|Unregistered:object ())
+    (defun UDC_DualLinkView:object (
+            dual-link-key:string
+            standard-apollo:string
+            smart-apollo:string
+            iz-active:bool
+            standard-owner:string
+            smart-owner:string
+            consumer-lane:string
+        ))
+    (defun UEV_DualPairForLink (
+            standard-apollo:string
+            smart-apollo:string
+        ))
+    (defun UEV_DualPairReadyForActivate (
+            standard-apollo:string
+            smart-apollo:string
+        ))
+    (defun UEV_ExecutorIsHalfOwner (executor:string standard-apollo:string smart-apollo:string))
+    (defun UEV_ValidateCompositeDualLinkKey:bool (dual-link-key:string))
 )
 ;; net: v2   ·   dev: v3   ;; bumped by the StoicSyntax refactor — deploy v3 then set net: v3
-(interface PythiaLedgerV3
+(interface PythiaLedgerV4
     @doc "Pyth ledger V2 — batch flush entries (explicit day, iz-complete); order-independent txs."
 
     ;;<=========================================================================>
@@ -1479,6 +1520,17 @@
     ;;
     (defun A_Flush:string (patron:string executor:string entries:[object{PYTHIA|S|PythFlushEntry}]))
 
+
+    ;;<=========================================================================>
+    ;; ADDED 2026-10-12 -- interface-membership sweep (StoicSyntax-Prefixes.md Sec5,
+    ;; owner ruling). Every one of these was already live in the module body; this
+    ;; closes the gap between what the module DOES and what its interface SAYS it does.
+    ;;<=========================================================================>
+    (defun UC_MaxDay:integer (a:integer b:integer))
+    (defun UC_PythDayOrdinal:integer (stamp:time))
+    (defun UCk_PythDaily:string (day:integer))
+    (defun UEV_FlushEntries:bool (entries:[object{PYTHIA|S|PythFlushEntry}]))
+    (defun UR_PythDailyExists:bool (day:integer))
 )
 ;;
 (module PYTHIA GOV
@@ -1487,8 +1539,8 @@
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
-    (implements PythiaV5)
-    (implements PythiaLedgerV3)
+    (implements PythiaV6)
+    (implements PythiaLedgerV4)
     (implements OuronetPolicyV2)
 
     ;;<=========================================================================>
@@ -1505,7 +1557,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -1529,7 +1581,7 @@
     (defun P|Info ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::P|Info)
         )
@@ -1698,8 +1750,8 @@
     (deftable PYTHIA|T|DualLinks:{PYTHIA|S|DualLink})                   ;;Key = <dual-link-key>
     (deftable PYTHIA|T|Config:{PYTHIA|S|Config})                        ;;Key = PYTHIA|INFO
     (deftable PYTHIA|T|Revocation:{PYTHIA|S|Revocation})                ;;Key = PYTHIA|REVOCATION
-    (deftable PYTHIA|T|PythDaily:{PythiaLedgerV3.PYTHIA|S|PythDaily})   ;;Key = <day ordinal string>
-    (deftable PYTHIA|T|PythTotal:{PythiaLedgerV3.PYTHIA|S|PythTotal})   ;;Key = PYTHIA|STOACHAIN
+    (deftable PYTHIA|T|PythDaily:{PythiaLedgerV4.PYTHIA|S|PythDaily})   ;;Key = <day ordinal string>
+    (deftable PYTHIA|T|PythTotal:{PythiaLedgerV4.PYTHIA|S|PythTotal})   ;;Key = PYTHIA|STOACHAIN
 
     ;;<=========================================================================>
     ;;{4}  CAPABILITIES
@@ -1828,7 +1880,7 @@
         )
     )
     (defcap PYTHIA|A>FLUSH
-        (entries:[object{PythiaLedgerV3.PYTHIA|S|PythFlushEntry}])
+        (entries:[object{PythiaLedgerV4.PYTHIA|S|PythFlushEntry}])
         @doc "Cronoton batch Pyth ledger flush; each entry is one calendar day (order-independent across txs)."
         @event
         (let
@@ -1874,7 +1926,7 @@
         @doc "Caller controls the Ouronet (DALOS) account."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership owner-account)
         )
@@ -1985,7 +2037,7 @@
         , "consumer-lane"    : consumer-lane
         }
     )
-    (defun UDC_PythMetrics:object{PythiaLedgerV3.PYTHIA|S|PythMetrics}
+    (defun UDC_PythMetrics:object{PythiaLedgerV4.PYTHIA|S|PythMetrics}
         (
             petitions:integer
             pondus:decimal
@@ -1994,7 +2046,7 @@
             failed-transactions:integer
             wasted-gas-reserved:integer
         )
-        @doc "Constructor for object{PythiaLedgerV3.PYTHIA|S|PythMetrics}."
+        @doc "Constructor for object{PythiaLedgerV4.PYTHIA|S|PythMetrics}."
         { "petitions": petitions
         , "pondus": pondus
         , "transactions": transactions
@@ -2003,39 +2055,39 @@
         , "wasted-gas-reserved": wasted-gas-reserved
         }
     )
-    (defun UDC_PythMetrics|Zero:object{PythiaLedgerV3.PYTHIA|S|PythMetrics} ()
+    (defun UDC_PythMetrics|Zero:object{PythiaLedgerV4.PYTHIA|S|PythMetrics} ()
         @doc "Zeroed six-metric blob."
         (UDC_PythMetrics 0 0.0 0 0 0 0)
     )
-    (defun UDC_PythTotal:object{PythiaLedgerV3.PYTHIA|S|PythTotal}
+    (defun UDC_PythTotal:object{PythiaLedgerV4.PYTHIA|S|PythTotal}
         (
-            total-metrics:object{PythiaLedgerV3.PYTHIA|S|PythMetrics}
+            total-metrics:object{PythiaLedgerV4.PYTHIA|S|PythMetrics}
             last-day:integer
         )
-        @doc "Constructor for object{PythiaLedgerV3.PYTHIA|S|PythTotal}."
+        @doc "Constructor for object{PythiaLedgerV4.PYTHIA|S|PythTotal}."
         { "total-metrics": total-metrics
         , "last-day": last-day
         }
     )
-    (defun UDC_PythTotal|Zero:object{PythiaLedgerV3.PYTHIA|S|PythTotal} ()
+    (defun UDC_PythTotal|Zero:object{PythiaLedgerV4.PYTHIA|S|PythTotal} ()
         @doc "Zeroed Pyth running total (default before first flush)."
         (UDC_PythTotal (UDC_PythMetrics|Zero) 0)
     )
-    (defun UDC_PythDaily:object{PythiaLedgerV3.PYTHIA|S|PythDaily}
+    (defun UDC_PythDaily:object{PythiaLedgerV4.PYTHIA|S|PythDaily}
         (
             day:integer
             flushed-at:time
             iz-sealed:bool
-            metrics:object{PythiaLedgerV3.PYTHIA|S|PythMetrics}
+            metrics:object{PythiaLedgerV4.PYTHIA|S|PythMetrics}
         )
-        @doc "Constructor for object{PythiaLedgerV3.PYTHIA|S|PythDaily}."
+        @doc "Constructor for object{PythiaLedgerV4.PYTHIA|S|PythDaily}."
         { "day": day
         , "flushed-at": flushed-at
         , "iz-sealed": iz-sealed
         , "metrics": metrics
         }
     )
-    (defun UDC_PythFlushEntry:object{PythiaLedgerV3.PYTHIA|S|PythFlushEntry}
+    (defun UDC_PythFlushEntry:object{PythiaLedgerV4.PYTHIA|S|PythFlushEntry}
         (
             day:integer
             iz-complete:bool
@@ -2046,7 +2098,7 @@
             failed-transactions:integer
             wasted-gas-reserved:integer
         )
-        @doc "Constructor for object{PythiaLedgerV3.PYTHIA|S|PythFlushEntry}."
+        @doc "Constructor for object{PythiaLedgerV4.PYTHIA|S|PythFlushEntry}."
         { "day": day
         , "iz-complete": iz-complete
         , "petitions": petitions
@@ -2116,10 +2168,10 @@
         @doc "Calendar operating day: 1 = PYTHIA|LEDGER-EPOCH-START (UTC midnight boundary)."
         (+ 1 (floor (/ (diff-time stamp PYTHIA|LEDGER-EPOCH-START) PYTHIA|SECONDS-PER-DAY)))
     )
-    (defun UC_AddPythMetrics:object{PythiaLedgerV3.PYTHIA|S|PythMetrics}
+    (defun UC_AddPythMetrics:object{PythiaLedgerV4.PYTHIA|S|PythMetrics}
         (
-            a:object{PythiaLedgerV3.PYTHIA|S|PythMetrics}
-            b:object{PythiaLedgerV3.PYTHIA|S|PythMetrics}
+            a:object{PythiaLedgerV4.PYTHIA|S|PythMetrics}
+            b:object{PythiaLedgerV4.PYTHIA|S|PythMetrics}
         )
         @doc "Element-wise sum — A_Flush ADDs each entry (gateway drain delta) onto day row and grand total."
         { "petitions": (+ (at "petitions" a) (at "petitions" b))
@@ -2130,14 +2182,14 @@
         , "wasted-gas-reserved": (+ (at "wasted-gas-reserved" a) (at "wasted-gas-reserved" b))
         }
     )
-    (defun UC_FlushAccFromTotal:object{PythiaLedgerV3.PYTHIA|S|PythFlushAcc}
-        (tot:object{PythiaLedgerV3.PYTHIA|S|PythTotal})
+    (defun UC_FlushAccFromTotal:object{PythiaLedgerV4.PYTHIA|S|PythFlushAcc}
+        (tot:object{PythiaLedgerV4.PYTHIA|S|PythTotal})
         @doc "Seed batch fold from current PYTHIA|T|PythTotal row."
         { "total-metrics": (at "total-metrics" tot)
         , "last-day": (at "last-day" tot) }
     )
-    (defun UC_FlushEntryMetrics:object{PythiaLedgerV3.PYTHIA|S|PythMetrics}
-        (entry:object{PythiaLedgerV3.PYTHIA|S|PythFlushEntry})
+    (defun UC_FlushEntryMetrics:object{PythiaLedgerV4.PYTHIA|S|PythMetrics}
+        (entry:object{PythiaLedgerV4.PYTHIA|S|PythFlushEntry})
         @doc "Extract six-metric blob from a flush entry."
         (UDC_PythMetrics
             (at "petitions" entry)
@@ -2240,7 +2292,7 @@
             \ the raw constants they replace). Governance may still override either in-table."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (with-default-read PYTHIA|T|Config PYTHIA|INFO
                 {"deploy-price" : (ref-IGNIS::UC_StoaPrice "pythia-deploy")
@@ -2282,7 +2334,7 @@
     )
     ;;
     ;; [5] PYTHIA|T|PythDaily  (PythiaLedgerV3.PYTHIA|S|PythDaily)  Key = <day ordinal string>
-    (defun UR_PythDay:object{PythiaLedgerV3.PYTHIA|S|PythDaily} (day:integer)
+    (defun UR_PythDay:object{PythiaLedgerV4.PYTHIA|S|PythDaily} (day:integer)
         @doc "Full Pyth daily delta row for day ordinal; zeroed row for un-flushed / gap \
             \ days (never aborts, so range reads survive holes in the ledger)."
         (with-default-read PYTHIA|T|PythDaily (UCk_PythDaily day)
@@ -2299,7 +2351,7 @@
     )
     ;;
     ;; [6] PYTHIA|T|PythTotal  (PythiaLedgerV3.PYTHIA|S|PythTotal)  Key = PYTHIA|STOACHAIN
-    (defun UR_PythTotal:object{PythiaLedgerV3.PYTHIA|S|PythTotal} ()
+    (defun UR_PythTotal:object{PythiaLedgerV4.PYTHIA|S|PythTotal} ()
         @doc "Running Pyth ledger totals; zeros when never flushed."
         (with-default-read PYTHIA|T|PythTotal PYTHIA|STOACHAIN
             { "total-metrics":
@@ -2315,7 +2367,7 @@
             (UDC_PythTotal total-metrics last-day)
         )
     )
-    (defun UR_PythTotal|TotalMetrics:object{PythiaLedgerV3.PYTHIA|S|PythMetrics} ()
+    (defun UR_PythTotal|TotalMetrics:object{PythiaLedgerV4.PYTHIA|S|PythMetrics} ()
         @doc "Six-metric running totals blob; zeros when never flushed."
         (at "total-metrics" (UR_PythTotal))
     )
@@ -2464,7 +2516,7 @@
             )
         )
     )
-    (defun URH_ListPythDaily:[object{PythiaLedgerV3.PYTHIA|S|PythDaily}] (from:integer to:integer)
+    (defun URH_ListPythDaily:[object{PythiaLedgerV4.PYTHIA|S|PythDaily}] (from:integer to:integer)
         @doc "Bounded daily delta rows for charting (inclusive range; empty when invalid)."
         (if
             (fold (or) false
@@ -2482,7 +2534,7 @@
         )
     )
     ;;
-    (defun INFO_PYTHIA|DeployApiKey:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_PYTHIA|DeployApiKey:object{OuronetInfoV3.ClientInfo}
         (
             patron:string
             owner-account:string
@@ -2492,7 +2544,7 @@
         @doc "ClientInfo for TS01-C4 PYTHIA|C_DeployApiKey (500 STOA per half)."
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 ;;
                 (deploy-fee:decimal (UR_DeployPrice))
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount owner-account))
@@ -2514,7 +2566,7 @@
             )
         )
     )
-    (defun INFO_PYTHIA|Link:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_PYTHIA|Link:object{OuronetInfoV3.ClientInfo}
         (
             standard-apollo:string
             smart-apollo:string
@@ -2523,7 +2575,7 @@
         @doc "ClientInfo for TS01-C4 PYTHIA|C_Link (inactive dual row; no fee)."
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 ;;
                 (dlk:string (UC_DualLinkKey standard-apollo smart-apollo))
                 (std-owner:string (UR_OwnerAccount standard-apollo))
@@ -2546,7 +2598,7 @@
             )
         )
     )
-    (defun INFO_PYTHIA|RevokeLink:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_PYTHIA|RevokeLink:object{OuronetInfoV3.ClientInfo}
         (
             patron:string
             dual-link-key:string
@@ -2554,8 +2606,8 @@
         @doc "ClientInfo for TS01-C4 PYTHIA|C_RevokeLink / A_RevokeLink (1 IGNIS)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 ;;
                 (revoke-fee:decimal (UC_RevokeIgnisFee))
                 (is-ignis-zero:bool (ref-IGNIS::URC_IsVirtualGasZero))
@@ -2583,7 +2635,7 @@
             )
         )
     )
-    (defun INFO_PYTHIA|UpdateDualConsumerLane:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_PYTHIA|UpdateDualConsumerLane:object{OuronetInfoV3.ClientInfo}
         (
             patron:string
             dual-link-key:string
@@ -2592,7 +2644,7 @@
         @doc "ClientInfo for TS01-C4 PYTHIA|C_UpdateDualConsumerLane."
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 ;;
                 (rename-fee:decimal (UR_RenamePrice))
                 (row:object{PYTHIA|S|DualLink} (UR_DLK|Data dual-link-key))
@@ -2618,10 +2670,10 @@
     )
     ;;{5.4}  Validate [UEV/CAP]
     ;;
-    (defun UEV_FlushEntries:bool (entries:[object{PythiaLedgerV3.PYTHIA|S|PythFlushEntry}])
+    (defun UEV_FlushEntries:bool (entries:[object{PythiaLedgerV4.PYTHIA|S|PythFlushEntry}])
         @doc "Validate flush batch: fold over entries; pure bool (no enforce)."
         (fold
-            (lambda (acc:bool entry:object{PythiaLedgerV3.PYTHIA|S|PythFlushEntry})
+            (lambda (acc:bool entry:object{PythiaLedgerV4.PYTHIA|S|PythFlushEntry})
                 (let
                     (
                         (day:integer (at "day" entry))
@@ -2826,7 +2878,7 @@
     (defun WI_PythDaily:string
         (
             day:integer
-            row:object{PythiaLedgerV3.PYTHIA|S|PythDaily}
+            row:object{PythiaLedgerV4.PYTHIA|S|PythDaily}
         )
         @doc "Insert PYTHIA|T|PythDaily full row (first flush of calendar day only)."
         (require-capability (SECURE))
@@ -2835,7 +2887,7 @@
     (defun WU_PythDaily|Metrics:string
         (
             day:integer
-            metrics:object{PythiaLedgerV3.PYTHIA|S|PythMetrics}
+            metrics:object{PythiaLedgerV4.PYTHIA|S|PythMetrics}
         )
         @doc "Replace same-day metrics snapshot (open day re-flush)."
         (require-capability (SECURE))
@@ -2855,7 +2907,7 @@
     ;;
     ;; [6] PYTHIA|T|PythTotal  (PythiaLedgerV3.PYTHIA|S|PythTotal)  Key = PYTHIA|STOACHAIN
     ;; WI_PythTotal — not used: first row touch is WW_PythTotal (upsert path).
-    (defun WW_PythTotal:string (row:object{PythiaLedgerV3.PYTHIA|S|PythTotal})
+    (defun WW_PythTotal:string (row:object{PythiaLedgerV4.PYTHIA|S|PythTotal})
         @doc "Upsert PYTHIA|T|PythTotal full row (A_Flush total-metrics + last-day)."
         (require-capability (SECURE))
         (write PYTHIA|T|PythTotal PYTHIA|STOACHAIN row)
@@ -2888,20 +2940,20 @@
     )
     ;;Protection: Class 1 — Innate protection offered by WW_PythTotal
     (defun XI_FlushPythLedger:string
-        (entries:[object{PythiaLedgerV3.PYTHIA|S|PythFlushEntry}])
+        (entries:[object{PythiaLedgerV4.PYTHIA|S|PythFlushEntry}])
         @doc "Process batch entries; commit running total once (entries may land in any tx order)."
         ;; SECURE: granted by WW_PythTotal (underlying W_).
         (let
             (
                 (now:time (at "block-time" (chain-data)))
-                (tot:object{PythiaLedgerV3.PYTHIA|S|PythTotal} (UR_PythTotal))
-                (init:object{PythiaLedgerV3.PYTHIA|S|PythFlushAcc} (UC_FlushAccFromTotal tot))
-                (final:object{PythiaLedgerV3.PYTHIA|S|PythFlushAcc}
+                (tot:object{PythiaLedgerV4.PYTHIA|S|PythTotal} (UR_PythTotal))
+                (init:object{PythiaLedgerV4.PYTHIA|S|PythFlushAcc} (UC_FlushAccFromTotal tot))
+                (final:object{PythiaLedgerV4.PYTHIA|S|PythFlushAcc}
                     (fold
                         (lambda
                             (
-                                acc:object{PythiaLedgerV3.PYTHIA|S|PythFlushAcc}
-                                entry:object{PythiaLedgerV3.PYTHIA|S|PythFlushEntry}
+                                acc:object{PythiaLedgerV4.PYTHIA|S|PythFlushAcc}
+                                entry:object{PythiaLedgerV4.PYTHIA|S|PythFlushEntry}
                             )
                             (XI_1|ApplyOneFlushEntry acc entry now)
                         )
@@ -2921,10 +2973,10 @@
     )
     ;;Protection: Class 1 — Innate protection offered by WU_PythDaily|Metrics,
     ;;Protection:          WU_PythDaily|FlushedAt, WU_PythDaily|IzSealed, WI_PythDaily
-    (defun XI_1|ApplyOneFlushEntry:object{PythiaLedgerV3.PYTHIA|S|PythFlushAcc}
+    (defun XI_1|ApplyOneFlushEntry:object{PythiaLedgerV4.PYTHIA|S|PythFlushAcc}
         (
-            acc:object{PythiaLedgerV3.PYTHIA|S|PythFlushAcc}
-            entry:object{PythiaLedgerV3.PYTHIA|S|PythFlushEntry}
+            acc:object{PythiaLedgerV4.PYTHIA|S|PythFlushAcc}
+            entry:object{PythiaLedgerV4.PYTHIA|S|PythFlushEntry}
             now:time
         )
         @doc "Fold step: ADD entry metrics (gateway drain delta) onto day row + grand total; seal flag only."
@@ -2933,23 +2985,23 @@
             (
                 (day:integer (at "day" entry))
                 (iz-complete:bool (at "iz-complete" entry))
-                (delta:object{PythiaLedgerV3.PYTHIA|S|PythMetrics}
+                (delta:object{PythiaLedgerV4.PYTHIA|S|PythMetrics}
                     (UC_FlushEntryMetrics entry)
                 )
-                (total-metrics:object{PythiaLedgerV3.PYTHIA|S|PythMetrics}
+                (total-metrics:object{PythiaLedgerV4.PYTHIA|S|PythMetrics}
                     (at "total-metrics" acc)
                 )
                 (last-day:integer (at "last-day" acc))
                 (next-last:integer (UC_MaxDay last-day day))
-                (next-total:object{PythiaLedgerV3.PYTHIA|S|PythMetrics}
+                (next-total:object{PythiaLedgerV4.PYTHIA|S|PythMetrics}
                     (UC_AddPythMetrics total-metrics delta)
                 )
             )
             (if (UR_PythDailyExists day)
                 (let
                     (
-                        (old-row:object{PythiaLedgerV3.PYTHIA|S|PythDaily} (UR_PythDay day))
-                        (day-metrics:object{PythiaLedgerV3.PYTHIA|S|PythMetrics}
+                        (old-row:object{PythiaLedgerV4.PYTHIA|S|PythDaily} (UR_PythDay day))
+                        (day-metrics:object{PythiaLedgerV4.PYTHIA|S|PythMetrics}
                             (UC_AddPythMetrics (at "metrics" old-row) delta)
                         )
                     )
@@ -2982,7 +3034,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership executor)
         )
@@ -3029,7 +3081,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership executor)
         )
@@ -3050,7 +3102,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership executor)
         )
@@ -3072,7 +3124,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership executor)
         )
@@ -3083,7 +3135,7 @@
         )
         (format "Pythia rename price set to {}" [new-price])
     )
-    (defun A_Flush:string (patron:string executor:string entries:[object{PythiaLedgerV3.PYTHIA|S|PythFlushEntry}])
+    (defun A_Flush:string (patron:string executor:string entries:[object{PythiaLedgerV4.PYTHIA|S|PythFlushEntry}])
         @doc "Cronoton batch flush: each entry is a drain DELTA — ADD onto day row + grand total; iz-complete seals only. \
             \ \
             \ ATTRIBUTION (patron/executor canon 2.2, 2026-09-22). The AUTHORITY is the CRONOTON \
@@ -3094,7 +3146,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership executor)
         )
@@ -3243,94 +3295,8 @@
 ;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/03_Talos.pact
 ;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface TalosStageOne_AdminV2
-    @doc "Exposes Ouronet Administrative Functions"
+;; TalosStageOne_AdminV2: already deployed and unchanged -- see LIVE_INTERFACES
 
-    ;;<=========================================================================>
-    ;;{1}  GOVERNANCE
-    ;;{G1}  constants
-    ;;{G2}  schemas
-    ;;{G3}  tables  ⟨cannot exist in an interface⟩
-    ;;{G4}  capabilities
-    ;;{G5}  functions
-
-    ;;<=========================================================================>
-    ;;{2}  POLICY
-    ;;{P1}  constants
-    ;;{P2}  schemas
-    ;;{P3}  tables  ⟨cannot exist in an interface⟩
-    ;;{P4}  capabilities
-    ;;{P5}  functions
-
-    ;;<=========================================================================>
-    ;;{3}  CST
-    ;;{3.1}  constants
-    ;;{3.2}  schemas
-    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
-
-    ;;<=========================================================================>
-    ;;{4}  CAPABILITIES
-    ;;{C1}  Trivial [bronze]
-    ;;{C2}  Simple
-    ;;{C3}  Composed
-    ;;{C4}  Ownership [gold]
-
-    ;;<=========================================================================>
-    ;;{5}  FUNCTIONS
-    ;;{5.1}  Construct [CT/UDC]
-    ;;{5.2}  Compute [UC]
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    ;;{5.4}  Validate [UEV/CAP]
-    ;;{5.5}  Write [W]
-    ;;{5.6}  Aux/X
-    ;;
-    ;;
-    ;;Fueling Functions
-    (defun XB_DynamicFuelSTOA ())
-    (defun XE_ConditionalFuelSTOA (condition:bool))
-    ;;{5.7}  User [A/C]
-    ;;
-    (defun DALOS|A_MigrateLiquidFunds:decimal (executor:string migration-target-stoa-account:string))
-    (defun DALOS|A_ToggleOAPU (executor:string oapu:bool))
-    (defun DALOS|A_ToggleGAP (executor:string gap:bool))
-    (defun DALOS|A_DeploySmartAccount (executor:string guard:guard stoa:string sovereign:string public:string))
-    (defun DALOS|A_DeployStandardAccount (executor:string guard:guard stoa:string public:string))
-    (defun DALOS|A_IgnisToggle (executor:string native:bool toggle:bool))
-    (defun DALOS|A_AccountCreationStoaToggle (executor:string toggle:bool))
-    (defun DALOS|A_SetIgnisSourcePrice (executor:string price:decimal))
-    (defun DALOS|A_SetAutoFueling (executor:string toggle:bool))
-    (defun DALOS|A_UpdatePublicKey (executor:string new-public:string))
-    (defun DALOS|A_UpdateUsagePrice (executor:string action:string new-price:decimal))
-    ;;
-    ;;
-    (defun BRD|A_Live (executor:string entity-id:string))
-    (defun BRD|A_SetFlag (executor:string entity-id:string flag:integer))
-    ;;
-    ;;
-    (defun DPTF|A_UpdateTreasuryDispoParameters (executor:string type:integer tdp:decimal tds:decimal))
-    (defun DPTF|A_WipeTreasuryDebt (executor:string))
-    (defun DPTF|A_WipeTreasuryDebtPartial (executor:string debt-to-be-wiped:decimal))
-    (defun DPTF|A_DeployAccount (patron:string executor:string executee:string id:string))
-    ;;
-    (defun DPOF|A_DeployAccount (patron:string executor:string executee:string id:string))
-    ;;
-    (defun ATS|AA_RemoveSecondary (patron:string executor:string ats:string reward-token:string accounts-with-ats-data:[string]))
-    (defun ATS|A_KickStart (executor:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal))
-    ;;
-    (defun LIQUID|A_MigrateLiquidFunds:decimal (executor:string migration-target-stoa-account:string))
-    ;;
-    ;;
-    (defun ORBR|A_Fuel (executor:string))
-    ;;
-    ;;
-    (defun SWP|A_UpdatePrincipal (executor:string principal:string add-or-remove:bool))
-    (defun SWP|A_RotatePrincipal (executor:string old:string new:string))
-    (defun SWP|A_UpdateLimit (executor:string limit:decimal spawn:bool))
-    (defun SWP|A_UpdateLiquidBoost (executor:string new-boost-variable:bool))
-    (defun SWP|A_DefinePrimordialPool (executor:string primordial-pool:string))
-    (defun SWP|A_ToggleAsymetricLiquidityAddition (executor:string toggle:bool))
-
-)
 ;;
 (module TS01-A GOV
     @doc "TALOS Stage 1 Administrator Functions \
@@ -3357,7 +3323,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -3397,7 +3363,7 @@
     (defun P|Info ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::P|Info)
         )
@@ -3569,7 +3535,7 @@
     (defun URC_Gassless ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|DALOS|SC_NAME)
         )
@@ -3584,7 +3550,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (if (ref-DALOS::UR_AutoFuel)
                 (with-capability (SECURE)
@@ -3611,7 +3577,7 @@
         (require-capability (SECURE))
         (let
             (
-                (ref-ORBR:module{OuroborosV2} OUROBOROS)
+                (ref-ORBR:module{OuroborosV3} OUROBOROS)
             )
             (with-capability (P|TS)
                 (ref-ORBR::C_Fuel GASLESS-PATRON)
@@ -3628,7 +3594,7 @@
         (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let
                 (
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
                 )
                 (ref-DALOS::A_MigrateLiquidFunds GASLESS-PATRON executor migration-target-stoa-account)
             )
@@ -3639,7 +3605,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
                 )
                 (ref-DALOS::A_ToggleOAPU GASLESS-PATRON executor oapu)
                 (if oapu
@@ -3654,7 +3620,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
                 )
                 (ref-DALOS::A_ToggleGAP GASLESS-PATRON executor gap)
                 (if gap
@@ -3687,8 +3653,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-DALOS::A_DeploySmartAccount executor guard stoa sovereign public)
@@ -3719,8 +3685,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-DALOS::A_DeployStandardAccount executor guard stoa public)
@@ -3736,7 +3702,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
                 )
                 (ref-DALOS::A_ToggleAccountCreationStoa GASLESS-PATRON executor toggle)
                 (if toggle
@@ -3753,7 +3719,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
                 )
                 (ref-DALOS::A_ToggleGasCollection GASLESS-PATRON executor native toggle)
                 (if native
@@ -3774,7 +3740,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
                 )
                 (ref-DALOS::A_SetIgnisSourcePrice GASLESS-PATRON executor price)
                 (format "Succesfuly set IGNIS price to {}" [price])
@@ -3786,7 +3752,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
                 )
                 (ref-DALOS::A_SetAutoFueling GASLESS-PATRON executor toggle)
                 (if toggle
@@ -3801,8 +3767,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-DALOS::A_UpdatePublicKey GASLESS-PATRON executor new-public)
@@ -3815,7 +3781,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
                 )
                 (ref-DALOS::A_UpdateUsagePrice GASLESS-PATRON executor action new-price)
                 (format "Price for Action {} successfully updated with {}" [action new-price])
@@ -3830,7 +3796,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-BRD:module{BrandingV2} BRD)
+                    (ref-BRD:module{BrandingV3} BRD)
                 )
                 (ref-BRD::A_Live GASLESS-PATRON executor entity-id)
             )
@@ -3848,7 +3814,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-BRD:module{BrandingV2} BRD)
+                    (ref-BRD:module{BrandingV3} BRD)
                 )
                 (ref-BRD::A_SetFlag GASLESS-PATRON executor entity-id flag)
             )
@@ -3865,7 +3831,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 )
                 (ref-DPTF::A_UpdateTreasury GASLESS-PATRON executor type tdp tds)
             )
@@ -3877,7 +3843,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 )
                 (ref-DPTF::A_WipeTreasuryDebt GASLESS-PATRON executor)
             )
@@ -3889,7 +3855,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 )
                 (ref-DPTF::A_WipeTreasuryDebtPartial GASLESS-PATRON executor debt-to-be-wiped)
             )
@@ -3925,10 +3891,10 @@
         (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                 )
                 (ref-DALOS::CAP_EnforceAccountOwnership executor)
@@ -3969,10 +3935,10 @@
         (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                 )
                 (ref-DALOS::CAP_EnforceAccountOwnership executor)
@@ -3992,8 +3958,8 @@
         (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATSU:module{AutostakeUsageV2} ATSU)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-ATSU:module{AutostakeUsageV3} ATSU)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-ATSU::AA_RemoveSecondary patron executor ats reward-token accounts-with-ats-data)
@@ -4009,8 +3975,8 @@
         (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATSU:module{AutostakeUsageV2} ATSU)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-ATSU:module{AutostakeUsageV3} ATSU)
                 )
                 ;;A_ on the blessed path: the collection runs EXACTLY as any C_'s does -- it is
                 ;;simply served by GASLESS-PATRON, the one account IGNIS::XE_CollectIgnis exempts. The
@@ -4029,7 +3995,7 @@
         (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let
                 (
-                    (ref-LIQUID:module{StoaLiquidStakingV2} LIQUID)
+                    (ref-LIQUID:module{StoaLiquidStakingV3} LIQUID)
                 )
                 (ref-LIQUID::A_MigrateLiquidFunds GASLESS-PATRON executor migration-target-stoa-account)
             )
@@ -4074,7 +4040,7 @@
         ;;abuse is about WHEN it ran is exactly one where WHO ran it is worth recording.
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership executor)
         )
@@ -4103,7 +4069,7 @@
         (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let
                 (
-                    (ref-SWP:module{SwapperV4} SWP)
+                    (ref-SWP:module{SwapperV5} SWP)
                 )
                 (ref-SWP::A_UpdatePrincipal GASLESS-PATRON executor principal add-or-remove)
             )
@@ -4123,7 +4089,7 @@
         (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let
                 (
-                    (ref-SWP:module{SwapperV4} SWP)
+                    (ref-SWP:module{SwapperV5} SWP)
                 )
                 (ref-SWP::A_RotatePrincipal GASLESS-PATRON executor old new)
             )
@@ -4136,7 +4102,7 @@
         (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let
                 (
-                    (ref-SWP:module{SwapperV4} SWP)
+                    (ref-SWP:module{SwapperV5} SWP)
                 )
                 (ref-SWP::A_UpdateLimit GASLESS-PATRON executor limit spawn)
             )
@@ -4147,7 +4113,7 @@
         (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let
                 (
-                    (ref-SWP:module{SwapperV4} SWP)
+                    (ref-SWP:module{SwapperV5} SWP)
                 )
                 (ref-SWP::A_UpdateLiquidBoost GASLESS-PATRON executor new-boost-variable)
             )
@@ -4158,7 +4124,7 @@
         (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let
                 (
-                    (ref-SWP:module{SwapperV4} SWP)
+                    (ref-SWP:module{SwapperV5} SWP)
                 )
                 (ref-SWP::A_DefinePrimordialPool GASLESS-PATRON executor primordial-pool)
             )
@@ -4169,7 +4135,7 @@
         (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let
                 (
-                    (ref-SWP:module{SwapperV4} SWP)
+                    (ref-SWP:module{SwapperV5} SWP)
                 )
                 (ref-SWP::A_ToggleAsymetricLiquidityAddition GASLESS-PATRON executor toggle)
             )
@@ -4191,7 +4157,7 @@
 ;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/03_Talos.pact
 ;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface TalosStageOne_ClientOneV2
+(interface TalosStageOne_ClientOneV3
     @doc "Exposes Ouronets Stage One First Batch of Client Functions \
         \ Modules: DALOS, DPTF and DPOF are included in the First Batch"
 
@@ -4245,7 +4211,7 @@
     (defun DALOS|C_UpdateEliteAccountSquared (patron:string sender:string receiver:string))
     ;;
     ;;
-    (defun DPTF|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
+    (defun DPTF|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV3.SocialSchema}]))
     (defun DPTF|C_UpgradeBranding (patron:string executor:string entity-id:string months:integer))
     ;;
     (defun DPTF|C_Issue:list (patron:string executor:string name:[string] ticker:[string] decimals:[integer] can-change-owner:[bool] can-upgrade:[bool] can-add-special-role:[bool] can-freeze:[bool] can-wipe:[bool] can-pause:[bool]))
@@ -4283,7 +4249,7 @@
     (defun DPTF|C_MultiBulkTransfer (patron:string executor:string executee-array:[[string]] id-lst:[string] transfer-amount-array:[[decimal]]))
     ;;
     ;;
-    (defun DPOF|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
+    (defun DPOF|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV3.SocialSchema}]))
     (defun DPOF|C_UpgradeBranding (patron:string executor:string entity-id:string months:integer))
     ;;
     (defun DPOF|C_Issue:list (patron:string executor:string name:[string] ticker:[string] decimals:[integer] can-upgrade:[bool] can-change-owner:[bool] can-add-special-role:[bool] can-transfer-oft-create-role:[bool] can-freeze:[bool] can-wipe:[bool] can-pause:[bool]))
@@ -4322,7 +4288,7 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements TalosStageOne_ClientOneV2)
+    (implements TalosStageOne_ClientOneV3)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -4338,7 +4304,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -4357,7 +4323,7 @@
     (defcap P|TS ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (gap:bool (ref-DALOS::UR_GAP))
             )
             (enforce (not gap) "While Global Administrative Pause is online, no client Functions can be executed")
@@ -4372,7 +4338,7 @@
     (defun P|Info ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::P|Info)
         )
@@ -4536,8 +4502,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
                 )
                 (ref-DALOS::C_ControlSmartAccount patron executor payable-as-smart-contract payable-by-smart-contract payable-by-method)
                 (ref-IGNIS::XE_CollectIgnis patron (ref-IGNIS::DALOS|URCi_ControlSmartAccount executor))
@@ -4568,8 +4534,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                 )
                 (ref-DALOS::C_DeploySmartAccount executor guard stoa sovereign public)
@@ -4606,8 +4572,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                 )
                 (ref-DALOS::C_DeployStandardAccount executor guard stoa public)
@@ -4627,8 +4593,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
                 )
                 (ref-DALOS::C_RotateGovernor patron executor governor)
                 (ref-IGNIS::XE_CollectIgnis patron (ref-IGNIS::DALOS|URCi_RotateGovernor executor))
@@ -4641,8 +4607,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
                 )
                 (ref-DALOS::C_RotateGuard patron executor new-guard safe)
                 (ref-IGNIS::XE_CollectIgnis patron (ref-IGNIS::DALOS|URCi_RotateGuard executor))
@@ -4656,8 +4622,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
                 )
                 (ref-DALOS::C_RotateStoa patron executor stoa)
                 (ref-IGNIS::XE_CollectIgnis patron (ref-IGNIS::DALOS|URCi_RotateStoa executor))
@@ -4671,8 +4637,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
                 )
                 (ref-DALOS::C_RotateSovereign patron executor new-sovereign)
                 (ref-IGNIS::XE_CollectIgnis patron (ref-IGNIS::DALOS|URCi_RotateSovereign executor))
@@ -4699,8 +4665,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
                     (ref-ELITE:module{EliteV2} ELITE)
                     (ea-id:string (ref-DALOS::UR_EliteAurynID))
                 )
@@ -4731,8 +4697,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
                     (ref-ELITE:module{EliteV2} ELITE)
                     (ea-id:string (ref-DALOS::UR_EliteAurynID))
                 )
@@ -4745,13 +4711,13 @@
         )
     )
     ;;  [DPTF_Client]
-    (defun DPTF|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
+    (defun DPTF|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV3.SocialSchema}])
         @doc "Updates <pending-branding> for DPTF Token <entity-id> costing 100 IGNIS"
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-B|DPTF:module{BrandingUsagePrimaryV2} DPTF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-B|DPTF:module{BrandingUsagePrimaryV3} DPTF)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-B|DPTF::C_UpdatePendingBranding patron executor entity-id logo description website social)
@@ -4766,7 +4732,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-B|DPTF:module{BrandingUsagePrimaryV2} DPTF)
+                    (ref-B|DPTF:module{BrandingUsagePrimaryV3} DPTF)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                 )
                 (ref-B|DPTF::C_UpgradeBranding patron executor entity-id months)
@@ -4782,10 +4748,10 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-DPTF::C_Issue patron executor name ticker decimals can-change-owner can-upgrade can-add-special-role can-freeze can-wipe can-pause)
                     )
                 )
@@ -4800,9 +4766,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -4818,8 +4784,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_Control patron executor id cu cco casr cf cw cp)
@@ -4833,8 +4799,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_TogglePause patron executor id toggle)
@@ -4851,8 +4817,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_ToggleReservation patron executor id toggle)
@@ -4871,8 +4837,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_ToggleFee patron executor id toggle)
@@ -4889,8 +4855,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_SetMinMove patron executor id min-move-value)
@@ -4904,8 +4870,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_SetFee patron executor id fee)
@@ -4919,9 +4885,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount target))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -4937,10 +4903,10 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount (ref-DALOS::GOV|DALOS|SC_NAME)))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -4956,10 +4922,10 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount (ref-DALOS::GOV|OUROBOROS|SC_NAME)))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -4974,10 +4940,10 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-DPTF::C_ToggleFeeLock patron executor id toggle)
                     )
                     (collect:bool (at 0 (at "output" ico)))
@@ -5017,10 +4983,10 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-DALOS::CAP_EnforceAccountOwnership executor)
@@ -5037,9 +5003,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -5057,8 +5023,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_ToggleBurnRole patron executor executee id toggle)
@@ -5071,8 +5037,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_ToggleMintRole patron executor executee id toggle)
@@ -5085,8 +5051,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_ToggleFeeExemptionRole patron executor executee id toggle)
@@ -5099,9 +5065,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -5125,8 +5091,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-TFT:module{TrueFungibleTransferV3} TFT)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-TFT::C_ClearDispo patron executor executor)
@@ -5147,8 +5113,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-TFT:module{TrueFungibleTransferV3} TFT)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-TFT::C_ClearDispo patron executor executee)
@@ -5161,9 +5127,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -5178,9 +5144,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -5198,9 +5164,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                     (ref-ELITE:module{EliteV2} ELITE)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                 )
@@ -5219,9 +5185,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                     (ref-ELITE:module{EliteV2} ELITE)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                 )
@@ -5248,8 +5214,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-TFT:module{TrueFungibleTransferV3} TFT)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-TFT::C_Transmute patron executor id transmute-amount)
@@ -5273,9 +5239,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-TFT:module{TrueFungibleTransferV3} TFT)
                     (receiver-amount:decimal (ref-TFT::URC_ReceiverAmount id executor executee transfer-amount))
                     (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                     (sa-r:string (ref-I|OURONET::OI|UC_ShortAccount executee))
@@ -5297,9 +5263,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-TFT:module{TrueFungibleTransferV3} TFT)
                     (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                     (sa-r:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                 )
@@ -5331,9 +5297,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-TFT:module{TrueFungibleTransferV3} TFT)
                     (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -5348,9 +5314,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-TFT:module{TrueFungibleTransferV3} TFT)
                     (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -5361,13 +5327,13 @@
         )
     )
     ;;  [DPOF_Client]
-    (defun DPOF|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
+    (defun DPOF|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV3.SocialSchema}])
         @doc "Updates <pending-branding> for DPOF Token <entity-id> costing 150 IGNIS"
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-B|DPOF:module{BrandingUsagePrimaryV2} DPOF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-B|DPOF:module{BrandingUsagePrimaryV3} DPOF)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-B|DPOF::C_UpdatePendingBranding patron executor entity-id logo description website social)
@@ -5381,7 +5347,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-B|DPOF:module{BrandingUsagePrimaryV2} DPOF)
+                    (ref-B|DPOF:module{BrandingUsagePrimaryV3} DPOF)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                 )
                 (ref-B|DPOF::C_UpgradeBranding patron executor entity-id months)
@@ -5396,10 +5362,10 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-DPOF::C_Issue patron executor name ticker decimals can-upgrade can-change-owner can-add-special-role can-transfer-oft-create-role can-freeze can-wipe can-pause)
                     )
                 )
@@ -5414,8 +5380,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPOF::C_RotateOwnership patron executor executee id)
@@ -5428,8 +5394,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPOF::C_Control patron executor id cu cco casr ctocr cf cw cp sg)
@@ -5445,8 +5411,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPOF::C_TogglePause patron executor id toggle)
@@ -5479,10 +5445,10 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-DALOS::CAP_EnforceAccountOwnership executor)
@@ -5501,9 +5467,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -5521,8 +5487,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPOF::C_ToggleAddQuantityRole patron executor executee id toggle)
@@ -5535,8 +5501,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPOF::C_ToggleBurnRole patron executor executee id toggle)
@@ -5550,8 +5516,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPOF::C_MoveCreateRole patron executor executee id)
@@ -5564,8 +5530,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPOF::C_ToggleTransferRole patron executor executee id toggle)
@@ -5579,9 +5545,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -5596,9 +5562,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -5614,10 +5580,10 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+                    (ico:object{IgnisCollectorV4.OutputCumulator}
                         (with-capability (P|TS)
                             (ref-DPOF::C_Mint patron executor id amount meta-data-chain)
                         )
@@ -5636,8 +5602,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                     (ref-ELITE:module{EliteV2} ELITE)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -5657,8 +5623,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                     (ref-ELITE:module{EliteV2} ELITE)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -5681,8 +5647,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                     (ref-ELITE:module{EliteV2} ELITE)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -5698,8 +5664,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                     (ref-ELITE:module{EliteV2} ELITE)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -5719,8 +5685,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                     (ref-ELITE:module{EliteV2} ELITE)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -5740,9 +5706,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                     (ref-ELITE:module{EliteV2} ELITE)
                     ;;
                     (ss:string (ref-I|OURONET::OI|UC_ShortAccount executor))
@@ -5763,9 +5729,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                     (ref-ELITE:module{EliteV2} ELITE)
                     ;;
                     (ss:string (ref-I|OURONET::OI|UC_ShortAccount executor))
@@ -5787,9 +5753,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                     (ref-ELITE:module{EliteV2} ELITE)
                     ;;
                     (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount executor))

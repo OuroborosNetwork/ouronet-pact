@@ -5,7 +5,7 @@
 ;; Mnemosyne operator: ouronet-ns.codex-keyset (define before A_RegisterCodexIdentity).
 ;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface CodexV2
+(interface CodexV3
     @doc "CodexV2 is the interface for the CODEX module — the on-chain Codex Identity \
         \ registry, Arweave upload audit log, and StoicTag name registry. It declares UC \
         \ validators (Apollo composite id, Arweave tx-id, StoicTag name/fee), UR field \
@@ -63,8 +63,8 @@
     ;; consumed by BOTH the TS01-C4 exec collect and the INFO preview layer.
     (defun URCi_RegisterStoicTag:decimal (tag-name:string))
     (defun URCi_ReleaseStoicTag:decimal (tag-name:string))
-    (defun URCi_RotateCodexGuard:object{IgnisCollectorV3.OutputCumulator} (patron:string))
-    (defun URCi_RecordArweaveUpload:object{IgnisCollectorV3.OutputCumulator} (patron:string))
+    (defun URCi_RotateCodexGuard:object{IgnisCollectorV4.OutputCumulator} (patron:string))
+    (defun URCi_RecordArweaveUpload:object{IgnisCollectorV4.OutputCumulator} (patron:string))
     ;;
     ;; [UR] CODEX|S|Identity — field accessors + DataOrNull (UR_CIX|Data is module-only; schema not in interface)
     (defun UR_CIX|CodexIdStandard:string (codex-id:string))
@@ -116,7 +116,7 @@
           codex-guard:guard
           registered-by:string ))
     ;;
-    ;;#24H fix: these four were already live/actively-called via TS01-C4's module{CodexV2}-typed
+    ;;#24H fix: these four were already live/actively-called via TS01-C4's module{CodexV3}-typed
     ;;ref, but missing from the interface itself. Added here, purely additive - the module already
     ;;implements all four with matching signatures.
     ;; [C]
@@ -125,6 +125,20 @@
     (defun C_RegisterStoicTag:string (patron:string executor:string tag-name:string))
     (defun C_ReleaseStoicTag:string (patron:string executor:string tag-name:string))
 
+
+    ;;<=========================================================================>
+    ;; ADDED 2026-10-12 -- interface-membership sweep (StoicSyntax-Prefixes.md Sec5,
+    ;; owner ruling). Every one of these was already live in the module body; this
+    ;; closes the gap between what the module DOES and what its interface SAYS it does.
+    ;;<=========================================================================>
+    (defun UC_IsBase64urlChar:bool (c:string))
+    (defun UDC_AWT|EmptyLatest:object (codex-id:string))
+    (defun UDC_CIX|GuardUpdate:object (new-codex-guard:guard))
+    (defun UDC_CIX|Unregistered:object ())
+    (defun UDC_STBA|IzActiveUpdate:object (iz-active:bool))
+    (defun UDC_STBA|Unregistered:object ())
+    (defun UDC_STG|IzActiveUpdate:object (iz-active:bool))
+    (defun UDC_STG|Unregistered:object ())
 )
 
 (module CODEX GOV
@@ -134,7 +148,7 @@
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
-    (implements CodexV2)
+    (implements CodexV3)
     (implements OuronetPolicyV2)
 
     ;;<=========================================================================>
@@ -151,7 +165,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -175,7 +189,7 @@
     (defun P|Info ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::P|Info)
         )
@@ -454,7 +468,7 @@
         (let
             (
                 (ref-U|DALOS:module{UtilityDalosGlyphsV3} U|DALOS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 ;;
                 (tag-row-found:bool (not (= (try false (UR_STG|Data tag-name)) false)))
                 (tag-iz-active:bool
@@ -518,7 +532,7 @@
         @doc "Caller controls the Ouronet (DALOS) account — Standard or Smart, not Stoa coin.details."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership account-address)
         )
@@ -714,27 +728,27 @@
             \ so this returns the pre-discount amount. Consumed by TS01-C4 exec + INFO."
         (UC_StoicTagStoaFee tag-name)
     )
-    (defun URCi_RotateCodexGuard:object{IgnisCollectorV3.OutputCumulator} (patron:string)
+    (defun URCi_RotateCodexGuard:object{IgnisCollectorV4.OutputCumulator} (patron:string)
         @doc "Cost single-source for CODEX|C_RotateCodexGuard — deter(usage) + components, on the \
             \ patron (the codex row carries no konto of its own). USAGE tier (deterrence 1x, owner \
             \ 2026-09-07): CODEX ops pay what they structurally cost and carry no deterrent premium. \
             \ Consumed by the TS01-C4 exec path + INFO, so the two cannot drift."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisPrice "CODEX|C_RotateCodexGuard" "usage")
                 patron (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_RecordArweaveUpload:object{IgnisCollectorV3.OutputCumulator} (patron:string)
+    (defun URCi_RecordArweaveUpload:object{IgnisCollectorV4.OutputCumulator} (patron:string)
         @doc "Cost single-source for CODEX|C_RecordArweaveUpload — deter(usage) + components, on \
             \ the patron. USAGE tier: recording an upload is routine activity, not a config \
             \ change. Consumed by the TS01-C4 exec path + INFO."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisPrice "CODEX|C_RecordArweaveUpload" "usage")
@@ -884,12 +898,12 @@
         )
     )
     ;;
-    (defun INFO_CODEX|RegisterStoicTag:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_CODEX|RegisterStoicTag:object{OuronetInfoV3.ClientInfo}
         (patron:string tag-name:string account-address:string)
         @doc "ClientInfo preview for TS01-C4 CODEX|C_RegisterStoicTag — STOA from patron; Elite discount on account-address."
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 ;;single-source: the SAME reader the TS01-C4 exec path collects from
                 (stoa-fee:decimal (URCi_RegisterStoicTag tag-name))
                 (glyph-count:integer (length tag-name))
@@ -907,12 +921,12 @@
             )
         )
     )
-    (defun INFO_CODEX|RotateCodexGuard:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_CODEX|RotateCodexGuard:object{OuronetInfoV3.ClientInfo}
         (patron:string codex-id:string)
         
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Rotate the Codex Guard of Codex {}." [codex-id])]
@@ -924,14 +938,14 @@
             )
         )
     )
-    (defun INFO_CODEX|RecordArweaveUpload:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_CODEX|RecordArweaveUpload:object{OuronetInfoV3.ClientInfo}
         (patron:string codex-id:string arweave-tx-id:string uploaded-bytes:integer)
         @doc "ClientInfo preview for TS01-C4 CODEX|C_RecordArweaveUpload — deter(usage) + \
             \ components via URCi_RecordArweaveUpload, so preview and execution cannot drift. \
             \ Records the Arweave transaction id and the uploaded byte count."
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Record Arweave upload {} ({} bytes) for Codex {}."
@@ -944,13 +958,13 @@
             )
         )
     )
-    (defun INFO_CODEX|ReleaseStoicTag:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_CODEX|ReleaseStoicTag:object{OuronetInfoV3.ClientInfo}
         (patron:string tag-name:string)
         @doc "ClientInfo preview for TS01-C4 CODEX|C_ReleaseStoicTag (IGNIS = UC_StoicTagStoaFee per glyph)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 ;;single-source: the SAME reader the TS01-C4 exec path collects from
                 (tag-fee:decimal (URCi_ReleaseStoicTag tag-name))
                 (glyph-count:integer (length tag-name))
@@ -1085,7 +1099,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership executor)
         )
@@ -1109,7 +1123,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership executor)
         )
@@ -1128,7 +1142,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership executor)
         )

@@ -42,9 +42,9 @@
 (print "--- [TX-OF-001 - DPOF tail: deploy / transmit / wipes / branding on COF · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
         (id:string "COF-98c486052a51")
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
@@ -144,8 +144,8 @@
 (print "--- [TX-OF-002 - DPOF Hydra wipe: seed math / plan build / 3 slices / replay reverts · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
         (id:string "COF-98c486052a51")
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
@@ -236,8 +236,8 @@
 (env-sigs [{ "key": "PK_Lumy", "caps": [] }])
 (let
     (
-        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
         (id:string "COF-98c486052a51")
         (attacker:string KST.LUMY)
         (victim:string KST.ANHD)
@@ -294,7 +294,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
     )
     (ref-TS01-C1::DPOF|C_ToggleFreezeAccount KST.ANHD (DPOF.UR_Konto "COF-98c486052a51") KST.LUMY "COF-98c486052a51" false)
     ""
@@ -302,8 +302,8 @@
 (env-sigs [{ "key": "PK_Lumy", "caps": [] } { "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
         (id:string "COF-98c486052a51")
     )
     (print (format "<(TS01-C1.DPOF|C_Transmit, holder signing, LUMY paying)> => \"{}\""

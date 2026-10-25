@@ -41,8 +41,8 @@
 (print "--- [TX-WSCALE-001 Fund + freeze a wide account · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
         (id:string "COF-98c486052a51")
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
@@ -88,8 +88,8 @@
 (print "--- [TX-WSCALE-002 · 02 · widths 10 / 20 / 30 + derived ceiling] ---")
 (let*
     (
-        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
         (id:string "COF-98c486052a51")
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)

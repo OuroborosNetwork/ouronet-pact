@@ -56,10 +56,10 @@
 (print "--- [Manual Ouro Price Update · 02 · let / invocation] ---")
 (let
     (
-        (ref-DSP:module{DispenserV2} DSP)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-DSP:module{DispenserV3} DSP)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-ATS:module{AutostakeV4} ATS)
         (ouro:string (ref-DALOS::UR_OuroborosID))
         (os:decimal (ref-DPTF::UR_Supply ouro))
 
@@ -128,9 +128,9 @@
 (print "--- [Koson Minter FullTilt Testing · 02 · let / invocation] ---")
 (let
     (
-        (ref-DSP:module{DispenserV2} DSP)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DSP:module{DispenserV3} DSP)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
         (ref-AOZ:module{AgeOfZalmoxis} AOZ)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
     )
@@ -226,7 +226,7 @@
 (print "--- [Koson Minter 1of3 Testing · 02 · let / invocation] ---")
 (let
     (
-        (ref-DSP:module{DispenserV2} DSP)
+        (ref-DSP:module{DispenserV3} DSP)
     )
     ;(ref-DSP::A_OuroMinterStageOne)
     (ref-DSP::A_KosonMinterStageOne_1of3)
@@ -267,7 +267,7 @@
 (print "--- [Koson Minter 2of3 Testing · 02 · let / invocation] ---")
 (let
     (
-        (ref-DSP:module{DispenserV2} DSP)
+        (ref-DSP:module{DispenserV3} DSP)
     )
     ;(ref-DSP::A_OuroMinterStageOne)
     (ref-DSP::A_KosonMinterStageOne_2of3)
@@ -308,11 +308,11 @@
 (print "--- [Koson Minter 3of3 Testing · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TFT:module{TrueFungibleTransferV2} TFT)
-        (ref-DSP:module{DispenserV2} DSP)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TFT:module{TrueFungibleTransferV3} TFT)
+        (ref-DSP:module{DispenserV3} DSP)
         (patron:string  KST.ANHD)
         (ats:string KST.ATSTK)
         (vst:string KST.VESTG)
@@ -376,8 +376,8 @@
 (print "--- [Dispenser - Ouro transfer to Emma · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
         (patron:string  KST.ANHD)
         (emma:string  KST.EMMA)
         (ouro:string "OURO-98c486052a51")
@@ -421,8 +421,8 @@
 (print "--- [Dispenser - AURYN transfer to Emma · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
         (patron:string  KST.ANHD)
         (emma:string  KST.EMMA)
         (ouro:string "OURO-98c486052a51")
@@ -466,8 +466,8 @@
 (print "--- [Dispenser - ELITEAURYN transfer to Emma · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
         (patron:string  KST.ANHD)
         (emma:string  KST.EMMA)
         (ouro:string "OURO-98c486052a51")
@@ -515,8 +515,8 @@
 (print "--- [TransmuteV2 · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
         (patron:string  KST.ANHD)
         (emma:string  KST.EMMA)
         (ignis:string "GAS-98c486052a51")
@@ -558,8 +558,8 @@
 (print "--- [TransmuteV2 · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
         (patron:string  KST.ANHD)
         (emma:string  KST.EMMA)
         (ignis:string "GAS-98c486052a51")

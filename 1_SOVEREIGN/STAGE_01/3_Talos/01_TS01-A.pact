@@ -116,7 +116,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -156,7 +156,7 @@
     (defun P|Info ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::P|Info)
         )
@@ -328,7 +328,7 @@
     (defun URC_Gassless ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|DALOS|SC_NAME)
         )
@@ -343,7 +343,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (if (ref-DALOS::UR_AutoFuel)
                 (with-capability (SECURE)
@@ -370,7 +370,7 @@
         (require-capability (SECURE))
         (let
             (
-                (ref-ORBR:module{OuroborosV2} OUROBOROS)
+                (ref-ORBR:module{OuroborosV3} OUROBOROS)
             )
             (with-capability (P|TS)
                 (ref-ORBR::C_Fuel GASLESS-PATRON)
@@ -387,7 +387,7 @@
         (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let
                 (
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
                 )
                 (ref-DALOS::A_MigrateLiquidFunds GASLESS-PATRON executor migration-target-stoa-account)
             )
@@ -398,7 +398,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
                 )
                 (ref-DALOS::A_ToggleOAPU GASLESS-PATRON executor oapu)
                 (if oapu
@@ -413,7 +413,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
                 )
                 (ref-DALOS::A_ToggleGAP GASLESS-PATRON executor gap)
                 (if gap
@@ -446,8 +446,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-DALOS::A_DeploySmartAccount executor guard stoa sovereign public)
@@ -478,8 +478,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-DALOS::A_DeployStandardAccount executor guard stoa public)
@@ -495,7 +495,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
                 )
                 (ref-DALOS::A_ToggleAccountCreationStoa GASLESS-PATRON executor toggle)
                 (if toggle
@@ -512,7 +512,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
                 )
                 (ref-DALOS::A_ToggleGasCollection GASLESS-PATRON executor native toggle)
                 (if native
@@ -533,7 +533,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
                 )
                 (ref-DALOS::A_SetIgnisSourcePrice GASLESS-PATRON executor price)
                 (format "Succesfuly set IGNIS price to {}" [price])
@@ -545,7 +545,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
                 )
                 (ref-DALOS::A_SetAutoFueling GASLESS-PATRON executor toggle)
                 (if toggle
@@ -560,8 +560,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-DALOS::A_UpdatePublicKey GASLESS-PATRON executor new-public)
@@ -574,7 +574,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
                 )
                 (ref-DALOS::A_UpdateUsagePrice GASLESS-PATRON executor action new-price)
                 (format "Price for Action {} successfully updated with {}" [action new-price])
@@ -589,7 +589,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-BRD:module{BrandingV2} BRD)
+                    (ref-BRD:module{BrandingV3} BRD)
                 )
                 (ref-BRD::A_Live GASLESS-PATRON executor entity-id)
             )
@@ -607,7 +607,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-BRD:module{BrandingV2} BRD)
+                    (ref-BRD:module{BrandingV3} BRD)
                 )
                 (ref-BRD::A_SetFlag GASLESS-PATRON executor entity-id flag)
             )
@@ -624,7 +624,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 )
                 (ref-DPTF::A_UpdateTreasury GASLESS-PATRON executor type tdp tds)
             )
@@ -636,7 +636,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 )
                 (ref-DPTF::A_WipeTreasuryDebt GASLESS-PATRON executor)
             )
@@ -648,7 +648,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 )
                 (ref-DPTF::A_WipeTreasuryDebtPartial GASLESS-PATRON executor debt-to-be-wiped)
             )
@@ -684,10 +684,10 @@
         (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                 )
                 (ref-DALOS::CAP_EnforceAccountOwnership executor)
@@ -728,10 +728,10 @@
         (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                 )
                 (ref-DALOS::CAP_EnforceAccountOwnership executor)
@@ -751,8 +751,8 @@
         (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATSU:module{AutostakeUsageV2} ATSU)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-ATSU:module{AutostakeUsageV3} ATSU)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-ATSU::AA_RemoveSecondary patron executor ats reward-token accounts-with-ats-data)
@@ -768,8 +768,8 @@
         (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATSU:module{AutostakeUsageV2} ATSU)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-ATSU:module{AutostakeUsageV3} ATSU)
                 )
                 ;;A_ on the blessed path: the collection runs EXACTLY as any C_'s does -- it is
                 ;;simply served by GASLESS-PATRON, the one account IGNIS::XE_CollectIgnis exempts. The
@@ -788,7 +788,7 @@
         (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let
                 (
-                    (ref-LIQUID:module{StoaLiquidStakingV2} LIQUID)
+                    (ref-LIQUID:module{StoaLiquidStakingV3} LIQUID)
                 )
                 (ref-LIQUID::A_MigrateLiquidFunds GASLESS-PATRON executor migration-target-stoa-account)
             )
@@ -833,7 +833,7 @@
         ;;abuse is about WHEN it ran is exactly one where WHO ran it is worth recording.
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership executor)
         )
@@ -862,7 +862,7 @@
         (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let
                 (
-                    (ref-SWP:module{SwapperV4} SWP)
+                    (ref-SWP:module{SwapperV5} SWP)
                 )
                 (ref-SWP::A_UpdatePrincipal GASLESS-PATRON executor principal add-or-remove)
             )
@@ -882,7 +882,7 @@
         (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let
                 (
-                    (ref-SWP:module{SwapperV4} SWP)
+                    (ref-SWP:module{SwapperV5} SWP)
                 )
                 (ref-SWP::A_RotatePrincipal GASLESS-PATRON executor old new)
             )
@@ -895,7 +895,7 @@
         (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let
                 (
-                    (ref-SWP:module{SwapperV4} SWP)
+                    (ref-SWP:module{SwapperV5} SWP)
                 )
                 (ref-SWP::A_UpdateLimit GASLESS-PATRON executor limit spawn)
             )
@@ -906,7 +906,7 @@
         (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let
                 (
-                    (ref-SWP:module{SwapperV4} SWP)
+                    (ref-SWP:module{SwapperV5} SWP)
                 )
                 (ref-SWP::A_UpdateLiquidBoost GASLESS-PATRON executor new-boost-variable)
             )
@@ -917,7 +917,7 @@
         (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let
                 (
-                    (ref-SWP:module{SwapperV4} SWP)
+                    (ref-SWP:module{SwapperV5} SWP)
                 )
                 (ref-SWP::A_DefinePrimordialPool GASLESS-PATRON executor primordial-pool)
             )
@@ -928,7 +928,7 @@
         (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let
                 (
-                    (ref-SWP:module{SwapperV4} SWP)
+                    (ref-SWP:module{SwapperV5} SWP)
                 )
                 (ref-SWP::A_ToggleAsymetricLiquidityAddition GASLESS-PATRON executor toggle)
             )

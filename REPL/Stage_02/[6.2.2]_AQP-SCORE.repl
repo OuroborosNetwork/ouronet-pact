@@ -35,10 +35,10 @@
         (patron:string KST.ANHD)
         (owner-konto:string KST.ANHD)
         (score-name:string "BootPhaseProbe")
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
         (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
         (split-stoa:[decimal]
             (ref-DALOS::URC_SplitSTOAPrices patron (ref-DALOS::UR_UsagePrice "smart"))
@@ -167,8 +167,8 @@
     (
         (patron:string KST.ANHD)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
         (score-id:string (ref-U|DALOS::UDC_Makeid "BootPhaseProbe"))
     )
     ;;==== TX-SCORE-02 · 01 · score-id (U|DALOS UDC_Makeid) — REPL ====================
@@ -269,7 +269,7 @@
 (env-sigs [])
 (let
     (
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
         (score-ids:[string] (ref-SCR::URH_SCR|AllScoreIds))
     )
     ;;==== TX-SCORE-07 · 01 · list all issued scores (URH_SCR|AllScoreIds) =====================
@@ -303,7 +303,7 @@
     (
         (patron:string KST.ANHD)
         (owner-konto:string KST.ANHD)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (split-stoa:[decimal] (ref-DALOS::URC_SplitSTOAPrices patron (* 4.0 (ref-DALOS::UR_UsagePrice "smart"))))
     )
     (print "--- [TX-SCORE-08 · 01 · env-sigs (4 issuances × smart fee)] ---")
@@ -347,7 +347,7 @@
     (
         (patron:string KST.ANHD)
         (owner-konto:string KST.ANHD)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (split-stoa:[decimal] (ref-DALOS::URC_SplitSTOAPrices patron (* 5.0 (ref-DALOS::UR_UsagePrice "smart"))))
     )
     (print "--- [TX-SCORE-09 · 01 · env-sigs (5 issuances × smart fee)] ---")
@@ -394,7 +394,7 @@
 (let
     (
         (patron:string KST.ANHD)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (wc-values:[decimal]
             (fold (+) []
                 [(make-list 10 1.0) (make-list 10 2.0) (make-list 10 4.0) [15.0 28.0 52.0 114.0]]
@@ -492,8 +492,8 @@
         (victim:string KST.ANHD)
         (score-name:string "RtScrOwnerProbe")
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
     )
     (map print
         [
@@ -558,10 +558,10 @@
         (patron:string KST.ANHD)
         (owner-konto:string KST.ANHD)
         (score-name:string "RtScrOwnerProbe")
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (split-stoa:[decimal]
             (ref-DALOS::URC_SplitSTOAPrices KST.ANHD (ref-DALOS::UR_UsagePrice "smart"))
         )
@@ -633,7 +633,7 @@
         (victim:string KST.ANHD)
         (fvt-name:string "RtFvtOwnerProbe")
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
     )
     (map print
         [
@@ -683,7 +683,7 @@
 ;;==== TX-SCORE-13b · 01 · non-vacuity ===========================================
 (print "--- [TX-SCORE-13b · 01 · non-vacuity] ---")
 ;;FINDING, recorded here because this is where it bites: `FVT|C>ISSUE-FVT` calls
-;;`(ref-RPS::URC_FvtExists fvt-id)` on a `module{AcquisitionRewardPerShareV1}` reference, and
+;;`(ref-RPS::URC_FvtExists fvt-id)` on a `module{AcquisitionRewardPerShareV4}` reference, and
 ;;`URC_FvtExists` is NOT among that interface's declared members (04_RPS.pact lines 1-84 declare
 ;;`URC_FvtRpsGlobalRowExists`, `URC_FvtScoreEntityLinkRowExists` and `URC_MultipletFamilyExists`, but
 ;;not this one). VERIFIED BY EXECUTION that this is not a load error: Pact 5.4 resolves a modref member
@@ -698,10 +698,10 @@
         (patron:string KST.ANHD)
         (owner-konto:string KST.ANHD)
         (fvt-name:string "RtFvtOwnerProbe")
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-RPS:module{AcquisitionRewardPerShareV4} RPS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (split-stoa:[decimal]
             (ref-DALOS::URC_SplitSTOAPrices KST.ANHD (ref-DALOS::UR_UsagePrice "smart"))
         )
@@ -777,9 +777,9 @@
         (bloodshed-id:string "Bloodshed-98c486052a51")
         (dhcd-id:string "DHCD-98c486052a51")
         (kbn-id:string "KBN-98c486052a51")
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
     )
     (map print
         [
@@ -884,8 +884,8 @@
         (bloodshed-id:string "Bloodshed-98c486052a51")
         (dhcd-id:string "DHCD-98c486052a51")
         (kbn-id:string "KBN-98c486052a51")
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
     )
     (map print
         [
@@ -1031,8 +1031,8 @@
 ;;back -- every later transaction in this suite sees exactly what it saw before.
 (let
     (
-        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (owner:string KST.ANHD)
         ;;IssueCompany = the underlying SFT collection issue PLUS the $100 equity premium, so the
         ;;cap must authorise both legs (see IGNIS-PRICING.md).
@@ -1063,9 +1063,9 @@
 (print "--- [TX-SCORE-15b · 02 · issue E|SCRQ and confirm the fixture] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-EQUITY:module{EquityV3} EQUITY)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-EQUITY:module{EquityV4} EQUITY)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
         (owner:string KST.ANHD)
         (links:[string] (make-list 24 "ipfs://ScoreEquityDispatchLink"))
     )
@@ -1250,8 +1250,8 @@
 (let
     (
         (patron:string KST.ANHD)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
     )
     (let

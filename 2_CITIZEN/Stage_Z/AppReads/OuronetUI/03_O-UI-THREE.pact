@@ -80,7 +80,7 @@
     (defcap GOV ()                          (compose-capability (GOV|O_UI_THREE_ADMIN)))
     (defcap GOV|O_UI_THREE_ADMIN ()         (enforce-guard GOV|MD_O-UI-THREE))
     (defun GOV|Demiurgoi ()
-        (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi))
+        (let ((ref-DALOS:module{OuronetDalosV3} DALOS)) (ref-DALOS::GOV|Demiurgoi))
     )
 
     ;;{3}  CST
@@ -135,7 +135,7 @@
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     (defun URC_Standing:object (account:string)
         @doc "Class, name, tier and DEB -- the account's Elite identity."
-        (let ((ref-DALOS:module{OuronetDalosV2} DALOS))
+        (let ((ref-DALOS:module{OuronetDalosV3} DALOS))
             {"card-ok" : true
             ,"elite-class" : (ref-DALOS::UR_Elite-Class account)
             ,"elite-name" : (ref-DALOS::UR_Elite-Name account)
@@ -156,9 +156,9 @@
             \ between a card that renders six rows and a card that renders none."
         (let*
             ( (ref-U|CT:module{OuronetConstantsV2} U|CT)
-              (ref-DALOS:module{OuronetDalosV2} DALOS)
-              (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-              (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+              (ref-DALOS:module{OuronetDalosV3} DALOS)
+              (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+              (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
               (ref-ELITE:module{EliteV2} ELITE)
               (ea:string (ref-DALOS::UR_EliteAurynID))
               (fea:string (if (!= ea BAR) (ref-DPTF::UR_Frozen ea) BAR))
@@ -203,9 +203,9 @@
             \ token. Account-independent, so this card is identical for every caller and is the \
             \ one here worth caching across users."
         (let*
-            ( (ref-DALOS:module{OuronetDalosV2} DALOS)
-              (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-              (ref-ATS:module{AutostakeV3} ATS)
+            ( (ref-DALOS:module{OuronetDalosV3} DALOS)
+              (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+              (ref-ATS:module{AutostakeV4} ATS)
               (a:string (at 0 (ref-DPTF::UR_RewardToken (ref-DALOS::UR_OuroborosID))))
               (e:string (at 0 (ref-DPTF::UR_RewardToken (ref-DALOS::UR_AurynID))))
               (av:decimal (ref-ATS::URC_Index a))
@@ -227,9 +227,9 @@
             \ until it is back at zero. A negative OURO balance is normal here, not an error."
         (let*
             ( (ref-U|DPTF:module{UtilityDptfV2} U|DPTF)
-              (ref-DALOS:module{OuronetDalosV2} DALOS)
-              (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-              (ref-TFT:module{TrueFungibleTransferV2} TFT)
+              (ref-DALOS:module{OuronetDalosV3} DALOS)
+              (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+              (ref-TFT:module{TrueFungibleTransferV3} TFT)
               (major:integer (ref-DALOS::UR_Elite-Tier-Major account))
               (minor:integer (ref-DALOS::UR_Elite-Tier-Minor account))
               (ouro:string (ref-DALOS::UR_OuroborosID))
@@ -273,7 +273,7 @@
             \ construction rather than by coincidence."
         (let*
             ( (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-              (ref-DALOS:module{OuronetDalosV2} DALOS)
+              (ref-DALOS:module{OuronetDalosV3} DALOS)
               (major:integer (ref-DALOS::UR_Elite-Tier-Major account))
               (minor:integer (ref-DALOS::UR_Elite-Tier-Minor account))
               (im:decimal (ref-DALOS::URC_IgnisGasDiscount account))
@@ -297,8 +297,8 @@
         @doc "What the account's tier unlocks elsewhere: SWP special-fee targets, branding \
             \ months, and Elite-ATS cold-recovery positions."
         (let*
-            ( (ref-DALOS:module{OuronetDalosV2} DALOS)
-              (ref-BRD:module{BrandingV2} BRD)
+            ( (ref-DALOS:module{OuronetDalosV3} DALOS)
+              (ref-BRD:module{BrandingV3} BRD)
               (major:integer (ref-DALOS::UR_Elite-Tier-Major account))
               (minor:integer (ref-DALOS::UR_Elite-Tier-Minor account))
               (deb:decimal (ref-DALOS::UR_Elite-DEB account)) )
@@ -362,10 +362,10 @@
             \ not a bigger ceiling -- and the time to notice is before a page depends on it \
             \ loading synchronously."
         (let*
-            ( (ref-DALOS:module{OuronetDalosV2} DALOS)
-              (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-              (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-              (ref-CODEX:module{CodexV2} CODEX)
+            ( (ref-DALOS:module{OuronetDalosV3} DALOS)
+              (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+              (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+              (ref-CODEX:module{CodexV3} CODEX)
               (ouro:string (ref-DALOS::UR_OuroborosID))
               (ea:string (ref-DALOS::UR_EliteAurynID))
               (fea:string (if (!= ea BAR) (ref-DPTF::UR_Frozen ea) BAR))
@@ -427,7 +427,7 @@
             \ Replaces DPL-UR::URC_0012b_PosObjSt."
         (let
             (
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-ATS:module{AutostakeV4} ATS)
             )
             (if (= input-obj (ref-ATS::UDC_MakeZeroUnstakeObject atspair))
                 1
@@ -459,9 +459,9 @@
         (let
             (
                 (ref-U|DEC:module{OuronetDecimalsV2} U|DEC)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-ATS:module{AutostakeV3} ATS)
-                (ref-ATSU:module{AutostakeUsageV2} ATSU)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-ATS:module{AutostakeV4} ATS)
+                (ref-ATSU:module{AutostakeUsageV3} ATSU)
                 ;;
                 (toggle-cold:bool (ref-ATS::UR_ToggleColdRecovery ats))
                 (toggle-hot:bool (ref-ATS::UR_ToggleHotRecovery ats))
@@ -579,9 +579,9 @@
             \ Replaces DPL-UR::URC_MaxRecoveryAmount."
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-ATS:module{AutostakeV3} ATS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-ATS:module{AutostakeV4} ATS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (ref-U|CT:module{OuronetConstantsV2} U|CT)
                 ;;
                 (c-rbt:string (ref-ATS::UR_ColdRewardBearingToken ats))

@@ -87,7 +87,7 @@
     (defcap GOV ()                          (compose-capability (GOV|O_UI_TEN_ADMIN)))
     (defcap GOV|O_UI_TEN_ADMIN ()           (enforce-guard GOV|MD_O-UI-TEN))
     (defun GOV|Demiurgoi ()
-        (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi))
+        (let ((ref-DALOS:module{OuronetDalosV3} DALOS)) (ref-DALOS::GOV|Demiurgoi))
     )
 
     ;;{5}  FUNCTIONS
@@ -106,7 +106,7 @@
         (let
             (
                 (ref-U|CT:module{OuronetConstantsV2} U|CT)
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (if (> nonce 0)
                 (let
@@ -144,7 +144,7 @@
             \ the page while looking like a cleanup."
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 ;;
                 (held-sf:[string] (ref-DPDC::URH_HeldCollectables account true))
                 (mngd-sf:[string] (ref-DPDC::URH_OwnedCollectables account true))
@@ -174,7 +174,7 @@
             \ Replaces DPL-UR::URC_0022_CollectableEntry, key-for-key."
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 ;;
                 (wallet-nonces:[object]
                     (ref-DPDC::URH_AccountNoncesWithSupplies account dpdc-id son))
@@ -207,7 +207,7 @@
             \ `map` -- same result, one pass, no per-element list rebuild."
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (map
                 (lambda (nonce:integer)
@@ -226,8 +226,8 @@
             \ Replaces DPL-UR::URC_0024_SetReader."
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
-                (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (ref-DPDC-S:module{DpdcSetsV3} DPDC-S)
             )
             (map
                 (lambda (set-class:integer) (ref-DPDC-S::UR_Set dpdc-id son set-class))
@@ -242,7 +242,7 @@
             \ Replaces DPL-UR::URC_0025_FilterNoncesByClass."
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (filter
                 (lambda (nonce:integer)
@@ -260,7 +260,7 @@
             \ Replaces DPL-UR::URC_0025a_FilterNoncesByClasses."
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (map
                 (lambda (nonce-class:integer)
@@ -284,8 +284,8 @@
             \ made the Wipe button unreachable."
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
-                (ref-DPDC-F:module{DpdcFragmentsV2} DPDC-F)
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (ref-DPDC-F:module{DpdcFragmentsV3} DPDC-F)
                 ;;
                 (l:integer (length selected-nonces))
                 (first-two:string (take 2 dpdc-id))
@@ -364,7 +364,7 @@
             \ needing the cross-module `keys` scans; fetch those from URH_01|Header."
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 ;;
                 (held-sf:[string] (ref-DPDC::URH_HeldCollectables account true))
                 (mngd-sf:[string] (ref-DPDC::URH_OwnedCollectables account true))

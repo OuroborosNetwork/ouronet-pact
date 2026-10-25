@@ -772,7 +772,7 @@
 (let
     (
         (ref-U|VST:module{UtilityVstV2} U|VST)
-        (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+        (ref-U|SWP:module{UtilitySwpV3} U|SWP)
     )
     (map print
         [

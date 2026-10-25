@@ -21,7 +21,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -102,7 +102,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -262,7 +262,7 @@
         (with-capability (GOV|CADUCEUS_ADMIN)
             (let
                 (
-                    (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+                    (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
                 )
                 (UEV_Ready)
                 (ref-TS01-C1::DALOS|C_DeploySmartAccount
@@ -280,7 +280,7 @@
         (with-capability (GOV|CADUCEUS_ADMIN)
             (let
                 (
-                    (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+                    (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                     (patron:string (UR_Patron))
                     (dptf-id:string (UR_DptfId))
@@ -318,7 +318,7 @@
         (with-capability (BRIDGE|RELAYER)
             (let
                 (
-                    (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+                    (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
                     (patron:string (UR_Patron))
                     (dptf-id:string (UR_DptfId))
                     (bridge-account:string (UR_BridgeAccount))
@@ -354,7 +354,7 @@
         (with-capability (BRIDGE|RELAYER)
             (let
                 (
-                    (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+                    (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
                     (patron:string (UR_Patron))
                     (dptf-id:string (UR_DptfId))
                     (bridge-account:string (UR_BridgeAccount))

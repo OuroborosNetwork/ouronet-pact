@@ -1,5 +1,5 @@
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface DemiourgosLaunchpadV2
+(interface DemiourgosLaunchpadV3
     @doc "Sovereign interface defining the API for the DemiPad launchpad, a permissioned \
         \ venue where Demiourgos.Holdings sells assets (true/orto/semi/non-fungibles) for \
         \ WSTOA, SSTOA or OURO while retaining a decreasing royalty fee. It declares schemas \
@@ -152,13 +152,13 @@
     ;;
     (defun URC_Prices:object{DEMIPAD|Prices} (asset-id:string amount-in-dollars:decimal type:integer))
     (defun URC_Acquire:[string] (buyer:string asset-id:string buy-amount-in-dollarz:decimal type:integer slippage:decimal))
-    (defun URCi_Deposit:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_Deposit:object{IgnisCollectorV4.OutputCumulator}
         (donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool)
     )
-    (defun URCi_TransmitSemiFungibles:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_TransmitSemiFungibles:object{IgnisCollectorV4.OutputCumulator}
         (client:string asset-id:string nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
     )
-    (defun URCi_TransmitNonFungibles:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_TransmitNonFungibles:object{IgnisCollectorV4.OutputCumulator}
         (client:string asset-id:string nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
     )
     ;;{5.4}  Validate [UEV/CAP]
@@ -185,7 +185,7 @@
     ;;
     ;;  [C]
     ;;
-    (defun C_Deposit:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_Deposit:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool max-cost:decimal)
     )
     (defun C_Withdraw (patron:string executor:string asset-id:string type:integer destination:string)
@@ -193,13 +193,23 @@
     ;;
     (defun C_TransmitTrueFungible (patron:string executor:string asset-id:string amount:decimal fuel-or-retrieve:bool))
     (defun C_TransmitOrtoFungible (patron:string executor:string asset-id:string nonces:[integer] fuel-or-retrieve:bool))
-    (defun C_TransmitSemiFungibles:object{IgnisCollectorV3.OutputCumulator} 
+    (defun C_TransmitSemiFungibles:object{IgnisCollectorV4.OutputCumulator} 
         (patron:string executor:string asset-id:string nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
     )
-    (defun C_TransmitNonFungibles:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_TransmitNonFungibles:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string asset-id:string nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
     )
 
+
+    ;;<=========================================================================>
+    ;; ADDED 2026-10-12 -- interface-membership sweep (StoicSyntax-Prefixes.md Sec5,
+    ;; owner ruling). Every one of these was already live in the module body; this
+    ;; closes the gap between what the module DOES and what its interface SAYS it does.
+    ;;<=========================================================================>
+    (defun UC_SlippageFactor:decimal (slippage:decimal))
+    (defun UEV_DepositDollarAmount (amount-in-dollars:decimal))
+    (defun UEV_DirectInjection (direct-injection:bool))
+    (defun UEV_SlippageCost (amount-in-dollars:decimal max-cost:decimal))
 )
 (module DEMIPAD GOV
     @doc "Demiourgos Launchpad, is a permissioned Launchpad operated by Demiourgos.Holdings  \
@@ -245,7 +255,7 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements DemiourgosLaunchpadV2)
+    (implements DemiourgosLaunchpadV3)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -261,7 +271,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -296,7 +306,7 @@
     (defun P|Info ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::P|Info)
         )
@@ -437,8 +447,8 @@
     ;;{3.2}  schemas
     ;;{3.3}  tables
     ;;
-    (deftable DEMIPAD|T|Properties:{DemiourgosLaunchpadV2.DEMIPAD|Properties})
-    (deftable DEMIPAD|T|Ledger:{DemiourgosLaunchpadV2.DEMIPAD|Holdings})
+    (deftable DEMIPAD|T|Properties:{DemiourgosLaunchpadV3.DEMIPAD|Properties})
+    (deftable DEMIPAD|T|Ledger:{DemiourgosLaunchpadV3.DEMIPAD|Holdings})
 
     ;;<=========================================================================>
     ;;{4}  CAPABILITIES
@@ -575,7 +585,7 @@
         @event
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (iz-type:bool (contains type [0 1 2 3]))
                 (iz-registered:bool (UR_CheckRegistration asset-id))
                 (ofb:bool (UR_OpenForBusiness asset-id))
@@ -636,7 +646,7 @@
         @event
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (iz-type:bool (contains type [1 2 3]))
             )
             ;;Validate <type> to be either 1, 2 or 3, and that the required Token Deposit is on.
@@ -701,19 +711,19 @@
     (defun CT_EmptyCumulator ()
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (ref-IGNIS::UDC_EmptyOutputCumulatorV2)
         )
     )
     ;;
     ;;
-    (defun UDC_Costs:object{DemiourgosLaunchpadV2.Costs} 
+    (defun UDC_Costs:object{DemiourgosLaunchpadV3.Costs} 
         (a:decimal b:decimal)
         {"pid"  : a
         ,"wstoa" : b}
     )
-    (defun UDC_DEMIPAD|Holdings:object{DemiourgosLaunchpadV2.DEMIPAD|Holdings}
+    (defun UDC_DEMIPAD|Holdings:object{DemiourgosLaunchpadV3.DEMIPAD|Holdings}
         (
             a:decimal b:decimal c:decimal d:decimal
             e:decimal f:decimal g:decimal
@@ -737,7 +747,7 @@
         ,"retrieval"                    : m
         }
     )
-    (defun UDC_LaunchpadPrices:object{DemiourgosLaunchpadV2.DEMIPAD|Prices}
+    (defun UDC_LaunchpadPrices:object{DemiourgosLaunchpadV3.DEMIPAD|Prices}
         (
             a:string b:string c:string d:string
             e:decimal f:decimal g:decimal h:decimal
@@ -765,7 +775,7 @@
             ""
         )
     )
-    (defun UC_GenerateRoyaltyIntervals:[object{DemiourgosLaunchpadV2.RoyaltyInterval}] ()
+    (defun UC_GenerateRoyaltyIntervals:[object{DemiourgosLaunchpadV3.RoyaltyInterval}] ()
         @doc "Generate list of fee intervals until fee reaches 3 promille"
         (let* 
             (
@@ -776,7 +786,7 @@
             )
             (fold
                 (lambda 
-                    (acc:[object{DemiourgosLaunchpadV2.RoyaltyInterval}] idx:integer)
+                    (acc:[object{DemiourgosLaunchpadV3.RoyaltyInterval}] idx:integer)
                     (let* 
                         (
                             (start:decimal
@@ -833,8 +843,8 @@
             (
                 (deposit-start:decimal current-balance)
                 (deposit-end:decimal (+ current-balance deposit-amount))
-                (intervals:[object{DemiourgosLaunchpadV2.RoyaltyInterval}] (UC_GenerateRoyaltyIntervals))
-                (last-interval:object{DemiourgosLaunchpadV2.RoyaltyInterval} (at (- (length intervals) 1) intervals) )
+                (intervals:[object{DemiourgosLaunchpadV3.RoyaltyInterval}] (UC_GenerateRoyaltyIntervals))
+                (last-interval:object{DemiourgosLaunchpadV3.RoyaltyInterval} (at (- (length intervals) 1) intervals) )
                 (last-interval-end:decimal (at "end" last-interval))
                 (min-fee:decimal (at "fee-promille" last-interval))
                 (min-fee-rate:decimal (/ min-fee 1000.0))
@@ -842,7 +852,7 @@
             (+
                 ;;Interval Fees
                 (fold
-                    (lambda (total-fee:decimal interval:object{DemiourgosLaunchpadV2.RoyaltyInterval})
+                    (lambda (total-fee:decimal interval:object{DemiourgosLaunchpadV3.RoyaltyInterval})
                         (let 
                             (
                                 (interval-start (at "start" interval))
@@ -894,7 +904,7 @@
         )
     )
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    (defun UR_LaunchpadState:object{DemiourgosLaunchpadV2.DEMIPAD|Properties} ()
+    (defun UR_LaunchpadState:object{DemiourgosLaunchpadV3.DEMIPAD|Properties} ()
         (read DEMIPAD|T|Properties PP)
     )
     (defun UR_DirectInjection:bool ()
@@ -910,7 +920,7 @@
         (at "resident-ouro" (UR_LaunchpadState))
     )
     ;;
-    (defun UR_AssetState:object{DemiourgosLaunchpadV2.DEMIPAD|Holdings} (asset-id:string)
+    (defun UR_AssetState:object{DemiourgosLaunchpadV3.DEMIPAD|Holdings} (asset-id:string)
         (read DEMIPAD|T|Ledger asset-id)
     )
     (defun UR_TotalDollarzRaised:decimal (asset-id:string)
@@ -992,14 +1002,14 @@
             )
         )
     )
-    (defun URC_Prices:object{DemiourgosLaunchpadV2.DEMIPAD|Prices} 
+    (defun URC_Prices:object{DemiourgosLaunchpadV3.DEMIPAD|Prices} 
         (asset-id:string amount-in-dollars:decimal type:integer)
         (let
             (
                 (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-SWPI:module{SwapperIssueV4} SWPI)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-SWPI:module{SwapperIssueV5} SWPI)
                 ;;
                 (wstoa-id:string (ref-DALOS::UR_WrappedStoaID))
                 (sstoa-id:string (ref-DALOS::UR_SilverStoaID))
@@ -1072,13 +1082,13 @@
             \ policy. The install-based, no-ceiling counterpart is CAP_Acquire (Variant 2, slippage off)."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-LIQUID:module{StoaLiquidStakingV2} LIQUID)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-LIQUID:module{StoaLiquidStakingV3} LIQUID)
                 (ref-U|CT:module{OuronetConstantsV2} U|CT)
                 ;;
                 (buyer-stoa:string (ref-DALOS::UR_AccountStoa buyer))
                 (lq-stoa:string (ref-LIQUID::GOV|LIQUID|SC_STOA-NAME))
-                (prices:object{DemiourgosLaunchpadV2.DEMIPAD|Prices} (URC_Prices asset-id buy-amount-in-dollarz type))
+                (prices:object{DemiourgosLaunchpadV3.DEMIPAD|Prices} (URC_Prices asset-id buy-amount-in-dollarz type))
                 (kp:integer (ref-U|CT::CT_STOA_PRECISION))
                 (f:decimal (UC_SlippageFactor slippage))
                 ;;Slippage-padded per-leg ceilings (floored to STOA precision so the signed caps are valid)
@@ -1109,7 +1119,7 @@
             )
         )
     )
-    (defun URCi_Deposit:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_Deposit:object{IgnisCollectorV4.OutputCumulator}
         (donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool)
         @doc "Cost preview for C_Deposit: (type 0) wrap-STOA of the non-environment amount, \
             \ (type 1) unwrap-STOA of the environment amount, and (unless direct-injection) the \
@@ -1119,12 +1129,12 @@
         (UEV_DepositDollarAmount amount-in-dollars)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
-                (ref-LIQUID:module{StoaLiquidStakingV2} LIQUID)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
+                (ref-LIQUID:module{StoaLiquidStakingV3} LIQUID)
                 ;;
-                (prices:object{DemiourgosLaunchpadV2.DEMIPAD|Prices} (URC_Prices asset-id amount-in-dollars type))
+                (prices:object{DemiourgosLaunchpadV3.DEMIPAD|Prices} (URC_Prices asset-id amount-in-dollars type))
                 (working-id:string
                     (if (or (= type 0) (= type 1))
                         (ref-DALOS::UR_WrappedStoaID)
@@ -1156,24 +1166,24 @@
             )
         )
     )
-    (defun URCi_TransmitSemiFungibles:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_TransmitSemiFungibles:object{IgnisCollectorV4.OutputCumulator}
         (client:string asset-id:string nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
         @doc "Cost preview for C_TransmitSemiFungibles: the single collectable multi-transfer \
             \ (client->launchpad on fuel, launchpad->client on retrieve), son=true."
         (URCi_TransmitCollectables client asset-id true nonces amounts fuel-or-retrieve)
     )
-    (defun URCi_TransmitNonFungibles:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_TransmitNonFungibles:object{IgnisCollectorV4.OutputCumulator}
         (client:string asset-id:string nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
         @doc "Cost preview for C_TransmitNonFungibles: as URCi_TransmitSemiFungibles with son=false."
         (URCi_TransmitCollectables client asset-id false nonces amounts fuel-or-retrieve)
     )
-    (defun URCi_TransmitCollectables:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_TransmitCollectables:object{IgnisCollectorV4.OutputCumulator}
         (client:string asset-id:string son:bool nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
         @doc "Shared cost preview for the collectable transmit legs (mirrors XI_TransmitCollectables): \
             \ one DPDC-T multi-transfer, sender/receiver flipped by fuel-or-retrieve."
         (let
             (
-                (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
+                (ref-DPDC-T:module{DpdcTransferV3} DPDC-T)
                 (lpad:string DEMIPAD|SC_NAME)
             )
             (if fuel-or-retrieve
@@ -1188,12 +1198,12 @@
         (let
             (
                 (ref-coin:module{stoa-ns.fungible-v1} coin)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-LIQUID:module{StoaLiquidStakingV2} LIQUID)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-LIQUID:module{StoaLiquidStakingV3} LIQUID)
                 ;;
                 (buyer-stoa:string (ref-DALOS::UR_AccountStoa buyer))
                 (lq-stoa:string (ref-LIQUID::GOV|LIQUID|SC_STOA-NAME))
-                (prices:object{DemiourgosLaunchpadV2.DEMIPAD|Prices} (URC_Prices asset-id buy-amount-in-dollarz type))
+                (prices:object{DemiourgosLaunchpadV3.DEMIPAD|Prices} (URC_Prices asset-id buy-amount-in-dollarz type))
                 ;;
 
                 (r1:string (at "receiver-one" prices))
@@ -1281,9 +1291,9 @@
         (let
             (
                 (fungibility:[bool] (UR_Fungibility asset-id))
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (cond
                 ((= fungibility TF) (ref-DPTF::CAP_Owner asset-id))
@@ -1404,12 +1414,12 @@
     )
     ;;
     ;;Protection: Class 2 — SECURE
-    (defun XI_SatisfyEnviroment (donor:string prices:object{DemiourgosLaunchpadV2.DEMIPAD|Prices})
+    (defun XI_SatisfyEnviroment (donor:string prices:object{DemiourgosLaunchpadV3.DEMIPAD|Prices})
         (require-capability (SECURE))
         (let
             (
                 (ref-coin:module{stoa-ns.fungible-v1} coin)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 ;;
                 (donor-stoa:string (ref-DALOS::UR_AccountStoa donor))
             )
@@ -1420,7 +1430,7 @@
         )
     )
     ;;Protection: Class 2 — SECURE
-    (defun XI_DepositResidents (prices:object{DemiourgosLaunchpadV2.DEMIPAD|Prices} type:integer)
+    (defun XI_DepositResidents (prices:object{DemiourgosLaunchpadV3.DEMIPAD|Prices} type:integer)
         (require-capability (SECURE))
         (with-capability (SECURE)
             (let
@@ -1454,13 +1464,13 @@
     )
     ;;
     ;;Protection: Class 2 — SECURE
-    (defun XI_TransmitCollectables:object{IgnisCollectorV3.OutputCumulator}
+    (defun XI_TransmitCollectables:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string asset-id:string son:bool nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
         (require-capability (SECURE))
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPDC-T:module{DpdcTransferV3} DPDC-T)
                 (lpad:string DEMIPAD|SC_NAME)
                 (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount executor))
             )
@@ -1505,7 +1515,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership executor)
         )
@@ -1528,7 +1538,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership executor)
         )
@@ -1550,7 +1560,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership executor)
         )
@@ -1572,7 +1582,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership executor)
         )
@@ -1581,7 +1591,7 @@
             (format "Asset {} Retrieval succesfuly set to {}" [asset-id toggle])
         )
     )
-    (defun C_Deposit:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_Deposit:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool max-cost:decimal)
         @doc "Deposits Funds into the Launchpad, for a registered Asset \
             \ \
@@ -1610,12 +1620,12 @@
         (with-capability (DEMIPAD|C>DEPOSIT executor asset-id amount-in-dollars type direct-injection max-cost)
             (let
                 (
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-TFT:module{TrueFungibleTransferV2} TFT)
-                    (ref-LIQUID:module{StoaLiquidStakingV2} LIQUID)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-TFT:module{TrueFungibleTransferV3} TFT)
+                    (ref-LIQUID:module{StoaLiquidStakingV3} LIQUID)
                     ;;
-                    (prices:object{DemiourgosLaunchpadV2.DEMIPAD|Prices}  (URC_Prices asset-id amount-in-dollars type))
+                    (prices:object{DemiourgosLaunchpadV3.DEMIPAD|Prices}  (URC_Prices asset-id amount-in-dollars type))
                     (working-id:string
                         (if (or (= type 0) (= type 1))
                             (ref-DALOS::UR_WrappedStoaID)
@@ -1631,19 +1641,19 @@
                     (rem:decimal (at "remainder-amount" prices))
                     (non-enviroment:decimal (+ cod rem))
                     ;;
-                    (ico1:object{IgnisCollectorV3.OutputCumulator}
+                    (ico1:object{IgnisCollectorV4.OutputCumulator}
                         (if (= type 0)
                             (ref-LIQUID::C_WrapStoa patron executor non-enviroment)
                             EOC
                         )
                     )
-                    (ico2:object{IgnisCollectorV3.OutputCumulator}
+                    (ico2:object{IgnisCollectorV4.OutputCumulator}
                         (if (= type 1)
                             (ref-LIQUID::C_UnwrapStoa patron executor env)
                             EOC
                         )
                     )
-                    (ico3:object{IgnisCollectorV3.OutputCumulator}
+                    (ico3:object{IgnisCollectorV4.OutputCumulator}
                         (if (not direct-injection)
                             (ref-TFT::C_Transfer patron executor DEMIPAD|SC_NAME working-id non-enviroment true)
                             EOC
@@ -1697,7 +1707,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-DALOS-X:module{OuronetDalosV2} DALOS)
+                (ref-DALOS-X:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS-X::CAP_EnforceAccountOwnership executor)
         )
@@ -1708,8 +1718,8 @@
             (with-capability (DEMIPAD|C>WITHDRAW asset-id type retrieval-amount destination)
                 (let
                     (
-                        (ref-DALOS:module{OuronetDalosV2} DALOS)
-                        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+                        (ref-DALOS:module{OuronetDalosV3} DALOS)
+                        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
                         (working-id:string
                             (if (= type 1)
                                 (ref-DALOS::UR_WrappedStoaID)
@@ -1742,8 +1752,8 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
                 (lpad:string DEMIPAD|SC_NAME)
                 (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount executor))
             )
@@ -1772,8 +1782,8 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
                 (lpad:string DEMIPAD|SC_NAME)
                 (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount executor))
             )
@@ -1789,7 +1799,7 @@
             )
         )
     )
-    (defun C_TransmitSemiFungibles:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_TransmitSemiFungibles:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string asset-id:string nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
         @doc "Moves <nonces>/<amounts> of semi-fungible collectable <asset-id> into or out of the Launchpad. \
             \ \
@@ -1805,7 +1815,7 @@
             (XI_TransmitCollectables patron executor asset-id true nonces amounts fuel-or-retrieve)
         )
     )
-    (defun C_TransmitNonFungibles:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_TransmitNonFungibles:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string asset-id:string nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
         @doc "Moves <nonces>/<amounts> of non-fungible collectable <asset-id> into or out of the \
             \ Launchpad. \

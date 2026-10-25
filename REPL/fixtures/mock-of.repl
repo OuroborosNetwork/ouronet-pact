@@ -26,7 +26,7 @@
 (let
     (
         (patron:string KST.ANHD)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (split-stoa:[decimal]
             (ref-DALOS::URC_SplitSTOAPrices patron (ref-DALOS::UR_UsagePrice "dpmf"))
         )
@@ -52,7 +52,7 @@
     )
 (print "--- [FIXTURE mock-of · 03 · issue] ---")
     (let
-        ((ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1))
+        ((ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1))
         (print (format "<(FIXTURE mock-of)> issued => {}"
             [(ref-TS01-C1::DPOF|C_Issue
                 patron patron ["MockOrto"] ["MOCKO"] [24]
@@ -79,7 +79,7 @@
 (print "--- [FIXTURE mock-of — postcondition · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (o:string (ref-U|DALOS::UDC_Makeid "MOCKO"))
     )

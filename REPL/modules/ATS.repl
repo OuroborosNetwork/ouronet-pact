@@ -52,10 +52,10 @@
 (print "--- [ATS-CNS — C_Constrict: hibernating stake, previously tested by NOTHING · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         (patron:string KST.ANHD)
         (auryndex:string "Auryndex-98c486052a51")
     )
@@ -128,14 +128,14 @@
 (print "--- [ATS-BRD — ATS|C_UpgradeBranding, and an INFO reader that cannot run · 02 · let / invocation] ---")
 (let
     (
-        (ref-BRD:module{BrandingV2} BRD)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-BRD:module{BrandingV3} BRD)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         (patron:string KST.ANHD)
         (auryndex:string "Auryndex-98c486052a51")
     )
     (let ((f0:integer (at "flag" (ref-BRD::UR_Branding auryndex false))))
         (ref-TS01-C2::ATS|C_UpgradeBranding patron (ATS.UR_OwnerKonto auryndex) auryndex 3)
-        (let ((b:object{BrandingV2.Schema} (ref-BRD::UR_Branding auryndex false)))
+        (let ((b:object{BrandingV3.Schema} (ref-BRD::UR_Branding auryndex false)))
             (map print
                 [
                     ;;Branding flag is a TIER that counts DOWN as branding improves; an upgraded
@@ -201,7 +201,7 @@
 ;;left: DPMF is dead, and guessing the forgotten argument there is churn.
 (let
     (
-        (ref-INFO-ONE:module{InfoOneV2} INFO-ONE)
+        (ref-INFO-ONE:module{InfoOneV3} INFO-ONE)
         (patron:string KST.ANHD)
     )
     (map print
@@ -238,22 +238,22 @@
 (print "--- [ATS-PBRD — C_UpdatePendingBranding writes PENDING, never LIVE · 02 · let / invocation] ---")
 (let
     (
-        (ref-BRD:module{BrandingV2} BRD)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-BRD:module{BrandingV3} BRD)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         (patron:string KST.ANHD)
         (auryndex:string "Auryndex-98c486052a51")
     )
     (let
         (
-            (live0:object{BrandingV2.Schema} (ref-BRD::UR_Branding auryndex false))
+            (live0:object{BrandingV3.Schema} (ref-BRD::UR_Branding auryndex false))
         )
         (ref-TS01-C2::ATS|C_UpdatePendingBranding patron (ATS.UR_OwnerKonto auryndex) auryndex
             "ipfs://pending-logo" "a pending description" "https://pending.example"
             [ { "social-media-name": "x", "social-media-link": "https://x.example/ouronet" } ])
         (let
             (
-                (pend:object{BrandingV2.Schema} (ref-BRD::UR_Branding auryndex true))
-                (live:object{BrandingV2.Schema} (ref-BRD::UR_Branding auryndex false))
+                (pend:object{BrandingV3.Schema} (ref-BRD::UR_Branding auryndex true))
+                (live:object{BrandingV3.Schema} (ref-BRD::UR_Branding auryndex false))
             )
             (map print
                 [
@@ -307,8 +307,8 @@
 (print "--- [ATS-G1 — the existence guards, as 2x2s on their own boolean argument · 02 · let / invocation] ---")
 (let
     (
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
         (ps:string "PlebeicStrength-98c486052a51")
     )
     (let
@@ -379,7 +379,7 @@
 ;;pinning a constant that a reordering upstream would silently invalidate.
 (let
     (
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-ATS:module{AutostakeV4} ATS)
         (ps:string "PlebeicStrength-98c486052a51")
     )
     (let
@@ -431,8 +431,8 @@
 (print "--- [ATS-G2 — ATSU|C>SYPHON: the gate that fronts a six-guard family · 01 · let / invocation] ---")
 (let
     (
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         (patron:string KST.ANHD)
         (ps:string "Auryndex-98c486052a51")
     )
@@ -536,7 +536,7 @@
 (print "--- [ATS-G3 — the URCv_ band: two derivations that refuse to answer a nonsense question · 02 · let / invocation] ---")
 (let
     (
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-ATS:module{AutostakeV4} ATS)
         (ps:string "PlebeicStrength-98c486052a51")
     )
     (let
@@ -590,9 +590,9 @@
 (print "--- [ATS-G4 — three constructors that refuse to build a nonsense object · 02 · let / invocation] ---")
 (let
     (
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-BRD:module{BrandingV2} BRD)
-        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-BRD:module{BrandingV3} BRD)
+        (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
         (ps:string "PlebeicStrength-98c486052a51")
     )
     (map print
@@ -666,7 +666,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-ATS:module{AutostakeV4} ATS)
         (ps:string "PlebeicStrength-98c486052a51")
         (n:integer (length (ref-ATS::UR_RewardTokenList ps)))
         (ok:[decimal] (make-list n 1.0))
@@ -720,8 +720,8 @@
 (print "--- [ATS-G6 — no royalties to withdraw, on a pair that has collected none · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-ATS:module{AutostakeV4} ATS)
         (ps:string "PlebeicStrength-98c486052a51")
     )
     (map print
@@ -759,8 +759,8 @@
 (print "--- [ATS-G7a — turn SYPHONING on (the fixture the syphon-amount guards need) · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-ATS:module{AutostakeV4} ATS)
         (ps:string "PlebeicStrength-98c486052a51")
     )
     (ref-TS01-C2::ATS|C_Control KST.ANHD (ATS.UR_OwnerKonto ps) ps
@@ -792,8 +792,8 @@
 (env-sigs [{ "key": "PK_AOZ", "caps": [] } { "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-ATS:module{AutostakeV4} ATS)
         (ps:string "PlebeicStrength-98c486052a51")
         (n:integer (length (ref-ATS::UR_RewardTokenList ps)))
         (mixed:[decimal] (+ [-1.0 100.0] (make-list (- n 2) 1.0)))
@@ -828,8 +828,8 @@
 (print "--- [ATS-G7c — restore: syphoning back OFF, leave the pair as found · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-ATS:module{AutostakeV4} ATS)
         (ps:string "PlebeicStrength-98c486052a51")
     )
     (ref-TS01-C2::ATS|C_Control KST.ANHD (ATS.UR_OwnerKonto ps) ps
@@ -862,8 +862,8 @@
 (env-sigs [{ "key": "PK_AOZ", "caps": [] } { "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         (ps:string "PlebeicStrength-98c486052a51")
         (rt:string (at 0 (ref-ATS::UR_RewardTokenList ps)))
     )
@@ -917,9 +917,9 @@
 (env-sigs [{ "key": "PK_AOZ", "caps": [] } { "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-ATS:module{AutostakeV4} ATS)
         (ref-U|ATS:module{UtilityAtsV3} U|ATS)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         (ps:string "PlebeicStrength-98c486052a51")
         (rts:[string] (ref-ATS::UR_RewardTokenList ps))
         (primal:string (at 0 rts))
@@ -1098,8 +1098,8 @@
 (print "--- [ATS-G13 — hibernation fronts both Coil and Curl, and Curl checks BOTH pairs · 02 · let / invocation] ---")
 (let
     (
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         (a:string "Auryndex-98c486052a51")
         (k:string "KORIndex-98c486052a51")
         (sl:string "StoaLiquindex-98c486052a51")
@@ -1240,8 +1240,8 @@
 (print "--- [ATS-G15 — elite positions, index precision, and the Hot-RBT prefix exclusion · 02 · let / invocation] ---")
 (let
     (
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         (a:string "Auryndex-98c486052a51")
         (k:string "KORIndex-98c486052a51")
     )
@@ -1401,8 +1401,8 @@
 (print "--- [ATS-G16 — the parameter lock's two-sided rule, and the seven-RT ceiling · 02 · let / invocation] ---")
 (let
     (
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         (a:string "Auryndex-98c486052a51")
         (t:string "TestKickPair-98c486052a51")
     )
@@ -1507,8 +1507,8 @@
 (print "--- [ATS-G17 — the two ATSU index/position guards, and a message that is only half right · 02 · let / invocation] ---")
 (let
     (
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         (a:string "Auryndex-98c486052a51")
     )
     (map print
@@ -1550,7 +1550,7 @@
         (
             (c-rbt:string (ref-ATS::UR_ColdRewardBearingToken a))
             (rt:string (at 0 (ref-ATS::UR_RewardTokenList a)))
-            (rt-row:object{AutostakeV3.ATS|RewardTokenSchemaV2}
+            (rt-row:object{AutostakeV4.ATS|RewardTokenSchemaV2}
                 (at 0 (at "reward-tokens" (read ATS.ATS|Pairs a ["reward-tokens"]))))
             (rbt-supply:decimal (ref-ATS::URC_PairRBTSupply a))
         )
@@ -1643,8 +1643,8 @@
 (print "--- [ATS-G18 — Constrict and Brumate read hibernation in OPPOSITE directions · 02 · let / invocation] ---")
 (let
     (
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         (a:string "Auryndex-98c486052a51")
         (k:string "KORIndex-98c486052a51")
         (sl:string "StoaLiquindex-98c486052a51")
@@ -1715,9 +1715,9 @@
 (print "--- [ATS-G19 - ATSU|C>COLD_RECOVERY: a derived position the pair does not have · 01 · let / invocation] ---")
 (let
     (
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         (ats:string "Auryndex-98c486052a51")
     )
     (map print
@@ -1809,8 +1809,8 @@
 (print "--- [ATS-G21 - ATSU|C>SYPHON: per-token resident amounts bound the syphon · 02 · let / invocation] ---")
 (let
     (
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         (ps:string "PlebeicStrength-98c486052a51")
     )
     ;;turn syphoning on through the ordinary control client (AOZ owns this pair)
@@ -1876,8 +1876,8 @@
 (print "--- [ATS-G23a — open the one gate that fronts the hot-RBT re-registration route · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-ATS:module{AutostakeV4} ATS)
         (kor:string "KORIndex-98c486052a51")
     )
     (map print
@@ -1925,9 +1925,9 @@
 (print "--- [ATS-G23 — the hot-RBT re-registration route, driven to the wall it actually hits · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
         (kor:string "KORIndex-98c486052a51")
         (thrbt:string "THRBT-98c486052a51")
     )
@@ -1970,8 +1970,8 @@
 (print "--- [ATS-G23c — restore KORIndex's direct recovery (leave the fixture as found) · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-ATS:module{AutostakeV4} ATS)
         (kor:string "KORIndex-98c486052a51")
     )
     (map print
@@ -2024,8 +2024,8 @@
 (print "--- [ATS-F1 — the reward-token SENTINEL invariant, swept across every RT on the chain · 02 · let / invocation] ---")
 (let
     (
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
         (ref-U|CT:module{OuronetConstantsV2} U|CT)
         (pairs:[string]
             ["Auryndex-98c486052a51" "EliteAuryndex-98c486052a51" "KORIndex-98c486052a51"
@@ -2114,9 +2114,9 @@
 (print "--- [ATS-I1 — THE INFO COST TEMPLATE: predicted cost vs what the op actually charges · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-ATS:module{AutostakeV4} ATS)
         ;;AOZT is the account the suite coils PlebeicStrength with -- it holds the PKOSON reward
         ;;token. ANHD does not, and a coil it cannot fund aborts on the debit rather than pricing.
         (patron:string KST.AOZT)
@@ -2130,7 +2130,7 @@
         (let
             (
                 ;;PREDICTED — read BEFORE anything executes, exactly as a client would
-                (predicted:object{OuronetInfoV2.ClientInfo}
+                (predicted:object{OuronetInfoV3.ClientInfo}
                     (INFO-ONE.INFO_ATS|Coil patron patron ats rt amount))
                 (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             )
@@ -2209,9 +2209,9 @@
         (coin.TRANSFER "k:95a59029029524ebb250b2fafe6826ff88bb59c527d661cba3279d09a51d3bdf" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
 (let
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-ATS:module{AutostakeV4} ATS)
         (ps:string "PlebeicStrength-98c486052a51")
     )
     (let
@@ -2249,7 +2249,7 @@
             (let
                 (
                     ;;PREDICTED — read BEFORE the unlock executes, exactly as a client would
-                    (predicted:object{OuronetInfoV2.ClientInfo}
+                    (predicted:object{OuronetInfoV3.ClientInfo}
                         (INFO-ONE.INFO_ATS|ToggleParameterLock patron ps false))
                     (stoa-before:decimal (coin.get-balance stoa-acct))
                     (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
@@ -2302,9 +2302,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (aur:string "Auryndex-98c486052a51")
         (kor:string "KORIndex-98c486052a51")
         (sl:string "StoaLiquindex-98c486052a51")
@@ -2313,7 +2313,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_ATS|UpdateRoyalty patron aur 10.0))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_ATS|UpdateRoyalty patron aur 10.0))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C2::ATS|C_UpdateRoyalty patron (ATS.UR_OwnerKonto aur) aur 10.0))
         )
@@ -2343,9 +2343,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (aur:string "Auryndex-98c486052a51")
         (kor:string "KORIndex-98c486052a51")
         (sl:string "StoaLiquindex-98c486052a51")
@@ -2354,7 +2354,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_ATS|UpdateSyphon patron aur 0.1))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_ATS|UpdateSyphon patron aur 0.1))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C2::ATS|C_UpdateSyphon patron (ATS.UR_OwnerKonto aur) aur 0.1))
         )
@@ -2384,9 +2384,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (aur:string "Auryndex-98c486052a51")
         (kor:string "KORIndex-98c486052a51")
         (sl:string "StoaLiquindex-98c486052a51")
@@ -2395,7 +2395,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_ATS|SetHibernationFees patron aur 100.0 0.008))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_ATS|SetHibernationFees patron aur 100.0 0.008))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C2::ATS|C_SetHibernationFees patron (ATS.UR_OwnerKonto aur) aur 100.0 0.008))
         )
@@ -2427,9 +2427,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (aur:string "Auryndex-98c486052a51")
         (kor:string "KORIndex-98c486052a51")
         (sl:string "StoaLiquindex-98c486052a51")
@@ -2438,7 +2438,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_ATS|SwitchColdRecovery patron kor true))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_ATS|SwitchColdRecovery patron kor true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C2::ATS|C_SwitchColdRecovery patron (ATS.UR_OwnerKonto kor) kor true))
         )
@@ -2469,9 +2469,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (aur:string "Auryndex-98c486052a51")
         (kor:string "KORIndex-98c486052a51")
         (sl:string "StoaLiquindex-98c486052a51")
@@ -2480,7 +2480,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_ATS|SwitchDirectRecovery patron kor false))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_ATS|SwitchDirectRecovery patron kor false))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C2::ATS|C_SwitchDirectRecovery patron (ATS.UR_OwnerKonto kor) kor false))
         )
@@ -2510,9 +2510,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (aur:string "Auryndex-98c486052a51")
         (kor:string "KORIndex-98c486052a51")
         (sl:string "StoaLiquindex-98c486052a51")
@@ -2521,7 +2521,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_ATS|ControlHotRecoveryFee patron aur true))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_ATS|ControlHotRecoveryFee patron aur true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C2::ATS|C_ControlHotRecoveryFee patron (ATS.UR_OwnerKonto aur) aur true))
         )
@@ -2551,9 +2551,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (aur:string "Auryndex-98c486052a51")
         (kor:string "KORIndex-98c486052a51")
         (sl:string "StoaLiquindex-98c486052a51")
@@ -2562,7 +2562,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_ATS|RotateOwnership patron aur lumy))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_ATS|RotateOwnership patron aur lumy))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C2::ATS|C_RotateOwnership patron (ATS.UR_OwnerKonto aur) lumy aur))
         )
@@ -2592,9 +2592,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (aur:string "Auryndex-98c486052a51")
         (kor:string "KORIndex-98c486052a51")
         (sl:string "StoaLiquindex-98c486052a51")
@@ -2603,7 +2603,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_ATS|Cull patron patron aur))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_ATS|Cull patron patron aur))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C2::ATS|C_Cull patron patron aur))
         )
@@ -2642,15 +2642,15 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
 (let
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sl:string "StoaLiquindex-98c486052a51")
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo}
+            (predicted:object{OuronetInfoV3.ClientInfo}
                 (INFO-ONE.INFO_ATS|ColdRecovery patron emma sl 0.1))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C2::ATS|C_ColdRecovery patron emma sl 0.1))
@@ -2706,9 +2706,9 @@
 (env-sigs [{ "key": "PK_AOZ", "caps": [] } { "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-ATS:module{AutostakeV4} ATS)
         (ps:string "PlebeicStrength-98c486052a51")
         (patron:string KST.ANHD)
         (target:string KST.ANHD)
@@ -2720,7 +2720,7 @@
         (ref-ATS::UR_CanChangeOwner ps) true (ref-ATS::UR_Hibernate ps))
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo}
+            (predicted:object{OuronetInfoV3.ClientInfo}
                 (INFO-ONE.INFO_ATS|Syphon patron target ps amounts))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C2::ATS|C_Syphon patron (ATS.UR_OwnerKonto ps) target ps amounts))
@@ -2762,9 +2762,9 @@
 (env-sigs [{ "key": "PK_AOZ", "caps": [] } { "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-ATS:module{AutostakeV4} ATS)
         (aur:string "Auryndex-98c486052a51")
         (kor:string "KORIndex-98c486052a51")
         (sl:string "StoaLiquindex-98c486052a51")
@@ -2777,7 +2777,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_ATS|Control patron ps (ref-ATS::UR_CanChangeOwner ps) true (ref-ATS::UR_Hibernate ps)))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_ATS|Control patron ps (ref-ATS::UR_CanChangeOwner ps) true (ref-ATS::UR_Hibernate ps)))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C2::ATS|C_Control patron (ATS.UR_OwnerKonto ps) ps (ref-ATS::UR_CanChangeOwner ps) true (ref-ATS::UR_Hibernate ps)))
         )
@@ -2809,9 +2809,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-ATS:module{AutostakeV4} ATS)
         (aur:string "Auryndex-98c486052a51")
         (kor:string "KORIndex-98c486052a51")
         (sl:string "StoaLiquindex-98c486052a51")
@@ -2824,7 +2824,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_ATS|ControlColdRecoveryFees patron kor true false))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_ATS|ControlColdRecoveryFees patron kor true false))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C2::ATS|C_ControlColdRecoveryFees patron (ATS.UR_OwnerKonto kor) kor true false))
         )
@@ -2856,9 +2856,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-ATS:module{AutostakeV4} ATS)
         (aur:string "Auryndex-98c486052a51")
         (kor:string "KORIndex-98c486052a51")
         (sl:string "StoaLiquindex-98c486052a51")
@@ -2871,7 +2871,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_ATS|SetColdRecoveryDuration patron kor true 24 6))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_ATS|SetColdRecoveryDuration patron kor true 24 6))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C2::ATS|C_SetColdRecoveryDuration patron (ATS.UR_OwnerKonto kor) kor true 24 6))
         )
@@ -2901,9 +2901,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-ATS:module{AutostakeV4} ATS)
         (aur:string "Auryndex-98c486052a51")
         (kor:string "KORIndex-98c486052a51")
         (sl:string "StoaLiquindex-98c486052a51")
@@ -2916,7 +2916,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_ATS|SetDirectRecoveryFee patron kor 10.0))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_ATS|SetDirectRecoveryFee patron kor 10.0))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C2::ATS|C_SetDirectRecoveryFee patron (ATS.UR_OwnerKonto kor) kor 10.0))
         )
@@ -2946,9 +2946,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-ATS:module{AutostakeV4} ATS)
         (aur:string "Auryndex-98c486052a51")
         (kor:string "KORIndex-98c486052a51")
         (sl:string "StoaLiquindex-98c486052a51")
@@ -2961,7 +2961,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_ATS|SwitchHotRecovery patron aur (not (ref-ATS::UR_ToggleHotRecovery aur))))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_ATS|SwitchHotRecovery patron aur (not (ref-ATS::UR_ToggleHotRecovery aur))))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C2::ATS|C_SwitchHotRecovery patron (ATS.UR_OwnerKonto aur) aur (not (ref-ATS::UR_ToggleHotRecovery aur))))
         )
@@ -2995,9 +2995,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-ATS:module{AutostakeV4} ATS)
         (aur:string "Auryndex-98c486052a51")
         (kor:string "KORIndex-98c486052a51")
         (sl:string "StoaLiquindex-98c486052a51")
@@ -3015,7 +3015,7 @@
     (ref-TS01-C2::ATS|C_SwitchColdRecovery patron (ATS.UR_OwnerKonto aur) aur false)
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_ATS|ToggleElite patron aur (not (ref-ATS::UR_EliteMode aur))))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_ATS|ToggleElite patron aur (not (ref-ATS::UR_EliteMode aur))))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C2::ATS|C_ToggleElite patron (ATS.UR_OwnerKonto aur) aur (not (ref-ATS::UR_EliteMode aur))))
         )
@@ -3045,9 +3045,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-ATS:module{AutostakeV4} ATS)
         (aur:string "Auryndex-98c486052a51")
         (kor:string "KORIndex-98c486052a51")
         (sl:string "StoaLiquindex-98c486052a51")
@@ -3060,7 +3060,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_ATS|ToggleUpgrade patron aur (not (ref-ATS::UR_CanUpgrade aur))))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_ATS|ToggleUpgrade patron aur (not (ref-ATS::UR_CanUpgrade aur))))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C2::ATS|C_ToggleUpgrade patron (ATS.UR_OwnerKonto aur) aur (not (ref-ATS::UR_CanUpgrade aur))))
         )
@@ -3092,9 +3092,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-ATS:module{AutostakeV4} ATS)
         (aur:string "Auryndex-98c486052a51")
         (kor:string "KORIndex-98c486052a51")
         (sl:string "StoaLiquindex-98c486052a51")
@@ -3107,7 +3107,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_ATS|Fuel patron patron sl (at 0 (ref-ATS::UR_RewardTokenList sl)) 1.0))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_ATS|Fuel patron patron sl (at 0 (ref-ATS::UR_RewardTokenList sl)) 1.0))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C2::ATS|C_Fuel patron patron sl (at 0 (ref-ATS::UR_RewardTokenList sl)) 1.0))
         )
@@ -3139,9 +3139,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-ATS:module{AutostakeV4} ATS)
         (aur:string "Auryndex-98c486052a51")
         (kor:string "KORIndex-98c486052a51")
         (sl:string "StoaLiquindex-98c486052a51")
@@ -3154,7 +3154,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_ATS|Constrict patron patron aur (at 0 (ref-ATS::UR_RewardTokenList aur)) 100.0 30))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_ATS|Constrict patron patron aur (at 0 (ref-ATS::UR_RewardTokenList aur)) 100.0 30))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C2::ATS|C_Constrict patron patron aur (at 0 (ref-ATS::UR_RewardTokenList aur)) 100.0 30))
         )
@@ -3186,9 +3186,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-ATS:module{AutostakeV4} ATS)
         (aur:string "Auryndex-98c486052a51")
         (kor:string "KORIndex-98c486052a51")
         (sl:string "StoaLiquindex-98c486052a51")
@@ -3201,7 +3201,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_ATS|VestedCoil patron patron ea "AURYN-98c486052a51" 100.0 emma 3600 7200 5))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_ATS|VestedCoil patron patron ea "AURYN-98c486052a51" 100.0 emma 3600 7200 5))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C2::ATS|C_VestedCoil patron patron ea "AURYN-98c486052a51" 100.0 emma 3600 7200 5))
         )
@@ -3231,9 +3231,9 @@
 (env-sigs [{ "key": "PK_AOZ", "caps": [] } { "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-ATS:module{AutostakeV4} ATS)
         (aur:string "Auryndex-98c486052a51")
         (kor:string "KORIndex-98c486052a51")
         (sl:string "StoaLiquindex-98c486052a51")
@@ -3246,7 +3246,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_ATS|HotRecovery patron aozt ps 50.0))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_ATS|HotRecovery patron aozt ps 50.0))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C2::ATS|C_HotRecovery patron aozt ps 50.0))
         )
@@ -3304,9 +3304,9 @@
         (coin.TRANSFER "k:95a59029029524ebb250b2fafe6826ff88bb59c527d661cba3279d09a51d3bdf" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
 (let
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-ATS:module{AutostakeV4} ATS)
         (aur:string "Auryndex-98c486052a51")
         (kor:string "KORIndex-98c486052a51")
         (ps:string "PlebeicStrength-98c486052a51")
@@ -3317,7 +3317,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_ATS|UpgradeBranding patron aur 1))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_ATS|UpgradeBranding patron aur 1))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (stoa-before:decimal (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))
             (m (ref-TS01-C2::ATS|C_UpgradeBranding patron (ATS.UR_OwnerKonto aur) aur 1))
@@ -3385,9 +3385,9 @@
         (coin.TRANSFER "k:95a59029029524ebb250b2fafe6826ff88bb59c527d661cba3279d09a51d3bdf" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
 (let
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-ATS:module{AutostakeV4} ATS)
         (aur:string "Auryndex-98c486052a51")
         (kor:string "KORIndex-98c486052a51")
         (ps:string "PlebeicStrength-98c486052a51")
@@ -3398,7 +3398,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_ATS|HOT-RBT|UpgradeBranding aozt ddk 1))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_ATS|HOT-RBT|UpgradeBranding aozt ddk 1))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply aozt false))
             (stoa-before:decimal (coin.get-balance (ref-DALOS::UR_AccountStoa aozt)))
             (m (ref-TS01-C2::ATS|HOT-RBT|C_UpgradeBranding aozt (DPOF.URC_BrandingKonto ddk) ddk 1))
@@ -3460,9 +3460,9 @@
         (coin.TRANSFER "k:95a59029029524ebb250b2fafe6826ff88bb59c527d661cba3279d09a51d3bdf" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
 (let
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-ATS:module{AutostakeV4} ATS)
         (aur:string "Auryndex-98c486052a51")
         (kor:string "KORIndex-98c486052a51")
         (ps:string "PlebeicStrength-98c486052a51")
@@ -3473,7 +3473,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_ATS|HOT-RBT|UpdatePendingBranding aozt ddk))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_ATS|HOT-RBT|UpdatePendingBranding aozt ddk))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply aozt false))
             (stoa-before:decimal (coin.get-balance (ref-DALOS::UR_AccountStoa aozt)))
             (m (ref-TS01-C2::ATS|HOT-RBT|C_UpdatePendingBranding aozt (DPOF.URC_BrandingKonto ddk) ddk "ipfs://probe-logo" "cost probe" "https://probe.example" []))
@@ -3535,9 +3535,9 @@
         (coin.TRANSFER "k:95a59029029524ebb250b2fafe6826ff88bb59c527d661cba3279d09a51d3bdf" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
 (let
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-ATS:module{AutostakeV4} ATS)
         (aur:string "Auryndex-98c486052a51")
         (kor:string "KORIndex-98c486052a51")
         (ps:string "PlebeicStrength-98c486052a51")
@@ -3556,7 +3556,7 @@
     (ref-TS01-C2::ATS|C_SwitchDirectRecovery aozt (ATS.UR_OwnerKonto ps) ps false)
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_ATS|RemoveSecondary aozt aozt ps (at 1 (ref-ATS::UR_RewardTokenList ps))))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_ATS|RemoveSecondary aozt aozt ps (at 1 (ref-ATS::UR_RewardTokenList ps))))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply aozt false))
             (stoa-before:decimal (coin.get-balance (ref-DALOS::UR_AccountStoa aozt)))
             (m (ref-TS01-C2::ATS|CC_RemoveSecondary aozt aozt ps (at 1 (ref-ATS::UR_RewardTokenList ps))))
@@ -3599,10 +3599,10 @@
 (env-sigs [{ "key": "PK_AOZ", "caps": [] } { "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
 (let
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+        (ref-ATS:module{AutostakeV4} ATS)
         (ps:string "PlebeicStrength-98c486052a51")
         (kor:string "KORIndex-98c486052a51")
         (ddk:string "DDKOSON-98c486052a51")
@@ -3622,7 +3622,7 @@
         )
         (let
             (
-                (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_ATS|Redeem aozt aozt ddk n))
+                (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_ATS|Redeem aozt aozt ddk n))
                 (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply aozt false))
                 (m (ref-TS01-C2::ATS|C_Redeem aozt aozt ddk n))
             )
@@ -3659,10 +3659,10 @@
 (env-sigs [{ "key": "PK_AOZ", "caps": [] } { "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
 (let
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+        (ref-ATS:module{AutostakeV4} ATS)
         (ps:string "PlebeicStrength-98c486052a51")
         (kor:string "KORIndex-98c486052a51")
         (ddk:string "DDKOSON-98c486052a51")
@@ -3682,7 +3682,7 @@
         )
         (let
             (
-                (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_ATS|Reverse aozt aozt ddk n))
+                (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_ATS|Reverse aozt aozt ddk n))
                 (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply aozt false))
                 (m (ref-TS01-C2::ATS|C_Reverse aozt aozt ddk n))
             )
@@ -3719,10 +3719,10 @@
 (env-sigs [{ "key": "PK_AOZ", "caps": [] } { "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
 (let
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+        (ref-ATS:module{AutostakeV4} ATS)
         (ps:string "PlebeicStrength-98c486052a51")
         (kor:string "KORIndex-98c486052a51")
         (ddk:string "DDKOSON-98c486052a51")
@@ -3742,7 +3742,7 @@
         )
         (let
             (
-                (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_ATS|HOT-RBT|Repurpose aozt ddk n emma))
+                (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_ATS|HOT-RBT|Repurpose aozt ddk n emma))
                 (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply aozt false))
                 (m (ref-TS01-C2::ATS|HOT-RBT|C_Repurpose aozt (ATS.UR_OwnerKonto (DPOF.UR_RewardBearingToken ddk)) emma ddk n))
             )
@@ -3790,10 +3790,10 @@
 (env-sigs [{ "key": "PK_AOZ", "caps": [] } { "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-ATS:module{AutostakeV4} ATS)
         (ps:string "PlebeicStrength-98c486052a51")
         (aozt:string KST.AOZT)
     )
@@ -3813,7 +3813,7 @@
             )
             (let
                 (
-                    (predicted:object{OuronetInfoV2.ClientInfo}
+                    (predicted:object{OuronetInfoV3.ClientInfo}
                         (INFO-ONE.INFO_ATS|DirectRecovery aozt aozt ps ra))
                     (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply aozt false))
                 )
@@ -3881,10 +3881,10 @@
         (coin.TRANSFER "k:95a59029029524ebb250b2fafe6826ff88bb59c527d661cba3279d09a51d3bdf" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
 (let
     (
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-ATS:module{AutostakeV4} ATS)
         (ps:string "PlebeicStrength-98c486052a51")
         (aozt:string KST.AOZT)
     )
@@ -3897,7 +3897,7 @@
         )
         (let
             (
-                (predicted:object{OuronetInfoV2.ClientInfo}
+                (predicted:object{OuronetInfoV3.ClientInfo}
                     (INFO-ONE.INFO_ATS|Issue aozt aozt ["GtAtsPairProbe"]))
                 (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply aozt false))
                 (stoa-before:decimal (coin.get-balance (ref-DALOS::UR_AccountStoa aozt)))
@@ -3960,10 +3960,10 @@
         (coin.TRANSFER "k:95a59029029524ebb250b2fafe6826ff88bb59c527d661cba3279d09a51d3bdf" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
 (let
     (
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-ATS:module{AutostakeV4} ATS)
         (ps:string "PlebeicStrength-98c486052a51")
         (aozt:string KST.AOZT)
     )
@@ -3979,7 +3979,7 @@
         )
         (let
             (
-                (predicted:object{OuronetInfoV2.ClientInfo}
+                (predicted:object{OuronetInfoV3.ClientInfo}
                     (INFO-ONE.INFO_ATS|AddHotRBT aozt pair hot))
                 (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply aozt false))
                 (stoa-before:decimal (coin.get-balance (ref-DALOS::UR_AccountStoa aozt)))
@@ -4044,10 +4044,10 @@
         (coin.TRANSFER "k:95a59029029524ebb250b2fafe6826ff88bb59c527d661cba3279d09a51d3bdf" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
 (let
     (
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-ATS:module{AutostakeV4} ATS)
         (ps:string "PlebeicStrength-98c486052a51")
         (aozt:string KST.AOZT)
     )
@@ -4061,7 +4061,7 @@
         )
         (let
             (
-                (predicted:object{OuronetInfoV2.ClientInfo}
+                (predicted:object{OuronetInfoV3.ClientInfo}
                     (INFO-ONE.INFO_ATS|KickStart aozt aozt pair [1.0] 1.0))
                 (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply aozt false))
                 (stoa-before:decimal (coin.get-balance (ref-DALOS::UR_AccountStoa aozt)))
@@ -4119,8 +4119,8 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (aur:string "Auryndex-98c486052a51")
         (patron:string KST.ANHD)
         (thresholds:[decimal] [50.0 100.0 200.0 350.0 550.0 800.0])
@@ -4138,7 +4138,7 @@
     (ref-TS01-C2::ATS|C_SwitchColdRecovery patron (ATS.UR_OwnerKonto aur) aur false)
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo}
+            (predicted:object{OuronetInfoV3.ClientInfo}
                 (INFO-ONE.INFO_ATS|SetColdRecoveryFees patron aur 7 thresholds ladder))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS01-C2::ATS|C_SetColdRecoveryFees patron (ATS.UR_OwnerKonto aur) aur 7 thresholds ladder))
@@ -4186,11 +4186,11 @@
       ] } ])
 (let
     (
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-ATS:module{AutostakeV4} ATS)
         (ps:string "PlebeicStrength-98c486052a51")
         (aozt:string KST.AOZT)
         (emma:string KST.EMMA)
@@ -4225,7 +4225,7 @@
         )
         (let
             (
-                (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_ATS|Curl aozt aozt p1 p2 tok amount))
+                (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_ATS|Curl aozt aozt p1 p2 tok amount))
                 (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply aozt false))
             )
             (let
@@ -4282,11 +4282,11 @@
       ] } ])
 (let
     (
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-ATS:module{AutostakeV4} ATS)
         (ps:string "PlebeicStrength-98c486052a51")
         (aozt:string KST.AOZT)
         (emma:string KST.EMMA)
@@ -4327,7 +4327,7 @@
         )
         (let
             (
-                (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_ATS|Brumate aozt aozt p1 p2 tok amount 30))
+                (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_ATS|Brumate aozt aozt p1 p2 tok amount 30))
                 (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply aozt false))
             )
             (let
@@ -4382,11 +4382,11 @@
       ] } ])
 (let
     (
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-ATS:module{AutostakeV4} ATS)
         (ps:string "PlebeicStrength-98c486052a51")
         (aozt:string KST.AOZT)
         (emma:string KST.EMMA)
@@ -4426,7 +4426,7 @@
         )
         (let
             (
-                (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_ATS|VestedCurl aozt aozt p1 p2 tok amount emma 3600 7200 5))
+                (predicted:object{OuronetInfoV3.ClientInfo} (INFO-ONE.INFO_ATS|VestedCurl aozt aozt p1 p2 tok amount emma 3600 7200 5))
                 (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply aozt false))
             )
             (let
@@ -4490,10 +4490,10 @@
       ] } ])
 (let
     (
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-ATS:module{AutostakeV4} ATS)
         (ps:string "PlebeicStrength-98c486052a51")
         (aozt:string KST.AOZT)
         (pair:string "GtRoyaltyPairProbe-98c486052a51")
@@ -4509,7 +4509,7 @@
         )
         (let
             (
-                (predicted:object{OuronetInfoV2.ClientInfo}
+                (predicted:object{OuronetInfoV3.ClientInfo}
                     (INFO-ONE.INFO_ATS|WithdrawRoyalties aozt pair aozt))
                 (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply aozt false))
             )
@@ -4565,8 +4565,8 @@
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (let
     (
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         (attacker:string KST.EMMA)
         (victim:string KST.ANHD)
     )
@@ -4638,8 +4638,8 @@
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (let
     (
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         (attacker:string KST.EMMA)
         (victim:string KST.ANHD)
     )
@@ -4710,7 +4710,7 @@
 )
 (let
     (
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
     )
     (ref-TS01-C1::DPTF|C_Issue KST.EMMA KST.EMMA
         ["EmmaCoin"] ["EMCO"] [24] [true] [true] [true] [false] [false] [true])
@@ -4733,9 +4733,9 @@
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (let
     (
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         (kor:string "KORIndex-98c486052a51")
         (attacker:string KST.EMMA)
         (victim:string KST.ANHD)
@@ -4786,8 +4786,8 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         (kor:string "KORIndex-98c486052a51")
     )
     (ref-TS01-C2::ATS|C_SwitchDirectRecovery KST.ANHD (ATS.UR_OwnerKonto kor) kor false)
@@ -4829,8 +4829,8 @@
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (let
     (
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         (pair:string "Auryndex-98c486052a51")
     )
     (map print
@@ -4850,7 +4850,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         (pair:string "Auryndex-98c486052a51")
     )
     (map print
@@ -4881,8 +4881,8 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         (pair:string "Auryndex-98c486052a51")
     )
     (let
@@ -4925,7 +4925,7 @@
 ;;the GUARD, not a route to it -- and this block says so rather than implying more.
 (let
     (
-        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-ATS:module{AutostakeV4} ATS)
     )
     (let
         (
@@ -4990,8 +4990,8 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
     )
     (let
         (
@@ -5055,8 +5055,8 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
     )
     (let
         (
@@ -5098,8 +5098,8 @@
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (let
     (
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         (pair:string "TestKickPair-98c486052a51")
     )
     (let
@@ -5127,8 +5127,8 @@
 (env-sigs [{ "key": "PK_Emma", "caps": [] } { "key": "PK_AOZ", "caps": [] }])
 (let
     (
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
     )
     (map print
         [
@@ -5191,10 +5191,10 @@
 )
 (let
     (
-        (ref-ATS:module{AutostakeV3} ATS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
     )
     ;;A virgin cold-RBT and a virgin pair. Both are ordinary client issuances, and the pair is left
     ;;UN-KICKSTARTED on purpose -- that is the state under test.

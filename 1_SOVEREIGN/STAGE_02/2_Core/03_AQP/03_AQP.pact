@@ -1,5 +1,5 @@
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface AcquisitionPoolsV1
+(interface AcquisitionPoolsV3
     @doc "Interface for AQP acquisition pools and staking. Declares tracker key builders and \
         \ readers for pool config, per-(pool,asset,owner,beneficiary) stake trackers \
         \ (DPTF/DPOF/DPSF/DPNF), and per-beneficiary rollups/anchor-sync state; URC_ \
@@ -155,19 +155,19 @@
     (defun URH_AQP|BenDpnfActiveNonceSupplies:[object] (beneficiary-id:string dpnf-id:string))
     ;;
     ;; [URCi]   cost readers — single source for exec billing + INFO preview (config/sync ops)
-    (defun URCi_Issue:object{IgnisCollectorV3.OutputCumulator} (output:[string]))
+    (defun URCi_Issue:object{IgnisCollectorV4.OutputCumulator} (output:[string]))
     (defun URCi_IssueStoa:decimal ())
-    (defun URCi_AddScore:object{IgnisCollectorV3.OutputCumulator} (output:[string]))
-    (defun URCi_RevokeScore:object{IgnisCollectorV3.OutputCumulator} (output:[string]))
-    (defun URCi_SetPoolStake:object{IgnisCollectorV3.OutputCumulator} (output:[string]))
-    (defun URCi_SyncTrueFungibleAnchors:object{IgnisCollectorV3.OutputCumulator} (output:[string]))
-    (defun URCi_SyncCollectableAnchors:object{IgnisCollectorV3.OutputCumulator} (output:[string]))
+    (defun URCi_AddScore:object{IgnisCollectorV4.OutputCumulator} (output:[string]))
+    (defun URCi_RevokeScore:object{IgnisCollectorV4.OutputCumulator} (output:[string]))
+    (defun URCi_SetPoolStake:object{IgnisCollectorV4.OutputCumulator} (output:[string]))
+    (defun URCi_SyncTrueFungibleAnchors:object{IgnisCollectorV4.OutputCumulator} (output:[string]))
+    (defun URCi_SyncCollectableAnchors:object{IgnisCollectorV4.OutputCumulator} (output:[string]))
     ;;{5.4}  Validate [UEV/CAP]
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
     ;; [XE]
     ;;
-    (defun XE_ZeroDptfTrackerSlot:object{IgnisCollectorV3.OutputCumulator}
+    (defun XE_ZeroDptfTrackerSlot:object{IgnisCollectorV4.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string)
     )
     (defun XE_SetVacateJobState:string
@@ -176,22 +176,22 @@
     (defun XE_SetSweepInProgress:string
         (pool-id:string flag:bool)
     )
-    (defun XE_TrueFungibleTransfer:object{IgnisCollectorV3.OutputCumulator}
+    (defun XE_TrueFungibleTransfer:object{IgnisCollectorV4.OutputCumulator}
         (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
     )
-    (defun XE_TrueFungiblePoolTracker:object{IgnisCollectorV3.OutputCumulator}
+    (defun XE_TrueFungiblePoolTracker:object{IgnisCollectorV4.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
     )
-    (defun XE_TrueFungibleBeneficiaryRollup:object{IgnisCollectorV3.OutputCumulator}
+    (defun XE_TrueFungibleBeneficiaryRollup:object{IgnisCollectorV4.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
     )
-    (defun XE_OrtoFungibleTransfer:object{IgnisCollectorV3.OutputCumulator}
+    (defun XE_OrtoFungibleTransfer:object{IgnisCollectorV4.OutputCumulator}
         (patron:string pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal] direction:bool)
     )
-    (defun XE_OrtoFungiblePoolTracker:object{IgnisCollectorV3.OutputCumulator}
+    (defun XE_OrtoFungiblePoolTracker:object{IgnisCollectorV4.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal] direction:bool)
     )
-    (defun XE_CollectableTransfer:object{IgnisCollectorV3.OutputCumulator}
+    (defun XE_CollectableTransfer:object{IgnisCollectorV4.OutputCumulator}
         (
             patron:string
             pool-id:string
@@ -204,7 +204,7 @@
             direction:bool
         )
     )
-    (defun XE_CollectablePoolTracker:object{IgnisCollectorV3.OutputCumulator}
+    (defun XE_CollectablePoolTracker:object{IgnisCollectorV4.OutputCumulator}
         (
             pool-id:string
             owner-id:string
@@ -216,7 +216,7 @@
             direction:bool
         )
     )
-    (defun XE_CollectableBeneficiaryRollup:object{IgnisCollectorV3.OutputCumulator}
+    (defun XE_CollectableBeneficiaryRollup:object{IgnisCollectorV4.OutputCumulator}
         (
             pool-id:string
             owner-id:string
@@ -230,38 +230,79 @@
     )
     ;; [XB]
     (defun XB_SetPoolStakeEnabled:string (pool-id:string enabled:bool))
-    (defun XB_SetBenDptfAnkSyncCount:object{IgnisCollectorV3.OutputCumulator}
+    (defun XB_SetBenDptfAnkSyncCount:object{IgnisCollectorV4.OutputCumulator}
         (beneficiary-id:string dptf-id:string)
     )
-    (defun XB_SetBenCollectableAnkSyncCount:object{IgnisCollectorV3.OutputCumulator}
+    (defun XB_SetBenCollectableAnkSyncCount:object{IgnisCollectorV4.OutputCumulator}
         (beneficiary-id:string collectable-id:string son:bool)
     )
     ;;{5.7}  User [A/C]
     ;; [C]   client
     ;;
-    (defun C_Issue:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_Issue:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string pool-name:string asset-id:string aqp-class:integer)
     )
-    (defun C_AddScore:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_AddScore:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string pool-id:string score-id:string)
     )
-    (defun C_RevokeScore:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_RevokeScore:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string pool-id:string score-id:string)
     )
-    (defun C_DisablePoolStake:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_DisablePoolStake:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string pool-id:string)
     )
-    (defun C_EnablePoolStake:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_EnablePoolStake:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string pool-id:string)
     )
     ;;
-    (defun C_SyncTrueFungibleAnchors:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_SyncTrueFungibleAnchors:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executee:string dptf-id:string)
     )
-    (defun C_SyncCollectableAnchors:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_SyncCollectableAnchors:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executee:string collectable-id:string son:bool)
     )
 
+
+    ;;<=========================================================================>
+    ;; ADDED 2026-10-12 -- interface-membership sweep (StoicSyntax-Prefixes.md Sec5,
+    ;; owner ruling). Every one of these was already live in the module body; this
+    ;; closes the gap between what the module DOES and what its interface SAYS it does.
+    ;;<=========================================================================>
+    (defun CC_FinalizeScoreRevoke:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string pool-id:string score-id:string))
+    (defun CC_UpdateScoreMultipliers:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string score-id:string
+         mx-frozen:decimal mx-sleeping:decimal mx-hibernated:decimal))
+    (defun CCp_BackfillScoreSlice:object{IgnisCollectorV4.OutputCumulator} (patron:string pool-id:string score-id:string beneficiaries:[string]))
+    (defun C_BeginScoreRevoke:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string pool-id:string score-id:string))
+    (defun Cp_DrainScoreSlice:object{IgnisCollectorV4.OutputCumulator} (patron:string pool-id:string score-id:string accounts:[string]))
+    (defun CAP_AqpAssetOwner (aqp-class:integer asset-id:string))
+    (defun CAP_PoolOwner (pool-id:string))
+    (defun CAP_StakeOwner (owner-id:string))
+    (defun UC_AQP|BackfillRowsForBeneficiary:[object] (beneficiary-id:string rows:[object]))
+    (defun UC_AQP|BackfillSumForBeneficiary:decimal (beneficiary-id:string rows:[object]))
+    (defun UC_AQP|BackfillUniqueBeneficiaries:[string] (rows:[object]))
+    (defun UC_PoolScoreSlotPatch:object (slot-index:integer score-id:string))
+    (defun UEV_AQP|ScoreDrainComplete (pool-id:string score-id:string))
+    (defun UEV_AQP|ScoreMxChangeSafe (score-id:string))
+    (defun UEV_AddScorePoolAndScore (pool-id:string score-id:string slot-index:integer))
+    (defun UEV_BeginScoreRevoke (pool-id:string score-id:string slot-index:integer))
+    (defun UEV_ExecutorIzAqpAssetOwner (executor:string aqp-class:integer asset-id:string))
+    (defun UEV_ExecutorIzPoolOwner (executor:string pool-id:string))
+    (defun UEV_IssuePoolClassAndAsset (aqp-class:integer asset-id:string))
+    (defun UEV_RevokeScorePoolAndScore (pool-id:string score-id:string slot-index:integer))
+    (defun UEV_StakeBeneficiaryAccount (beneficiary-id:string))
+    (defun UEV_StakeCollectableLeg (collectable-id:string son:bool))
+    (defun UEV_StakeOrtoFungibleDpofLeg (dpof-id:string))
+    (defun UEV_StakeTrueFungibleDptfLeg (dptf-id:string))
+    (defun URHC_AQP|PoolOrphanedScores:[string] (pool-id:string))
+    (defun URHC_AQP|PoolSweepClear:bool (pool-id:string))
+    (defun URHC_AQP|ScoreBackfillCandidates:[string] (pool-id:string score-id:string leg-rows:object))
+    (defun URHC_AQP|ScoreBackfillNeeded:bool (pool-id:string score-id:string))
+    (defun URHC_AQP|ScoreBackfillOutstanding:[object] (pool-id:string score-id:string))
+    (defun URHC_AQP|ScoreDrainOutstanding:[string] (pool-id:string score-id:string))
+    (defun URH_AQP|ScoreBackfillLegRows:object (pool-id:string))
+    (defun URH_AQP|ScoreTargetBaseForBeneficiary:decimal (pool-id:string score-id:string beneficiary-id:string
+         nat-rows:[object] frz-rows:[object] slp-rows:[object]))
+    (defun UR_AQP|PoolVacateInProgress:bool (pool-id:string))
 )
 (module AQP-POOL GOV
     @doc "Sovereign acquisition-pool module. Owns pool definitions (asset, aqp-class, up to \
@@ -276,7 +317,7 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements AcquisitionPoolsV1)
+    (implements AcquisitionPoolsV3)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -293,7 +334,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -324,7 +365,7 @@
     (defun P|Info ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::P|Info)
         )
@@ -455,12 +496,12 @@
     ;;{3}  CST
     ;;{3.1}  constants
     (defconst BAR                                       (CT_Bar))
-    (defconst GAS|ISSUE-POOL                        (let ((ref-IGNIS:module{IgnisCollectorV3} IGNIS)) (ref-IGNIS::UC_IgnisDeter "issue-pool")))
-    (defconst GAS|ADD-SCORE                         (let ((ref-IGNIS:module{IgnisCollectorV3} IGNIS)) (ref-IGNIS::UC_IgnisDeter "add-score")))
-    (defconst GAS|REVOKE-SCORE                      (let ((ref-IGNIS:module{IgnisCollectorV3} IGNIS)) (ref-IGNIS::UC_IgnisDeter "revoke-score")))
-    (defconst GAS|SET-POOL-STAKE                    (let ((ref-IGNIS:module{IgnisCollectorV3} IGNIS)) (ref-IGNIS::UC_IgnisDeter "pool-stake-toggle")))
-    (defconst GAS|SYNC-TF-ANCHORS                   (let ((ref-IGNIS:module{IgnisCollectorV3} IGNIS)) (ref-IGNIS::UC_IgnisDeter "sync-anchors")))
-    (defconst GAS|SYNC-COLLECTABLE-ANCHORS          (let ((ref-IGNIS:module{IgnisCollectorV3} IGNIS)) (ref-IGNIS::UC_IgnisDeter "sync-anchors")))
+    (defconst GAS|ISSUE-POOL                        (let ((ref-IGNIS:module{IgnisCollectorV4} IGNIS)) (ref-IGNIS::UC_IgnisDeter "issue-pool")))
+    (defconst GAS|ADD-SCORE                         (let ((ref-IGNIS:module{IgnisCollectorV4} IGNIS)) (ref-IGNIS::UC_IgnisDeter "add-score")))
+    (defconst GAS|REVOKE-SCORE                      (let ((ref-IGNIS:module{IgnisCollectorV4} IGNIS)) (ref-IGNIS::UC_IgnisDeter "revoke-score")))
+    (defconst GAS|SET-POOL-STAKE                    (let ((ref-IGNIS:module{IgnisCollectorV4} IGNIS)) (ref-IGNIS::UC_IgnisDeter "pool-stake-toggle")))
+    (defconst GAS|SYNC-TF-ANCHORS                   (let ((ref-IGNIS:module{IgnisCollectorV4} IGNIS)) (ref-IGNIS::UC_IgnisDeter "sync-anchors")))
+    (defconst GAS|SYNC-COLLECTABLE-ANCHORS          (let ((ref-IGNIS:module{IgnisCollectorV4} IGNIS)) (ref-IGNIS::UC_IgnisDeter "sync-anchors")))
     (defconst EOC                                       (CT_EmptyCumulator))
     (defconst AQP|SC_NAME                               (CT_AqpScName))
     ;;{3.2}  schemas
@@ -489,17 +530,17 @@
     ;; [13] AQP|T|UserOccupancy
     ;;{3.3}  tables
     ;;
-    (deftable AQP|T|Pool:{AcquisitionSchemasV1.AQP|Schema})                                  ;;1] Key = <Pool-ID>
-    (deftable AQP|T|DPTFTracker:{AcquisitionSchemasV1.AQP|TrueFungibleTracker})              ;;2] Key = <Pool-ID> | <DPTF-ID> | <Owner-ID> | <Beneficiary-ID>
-    (deftable AQP|T|DPOFTracker:{AcquisitionSchemasV1.AQP|OrtoFungibleTracker})              ;;3] Key = <Pool-ID> | <DPOF-ID> | <Owner-ID> | <Beneficiary-ID> | <Nonce>
-    (deftable AQP|T|DPSFTracker:{AcquisitionSchemasV1.AQP|SemiFungibleTracker})              ;;4] Key = <Pool-ID> | <DPSF-ID> | <Owner-ID> | <Beneficiary-ID> | <Nonce>
-    (deftable AQP|T|DPNFTracker:{AcquisitionSchemasV1.AQP|NonFungibleTracker})               ;;5] Key = <Pool-ID> | <DPNF-ID> | <Owner-ID> | <Beneficiary-ID> | <Nonce>
-    (deftable AQP|T|BenDptfTotal:{AcquisitionSchemasV1.AQP|BenDptfTotal})                    ;;8] Key = <Beneficiary-ID> | <DPTF-ID>
-    (deftable AQP|T|BenDpsfNonceTotal:{AcquisitionSchemasV1.AQP|BenDpsfNonceTotal})          ;;9] Key = <Beneficiary-ID> | <DPSF-ID> | <Nonce>
-    (deftable AQP|T|BenDpnfNonceTotal:{AcquisitionSchemasV1.AQP|BenDpnfNonceTotal})          ;;10] Key = <Beneficiary-ID> | <DPNF-ID> | <Nonce>
-    (deftable AQP|T|BenDpsfAnkMeta:{AcquisitionSchemasV1.AQP|BenDpsfAnkMeta})                ;;11] Key = <Beneficiary-ID> | <DPSF-ID>
-    (deftable AQP|T|BenDpnfAnkMeta:{AcquisitionSchemasV1.AQP|BenDpnfAnkMeta})                ;;12] Key = <Beneficiary-ID> | <DPNF-ID>
-    (deftable AQP|T|UserOccupancy:{AcquisitionSchemasV1.AQP|UserOccupancy})                  ;;13] Key = <Pool-ID> | <Beneficiary-ID>
+    (deftable AQP|T|Pool:{AcquisitionSchemasV3.AQP|Schema})                                  ;;1] Key = <Pool-ID>
+    (deftable AQP|T|DPTFTracker:{AcquisitionSchemasV3.AQP|TrueFungibleTracker})              ;;2] Key = <Pool-ID> | <DPTF-ID> | <Owner-ID> | <Beneficiary-ID>
+    (deftable AQP|T|DPOFTracker:{AcquisitionSchemasV3.AQP|OrtoFungibleTracker})              ;;3] Key = <Pool-ID> | <DPOF-ID> | <Owner-ID> | <Beneficiary-ID> | <Nonce>
+    (deftable AQP|T|DPSFTracker:{AcquisitionSchemasV3.AQP|SemiFungibleTracker})              ;;4] Key = <Pool-ID> | <DPSF-ID> | <Owner-ID> | <Beneficiary-ID> | <Nonce>
+    (deftable AQP|T|DPNFTracker:{AcquisitionSchemasV3.AQP|NonFungibleTracker})               ;;5] Key = <Pool-ID> | <DPNF-ID> | <Owner-ID> | <Beneficiary-ID> | <Nonce>
+    (deftable AQP|T|BenDptfTotal:{AcquisitionSchemasV3.AQP|BenDptfTotal})                    ;;8] Key = <Beneficiary-ID> | <DPTF-ID>
+    (deftable AQP|T|BenDpsfNonceTotal:{AcquisitionSchemasV3.AQP|BenDpsfNonceTotal})          ;;9] Key = <Beneficiary-ID> | <DPSF-ID> | <Nonce>
+    (deftable AQP|T|BenDpnfNonceTotal:{AcquisitionSchemasV3.AQP|BenDpnfNonceTotal})          ;;10] Key = <Beneficiary-ID> | <DPNF-ID> | <Nonce>
+    (deftable AQP|T|BenDpsfAnkMeta:{AcquisitionSchemasV3.AQP|BenDpsfAnkMeta})                ;;11] Key = <Beneficiary-ID> | <DPSF-ID>
+    (deftable AQP|T|BenDpnfAnkMeta:{AcquisitionSchemasV3.AQP|BenDpnfAnkMeta})                ;;12] Key = <Beneficiary-ID> | <DPNF-ID>
+    (deftable AQP|T|UserOccupancy:{AcquisitionSchemasV3.AQP|UserOccupancy})                  ;;13] Key = <Pool-ID> | <Beneficiary-ID>
 
     ;;<=========================================================================>
     ;;{4}  CAPABILITIES
@@ -642,7 +683,7 @@
             (if direction
                 (let
                     (
-                        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                        (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                     )
                     (ref-DPOF::UEV_NoncesToAccount dpof-id owner-id nonces)
                     (ref-DPOF::UEV_NoncesCirculating dpof-id nonces)
@@ -709,7 +750,7 @@
             (if direction
                 (let
                     (
-                        (ref-DPDC:module{DpdcV2} DPDC)
+                        (ref-DPDC:module{DpdcV3} DPDC)
                     )
                     (ref-DPDC::UEV_NonceQuantityInclusionMapper owner-id collectable-id son nonces nonce-amounts)
                 )
@@ -749,7 +790,7 @@
         ;;the same binding is made here from the reader that is.
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
             )
             (enforce
                 (= executor (ref-SCR::UR_SCR|ScoreOwnerKonto score-id))
@@ -839,7 +880,7 @@
         )
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
             )
             (enforce
                 (and
@@ -918,7 +959,7 @@
         @doc "Empty IGNIS OutputCumulator for stub transfer legs."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (ref-IGNIS::UDC_EmptyOutputCumulatorV2)
         )
@@ -928,7 +969,7 @@
         @doc "Resolves AQP|SC_NAME from canonical AQP-ANK via interface ref."
         (let
             (
-                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
             )
             (ref-ANK::GOV|AQP|SC_NAME)
         )
@@ -937,7 +978,7 @@
     ;; [UDC] construct
     ;;
     ;; Default tracker and attribution rows for UR with-default-read.
-    (defun UDC_AQP|TrueFungibleTracker:object{AcquisitionSchemasV1.AQP|TrueFungibleTracker}
+    (defun UDC_AQP|TrueFungibleTracker:object{AcquisitionSchemasV3.AQP|TrueFungibleTracker}
         (bal:decimal pool-id:string dptf-id:string owner-id:string beneficiary-id:string)
         @doc "Default DPTF tracker row (zero balance, key fields from arguments)."
         {"balance"          : bal
@@ -946,7 +987,7 @@
         ,"owner-id"         : owner-id
         ,"beneficiary-id"   : beneficiary-id}
     )
-    (defun UDC_AQP|OrtoFungibleTracker:object{AcquisitionSchemasV1.AQP|OrtoFungibleTracker}
+    (defun UDC_AQP|OrtoFungibleTracker:object{AcquisitionSchemasV3.AQP|OrtoFungibleTracker}
         (bal:decimal pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer)
         @doc "Default DPOF tracker row (zero balance, key fields from arguments)."
         {"balance"          : bal
@@ -956,7 +997,7 @@
         ,"beneficiary-id"   : beneficiary-id
         ,"nonce"            : nonce}
     )
-    (defun UDC_AQP|SemiFungibleTracker:object{AcquisitionSchemasV1.AQP|SemiFungibleTracker}
+    (defun UDC_AQP|SemiFungibleTracker:object{AcquisitionSchemasV3.AQP|SemiFungibleTracker}
         (bal:decimal pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer)
         @doc "Default DPSF tracker row (zero balance, key fields from arguments)."
         {"balance"          : bal
@@ -966,7 +1007,7 @@
         ,"beneficiary-id"   : beneficiary-id
         ,"nonce"            : nonce}
     )
-    (defun UDC_AQP|NonFungibleTracker:object{AcquisitionSchemasV1.AQP|NonFungibleTracker}
+    (defun UDC_AQP|NonFungibleTracker:object{AcquisitionSchemasV3.AQP|NonFungibleTracker}
         (bal:decimal pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer)
         @doc "Default DPNF tracker row (zero balance, key fields from arguments)."
         {"balance"          : bal
@@ -976,7 +1017,7 @@
         ,"beneficiary-id"   : beneficiary-id
         ,"nonce"            : nonce}
     )
-    (defun UDC_AQP|BenDptfTotal:object{AcquisitionSchemasV1.AQP|BenDptfTotal}
+    (defun UDC_AQP|BenDptfTotal:object{AcquisitionSchemasV3.AQP|BenDptfTotal}
         (total:decimal sync-count:integer beneficiary-id:string dptf-id:string)
         @doc "Default beneficiary DPTF rollup row (zero total, never synced)."
         {"total-balance"        : total
@@ -984,7 +1025,7 @@
         ,"beneficiary-id"       : beneficiary-id
         ,"dptf-id"              : dptf-id}
     )
-    (defun UDC_AQP|BenDpsfNonceTotal:object{AcquisitionSchemasV1.AQP|BenDpsfNonceTotal}
+    (defun UDC_AQP|BenDpsfNonceTotal:object{AcquisitionSchemasV3.AQP|BenDpsfNonceTotal}
         (amount:integer beneficiary-id:string dpsf-id:string nonce:integer)
         @doc "Default DPSF per-nonce rollup row (zero amount)."
         {"amount"           : amount
@@ -992,7 +1033,7 @@
         ,"dpsf-id"          : dpsf-id
         ,"nonce"            : nonce}
     )
-    (defun UDC_AQP|BenDpnfNonceTotal:object{AcquisitionSchemasV1.AQP|BenDpnfNonceTotal}
+    (defun UDC_AQP|BenDpnfNonceTotal:object{AcquisitionSchemasV3.AQP|BenDpnfNonceTotal}
         (amount:integer beneficiary-id:string dpnf-id:string nonce:integer)
         @doc "Default DPNF per-nonce rollup row (zero amount)."
         {"amount"           : amount
@@ -1000,7 +1041,7 @@
         ,"dpnf-id"          : dpnf-id
         ,"nonce"            : nonce}
     )
-    (defun UDC_AQP|BenDpsfAnkMeta:object{AcquisitionSchemasV1.AQP|BenDpsfAnkMeta}
+    (defun UDC_AQP|BenDpsfAnkMeta:object{AcquisitionSchemasV3.AQP|BenDpsfAnkMeta}
         (sync-count:integer active-nonce-count:integer beneficiary-id:string dpsf-id:string)
         @doc "Default DPSF ANK meta row (never synced, no active nonces)."
         {"last-ank-sync-count"  : sync-count
@@ -1008,7 +1049,7 @@
         ,"beneficiary-id"       : beneficiary-id
         ,"dpsf-id"              : dpsf-id}
     )
-    (defun UDC_AQP|BenDpnfAnkMeta:object{AcquisitionSchemasV1.AQP|BenDpnfAnkMeta}
+    (defun UDC_AQP|BenDpnfAnkMeta:object{AcquisitionSchemasV3.AQP|BenDpnfAnkMeta}
         (sync-count:integer active-nonce-count:integer beneficiary-id:string dpnf-id:string)
         @doc "Default DPNF ANK meta row (never synced, no active nonces)."
         {"last-ank-sync-count"  : sync-count
@@ -1016,14 +1057,14 @@
         ,"beneficiary-id"       : beneficiary-id
         ,"dpnf-id"              : dpnf-id}
     )
-    (defun UDC_AQP|UserOccupancy:object{AcquisitionSchemasV1.AQP|UserOccupancy}
+    (defun UDC_AQP|UserOccupancy:object{AcquisitionSchemasV3.AQP|UserOccupancy}
         (unn:integer pool-id:string beneficiary-id:string)
         @doc "Vacate-v2 §4: default per (pool, beneficiary) occupancy row (unn = 0 when absent)."
         {"unn"                  : unn
         ,"pool-id"              : pool-id
         ,"beneficiary-id"       : beneficiary-id}
     )
-    (defun UDC_AQP|Schema:object{AcquisitionSchemasV1.AQP|Schema}
+    (defun UDC_AQP|Schema:object{AcquisitionSchemasV3.AQP|Schema}
         (aqp-class:integer asset-id:string aqp-id:string)
         @doc "Default new pool row: all seven score slots BAR; aqp-id equals pool-id (table key). #FP1 universal \
             \ nns: starts -1 only for LP pools (class 0, complex multi-leg — still nzs-based finalize) and 0 for \
@@ -1043,8 +1084,8 @@
         ,"nns"                  : (if (< aqp-class 1) -1 0)
         ,"aqp-id"               : aqp-id}
     )
-    (defun UDC_AQP|SchemaWithScoreSlots:object{AcquisitionSchemasV1.AQP|Schema}
-        (pool:object{AcquisitionSchemasV1.AQP|Schema}
+    (defun UDC_AQP|SchemaWithScoreSlots:object{AcquisitionSchemasV3.AQP|Schema}
+        (pool:object{AcquisitionSchemasV3.AQP|Schema}
             score-primary:string
             score-secondary:string
             score-tertiary:string
@@ -1080,8 +1121,8 @@
             pool
         )
     )
-    (defun UDC_AQP|SchemaWithScoreAtSlot:object{AcquisitionSchemasV1.AQP|Schema}
-        (pool:object{AcquisitionSchemasV1.AQP|Schema} slot-index:integer score-id:string)
+    (defun UDC_AQP|SchemaWithScoreAtSlot:object{AcquisitionSchemasV3.AQP|Schema}
+        (pool:object{AcquisitionSchemasV3.AQP|Schema} slot-index:integer score-id:string)
         @doc "Returns pool row with score-id written into slot-index (0=primary .. 6=septenary)."
         (UDC_AQP|SchemaWithScoreSlots pool
             (if (= slot-index 0) score-id (at "score-primary" pool))
@@ -1160,7 +1201,7 @@
     )
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;; [UR]  read
-    (defun UR_AQP|Pool:object{AcquisitionSchemasV1.AQP|Schema} (pool-id:string)
+    (defun UR_AQP|Pool:object{AcquisitionSchemasV3.AQP|Schema} (pool-id:string)
         @doc "Reads full pool definition row from AQP|T|Pool."
         (read AQP|T|Pool pool-id)
     )
@@ -1190,8 +1231,8 @@
             \ gate and becomes the test for whether the sweep is NEEDED."
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
                 ;;
                 (pool-id:string (ref-SCR::UR_SCR|ScoreAqpoolLink score-id))
             )
@@ -1289,7 +1330,7 @@
         (at "sweep-in-progress" (read AQP|T|Pool pool-id ["sweep-in-progress"]))
     )
     ;;
-    (defun UR_AQP|DPTFTracker:object{AcquisitionSchemasV1.AQP|TrueFungibleTracker}
+    (defun UR_AQP|DPTFTracker:object{AcquisitionSchemasV3.AQP|TrueFungibleTracker}
         (pool-id:string dptf-id:string owner-id:string beneficiary-id:string)
         @doc "Reads DPTF tracker row; absent rows read as zero balance via default object."
         (with-default-read AQP|T|DPTFTracker (UCk_DPTFTracker pool-id dptf-id owner-id beneficiary-id)
@@ -1323,7 +1364,7 @@
         (at "beneficiary-id" (UR_AQP|DPTFTracker pool-id dptf-id owner-id beneficiary-id))
     )
     ;;
-    (defun UR_AQP|BenDptfTotal:object{AcquisitionSchemasV1.AQP|BenDptfTotal}
+    (defun UR_AQP|BenDptfTotal:object{AcquisitionSchemasV3.AQP|BenDptfTotal}
         (beneficiary-id:string dptf-id:string)
         @doc "Reads cross-pool DPTF stake rollup for beneficiary × dptf-id; absent row reads as zero total."
         (with-default-read AQP|T|BenDptfTotal (UCk_BenDptfTotal beneficiary-id dptf-id)
@@ -1348,7 +1389,7 @@
             \ than were applied at last sync — UI signal for C_SyncTrueFungibleAnchors."
         (let
             (
-                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
                 ;;
                 (total:decimal (UR_AQP|BenDptfTotalBalance beneficiary-id dptf-id))
                 (last-sync:integer (UR_AQP|BenDptfLastAnkSyncCount beneficiary-id dptf-id))
@@ -1358,7 +1399,7 @@
         )
     )
     ;;
-    (defun UR_AQP|BenDpsfNonceTotal:object{AcquisitionSchemasV1.AQP|BenDpsfNonceTotal}
+    (defun UR_AQP|BenDpsfNonceTotal:object{AcquisitionSchemasV3.AQP|BenDpsfNonceTotal}
         (beneficiary-id:string dpsf-id:string nonce:integer)
         @doc "Reads cross-pool per-nonce DPSF rollup; absent row reads as zero amount."
         (with-default-read AQP|T|BenDpsfNonceTotal
@@ -1375,7 +1416,7 @@
         @doc "Staked integer supply on one DPSF nonce across all pools for (beneficiary, dpsf-id)."
         (at "amount" (UR_AQP|BenDpsfNonceTotal beneficiary-id dpsf-id nonce))
     )
-    (defun UR_AQP|BenDpsfAnkMeta:object{AcquisitionSchemasV1.AQP|BenDpsfAnkMeta}
+    (defun UR_AQP|BenDpsfAnkMeta:object{AcquisitionSchemasV3.AQP|BenDpsfAnkMeta}
         (beneficiary-id:string dpsf-id:string)
         @doc "Reads ANK sync metadata for one DPSF leg; absent row reads as never synced / no active nonces."
         (with-default-read AQP|T|BenDpsfAnkMeta
@@ -1404,7 +1445,7 @@
         @doc "True when beneficiary has active DPSF stake and ANK has more live anchors on dpsf-id than at last sync."
         (let
             (
-                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
                 ;;
                 (last-sync:integer (UR_AQP|BenDpsfLastAnkSyncCount beneficiary-id dpsf-id))
                 (live-count:integer (ref-ANK::UR_AA|AnchorsActive dpsf-id))
@@ -1413,7 +1454,7 @@
         )
     )
     ;;
-    (defun UR_AQP|BenDpnfNonceTotal:object{AcquisitionSchemasV1.AQP|BenDpnfNonceTotal}
+    (defun UR_AQP|BenDpnfNonceTotal:object{AcquisitionSchemasV3.AQP|BenDpnfNonceTotal}
         (beneficiary-id:string dpnf-id:string nonce:integer)
         @doc "Reads cross-pool per-nonce DPNF rollup; absent row reads as zero amount."
         (with-default-read AQP|T|BenDpnfNonceTotal
@@ -1430,7 +1471,7 @@
         @doc "Staked integer supply on one DPNF nonce across all pools for (beneficiary, dpnf-id)."
         (at "amount" (UR_AQP|BenDpnfNonceTotal beneficiary-id dpnf-id nonce))
     )
-    (defun UR_AQP|BenDpnfAnkMeta:object{AcquisitionSchemasV1.AQP|BenDpnfAnkMeta}
+    (defun UR_AQP|BenDpnfAnkMeta:object{AcquisitionSchemasV3.AQP|BenDpnfAnkMeta}
         (beneficiary-id:string dpnf-id:string)
         @doc "Reads ANK sync metadata for one DPNF leg; absent row reads as never synced / no active nonces."
         (with-default-read AQP|T|BenDpnfAnkMeta
@@ -1459,7 +1500,7 @@
         @doc "True when beneficiary has active DPNF stake and ANK has more live anchors on dpnf-id than at last sync."
         (let
             (
-                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
                 ;;
                 (last-sync:integer (UR_AQP|BenDpnfLastAnkSyncCount beneficiary-id dpnf-id))
                 (live-count:integer (ref-ANK::UR_AA|AnchorsActive dpnf-id))
@@ -1468,7 +1509,7 @@
         )
     )
     ;;
-    (defun UR_AQP|DPOFTracker:object{AcquisitionSchemasV1.AQP|OrtoFungibleTracker}
+    (defun UR_AQP|DPOFTracker:object{AcquisitionSchemasV3.AQP|OrtoFungibleTracker}
         (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer)
         @doc "Reads DPOF tracker row; absent rows read as zero balance via default object."
         (with-default-read AQP|T|DPOFTracker (UCk_DPOFTracker pool-id dpof-id owner-id beneficiary-id nonce)
@@ -1507,7 +1548,7 @@
         (at "nonce" (UR_AQP|DPOFTracker pool-id dpof-id owner-id beneficiary-id nonce))
     )
     ;;
-    (defun UR_AQP|DPSFTracker:object{AcquisitionSchemasV1.AQP|SemiFungibleTracker}
+    (defun UR_AQP|DPSFTracker:object{AcquisitionSchemasV3.AQP|SemiFungibleTracker}
         (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer)
         @doc "Reads DPSF tracker row; absent rows read as zero balance via default object."
         (with-default-read AQP|T|DPSFTracker (UCk_DPSFTracker pool-id dpsf-id owner-id beneficiary-id nonce)
@@ -1546,7 +1587,7 @@
         (at "nonce" (UR_AQP|DPSFTracker pool-id dpsf-id owner-id beneficiary-id nonce))
     )
     ;;
-    (defun UR_AQP|DPNFTracker:object{AcquisitionSchemasV1.AQP|NonFungibleTracker}
+    (defun UR_AQP|DPNFTracker:object{AcquisitionSchemasV3.AQP|NonFungibleTracker}
         (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer)
         @doc "Reads DPNF tracker row; absent rows read as zero balance via default object."
         (with-default-read AQP|T|DPNFTracker (UCk_DPNFTracker pool-id dpnf-id owner-id beneficiary-id nonce)
@@ -1589,10 +1630,10 @@
         @doc "Resolve pool governor konto from aqp-class and canonical native asset-id (issue-time or pre-pool-row)."
         (let
             (
-                (ref-SWP:module{SwapperV4} SWP)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-SWP:module{SwapperV5} SWP)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (if (= aqp-class 0)
                 (ref-SWP::UR_OwnerKonto (ref-SWP::UR_GetLpSwpair asset-id))
@@ -1646,7 +1687,7 @@
             \ for the reverse direction. DEFECT-LEDGER."
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (c:integer (UR_AQP|PoolAqpClass pool-id))
                 (asset-id:string (UR_AQP|PoolAssetId pool-id))
                 (core-ok:bool
@@ -1759,7 +1800,7 @@
         @doc "True when no other employed pool score has boost-link pointing at score-id (triplet hub protection)."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
                 ;;
                 (active-ids:[string] (URC_PoolActiveScoreIds pool-id))
             )
@@ -1872,7 +1913,7 @@
             \ class 2 native circulating; class 1 Z|/H| satellite linked to pool DPTF; class 0 Z| orto LP linked to pool native LP."
         (let
             (
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                 ;;
                 (c:integer (UR_AQP|PoolAqpClass pool-id))
                 (asset-id:string (UR_AQP|PoolAssetId pool-id))
@@ -2212,7 +2253,7 @@
             \ the callers branch on -- an absent twin contributes nothing rather than refusing."
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (asset:string (UR_AQP|PoolAssetId pool-id))
             )
             {"native"   : asset
@@ -2250,7 +2291,7 @@
             \    go stale and the EXISTING deb-staleness sweep is what repairs them."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
             )
             (fold (and) true
                 [
@@ -2288,7 +2329,7 @@
             \ all call ONE function -- `URC_SCR|SleepingLegHeldWeight` -- so they cannot drift."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
                 (legs:object (URC_AQP|PoolLiquidityLegs pool-id))
                 (slp-mine:[object] (UC_AQP|BackfillRowsForBeneficiary beneficiary-id slp-rows))
             )
@@ -2401,7 +2442,7 @@
             )
             (let
                 (
-                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
                 )
                 (ref-SCR::URH_SCR|ScoreHolderAccounts pool-id score-id)
             )
@@ -2423,7 +2464,7 @@
             []
             (let
                 (
-                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
                     (leg-rows:object (URH_AQP|ScoreBackfillLegRows pool-id))
                 )
                 (filter
@@ -2479,7 +2520,7 @@
             \ employed by the same pool and carries the weight that makes this true."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
             )
             (> (length
                    (filter
@@ -2500,7 +2541,7 @@
             \ transaction's writes."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
                 (employed:[string] (URC_PoolActiveScoreIds pool-id))
             )
             (filter
@@ -2521,7 +2562,7 @@
             []
             (let
                 (
-                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
                 )
                 (ref-SCR::URH_SCR|ScoreHolderAccounts pool-id score-id)
             )
@@ -2652,10 +2693,10 @@
         )
     )
     ;; [URCi]   cost readers — single source for exec billing + INFO preview (config/sync)
-    (defun URCi_Issue:object{IgnisCollectorV3.OutputCumulator} (output:[string])
+    (defun URCi_Issue:object{IgnisCollectorV4.OutputCumulator} (output:[string])
         (let
             (
-                (r:module{IgnisCollectorV3} IGNIS)
+                (r:module{IgnisCollectorV4} IGNIS)
             )
             (r::UDC_ConstructOutputCumulator
                 (r::UC_IgnisPrice "AQP-POOL|C_Issue" "issue-pool")
@@ -2668,62 +2709,62 @@
             \ dollar-denominated and so ignored the peg entirely."
         (let
             (
-                (r:module{IgnisCollectorV3} IGNIS)
+                (r:module{IgnisCollectorV4} IGNIS)
             )
             (r::UC_StoaPrice "issue-pool")
         ))
-    (defun URCi_AddScore:object{IgnisCollectorV3.OutputCumulator} (output:[string])
+    (defun URCi_AddScore:object{IgnisCollectorV4.OutputCumulator} (output:[string])
         (let
             (
-                (r:module{IgnisCollectorV3} IGNIS)
+                (r:module{IgnisCollectorV4} IGNIS)
             )
             (r::UDC_ConstructOutputCumulator
                 (r::UC_IgnisPrice "AQP-POOL|C_AddScore" "add-score")
                 AQP|SC_NAME (r::URC_IsVirtualGasZero) output)
         ))
-    (defun URCi_RevokeScore:object{IgnisCollectorV3.OutputCumulator} (output:[string])
+    (defun URCi_RevokeScore:object{IgnisCollectorV4.OutputCumulator} (output:[string])
         (let
             (
-                (r:module{IgnisCollectorV3} IGNIS)
+                (r:module{IgnisCollectorV4} IGNIS)
             )
             (r::UDC_ConstructOutputCumulator
                 (r::UC_IgnisPrice "AQP-POOL|C_RevokeScore" "revoke-score")
                 AQP|SC_NAME (r::URC_IsVirtualGasZero) output)
         ))
-    (defun URCi_SetPoolStake:object{IgnisCollectorV3.OutputCumulator} (output:[string])
+    (defun URCi_SetPoolStake:object{IgnisCollectorV4.OutputCumulator} (output:[string])
         @doc "Shared by Enable / Disable pool-stake — one component key is exact because \
             \ AQP-POOL|C_EnablePoolStake and C_DisablePoolStake are both 6.0."
         (let
             (
-                (r:module{IgnisCollectorV3} IGNIS)
+                (r:module{IgnisCollectorV4} IGNIS)
             )
             (r::UDC_ConstructOutputCumulator
                 (r::UC_IgnisPrice "AQP-POOL|C_EnablePoolStake" "pool-stake-toggle")
                 AQP|SC_NAME (r::URC_IsVirtualGasZero) output)
         ))
-    (defun URCi_SyncTrueFungibleAnchors:object{IgnisCollectorV3.OutputCumulator} (output:[string])
+    (defun URCi_SyncTrueFungibleAnchors:object{IgnisCollectorV4.OutputCumulator} (output:[string])
         @doc "Gas leg for the TF anchor sync; exec concats it with the anchor-repair + meta \
             \ legs (state-dependent)."
         (let
             (
-                (r:module{IgnisCollectorV3} IGNIS)
+                (r:module{IgnisCollectorV4} IGNIS)
             )
             (r::UDC_ConstructOutputCumulator
                 (r::UC_IgnisPrice "AQP-POOL|C_SyncTrueFungibleAnchors" "sync-anchors")
                 AQP|SC_NAME (r::URC_IsVirtualGasZero) output)
         ))
-    (defun URCi_UpdateScoreMultipliers:object{IgnisCollectorV3.OutputCumulator} (output:[string])
+    (defun URCi_UpdateScoreMultipliers:object{IgnisCollectorV4.OutputCumulator} (output:[string])
         @doc "Cost of re-setting a score's frozen/sleeping multipliers — a settings write, priced \
             \ alongside the other one-shot score settings."
         (let
             (
-                (r:module{IgnisCollectorV3} IGNIS)
+                (r:module{IgnisCollectorV4} IGNIS)
             )
             (r::UDC_ConstructOutputCumulator
                 (r::UC_IgnisPrice "AQP-POOL|CC_UpdateScoreMultipliers" "setup")
                 AQP|SC_NAME (r::URC_IsVirtualGasZero) output)
         ))
-    (defun URCi_BackfillScoreSlice:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_BackfillScoreSlice:object{IgnisCollectorV4.OutputCumulator}
         (beneficiaries:[string] output:[string])
         @doc "Gas leg for one re-rate slice. PRICED PER HOLDER, because that is what the \
             \ transaction actually does — one target recomputation and one delta write each. A flat \
@@ -2731,25 +2772,25 @@
             \ toward the single shape the recipe exists to avoid."
         (let
             (
-                (r:module{IgnisCollectorV3} IGNIS)
+                (r:module{IgnisCollectorV4} IGNIS)
             )
             (r::UDC_ConstructOutputCumulator
                 (* (dec (length beneficiaries))
                    (r::UC_IgnisPrice "AQP-POOL|CCp_BackfillScoreSlice" "backfill"))
                 AQP|SC_NAME (r::URC_IsVirtualGasZero) output)
         ))
-    (defun URCi_BeginScoreRevoke:object{IgnisCollectorV3.OutputCumulator} (output:[string])
+    (defun URCi_BeginScoreRevoke:object{IgnisCollectorV4.OutputCumulator} (output:[string])
         @doc "Cost of vacating a score's pool slot to begin a revoke — a config write, priced with \
             \ the other pool-settings ops."
         (let
             (
-                (r:module{IgnisCollectorV3} IGNIS)
+                (r:module{IgnisCollectorV4} IGNIS)
             )
             (r::UDC_ConstructOutputCumulator
                 (r::UC_IgnisPrice "AQP-POOL|C_BeginScoreRevoke" "setup")
                 AQP|SC_NAME (r::URC_IsVirtualGasZero) output)
         ))
-    (defun URCi_DrainScoreSlice:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_DrainScoreSlice:object{IgnisCollectorV4.OutputCumulator}
         (accounts:[string] output:[string])
         @doc "Gas leg for one drain slice. PRICED PER HOLDER, like the re-rate slice and for the \
             \ same reason: the transaction does one read and one delta write per account, so a flat \
@@ -2757,30 +2798,30 @@
             \ callers toward the shape the recipe exists to avoid."
         (let
             (
-                (r:module{IgnisCollectorV3} IGNIS)
+                (r:module{IgnisCollectorV4} IGNIS)
             )
             (r::UDC_ConstructOutputCumulator
                 (* (dec (length accounts))
                    (r::UC_IgnisPrice "AQP-POOL|Cp_DrainScoreSlice" "backfill"))
                 AQP|SC_NAME (r::URC_IsVirtualGasZero) output)
         ))
-    (defun URCi_FinalizeScoreRevoke:object{IgnisCollectorV3.OutputCumulator} (output:[string])
+    (defun URCi_FinalizeScoreRevoke:object{IgnisCollectorV4.OutputCumulator} (output:[string])
         @doc "Cost of cutting the aqpool-link once a drain is complete — a config write."
         (let
             (
-                (r:module{IgnisCollectorV3} IGNIS)
+                (r:module{IgnisCollectorV4} IGNIS)
             )
             (r::UDC_ConstructOutputCumulator
                 (r::UC_IgnisPrice "AQP-POOL|CC_FinalizeScoreRevoke" "setup")
                 AQP|SC_NAME (r::URC_IsVirtualGasZero) output)
         ))
-    (defun URCi_SyncCollectableAnchors:object{IgnisCollectorV3.OutputCumulator} (output:[string])
+    (defun URCi_SyncCollectableAnchors:object{IgnisCollectorV4.OutputCumulator} (output:[string])
         @doc "Gas leg for the SF+NF anchor sync; exec concats it with the anchor-repair + \
             \ meta legs (state-dependent). One component key is exact because \
             \ AQP-POOL|C_SyncSemiFungibleAnchors and C_SyncNonFungibleAnchors are both 36.0."
         (let
             (
-                (r:module{IgnisCollectorV3} IGNIS)
+                (r:module{IgnisCollectorV4} IGNIS)
             )
             (r::UDC_ConstructOutputCumulator
                 (r::UC_IgnisPrice "AQP-POOL|C_SyncSemiFungibleAnchors" "sync-anchors")
@@ -2793,9 +2834,9 @@
             \ ico-meta = the biggest-tier sync-count stamp (XB_SetBenDptfAnkSyncCount); ico-gas = URCi_SyncTrueFungibleAnchors."
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
                 ;;
                 (n-live:integer (length (ref-ANK::UR_ANK|AnchorsForAsset dptf-id)))
             )
@@ -2818,9 +2859,9 @@
             \ the biggest-tier sync-count stamp (XB_SetBenCollectableAnkSyncCount); ico-gas = URCi_SyncCollectableAnchors."
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
                 ;;
                 (n-live:integer (length (ref-ANK::UR_ANK|AnchorsForAsset collectable-id)))
             )
@@ -2861,7 +2902,7 @@
             \ carries, which no id comparison can detect."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
                 ;;
                 (aqpool:string (ref-SCR::UR_SCR|ScoreAqpoolLink score-id))
             )
@@ -2878,10 +2919,10 @@
         @doc "aqp-class 0..4 and asset-id existence / shape for that class (native id only at issue)."
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-SWP:module{SwapperV4} SWP)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-SWP:module{SwapperV5} SWP)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 ;;
                 (p2:string (take 2 asset-id))
                 (is-class-ok:bool (contains aqp-class (enumerate 0 4)))
@@ -2962,8 +3003,8 @@
             \ score exists with BAR aqpool-link; score-class matches pool; class-0 lp-denominator fits pool LP pair."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-                (ref-SWP:module{SwapperV4} SWP)
+                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+                (ref-SWP:module{SwapperV5} SWP)
                 ;;
                 (aqp-class:integer (UR_AQP|PoolAqpClass pool-id))
                 (asset-id:string (UR_AQP|PoolAssetId pool-id))
@@ -3018,7 +3059,7 @@
             \ and no employed peer has boost-link = score-id (revoke dependents before hub)."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
             )
             (enforce (!= slot-index -1) "score-id is not assigned to pool")
             (enforce
@@ -3114,7 +3155,7 @@
             \ still have to be zero before the link goes -- just later, and reachably."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
             )
             (enforce (!= slot-index -1) "score-id is not assigned to pool")
             (enforce
@@ -3135,7 +3176,7 @@
         @doc "Stake paths: beneficiary must exist and be an activated standard (non-principal) Ouronet account."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::UEV_EnforceAccountExists beneficiary-id)
             (ref-DALOS::UEV_EnforceAccountType beneficiary-id false)
@@ -3145,7 +3186,7 @@
         @doc "Reject R| reserved; validate DPTF id exists via DPTF::UEV_id."
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
             )
             (enforce (not (URC_DptfStakeIsReservedLeg dptf-id)) "Reserved DPTF (R|) cannot be staked")
             (ref-DPTF::UEV_id dptf-id)
@@ -3155,7 +3196,7 @@
         @doc "Validate issued DPOF id via DPOF::UEV_id."
         (let
             (
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
             )
             (ref-DPOF::UEV_id dpof-id)
         )
@@ -3164,7 +3205,7 @@
         @doc "Validate issued DPDC collectable id via DPDC::UEV_id."
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (ref-DPDC::UEV_id collectable-id son)
         )
@@ -3193,7 +3234,7 @@
         @doc "Issue / pre-pool: tx sender must own the canonical asset for aqp-class and asset-id."
         (let 
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership (URC_AqpOwnerKontoFromClassAndAsset aqp-class asset-id))
         )
@@ -3202,7 +3243,7 @@
         @doc "Post-issue pool governance: tx sender must own the canonical asset behind pool-id (URC_AqpOwnerKonto)."
         (let 
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership (URC_AqpOwnerKonto pool-id))
         )
@@ -3211,7 +3252,7 @@
         @doc "Stake / unstake: tx sender must own owner-id (depositor of tokens)."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership owner-id)
         )
@@ -3223,7 +3264,7 @@
     ;; WU lists every schema field: defun when used; comment when [.], select key, or mutates via WW_*.
     ;;
     (defun WI_Pool:string
-        (pool-id:string row:object{AcquisitionSchemasV1.AQP|Schema})
+        (pool-id:string row:object{AcquisitionSchemasV3.AQP|Schema})
         @doc "Insert AQP|T|Pool full row (issue only)."
         (require-capability (SECURE))
         (insert AQP|T|Pool pool-id row)
@@ -3330,7 +3371,7 @@
     ;;
     ;; WI_DPTFTracker — not used: first row touch is WW_DPTFTracker (upsert path).
     (defun WW_DPTFTracker:string
-        (pool-id:string dptf-id:string owner-id:string beneficiary-id:string row:object{AcquisitionSchemasV1.AQP|TrueFungibleTracker})
+        (pool-id:string dptf-id:string owner-id:string beneficiary-id:string row:object{AcquisitionSchemasV3.AQP|TrueFungibleTracker})
         @doc "Upsert full AQP|T|DPTFTracker row for (pool, dptf, owner, beneficiary)."
         (require-capability (SECURE))
         (write AQP|T|DPTFTracker (UCk_DPTFTracker pool-id dptf-id owner-id beneficiary-id) row)
@@ -3343,7 +3384,7 @@
     ;;
     ;; WI_DPOFTracker — not used: first row touch is WW_DPOFTracker (upsert path).
     (defun WW_DPOFTracker:string
-        (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer row:object{AcquisitionSchemasV1.AQP|OrtoFungibleTracker})
+        (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer row:object{AcquisitionSchemasV3.AQP|OrtoFungibleTracker})
         @doc "Upsert full AQP|T|DPOFTracker row for (pool, dpof, owner, beneficiary, nonce)."
         (require-capability (SECURE))
         (write AQP|T|DPOFTracker (UCk_DPOFTracker pool-id dpof-id owner-id beneficiary-id nonce) row)
@@ -3357,7 +3398,7 @@
     ;;
     ;; WI_DPSFTracker — not used: first row touch is WW_DPSFTracker (upsert path).
     (defun WW_DPSFTracker:string
-        (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer row:object{AcquisitionSchemasV1.AQP|SemiFungibleTracker})
+        (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer row:object{AcquisitionSchemasV3.AQP|SemiFungibleTracker})
         @doc "Upsert full AQP|T|DPSFTracker row for (pool, dpsf, owner, beneficiary, nonce)."
         (require-capability (SECURE))
         (write AQP|T|DPSFTracker (UCk_DPSFTracker pool-id dpsf-id owner-id beneficiary-id nonce) row)
@@ -3371,7 +3412,7 @@
     ;;
     ;; WI_DPNFTracker — not used: first row touch is WW_DPNFTracker (upsert path).
     (defun WW_DPNFTracker:string
-        (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer row:object{AcquisitionSchemasV1.AQP|NonFungibleTracker})
+        (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer row:object{AcquisitionSchemasV3.AQP|NonFungibleTracker})
         @doc "Upsert full AQP|T|DPNFTracker row for (pool, dpnf, owner, beneficiary, nonce)."
         (require-capability (SECURE))
         (write AQP|T|DPNFTracker (UCk_DPNFTracker pool-id dpnf-id owner-id beneficiary-id nonce) row)
@@ -3385,13 +3426,13 @@
     ;;
     ;; WI_BenDptfTotal — not used: first row touch is WW_BenDptfTotal (upsert path).
     (defun WW_BenDptfTotal:string
-        (beneficiary-id:string dptf-id:string row:object{AcquisitionSchemasV1.AQP|BenDptfTotal})
+        (beneficiary-id:string dptf-id:string row:object{AcquisitionSchemasV3.AQP|BenDptfTotal})
         @doc "Upsert full AQP|T|BenDptfTotal row for (beneficiary, dptf-id)."
         (require-capability (SECURE))
         (write AQP|T|BenDptfTotal (UCk_BenDptfTotal beneficiary-id dptf-id) row)
     )
     (defun WU_BenDptfTotal|LastAnkSyncCount:string
-        (beneficiary-id:string dptf-id:string row:object{AcquisitionSchemasV1.AQP|BenDptfTotal} sync-count:integer)
+        (beneficiary-id:string dptf-id:string row:object{AcquisitionSchemasV3.AQP|BenDptfTotal} sync-count:integer)
         @doc "Update last-ank-sync-count on AQP|T|BenDptfTotal; preserve other fields. \
             \ <row> kept for call-site symmetry with collectable meta WU_*; write uses update (not object-+ merge)."
         (require-capability (SECURE))
@@ -3405,7 +3446,7 @@
     ;;
     ;; WI_BenDpsfNonceTotal — not used: first row touch is WW_BenDpsfNonceTotal (upsert path).
     (defun WW_BenDpsfNonceTotal:string
-        (beneficiary-id:string dpsf-id:string nonce:integer row:object{AcquisitionSchemasV1.AQP|BenDpsfNonceTotal})
+        (beneficiary-id:string dpsf-id:string nonce:integer row:object{AcquisitionSchemasV3.AQP|BenDpsfNonceTotal})
         @doc "Upsert full AQP|T|BenDpsfNonceTotal row for (beneficiary, dpsf-id, nonce)."
         (require-capability (SECURE))
         (write AQP|T|BenDpsfNonceTotal (UCk_BenDpsfNonceTotal beneficiary-id dpsf-id nonce) row)
@@ -3417,7 +3458,7 @@
     ;;
     ;; WI_BenDpnfNonceTotal — not used: first row touch is WW_BenDpnfNonceTotal (upsert path).
     (defun WW_BenDpnfNonceTotal:string
-        (beneficiary-id:string dpnf-id:string nonce:integer row:object{AcquisitionSchemasV1.AQP|BenDpnfNonceTotal})
+        (beneficiary-id:string dpnf-id:string nonce:integer row:object{AcquisitionSchemasV3.AQP|BenDpnfNonceTotal})
         @doc "Upsert full AQP|T|BenDpnfNonceTotal row for (beneficiary, dpnf-id, nonce)."
         (require-capability (SECURE))
         (write AQP|T|BenDpnfNonceTotal (UCk_BenDpnfNonceTotal beneficiary-id dpnf-id nonce) row)
@@ -3429,13 +3470,13 @@
     ;;
     ;; WI_BenDpsfAnkMeta — not used: first row touch is WW_BenDpsfAnkMeta (upsert path).
     (defun WW_BenDpsfAnkMeta:string
-        (beneficiary-id:string dpsf-id:string row:object{AcquisitionSchemasV1.AQP|BenDpsfAnkMeta})
+        (beneficiary-id:string dpsf-id:string row:object{AcquisitionSchemasV3.AQP|BenDpsfAnkMeta})
         @doc "Upsert full AQP|T|BenDpsfAnkMeta row for (beneficiary, dpsf-id)."
         (require-capability (SECURE))
         (write AQP|T|BenDpsfAnkMeta (UCk_BenDpsfAnkMeta beneficiary-id dpsf-id) row)
     )
     (defun WU_BenDpsfAnkMeta|LastAnkSyncCount:string
-        (beneficiary-id:string dpsf-id:string row:object{AcquisitionSchemasV1.AQP|BenDpsfAnkMeta} sync-count:integer)
+        (beneficiary-id:string dpsf-id:string row:object{AcquisitionSchemasV3.AQP|BenDpsfAnkMeta} sync-count:integer)
         @doc "Update last-ank-sync-count; preserve active-nonce-count from <row>."
         (require-capability (SECURE))
         (write AQP|T|BenDpsfAnkMeta (UCk_BenDpsfAnkMeta beneficiary-id dpsf-id)
@@ -3447,13 +3488,13 @@
     ;;
     ;; WI_BenDpnfAnkMeta — not used: first row touch is WW_BenDpnfAnkMeta (upsert path).
     (defun WW_BenDpnfAnkMeta:string
-        (beneficiary-id:string dpnf-id:string row:object{AcquisitionSchemasV1.AQP|BenDpnfAnkMeta})
+        (beneficiary-id:string dpnf-id:string row:object{AcquisitionSchemasV3.AQP|BenDpnfAnkMeta})
         @doc "Upsert full AQP|T|BenDpnfAnkMeta row for (beneficiary, dpnf-id)."
         (require-capability (SECURE))
         (write AQP|T|BenDpnfAnkMeta (UCk_BenDpnfAnkMeta beneficiary-id dpnf-id) row)
     )
     (defun WU_BenDpnfAnkMeta|LastAnkSyncCount:string
-        (beneficiary-id:string dpnf-id:string row:object{AcquisitionSchemasV1.AQP|BenDpnfAnkMeta} sync-count:integer)
+        (beneficiary-id:string dpnf-id:string row:object{AcquisitionSchemasV3.AQP|BenDpnfAnkMeta} sync-count:integer)
         @doc "Update last-ank-sync-count; preserve active-nonce-count from <row>."
         (require-capability (SECURE))
         (write AQP|T|BenDpnfAnkMeta (UCk_BenDpnfAnkMeta beneficiary-id dpnf-id)
@@ -3514,7 +3555,7 @@
     )
     ;;Protection: Class 1 — Innate protection offered by WW_DPSFTracker, WU_Pool|Occupancy,
     ;;Protection:          WW_DPNFTracker
-    (defun XI_1|WriteCollectableTrackerSlot:object{IgnisCollectorV3.OutputCumulator}
+    (defun XI_1|WriteCollectableTrackerSlot:object{IgnisCollectorV4.OutputCumulator}
         (
             pool-id:string
             owner-id:string
@@ -3529,7 +3570,7 @@
         ;; SECURE: granted by WW_DPSFTracker / WW_DPNFTracker (underlying W_).
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 ;;
                 (delta:decimal (if direction (dec amount) (- (dec amount))))
             )
@@ -3564,7 +3605,7 @@
     )
     ;;Protection: Class 1 — Innate protection offered by XI_2|BumpBenDpsfNonceTotal,
     ;;Protection:          XI_2|BumpBenDpnfNonceTotal
-    (defun XI_1|BumpBenCollectableNonceTotalSlot:object{IgnisCollectorV3.OutputCumulator}
+    (defun XI_1|BumpBenCollectableNonceTotalSlot:object{IgnisCollectorV4.OutputCumulator}
         (beneficiary-id:string collectable-id:string son:bool nonce:integer amount:integer direction:bool)
         @doc "One BenDpsfNonceTotal or BenDpnfNonceTotal row — son dispatch to XI_2 leaf."
         ;; SECURE: granted by XI_2|BumpBenDpsfNonceTotal / XI_2|BumpBenDpnfNonceTotal (underlying W_).
@@ -3575,19 +3616,19 @@
     )
     ;;Protection: Class 1 — Innate protection offered by WW_BenDpsfNonceTotal,
     ;;Protection:          WW_BenDpsfAnkMeta
-    (defun XI_2|BumpBenDpsfNonceTotal:object{IgnisCollectorV3.OutputCumulator}
+    (defun XI_2|BumpBenDpsfNonceTotal:object{IgnisCollectorV4.OutputCumulator}
         (beneficiary-id:string dpsf-id:string nonce:integer amount:integer direction:bool)
         @doc "AQP|T|BenDpsfNonceTotal: bump amount ±supply for (beneficiary, dpsf-id, nonce) across pools. \
             \ Also bumps BenDpsfAnkMeta.active-nonce-count when amount crosses 0↔positive."
         ;; SECURE: granted by WW_BenDpsfNonceTotal / WW_BenDpsfAnkMeta (underlying W_).
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 ;;
                 (amt:integer (UR_AQP|BenDpsfNonceAmount beneficiary-id dpsf-id nonce))
                 (delta:integer (if direction amount (- amount)))
                 (new-amt:integer (+ amt delta))
-                (meta:object{AcquisitionSchemasV1.AQP|BenDpsfAnkMeta} (UR_AQP|BenDpsfAnkMeta beneficiary-id dpsf-id))
+                (meta:object{AcquisitionSchemasV3.AQP|BenDpsfAnkMeta} (UR_AQP|BenDpsfAnkMeta beneficiary-id dpsf-id))
                 (sc:integer (at "last-ank-sync-count" meta))
                 (anc:integer (at "active-nonce-count" meta))
                 (new-anc:integer
@@ -3614,19 +3655,19 @@
     )
     ;;Protection: Class 1 — Innate protection offered by WW_BenDpnfNonceTotal,
     ;;Protection:          WW_BenDpnfAnkMeta
-    (defun XI_2|BumpBenDpnfNonceTotal:object{IgnisCollectorV3.OutputCumulator}
+    (defun XI_2|BumpBenDpnfNonceTotal:object{IgnisCollectorV4.OutputCumulator}
         (beneficiary-id:string dpnf-id:string nonce:integer amount:integer direction:bool)
         @doc "AQP|T|BenDpnfNonceTotal: bump amount ±supply for (beneficiary, dpnf-id, nonce) across pools. \
             \ Also bumps BenDpnfAnkMeta.active-nonce-count when amount crosses 0↔positive."
         ;; SECURE: granted by WW_BenDpnfNonceTotal / WW_BenDpnfAnkMeta (underlying W_).
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 ;;
                 (amt:integer (UR_AQP|BenDpnfNonceAmount beneficiary-id dpnf-id nonce))
                 (delta:integer (if direction amount (- amount)))
                 (new-amt:integer (+ amt delta))
-                (meta:object{AcquisitionSchemasV1.AQP|BenDpnfAnkMeta} (UR_AQP|BenDpnfAnkMeta beneficiary-id dpnf-id))
+                (meta:object{AcquisitionSchemasV3.AQP|BenDpnfAnkMeta} (UR_AQP|BenDpnfAnkMeta beneficiary-id dpnf-id))
                 (sc:integer (at "last-ank-sync-count" meta))
                 (anc:integer (at "active-nonce-count" meta))
                 (new-anc:integer
@@ -3652,13 +3693,13 @@
         )
     )
     ;;Protection: Class 1 — Innate protection offered by WW_DPTFTracker, WU_Pool|Occupancy
-    (defun XI_1|WriteDptfTrackerSlot:object{IgnisCollectorV3.OutputCumulator}
+    (defun XI_1|WriteDptfTrackerSlot:object{IgnisCollectorV4.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
         @doc "One AQP|T|DPTFTracker row — read balance, write ±amount (cap validates unstake sufficiency)."
         ;; SECURE: granted by WW_DPTFTracker (underlying W_).
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 ;;
                 (bal:decimal (UR_AQP|DPTFTrackerBalance pool-id dptf-id owner-id beneficiary-id))
                 (delta:decimal (if direction amount (- amount)))
@@ -3675,14 +3716,14 @@
         )
     )
     ;;Protection: Class 1 — Innate protection offered by WW_DPTFTracker, WU_Pool|Occupancy
-    (defun XI_1|ZeroDptfTrackerSlot:object{IgnisCollectorV3.OutputCumulator}
+    (defun XI_1|ZeroDptfTrackerSlot:object{IgnisCollectorV4.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string)
         @doc "Vacate: write AQP|T|DPTFTracker balance=0. #FP1: reads the pre-balance so the pool nns occupancy \
             \ counter can record the occupied->empty transition (the old 'no read' shortcut yields to correct nns)."
         ;; SECURE: granted by WW_DPTFTracker (underlying W_).
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 (bal:decimal (UR_AQP|DPTFTrackerBalance pool-id dptf-id owner-id beneficiary-id))
             )
             (WW_DPTFTracker pool-id dptf-id owner-id beneficiary-id
@@ -3694,13 +3735,13 @@
         )
     )
     ;;Protection: Class 1 — Innate protection offered by WW_BenDptfTotal
-    (defun XI_1|BumpBenDptfTotalSlot:object{IgnisCollectorV3.OutputCumulator}
+    (defun XI_1|BumpBenDptfTotalSlot:object{IgnisCollectorV4.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
         @doc "One AQP|T|BenDptfTotal row — bump total-balance ±amount; preserve last-ank-sync-count."
         ;; SECURE: granted by WW_BenDptfTotal (underlying W_).
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 ;;
                 (tb:decimal (UR_AQP|BenDptfTotalBalance beneficiary-id dptf-id))
                 (sc:integer (UR_AQP|BenDptfLastAnkSyncCount beneficiary-id dptf-id))
@@ -3714,7 +3755,7 @@
         )
     )
     ;;Protection: Class 1 — Innate protection offered by WW_DPOFTracker, WU_Pool|Occupancy
-    (defun XI_1|WriteDpofTrackerSlot:object{IgnisCollectorV3.OutputCumulator}
+    (defun XI_1|WriteDpofTrackerSlot:object{IgnisCollectorV4.OutputCumulator}
         (
             pool-id:string
             owner-id:string
@@ -3728,7 +3769,7 @@
         ;; SECURE: granted by WW_DPOFTracker (underlying W_).
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 ;;
                 (bal:decimal (UR_AQP|DPOFTrackerBalance pool-id dpof-id owner-id beneficiary-id nonce))
                 (delta:decimal (if direction amount (- amount)))
@@ -3778,7 +3819,7 @@
     ;;
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          AQP|XE>TRUE-FUNGIBLE-POOL-CUSTODY
-    (defun XE_TrueFungibleTransfer:object{IgnisCollectorV3.OutputCumulator}
+    (defun XE_TrueFungibleTransfer:object{IgnisCollectorV4.OutputCumulator}
         (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
         @doc "Phase 1.1 — UrStoa ≡ X_UR|Transfer. TFT::C_Transfer owner↔AQP|SC_NAME. Composes custody cap (validation once per tx). \
             \ \
@@ -3791,7 +3832,7 @@
         (with-capability (AQP|XE>TRUE-FUNGIBLE-POOL-CUSTODY pool-id owner-id beneficiary-id dptf-id amount direction)
             (let
                 (
-                    (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                    (ref-TFT:module{TrueFungibleTransferV3} TFT)
                     ;;
                     (vault:string AQP|SC_NAME)
                 )
@@ -3804,7 +3845,7 @@
     )
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          P|SECURE-CALLER
-    (defun XE_TrueFungiblePoolTracker:object{IgnisCollectorV3.OutputCumulator}
+    (defun XE_TrueFungiblePoolTracker:object{IgnisCollectorV4.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
         @doc "Phase 1.2 — per-pool AQP|T|DPTFTracker row. UrStoa: N/A. P|SECURE-CALLER (no custody re-validation)."
         (P|UEV_IMC)
@@ -3814,7 +3855,7 @@
     )
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          P|SECURE-CALLER
-    (defun XE_ZeroDptfTrackerSlot:object{IgnisCollectorV3.OutputCumulator}
+    (defun XE_ZeroDptfTrackerSlot:object{IgnisCollectorV4.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string)
         @doc "IMC: zero one AQP|T|DPTFTracker row (write-only). Called from AQP-VCT vacate."
         (P|UEV_IMC)
@@ -3824,7 +3865,7 @@
     )
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          P|SECURE-CALLER
-    (defun XE_TrueFungibleBeneficiaryRollup:object{IgnisCollectorV3.OutputCumulator}
+    (defun XE_TrueFungibleBeneficiaryRollup:object{IgnisCollectorV4.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
         @doc "Phase 1.3 — cross-pool AQP|T|BenDptfTotal. UrStoa ≡ N/A. P|SECURE-CALLER."
         (P|UEV_IMC)
@@ -3834,7 +3875,7 @@
     )
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          AQP|XE>ORTO-FUNGIBLE-POOL-CUSTODY
-    (defun XE_OrtoFungibleTransfer:object{IgnisCollectorV3.OutputCumulator}
+    (defun XE_OrtoFungibleTransfer:object{IgnisCollectorV4.OutputCumulator}
         (patron:string 
             pool-id:string
             owner-id:string
@@ -3849,7 +3890,7 @@
         (with-capability (AQP|XE>ORTO-FUNGIBLE-POOL-CUSTODY pool-id owner-id beneficiary-id dpof-id nonces nonce-amounts direction)
             (let
                 (
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                     ;;
                     (vault:string AQP|SC_NAME)
                     (sender:string (if direction owner-id vault))
@@ -3861,7 +3902,7 @@
     )
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          P|SECURE-CALLER
-    (defun XE_OrtoFungiblePoolTracker:object{IgnisCollectorV3.OutputCumulator}
+    (defun XE_OrtoFungiblePoolTracker:object{IgnisCollectorV4.OutputCumulator}
         (
             pool-id:string
             owner-id:string
@@ -3876,10 +3917,10 @@
         (with-capability (P|SECURE-CALLER)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     ;;
                     (l:integer (length nonces))
-                    (slot-ocs:[object{IgnisCollectorV3.OutputCumulator}]
+                    (slot-ocs:[object{IgnisCollectorV4.OutputCumulator}]
                         (map
                             (lambda (idx:integer)
                                 ;; M5: write/remove the exact (owner, beneficiary) tracker row BOTH directions —
@@ -3898,7 +3939,7 @@
     )
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          AQP|XE>COLLECTABLE-POOL-CUSTODY
-    (defun XE_CollectableTransfer:object{IgnisCollectorV3.OutputCumulator}
+    (defun XE_CollectableTransfer:object{IgnisCollectorV4.OutputCumulator}
         (
             patron:string
             pool-id:string
@@ -3924,7 +3965,7 @@
             )
             (let
                 (
-                    (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
+                    (ref-DPDC-T:module{DpdcTransferV3} DPDC-T)
                     ;;
                     (vault:string AQP|SC_NAME)
                     (sender:string (if direction owner-id vault))
@@ -3936,7 +3977,7 @@
     )
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          P|SECURE-CALLER
-    (defun XE_CollectablePoolTracker:object{IgnisCollectorV3.OutputCumulator}
+    (defun XE_CollectablePoolTracker:object{IgnisCollectorV4.OutputCumulator}
         (
             pool-id:string
             owner-id:string
@@ -3952,10 +3993,10 @@
         (with-capability (P|SECURE-CALLER)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     ;;
                     (l:integer (length nonces))
-                    (slot-ocs:[object{IgnisCollectorV3.OutputCumulator}]
+                    (slot-ocs:[object{IgnisCollectorV4.OutputCumulator}]
                         (map
                             (lambda (idx:integer)
                                 ;; M5: write/remove the exact (owner, beneficiary) tracker row BOTH directions —
@@ -3974,7 +4015,7 @@
     )
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          P|SECURE-CALLER
-    (defun XE_CollectableBeneficiaryRollup:object{IgnisCollectorV3.OutputCumulator}
+    (defun XE_CollectableBeneficiaryRollup:object{IgnisCollectorV4.OutputCumulator}
         (
             pool-id:string
             owner-id:string
@@ -3990,10 +4031,10 @@
         (with-capability (P|SECURE-CALLER)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     ;;
                     (l:integer (length nonces))
-                    (slot-ocs:[object{IgnisCollectorV3.OutputCumulator}]
+                    (slot-ocs:[object{IgnisCollectorV4.OutputCumulator}]
                         (map
                             (lambda (idx:integer)
                                 ;; M5: bump/unbump the exact beneficiary rollup slot BOTH directions —
@@ -4039,7 +4080,7 @@
     ;;
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          AQP|XE>SET-BENEFICIARY-DPTF-ANK-SYNC
-    (defun XB_SetBenDptfAnkSyncCount:object{IgnisCollectorV3.OutputCumulator}
+    (defun XB_SetBenDptfAnkSyncCount:object{IgnisCollectorV4.OutputCumulator}
         (beneficiary-id:string dptf-id:string)
         @doc "Backward (FVT::CC_TrueFungibleStakeFlow phase 2.2]): set last-ank-sync-count on BenDptfTotal \
             \ (:= AQP-ANK::UR_AA|AnchorsActive dptf-id); preserve total-balance. P|UEV_IMC + AQP|XE>SET-BENEFICIARY-DPTF-ANK-SYNC. \
@@ -4048,10 +4089,10 @@
         (with-capability (AQP|XE>SET-BENEFICIARY-DPTF-ANK-SYNC beneficiary-id dptf-id)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
                     ;;
-                    (row:object{AcquisitionSchemasV1.AQP|BenDptfTotal} (UR_AQP|BenDptfTotal beneficiary-id dptf-id))
+                    (row:object{AcquisitionSchemasV3.AQP|BenDptfTotal} (UR_AQP|BenDptfTotal beneficiary-id dptf-id))
                     (live-count:integer (ref-ANK::UR_AA|AnchorsActive dptf-id))
                 )
                 ;; SECURE: granted by WU_BenDptfTotal|LastAnkSyncCount (underlying W_).
@@ -4062,7 +4103,7 @@
     )
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          AQP|XE>SET-BEN-COLLECTABLE-ANK-SYNC
-    (defun XB_SetBenCollectableAnkSyncCount:object{IgnisCollectorV3.OutputCumulator}
+    (defun XB_SetBenCollectableAnkSyncCount:object{IgnisCollectorV4.OutputCumulator}
         (beneficiary-id:string collectable-id:string son:bool)
         @doc "Backward (FVT collectable stake phase 3 / C_SyncCollectableAnchors): stamp last-ank-sync-count \
             \ on BenDpsfAnkMeta or BenDpnfAnkMeta. P|UEV_IMC + AQP|XE>SET-BEN-COLLECTABLE-ANK-SYNC."
@@ -4070,22 +4111,22 @@
         (with-capability (AQP|XE>SET-BEN-COLLECTABLE-ANK-SYNC beneficiary-id collectable-id son)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
                     ;;
                     (live-count:integer (ref-ANK::UR_AA|AnchorsActive collectable-id))
                 )
                 (if son
                     (let
                         (
-                            (row:object{AcquisitionSchemasV1.AQP|BenDpsfAnkMeta} (UR_AQP|BenDpsfAnkMeta beneficiary-id collectable-id))
+                            (row:object{AcquisitionSchemasV3.AQP|BenDpsfAnkMeta} (UR_AQP|BenDpsfAnkMeta beneficiary-id collectable-id))
                         )
                         ;; SECURE: granted by WU_BenDpsfAnkMeta|LastAnkSyncCount (underlying W_).
                         (WU_BenDpsfAnkMeta|LastAnkSyncCount beneficiary-id collectable-id row live-count)
                     )
                     (let
                         (
-                            (row:object{AcquisitionSchemasV1.AQP|BenDpnfAnkMeta} (UR_AQP|BenDpnfAnkMeta beneficiary-id collectable-id))
+                            (row:object{AcquisitionSchemasV3.AQP|BenDpnfAnkMeta} (UR_AQP|BenDpnfAnkMeta beneficiary-id collectable-id))
                         )
                         ;; SECURE: granted by WU_BenDpnfAnkMeta|LastAnkSyncCount (underlying W_).
                         (WU_BenDpnfAnkMeta|LastAnkSyncCount beneficiary-id collectable-id row live-count)
@@ -4100,7 +4141,7 @@
     ;; [C]   client
     ;;
     ;;Lifecycle (AQP|T|Pool / AQP|Schema)
-    (defun C_Issue:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_Issue:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string pool-name:string asset-id:string aqp-class:integer)
         @doc "Create a new pool (canonical native asset-id + aqp-class). Patron pays STOA smart + IGNIS; \
             \ returns pool-id in output list. Score slots start BAR."
@@ -4109,7 +4150,7 @@
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     ;;
                     (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
@@ -4121,7 +4162,7 @@
         )
     )
     ;;Score slots (score-primary … score-septenary); score-class must match pool aqp-class.
-    (defun C_AddScore:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_AddScore:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string pool-id:string score-id:string)
         @doc "Assign score-id to the first free pool slot; SCR XE_CreateAqpoolLink then XI pool slot write. \
             \ URC_FirstFreeScoreSlotIndex runs once before the cap; slot-index is passed through. \
@@ -4134,8 +4175,8 @@
             (with-capability (AQP|C>ADD-SCORE executor pool-id score-id slot-index)
                 (let
                     (
-                        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-                        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+                        (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                         ;;
                         (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                     )
@@ -4170,7 +4211,7 @@
             )
         )
     )
-    (defun C_RevokeScore:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_RevokeScore:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string pool-id:string score-id:string)
         @doc "Clear score-id from its pool slot (compact higher slots); SCR XE_RevokeAqpoolLink then XI pool slot write. \
             \ URC_ScoreSlotIndexForScore runs once before the cap; slot-index is passed through. \
@@ -4183,8 +4224,8 @@
             (with-capability (AQP|C>REVOKE-SCORE executor pool-id score-id slot-index)
                 (let
                     (
-                        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-                        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+                        (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                         ;;
                         (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                     )
@@ -4195,14 +4236,14 @@
             )
         )
     )
-    (defun C_DisablePoolStake:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_DisablePoolStake:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string pool-id:string)
         @doc "Pool owner pauses new stakes (stake-enabled → false). IGNIS only (GAS|SET-POOL-STAKE); no STOA."
         (P|UEV_IMC)
         (with-capability (AQP|C>DISABLE-POOL-STAKE executor pool-id)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     ;;
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
@@ -4211,14 +4252,14 @@
             )
         )
     )
-    (defun C_EnablePoolStake:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_EnablePoolStake:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string pool-id:string)
         @doc "Pool owner re-enables new stakes (stake-enabled → true). IGNIS only (GAS|SET-POOL-STAKE); no STOA."
         (P|UEV_IMC)
         (with-capability (AQP|C>ENABLE-POOL-STAKE executor pool-id)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     ;;
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
@@ -4227,7 +4268,7 @@
             )
         )
     )
-    (defun CC_UpdateScoreMultipliers:object{IgnisCollectorV3.OutputCumulator}
+    (defun CC_UpdateScoreMultipliers:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string score-id:string
          mx-frozen:decimal mx-sleeping:decimal mx-hibernated:decimal)
         @doc "Re-set a score's frozen, sleeping and hibernating multipliers. Score owner only. \
@@ -4263,7 +4304,7 @@
             (AQP|C>UPDATE-SCORE-MULTIPLIERS patron executor score-id mx-frozen mx-sleeping mx-hibernated)
             (let
                 (
-                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
                 )
                 (ref-SCR::XE_SetScoreMultipliers score-id mx-frozen mx-sleeping mx-hibernated)
             )
@@ -4277,7 +4318,7 @@
             [(format "Score {} multipliers set: frozen {} (flat) / sleeping UP TO {} (ceiling at 300 months) / hibernating {} (flat)"
                 [score-id mx-frozen mx-sleeping mx-hibernated])])
     )
-    (defun CCp_BackfillScoreSlice:object{IgnisCollectorV3.OutputCumulator}
+    (defun CCp_BackfillScoreSlice:object{IgnisCollectorV4.OutputCumulator}
         (patron:string pool-id:string score-id:string beneficiaries:[string])
         @doc "HYDRA FED SLICE — re-rate exactly the listed holders of <score-id> to their canonical \
             \ base. Run one per slice of `URHC_AQP|ScoreBackfillOutstanding`; slices are \
@@ -4312,7 +4353,7 @@
         (with-capability (AQP|C>BACKFILL-SCORE-SLICE patron pool-id score-id beneficiaries)
             (let
                 (
-                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
                     ;;Scanned ONCE per transaction and threaded through every holder: the trackers
                     ;;cannot change inside this tx, so a per-holder rescan would be identical work.
                     (leg-rows:object (URH_AQP|ScoreBackfillLegRows pool-id))
@@ -4339,7 +4380,7 @@
             [(format "Re-rated {} holder(s) of score {} in pool {}"
                 [(length beneficiaries) score-id pool-id])])
     )
-    (defun C_BeginScoreRevoke:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_BeginScoreRevoke:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string pool-id:string score-id:string)
         @doc "PHASE 1 of 3 — begin retiring <score-id> from <pool-id>: vacate its pool slot and \
             \ freeze the pool. Pool owner. \
@@ -4384,7 +4425,7 @@
             )
         )
     )
-    (defun Cp_DrainScoreSlice:object{IgnisCollectorV3.OutputCumulator}
+    (defun Cp_DrainScoreSlice:object{IgnisCollectorV4.OutputCumulator}
         (patron:string pool-id:string score-id:string accounts:[string])
         @doc "PHASE 2 of 3 — HYDRA FED SLICE: retire exactly the listed holders of a score that is \
             \ mid-revoke, driving each stored base to 0.0. Run one per slice of \
@@ -4404,7 +4445,7 @@
         (with-capability (AQP|C>DRAIN-SCORE-SLICE patron pool-id score-id accounts)
             (let
                 (
-                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
                 )
                 (map
                     (lambda (a:string) (ref-SCR::XE_DrainBase a pool-id score-id))
@@ -4415,7 +4456,7 @@
         (URCi_DrainScoreSlice accounts
             [(format "Retired {} holder(s) of score {} in pool {}" [(length accounts) score-id pool-id])])
     )
-    (defun CC_FinalizeScoreRevoke:object{IgnisCollectorV3.OutputCumulator}
+    (defun CC_FinalizeScoreRevoke:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string pool-id:string score-id:string)
         @doc "PHASE 3 of 3 — cut the aqpool-link now that no holder carries weight for the score. \
             \ Pool owner. Refused while a single holder remains, re-reading the drain's own work \
@@ -4431,7 +4472,7 @@
         (with-capability (AQP|C>FINALIZE-SCORE-REVOKE patron executor pool-id score-id)
             (let
                 (
-                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
                 )
                 (ref-SCR::XE_RevokeAqpoolLink score-id pool-id)
             )
@@ -4440,7 +4481,7 @@
             [(format "Score {} fully retired from pool {}: link cut. Pool stays frozen until CC_ClearPoolSweep."
                 [score-id pool-id])])
     )
-    (defun C_SyncTrueFungibleAnchors:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_SyncTrueFungibleAnchors:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executee:string dptf-id:string)
         @doc "Pool-agnostic ANK repair when new TF anchors issued after stake. Reads BenDptfTotal, \
             \ refreshes promile, stamps last-ank-sync-count. SCORE boosted unchanged (lazy on next stake). \
@@ -4465,18 +4506,18 @@
         (with-capability (AQP|C>SYNC-TF-ANCHORS patron executee dptf-id)
             (let
                 (
-                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     ;;
                     (total:decimal (UR_AQP|BenDptfTotalBalance executee dptf-id))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
-                    (ico-ank:object{IgnisCollectorV3.OutputCumulator}
+                    (ico-ank:object{IgnisCollectorV4.OutputCumulator}
                         (ref-ANK::XE_UpdateTrueFungibleUserAnchorValues executee dptf-id total)
                     )
-                    (ico-meta:object{IgnisCollectorV3.OutputCumulator}
+                    (ico-meta:object{IgnisCollectorV4.OutputCumulator}
                         (XB_SetBenDptfAnkSyncCount executee dptf-id)
                     )
-                    (ico-gas:object{IgnisCollectorV3.OutputCumulator}
+                    (ico-gas:object{IgnisCollectorV4.OutputCumulator}
                         (URCi_SyncTrueFungibleAnchors [executee dptf-id])
                     )
                 )
@@ -4484,7 +4525,7 @@
             )
         )
     )
-    (defun C_SyncCollectableAnchors:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_SyncCollectableAnchors:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executee:string collectable-id:string son:bool)
         @doc "Pool-agnostic ANK repair for DPSF (son=true) or DPNF (son=false). Reads Ben* nonce rollup, \
             \ absolute resync via AQP-ANK::XE_Resync*, stamps Ben*AnkMeta. Talos splits SF/NF shells. \
@@ -4519,13 +4560,13 @@
             (with-capability (AQP|C>SYNC-COLLECTABLE-ANCHORS patron executee collectable-id son)
                 (let
                     (
-                        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-                        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                        (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+                        (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                         ;;
                         (nonces:[integer] (map (at "nonce") supplies))
                         (nonce-amounts:[integer] (map (at "amount") supplies))
                         (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
-                        (ico-ank:object{IgnisCollectorV3.OutputCumulator}
+                        (ico-ank:object{IgnisCollectorV4.OutputCumulator}
                             (if son
                                 (ref-ANK::XE_ResyncSemiFungibleUserAnchorValues
                                     executee collectable-id nonces nonce-amounts
@@ -4535,10 +4576,10 @@
                                 )
                             )
                         )
-                        (ico-meta:object{IgnisCollectorV3.OutputCumulator}
+                        (ico-meta:object{IgnisCollectorV4.OutputCumulator}
                             (XB_SetBenCollectableAnkSyncCount executee collectable-id son)
                         )
-                        (ico-gas:object{IgnisCollectorV3.OutputCumulator}
+                        (ico-gas:object{IgnisCollectorV4.OutputCumulator}
                             (URCi_SyncCollectableAnchors [executee collectable-id])
                         )
                     )

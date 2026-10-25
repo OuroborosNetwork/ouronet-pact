@@ -73,10 +73,10 @@
 (print "--- [RT-A-001 - route around the lp-churn deterrent by picking the other Talos client · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS01-CP:module{TalosStageOne_ClientPactsV4} TS01-CP)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-        (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
+        (ref-TS01-CP:module{TalosStageOne_ClientPactsV5} TS01-CP)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+        (ref-SWPLC:module{SwapperLiquidityClientV3} SWPLC)
         (patron:string KST.ANHD)
         ;;the same standard pool modules/SWP.repl measures the SINGLE-TX route on at <<SWP-I14>>,
         ;;so the two figures are directly comparable rather than merely similar.
@@ -215,8 +215,8 @@
 (print "--- [RT-A-002 - the door that requires asymmetry is the one that does not tax it · 02 · let / invocation] ---")
 (let
     (
-        (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
-        (ref-SWP:module{SwapperV4} SWP)
+        (ref-SWPLC:module{SwapperLiquidityClientV3} SWPLC)
+        (ref-SWP:module{SwapperV5} SWP)
         (patron:string KST.ANHD)
         (pool:string "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
         (amounts:[decimal] [10.0 10.0 10.0])
@@ -328,13 +328,13 @@
             (expect-failure
                 "<<RT-A-003b>> the SIBLING op, C_Fuel, refuses this very pool and says why"
                 "Fueling requires an ATS-Pair Index of at least 0.1"
-                (let ((r:module{TalosStageOne_ClientTwoV2} TS01-C2))
+                (let ((r:module{TalosStageOne_ClientTwoV3} TS01-C2))
                     (r::ATS|C_Fuel KST.ANHD KST.ANHD pool rt 100.0)))
             ;;The door a user actually uses.
             (expect-failure
                 "<<RT-A-003c>> ...and C_Coil must refuse it too, by a guard rather than by dividing"
                 "Coiling requires an ATS-Pair Index greater than zero"
-                (let ((r:module{TalosStageOne_ClientTwoV2} TS01-C2))
+                (let ((r:module{TalosStageOne_ClientTwoV3} TS01-C2))
                     (r::ATS|C_Coil KST.ANHD KST.ANHD pool rt 100.0)))
             ;;The shared reader -- so the INFO preview of a coil refuses identically rather than
             ;;throwing an arithmetic exception at anyone asking for a quote.
@@ -391,9 +391,9 @@
 )
 (let
     (
-        (ref-SWPU:module{SwapperUsageV3} SWPU)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
+        (ref-SWPU:module{SwapperUsageV4} SWPU)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV5} TS01-C3)
         (trader:string KST.AOZT)
         (in-id:string "AKOSON-98c486052a51")
         (out-id:string "TUSD-98c486052a51")
@@ -402,7 +402,7 @@
         (
             ;;THE QUOTE, taken BEFORE anything moves. Eager `let` is what makes this faithful rather
             ;;than a re-quote: the bound is fixed here and cannot refresh.
-            (stale-bounds:object{SwapperUsageV3.Slippage}
+            (stale-bounds:object{SwapperUsageV4.Slippage}
                 (ref-SWPU::UDC_SpawnSmartSwapSlippageBounds in-id 5.0 out-id 0.01))
         )
         ;;THE PRICE MOVE: an ordinary, permitted swap in the same direction, priced at its own live
@@ -475,15 +475,15 @@
 )
 (let
     (
-        (ref-SWPU:module{SwapperUsageV3} SWPU)
-        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
+        (ref-SWPU:module{SwapperUsageV4} SWPU)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV5} TS01-C3)
         (trader:string KST.AOZT)
         (in-id:string "AKOSON-98c486052a51")
         (out-id:string "TUSD-98c486052a51")
     )
     (let
         (
-            (fresh-bounds:object{SwapperUsageV3.Slippage}
+            (fresh-bounds:object{SwapperUsageV4.Slippage}
                 (ref-SWPU::UDC_SpawnSmartSwapSlippageBounds in-id 5.0 out-id 0.01))
         )
         (map print
@@ -542,9 +542,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-SWPU:module{SwapperUsageV3} SWPU)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
+        (ref-SWPU:module{SwapperUsageV4} SWPU)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV5} TS01-C3)
         (trader:string KST.ANHD)
         (in-id:string "EURT-98c486052a51")
         (out-id:string "OURO-98c486052a51")
@@ -593,9 +593,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-SWPU:module{SwapperUsageV3} SWPU)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
+        (ref-SWPU:module{SwapperUsageV4} SWPU)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV5} TS01-C3)
         (trader:string KST.ANHD)
         (out-id:string "OURO-98c486052a51")
         (pool:string "W|OURO-98c486052a51|TEUR-98c486052a51|EURT-98c486052a51|EURC-98c486052a51|EURD-98c486052a51|AEUR-98c486052a51|CEUR-98c486052a51")

@@ -36,7 +36,7 @@
 (print "--- [DPDC-S-G1 — the set-definition validators, against the suite's live sets · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+        (ref-DPDC-S:module{DpdcSetsV3} DPDC-S)
         (sft:string "TSFS-98c486052a51")
     )
     (map print
@@ -100,7 +100,7 @@
 ;;direction alone would show it.
 (let
     (
-        (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+        (ref-DPDC-S:module{DpdcSetsV3} DPDC-S)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
         (sft:string "TSFS-98c486052a51")
     )
@@ -144,7 +144,7 @@
 (print "--- [DPDC-S-G1 · 03 · composite definitions and the constituent readers] ---")
 (let
     (
-        (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+        (ref-DPDC-S:module{DpdcSetsV3} DPDC-S)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
         (sft:string "TSFS-98c486052a51")
         (nft:string "TSFN-98c486052a51")
@@ -191,7 +191,7 @@
 ;;PINNED as an upper bound and counts how many pins rest on wording shared across sites.
 (let
     (
-        (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+        (ref-DPDC-S:module{DpdcSetsV3} DPDC-S)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
         (sft:string "TSFS-98c486052a51")
     )
@@ -255,8 +255,8 @@
 (print "--- [DPDC-S-G2 — set composition, renaming, and the inactive-class gate · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-DPDC-S:module{DpdcSetsV3} DPDC-S)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
         (sft:string "TSFS-98c486052a51")
     )
     (map print
@@ -295,8 +295,8 @@
 (print "--- [DPDC-S-G3 — composition into a DEACTIVATED set-class · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-DPDC-S:module{DpdcSetsV3} DPDC-S)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
         (sft:string "TSFS-98c486052a51")
     )
     (ref-TS02-C1::DPSF|C_ToggleSet KST.ANHD (DPDC.UR_OwnerKonto sft true) sft 1 false)
@@ -343,9 +343,9 @@
 (print "--- [DPDC-F-G1 — the fragment repurpose, merge and enable-fragmentation rules · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-DPDC:module{DpdcV3} DPDC)
         (ref-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
         (sft:string "TSFS-98c486052a51")
     )
     (map print
@@ -435,7 +435,7 @@
 ;;would guess wrong in either direction, so both sides are asserted.
 ;;==== DPDC-S-G4 -- UCv_TakePureWipe's size bound is STRICT · 02 · let / invocation ==== ==========
 (print "--- [DPDC-S-G4 -- UCv_TakePureWipe's size bound is STRICT · 02 · let / invocation] ---")
-(let ((obj:object{DpdcManagementV2.RemovableNonces} (DPDC-MNG.UDC_RemovableNonces [1 2] [10 20])))
+(let ((obj:object{DpdcManagementV3.RemovableNonces} (DPDC-MNG.UDC_RemovableNonces [1 2] [10 20])))
     (map print
         [
             ;;a genuinely smaller slice works, and carries BOTH parallel lists down together --
@@ -478,9 +478,9 @@
 (print "--- [DPDC-S-G5 - DPDC-S|C>ENABLE-FRAGMENTATION is not idempotent · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+        (ref-DPDC-S:module{DpdcSetsV3} DPDC-S)
         (ref-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
         (sft:string "TSFS-98c486052a51")
     )
     (map print
@@ -531,7 +531,7 @@
 (print "--- [DPDC-S-G6 - DPDC-MNG|C>IZ-CLASS-ZERO refuses a nonce that carries a set class · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-DPDC:module{DpdcV3} DPDC)
         (sft:string "TSFS-98c486052a51")
     )
     (map print
@@ -575,14 +575,14 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "TSFS-98c486052a51")
         (patron:string KST.ANHD)
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|Make patron patron sf [1 2] 1 5))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|Make patron patron sf [1 2] 1 5))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_Make patron patron sf [1 2] 1 5))
         )
@@ -612,8 +612,8 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "TSFS-98c486052a51")
         (patron:string KST.ANHD)
     )
@@ -623,7 +623,7 @@
     (ref-TS02-C1::DPSF|C_Make patron patron sf [1 2] 1 5)
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|Break patron patron sf 11 5))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|Break patron patron sf 11 5))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|CC_Break patron patron sf 11 5))
         )
@@ -654,14 +654,14 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "TSFS-98c486052a51")
         (patron:string KST.ANHD)
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|ToggleSet patron sf 1 false))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|ToggleSet patron sf 1 false))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_ToggleSet patron (DPDC.UR_OwnerKonto sf true) sf 1 false))
         )
@@ -693,14 +693,14 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "TSFS-98c486052a51")
         (patron:string KST.ANHD)
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|RenameSet patron sf 1 "SC1-CostProbe"))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|RenameSet patron sf 1 "SC1-CostProbe"))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_RenameSet patron (DPDC.UR_OwnerKonto sf true) sf 1 "SC1-CostProbe"))
         )
@@ -733,10 +733,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sft:string "TSFS-98c486052a51")
         (nft:string "TSFN-98c486052a51")
         (patron:string KST.ANHD)
@@ -749,7 +749,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateSetNonceName patron sft patron 1 false "ProbeName"))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateSetNonceName patron sft patron 1 false "ProbeName"))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_UpdateSetNonceName patron patron sft 1 false "ProbeName"))
         )
@@ -779,10 +779,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sft:string "TSFS-98c486052a51")
         (nft:string "TSFN-98c486052a51")
         (patron:string KST.ANHD)
@@ -795,7 +795,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateSetNonceDescription patron sft patron 1 false "probe description"))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateSetNonceDescription patron sft patron 1 false "probe description"))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_UpdateSetNonceDescription patron patron sft 1 false "probe description"))
         )
@@ -825,10 +825,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sft:string "TSFS-98c486052a51")
         (nft:string "TSFN-98c486052a51")
         (patron:string KST.ANHD)
@@ -841,7 +841,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateSetNonceRoyalty patron sft patron 1 false 3.0))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateSetNonceRoyalty patron sft patron 1 false 3.0))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_UpdateSetNonceRoyalty patron patron sft 1 false 3.0))
         )
@@ -871,10 +871,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sft:string "TSFS-98c486052a51")
         (nft:string "TSFN-98c486052a51")
         (patron:string KST.ANHD)
@@ -887,7 +887,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateSetNonceIgnisRoyalty patron sft patron 1 false 2.0))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateSetNonceIgnisRoyalty patron sft patron 1 false 2.0))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_UpdateSetNonceIgnisRoyalty patron patron sft 1 false 2.0))
         )
@@ -917,10 +917,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sft:string "TSFS-98c486052a51")
         (nft:string "TSFN-98c486052a51")
         (patron:string KST.ANHD)
@@ -933,7 +933,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateSetNonceScore patron sft patron 1 false 7.0))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateSetNonceScore patron sft patron 1 false 7.0))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_UpdateSetNonceScore patron patron sft 1 false 7.0))
         )
@@ -963,10 +963,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sft:string "TSFS-98c486052a51")
         (nft:string "TSFN-98c486052a51")
         (patron:string KST.ANHD)
@@ -979,7 +979,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|RemoveSetNonceScore patron sft patron 1 false))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|RemoveSetNonceScore patron sft patron 1 false))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_RemoveSetNonceScore patron patron sft 1 false))
         )
@@ -1009,10 +1009,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sft:string "TSFS-98c486052a51")
         (nft:string "TSFN-98c486052a51")
         (patron:string KST.ANHD)
@@ -1025,7 +1025,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateSetNonceMetaData patron sft patron 1 false (ref-DPDC-UDC::UDC_NoMetaData)))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateSetNonceMetaData patron sft patron 1 false (ref-DPDC-UDC::UDC_NoMetaData)))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_UpdateSetNonceMetaData patron patron sft 1 false (ref-DPDC-UDC::UDC_NoMetaData)))
         )
@@ -1055,10 +1055,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sft:string "TSFS-98c486052a51")
         (nft:string "TSFN-98c486052a51")
         (patron:string KST.ANHD)
@@ -1071,7 +1071,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateSetNonceURI patron sft patron 1 false type (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateSetNonceURI patron sft patron 1 false type (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_UpdateSetNonceURI patron patron sft 1 false type (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
         )
@@ -1101,10 +1101,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sft:string "TSFS-98c486052a51")
         (nft:string "TSFN-98c486052a51")
         (patron:string KST.ANHD)
@@ -1117,7 +1117,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateSetNonce patron sft patron 1 false nd))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateSetNonce patron sft patron 1 false nd))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_UpdateSetNonce patron patron sft 1 false nd))
         )
@@ -1149,10 +1149,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sft:string "TSFS-98c486052a51")
         (nft:string "TSFN-98c486052a51")
         (patron:string KST.ANHD)
@@ -1170,7 +1170,7 @@
     (ref-TS02-C1::DPSF|C_EnableSetClassFragmentation patron (DPDC.UR_OwnerKonto sft true) sft 2 nd)
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateSetNonces patron sft patron [1 2] false [nd nd]))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateSetNonces patron sft patron [1 2] false [nd nd]))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_UpdateSetNonces patron patron sft [1 2] false [nd nd]))
         )
@@ -1202,10 +1202,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sft:string "TSFS-98c486052a51")
         (nft:string "TSFN-98c486052a51")
         (patron:string KST.ANHD)
@@ -1223,7 +1223,7 @@
     (ref-TS02-C2::DPNF|C_EnableSetClassFragmentation patron (DPDC.UR_OwnerKonto nft false) nft 1 nd)
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateSetNonceName patron nft patron 1 false "ProbeName"))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateSetNonceName patron nft patron 1 false "ProbeName"))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_UpdateSetNonceName patron patron nft 1 false "ProbeName"))
         )
@@ -1253,10 +1253,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sft:string "TSFS-98c486052a51")
         (nft:string "TSFN-98c486052a51")
         (patron:string KST.ANHD)
@@ -1274,7 +1274,7 @@
     (ref-TS02-C2::DPNF|C_EnableSetClassFragmentation patron (DPDC.UR_OwnerKonto nft false) nft 1 nd)
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateSetNonceDescription patron nft patron 1 false "probe description"))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateSetNonceDescription patron nft patron 1 false "probe description"))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_UpdateSetNonceDescription patron patron nft 1 false "probe description"))
         )
@@ -1304,10 +1304,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sft:string "TSFS-98c486052a51")
         (nft:string "TSFN-98c486052a51")
         (patron:string KST.ANHD)
@@ -1325,7 +1325,7 @@
     (ref-TS02-C2::DPNF|C_EnableSetClassFragmentation patron (DPDC.UR_OwnerKonto nft false) nft 1 nd)
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateSetNonceRoyalty patron nft patron 1 false 3.0))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateSetNonceRoyalty patron nft patron 1 false 3.0))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_UpdateSetNonceRoyalty patron patron nft 1 false 3.0))
         )
@@ -1355,10 +1355,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sft:string "TSFS-98c486052a51")
         (nft:string "TSFN-98c486052a51")
         (patron:string KST.ANHD)
@@ -1376,7 +1376,7 @@
     (ref-TS02-C2::DPNF|C_EnableSetClassFragmentation patron (DPDC.UR_OwnerKonto nft false) nft 1 nd)
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateSetNonceIgnisRoyalty patron nft patron 1 false 2.0))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateSetNonceIgnisRoyalty patron nft patron 1 false 2.0))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_UpdateSetNonceIgnisRoyalty patron patron nft 1 false 2.0))
         )
@@ -1406,10 +1406,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sft:string "TSFS-98c486052a51")
         (nft:string "TSFN-98c486052a51")
         (patron:string KST.ANHD)
@@ -1427,7 +1427,7 @@
     (ref-TS02-C2::DPNF|C_EnableSetClassFragmentation patron (DPDC.UR_OwnerKonto nft false) nft 1 nd)
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateSetNonceScore patron nft patron 1 false 7.0))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateSetNonceScore patron nft patron 1 false 7.0))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_UpdateSetNonceScore patron patron nft 1 false 7.0))
         )
@@ -1457,10 +1457,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sft:string "TSFS-98c486052a51")
         (nft:string "TSFN-98c486052a51")
         (patron:string KST.ANHD)
@@ -1478,7 +1478,7 @@
     (ref-TS02-C2::DPNF|C_EnableSetClassFragmentation patron (DPDC.UR_OwnerKonto nft false) nft 1 nd)
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|RemoveSetNonceScore patron nft patron 1 false))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|RemoveSetNonceScore patron nft patron 1 false))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_RemoveSetNonceScore patron patron nft 1 false))
         )
@@ -1508,10 +1508,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sft:string "TSFS-98c486052a51")
         (nft:string "TSFN-98c486052a51")
         (patron:string KST.ANHD)
@@ -1529,7 +1529,7 @@
     (ref-TS02-C2::DPNF|C_EnableSetClassFragmentation patron (DPDC.UR_OwnerKonto nft false) nft 1 nd)
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateSetNonceMetaData patron nft patron 1 false (ref-DPDC-UDC::UDC_NoMetaData)))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateSetNonceMetaData patron nft patron 1 false (ref-DPDC-UDC::UDC_NoMetaData)))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_UpdateSetNonceMetaData patron patron nft 1 false (ref-DPDC-UDC::UDC_NoMetaData)))
         )
@@ -1559,10 +1559,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sft:string "TSFS-98c486052a51")
         (nft:string "TSFN-98c486052a51")
         (patron:string KST.ANHD)
@@ -1580,7 +1580,7 @@
     (ref-TS02-C2::DPNF|C_EnableSetClassFragmentation patron (DPDC.UR_OwnerKonto nft false) nft 1 nd)
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateSetNonceURI patron nft patron 1 false type (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateSetNonceURI patron nft patron 1 false type (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_UpdateSetNonceURI patron patron nft 1 false type (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
         )
@@ -1610,10 +1610,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sft:string "TSFS-98c486052a51")
         (nft:string "TSFN-98c486052a51")
         (patron:string KST.ANHD)
@@ -1631,7 +1631,7 @@
     (ref-TS02-C2::DPNF|C_EnableSetClassFragmentation patron (DPDC.UR_OwnerKonto nft false) nft 1 nd)
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateSetNonce patron nft patron 1 false nd))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateSetNonce patron nft patron 1 false nd))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_UpdateSetNonce patron patron nft 1 false nd))
         )
@@ -1661,10 +1661,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sft:string "TSFS-98c486052a51")
         (nft:string "TSFN-98c486052a51")
         (patron:string KST.ANHD)
@@ -1682,7 +1682,7 @@
     (ref-TS02-C2::DPNF|C_EnableSetClassFragmentation patron (DPDC.UR_OwnerKonto nft false) nft 1 nd)
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateSetNonces patron nft patron [1] false [nd]))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateSetNonces patron nft patron [1] false [nd]))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_UpdateSetNonces patron patron nft [1] false [nd]))
         )
@@ -1715,10 +1715,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sft:string "TSFS-98c486052a51")
         (nft:string "TSFN-98c486052a51")
         (patron:string KST.ANHD)
@@ -1731,7 +1731,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|DefinePrimordialSet patron sft "SC4-Probe" 1.0 [(ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [4]) (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [5])] nd))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|DefinePrimordialSet patron sft "SC4-Probe" 1.0 [(ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [4]) (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [5])] nd))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_DefinePrimordialSet patron (DPDC.UR_OwnerKonto sft true) sft "SC4-Probe" 1.0 [(ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [4]) (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [5])] nd))
         )
@@ -1761,10 +1761,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sft:string "TSFS-98c486052a51")
         (nft:string "TSFN-98c486052a51")
         (patron:string KST.ANHD)
@@ -1777,7 +1777,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|DefineCompositeSet patron sft "SC4-Comp" 1.0 [(ref-DPDC-UDC::UDC_DPDC|AllowedClassForSetPosition 1)] nd))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|DefineCompositeSet patron sft "SC4-Comp" 1.0 [(ref-DPDC-UDC::UDC_DPDC|AllowedClassForSetPosition 1)] nd))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_DefineCompositeSet patron (DPDC.UR_OwnerKonto sft true) sft "SC4-Comp" 1.0 [(ref-DPDC-UDC::UDC_DPDC|AllowedClassForSetPosition 1)] nd))
         )
@@ -1816,10 +1816,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sft:string "TSFS-98c486052a51")
         (nft:string "TSFN-98c486052a51")
         (patron:string KST.ANHD)
@@ -1832,7 +1832,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|DefineHybridSet patron sft "SC4-Hyb" 1.0 [(ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [4]) (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [5])] [(ref-DPDC-UDC::UDC_DPDC|AllowedClassForSetPosition 1)] nd))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|DefineHybridSet patron sft "SC4-Hyb" 1.0 [(ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [4]) (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [5])] [(ref-DPDC-UDC::UDC_DPDC|AllowedClassForSetPosition 1)] nd))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_DefineHybridSet patron (DPDC.UR_OwnerKonto sft true) sft "SC4-Hyb" 1.0 [(ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [4]) (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [5])] [(ref-DPDC-UDC::UDC_DPDC|AllowedClassForSetPosition 1)] nd))
         )
@@ -1864,10 +1864,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sft:string "TSFS-98c486052a51")
         (nft:string "TSFN-98c486052a51")
         (patron:string KST.ANHD)
@@ -1880,7 +1880,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|EnableSetClassFragmentation patron sft 2 nd))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|EnableSetClassFragmentation patron sft 2 nd))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_EnableSetClassFragmentation patron (DPDC.UR_OwnerKonto sft true) sft 2 nd))
         )
@@ -1910,10 +1910,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sft:string "TSFS-98c486052a51")
         (nft:string "TSFN-98c486052a51")
         (patron:string KST.ANHD)
@@ -1926,7 +1926,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|Make patron patron nft [1 3] 1))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|Make patron patron nft [1 3] 1))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_Make patron patron nft [1 3] 1))
         )
@@ -1962,11 +1962,11 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sft:string "TSFS-98c486052a51")
         (nft:string "TSFN-98c486052a51")
         (patron:string KST.ANHD)
@@ -1980,7 +1980,7 @@
     (ref-TS02-C2::DPNF|C_Make patron patron nft [1 3] 1)
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|Break patron patron nft (ref-DPDC::UR_NoncesUsed nft false)))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|Break patron patron nft (ref-DPDC::UR_NoncesUsed nft false)))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_Break patron patron nft (ref-DPDC::UR_NoncesUsed nft false)))
         )
@@ -2014,10 +2014,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sft:string "TSFS-98c486052a51")
         (nft:string "TSFN-98c486052a51")
         (patron:string KST.ANHD)
@@ -2030,7 +2030,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|DefinePrimordialSet patron nft "NFT-SC2-Probe" 1.0 [(ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [1 2]) (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [3 4])] nd))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|DefinePrimordialSet patron nft "NFT-SC2-Probe" 1.0 [(ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [1 2]) (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [3 4])] nd))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_DefinePrimordialSet patron (DPDC.UR_OwnerKonto nft false) nft "NFT-SC2-Probe" 1.0 [(ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [1 2]) (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [3 4])] nd))
         )
@@ -2060,10 +2060,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sft:string "TSFS-98c486052a51")
         (nft:string "TSFN-98c486052a51")
         (patron:string KST.ANHD)
@@ -2076,7 +2076,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|DefineCompositeSet patron nft "NFT-SC2-Comp" 1.0 [(ref-DPDC-UDC::UDC_DPDC|AllowedClassForSetPosition 1)] nd))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|DefineCompositeSet patron nft "NFT-SC2-Comp" 1.0 [(ref-DPDC-UDC::UDC_DPDC|AllowedClassForSetPosition 1)] nd))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_DefineCompositeSet patron (DPDC.UR_OwnerKonto nft false) nft "NFT-SC2-Comp" 1.0 [(ref-DPDC-UDC::UDC_DPDC|AllowedClassForSetPosition 1)] nd))
         )
@@ -2115,10 +2115,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sft:string "TSFS-98c486052a51")
         (nft:string "TSFN-98c486052a51")
         (patron:string KST.ANHD)
@@ -2131,7 +2131,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|DefineHybridSet patron nft "NFT-SC2-Hyb" 1.0 [(ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [1 2])] [(ref-DPDC-UDC::UDC_DPDC|AllowedClassForSetPosition 1)] nd))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|DefineHybridSet patron nft "NFT-SC2-Hyb" 1.0 [(ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [1 2])] [(ref-DPDC-UDC::UDC_DPDC|AllowedClassForSetPosition 1)] nd))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_DefineHybridSet patron (DPDC.UR_OwnerKonto nft false) nft "NFT-SC2-Hyb" 1.0 [(ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [1 2])] [(ref-DPDC-UDC::UDC_DPDC|AllowedClassForSetPosition 1)] nd))
         )
@@ -2161,10 +2161,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sft:string "TSFS-98c486052a51")
         (nft:string "TSFN-98c486052a51")
         (patron:string KST.ANHD)
@@ -2177,7 +2177,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|RenameSet patron nft 1 "NFT-SC1-Probe"))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|RenameSet patron nft 1 "NFT-SC1-Probe"))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_RenameSet patron (DPDC.UR_OwnerKonto nft false) nft 1 "NFT-SC1-Probe"))
         )
@@ -2207,10 +2207,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sft:string "TSFS-98c486052a51")
         (nft:string "TSFN-98c486052a51")
         (patron:string KST.ANHD)
@@ -2223,7 +2223,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|ToggleSet patron nft 1 false))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|ToggleSet patron nft 1 false))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_ToggleSet patron (DPDC.UR_OwnerKonto nft false) nft 1 false))
         )
@@ -2253,10 +2253,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sft:string "TSFS-98c486052a51")
         (nft:string "TSFN-98c486052a51")
         (patron:string KST.ANHD)
@@ -2269,7 +2269,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|EnableSetClassFragmentation patron nft 1 nd))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPNF|EnableSetClassFragmentation patron nft 1 nd))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C2::DPNF|C_EnableSetClassFragmentation patron (DPDC.UR_OwnerKonto nft false) nft 1 nd))
         )

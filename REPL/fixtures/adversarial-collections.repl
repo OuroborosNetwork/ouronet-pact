@@ -35,7 +35,7 @@
 (let
     (
         (patron:string KST.ANHD)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         ;;one SFT collection, so one <dpsf> usage price (mock-collections pays dpnf + dpsf).
         (split-stoa:[decimal]
             (ref-DALOS::URC_SplitSTOAPrices patron (ref-DALOS::UR_UsagePrice "dpsf"))
@@ -63,7 +63,7 @@
 (print "--- [FIXTURE adversarial-collections · 03 · issue] ---")
     (let
         (
-            (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+            (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
         )
         ;;   cu   cco  ccc  casr   cnfcr  cf     cw     cp
         (print (ref-TS02-C1::DPSF|C_Issue patron patron patron "AdversarialLockedSft" "ADVC"
@@ -83,7 +83,7 @@
 (print "--- [FIXTURE adversarial-collections — postcondition · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-DPDC:module{DpdcV3} DPDC)
         (c:string "ADVC-98c486052a51")
     )
     (map print

@@ -38,16 +38,16 @@
 (print "--- [TX-SPARK-BUY-GT - pure-citizen SPARK|C_BuySparks executes + INFO_BuySparks == real gas delta · 01 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-        (ref-SPARK:module{SparksV2} DEMIPAD-SPARK)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPAD:module{DemiourgosLaunchpadV3} DEMIPAD)
+        (ref-SPARK:module{SparksV3} DEMIPAD-SPARK)
         (patron:string KST.ANHD)
         (spark-id:string "SPARK-98c486052a51")
         (amount:integer 25)
         (iz-native:bool true)
         (type:integer 0)
         (correct-pid:decimal (at "pid" (ref-SPARK::URC_SparkAmountCosts amount)))
-        (prices-obj:object{DemiourgosLaunchpadV2.DEMIPAD|Prices} (ref-DPAD::URC_Prices spark-id correct-pid type))
+        (prices-obj:object{DemiourgosLaunchpadV3.DEMIPAD|Prices} (ref-DPAD::URC_Prices spark-id correct-pid type))
     )
     (let
         (
@@ -79,7 +79,7 @@
                         "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" a4) ] } ])
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (ref-TS02-CPAD:module{CitizenLaunchpadTalosV1} TS02-CPAD)
                 (predicted:decimal (at "ignis-need" (at "ignis" (ref-SPARK::INFO_BuySparks patron patron amount iz-native))))
                 (pre-gas:decimal (ref-DPTF::UR_AccountSupply "GAS-98c486052a51" patron))
@@ -134,7 +134,7 @@
 (print "--- [TX-SPARK-REDEEM-URCi - URCi_RedeemSparks / INFO_RedeemSparks compute the 6-leg Sigma cost · 02 · let / invocation] ---")
 (let
     (
-        (ref-SPARK:module{SparksV2} DEMIPAD-SPARK)
+        (ref-SPARK:module{SparksV3} DEMIPAD-SPARK)
         (patron:string KST.ANHD)
         (qty:decimal 5.0)
         ;; payer (patron) != account-to-redeem (a distinct k: account) so the leg-1 wSTOA transfer is valid
@@ -165,15 +165,15 @@
 (print "--- [TX-STOICPAY-BUY-GT - pure-citizen KPAY|C_BuyStoicPay + INFO_BuyStoicPay == real gas delta · 01 · let / invocation] ---")
 (let
     (
-        (ref-DPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-        (ref-KPAY:module{StoicPayV3} DEMIPAD-STOICPAY)
+        (ref-DPAD:module{DemiourgosLaunchpadV3} DEMIPAD)
+        (ref-KPAY:module{StoicPayV4} DEMIPAD-STOICPAY)
         (patron:string KST.ANHD)
         (kpay-id:string (DEMIPAD-STOICPAY.UR_KpayID))
         (amount:integer 100)
         (iz-native:bool true)
         (type:integer 0)
         (correct-pid:decimal (at "pid" (ref-KPAY::URC_KpayAmountCosts amount 0.0)))
-        (prices-obj:object{DemiourgosLaunchpadV2.DEMIPAD|Prices} (ref-DPAD::URC_Prices kpay-id correct-pid type))
+        (prices-obj:object{DemiourgosLaunchpadV3.DEMIPAD|Prices} (ref-DPAD::URC_Prices kpay-id correct-pid type))
     )
     (let
         (
@@ -202,7 +202,7 @@
                         "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" a4) ] } ])
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (ref-TS02-CPAD:module{CitizenLaunchpadTalosV1} TS02-CPAD)
                 (predicted:decimal (at "ignis-need" (at "ignis" (ref-KPAY::INFO_BuyStoicPay patron patron amount iz-native))))
                 (pre-gas:decimal (ref-DPTF::UR_AccountSupply "GAS-98c486052a51" patron))
@@ -268,8 +268,8 @@
 ;;What this measures is the IGNIS the sale charges to execute, which is the part the preview prices.
 (let
     (
-        (ref-DPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-        (ref-SNAKES:module{SaleSnakesV2} DEMIPAD-SNAKES)
+        (ref-DPAD:module{DemiourgosLaunchpadV3} DEMIPAD)
+        (ref-SNAKES:module{SaleSnakesV3} DEMIPAD-SNAKES)
         (patron:string KST.EMMA)
         (asset-id:string "E|DH-98c486052a51")
         (nonce:integer 1)
@@ -283,7 +283,7 @@
         )
         (let
             (
-                (prices-obj:object{DemiourgosLaunchpadV2.DEMIPAD|Prices}
+                (prices-obj:object{DemiourgosLaunchpadV3.DEMIPAD|Prices}
                     (ref-DPAD::URC_Prices asset-id correct-pid type))
             )
             (let
@@ -314,7 +314,7 @@
                                 "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" a4) ] } ])
                 (let
                     (
-                        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                         (ref-CPAD:module{CitizenLaunchpadTalosV1} TS02-CPAD)
                         (gas-id:string "GAS-98c486052a51")
                     )
@@ -381,8 +381,8 @@
 ;;What this measures is the IGNIS the sale charges to execute, which is the part the preview prices.
 (let
     (
-        (ref-DPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-        (ref-CUST:module{SaleCustodiansV2} DEMIPAD-CUSTODIANS)
+        (ref-DPAD:module{DemiourgosLaunchpadV3} DEMIPAD)
+        (ref-CUST:module{SaleCustodiansV3} DEMIPAD-CUSTODIANS)
         (patron:string KST.EMMA)
         (asset-id:string "DHOC-98c486052a51")
         (nonce:integer -1)
@@ -396,7 +396,7 @@
         )
         (let
             (
-                (prices-obj:object{DemiourgosLaunchpadV2.DEMIPAD|Prices}
+                (prices-obj:object{DemiourgosLaunchpadV3.DEMIPAD|Prices}
                     (ref-DPAD::URC_Prices asset-id correct-pid type))
             )
             (let
@@ -427,7 +427,7 @@
                                 "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" a4) ] } ])
                 (let
                     (
-                        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                         (ref-CPAD:module{CitizenLaunchpadTalosV1} TS02-CPAD)
                         (gas-id:string "GAS-98c486052a51")
                     )

@@ -3,7 +3,7 @@
 ;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact
 ;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface TrueFungibleTransferV2
+(interface TrueFungibleTransferV3
     @doc "Exposes True Fungible Transfer Functions"
 
     ;;<=========================================================================>
@@ -73,26 +73,26 @@
     (defun URC_IzTrueFungibleEliteAuryn:bool (id:string))
     (defun URC_IzTrueFungibleUnity:bool (id:string))
     (defun URC_AreTrueFungiblesEliteAurynz:bool (id:string))
-    (defun URCi_SmallTransmuteCumulator:object{IgnisCollectorV3.OutputCumulator} (id:string transmuter:string))
-    (defun URCi_LargeTransmuteCumulator:object{IgnisCollectorV3.OutputCumulator} (id:string transmuter:string))
-    (defun URCi_Transmute:object{IgnisCollectorV3.OutputCumulator} (id:string transmuter:string))
-    (defun URCi_ClearDispo:object{IgnisCollectorV3.OutputCumulator} (account:string))
-    (defun URCi_UnityTransferCumulator:object{IgnisCollectorV3.OutputCumulator} (sender:string receiver:string amount:decimal))
+    (defun URCi_SmallTransmuteCumulator:object{IgnisCollectorV4.OutputCumulator} (id:string transmuter:string))
+    (defun URCi_LargeTransmuteCumulator:object{IgnisCollectorV4.OutputCumulator} (id:string transmuter:string))
+    (defun URCi_Transmute:object{IgnisCollectorV4.OutputCumulator} (id:string transmuter:string))
+    (defun URCi_ClearDispo:object{IgnisCollectorV4.OutputCumulator} (account:string))
+    (defun URCi_UnityTransferCumulator:object{IgnisCollectorV4.OutputCumulator} (sender:string receiver:string amount:decimal))
         ;;
-    (defun URCi_TransferCumulator:object{IgnisCollectorV3.OutputCumulator} (type:integer id:string sender:string receiver:string))
-    (defun URCi_Transfer:object{IgnisCollectorV3.OutputCumulator} (id:string sender:string receiver:string transfer-amount:decimal))
-    (defun URCi_SmallTransferCumulator:object{IgnisCollectorV3.OutputCumulator} (id:string sender:string receiver:string))
-    (defun URCi_MediumTransferCumulator:object{IgnisCollectorV3.OutputCumulator} (id:string sender:string receiver:string))
-    (defun URCi_LargeTransferCumulator:object{IgnisCollectorV3.OutputCumulator} (sender:string receiver:string))
+    (defun URCi_TransferCumulator:object{IgnisCollectorV4.OutputCumulator} (type:integer id:string sender:string receiver:string))
+    (defun URCi_Transfer:object{IgnisCollectorV4.OutputCumulator} (id:string sender:string receiver:string transfer-amount:decimal))
+    (defun URCi_SmallTransferCumulator:object{IgnisCollectorV4.OutputCumulator} (id:string sender:string receiver:string))
+    (defun URCi_MediumTransferCumulator:object{IgnisCollectorV4.OutputCumulator} (id:string sender:string receiver:string))
+    (defun URCi_LargeTransferCumulator:object{IgnisCollectorV4.OutputCumulator} (sender:string receiver:string))
         ;;
-    (defun URCi_MultiTransferCumulator:object{IgnisCollectorV3.OutputCumulator} (id-lst:[string] sender:string receiver:string transfer-amount-lst:[decimal]))
+    (defun URCi_MultiTransferCumulator:object{IgnisCollectorV4.OutputCumulator} (id-lst:[string] sender:string receiver:string transfer-amount-lst:[decimal]))
         ;;
-    (defun URCi_MultiBulkTransferCumulator:object{IgnisCollectorV3.OutputCumulator} (id-lst:[string] sender:string receiver-array:[[string]] transfer-amount-array:[[decimal]]))
-    (defun URCi_BulkTransferCumulator:object{IgnisCollectorV3.OutputCumulator} (id:string sender:string receiver-lst:[string] transfer-amount-lst:[decimal]))
-    (defun URCi_UnityBulkTransferCumulator:object{IgnisCollectorV3.OutputCumulator} (sender:string receiver-lst:[string] transfer-amount-lst:[decimal]))
-    (defun URCi_SimpleBulkTransferCumulator:object{IgnisCollectorV3.OutputCumulator} (id:string sender:string size:integer))
-    (defun URCi_ComplexBulkTransferCumulator:object{IgnisCollectorV3.OutputCumulator} (id:string sender:string size:integer))
-    (defun URCi_EliteBulkTransferCumulator:object{IgnisCollectorV3.OutputCumulator} (id:string sender:string size:integer))
+    (defun URCi_MultiBulkTransferCumulator:object{IgnisCollectorV4.OutputCumulator} (id-lst:[string] sender:string receiver-array:[[string]] transfer-amount-array:[[decimal]]))
+    (defun URCi_BulkTransferCumulator:object{IgnisCollectorV4.OutputCumulator} (id:string sender:string receiver-lst:[string] transfer-amount-lst:[decimal]))
+    (defun URCi_UnityBulkTransferCumulator:object{IgnisCollectorV4.OutputCumulator} (sender:string receiver-lst:[string] transfer-amount-lst:[decimal]))
+    (defun URCi_SimpleBulkTransferCumulator:object{IgnisCollectorV4.OutputCumulator} (id:string sender:string size:integer))
+    (defun URCi_ComplexBulkTransferCumulator:object{IgnisCollectorV4.OutputCumulator} (id:string sender:string size:integer))
+    (defun URCi_EliteBulkTransferCumulator:object{IgnisCollectorV4.OutputCumulator} (id:string sender:string size:integer))
     ;;{5.4}  Validate [UEV/CAP]
     ;;
     ;;  [UEV]
@@ -108,11 +108,11 @@
     ;;
     ;;  [C]
     ;;
-    (defun C_ClearDispo:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string))
-    (defun C_Transmute:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string id:string transmute-amount:decimal))
-    (defun C_Transfer:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string transfer-amount:decimal method:bool))
-    (defun C_MultiTransfer:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id-lst:[string] transfer-amount-lst:[decimal] method:bool))
-    (defun C_MultiBulkTransfer:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee-array:[[string]] id-lst:[string] transfer-amount-array:[[decimal]]))
+    (defun C_ClearDispo:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string executee:string))
+    (defun C_Transmute:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string id:string transmute-amount:decimal))
+    (defun C_Transfer:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string executee:string id:string transfer-amount:decimal method:bool))
+    (defun C_MultiTransfer:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string executee:string id-lst:[string] transfer-amount-lst:[decimal] method:bool))
+    (defun C_MultiBulkTransfer:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string executee-array:[[string]] id-lst:[string] transfer-amount-array:[[decimal]]))
 
 )
 ;;
@@ -127,7 +127,7 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements TrueFungibleTransferV2)
+    (implements TrueFungibleTransferV3)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -143,7 +143,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -178,7 +178,7 @@
     (defun P|Info ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::P|Info)
         )
@@ -327,7 +327,7 @@
     (defconst DALOS|SC_NAME
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|DALOS|SC_NAME)
         )
@@ -335,7 +335,7 @@
     (defconst ATS|SC_NAME
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|ATS|SC_NAME)
         )
@@ -343,7 +343,7 @@
     (defconst OUROBOROS|SC_NAME
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|OUROBOROS|SC_NAME)
         )
@@ -351,7 +351,7 @@
     (defconst VST|SC_NAME
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|VST|SC_NAME)
         )
@@ -373,7 +373,7 @@
         @event
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (ouro-amount:decimal (ref-DALOS::UR_TF_AccountSupply executee true))
                 (account-type:bool (ref-DALOS::UR_AccountType executee))
             )
@@ -418,8 +418,8 @@
     (defcap DPTF|C>X-TRANSMUTE (id:string transmuter:string amount:decimal) 
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
             )
             ;;1]Ownership (included in the <XB_DebitTrueFungible>)
             ;;2]Transferability (not needed for transmute)
@@ -471,7 +471,7 @@
         @event
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (min-move:decimal (ref-DPTF::UR_MinMove id))
             )
             (if (!= min-move 0.0)
@@ -487,8 +487,8 @@
         (id:string sender:string receiver:string method:bool)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
             )
             ;;1]Ownership
             (ref-DALOS::CAP_EnforceAccountOwnership sender)
@@ -514,8 +514,8 @@
         (let
             (
                 (ref-U|LST:module{StringProcessorV2} U|LST)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 ;;
                 (l1:integer (length id-lst))
                 (l2:integer (length transfer-amount-lst))
@@ -594,7 +594,7 @@
         @event
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (min-move:decimal (ref-DPTF::UR_MinMove id))
             )
             (if (!= min-move 0.0)
@@ -611,8 +611,8 @@
         (let
             (
                 (ref-U|LST:module{StringProcessorV2} U|LST)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (l1:integer (length receiver-lst))
                 (l2:integer (length transfer-amount-lst))
             )
@@ -661,7 +661,7 @@
     (defun CT_EmptyCumulator ()
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (ref-IGNIS::UDC_EmptyOutputCumulatorV2)
         )
@@ -670,9 +670,9 @@
     (defun UDC_GetDispoData:object{UtilityDptfV2.DispoData} (account:string)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-ATS:module{AutostakeV4} ATS)
                 (a-id:string (ref-DALOS::UR_AurynID))
                 (ea-id:string (ref-DALOS::UR_EliteAurynID))
                 (ouro-id:string (ref-DALOS::UR_OuroborosID))
@@ -687,11 +687,11 @@
             ,"ouroboros-precision"  : (ref-DPTF::UR_Decimals ouro-id)}
         )
     )
-    (defun UDCx_BulkTransferCumulator:object{IgnisCollectorV3.OutputCumulator}
+    (defun UDCx_BulkTransferCumulator:object{IgnisCollectorV4.OutputCumulator}
         (id:string sender:string size:integer price:decimal)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 (l-dec:decimal (dec size))
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
@@ -715,7 +715,7 @@
         (let
             (
                 (ref-U|LST:module{StringProcessorV2} U|LST)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
             )
             (fold
                 (lambda
@@ -730,7 +730,7 @@
     (defun UC_BulkFees:[decimal] (id:string transfer-amount-lst:[decimal])
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
             )
             (fold
                 (lambda
@@ -749,7 +749,7 @@
         (let
             (
                 (ref-U|DPTF:module{UtilityDptfV2} U|DPTF)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (dispo-data:object{UtilityDptfV2.DispoData} (UDC_GetDispoData account))
                 (max-dispo:decimal (ref-U|DPTF::UC_OuroDispo dispo-data))
                 (account-type:bool (ref-DALOS::UR_AccountType account))
@@ -765,8 +765,8 @@
             \ The Virtual Ouro is the maximum Ouro the Account is able to spend"
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (ouro-id:string (ref-DALOS::UR_OuroborosID))
                 (ouro:decimal (ref-DPTF::UR_AccountSupply ouro-id account))
                 (smart-treasury:string (at 0 (ref-DALOS::UR_DemiurgoiID)))
@@ -785,7 +785,7 @@
         @doc "Computes the amount the <receiver> gets when transfering DPTFs"
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 ;;
                 (tc:integer (at "type" (URC_TransferClasses id sender receiver amount)))
             )
@@ -799,12 +799,12 @@
         @doc "UNITY will only be used with Complex Transfers, as it will have a VTT"
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (if (<= transfer-amount 10.0) (ref-IGNIS::UC_IgnisLeg "tier-small") 0.0)
         )
     )
-    (defun URC_TransferClasses:object{TrueFungibleTransferV2.TransferClass}
+    (defun URC_TransferClasses:object{TrueFungibleTransferV3.TransferClass}
         (id:string sender:string receiver:string amount:decimal)
         @doc "Computes the Transfer Class \
         \ Class 1   : [DPTF|C>CLASS-1-TRANSFER]         [1]     Simple (T)\
@@ -832,7 +832,7 @@
     (defun URC_IzSimpleTransfer:bool (id:string sender:string receiver:string amount:decimal)
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 ;;
                 (fee-toggle:bool (ref-DPTF::UR_FeeToggle id))
                 (fee-promile:decimal (ref-DPTF::UR_FeePromile id))
@@ -848,7 +848,7 @@
             )
         )
     )
-    (defun URC_TransferClassesForBulk:object{TrueFungibleTransferV2.TransferClass}
+    (defun URC_TransferClassesForBulk:object{TrueFungibleTransferV3.TransferClass}
         (id:string sender:string transfer-amount-lst:[decimal])
         @doc "Computes the Bulk Transfer Class, assuming Elite Auryns will never have VTT \
         \ Class 0   : VTT (Volumetric Transfer Tax) Class \
@@ -860,7 +860,7 @@
         \ Class 3   : [DPTF|C>CLASS-3-BULK-ELITE]       [6]     (T + F + U) With Fee + Update"
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 ;;
                 (iz-simple-transfer-for-bulk:bool 
                     (URC_IzSimpleTransferForBulk id sender transfer-amount-lst)
@@ -885,7 +885,7 @@
     (defun URC_IzSimpleTransferForBulk:bool (id:string sender:string transfer-amount-lst:[decimal])
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 ;;
                 (fee-toggle:bool (ref-DPTF::UR_FeeToggle id))
                 (fee-promile:decimal (ref-DPTF::UR_FeePromile id))
@@ -915,7 +915,7 @@
     (defun URC_IzTrueFungibleEliteAuryn:bool (id:string)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (ea-id:string (ref-DALOS::UR_EliteAurynID))
             )
             (if (= id ea-id) true false)
@@ -924,7 +924,7 @@
     (defun URC_IzTrueFungibleUnity:bool (id:string)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (u-id:string (ref-DALOS::UR_UnityID))
             )
             (if (= id u-id) true false)
@@ -933,8 +933,8 @@
     (defun URC_AreTrueFungiblesEliteAurynz:bool (id:string)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (ea-id:string (ref-DALOS::UR_EliteAurynID))
                 (fea:string (ref-DPTF::UR_Frozen ea-id))
                 (rea:string (ref-DPTF::UR_Reservation ea-id))
@@ -947,8 +947,8 @@
         (let
             (
                 (ref-U|LST:module{StringProcessorV2} U|LST)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-ATS:module{AutostakeV4} ATS)
                 (rt-ats-pairs:[string] (ref-DPTF::UR_RewardToken id))
                 (rbt-ats-pairs:[string] (ref-DPTF::UR_RewardBearingToken id))
                 (length-rt:integer (length rt-ats-pairs))
@@ -1001,7 +1001,7 @@
         (let
             (
                 (ref-U|LST:module{StringProcessorV2} U|LST)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (ats-pairs:[string] (ref-DPTF::UR_RewardBearingToken id))
                 (ats-pairs-bool:[bool] (URCx_NFR-Boolean_RT-RBT id ats-pairs false))
                 (milestones:integer (length (ref-U|LST::UC_Search ats-pairs-bool true)))
@@ -1016,8 +1016,8 @@
         (let
             (
                 (ref-U|LST:module{StringProcessorV2} U|LST)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-ATS:module{AutostakeV4} ATS)
                 (ats-pairs:[string] (ref-DPTF::UR_RewardToken id))
                 (ats-pairs-bool:[bool] (URCx_NFR-Boolean_RT-RBT id ats-pairs true))
                 (milestones:integer (length (ref-U|LST::UC_Search ats-pairs-bool true)))
@@ -1049,7 +1049,7 @@
         (let
             (
                 (ref-U|LST:module{StringProcessorV2} U|LST)
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-ATS:module{AutostakeV4} ATS)
             )
             (fold
                 (lambda
@@ -1074,18 +1074,18 @@
         (let
             (
                 (ref-U|ATS:module{UtilityAtsV3} U|ATS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (prec:integer (ref-DPTF::UR_Decimals id))
             )
             (ref-U|ATS::UCv_SplitBalanceWithBooleans prec amount milestones boolean)
         )
     )
     ;;
-    (defun URCi_SmallTransmuteCumulator:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_SmallTransmuteCumulator:object{IgnisCollectorV4.OutputCumulator}
         (id:string transmuter:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisLeg "tier-small") transmuter
@@ -1093,11 +1093,11 @@
             )
         )
     )
-    (defun URCi_LargeTransmuteCumulator:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_LargeTransmuteCumulator:object{IgnisCollectorV4.OutputCumulator}
         (id:string transmuter:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisLeg "tier-medium") transmuter
@@ -1105,7 +1105,7 @@
             )
         )
     )
-    (defun URCi_Transmute:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_Transmute:object{IgnisCollectorV4.OutputCumulator}
         (id:string transmuter:string)
         @doc "Cost single-source for C_Transmute — the same class choice C_Transmute makes: \
             \ Elite-Auryn transmute bills the Large (ignis|medium) rail, else the Small \
@@ -1115,23 +1115,23 @@
             (URCi_SmallTransmuteCumulator id transmuter)
         )
     )
-    (defun URCi_ClearDispo:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_ClearDispo:object{IgnisCollectorV4.OutputCumulator}
         (account:string)
         @doc "Cost single-source for C_ClearDispo — pure re-derivation of the 5-leg concat: \
             \ (conditional EA freeze) + EA WipeSlim + (conditional EA unfreeze) + Auryn burn + \
             \ Ouroboros burn. Freeze legs are EOC when the EA account is already frozen."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 ;;
                 (ouro-id:string (ref-DALOS::UR_OuroborosID))
                 (a-id:string (ref-DALOS::UR_AurynID))
                 (ea-id:string (ref-DALOS::UR_EliteAurynID))
                 (ats-sc:string (ref-DALOS::GOV|ATS|SC_NAME))
                 (frozen-state:bool (ref-DPTF::UR_AccountFrozenState ea-id account))
-                (toggle-leg:object{IgnisCollectorV3.OutputCumulator}
+                (toggle-leg:object{IgnisCollectorV4.OutputCumulator}
                     (if (not frozen-state) (ref-DPTF::URCi_ToggleFreezeAccount ea-id) EOC)
                 )
             )
@@ -1148,11 +1148,11 @@
         )
     )
     ;;
-    (defun URCi_UnityTransferCumulator:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_UnityTransferCumulator:object{IgnisCollectorV4.OutputCumulator}
         (sender:string receiver:string amount:decimal)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 (price:decimal
                     (if (< amount 10.0)
                         (ref-IGNIS::UC_IgnisLeg "tier-smallest")
@@ -1167,7 +1167,7 @@
         )
     )
     ;;
-    (defun URCi_Transfer:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_Transfer:object{IgnisCollectorV4.OutputCumulator}
         (id:string sender:string receiver:string transfer-amount:decimal)
         @doc "Pure cost of a single C_Transfer, keyed on the SAME inputs C_Transfer takes: \
             \ compute the transfer class then dispatch via URCi_TransferCumulator. Lets \
@@ -1178,7 +1178,7 @@
             id sender receiver
         )
     )
-    (defun URCi_TransferCumulator:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_TransferCumulator:object{IgnisCollectorV4.OutputCumulator}
         (type:integer id:string sender:string receiver:string)
         (cond
             ((contains type [1 2]) (URCi_SmallTransferCumulator id sender receiver))
@@ -1187,11 +1187,11 @@
             EOC
         )
     )
-    (defun URCi_SmallTransferCumulator:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_SmallTransferCumulator:object{IgnisCollectorV4.OutputCumulator}
         (id:string sender:string receiver:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisLeg "tier-smallest")  sender
@@ -1199,11 +1199,11 @@
             )
         )
     )
-    (defun URCi_MediumTransferCumulator:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_MediumTransferCumulator:object{IgnisCollectorV4.OutputCumulator}
         (id:string sender:string receiver:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisLeg "tier-small") sender
@@ -1211,11 +1211,11 @@
             )
         )
     )
-    (defun URCi_LargeTransferCumulator:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_LargeTransferCumulator:object{IgnisCollectorV4.OutputCumulator}
         (sender:string receiver:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisLeg "tier-medium") sender
@@ -1224,23 +1224,23 @@
         )
     )
     ;;Multi
-    (defun URCi_MultiTransferCumulator:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_MultiTransferCumulator:object{IgnisCollectorV4.OutputCumulator}
         (id-lst:[string] sender:string receiver:string transfer-amount-lst:[decimal])
         (let
             (
                 (ref-U|LST:module{StringProcessorV2} U|LST)
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 (l:integer (length id-lst))
-                (folded-obj:[object{IgnisCollectorV3.OutputCumulator}]
+                (folded-obj:[object{IgnisCollectorV4.OutputCumulator}]
                     (fold
                         (lambda
-                            (acc:[object{IgnisCollectorV3.OutputCumulator}] idx:integer)
+                            (acc:[object{IgnisCollectorV4.OutputCumulator}] idx:integer)
                             (let
                                 (
                                     (id:string (at idx id-lst))
                                     (transfer-amount:decimal (at idx transfer-amount-lst))
                                     (what-type:integer (at "type" (URC_TransferClasses id sender receiver transfer-amount)))
-                                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                                    (ico:object{IgnisCollectorV4.OutputCumulator}
                                         (URCi_TransferCumulator what-type id sender receiver)
                                     )
                                 )
@@ -1256,17 +1256,17 @@
         )
     )
     ;;Bulk
-    (defun URCi_MultiBulkTransferCumulator:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_MultiBulkTransferCumulator:object{IgnisCollectorV4.OutputCumulator}
         (id-lst:[string] sender:string receiver-array:[[string]] transfer-amount-array:[[decimal]])
         (let
             (
                 (ref-U|LST:module{StringProcessorV2} U|LST)
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 (l:integer (length id-lst))
-                (folded-obj:[object{IgnisCollectorV3.OutputCumulator}]
+                (folded-obj:[object{IgnisCollectorV4.OutputCumulator}]
                     (fold
                         (lambda
-                            (acc:[object{IgnisCollectorV3.OutputCumulator}] idx:integer)
+                            (acc:[object{IgnisCollectorV4.OutputCumulator}] idx:integer)
                             (ref-U|LST::UC_AppL acc
                                 (URCi_BulkTransferCumulator
                                     (at idx id-lst)
@@ -1284,7 +1284,7 @@
             (ref-IGNIS::UDC_ConcatenateOutputCumulators folded-obj [])
         )
     )
-    (defun URCi_BulkTransferCumulator:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_BulkTransferCumulator:object{IgnisCollectorV4.OutputCumulator}
         (id:string sender:string receiver-lst:[string] transfer-amount-lst:[decimal])
         (let
             (
@@ -1301,22 +1301,22 @@
         )
     )
     ;;
-    (defun URCi_UnityBulkTransferCumulator:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_UnityBulkTransferCumulator:object{IgnisCollectorV4.OutputCumulator}
         (sender:string receiver-lst:[string] transfer-amount-lst:[decimal])
         (let
             (
                 (ref-U|LST:module{StringProcessorV2} U|LST)
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 (l:integer (length receiver-lst))
-                (folded-obj:[object{IgnisCollectorV3.OutputCumulator}]
+                (folded-obj:[object{IgnisCollectorV4.OutputCumulator}]
                     (fold
                         (lambda
-                            (acc:[object{IgnisCollectorV3.OutputCumulator}] idx:integer)
+                            (acc:[object{IgnisCollectorV4.OutputCumulator}] idx:integer)
                             (let
                                 (
                                     (transfer-amount:decimal (at idx transfer-amount-lst))
                                     (receiver:string (at idx receiver-lst))
-                                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                                    (ico:object{IgnisCollectorV4.OutputCumulator}
                                         (URCi_UnityTransferCumulator sender receiver transfer-amount)
                                     )
                                 )
@@ -1331,29 +1331,29 @@
             (ref-IGNIS::UDC_ConcatenateOutputCumulators folded-obj [])
         )
     )
-    (defun URCi_SimpleBulkTransferCumulator:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_SimpleBulkTransferCumulator:object{IgnisCollectorV4.OutputCumulator}
         (id:string sender:string size:integer)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (UDCx_BulkTransferCumulator id sender size (ref-IGNIS::UC_IgnisLeg "tier-smallest"))
         )
     )
-    (defun URCi_ComplexBulkTransferCumulator:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_ComplexBulkTransferCumulator:object{IgnisCollectorV4.OutputCumulator}
         (id:string sender:string size:integer)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (UDCx_BulkTransferCumulator id sender size (ref-IGNIS::UC_IgnisLeg "tier-small"))
         )
     )
-    (defun URCi_EliteBulkTransferCumulator:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_EliteBulkTransferCumulator:object{IgnisCollectorV4.OutputCumulator}
         (id:string sender:string size:integer)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (UDCx_BulkTransferCumulator id sender size (ref-IGNIS::UC_IgnisLeg "tier-medium"))
         )
@@ -1376,7 +1376,7 @@
             \ why an operation that costs nothing still needs a minimum."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (if (= id (ref-DALOS::UR_IgnisID))
                 (enforce (>= amount CT_IGNIS_TRANSMUTE_MINIMUM)
@@ -1388,7 +1388,7 @@
     (defun UEV_Minimum (id:string amount:decimal)
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (min-move-read:decimal (ref-DPTF::UR_MinMove id))
                 (precision:integer (ref-DPTF::UR_Decimals id))
                 (min-move:decimal
@@ -1404,7 +1404,7 @@
     (defun UEV_DispoLocker (id:string account:string)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (type:bool (ref-DALOS::UR_AccountType account))
                 (ea-id:string (ref-DALOS::UR_EliteAurynID))
                 (ouro-amount:decimal (ref-DALOS::UR_TF_AccountSupply account true))
@@ -1418,8 +1418,8 @@
     (defun UEV_MoveRoleCheck (id:string sender:string receiver:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (verum-five:[string] (ref-DPTF::UR_Verum5 id))
                 (lvf:integer (length verum-five))
                 (transfer-roles:integer
@@ -1460,7 +1460,7 @@
         (require-capability (DPTF|C>X-TRANSMUTE id transmuter transmute-amount))
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (dispo-data:object{UtilityDptfV2.DispoData} (UDC_GetDispoData transmuter))
             )
             (ref-DPTF::XB_DebitTrueFungible id transmuter transmute-amount dispo-data false)
@@ -1473,7 +1473,7 @@
         (require-capability (DPTF|C>X-TRANSFER id sender receiver method))
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (dispo-data:object{UtilityDptfV2.DispoData} (UDC_GetDispoData sender))
             )
             (ref-DPTF::XB_DebitTrueFungible id sender transfer-amount dispo-data false)
@@ -1485,7 +1485,7 @@
         (require-capability (DPTF|C>X-TRANSFER id sender receiver method))
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (dispo-data:object{UtilityDptfV2.DispoData} (UDC_GetDispoData sender))
             )
             (ref-DPTF::XB_DebitTrueFungible id sender transfer-amount dispo-data false)
@@ -1497,7 +1497,7 @@
     (defun XI_ComplexCredit (id:string receiver:string transfer-amount:decimal)
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (dalos:string DALOS|SC_NAME)
                 (fees:[decimal] (ref-DPTF::URC_Fee id transfer-amount))
                 (primary-fee:decimal (at 0 fees))
@@ -1522,7 +1522,7 @@
     (defun XI_DynamicUpdateEliteAccount (account:string)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (type:bool (ref-DALOS::UR_AccountType account))
             )
             (if (not type)
@@ -1535,7 +1535,7 @@
     (defun XI_DirectUpdateEliteAccount (account:string)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (ref-ELITE:module{EliteV2} ELITE)
                 (elite-aurynz:decimal (ref-ELITE::URC_EliteAurynzSupply account))
             )
@@ -1558,7 +1558,7 @@
                 )
                 (let
                     (
-                        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                         (dalos:string DALOS|SC_NAME)
                         (fees:[decimal] (UC_BulkFees id transfer-amount-lst))
                         (primary-fee:decimal (at 0 fees))
@@ -1587,7 +1587,7 @@
         (require-capability (SECURE))
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
             )
             (map
                 (lambda
@@ -1615,7 +1615,7 @@
     (defun XI_CreditPrimaryFee (id:string pf:decimal native:bool)
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (rt:bool (ref-DPTF::URC_IzRT id))
                 (rbt:bool (ref-DPTF::URC_IzRBT id))
                 (target:string (ref-DPTF::UR_FeeTarget id))
@@ -1665,7 +1665,7 @@
         (require-capability (SECURE))
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
             )
             (if (!= still-fee 0.0)
                 (ref-DPTF::XB_CreditTrueFungible id target still-fee)
@@ -1678,7 +1678,7 @@
         (require-capability (SECURE))
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
             )
             (if (!= burn-fee 0.0)
                 (ref-DPTF::XBv_UpdateSupply id burn-fee false)
@@ -1691,8 +1691,8 @@
         (require-capability (SECURE))
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-ATS:module{AutostakeV4} ATS)
                 (ats:string (ref-ATS::GOV|ATS|SC_NAME))
             )
             (if (!= credit-fee 0.0)
@@ -1704,7 +1704,7 @@
     ;;{5.7}  User [A/C]
     ;;
     ;;Clear Dispo
-    (defun C_ClearDispo:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_ClearDispo:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string executee:string)
         @doc "Settles <executee>'s OURO dispo (a negative OURO balance) by force-converting \
             \ 2.5x its Elite-Auryn equivalent, then zeroing the debt. \
@@ -1719,10 +1719,10 @@
         (with-capability (DPTF|C>CLEAR-DISPO executor executee)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                    (ref-ATS:module{AutostakeV3} ATS)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                    (ref-ATS:module{AutostakeV4} ATS)
                     ;;
                     (ouro-id:string (ref-DALOS::UR_OuroborosID))
                     (a-id:string (ref-DALOS::UR_AurynID))
@@ -1747,28 +1747,28 @@
                     (ats-sc:string (ref-DALOS::GOV|ATS|SC_NAME))
                     ;;
                     ;;Ignis Cumulation
-                    (ico1:object{IgnisCollectorV3.OutputCumulator}
+                    (ico1:object{IgnisCollectorV4.OutputCumulator}
                         (if (not frozen-state)
                             (ref-DPTF::C_ToggleFreezeAccount patron (ref-DPTF::UR_Konto ea-id) executee ea-id true)
                             EOC
                         )
                     )
-                    (ico2:object{IgnisCollectorV3.OutputCumulator}
+                    (ico2:object{IgnisCollectorV4.OutputCumulator}
                         (ref-DPTF::C_WipeSlim patron (ref-DPTF::UR_Konto ea-id) executee ea-id total-ea)
                     )
                     ;;#28M fix: only unfreeze if this function was the one that froze it (mirrors
                     ;;ico1's own condition) - otherwise a pre-existing, unrelated freeze on this
                     ;;executee gets silently lifted by ClearDispo.
-                    (ico3:object{IgnisCollectorV3.OutputCumulator}
+                    (ico3:object{IgnisCollectorV4.OutputCumulator}
                         (if (not frozen-state)
                             (ref-DPTF::C_ToggleFreezeAccount patron (ref-DPTF::UR_Konto ea-id) executee ea-id false)
                             EOC
                         )
                     )
-                    (ico4:object{IgnisCollectorV3.OutputCumulator}
+                    (ico4:object{IgnisCollectorV4.OutputCumulator}
                         (ref-DPTF::C_Burn patron ats-sc a-id burn-auryn-amount)
                     )
-                    (ico5:object{IgnisCollectorV3.OutputCumulator}
+                    (ico5:object{IgnisCollectorV4.OutputCumulator}
                         (ref-DPTF::C_Burn patron ats-sc ouro-id ouro-amount)
                     )
                 )
@@ -1805,7 +1805,7 @@
         )
     )
     ;;Transmute
-    (defun C_Transmute:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_Transmute:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string id:string transmute-amount:decimal)
         @doc "Convert <transmute-amount> of <id> out of <executor>'s balance and into the \
             \ protocol's primary fee pool. \
@@ -1855,7 +1855,7 @@
         )
     )
     ;;Transfer
-    (defun C_Transfer:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_Transfer:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string executee:string id:string transfer-amount:decimal method:bool)
         @doc "Moves <transfer-amount> of <id> from <executor> to <executee>, picking one of six \
             \ transfer variants across three classes from URC_TransferClasses. \
@@ -1912,7 +1912,7 @@
         )
     )
     ;;Multi Transfer
-    (defun C_MultiTransfer:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_MultiTransfer:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string executee:string id-lst:[string] transfer-amount-lst:[decimal] method:bool)
         @doc "Moves one amount of each <id-lst> token from <executor> to <executee> in a single \
             \ transaction. \
@@ -1927,21 +1927,21 @@
             (let
                 (
                     (ref-U|LST:module{StringProcessorV2} U|LST)
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                     (contains-eazs:bool (UC_ContainsEliteAurynz id-lst))
                     (l:integer (length id-lst))
-                    (folded-obj:[object{IgnisCollectorV3.OutputCumulator}]
+                    (folded-obj:[object{IgnisCollectorV4.OutputCumulator}]
                         (fold
                             (lambda
-                                (acc:[object{IgnisCollectorV3.OutputCumulator}] idx:integer)
+                                (acc:[object{IgnisCollectorV4.OutputCumulator}] idx:integer)
                                 (let
                                     (
                                         (id:string (at idx id-lst))
                                         (transfer-amount:decimal (at idx transfer-amount-lst))
-                                        (what-type-obj:object{TrueFungibleTransferV2.TransferClass} (URC_TransferClasses id executor executee transfer-amount))
+                                        (what-type-obj:object{TrueFungibleTransferV3.TransferClass} (URC_TransferClasses id executor executee transfer-amount))
                                         (what-type:integer (at "type" what-type-obj))
-                                        (ico:object{IgnisCollectorV3.OutputCumulator}
+                                        (ico:object{IgnisCollectorV4.OutputCumulator}
                                             (URCi_TransferCumulator what-type id executor executee)
                                         )
                                         (iz-simple-transfer:bool (at "iz-it-simple" what-type-obj))
@@ -1980,7 +1980,7 @@
         )
     )
     ;;Bulk Transfer
-    (defun C_MultiBulkTransfer:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_MultiBulkTransfer:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string executee-array:[[string]] id-lst:[string] transfer-amount-array:[[decimal]])
         @doc "Runs one bulk transfer per <id-lst> token: leg i sends <transfer-amount-array>[i] \
             \ from <executor> to the receivers in <executee-array>[i]. \
@@ -1994,27 +1994,27 @@
         (let
             (
                 (ref-U|LST:module{StringProcessorV2} U|LST)
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (contains-eazs:bool (UC_ContainsEliteAurynz id-lst))
                 (l:integer (length id-lst))
-                (folded-obj:[object{IgnisCollectorV3.OutputCumulator}]
+                (folded-obj:[object{IgnisCollectorV4.OutputCumulator}]
                     (fold
                         (lambda
-                            (acc:[object{IgnisCollectorV3.OutputCumulator}] idx:integer)
+                            (acc:[object{IgnisCollectorV4.OutputCumulator}] idx:integer)
                             (let
                                 (
                                     (id:string (at idx id-lst))
                                     (receiver-lst:[string] (at idx executee-array))
                                     (transfer-amount-lst:[decimal] (at idx transfer-amount-array))
                                     (size:integer (length receiver-lst))
-                                    (what-type-obj:object{TrueFungibleTransferV2.TransferClass}
+                                    (what-type-obj:object{TrueFungibleTransferV3.TransferClass}
                                         (URC_TransferClassesForBulk id executor transfer-amount-lst)
                                     )
                                     (what-type:integer (at "type" what-type-obj))
                                     (iz-it-simple:bool (at "iz-it-simple" what-type-obj))
                                     (total-debit:decimal (fold (+) 0.0 transfer-amount-lst))
-                                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                                    (ico:object{IgnisCollectorV4.OutputCumulator}
                                         (cond
                                             ((contains what-type [1 4 5]) (URCi_ComplexBulkTransferCumulator id executor size))
                                             ((= what-type 2) (URCi_UnityBulkTransferCumulator executor receiver-lst transfer-amount-lst))

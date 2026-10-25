@@ -209,7 +209,7 @@ Seven slots per pool. Stake updates **every** employed score (skip `BAR`).
 
 **Talos:** **`AQP-POOL|CC_StakeTrueFungible`** / **`CC_UnstakeTrueFungible`** — **`@event`** cap + **`IGNIS::C_Collect patron`** + result text only.
 
-**Capability model (see `.cursor/skills/ouronet-talos-orchestrator-events/SKILL.md`):**
+**Capability model (see `OuronetInformational/modules/aqp/talos-orchestrator-events.md`):**
 
 - **Talos client `@event`:** `AQP|C>STAKE-TRUE-FUNGIBLE` / `C>UNSTAKE-TRUE-FUNGIBLE` (incl. `patron`) — **`compose-capability (P|TS)` only**.
 - **FVT `CC_TrueFungibleStakeFlow`:** `UEV_IMC` + `FVT|C>TRUE-FUNGIBLE-STAKE-FLOW` + phase **`XE_*`** calls.

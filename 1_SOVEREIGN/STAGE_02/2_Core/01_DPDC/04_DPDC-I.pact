@@ -2,7 +2,7 @@
 ;; History/shared registry: 1_SOVEREIGN/STAGE_02/0_Interfaces/02_Core.pact
 ;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface DpdcIssueV2
+(interface DpdcIssueV3
     @doc "Exposes Collectables Issue Functions"
 
     ;;<=========================================================================>
@@ -44,7 +44,7 @@
     ;;
     (defun URCi_IssueCollectionPrice:decimal (son:bool))
     (defun URCi_IssueCollectionStoa:decimal (son:bool))
-    (defun URCi_IssueDigitalCollection:object{IgnisCollectorV3.OutputCumulator} (son:bool owner-account:string))
+    (defun URCi_IssueDigitalCollection:object{IgnisCollectorV4.OutputCumulator} (son:bool owner-account:string))
     ;;{5.4}  Validate [UEV/CAP]
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
@@ -56,7 +56,7 @@
     ;; Talos entrypoint with no ownership check, let any signer force any existing account to associate
     ;; with any collection. Real auto-association always calls DPDC::XBv_DeployAccountSFT/NFT directly,
     ;; module-to-module (see DPDC-C/DPDC-F/DPDC-R/DPDC-S and this module's own Issue flow below).
-    (defun C_IssueDigitalCollection:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_IssueDigitalCollection:object{IgnisCollectorV4.OutputCumulator}
         (
             patron:string executor:string executee:string son:bool
             collection-name:string collection-ticker:string
@@ -81,7 +81,7 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements DpdcIssueV2)
+    (implements DpdcIssueV3)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -97,7 +97,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -124,7 +124,7 @@
     (defun P|Info ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::P|Info)
         )
@@ -271,7 +271,7 @@
         (let
             (
                 (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-U|DALOS::UEV_NameOrTicker collection-name true iz-special)
             (ref-U|DALOS::UEV_NameOrTicker collection-ticker false iz-special)
@@ -307,7 +307,7 @@
             \ Single source for the exec construct and the INFO preview."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_Issue" "issue-sft")
                     (ref-IGNIS::UC_IgnisPrice "DPNF|C_Issue" "issue-nft"))
@@ -319,12 +319,12 @@
             \ Single source for XE_CollectStoa and the INFO preview."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (if son (ref-IGNIS::UC_StoaPrice "issue-sft") (ref-IGNIS::UC_StoaPrice "issue-nft"))
         )
     )
-    (defun URCi_IssueDigitalCollection:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_IssueDigitalCollection:object{IgnisCollectorV4.OutputCumulator}
         (son:bool owner-account:string)
         @doc "Cost preview for C_IssueDigitalCollection: IGNIS construct priced via \
             \ URCi_IssueCollectionPrice on the owner payer, empty output (the created \
@@ -332,7 +332,7 @@
             \ separately via URCi_IssueCollectionStoa."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (URCi_IssueCollectionPrice son)
@@ -359,7 +359,7 @@
             (
                 (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
                 (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 (id:string (ref-U|DALOS::UDC_Makeid collection-ticker))
                 (specifications:object{DpdcUdcV2.DPDC|Properties}
                     (ref-DPDC-UDC::UDC_DPDC|Properties
@@ -443,7 +443,7 @@
     )
     ;;{5.7}  User [A/C]
     ;; C_DeployAccountSFT/NFT removed — DPDC Audit #35M: see interface-side removal note above.
-    (defun C_IssueDigitalCollection:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_IssueDigitalCollection:object{IgnisCollectorV4.OutputCumulator}
         (
             patron:string executor:string executee:string son:bool
             collection-name:string collection-ticker:string
@@ -469,9 +469,9 @@
         (with-capability (DPDC-I|C>ISSUE executor executee collection-name collection-ticker iz-special)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-BRD:module{BrandingV2} BRD)
-                    (ref-DPDC:module{DpdcV2} DPDC)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-BRD:module{BrandingV3} BRD)
+                    (ref-DPDC:module{DpdcV3} DPDC)
                     ;;
                     (ignis-price:decimal (URCi_IssueCollectionPrice son))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))

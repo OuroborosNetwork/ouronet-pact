@@ -46,8 +46,8 @@
 (print "--- [CODEX-G1 — the StoicTag registry's four uniqueness and liveness guards · 02 · let / invocation] ---")
 (let
     (
-        (ref-CODEX:module{CodexV2} CODEX)
-        (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
+        (ref-CODEX:module{CodexV3} CODEX)
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV9} TS01-C4)
         (tag:string "codextest01")
     )
     (let
@@ -134,8 +134,8 @@
 (print "--- [CODEX-G2 — releasing a tag that is present but already released · 02 · let / invocation] ---")
 (let
     (
-        (ref-CODEX:module{CodexV2} CODEX)
-        (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
+        (ref-CODEX:module{CodexV3} CODEX)
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV9} TS01-C4)
         (tag:string "codextest01")
     )
     (let
@@ -159,7 +159,7 @@
         ;;Recipe mirrored from this suite's own TX006, which re-registers a released tag.
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (fee:decimal (ref-CODEX::UC_StoicTagStoaFee tag))
             )
             (let
@@ -294,8 +294,8 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Florean", "caps": [] }])
 (let
     (
-        (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV9} TS01-C4)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (composite-id:string (read-string "CODEX|COMPOSITE-ID"))
         (patron:string KST.ANHD)
         ;;a SECOND arweave tx-id: the fixture's own was already consumed by [6.9] TX003, and the
@@ -305,7 +305,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo}
+            (predicted:object{OuronetInfoV3.ClientInfo}
                 (CODEX.INFO_CODEX|RecordArweaveUpload patron composite-id tx2 bytes))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
         )

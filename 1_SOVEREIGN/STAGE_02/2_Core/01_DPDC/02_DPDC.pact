@@ -2,7 +2,7 @@
 ;; History/shared registry: 1_SOVEREIGN/STAGE_02/0_Interfaces/02_Core.pact
 ;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface BrandingUsageTertiaryV2
+(interface BrandingUsageTertiaryV3
     @doc "Exposes Branding Functions for Semi-Fungibles (S) and Non-Fungibles (N)"
 
     ;;<=========================================================================>
@@ -44,13 +44,13 @@
     ;;{5.6}  Aux/X
     ;;{5.7}  User [A/C]
     ;;
-    (defun C_UpdatePendingBranding:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string entity-id:string son:bool logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
+    (defun C_UpdatePendingBranding:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string entity-id:string son:bool logo:string description:string website:string social:[object{BrandingV3.SocialSchema}]))
     (defun C_UpgradeBranding (patron:string executor:string entity-id:string son:bool months:integer))
 
 )
 
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface DpdcV2
+(interface DpdcV3
     @doc "Exposes Collectables Functions"
 
     ;;<=========================================================================>
@@ -175,7 +175,7 @@
     (defun URH_AccountNoncesWithSupplies:[object] (account:string id:string son:bool))
     ;;
     ;;  [URCi]  Branding cost readers — single source for exec billing + INFO preview
-    (defun URCi_UpdatePendingBranding:object{IgnisCollectorV3.OutputCumulator} (entity-id:string son:bool))
+    (defun URCi_UpdatePendingBranding:object{IgnisCollectorV4.OutputCumulator} (entity-id:string son:bool))
     (defun URCi_UpgradeBranding:decimal (months:integer))
     ;;{5.4}  Validate [UEV/CAP]
     ;;
@@ -283,6 +283,14 @@
     (defun XE_W|Supply (account:string id:string son:bool nonce-value:integer amount:integer))
     ;;{5.7}  User [A/C]
 
+
+    ;;<=========================================================================>
+    ;; ADDED 2026-10-12 -- interface-membership sweep (StoicSyntax-Prefixes.md Sec5,
+    ;; owner ruling). Every one of these was already live in the module body; this
+    ;; closes the gap between what the module DOES and what its interface SAYS it does.
+    ;;<=========================================================================>
+    (defun UC_ParseSignedInteger:integer (value:string))
+    (defun URH_AS-Keys:[string] (son:bool))
 )
 ;;
 (module DPDC GOV
@@ -298,8 +306,8 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements BrandingUsageTertiaryV2)
-    (implements DpdcV2)
+    (implements BrandingUsageTertiaryV3)
+    (implements DpdcV3)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -315,7 +323,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -350,7 +358,7 @@
     (defun P|Info ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::P|Info)
         )
@@ -511,7 +519,7 @@
     (defcap AHU ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (ah:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
             )
             (ref-DALOS::CAP_EnforceAccountOwnership ah)
@@ -963,12 +971,12 @@
         )
     )
     ;;
-    (defun URCi_UpdatePendingBranding:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_UpdatePendingBranding:object{IgnisCollectorV4.OutputCumulator}
         (entity-id:string son:bool)
         @doc "Cost preview for C_UpdatePendingBranding (Branding tier; son->4.0 else 5.0)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 (owner:string (UR_OwnerKonto entity-id son))
                 (multiplier:decimal (if son 4.0 5.0))
             )
@@ -980,7 +988,7 @@
             \ the exec path bills the same value via ref-BRD::XE_UpgradeBranding)."
         (let
             (
-                (ref-BRD:module{BrandingV2} BRD)
+                (ref-BRD:module{BrandingV3} BRD)
             )
             (ref-BRD::URCi_UpgradeBranding months)
         )
@@ -1185,8 +1193,8 @@
     (defun UEV_IgnisRoyalty (royalty:decimal)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 ;;
                 (ignis-id:string (ref-DALOS::UR_IgnisID))
                 (ignis-pr:integer (ref-DPTF::UR_Decimals ignis-id))
@@ -1311,7 +1319,7 @@
                 )
                 (let
                     (
-                        (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                        (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                         (nft-holder:string (UR_NonceHolder id false nonce))
                         (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                     )
@@ -1374,7 +1382,7 @@
         @doc "Enforces DPSF or DPNF Token ID Ownership"
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership (UR_OwnerKonto id son))
         )
@@ -1383,7 +1391,7 @@
         @doc "Enforces DPSF or DPNF Token ID Creator Ownership"
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership (UR_CreatorKonto id son))
         )
@@ -1414,7 +1422,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
             )
             (ref-DALOS::UEV_EnforceAccountExists account)
@@ -1447,7 +1455,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
             )
             (ref-DALOS::UEV_EnforceAccountExists account)
@@ -1564,7 +1572,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 (iz-bar:bool (if (= new-holder-account BAR) true false))
                 (sh:string
                     (if iz-bar
@@ -1979,8 +1987,8 @@
             {"id"       : id}
         )
     )
-    (defun C_UpdatePendingBranding:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string executor:string entity-id:string son:bool logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
+    (defun C_UpdatePendingBranding:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string entity-id:string son:bool logo:string description:string website:string social:[object{BrandingV3.SocialSchema}])
         @doc "ATTRIBUTION (patron/executor canon 2.2, 2026-09-22). The AUTHORITY is collectable \
             \ ownership -- DPDC|C>UPDATE-BRD calls CAP_Owner, which enforces on the DERIVED \
             \ (UR_OwnerKonto entity-id son) and names no actor: HANDOFF 4g. \
@@ -1990,7 +1998,7 @@
         (UEV_ExecutorIsOwnerKonto executor entity-id son)
         (let
             (
-                (ref-BRD:module{BrandingV2} BRD)
+                (ref-BRD:module{BrandingV3} BRD)
                 (owner:string (UR_OwnerKonto entity-id son))
                 (multiplier:decimal (if son 4.0 5.0))
             )
@@ -2008,8 +2016,8 @@
         (UEV_ExecutorIsOwnerKonto executor entity-id son)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-BRD:module{BrandingV2} BRD)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-BRD:module{BrandingV3} BRD)
                 (owner:string (UR_OwnerKonto entity-id son))
                 (stoa-payment:decimal
                     (with-capability (DPDC|C>UPGRADE-BRD entity-id son)

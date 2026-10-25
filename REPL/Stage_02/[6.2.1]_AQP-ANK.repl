@@ -56,9 +56,9 @@
         (patron:string KST.ANHD)
         (ouro-id:string "OURO-98c486052a51")
         (ouro-owner:string (AQP-ANK.URC_AnchorableAssetOwner ouro-id [true true]))
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
-        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+        (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
         (core-class-name:string "CoreBoostTFa")
         (core-class-id:string "CoreBoostTFa-98c486052a51")
         (split-stoa:[decimal]
@@ -201,9 +201,9 @@
         (patron:string KST.ANHD)
         (ouro-id:string "OURO-98c486052a51")
         (ouro-owner:string (AQP-ANK.URC_AnchorableAssetOwner ouro-id [true true]))
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
-        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+        (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
         (temp-class-name:string "TempClassTF")
         (temp-class-id:string "TempClassTF-98c486052a51")
         (class07-id:string "CoreBoostTFg-98c486052a51")
@@ -321,7 +321,7 @@
         (total-dptf:decimal 500.0)
         (anchor-id:string "TFclassBa-98c486052a51")
         (bc-id:string "CoreBoostTFb-98c486052a51")
-        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+        (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
         (n-live:integer (length (ref-ANK::UR_ANK|AnchorsForAsset ouro-id)))
         (expected-promile:decimal 50.0)
     )
@@ -403,8 +403,8 @@
         (ouro-owner:string (AQP-ANK.URC_AnchorableAssetOwner ouro-id [true true]))
         (dhcd-id:string "DHCD-98c486052a51")
         (kbn-id:string "KBN-98c486052a51")
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
-        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+        (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
         (tf-ids:[string] (ref-ANK::UR_ANK|AnchorsForAsset ouro-id))
         (sf-ids:[string] (ref-ANK::UR_ANK|AnchorsForAsset dhcd-id))
     )
@@ -510,7 +510,7 @@
 (env-sigs [])
 (let
     (
-        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+        (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
         (anchor-ids:[string] (ref-ANK::URH_ANK|AllAnchorIds))
         (bc-ids:[string] (ref-ANK::URH_BC|AllBoostClassIds))
     )
@@ -555,7 +555,7 @@
 ;    (
 ;        (patron:string KST.ANHD)
 ;        (kbn-id:string "KBN-98c486052a51")
-;        (ref-DALOS:module{OuronetDalosV2} DALOS)
+;        (ref-DALOS:module{OuronetDalosV3} DALOS)
 ;        (split-stoa:[decimal]
 ;            (ref-DALOS::URC_SplitSTOAPrices patron (* (ref-DALOS::UR_UsagePrice "standard") 7.0))
 ;        )
@@ -594,7 +594,7 @@
 ;    (
 ;        (patron:string KST.ANHD)
 ;        (kbn-id:string "KBN-98c486052a51")
-;        (ref-DALOS:module{OuronetDalosV2} DALOS)
+;        (ref-DALOS:module{OuronetDalosV3} DALOS)
 ;        (split-stoa:[decimal]
 ;            (ref-DALOS::URC_SplitSTOAPrices patron (* (ref-DALOS::UR_UsagePrice "standard") 14.0))
 ;        )
@@ -676,10 +676,10 @@
         (ouro-owner:string (AQP-ANK.URC_AnchorableAssetOwner ouro-id [true true]))
         (anchor-name:string "RtAnkOwnerProbe")
         (class-name:string "RtAnkOwnerClass")
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
     )
     (let
         (
@@ -755,9 +755,9 @@
         (ouro-owner:string (AQP-ANK.URC_AnchorableAssetOwner ouro-id [true true]))
         (anchor-name:string "RtAnkOwnerProbe")
         (class-name:string "RtAnkOwnerClass")
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         ;;acnoi=true costs 2x the anchor STOA deterrence; "standard" is the same 50 STOA figure.
         (split-stoa:[decimal]
             (ref-DALOS::URC_SplitSTOAPrices KST.ANHD (* (ref-DALOS::UR_UsagePrice "standard") 2.0))
@@ -826,10 +826,10 @@
 (print "--- [TX009 · 01 · URCv_CoreDptf on a pure DPTF and on an LP] ---")
 (let
     (
-        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-SWP:module{SwapperV4} SWP)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-SWP:module{SwapperV5} SWP)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ouro-id:string "OURO-98c486052a51")
         (ouro-owner:string (AQP-ANK.URC_AnchorableAssetOwner "OURO-98c486052a51" [true true]))
         (swpair:string "W|OURO-98c486052a51|TSTY-98c486052a51")
@@ -939,10 +939,10 @@
 (let
     (
         (patron:string KST.ANHD)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
-        (ref-SWP:module{SwapperV4} SWP)
-        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+        (ref-SWP:module{SwapperV5} SWP)
+        (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (swpair:string "W|OURO-98c486052a51|TSTY-98c486052a51")
     )
     (let

@@ -24,7 +24,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -61,7 +61,7 @@
     (defun P|Info ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::P|Info)
         )
@@ -239,11 +239,44 @@
         (compose-capability (SECURE))
         (compose-capability (GOV))
     )
+    (defcap GOV|MIGRATE-GENERAL-FIELDS ()
+        @event
+        ;;ADDED 2026-10-12, hotfix. `GeneralContributionSchema` gained `distribution-round` and
+        ;;`zombie-rewards` (the #1C / #5M fixes) in a module upgrade that was never followed by a
+        ;;row migration -- confirmed directly against the LIVE chain (UR_Global0 returns only the
+        ;;original 10 fields; describe-module confirms the LIVE code already reads the new two),
+        ;;so every path touching distribution-round (A_Stake, A_Unstake, A_Inject, collect, the
+        ;;dust-sweep) aborts with "Key distribution-round not found in object" since that upgrade
+        ;;landed. AUTHORISATION FIRST per the 2026-09-14 ruling, then the safety check: refuse a
+        ;;SECOND call outright (rather than silently resetting real escrowed state back to 0)
+        ;;instead of trying to make the migration itself idempotent.
+        ;;TWO DEAD ENDS, BOTH VERIFIED LIVE 2026-10-12 BEFORE LANDING ON THE THIRD. `(try false
+        ;;(UR_Global11))` does not work: the explicit-column `read` behind it throws an EvalError
+        ;;("Key ... not found in object") that `try` cannot catch on this chain -- confirmed by
+        ;;firing the exact expression at the real node and getting the SAME uncaught failure
+        ;;back, and then confirming the SAME is true of bare `(at "k" obj)` on a plain in-memory
+        ;;literal with no database involved at all, which rules out "it's a database thing."
+        ;;`with-default-read` looked like the fix (it exists for exactly this) but is NOT: it
+        ;;substitutes its default only when the ROW is entirely absent, not when the row EXISTS
+        ;;and is merely missing the one requested COLUMN -- which is our actual shape, and it
+        ;;throws the identical uncaught error for it, confirmed live. `(contains key obj)` is the
+        ;;one that actually works: tested live against this exact row, both ways (false for the
+        ;;missing field, true for one that exists), with no error either time.
+        (compose-capability (SECURE))
+        (compose-capability (GOV))
+        (let
+            (
+                (already-migrated:bool (contains "distribution-round" (UR_Global0)))
+            )
+            (enforce (not already-migrated)
+                "STOAICO: distribution-round already present -- migration already applied, refusing a second run")
+        )
+    )
     (defcap STOAICO|INJECT (account:string)
         @event
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership account)
             (compose-capability (STOAICO|ADMIN))
@@ -253,8 +286,8 @@
         @event
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (v-usd-id:string (UR_Global10))
             )
             (ref-DALOS::UEV_EnforceAccountExists account)
@@ -267,7 +300,7 @@
         (compose-capability (STOAICO|ADMIN))
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (v-usd-id:string (UR_Global10))
                 (user-score:decimal (UR_User1 account))
             )
@@ -282,7 +315,7 @@
         @event
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (iz-account:bool (UR_IzAccount account))
             )
             (ref-DALOS::CAP_EnforceAccountOwnership account)
@@ -538,9 +571,9 @@
             \ is non-zero, else a single wSTOA Transfer. Data-dependent, dirty-read-fed from the live vault."
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
                 (wSTOA-supply:decimal (URC_ClaimableRewards account))
                 (urSTOA-supply:decimal (dec (UR_User2 account)))
                 (wSTOA-id:string (UR_Global8))
@@ -564,13 +597,13 @@
                     (ref-TFT::URCi_Transfer wSTOA-id DEMIPAD|SC_NAME account wSTOA-supply)))
         )
     )
-    (defun INFO_Collect:object{OuronetInfoV2.ClientInfo} (patron:string account:string)
+    (defun INFO_Collect:object{OuronetInfoV3.ClientInfo} (patron:string account:string)
         @doc "Cost preview for the STOAICO|C_Collect pure-citizen reward collect (sole gas-funded path = \
             \ the TS02-CPAD Talos wrapper). IGNIS = URCi_Collect. No protocol STOA fee; the collect DELIVERS \
             \ wSTOA + urSTOA rewards to the account (a payout, not a cost)."
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 (wSTOA-supply:decimal (URC_ClaimableRewards account))
                 (urSTOA-supply:decimal (dec (UR_User2 account)))
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
@@ -598,8 +631,8 @@
         (require-capability (SECURE))
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
                 (wSTOA-supply:decimal (URC_ClaimableRewards account))
                 (urSTOA-supply:decimal (dec (UR_User2 account)))
                 (wSTOA-id:string (UR_Global8))
@@ -905,8 +938,8 @@
         (with-capability (INIT-ICO-DISTRIBUTION)
             (let
                 (
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
-                    (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+                    (ref-DALOS:module{OuronetDalosV3} DALOS)
+                    (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
                     (dptf-ids:list 
                         (ref-TS01-C1::DPTF|C_Issue account account
                             ["WrappedUrStoa" "VirtualIcoDollars"]
@@ -940,6 +973,29 @@
             )
         )
     )
+    (defun A_MigrateGeneralFields:string ()
+        @doc "ONE-TIME admin hotfix, not a normal operation. `GeneralContributionSchema` gained \
+            \ `distribution-round` and `zombie-rewards` (the #1C / #5M fixes) in a module upgrade \
+            \ that was never followed by a row migration -- the live STOAICO|T|General row still \
+            \ holds only the original 10 fields it was inserted with. Every path that reads a \
+            \ distribution-round (A_Stake, A_Unstake, A_Inject, collect, the dust-sweep) has \
+            \ aborted with \"Key distribution-round not found in object\" since that upgrade \
+            \ landed -- confirmed directly against the live row (UR_Global0) and the live module \
+            \ code (describe-module), 2026-10-12. The values written here are the actual, \
+            \ chain-confirmed starting values, not a guess: the live row's current-rps and \
+            \ wstoa-supply both read 0, meaning no A_Inject has ever landed, so \
+            \ distribution-round=0 and zombie-rewards=0.0 are exactly what genesis would have \
+            \ written had the field existed at insert time. GOV|MIGRATE-GENERAL-FIELDS refuses a \
+            \ second call outright, so running this twice is a clean abort, not a silent reset."
+        (with-capability (GOV|MIGRATE-GENERAL-FIELDS)
+            (update STOAICO|T|General STOAICO|INFO
+                {"distribution-round" : 0
+                ,"zombie-rewards"     : 0.0
+                }
+            )
+            "STOAICO: migrated -- distribution-round and zombie-rewards added to the General row"
+        )
+    )
     (defun A_Inject (patron:string account:string wstoa-amount:decimal)
         @doc "Injects the ICO wSTOA amount into the Distribution-Vault (D-Vault); \
             \ the 10 mil from the ICO sale, from <account> \
@@ -947,7 +1003,7 @@
         (with-capability (STOAICO|INJECT account)
             (let
                 (
-                    (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+                    (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
                     (wSTOA-ID:string (UR_Global8))
                     ;;
                     (vault-score:decimal (UR_Global1))
@@ -1002,8 +1058,8 @@
         (with-capability (STOAICO|ADD-CONTRIBUTION account v-usd-amount)
             (let
                 (
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
                     (v-usd-id:string (UR_Global10))
                     (user-score:decimal (UR_User1 account))
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
@@ -1055,8 +1111,8 @@
         (with-capability (STOAICO|REMOVE-CONTRIBUTION account v-usd-amount)
             (let
                 (
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
                     (v-usd-id:string (UR_Global10))
                     (user-score:decimal (UR_User1 account))
                     (remaining:decimal (- user-score v-usd-amount))

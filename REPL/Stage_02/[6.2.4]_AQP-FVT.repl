@@ -34,11 +34,11 @@
         (ouro-owner:string (AQP-ANK.URC_AnchorableAssetOwner ouro-id [true true]))
         (score-name:string "TfStakeScore")
         (boost-class-name:string "TfStakeBoost")
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
         (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
         (anchor-id:string (ref-U|DALOS::UDC_Makeid "TfStakeAnchor"))
         (split-std:[decimal]
@@ -138,12 +138,12 @@
         (fvt-name:string "TfStakeVault")
         (pool-name:string "TfStakePool")
         (fvt-class:integer 1)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
         (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
         (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
@@ -262,12 +262,12 @@
         (pool-name:string "TfStakePool")
         (stake-amount:decimal 100.0)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
-        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
         (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
         (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
@@ -351,8 +351,8 @@
         (score-name:string "TfStakeScore")
         (fvt-name:string "TfStakeVault")
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
         (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
         (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
     )
@@ -410,10 +410,10 @@
         (pool-name:string "TfStakePool")
         (inject-amt:decimal 50.0)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
         (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
         (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
@@ -448,7 +448,7 @@
         ;; OURO reward, instant-injected lane (no live stream) → payout is drift-free, so reader == exec exactly.
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 (predicted:decimal
                     (at "ignis-need"
                         (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
@@ -524,6 +524,94 @@
 ;; TX-FVT-05b — Streamed inject (linear vesting) smoke: CC_InjectStream 240 OURO over 24h; the sole staker (ANHD)
 ;;   collects ~half at +12h and the exact remainder at +24h (finish flush → stream pruned). Proves the drip's
 ;;   time-based release, the exact-remainder flush, and compaction. Block-time driven via env-chain-data.
+(begin-tx "TX-FVT-05a2 - drift-lock + stream-eligible latches (V14)")
+(print "")
+(print "=== TX-FVT-05a2 — the two one-way latches that make a stream honest ===")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;; ============================================================================
+;; WHAT THIS PROVES — added 2026-10-25 with the V14 round.
+;;
+;; A stream pays against STORED weights for its whole duration: the drip divides by the stored
+;; total-deb mirror and each member is paid against their stored deb, with NO fix loop and NO
+;; freshness enforce. A mis-split is therefore never corrected retroactively. (Measured and
+;; recorded in memories/2026-10-23-interface-bump-default-and-inject-paths.md §4; the design doc
+;; claimed D10 covered this and it never did -- corrected in STREAMED-INJECT-DESIGN.md.)
+;;
+;; The fix is two LATCHES rather than a scan at drip time:
+;;   SCR|Schema.drift-locked          a score with deb-boost false and no boost-class link cannot
+;;                                    drift between stakes -- the owner asserts it, one-way.
+;;   FVT|RewardAggregate.stream-eligible  set only after proving EVERY enabled member is locked.
+;;
+;; CC_InjectStream refuses unless the FVT is latched, and UEV_StreamEligibleMemberOk keeps the
+;; proof true for every later admission/re-enable. Both latches are irreversible by construction,
+;; which is what the one-way assertions below pin.
+;;
+;; NOT TESTED HERE, DELIBERATELY: that a stream opened BEFORE the gate existed keeps dripping.
+;; There is no un-latch, so a pre-latch stream cannot be constructed once the gate is in place.
+;; The grandfathering guarantee rests on the DRIP not being gated by the inject defcap -- a
+;; structural fact about XI_ReleaseStream, not a state this suite can reach.
+;; ============================================================================
+;;==== TX-FVT-05a2 · 01 · latches ==== ========================================
+(print "--- [TX-FVT-05a2 · 01 · refuse-then-latch] ---")
+(let
+    (
+        (patron:string KST.ANHD)
+        (ouro-id:string "OURO-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+        (score-id:string (ref-U|DALOS::UDC_Makeid "TfStakeScore"))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "TfStakeVault"))
+    )
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (map print
+        [
+            ;;BOTH LATCHES START FALSE -- the fail-safe direction. An FVT that has not proven
+            ;;anything cannot stream, and a score nobody has asserted about is not trusted.
+            (expect "<<05a2>> score starts unlocked" false (AQP-SCORE.UR_SCR|ScoreDriftLocked score-id))
+            (expect "<<05a2>> FVT starts stream-ineligible" false (AQP-FVT.UR_FVT|StreamEligible fvt-id))
+            ;;THE GATE ITSELF: a stream is refused outright on an un-latched FVT. This is the
+            ;;assertion that would have caught the original gap, and it is the reason the whole
+            ;;round exists.
+            (expect-failure "<<05a2>> CC_InjectStream refused while the FVT is not stream-eligible"
+                "FVT is not stream-eligible"
+                (ref-TS02-C3::AQP-FVT|CC_InjectStream patron patron fvt-id ouro-id 240.0 86400))
+            ;;THE FVT LATCH CANNOT OUTRUN ITS MEMBERS: TfStakeScore is still unlocked here, so the
+            ;;member scan refuses. Latching is a PROOF over the membership, not a declaration.
+            (expect-failure "<<05a2>> FVT latch refused while a member is not drift-locked"
+                "must be drift-locked"
+                (ref-TS02-C3::AQP-FVT|CC_LatchStreamEligible patron (AQP-FVT.UR_FVT|OwnerKonto fvt-id) fvt-id))
+        ])
+    ;;LOCK THE SCORE, THEN THE FVT -- the real-world order, and the only order that works.
+    (print (format "<(AQP-SCR|C_LockScoreDrift)> => \"{}\""
+        [(ref-TS02-C3::AQP-SCR|C_LockScoreDrift patron (AQP-SCORE.UR_SCR|ScoreOwnerKonto score-id) score-id)]))
+    (print (format "<(AQP-FVT|CC_LatchStreamEligible)> => \"{}\""
+        [(ref-TS02-C3::AQP-FVT|CC_LatchStreamEligible patron (AQP-FVT.UR_FVT|OwnerKonto fvt-id) fvt-id)]))
+    (map print
+        [
+            (expect "<<05a2>> score is now drift-locked" true (AQP-SCORE.UR_SCR|ScoreDriftLocked score-id))
+            (expect "<<05a2>> FVT is now stream-eligible" true (AQP-FVT.UR_FVT|StreamEligible fvt-id))
+            ;;ONE-WAY, BOTH OF THEM. A latch that could be re-run is a latch that could be
+            ;;scripted into a loop; a latch that could be UNSET is not a guarantee at all.
+            (expect-failure "<<05a2>> locking an already-locked score is refused (one-way)"
+                "already locked"
+                (ref-TS02-C3::AQP-SCR|C_LockScoreDrift patron (AQP-SCORE.UR_SCR|ScoreOwnerKonto score-id) score-id))
+            (expect-failure "<<05a2>> latching an already-latched FVT is refused (one-way)"
+                "already stream-eligible"
+                (ref-TS02-C3::AQP-FVT|CC_LatchStreamEligible patron (AQP-FVT.UR_FVT|OwnerKonto fvt-id) fvt-id))
+            ;;AND THE LOCK IS LOAD-BEARING AFTERWARDS: the two things that would make the score
+            ;;drift again are refused for good. Without these the latch would be a label.
+            (expect-failure "<<05a2>> deb-boost refused on a drift-locked score"
+                "must not be drift-locked"
+                (ref-TS02-C3::AQP-SCR|C_EnableDebBoost patron (AQP-SCORE.UR_SCR|ScoreOwnerKonto score-id) score-id))
+        ])
+    (env-sigs [])
+    ""
+)
+(commit-tx)
+;;|| NEXT >
+;;||
+;;||
 (begin-tx "TX-FVT-05b - streamed inject linear vesting smoke")
 (print "")
 (print "=== TX-FVT-05b — CC_InjectStream 240 OURO / 24h → collect @12h (~120) + @24h (~120) ===")
@@ -537,8 +625,8 @@
         (ouro-id:string "OURO-98c486052a51")
         (ouro-owner:string (AQP-ANK.URC_AnchorableAssetOwner ouro-id [true true]))
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (score-id:string (ref-U|DALOS::UDC_Makeid "TfStakeScore"))
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "TfStakeVault"))
         (pool-id:string (ref-U|DALOS::UDC_Makeid "TfStakePool"))
@@ -616,11 +704,11 @@
         (ouro-id:string "OURO-98c486052a51")
         (ouro-owner:string (AQP-ANK.URC_AnchorableAssetOwner ouro-id [true true]))
         (boost-class-name:string "TfStakeBoost2")
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
-        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+        (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
         (anchor2-id:string (ref-U|DALOS::UDC_Makeid "TfStakeAnchor2"))
         (sync-needed-pre:bool (ref-AQP::URC_BenDptfAnchorsNeedSync beneficiary-id ouro-id))
         (aa-pre:integer (ref-ANK::UR_AA|AnchorsActive ouro-id))
@@ -668,8 +756,8 @@
         ;; Talos exec (which bills the concatenated exec cumulator). Proves reader == exec (INFO no longer understated).
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPTF2:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-DPTF2:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (predicted:decimal
                     (at "ignis-need"
                         (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
@@ -735,11 +823,11 @@
         (pool-name:string "TfStakePool")
         (partial-amt:decimal 40.0)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
-        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
         (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
         (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
@@ -837,11 +925,11 @@
         (score-name:string "TfMosaicScore")
         (fvt-name:string "TfMosaicVault")
         (pool-name:string "TfMosaicPool")
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-U|CT:module{OuronetConstantsV2} U|CT)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
         (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
         (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
@@ -966,11 +1054,11 @@
         (stake-e:decimal 40.0)
         (inject-amt:decimal 100.0)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
         (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
         (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
@@ -1090,10 +1178,10 @@
         (pool-name:string "TfStakePool")
         (stake-amount:decimal 50.0)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
-        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
         (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
         ;; Deltas (robust to FVT-09's ANHD self-stake leftover in TfStakePool):
@@ -1167,10 +1255,10 @@
         (stake-amount:decimal 100.0)
         (move-amount:decimal 40.0)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
-        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
         (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
         ;; DELTAS THROUGHOUT (robust to FVT-09's ANHD self-stake leftover in TfStakePool, same

@@ -39,9 +39,9 @@
     (
         (anhd:string KST.ANHD)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
         (pool-id:string (ref-U|DALOS::UDC_Makeid "DHWonderCoach"))
         (score-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryWonderCoach"))
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
@@ -86,11 +86,11 @@
         (anhd:string KST.ANHD)
         (emma:string KST.EMMA)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
         (pool-id:string (ref-U|DALOS::UDC_Makeid "DHWonderCoach"))
         (score-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryWonderCoach"))
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
@@ -139,10 +139,10 @@
     (
         (anhd:string KST.ANHD)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (pool-id:string (ref-U|DALOS::UDC_Makeid "DHWonderCoach"))
         (score-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryWonderCoach"))
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
@@ -199,9 +199,9 @@
         (anhd:string KST.ANHD)
         (emma:string KST.EMMA)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
         (dhwc-id:string "DHWC-98c486052a51")
         (nonce:integer 2)
@@ -232,9 +232,9 @@
     (
         (emma:string KST.EMMA)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (pool-id:string (ref-U|DALOS::UDC_Makeid "DHWonderCoach"))
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
         (dhwc-id:string "DHWC-98c486052a51")
@@ -296,10 +296,10 @@
     (
         (anhd:string KST.ANHD)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (pool-id:string (ref-U|DALOS::UDC_Makeid "DHWonderCoach"))
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
         (score-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryWonderCoach"))
@@ -357,8 +357,8 @@
     (
         (emma:string KST.EMMA)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (wc-pool:string (ref-U|DALOS::UDC_Makeid "DHWonderCoach"))
         (bunnies-pool:string (ref-U|DALOS::UDC_Makeid "DHBunnies"))
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
@@ -400,9 +400,9 @@
     (
         (emma:string KST.EMMA)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (wc-pool:string (ref-U|DALOS::UDC_Makeid "DHWonderCoach"))
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
         (dhwc-id:string "DHWC-98c486052a51")
@@ -438,8 +438,8 @@
     (
         (emma:string KST.EMMA)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (bunnies-pool:string (ref-U|DALOS::UDC_Makeid "DHBunnies"))
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
         (kbn-id:string "KBN-98c486052a51")
@@ -483,9 +483,9 @@
     (
         (anhd:string KST.ANHD)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
         (auryn-id:string "AURYN-98c486052a51")
         (bunnies-score:string (ref-U|DALOS::UDC_Makeid "SubsidiaryBunnies"))
@@ -553,8 +553,8 @@
     (
         (anhd:string KST.ANHD)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
         (auryn-id:string "AURYN-98c486052a51")
         (bunnies-score:string (ref-U|DALOS::UDC_Makeid "SubsidiaryBunnies"))
@@ -600,10 +600,10 @@
         (anhd:string KST.ANHD)
         (emma:string KST.EMMA)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
         (bunnies-pool:string (ref-SCR::UR_SCR|ScoreAqpoolLink (ref-U|DALOS::UDC_Makeid "SubsidiaryBunnies")))
         (bunnies-score:string (ref-U|DALOS::UDC_Makeid "SubsidiaryBunnies"))
         (ea-id:string (ref-DALOS::UR_EliteAurynID))
@@ -640,8 +640,8 @@
     (
         (anhd:string KST.ANHD)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
         (auryn-id:string "AURYN-98c486052a51")
         (bunnies-pool:string (ref-SCR::UR_SCR|ScoreAqpoolLink (ref-U|DALOS::UDC_Makeid "SubsidiaryBunnies")))
@@ -698,8 +698,8 @@
     (
         (anhd:string KST.ANHD)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (bunnies-score:string (ref-U|DALOS::UDC_Makeid "SubsidiaryBunnies"))
         (wc-score:string (ref-U|DALOS::UDC_Makeid "SubsidiaryWonderCoach"))
     )
@@ -725,7 +725,7 @@
                     (ref-TS02-C3::AQP-SCR|C_CreateScoreBoostLink anhd (AQP-SCORE.UR_SCR|ScoreOwnerKonto bunnies-score) bunnies-score wc-score))
                 (expect-failure
                     "<<TX-AQP-DEB09>> enable-deb-boost on a POPULATED score must fail (nzs>0 ⇒ vacate to reconfigure)"
-                "Deb-boost must be off and the score must have no stakers (nzs-count ="
+                "Deb-boost must be off, the score must have no stakers (nzs-count = 0) — vacate to reconfigure — and the score must not be drift-locked"
                     (ref-TS02-C3::AQP-SCR|C_EnableDebBoost anhd (AQP-SCORE.UR_SCR|ScoreOwnerKonto bunnies-score) bunnies-score))
             ]
         )
@@ -773,9 +773,9 @@
         (anhd:string KST.ANHD)
         (lumy:string KST.LUMY)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (pool-id:string (ref-U|DALOS::UDC_Makeid "DHCodingDivision"))
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "CodingDivisionTreasury"))
         (dhcd-id:string "DHCD-98c486052a51")
@@ -812,9 +812,9 @@
     (
         (anhd:string KST.ANHD)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "CodingDivisionTreasury"))
         (wstoa-id:string (ref-DALOS::UR_WrappedStoaID))
     )
@@ -867,10 +867,10 @@
     (
         (anhd:string KST.ANHD)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (pool-id:string (ref-U|DALOS::UDC_Makeid "DHCodingDivision"))
         (score-id:string (ref-U|DALOS::UDC_Makeid "TheCodingDivision"))
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "CodingDivisionTreasury"))
@@ -941,12 +941,12 @@
         (anhd:string KST.ANHD)
         (emma:string KST.EMMA)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (farm-id:string (ref-U|DALOS::UDC_Makeid "OuroLpFarm"))
         (silver-score:string (ref-U|DALOS::UDC_Makeid "SilverSnakePower"))
         (ouro-pool:string (ref-SCR::UR_SCR|ScoreAqpoolLink silver-score))
@@ -1021,8 +1021,8 @@
     (
         (anhd:string KST.ANHD)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (farm-id:string (ref-U|DALOS::UDC_Makeid "OuroLpFarm"))
         (ouro-id:string "OURO-98c486052a51")
         (defpact-amt:decimal 20.0)
@@ -1075,7 +1075,7 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+        (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
         (silver-score:string (ref-U|DALOS::UDC_Makeid "SilverSnakePower"))
         (silver-class:string (ref-U|DALOS::UDC_Makeid "SilverSnakePower"))
     )
@@ -1140,11 +1140,11 @@
         (lumy:string KST.LUMY)
         (anhd:string KST.ANHD)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (anchor-id:string (ref-U|DALOS::UDC_Makeid "AurynRain"))
         (silver-class:string (ref-U|DALOS::UDC_Makeid "SilverSnakePower"))
         (silver-score:string (ref-U|DALOS::UDC_Makeid "SilverSnakePower"))
@@ -1240,8 +1240,8 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (anchor-id:string (ref-U|DALOS::UDC_Makeid "AurynRain"))
         (ouro-pool:string (ref-U|DALOS::UDC_Makeid "DHOuroLp"))
     )
@@ -1279,8 +1279,8 @@
         (anhd:string KST.ANHD)
         (emma:string KST.EMMA)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
         (auryn-id:string "AURYN-98c486052a51")
     )
@@ -1302,6 +1302,228 @@
                     emma-before (ref-DPTF::UR_AccountSupply auryn-id emma))
             ]
         )
+    )
+)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
+;;
+;; ============================================================================
+;; TX-AQP-DEB15 — WHO CAUSED THE FIX DECIDES WHO PAYS FOR IT (owner ruling, 2026-10-23).
+;;
+;; Injecting is PERMISSIONLESS, so `CC_Inject` force-fixing every stale present member
+;; let ANY account raise ANOTHER account's next collect bill. The rule now:
+;;
+;;     owner injects       -> fix + record the 2e forced-fix count  (DEB06/DEB07 above)
+;;     non-owner injects   -> fix, record NOTHING                   (THIS test)
+;;
+;; WHY THIS TEST HAD TO BE WRITTEN RATHER THAN ASSUMED COVERED. Every pre-existing inject
+;; in this suite is `CC_Inject anhd anhd ...`, and ANHD **is** SubsidiaryTreasury's
+;; owner-konto (pinned by [6.2.8d] <<TX-UNSTALEALL01>>). So the whole suite exercises the
+;; OWNER branch only: delete the owner test from CC_Inject entirely and every other
+;; assertion in this file still passes. That is the shadowed-gate shape -- a branch no
+;; fixture can reach is indistinguishable from one that is not there.
+;;
+;; IT ASSERTS BOTH HALVES, for the same reason. "ffc stays 0" alone would also pass if the
+;; non-owner branch stopped fixing anybody at all, which would be a far worse bug than the
+;; one being prevented. So: the member must come out FRESH *and* unbilled.
+;; ============================================================================
+(begin-tx "TX-AQP-DEB15a - give ANHD his EliteAuryn back so his deb can be moved again")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-DEB15a - give ANHD his EliteAuryn back · 01 · env-sigs (caps) ====
+(print "--- [TX-AQP-DEB15a - give ANHD his EliteAuryn back · 01 · env-sigs (caps)] ---")
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+;;==== TX-AQP-DEB15a - give ANHD his EliteAuryn back · 02 · let / invocation ====
+(print "--- [TX-AQP-DEB15a - give ANHD his EliteAuryn back · 02 · let / invocation] ---")
+(let
+    (
+        (anhd:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ea-id:string (ref-DALOS::UR_EliteAurynID))
+        (emma-ea:decimal (ref-DPTF::UR_AccountSupply ea-id emma))
+    )
+    ;; By this point in the fixture ANHD's EliteAuryn has been moved away twice, so his deb sits
+    ;; at the floor and cannot be pushed DOWN any further -- which is the only direction that
+    ;; reliably stales a score here. Hand it back first so the next tx has room to move it.
+    (ref-TS01-C1::DPTF|C_Transfer emma emma anhd ea-id (floor (* emma-ea 0.99) 4) false)
+    (print (format "<(DEB15a ANHD elite-deb restored)> => {}" [(ref-DALOS::UR_Elite-DEB anhd)]))
+)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
+;;
+(begin-tx "TX-AQP-DEB15b - re-stale ANHD and fund a NON-OWNER with auryn")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-DEB15b - re-stale ANHD and fund a NON-OWNER · 01 · env-sigs (caps) ====
+(print "--- [TX-AQP-DEB15b - re-stale ANHD and fund a NON-OWNER · 01 · env-sigs (caps)] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-AQP-DEB15b - re-stale ANHD and fund a NON-OWNER · 02 · let / invocation ====
+(print "--- [TX-AQP-DEB15b - re-stale ANHD and fund a NON-OWNER · 02 · let / invocation] ---")
+(let
+    (
+        (anhd:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (auryn-id:string "AURYN-98c486052a51")
+        (ea-id:string (ref-DALOS::UR_EliteAurynID))
+        (bunnies-score:string (ref-U|DALOS::UDC_Makeid "SubsidiaryBunnies"))
+        (bunnies-pool:string (ref-SCR::UR_SCR|ScoreAqpoolLink (ref-U|DALOS::UDC_Makeid "SubsidiaryBunnies")))
+        (ea-bal:decimal (ref-DPTF::UR_AccountSupply ea-id anhd))
+        (deb-pre:decimal (ref-DALOS::UR_Elite-DEB anhd))
+    )
+    ;; deb DOWN => stale, the same lever every other tx in this file uses
+    (ref-TS01-C1::DPTF|C_Transfer anhd anhd emma ea-id (floor (* ea-bal 0.99) 4) false)
+    ;; ...and give EMMA the auryn she will inject with, so the NEXT tx is purely the inject
+    (ref-TS01-C1::DPTF|C_Transfer anhd anhd emma auryn-id 5.0 false)
+    (map print
+        [
+            (format "<(DEB15b ANHD elite-deb {} -> {})>" [deb-pre (ref-DALOS::UR_Elite-DEB anhd)])
+            (expect "<<TX-AQP-DEB15b>> ANHD Bunnies re-STALE (fixture precondition)" true
+                (ref-SCR::URC_U-SCR|UserScoreDebStale anhd bunnies-pool bunnies-score))
+        ]
+    )
+)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
+;;
+(begin-tx "TX-AQP-DEB15c - NON-OWNER inject fixes the stale member but bills NOBODY")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-DEB15c - NON-OWNER inject fixes but bills NOBODY · 01 · env-sigs (caps) ====
+(print "--- [TX-AQP-DEB15c - NON-OWNER inject fixes but bills NOBODY · 01 · env-sigs (caps)] ---")
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+;;==== TX-AQP-DEB15c - NON-OWNER inject fixes but bills NOBODY · 02 · let / invocation ====
+(print "--- [TX-AQP-DEB15c - NON-OWNER inject fixes but bills NOBODY · 02 · let / invocation] ---")
+(let
+    (
+        (anhd:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
+        (auryn-id:string "AURYN-98c486052a51")
+        (bunnies-score:string (ref-U|DALOS::UDC_Makeid "SubsidiaryBunnies"))
+        (bunnies-pool:string (ref-SCR::UR_SCR|ScoreAqpoolLink (ref-U|DALOS::UDC_Makeid "SubsidiaryBunnies")))
+        (owner-konto:string (ref-FVT::UR_FVT|OwnerKonto fvt-id))
+        ;; MEASURED, NOT ASSUMED TO BE ZERO. Earlier txs in this file inject through the MTX
+        ;; defpact as the OWNER, which legitimately leaves a non-zero count standing here. The
+        ;; claim is that a NON-OWNER inject does not MOVE it, so the baseline is read, not asserted.
+        (ffc-pre:integer (ref-FVT::UR_FVT-FFC|Count fvt-id auryn-id anhd))
+    )
+    (map print
+        [
+            ;; THE PREMISE, STATED AS AN ASSERTION. If EMMA ever became the owner-konto this test
+            ;; would silently start measuring the OWNER branch and still pass, so it says who she
+            ;; is not, rather than relying on a fixture detail staying true.
+            (expect "<<TX-AQP-DEB15c>> premise: EMMA is NOT the FVT owner-konto" false (= emma owner-konto))
+            (expect "<<TX-AQP-DEB15c>> premise: ANHD is STALE going in" true
+                (ref-SCR::URC_U-SCR|UserScoreDebStale anhd bunnies-pool bunnies-score))
+            (format "<(DEB15c ffc before the non-owner inject)> => {}" [ffc-pre])
+            ;; THE NON-OWNER INJECT
+            (format "<(DEB15c EMMA (non-owner) CC_Inject)> => \"{}\""
+                [(ref-TS02-C3::AQP-FVT|CC_Inject emma emma fvt-id auryn-id 1.0)])
+            ;; (a) THE FIX STILL HAPPENED. Asserting only (b) would also pass if the non-owner
+            ;;     branch stopped fixing anybody at all -- a worse bug than the one prevented,
+            ;;     since the inject would then distribute against a stale divisor.
+            (expect "<<TX-AQP-DEB15c>> ANHD Bunnies is FRESH — the non-owner inject DID fix him" false
+                (ref-SCR::URC_U-SCR|UserScoreDebStale anhd bunnies-pool bunnies-score))
+            ;; (b) AND NOBODY WAS BILLED FOR IT. Were CC_Inject still calling the penalized fixer
+            ;;     unconditionally, this would have RISEN and ANHD would owe non-discountable
+            ;;     IGNIS at his next collect because a STRANGER chose to fund a lane.
+            (expect "<<TX-AQP-DEB15c>> ffc UNCHANGED — a stranger's inject bills the fixed user NOTHING"
+                ffc-pre (ref-FVT::UR_FVT-FFC|Count fvt-id auryn-id anhd))
+        ]
+    )
+)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
+;;
+;; ============================================================================
+;; TX-AQP-DEB16 — THE PER-LANE INJECTION FLOOR (added with the V3 interface round).
+;;
+;; `CC_Inject` runs its stale-fix loop regardless of `amount` — the loop never reads it — so a
+;; `> 0.0` check was never a floor in any useful sense: one smallest unit bought a full force-fix
+;; of the entire present membership. Every lane is therefore born at CT_DEFAULT_MIN_INJECT, and
+;; its owner may raise it.
+;;
+;; THE DEFAULT IS ASSERTED FIRST, because it is the half that cannot be observed any other way:
+;; a lane nobody has configured must already be protected, or the floor is opt-in and the hole
+;; stays open for every owner who never thinks about it.
+;; ============================================================================
+(begin-tx "TX-AQP-DEB16 - per-lane injection floor: default, enforcement, and owner raise")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-DEB16 - per-lane injection floor · 01 · env-sigs (caps) ====
+(print "--- [TX-AQP-DEB16 - per-lane injection floor · 01 · env-sigs (caps)] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-AQP-DEB16 - per-lane injection floor · 02 · let / invocation ====
+(print "--- [TX-AQP-DEB16 - per-lane injection floor · 02 · let / invocation] ---")
+(let
+    (
+        (anhd:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
+        (auryn-id:string "AURYN-98c486052a51")
+    )
+    (map print
+        [
+            ;; (a) EVERY LANE IS BORN PROTECTED — nobody set this; it is the schema default
+            ;;     reaching a row that was created long before the field existed.
+            (format "<(DEB16 default floor)> => {}" [(ref-FVT::UR_FVT-RG|MinInjectAmount fvt-id auryn-id)])
+            (expect "<<TX-AQP-DEB16>> a lane nobody configured already carries the 1.0 default"
+                1.0 (ref-FVT::UR_FVT-RG|MinInjectAmount fvt-id auryn-id))
+            ;; (b) DUST IS REFUSED. This is the whole point: before the floor, this call SUCCEEDED
+            ;;     and force-fixed the entire present membership for one smallest unit.
+            (expect-failure "<<TX-AQP-DEB16>> a dust injection is refused by the lane's floor"
+                "Inject amount is below this lane's minimum"
+                (ref-TS02-C3::AQP-FVT|CC_Inject anhd anhd fvt-id auryn-id 0.000000001))
+            ;; (c) ...and the floor is not merely decorative at exactly the boundary either.
+            (expect-failure "<<TX-AQP-DEB16>> just under the floor is still refused"
+                "Inject amount is below this lane's minimum"
+                (ref-TS02-C3::AQP-FVT|CC_Inject anhd anhd fvt-id auryn-id 0.999999999))
+            ;; (d) THE OWNER MAY RAISE IT, and the new floor binds immediately.
+            (format "<(DEB16 owner raises floor to 25.0)> => \"{}\""
+                [(ref-TS02-C3::AQP-FVT|C_SetMinInjectAmount anhd anhd fvt-id auryn-id 25.0)])
+            (expect "<<TX-AQP-DEB16>> the raised floor is what the lane now reports"
+                25.0 (ref-FVT::UR_FVT-RG|MinInjectAmount fvt-id auryn-id))
+            (expect-failure "<<TX-AQP-DEB16>> an amount legal a moment ago is now below the raised floor"
+                "Inject amount is below this lane's minimum"
+                (ref-TS02-C3::AQP-FVT|CC_Inject anhd anhd fvt-id auryn-id 10.0))
+            ;; (e) A FLOOR OF ZERO IS NOT A FLOOR — it would restore the very hole this closes.
+            (expect-failure "<<TX-AQP-DEB16>> the floor itself has a floor: zero is refused"
+                "Minimum inject amount must be positive"
+                (ref-TS02-C3::AQP-FVT|C_SetMinInjectAmount anhd anhd fvt-id auryn-id 0.0))
+            ;; (f) put it back so nothing downstream inherits a 25.0 floor
+            (format "<(DEB16 restore default)> => \"{}\""
+                [(ref-TS02-C3::AQP-FVT|C_SetMinInjectAmount anhd anhd fvt-id auryn-id 1.0)])
+        ]
     )
 )
 (commit-tx)

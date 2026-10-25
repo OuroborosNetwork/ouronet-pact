@@ -83,10 +83,10 @@
 (print "--- [RT-H-001 - swap a token for itself, and swap a token twice · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-SWP:module{SwapperV4} SWP)
-        (ref-SWPU:module{SwapperUsageV3} SWPU)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV5} TS01-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-SWP:module{SwapperV5} SWP)
+        (ref-SWPU:module{SwapperUsageV4} SWPU)
         (pool:string "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
         ;;the WEIGHTED twin of the same three tokens, issued by [6.3] at SWP|TX 04. Same tokens,
         ;;different pool type -- so the only thing that differs between attack 2 and attack 3 is
@@ -199,15 +199,15 @@
 ;;            possible output passes. That is what the <= 50 ceiling exists to prevent.
 (let
     (
-        (ref-SWPU:module{SwapperUsageV3} SWPU)
+        (ref-SWPU:module{SwapperUsageV4} SWPU)
         ;;hand-built, never passed through the constructor. This is the whole attack: the schema is
         ;;public and the client surface accepts the object, so nothing obliges a caller to use
         ;;UDC_SpawnSmartSwapSlippageBounds at all.
-        (forged:object{SwapperUsageV3.Slippage}
+        (forged:object{SwapperUsageV4.Slippage}
             { "expected-output-amount" : 1000.0
             , "output-precision"       : 12
             , "slippage-percent"       : 9999.0 })
-        (conforming:object{SwapperUsageV3.Slippage}
+        (conforming:object{SwapperUsageV4.Slippage}
             { "expected-output-amount" : 1000.0
             , "output-precision"       : 12
             , "slippage-percent"       : 10.0 })
@@ -340,7 +340,7 @@
             (expect-failure
                 "<<RT-H-003c>> hot recovery on a pair with none is refused by a GUARD, not by a table read"
                 "must be set to true for exec"
-                (let ((r:module{TalosStageOne_ClientTwoV2} TS01-C2))
+                (let ((r:module{TalosStageOne_ClientTwoV3} TS01-C2))
                     (r::ATS|C_HotRecovery KST.ANHD KST.ANHD pool 1.0)))
             ;;THE PREVIEW IS A SEPARATE COPY OF THE BUG. Fixing the exec path did NOT fix this:
             ;;`URCi_HotRecovery` has its own eager `let` with the same two lines, so a QUOTE still
@@ -370,7 +370,7 @@
 (let
     (
         (pool:string "Bisthanium-98c486052a51")
-        (r:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (r:module{TalosStageOne_ClientTwoV3} TS01-C2)
     )
     (r::ATS|C_SwitchHotRecovery KST.ANHD (ATS.UR_OwnerKonto pool) pool true)
     (map print

@@ -2,7 +2,7 @@
 ;; History/shared registry: 1_SOVEREIGN/STAGE_02/0_Interfaces/02_Core.pact
 ;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface DpdcNonceV2
+(interface DpdcNonceV3
     @doc "Exposes Collectables Nonce Management related Functions"
 
     ;;<=========================================================================>
@@ -46,8 +46,8 @@
     ;;
     ;;  [URCi]
     ;;
-    (defun URCi_UpdateNonces:object{IgnisCollectorV3.OutputCumulator} (account:string count:integer))
-    (defun URCi_UpdateNonceField:object{IgnisCollectorV3.OutputCumulator} (account:string))
+    (defun URCi_UpdateNonces:object{IgnisCollectorV4.OutputCumulator} (account:string count:integer))
+    (defun URCi_UpdateNonceField:object{IgnisCollectorV4.OutputCumulator} (account:string))
     ;;{5.4}  Validate [UEV/CAP]
     ;;
     ;; [UEV]
@@ -73,6 +73,13 @@
     (defun C_UpdateNonceMetaData                        (patron:string executor:string id:string son:bool nosc:integer nos:bool nost:bool meta-data:object))
     (defun C_UpdateNonceURI                             (patron:string executor:string id:string son:bool nosc:integer nos:bool nost:bool ay:object{DpdcUdcV2.URI|Type} u1:object{DpdcUdcV2.URI|Data} u2:object{DpdcUdcV2.URI|Data} u3:object{DpdcUdcV2.URI|Data}))
 
+
+    ;;<=========================================================================>
+    ;; ADDED 2026-10-12 -- interface-membership sweep (StoicSyntax-Prefixes.md Sec5,
+    ;; owner ruling). Every one of these was already live in the module body; this
+    ;; closes the gap between what the module DOES and what its interface SAYS it does.
+    ;;<=========================================================================>
+    (defun UEV_NotSetInstance (id:string son:bool nosc:integer nost:bool))
 )
 ;;
 (module DPDC-N GOV
@@ -89,7 +96,7 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements DpdcNonceV2)
+    (implements DpdcNonceV3)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -105,7 +112,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -132,7 +139,7 @@
     (defun P|Info ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::P|Info)
         )
@@ -271,8 +278,8 @@
         @event
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPDC-C:module{DpdcCreateV3} DPDC-C)
                 (l1:integer (length nosc))
                 (l2:integer (length new-nonces-data))
             )
@@ -299,7 +306,7 @@
         @event
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (UEV_RoleModifyRoyaltiesON id son account)
             (ref-DPDC::UEV_Royalty royalty-value)
@@ -312,7 +319,7 @@
         @event
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (UEV_RoleModifyRoyaltiesON id son account)
             (ref-DPDC::UEV_IgnisRoyalty royalty-value)
@@ -325,7 +332,7 @@
         @event
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (ref-DPDC::UEV_Name name)     ;; DPDC Audit #12Hb
             (compose-capability (DPDC-N|C>UPDATE id son account nosc nos nost))
@@ -337,7 +344,7 @@
         @event
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (ref-DPDC::UEV_Description description)     ;; DPDC Audit #12Hb
             (compose-capability (DPDC-N|C>UPDATE id son account nosc nos nost))
@@ -356,7 +363,7 @@
         @event
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (ref-DPDC::UEV_MetaDataBag meta-data)     ;; DPDC Audit #12Hb
             (compose-capability (DPDC-N|C>UPDATE id son account nosc nos nost))
@@ -372,7 +379,7 @@
         @event
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (UEV_RoleSetNewUriON id son account)
             ;; DPDC Audit #12Hb
@@ -393,7 +400,7 @@
         (id:string son:bool account:string nosc:integer nos:bool nost:bool)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (UEV_NonceDataUpdater id son account nosc nos nost)
             (UEV_NotSetInstance id son nosc nost)     ;; DPDC Audit #12Hc
@@ -425,8 +432,8 @@
             \ nost = <NoNCe-Or-SET>       ; designates if <nosc> is either a <nonce> or <set-class> value"
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
-                (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (ref-DPDC-S:module{DpdcSetsV3} DPDC-S)
             )
             (if nost
                 (if nos
@@ -441,19 +448,19 @@
         )
     )
     ;;
-    (defun URCi_UpdateNonces:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_UpdateNonces:object{IgnisCollectorV4.OutputCumulator}
         (account:string count:integer)
         @doc "Cost preview for C_UpdateNonces (count * UsagePrice ignis|smallest; \
             \ construct with empty output list)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 (price:decimal (* (dec count) (ref-IGNIS::UC_IgnisLeg "tier-smallest")))
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator price account (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_UpdateNonceField:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_UpdateNonceField:object{IgnisCollectorV4.OutputCumulator}
         (account:string)
         @doc "Cost preview for the single-field nonce updates (Royalty, IgnisRoyalty, Name, \
             \ Description, Score, MetaData, URI) — ONE uniform price for all ~20 C_UpdateNonce* \
@@ -463,7 +470,7 @@
             \ update is a config/property change per the IG|DETER rubric."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisPrice "DPNF|C_UpdateNonce" "setup")
@@ -478,8 +485,8 @@
             ;;Nonce
             (let
                 (
-                    (ref-DPDC:module{DpdcV2} DPDC)
-                    (ref-DPDC-F:module{DpdcFragmentsV2} DPDC-F)
+                    (ref-DPDC:module{DpdcV3} DPDC)
+                    (ref-DPDC-F:module{DpdcFragmentsV3} DPDC-F)
                 )
                 (ref-DPDC::UEV_Nonce id son nosc)
                 (if (not nos)
@@ -490,7 +497,7 @@
             ;;Sets
             (let
                 (
-                    (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+                    (ref-DPDC-S:module{DpdcSetsV3} DPDC-S)
                 )
                 (ref-DPDC-S::UEV_SetClass id son nosc)
                 (if (not nos)
@@ -511,7 +518,7 @@
         (if (and nost (not son))
             (let
                 (
-                    (ref-DPDC:module{DpdcV2} DPDC)
+                    (ref-DPDC:module{DpdcV3} DPDC)
                 )
                 (enforce
                     (= (ref-DPDC::UR_NonceClass id son nosc) 0)
@@ -525,7 +532,7 @@
     (defun UEV_RoleNftRecreateON (id:string son:bool account:string)
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 (x:bool (ref-DPDC::UR_CA|R-Recreate id son account))
             )
             (enforce x (format "{} Collection {} Element Data cannot be Updated while using the {} Ouronet Account" [(if son "SFT" "NFT") id account]))
@@ -534,7 +541,7 @@
     (defun UEV_RoleNftUpdateON (id:string son:bool account:string)
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 (x:bool (ref-DPDC::UR_CA|R-Update id son account))
             )
             (enforce x (format "{} Collection {} Element Data cannot be Updated while using the {} Ouronet Account" [(if son "SFT" "NFT") id account]))
@@ -543,7 +550,7 @@
     (defun UEV_RoleModifyRoyaltiesON (id:string son:bool account:string)
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 (x:bool (ref-DPDC::UR_CA|R-ModifyRoyalties id son account))
             )
             (enforce x (format "{} Collection {} Element Data Royalties cannot be Updated while using the {} Ouronet Account" [(if son "SFT" "NFT") id account]))
@@ -552,7 +559,7 @@
     (defun UEV_RoleSetNewUriON (id:string son:bool account:string)
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 (x:bool (ref-DPDC::UR_CA|R-SetUri id son account))
             )
             (enforce x (format "{} Collection {} Element Data URIs cannot be Updated while using the {} Ouronet Account" [(if son "SFT" "NFT") id account]))
@@ -583,8 +590,8 @@
         (require-capability (SECURE))
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
-                (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (ref-DPDC-S:module{DpdcSetsV3} DPDC-S)
             )
             (map
                 (lambda
@@ -747,7 +754,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 (smallest:decimal (ref-IGNIS::UC_IgnisLeg "tier-smallest"))
                 (how-many:decimal (dec (length nosc)))
                 (price:decimal (* how-many smallest))

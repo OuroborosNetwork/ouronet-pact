@@ -17,7 +17,7 @@
 (namespace "ouronet-ns")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (owner:string KST.ANHD)
         (dpnf-price:decimal (ref-DALOS::UR_UsagePrice "dpnf"))
         (split-stoa:[decimal] (ref-DALOS::URC_SplitSTOAPrices owner dpnf-price))
@@ -43,9 +43,9 @@
 )
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-DPDC:module{DpdcV3} DPDC)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (owner:string KST.ANHD)
         (creator:string KST.ANHD)
         (name256:string (fold (+) "" (make-list 256 "x")))

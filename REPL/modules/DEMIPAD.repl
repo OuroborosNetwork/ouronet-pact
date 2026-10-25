@@ -40,7 +40,7 @@
 (print "--- [DEMIPAD-G1 — the pure launchpad guards · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
+        (ref-DPAD:module{DemiourgosLaunchpadV3} DEMIPAD)
     )
     (map print
         [
@@ -109,8 +109,8 @@
 (print "--- [DEMIPAD-G2 — the launchpad sale/retrieval toggles and the deposit admission chain · 02 · let / invocation] ---")
 (let
     (
-        (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-        (ref-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
+        (ref-DEMIPAD:module{DemiourgosLaunchpadV3} DEMIPAD)
+        (ref-DPAD:module{TalosStageTwo_DemiPadV4} TS02-DPAD)
         (sft:string "TSFS-98c486052a51")
     )
     (map print
@@ -229,7 +229,7 @@
 (print "--- [DEMIPAD-G3 - the launchpad admin ops name the acting admin, and check it · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
+        (ref-DPAD:module{TalosStageTwo_DemiPadV4} TS02-DPAD)
         (sft:string "TSFS-98c486052a51")
     )
     (map print
@@ -252,7 +252,7 @@
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (let
     (
-        (ref-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
+        (ref-DPAD:module{TalosStageTwo_DemiPadV4} TS02-DPAD)
         (sft:string "TSFS-98c486052a51")
     )
     (map print
@@ -293,14 +293,14 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPAD:module{TalosStageTwo_DemiPadV4} TS02-DPAD)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (patron:string KST.ANHD)
         (asset:string "OURO-98c486052a51")
     )
     (let
         (
-            (predicted-f:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DEMIPAD|FuelTrueFungible patron patron asset 100.0))
+            (predicted-f:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DEMIPAD|FuelTrueFungible patron patron asset 100.0))
             (ignis-before-f:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (mf (ref-DPAD::DEMIPAD|C_FuelTrueFungible patron patron asset 100.0))
         )
@@ -316,7 +316,7 @@
     )
     (let
         (
-            (predicted-r:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DEMIPAD|RetrieveTrueFungible patron patron asset 100.0))
+            (predicted-r:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DEMIPAD|RetrieveTrueFungible patron patron asset 100.0))
             (ignis-before-r:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (mr (ref-DPAD::DEMIPAD|C_RetrieveTrueFungible patron patron asset 100.0))
         )
@@ -358,14 +358,14 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPAD:module{TalosStageTwo_DemiPadV4} TS02-DPAD)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (patron:string KST.ANHD)
         (asset:string "COF-98c486052a51")
     )
     (let
         (
-            (predicted-f:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DEMIPAD|FuelOrtoFungible patron patron asset [1]))
+            (predicted-f:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DEMIPAD|FuelOrtoFungible patron patron asset [1]))
             (ignis-before-f:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (mf (ref-DPAD::DEMIPAD|C_FuelOrtoFungible patron patron asset [1]))
         )
@@ -381,7 +381,7 @@
     )
     (let
         (
-            (predicted-r:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DEMIPAD|RetrieveOrtoFungible patron patron asset [1]))
+            (predicted-r:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DEMIPAD|RetrieveOrtoFungible patron patron asset [1]))
             (ignis-before-r:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (mr (ref-DPAD::DEMIPAD|C_RetrieveOrtoFungible patron patron asset [1]))
         )
@@ -418,14 +418,14 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPAD:module{TalosStageTwo_DemiPadV4} TS02-DPAD)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (patron:string KST.ANHD)
         (asset:string "TSFS-98c486052a51")
     )
     (let
         (
-            (predicted-f:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DEMIPAD|FuelSemiFungible patron patron asset [5] [100]))
+            (predicted-f:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DEMIPAD|FuelSemiFungible patron patron asset [5] [100]))
             (ignis-before-f:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (mf (ref-DPAD::DEMIPAD|C_FuelSemiFungible patron patron asset [5] [100]))
         )
@@ -441,7 +441,7 @@
     )
     (let
         (
-            (predicted-r:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DEMIPAD|RetrieveSemiFungible patron patron asset [5] [100]))
+            (predicted-r:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DEMIPAD|RetrieveSemiFungible patron patron asset [5] [100]))
             (ignis-before-r:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (mr (ref-DPAD::DEMIPAD|C_RetrieveSemiFungible patron patron asset [5] [100]))
         )
@@ -478,14 +478,14 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPAD:module{TalosStageTwo_DemiPadV4} TS02-DPAD)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (patron:string KST.ANHD)
         (asset:string "CNF-98c486052a51")
     )
     (let
         (
-            (predicted-f:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DEMIPAD|FuelNonFungible patron patron asset [2] [1]))
+            (predicted-f:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DEMIPAD|FuelNonFungible patron patron asset [2] [1]))
             (ignis-before-f:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (mf (ref-DPAD::DEMIPAD|C_FuelNonFungible patron patron asset [2] [1]))
         )
@@ -501,7 +501,7 @@
     )
     (let
         (
-            (predicted-r:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DEMIPAD|RetrieveNonFungible patron patron asset [2] [1]))
+            (predicted-r:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DEMIPAD|RetrieveNonFungible patron patron asset [2] [1]))
             (ignis-before-r:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (mr (ref-DPAD::DEMIPAD|C_RetrieveNonFungible patron patron asset [2] [1]))
         )

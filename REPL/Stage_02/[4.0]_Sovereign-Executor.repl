@@ -67,8 +67,8 @@
 (let
     (
         (ref-U|G:module{OuronetGuardsV2} U|G)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-DPDC:module{DpdcV3} DPDC)
         ;;
         (patron:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
         (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
@@ -166,7 +166,7 @@
 (print "--- [TX-02 [4.2] - Issue Ouronet Custodians Collection · 01 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (issuing-account:string KST.ANHD)
         (split-stoa:[decimal]
             (ref-DALOS::URC_SplitSTOAPrices
@@ -209,7 +209,7 @@
     )
     (let
         (
-            (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+            (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
             ;;Input Variables
             (patron:string issuing-account)
             (collection-owner:string patron)
@@ -246,7 +246,7 @@
 (print "--- [TX-02 [4.2] - Issue Ouronet Custodians Collection · 01 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (issuing-account:string KST.ANHD)
     )
 ;;==== TX-02 [4.2] - Issue Ouronet Custodians Collection · 02 · env-sigs (caps) ==== ==============
@@ -260,7 +260,7 @@
         (
             (ref-U|LST:module{StringProcessorV2} U|LST)
             (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-            (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+            (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
             ;;
             ;;Input Variables
             ;(patron:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
@@ -479,8 +479,8 @@
 (print "--- [TX-03 [4.3] - Issue Shareholders Collection · 01 · let / invocation] ---")
 (let
     (
-        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (issuing-account:string KST.ANHD)
         (split-stoa:[decimal]
             (ref-DALOS::URC_SplitSTOAPrices
@@ -525,7 +525,7 @@
     )
     (let
         (
-            (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+            (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
             ;;
             ;;Input Variables
             ;(patron:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
@@ -594,7 +594,7 @@
 (print "--- [TX-02 [4.2] - Issue Coding Division Collection · 01 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (issuing-account:string KST.ANHD)
         (split-stoa:[decimal]
             (ref-DALOS::URC_SplitSTOAPrices
@@ -637,7 +637,7 @@
     )
     (let
         (
-            (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+            (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
             ;;Input Variables
             (patron:string issuing-account)
             (collection-owner:string patron)
@@ -677,7 +677,7 @@
 (print "--- [TX-04 [4.4] - Issue Coding Division Collection · 01 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (issuing-account:string KST.ANHD)
         (split-stoa:[decimal]
             (ref-DALOS::URC_SplitSTOAPrices
@@ -697,7 +697,7 @@
         (
             (ref-U|LST:module{StringProcessorV2} U|LST)
             (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-            (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+            (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
             ;;
             ;;Input Variables
             ;(patron:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
@@ -883,7 +883,7 @@
 (print "--- [TX-02 [4.2] - Issue Wonder Coach Collection · 01 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (issuing-account:string KST.ANHD)
         (split-stoa:[decimal]
             (ref-DALOS::URC_SplitSTOAPrices
@@ -926,7 +926,7 @@
     )
     (let
         (
-            (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+            (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
             ;;Input Variables
             (patron:string issuing-account)
             (collection-owner:string patron)
@@ -964,7 +964,7 @@
 (print "--- [TX-06 [4.6] - Issue Wonder Coach Collection · 01 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (issuing-account:string KST.ANHD)
         (split-stoa:[decimal]
             (ref-DALOS::URC_SplitSTOAPrices
@@ -984,7 +984,7 @@
         (
             (ref-U|LST:module{StringProcessorV2} U|LST)
             (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-            (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+            (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
             ;;
             ;;Input Variables
             ;(patron:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
@@ -1305,7 +1305,7 @@
 (print "--- [TX-07 [4.7] - Issue Nosferatu Collection · 01 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (issuing-account:string KST.ANHD)
         (split-stoa:[decimal]
             (ref-DALOS::URC_SplitSTOAPrices
@@ -1352,7 +1352,7 @@
         (
             (ref-U|LST:module{StringProcessorV2} U|LST)
             (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-            (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+            (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
             ;;
             ;;Input Variables
             (patron:string issuing-account)
@@ -1390,7 +1390,7 @@
 (print "--- [TX-08 [4.8] - Issue Bloodshed Collection and Bunny · 01 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (issuing-account:string KST.ANHD)
         (split-stoa:[decimal]
             (ref-DALOS::URC_SplitSTOAPrices
@@ -1437,7 +1437,7 @@
         (
             (ref-U|LST:module{StringProcessorV2} U|LST)
             (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-            (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+            (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
             ;;
             ;;Input Variables
             (patron:string issuing-account)
@@ -1480,7 +1480,7 @@
 (print "--- [TX-08 [4.8] - Issue Bloodshed Collection and Bunny · 01 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (issuing-account:string KST.ANHD)
         (split-stoa:[decimal]
             (ref-DALOS::URC_SplitSTOAPrices
@@ -1527,7 +1527,7 @@
         (
             (ref-U|LST:module{StringProcessorV2} U|LST)
             (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-            (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+            (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
             ;;
             ;;Input Variables
             (patron:string issuing-account)

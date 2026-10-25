@@ -41,8 +41,8 @@
 (let
     (
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-DPDC-MNG:module{DpdcManagementV3} DPDC-MNG)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (id:string "CNF-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -87,21 +87,21 @@
 (print "--- [TX-DSCALE-002 · 02 · widths 8 / 16 / 24 + derived ceiling] ---")
 (let*
     (
-        (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-DPDC-MNG:module{DpdcManagementV3} DPDC-MNG)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (id:string "CNF-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
         ;;partition the 40 nonces into 5 slices of 8, then fire widths 8, 16, 24
-        (plan:object{DpdcManagementV2.DPDC-MNG|WipeSlicePlan}
+        (plan:object{DpdcManagementV3.DPDC-MNG|WipeSlicePlan}
             (ref-DPDC-MNG::URHC_BuildWipeSlicePlan lumy id false 5))
-        (sl:[object{DpdcManagementV2.RemovableNonces}] (at "slices" plan))
-        (w8:object{DpdcManagementV2.RemovableNonces} (at 0 sl))
-        (w16:object{DpdcManagementV2.RemovableNonces}
+        (sl:[object{DpdcManagementV3.RemovableNonces}] (at "slices" plan))
+        (w8:object{DpdcManagementV3.RemovableNonces} (at 0 sl))
+        (w16:object{DpdcManagementV3.RemovableNonces}
             (ref-DPDC-MNG::UDC_RemovableNonces
                 (+ (at "r-nonces" (at 1 sl)) (at "r-nonces" (at 2 sl)))
                 (+ (at "r-amounts" (at 1 sl)) (at "r-amounts" (at 2 sl)))))
-        (w24:object{DpdcManagementV2.RemovableNonces}
+        (w24:object{DpdcManagementV3.RemovableNonces}
             (ref-DPDC-MNG::UDC_RemovableNonces
                 (+ (+ (at "r-nonces" (at 3 sl)) (at "r-nonces" (at 4 sl))) (at "r-nonces" (at 0 sl)))
                 (+ (+ (at "r-amounts" (at 3 sl)) (at "r-amounts" (at 4 sl))) (at "r-amounts" (at 0 sl)))))

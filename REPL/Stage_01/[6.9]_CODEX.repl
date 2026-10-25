@@ -89,8 +89,8 @@
         (public-smart:string (read-string "CODEX|PUBLIC-SMART"))
         (registered-by:string (read-string "CODEX|REGISTERED-BY"))
         (codex-guard:guard (read-keyset "KEY_CODEX_GUARD"))
-        (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
-        (ref-CODEX:module{CodexV2} CODEX)
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV9} TS01-C4)
+        (ref-CODEX:module{CodexV3} CODEX)
         (reg-msg:string
             (ref-TS01-C4::CODEX|A_RegisterCodexIdentity
                 KST.ANHD
@@ -160,13 +160,13 @@
     (
         (composite-id:string (read-string "CODEX|COMPOSITE-ID"))
         (new-codex-guard:guard (read-keyset "KEY_CODEX_GUARD_NEW"))
-        (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
-        (ref-CODEX:module{CodexV2} CODEX)
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV9} TS01-C4)
+        (ref-CODEX:module{CodexV3} CODEX)
         ;;FUNCTION COVERAGE (G6) — `INFO_CODEX|RotateCodexGuard`, per the owner's spec: an INFO_ must
         ;;report the same cost the op actually charges. Template: `modules/ATS.repl <<ATS-I1>>`.
         ;;These bindings rely on `let` being EAGER and ORDERED: the quote and the pre-op balance are
         ;;both taken BEFORE `rot-msg` runs the rotation.
-        (predicted:object{OuronetInfoV2.ClientInfo}
+        (predicted:object{OuronetInfoV3.ClientInfo}
             (CODEX.INFO_CODEX|RotateCodexGuard KST.ANHD composite-id))
         (ignis-before:decimal (DALOS.UR_TF_AccountSupply KST.ANHD false))
         (rot-msg:string
@@ -230,8 +230,8 @@
         (composite-id:string (read-string "CODEX|COMPOSITE-ID"))
         (arweave-tx-id:string (read-string "CODEX|ARWEAVE-TX-ID"))
         (uploaded-bytes:integer 1024)
-        (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
-        (ref-CODEX:module{CodexV2} CODEX)
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV9} TS01-C4)
+        (ref-CODEX:module{CodexV3} CODEX)
         (arw-msg:string
             (ref-TS01-C4::CODEX|C_RecordArweaveUpload KST.ANHD KST.ANHD composite-id arweave-tx-id uploaded-bytes)
         )
@@ -306,9 +306,9 @@
                 account-raw
             )
         )
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
-        (ref-CODEX:module{CodexV2} CODEX)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV9} TS01-C4)
+        (ref-CODEX:module{CodexV3} CODEX)
         (stoa-fee:decimal (ref-CODEX::UC_StoicTagStoaFee tag-name))
         (patron-stoa:string (ref-DALOS::UR_AccountStoa patron))
         (demiurgoi:[string] (ref-DALOS::UR_DemiurgoiID))
@@ -346,7 +346,7 @@
             ;;`account-address` rather than from the patron) — so the quote must track BOTH a
             ;;length-dependent price AND a discount read off a different account than the payer.
             ;;The managed coin.TRANSFER caps installed just above are what let the charge land.
-            (predicted:object{OuronetInfoV2.ClientInfo}
+            (predicted:object{OuronetInfoV3.ClientInfo}
                 (CODEX.INFO_CODEX|RegisterStoicTag patron tag-name account-address))
             (stoa-before:decimal (coin.get-balance patron-stoa))
             (stg-msg:string
@@ -437,8 +437,8 @@
                 account-raw
             )
         )
-        (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
-        (ref-CODEX:module{CodexV2} CODEX)
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV9} TS01-C4)
+        (ref-CODEX:module{CodexV3} CODEX)
         (tag-fee:decimal (ref-CODEX::UC_StoicTagStoaFee tag-name))
         ;;FUNCTION COVERAGE (G6) — `INFO_CODEX|ReleaseStoicTag`, per the owner's spec. Template:
         ;;`modules/ATS.repl <<ATS-I1>>`. This completes CODEX: rotate-guard (IGNIS) at <<TX002-INFO>>,
@@ -446,7 +446,7 @@
         ;;<<TX004-INFO>>, release-tag here — all four client ops now have a measured quote.
         ;;Release is the interesting twin of register: the SAME per-glyph figure is charged, but in
         ;;IGNIS rather than STOA, so a preview that copied its sibling's currency would be caught here.
-        (predicted:object{OuronetInfoV2.ClientInfo}
+        (predicted:object{OuronetInfoV3.ClientInfo}
             (CODEX.INFO_CODEX|ReleaseStoicTag patron tag-name))
         (ignis-before:decimal (DALOS.UR_TF_AccountSupply patron false))
         (stoa-before:decimal (coin.get-balance (DALOS.UR_AccountStoa patron)))
@@ -529,9 +529,9 @@
                 account-raw
             )
         )
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
-        (ref-CODEX:module{CodexV2} CODEX)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV9} TS01-C4)
+        (ref-CODEX:module{CodexV3} CODEX)
         (stoa-fee:decimal (ref-CODEX::UC_StoicTagStoaFee tag-name))
         (patron-stoa:string (ref-DALOS::UR_AccountStoa patron))
         (demiurgoi:[string] (ref-DALOS::UR_DemiurgoiID))

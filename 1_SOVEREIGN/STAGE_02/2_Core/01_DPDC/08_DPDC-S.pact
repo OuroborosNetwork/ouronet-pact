@@ -2,7 +2,7 @@
 ;; History/shared registry: 1_SOVEREIGN/STAGE_02/0_Interfaces/02_Core.pact
 ;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface DpdcSetsV2
+(interface DpdcSetsV3
     @doc "Exposes Collectables Set related Functions"
 
     ;;<=========================================================================>
@@ -68,16 +68,16 @@
     (defun URC_SemiFungibleConstituents:[integer] (id:string set-class:integer))
     (defun URCv_NonFungibleConstituents:[integer] (id:string nonce:integer))
         ;;  [URCi] cost readers — single source per op
-    (defun URCi_MakeSemiFungibleSet:object{IgnisCollectorV3.OutputCumulator} (account:string id:string nonces:[integer] how-many-sets:integer))
-    (defun URCi_BreakSemiFungibleSet:object{IgnisCollectorV3.OutputCumulator} (account:string id:string nonce:integer how-many-sets:integer))
-    (defun URCi_MakeNonFungibleSet:object{IgnisCollectorV3.OutputCumulator} (account:string id:string nonces:[integer]))
-    (defun URCi_BreakNonFungibleSet:object{IgnisCollectorV3.OutputCumulator} (account:string id:string nonce:integer))
-    (defun URCi_DefinePrimordialSet:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool))
-    (defun URCi_DefineCompositeSet:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool))
-    (defun URCi_DefineHybridSet:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool))
-    (defun URCi_EnableSetClassFragmentation:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool))
-    (defun URCi_ToggleSet:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool))
-    (defun URCi_RenameSet:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool))
+    (defun URCi_MakeSemiFungibleSet:object{IgnisCollectorV4.OutputCumulator} (account:string id:string nonces:[integer] how-many-sets:integer))
+    (defun URCi_BreakSemiFungibleSet:object{IgnisCollectorV4.OutputCumulator} (account:string id:string nonce:integer how-many-sets:integer))
+    (defun URCi_MakeNonFungibleSet:object{IgnisCollectorV4.OutputCumulator} (account:string id:string nonces:[integer]))
+    (defun URCi_BreakNonFungibleSet:object{IgnisCollectorV4.OutputCumulator} (account:string id:string nonce:integer))
+    (defun URCi_DefinePrimordialSet:object{IgnisCollectorV4.OutputCumulator} (id:string son:bool))
+    (defun URCi_DefineCompositeSet:object{IgnisCollectorV4.OutputCumulator} (id:string son:bool))
+    (defun URCi_DefineHybridSet:object{IgnisCollectorV4.OutputCumulator} (id:string son:bool))
+    (defun URCi_EnableSetClassFragmentation:object{IgnisCollectorV4.OutputCumulator} (id:string son:bool))
+    (defun URCi_ToggleSet:object{IgnisCollectorV4.OutputCumulator} (id:string son:bool))
+    (defun URCi_RenameSet:object{IgnisCollectorV4.OutputCumulator} (id:string son:bool))
     ;;{5.4}  Validate [UEV/CAP]
     ;;
     ;;  [UEV]
@@ -105,26 +105,26 @@
     ;;
     ;;  [C]
     ;;
-    (defun C_MakeSemiFungibleSet:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string id:string nonces:[integer] set-class:integer how-many-sets:integer))
-    (defun CC_BreakSemiFungibleSet:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string id:string nonce:integer how-many-sets:integer))
-    (defun C_MakeNonFungibleSet:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string id:string nonces:[integer] set-class:integer))
-    (defun C_BreakNonFungibleSet:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string id:string nonce:integer))
+    (defun C_MakeSemiFungibleSet:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string id:string nonces:[integer] set-class:integer how-many-sets:integer))
+    (defun CC_BreakSemiFungibleSet:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string id:string nonce:integer how-many-sets:integer))
+    (defun C_MakeNonFungibleSet:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string id:string nonces:[integer] set-class:integer))
+    (defun C_BreakNonFungibleSet:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string id:string nonce:integer))
         ;;
-    (defun C_DefinePrimordialSet:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_DefinePrimordialSet:object{IgnisCollectorV4.OutputCumulator}
         (
             patron:string executor:string id:string son:bool set-name:string score-multiplier:decimal
             set-definition:[object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition}]
             ind:object{DpdcUdcV2.DPDC|NonceData}
         )
     )
-    (defun C_DefineCompositeSet:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_DefineCompositeSet:object{IgnisCollectorV4.OutputCumulator}
         (
             patron:string executor:string id:string son:bool set-name:string score-multiplier:decimal
             set-definition:[object{DpdcUdcV2.DPDC|AllowedClassForSetPosition}]
             ind:object{DpdcUdcV2.DPDC|NonceData}
         )
     )
-    (defun C_DefineHybridSet:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_DefineHybridSet:object{IgnisCollectorV4.OutputCumulator}
         (
             patron:string executor:string id:string son:bool set-name:string score-multiplier:decimal
             primordial-sd:[object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition}]
@@ -132,15 +132,25 @@
             ind:object{DpdcUdcV2.DPDC|NonceData}
         )
     )
-    (defun C_EnableSetClassFragmentation:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_EnableSetClassFragmentation:object{IgnisCollectorV4.OutputCumulator}
         (
             patron:string executor:string id:string son:bool set-class:integer
             fragmentation-ind:object{DpdcUdcV2.DPDC|NonceData}
         )
     )
-    (defun C_ToggleSet:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string id:string son:bool set-class:integer toggle:bool))
-    (defun C_RenameSet:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string id:string son:bool set-class:integer new-name:string))
+    (defun C_ToggleSet:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string id:string son:bool set-class:integer toggle:bool))
+    (defun C_RenameSet:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string id:string son:bool set-class:integer new-name:string))
 
+
+    ;;<=========================================================================>
+    ;; ADDED 2026-10-12 -- interface-membership sweep (StoicSyntax-Prefixes.md Sec5,
+    ;; owner ruling). Every one of these was already live in the module body; this
+    ;; closes the gap between what the module DOES and what its interface SAYS it does.
+    ;;<=========================================================================>
+    (defun UC_FirstNoncesFromPSD:[integer] (psd:[object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition}]))
+    (defun UEV_ExecutorIsCollectionOwner (executor:string id:string son:bool))
+    (defun UEV_ScoreMultiplier (new-multiplier:decimal))
+    (defun URH_NonceListFromCSD:[integer] (id:string csd:[object{DpdcUdcV2.DPDC|AllowedClassForSetPosition}]))
 )
 ;;
 (module DPDC-S GOV
@@ -158,7 +168,7 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements DpdcSetsV2)
+    (implements DpdcSetsV3)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -174,7 +184,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -205,7 +215,7 @@
     (defun P|Info ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::P|Info)
         )
@@ -377,7 +387,7 @@
         @event
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 (nonce-class:integer (ref-DPDC::UR_NonceClass id son nonce))
             )
             ;;Nonces of Inactive Sets can still be broken down.
@@ -425,8 +435,8 @@
     (defcap DPDC-S|CX>DEFINE (id:string son:bool ind:object{DpdcUdcV2.DPDC|NonceData})
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
-                (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (ref-DPDC-C:module{DpdcCreateV3} DPDC-C)
             )
             (ref-DPDC::CAP_Owner id son)
             (ref-DPDC-C::UEV_NonceDataForCreation ind)
@@ -441,8 +451,8 @@
         @event
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
-                (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (ref-DPDC-C:module{DpdcCreateV3} DPDC-C)
                 (iz-fragmented:bool (UEV_IzSetClassFragmented id son set-class))
             )
             (enforce (not iz-fragmented) "Set Class must not be fragmented in order to enable fragmentation for it !")
@@ -459,7 +469,7 @@
         @event
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (UEV_SetActiveState id son set-class (not toggle))
             (ref-DPDC::CAP_Owner id son)
@@ -475,7 +485,7 @@
             (format "Set-Class {} does not exist for this DPDC" [set-class]))
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 (current-name:string (UR_SetName id son set-class))
             )
             (enforce (!= new-name current-name) (format "The Set Name of <{}> must be different from the current name of <{}> for operation" [new-name current-name]))
@@ -500,7 +510,7 @@
     (defun CT_EmptyCumulator ()
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (ref-IGNIS::UDC_EmptyOutputCumulatorV2)
         )
@@ -608,7 +618,7 @@
             \ score in 3 of the 4 branches."
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 (nonce-class:integer (ref-DPDC::UR_NonceClass id son nonce))
                 (raw-nonce-score:decimal (ref-DPDC::UR_N|RawScore (ref-DPDC::UR_NativeNonceData id son (abs nonce))))
             )
@@ -653,7 +663,7 @@
             \ across nested sets."
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 (summed-score:decimal
                     (fold
                         (lambda
@@ -737,7 +747,7 @@
     (defun URCv_NonFungibleConstituents:[integer] (id:string nonce:integer)
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 (nonce-class:integer (ref-DPDC::UR_NonceClass id false nonce))
             )
             (enforce (!= nonce-class 0) "Invalid NFT Nonce to Read Constituents")
@@ -746,29 +756,29 @@
     )
     ;;
     ;;
-    (defun URCi_MakeSemiFungibleSet:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_MakeSemiFungibleSet:object{IgnisCollectorV4.OutputCumulator}
         (account:string id:string nonces:[integer] how-many-sets:integer)
         @doc "Cost preview for C_MakeSemiFungibleSet: only the account->DPDC set-element transfer \
             \ is billed (the XB_CreditSFT-Nonce write's cumulator is discarded). Purely derived."
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
-                (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (ref-DPDC-T:module{DpdcTransferV3} DPDC-T)
                 (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
             )
             (ref-DPDC-T::URCi_MultiTransferCumulator
                 [id] [true] account dpdc [nonces] [(make-list (length nonces) how-many-sets)])
         )
     )
-    (defun URCi_BreakSemiFungibleSet:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_BreakSemiFungibleSet:object{IgnisCollectorV4.OutputCumulator}
         (account:string id:string nonce:integer how-many-sets:integer)
         @doc "Cost preview for CC_BreakSemiFungibleSet: account->DPDC set transfer + DPDC->account \
             \ constituents release (the XE_DebitSFT-Nonce burn is discarded). Purely derived."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
-                (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (ref-DPDC-T:module{DpdcTransferV3} DPDC-T)
                 (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
                 (constituents:[integer]
                     (URC_SemiFungibleConstituents id (ref-DPDC::UR_NonceClass id true nonce)))
@@ -782,16 +792,16 @@
             )
         )
     )
-    (defun URCi_MakeNonFungibleSet:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_MakeNonFungibleSet:object{IgnisCollectorV4.OutputCumulator}
         (account:string id:string nonces:[integer])
         @doc "Cost preview for C_MakeNonFungibleSet: account->DPDC transfer + creation of the new \
             \ set nonce + DPDC->account transfer of that new nonce. Purely derived."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
-                (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
-                (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (ref-DPDC-C:module{DpdcCreateV3} DPDC-C)
+                (ref-DPDC-T:module{DpdcTransferV3} DPDC-T)
                 (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
             )
             (ref-IGNIS::UDC_ConcatenateOutputCumulators
@@ -804,15 +814,15 @@
             )
         )
     )
-    (defun URCi_BreakNonFungibleSet:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_BreakNonFungibleSet:object{IgnisCollectorV4.OutputCumulator}
         (account:string id:string nonce:integer)
         @doc "Cost preview for C_BreakNonFungibleSet: account->DPDC transfer + DPDC->account \
             \ constituents release (the XE_DebitNFT-Nonce burn is discarded). Purely derived."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
-                (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (ref-DPDC-T:module{DpdcTransferV3} DPDC-T)
                 (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
                 (constituents:[integer] (URCv_NonFungibleConstituents id nonce))
             )
@@ -826,16 +836,16 @@
         )
     )
     ;;
-    (defun URCi_DefinePrimordialSet:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_DefinePrimordialSet:object{IgnisCollectorV4.OutputCumulator}
         (id:string son:bool)
         @doc "Cost preview for C_DefinePrimordialSet (same shape for Composite/Hybrid): the base \
             \ token-issue IGNIS price on the creator + (for SFT sets) the zero-supply set-nonce \
             \ creation; NFT sets add no nonce cost (EOC). Purely derived."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
-                (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (ref-DPDC-C:module{DpdcCreateV3} DPDC-C)
                 (creator:string (ref-DPDC::UR_CreatorKonto id son))
                 (price:decimal (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_DefinePrimordialSet" "define-set")
                                 (ref-IGNIS::UC_IgnisPrice "DPNF|C_DefinePrimordialSet" "define-set")))
@@ -852,13 +862,13 @@
             )
         )
     )
-    (defun URCi_DefineCompositeSet:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_DefineCompositeSet:object{IgnisCollectorV4.OutputCumulator}
         (id:string son:bool)
         @doc "Cost preview for C_DefineCompositeSet: identical cost shape to \
             \ URCi_DefinePrimordialSet."
         (URCi_DefinePrimordialSet id son)
     )
-    (defun URCi_DefineHybridSet:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_DefineHybridSet:object{IgnisCollectorV4.OutputCumulator}
         (id:string son:bool)
         @doc "Cost preview for C_DefineHybridSet: the same SHAPE as URCi_DefinePrimordialSet -- base \
             \ token-issue price on the creator + (SFT only) the zero-supply set-nonce creation, the NFT \
@@ -872,9 +882,9 @@
             \ Measured against a real charge by modules/DPDC-S.repl <<DPDC-S-I27>> and <<DPDC-S-I33>>."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
-                (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (ref-DPDC-C:module{DpdcCreateV3} DPDC-C)
                 (creator:string (ref-DPDC::UR_CreatorKonto id son))
                 (price:decimal (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_DefineHybridSet" "define-set")
                                 (ref-IGNIS::UC_IgnisPrice "DPNF|C_DefineHybridSet" "define-set")))
@@ -891,14 +901,14 @@
             )
         )
     )
-    (defun URCi_EnableSetClassFragmentation:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_EnableSetClassFragmentation:object{IgnisCollectorV4.OutputCumulator}
         (id:string son:bool)
         @doc "Cost preview for C_EnableSetClassFragmentation: the biggest IGNIS cumulator on the \
             \ set creator."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_EnableSetClassFragmentation" "setup")
@@ -906,13 +916,13 @@
                 (ref-DPDC::UR_CreatorKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_ToggleSet:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_ToggleSet:object{IgnisCollectorV4.OutputCumulator}
         (id:string son:bool)
         @doc "Cost preview for C_ToggleSet: the biggest IGNIS cumulator on the set creator."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_ToggleSet" "setup")
@@ -920,13 +930,13 @@
                 (ref-DPDC::UR_CreatorKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_RenameSet:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_RenameSet:object{IgnisCollectorV4.OutputCumulator}
         (id:string son:bool)
         @doc "Cost preview for C_RenameSet: the small IGNIS cumulator on the set creator."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_RenameSet" "setup")
@@ -945,7 +955,7 @@
         )
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 (nonces-used-in-set-definition:[integer]
                     (fold
                         (lambda
@@ -1004,7 +1014,7 @@
         (let
             (
                 (ref-U|INT:module{OuronetIntegersV2} U|INT)
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 (set-classes-used-in-set-definition:[integer]
                     (fold
                         (lambda
@@ -1162,7 +1172,7 @@
     (defun UEV_Composite (id:string son:bool nonces:[integer] csd:[object{DpdcUdcV2.DPDC|AllowedClassForSetPosition}])
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 (l1:integer (length nonces))
                 (l2:integer (length csd))
             )
@@ -1199,7 +1209,7 @@
         (let
             (
                 (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 (set-classes-used:integer (ref-DPDC::UR_SetClassesUsed id son))
                 (set-class:integer (+ set-classes-used 1))
                 (nonces-used:integer (ref-DPDC::UR_NoncesUsed id son))
@@ -1240,7 +1250,7 @@
         (let
             (
                 (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 (set-classes-used:integer (ref-DPDC::UR_SetClassesUsed id son))
                 (set-class:integer (+ set-classes-used 1))
                 (nonces-used:integer (ref-DPDC::UR_NoncesUsed id son))
@@ -1282,7 +1292,7 @@
         (let
             (
                 (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 (set-classes-used:integer (ref-DPDC::UR_SetClassesUsed id son))
                 (set-class:integer (+ set-classes-used 1))
                 (nonces-used:integer (ref-DPDC::UR_NoncesUsed id son))
@@ -1371,7 +1381,7 @@
         )
     )
     ;;{5.7}  User [A/C]
-    (defun C_MakeSemiFungibleSet:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_MakeSemiFungibleSet:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string id:string nonces:[integer] set-class:integer how-many-sets:integer)
         @doc "Assembles <how-many-sets> Class-<set-class> SFT sets for <executor> out of its own <nonces>. \
             \ \
@@ -1386,9 +1396,9 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
-                (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
-                (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (ref-DPDC-C:module{DpdcCreateV3} DPDC-C)
+                (ref-DPDC-T:module{DpdcTransferV3} DPDC-T)
                 (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
                 (son:bool true)
             )
@@ -1401,7 +1411,7 @@
             )
         )
     )
-    (defun CC_BreakSemiFungibleSet:object{IgnisCollectorV3.OutputCumulator}
+    (defun CC_BreakSemiFungibleSet:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string id:string nonce:integer how-many-sets:integer)
         @doc "Dissolves <how-many-sets> of <executor>'s Class-non-0 SFT set nonces back into their constituents. \
             \ \
@@ -1416,24 +1426,24 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
-                (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
-                (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (ref-DPDC-C:module{DpdcCreateV3} DPDC-C)
+                (ref-DPDC-T:module{DpdcTransferV3} DPDC-T)
                 (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
                 (son:bool true)
             )
             (with-capability (DPDC-S|C>BREAK id son nonce how-many-sets)
                 (let
                     (
-                        (ico1:object{IgnisCollectorV3.OutputCumulator}
+                        (ico1:object{IgnisCollectorV4.OutputCumulator}
                             ;;1]Transfer the SFT Sets from <account> to <dpdc>
                             (ref-DPDC-T::C_Transfer patron executor dpdc [id] [son] [[nonce]] [[how-many-sets]] true)
                         )
                         (constituents:[integer]
                             (URC_SemiFungibleConstituents id (ref-DPDC::UR_NonceClass id son nonce))
                         )
-                        (ico2:object{IgnisCollectorV3.OutputCumulator}
+                        (ico2:object{IgnisCollectorV4.OutputCumulator}
                             ;;2]Release the Set Elements from <dpdc> to <account>
                             (ref-DPDC-T::C_Transfer patron dpdc executor [id] [son] [constituents] [(make-list (length constituents) how-many-sets)] true)
                         )
@@ -1445,7 +1455,7 @@
             )
         )
     )
-    (defun C_MakeNonFungibleSet:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_MakeNonFungibleSet:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string id:string nonces:[integer] set-class:integer)
         @doc "Assembles one Class-<set-class> NFT set for <executor> out of its own <nonces>, minting the set nonce. \
             \ \
@@ -1460,18 +1470,18 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-                (ref-DPDC:module{DpdcV2} DPDC)
-                (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
-                (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (ref-DPDC-C:module{DpdcCreateV3} DPDC-C)
+                (ref-DPDC-T:module{DpdcTransferV3} DPDC-T)
                 (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
                 (son:bool false)
             )
             (with-capability (DPDC-S|C>MAKE id son nonces set-class 1)
                 (let
                     (
-                        (ico1:object{IgnisCollectorV3.OutputCumulator}
+                        (ico1:object{IgnisCollectorV4.OutputCumulator}
                             ;;1]Transfer <nonces> to <dpdc>
                             (ref-DPDC-T::C_Transfer patron executor dpdc [id] [son] [nonces] [(make-list (length nonces) 1)] true)
                         )
@@ -1491,7 +1501,7 @@
                                 (remove "meta-data" set-nd)
                             )
                         )
-                        (ico2:object{IgnisCollectorV3.OutputCumulator}
+                        (ico2:object{IgnisCollectorV4.OutputCumulator}
                             ;;2]When one nonce of class non-0 is created, is automatically created on <dpdc> account
                             ;;PROVISIONAL PATRON SLOT CLEARED (HANDOFF 4e) at this module's own
                             ;;turn, 2026-09-22. It read `account` because no patron existed here
@@ -1506,7 +1516,7 @@
                             ;;attribution available and it is exact.
                             (ref-DPDC-C::C_CreateNewNonce patron (ref-DPDC::UR_Verum5 id son) id son set-class 1 spawned-nd true)
                         )
-                        (ico3:object{IgnisCollectorV3.OutputCumulator}
+                        (ico3:object{IgnisCollectorV4.OutputCumulator}
                             ;;3]Transfer new set nonce to <account>
                             (ref-DPDC-T::C_Transfer patron dpdc executor [id] [son] [[(ref-DPDC::UR_NoncesUsed id son)]] [[1]] true)
                         )
@@ -1516,7 +1526,7 @@
             )
         )
     )
-    (defun C_BreakNonFungibleSet:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_BreakNonFungibleSet:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string id:string nonce:integer)
         @doc "Dissolves one of <executor>'s Class-non-0 NFT set nonces back into its constituents. \
             \ \
@@ -1531,24 +1541,24 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
-                (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
-                (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (ref-DPDC-C:module{DpdcCreateV3} DPDC-C)
+                (ref-DPDC-T:module{DpdcTransferV3} DPDC-T)
                 (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
                 (son:bool false)
             )
             (with-capability (DPDC-S|C>BREAK id son nonce 1)
                 (let
                     (
-                        (ico1:object{IgnisCollectorV3.OutputCumulator}
+                        (ico1:object{IgnisCollectorV4.OutputCumulator}
                             ;;1]Transfer the SFT|NFT from <account> to <dpdc>
                             (ref-DPDC-T::C_Transfer patron executor dpdc [id] [son] [[nonce]] [[1]] true)
                         )
                         (constituents:[integer]
                             (URCv_NonFungibleConstituents id nonce)
                         )
-                        (ico2:object{IgnisCollectorV3.OutputCumulator}
+                        (ico2:object{IgnisCollectorV4.OutputCumulator}
                             ;;2]Release the Set Elements from <dpdc> to <account>
                             (ref-DPDC-T::C_Transfer patron dpdc executor [id] [son] [constituents] [(make-list (length constituents) 1)] true)
                         )
@@ -1581,12 +1591,12 @@
             \ (patron/executor canon 2.2, indirect route named, 2026-09-22.)"
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (ref-DPDC::UEV_ExecutorIsOwnerKonto executor id son)
         )
     )
-    (defun C_DefinePrimordialSet:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_DefinePrimordialSet:object{IgnisCollectorV4.OutputCumulator}
         (
             patron:string executor:string id:string son:bool set-name:string score-multiplier:decimal
             set-definition:[object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition}]
@@ -1604,18 +1614,18 @@
         (with-capability (DPDC-S|C>DEFINE-PRIMORDIAL id son score-multiplier set-definition ind)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC:module{DpdcV2} DPDC)
-                    (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC:module{DpdcV3} DPDC)
+                    (ref-DPDC-C:module{DpdcCreateV3} DPDC-C)
                     ;;
                     (creator:string (ref-DPDC::UR_CreatorKonto id son))
                     (price:decimal (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_DefinePrimordialSet" "define-set")
                                 (ref-IGNIS::UC_IgnisPrice "DPNF|C_DefinePrimordialSet" "define-set")))
                     (set-class:integer (XI_PrimordialSet id son set-name score-multiplier set-definition ind))
-                    (ico0:object{IgnisCollectorV3.OutputCumulator}
+                    (ico0:object{IgnisCollectorV4.OutputCumulator}
                         (ref-IGNIS::UDC_ConstructOutputCumulator price creator false [])
                     )
-                    (ico1:object{IgnisCollectorV3.OutputCumulator}
+                    (ico1:object{IgnisCollectorV4.OutputCumulator}
                         (if son
                             (ref-DPDC-C::C_CreateNewNonce patron (ref-DPDC::UR_Verum5 id son) id son set-class 0 ind true)
                             EOC
@@ -1634,7 +1644,7 @@
             )
         )
     )
-    (defun C_DefineCompositeSet:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_DefineCompositeSet:object{IgnisCollectorV4.OutputCumulator}
         (
             patron:string executor:string id:string son:bool set-name:string score-multiplier:decimal
             set-definition:[object{DpdcUdcV2.DPDC|AllowedClassForSetPosition}]
@@ -1649,18 +1659,18 @@
         (with-capability (DPDC-S|C>DEFINE-COMPOSITE id son score-multiplier set-definition ind)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC:module{DpdcV2} DPDC)
-                    (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC:module{DpdcV3} DPDC)
+                    (ref-DPDC-C:module{DpdcCreateV3} DPDC-C)
                     ;;
                     (creator:string (ref-DPDC::UR_CreatorKonto id son))
                     (price:decimal (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_DefineCompositeSet" "define-set")
                                 (ref-IGNIS::UC_IgnisPrice "DPNF|C_DefineCompositeSet" "define-set")))
                     (set-class:integer (XI_CompositeSet id son set-name score-multiplier set-definition ind))
-                    (ico0:object{IgnisCollectorV3.OutputCumulator}
+                    (ico0:object{IgnisCollectorV4.OutputCumulator}
                         (ref-IGNIS::UDC_ConstructOutputCumulator price creator false [])
                     )
-                    (ico1:object{IgnisCollectorV3.OutputCumulator}
+                    (ico1:object{IgnisCollectorV4.OutputCumulator}
                         (if son
                             (ref-DPDC-C::C_CreateNewNonce patron (ref-DPDC::UR_Verum5 id son) id son set-class 0 ind true)
                             EOC
@@ -1679,7 +1689,7 @@
             )
         )
     )
-    (defun C_DefineHybridSet:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_DefineHybridSet:object{IgnisCollectorV4.OutputCumulator}
         (
             patron:string executor:string id:string son:bool set-name:string score-multiplier:decimal
             primordial-sd:[object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition}]
@@ -1695,19 +1705,19 @@
         (with-capability (DPDC-S|C>DEFINE-HYBRID id son score-multiplier primordial-sd composite-sd ind)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC:module{DpdcV2} DPDC)
-                    (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC:module{DpdcV3} DPDC)
+                    (ref-DPDC-C:module{DpdcCreateV3} DPDC-C)
                     (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
                     ;;
                     (creator:string (ref-DPDC::UR_CreatorKonto id son))
                     (price:decimal (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_DefineHybridSet" "define-set")
                                 (ref-IGNIS::UC_IgnisPrice "DPNF|C_DefineHybridSet" "define-set")))
                     (set-class:integer (XI_HybridSet id son set-name score-multiplier primordial-sd composite-sd ind))
-                    (ico0:object{IgnisCollectorV3.OutputCumulator}
+                    (ico0:object{IgnisCollectorV4.OutputCumulator}
                         (ref-IGNIS::UDC_ConstructOutputCumulator price creator false [])
                     )
-                    (ico1:object{IgnisCollectorV3.OutputCumulator}
+                    (ico1:object{IgnisCollectorV4.OutputCumulator}
                         (if son
                             (ref-DPDC-C::C_CreateNewNonce patron (ref-DPDC::UR_Verum5 id son) id son set-class 0 ind true)
                             (do
@@ -1729,7 +1739,7 @@
             )
         )
     )
-    (defun C_EnableSetClassFragmentation:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_EnableSetClassFragmentation:object{IgnisCollectorV4.OutputCumulator}
         (
             patron:string executor:string id:string son:bool set-class:integer
             fragmentation-ind:object{DpdcUdcV2.DPDC|NonceData}
@@ -1745,7 +1755,7 @@
             (URCi_EnableSetClassFragmentation id son)
         )
     )
-    (defun C_ToggleSet:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_ToggleSet:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string id:string son:bool set-class:integer toggle:bool)
         @doc "Activates or deactivates a set-class for further composition. \
             \ Executor: PROVEN INDIRECTLY via the capability's (CAP_Owner id son), a derived \
@@ -1758,7 +1768,7 @@
             (URCi_ToggleSet id son)
         )
     )
-    (defun C_RenameSet:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_RenameSet:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string id:string son:bool set-class:integer new-name:string)
         @doc "Renames a set-class. \
             \ Executor: PROVEN INDIRECTLY via the capability's (CAP_Owner id son), a derived \

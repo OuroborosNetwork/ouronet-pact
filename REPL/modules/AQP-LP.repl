@@ -52,8 +52,8 @@
 (print "--- [AQPLP-G1 — the LP-stake score context, on a chain that has both halves · 02 · let / invocation] ---")
 (let
     (
-        (ref-SWP:module{SwapperV4} SWP)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-SWP:module{SwapperV5} SWP)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
         (lp:string (at 0 (keys SWP.SWP|LP)))
         (sc:string "DhbVacateScore-98c486052a51")
         (pool:string "DhbVacatePool-98c486052a51")
@@ -142,9 +142,9 @@
 (print "--- [AQPLP-G2 — a CLASS-0 liquidity score, and the guards that needed one · 02 · let / invocation] ---")
 (let
     (
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-SWP:module{SwapperV4} SWP)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-SWP:module{SwapperV5} SWP)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
     )
     (env-module-admin SWP)
@@ -241,9 +241,9 @@
 (print "--- [AQPLP-G3 — the class-0 pool rule, reached by building the pool the suite never had · 02 · let / invocation] ---")
 (let
     (
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-SWP:module{SwapperV4} SWP)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-SWP:module{SwapperV5} SWP)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
     )
     (env-module-admin SWP)
@@ -331,13 +331,13 @@
 (print "--- [AQPLP-G4 — a REAL frozen LP leg stakes: the match is a real link, not a prefix strip · 02 · let / invocation] ---")
 (let
     (
-        (ref-SWP:module{SwapperV4} SWP)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-SWP:module{SwapperV5} SWP)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
     )
     (env-module-admin SWP)

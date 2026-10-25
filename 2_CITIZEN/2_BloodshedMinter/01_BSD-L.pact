@@ -161,7 +161,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -367,7 +367,7 @@
         @doc "Issue Bloodshed NFT Collection"
         (let
             (
-                (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+                (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
             )
             (ref-TS02-C2::DPNF|C_Issue
                 patron
@@ -382,7 +382,7 @@
             (
                 (ref-U|LST:module{StringProcessorV2} U|LST)
                 (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-                (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+                (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
                 (b:string BAR)
                 (t:bool true)
                 (f:bool false)

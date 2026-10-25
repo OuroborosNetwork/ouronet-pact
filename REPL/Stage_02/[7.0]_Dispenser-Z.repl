@@ -77,12 +77,12 @@
     (
         (ref-U|G:module{OuronetGuardsV2} U|G)
         (ref-P|DALOS:module{OuronetPolicyV2} DALOS)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
         (ref-AOZ:module{AgeOfZalmoxis} AOZ)
         (ref-P|DSP:module{OuronetPolicyV2} DSP)
-        (ref-DSP:module{DispenserV2} DSP)
+        (ref-DSP:module{DispenserV3} DSP)
         ;;
         (patron:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
         (dalos-sc:string (ref-DALOS::GOV|DALOS|SC_NAME))

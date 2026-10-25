@@ -72,7 +72,7 @@
     (defcap GOV ()                          (compose-capability (GOV|O_UI_EIGHT_ADMIN)))
     (defcap GOV|O_UI_EIGHT_ADMIN ()         (enforce-guard GOV|MD_O-UI-EIGHT))
     (defun GOV|Demiurgoi ()
-        (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi))
+        (let ((ref-DALOS:module{OuronetDalosV3} DALOS)) (ref-DALOS::GOV|Demiurgoi))
     )
 
     ;;{5}  FUNCTIONS
@@ -119,7 +119,7 @@
             \ Replaces DPL-UR::URC_0016_TruefungibleHeader, key-for-key."
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 ;;
                 (total-tf-number:integer (length (keys DPTF.DPTF|PropertiesTable)))
                 (held-tf:[string] (ref-DPTF::URH_HeldTrueFungibles account))
@@ -140,9 +140,9 @@
         (let
             (
                 (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-SWPI:module{SwapperIssueV4} SWPI)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-SWPI:module{SwapperIssueV5} SWPI)
                 ;;
                 (ignis-id:string (ref-DALOS::UR_IgnisID))
                 (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
@@ -201,8 +201,8 @@
         (let
             (
                 (ref-U|CT:module{OuronetConstantsV2} U|CT)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-SWP:module{SwapperV4} SWP)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-SWP:module{SwapperV5} SWP)
                 ;;
                 (lp-id:string (ref-SWP::UR_TokenLP swpair))
             )
@@ -219,7 +219,7 @@
                 (let
                     (
                         (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
-                        (ref-SWPI:module{SwapperIssueV4} SWPI)
+                        (ref-SWPI:module{SwapperIssueV5} SWPI)
                         ;;
                         (lp-id-used:string (if iz-native lp-id lp-id-frozen-counterpart))
                         (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
@@ -252,7 +252,7 @@
             \ Replaces DPL-UR::URC_0008b_TrueFungibleNativeLPMapper."
         (let
             (
-                (ref-SWP:module{SwapperV4} SWP)
+                (ref-SWP:module{SwapperV5} SWP)
             )
             (map
                 (lambda (lp-id:string)
@@ -272,16 +272,32 @@
             \ refusal is the right thing to swallow: the list is display, and one pool without \
             \ a frozen LP is a normal state, not an error the user must see. \
             \ \
-            \ Replaces DPL-UR::URC_0008b_TrueFungibleFrozenLPMapper."
+            \ Replaces DPL-UR::URC_0008b_TrueFungibleFrozenLPMapper. \
+            \ \
+            \ THE SWPAIR IS RESOLVED THROUGH THE FROZEN LINK, NOT THE FROZEN ID. `SWP|LP` is \
+            \ keyed by the NATIVE LP id, so reading it with a frozen id finds no row, the `try` \
+            \ below swallows the failure, and every frozen LP degrades to UDC_ZeroEntry -- a \
+            \ holder with a real frozen balance was shown `0.0000 held` and `No Existing \
+            \ Supply` while the AQP stake page, which reads the balance directly, showed the \
+            \ true figure. Reported 2026-10-17 against a live 134,224.0642 fLP position. \
+            \ \
+            \ `frozen-link` is written BIDIRECTIONALLY by `XE_UpdateSpecialTrueFungible` \
+            \ (`XI_UpdateFrozen` runs once each direction), so `UR_Frozen frozen-id` IS the \
+            \ native id. Do NOT strip the `F|` prefix instead: a frozen counterpart is a \
+            \ SEPARATELY minted token with its own suffix -- native `...LP-6D_MJJXmhuz3` vs \
+            \ frozen `F|...LP-_MYr9VcKUkBx` -- so `drop 2` yields an id that matches nothing. \
+            \ Same defect and same resolution as the AQP frozen-leg fix (commit aaa67eea)."
         (let
             (
-                (ref-SWP:module{SwapperV4} SWP)
+                (ref-SWP:module{SwapperV5} SWP)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
             )
             (map
                 (lambda (lp-id:string)
                     (try
                         (UDC_ZeroEntry)
-                        (URCv_04|LpEntry account (ref-SWP::UR_GetLpSwpair lp-id) false)
+                        (URCv_04|LpEntry account
+                            (ref-SWP::UR_GetLpSwpair (ref-DPTF::UR_Frozen lp-id)) false)
                     )
                 )
                 lp-ids
@@ -296,9 +312,9 @@
             \ Replaces DPL-UR::URC_0017_TruefungibleButton, key-for-key."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-ATS-C:module{AutostakeComputerV2} ATS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-ATS-C:module{AutostakeComputerV3} ATS)
                 ;;
                 (owner:string (ref-DPTF::UR_Konto dptf))
                 (balance:decimal (ref-DPTF::UR_AccountSupply dptf account))
@@ -314,11 +330,11 @@
                 ;;
                 (first-two:string (take 2 dptf))
                 ;;
-                (can-coil-obj:object{AutostakeComputerV2.CanCoil} (ref-ATS-C::UC_CanCoil dptf))
-                (can-curl-obj:object{AutostakeComputerV2.CanCurl} (ref-ATS-C::UC_CanCurl dptf))
-                (can-constrict-obj:object{AutostakeComputerV2.CanConstrict}
+                (can-coil-obj:object{AutostakeComputerV3.CanCoil} (ref-ATS-C::UC_CanCoil dptf))
+                (can-curl-obj:object{AutostakeComputerV3.CanCurl} (ref-ATS-C::UC_CanCurl dptf))
+                (can-constrict-obj:object{AutostakeComputerV3.CanConstrict}
                     (ref-ATS-C::UC_CanConstrict dptf))
-                (can-brumate-obj:object{AutostakeComputerV2.CanBrumate}
+                (can-brumate-obj:object{AutostakeComputerV3.CanBrumate}
                     (ref-ATS-C::UC_CanBrumate dptf))
                 ;;
                 ;;Transfer Check
@@ -387,7 +403,7 @@
             \ from a wallet that legitimately holds nothing."
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 ;;
                 (held-tf:[string] (ref-DPTF::URH_HeldTrueFungibles account))
                 (mngd-tf:[string] (ref-DPTF::URH_OwnedTrueFungibles account))
@@ -422,7 +438,7 @@
             (lambda (dptf:string)
                 (let
                     (
-                        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                     )
                     {"t1"                       : (ref-DPTF::UR_Name dptf)
                     ,"t2"                       : dptf

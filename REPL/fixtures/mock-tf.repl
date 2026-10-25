@@ -34,7 +34,7 @@
 (let
     (
         (patron:string KST.ANHD)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         ;;DERIVED, never hardcoded: this survived a 5000x re-pricing untouched (RULE 2 note).
         (split-stoa:[decimal]
             (ref-DALOS::URC_SplitSTOAPrices patron (* (ref-DALOS::UR_UsagePrice "dptf") 2.0))
@@ -62,7 +62,7 @@
 (print "--- [FIXTURE mock-tf · 03 · issue] ---")
     (let
         (
-            (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+            (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
             (issued-ids:[string]
                 (ref-TS01-C1::DPTF|C_Issue
                     patron patron
@@ -94,7 +94,7 @@
 (print "--- [FIXTURE mock-tf — postcondition · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (a:string (ref-U|DALOS::UDC_Makeid "MOCKA"))
         (b:string (ref-U|DALOS::UDC_Makeid "MOCKB"))

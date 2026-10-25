@@ -29,8 +29,8 @@
 (let
     (
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-DPDC-MNG:module{DpdcManagementV3} DPDC-MNG)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (id:string "CNF-98c486052a51")
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
@@ -77,12 +77,12 @@
 (print "--- [TX-HW-002 · 01 · plan asserts] ---")
 (let*
     (
-        (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
+        (ref-DPDC-MNG:module{DpdcManagementV3} DPDC-MNG)
         (id:string "CNF-98c486052a51")
         (emma:string KST.EMMA)
-        (full:object{DpdcManagementV2.RemovableNonces} (ref-DPDC-MNG::URHC_WipePure emma id false))
-        (plan:object{DpdcManagementV2.DPDC-MNG|WipeSlicePlan} (ref-DPDC-MNG::URHC_BuildWipeSlicePlan emma id false 3))
-        (slices:[object{DpdcManagementV2.RemovableNonces}] (at "slices" plan))
+        (full:object{DpdcManagementV3.RemovableNonces} (ref-DPDC-MNG::URHC_WipePure emma id false))
+        (plan:object{DpdcManagementV3.DPDC-MNG|WipeSlicePlan} (ref-DPDC-MNG::URHC_BuildWipeSlicePlan emma id false 3))
+        (slices:[object{DpdcManagementV3.RemovableNonces}] (at "slices" plan))
     )
     (map print
         [
@@ -90,11 +90,11 @@
             (expect "<<TX-HW-002>> seed: 1001 nonces need 3 slices (ceiling 500, calibrated)" 3 (ref-DPDC-MNG::UC_ComputeMinWipeSliceCount 1001))
             (expect "<<TX-HW-002>> plan: 3 slices over 12 nonces" 3 (at "slice-count" plan))
             (expect "<<TX-HW-002>> plan: slice widths 4/4/4"
-                [4 4 4] (map (lambda (s:object{DpdcManagementV2.RemovableNonces}) (length (at "r-nonces" s))) slices))
+                [4 4 4] (map (lambda (s:object{DpdcManagementV3.RemovableNonces}) (length (at "r-nonces" s))) slices))
             (expect "<<TX-HW-002>> plan: disjoint slices cover the full set exactly"
                 (at "r-nonces" full)
                 (fold (lambda (acc:[integer] ns:[integer]) (+ acc ns)) []
-                    (map (lambda (s:object{DpdcManagementV2.RemovableNonces}) (at "r-nonces" s)) slices)))
+                    (map (lambda (s:object{DpdcManagementV3.RemovableNonces}) (at "r-nonces" s)) slices)))
             ;; slice order follows the select's LEXICOGRAPHIC key order ("…|10" < "…|9"),
             ;; not numeric nonce order — the UI must treat plan slices as opaque payloads
             (expect "<<TX-HW-002>> plan: slice 0 follows lex key order (10..13, NOT 9..12)"
@@ -129,9 +129,9 @@
 (print "--- [TX-HW-003 - Slice 0 (nonces 9..12): static payload, freeze holds · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-DPDC-MNG:module{DpdcManagementV3} DPDC-MNG)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (id:string "CNF-98c486052a51")
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
@@ -171,8 +171,8 @@
 (print "--- [TX-HW-004 - Replay slice 0 REVERTS (idempotency: live table = completion ledger) · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-DPDC-MNG:module{DpdcManagementV3} DPDC-MNG)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (id:string "CNF-98c486052a51")
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
@@ -211,8 +211,8 @@
 (print "--- [TX-HW-005 - Unfreeze mid-campaign: slice 1 REVERTS, refreeze, slice 1 lands · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-DPDC-MNG:module{DpdcManagementV3} DPDC-MNG)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (id:string "CNF-98c486052a51")
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
@@ -260,9 +260,9 @@
 (print "--- [TX-HW-006 - Slice 2 (last): terminal state exactly empty · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-DPDC-MNG:module{DpdcManagementV3} DPDC-MNG)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (id:string "CNF-98c486052a51")
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
@@ -307,10 +307,10 @@
 (print "--- [TX-HW-007 - SFT Hydra wipe: fresh nonces, 2 slices, replay reverts, terminal empty · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-DPDC:module{DpdcV3} DPDC)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-DPDC-MNG:module{DpdcManagementV3} DPDC-MNG)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
         (id:string "DHCD-98c486052a51")
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
@@ -344,17 +344,17 @@
         (print "--- [TX-HW-007 · 03 · plan 2 slices / fire / replay / terminal] ---")
         (let*
             (
-                (plan:object{DpdcManagementV2.DPDC-MNG|WipeSlicePlan}
+                (plan:object{DpdcManagementV3.DPDC-MNG|WipeSlicePlan}
                     (ref-DPDC-MNG::URHC_BuildWipeSlicePlan lumy id true 2))
-                (sl:[object{DpdcManagementV2.RemovableNonces}] (at "slices" plan))
-                (s0:object{DpdcManagementV2.RemovableNonces} (at 0 sl))
-                (s1:object{DpdcManagementV2.RemovableNonces} (at 1 sl))
+                (sl:[object{DpdcManagementV3.RemovableNonces}] (at "slices" plan))
+                (s0:object{DpdcManagementV3.RemovableNonces} (at 0 sl))
+                (s1:object{DpdcManagementV3.RemovableNonces} (at 1 sl))
             )
             (ref-TS02-C1::DPSF|Cp_WipeSlice patron lumy id s0)
             (map print
                 [
                     (expect "<<TX-HW-007>> plan: 2 slices of 4 over 8 SFT nonces"
-                        [4 4] (map (lambda (x:object{DpdcManagementV2.RemovableNonces}) (length (at "r-nonces" x))) sl))
+                        [4 4] (map (lambda (x:object{DpdcManagementV3.RemovableNonces}) (length (at "r-nonces" x))) sl))
                     (expect "<<TX-HW-007>> after slice 0: 4 SFT nonces remain"
                         4 (length (at "r-nonces" (ref-DPDC-MNG::URHC_WipePure lumy id true))))
                     (expect-failure "<<TX-HW-007>> replayed SFT slice 0 REVERTS (live table = completion ledger)"

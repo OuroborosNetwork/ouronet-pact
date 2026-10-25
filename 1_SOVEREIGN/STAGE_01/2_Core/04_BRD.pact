@@ -1,5 +1,5 @@
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface BrandingV2
+(interface BrandingV3
     @doc "Interface Exposing the Branding Functions needed to create the Branding Functionality \
         \ Entities are DPTF DPMF DPSF DPNF ATSPairs SWPairs \
         \ Should Future entities be added, they too can be branded via this module \
@@ -85,6 +85,13 @@
     (defun A_Live (patron:string executor:string entity-id:string))
     (defun A_SetFlag (patron:string executor:string entity-id:string flag:integer))
 
+
+    ;;<=========================================================================>
+    ;; ADDED 2026-10-12 -- interface-membership sweep (StoicSyntax-Prefixes.md Sec5,
+    ;; owner ruling). Every one of these was already live in the module body; this
+    ;; closes the gap between what the module DOES and what its interface SAYS it does.
+    ;;<=========================================================================>
+    (defun UDC_BrandingGenesis:object{Schema} (input:object{Schema} genesis:time))
 )
 
 (module BRD GOV
@@ -98,7 +105,7 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements BrandingV2)
+    (implements BrandingV3)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -114,7 +121,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -137,7 +144,7 @@
     (defun P|Info ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::P|Info)
         )
@@ -280,8 +287,8 @@
     ;;{3.2}  schemas
     ;;
     (defschema BRD|PropertiesSchema
-        branding:object{BrandingV2.Schema}
-        branding-pending:object{BrandingV2.Schema}
+        branding:object{BrandingV3.Schema}
+        branding-pending:object{BrandingV3.Schema}
     )
     ;;{3.3}  tables
     (deftable BRD|BrandingTable:{BRD|PropertiesSchema})
@@ -310,7 +317,7 @@
         @event
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (mp:integer (URC_MaxBluePayment entity-owner-account))
                 (flag:integer (UR_Flag entity-id false))
                 (premium:time (UR_PremiumUntil entity-id false))
@@ -344,38 +351,38 @@
         )
     )
     ;;
-    (defun UDC_BrandingLogo:object{BrandingV2.Schema} (input:object{BrandingV2.Schema} logo:string)
+    (defun UDC_BrandingLogo:object{BrandingV3.Schema} (input:object{BrandingV3.Schema} logo:string)
         (+
             {"logo" : logo}
             (remove "logo" input)
         )
     )
-    (defun UDC_BrandingDescription:object{BrandingV2.Schema} (input:object{BrandingV2.Schema} description:string)
+    (defun UDC_BrandingDescription:object{BrandingV3.Schema} (input:object{BrandingV3.Schema} description:string)
         (+
             {"description" : description}
             (remove "description" input)
         )
     )
-    (defun UDC_BrandingWebsite:object{BrandingV2.Schema} (input:object{BrandingV2.Schema} website:string)
+    (defun UDC_BrandingWebsite:object{BrandingV3.Schema} (input:object{BrandingV3.Schema} website:string)
         (+
             {"website" : website}
             (remove "website" input)
         )
     )
-    (defun UDC_BrandingSocial:object{BrandingV2.Schema} (input:object{BrandingV2.Schema} social:[object{BrandingV2.SocialSchema}])
+    (defun UDC_BrandingSocial:object{BrandingV3.Schema} (input:object{BrandingV3.Schema} social:[object{BrandingV3.SocialSchema}])
         (+
             {"social" : social}
             (remove "social" input)
         )
     )
-    (defun UDC_BrandingFlag:object{BrandingV2.Schema} (input:object{BrandingV2.Schema} flag:integer)
+    (defun UDC_BrandingFlag:object{BrandingV3.Schema} (input:object{BrandingV3.Schema} flag:integer)
         (enforce (contains flag (enumerate 0 4)) "Invalid Flag Integer")
         (+
             {"flag" : flag}
             (remove "flag" input)
         )
     )
-    (defun UDC_BrandingPremium:object{BrandingV2.Schema} (input:object{BrandingV2.Schema} premium:time)
+    (defun UDC_BrandingPremium:object{BrandingV3.Schema} (input:object{BrandingV3.Schema} premium:time)
         (+
             {"premium-until" : premium}
             (remove "premium-until" input)
@@ -386,7 +393,7 @@
     ;;under the cascade rule, for a constructor only <XE_Issue> needs. The siblings are
     ;;interface-declared because external modules build branding objects with them;
     ;;nothing outside BRD sets a genesis.
-    (defun UDC_BrandingGenesis:object{BrandingV2.Schema} (input:object{BrandingV2.Schema} genesis:time)
+    (defun UDC_BrandingGenesis:object{BrandingV3.Schema} (input:object{BrandingV3.Schema} genesis:time)
         (+
             {"genesis" : genesis}
             (remove "genesis" input)
@@ -394,7 +401,7 @@
     )
     ;;{5.2}  Compute [UC]
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    (defun UR_Branding:object{BrandingV2.Schema} (id:string pending:bool)
+    (defun UR_Branding:object{BrandingV3.Schema} (id:string pending:bool)
         (if pending
             (with-read BRD|BrandingTable id
                 { "branding-pending" := b }
@@ -415,7 +422,7 @@
     (defun UR_Website:string (id:string pending:bool)
         (at "website" (UR_Branding id pending))
     )
-    (defun UR_Social:[object{BrandingV2.SocialSchema}] (id:string pending:bool)
+    (defun UR_Social:[object{BrandingV3.SocialSchema}] (id:string pending:bool)
         (at "social" (UR_Branding id pending))
     )
     (defun UR_Flag:integer (id:string pending:bool)
@@ -430,7 +437,7 @@
     (defun URC_MaxBluePayment (account:string)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (mt:integer (ref-DALOS::UR_Elite-Tier-Major account))
             )
             (if (<= mt 2)
@@ -450,7 +457,7 @@
             \ XE_UpgradeBranding write (exec billing) and every C_UpgradeBranding INFO preview."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (* (dec months) (ref-DALOS::UR_UsagePrice "blue"))
         )
@@ -475,7 +482,7 @@
         ;;Fixed 2026-09-12, owner-authorised.
         (let
             (
-                (fresh:object{BrandingV2.Schema}
+                (fresh:object{BrandingV3.Schema}
                     (UDC_BrandingGenesis BRD|DEFAULT (at "block-time" (chain-data))))
             )
             (insert BRD|BrandingTable entity-id
@@ -485,7 +492,7 @@
         )
     )
     ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
-    (defun XE_UpdatePendingBranding (entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
+    (defun XE_UpdatePendingBranding (entity-id:string logo:string description:string website:string social:[object{BrandingV3.SocialSchema}])
         @doc "Updates <pending-branding> with new branding data. \
             \ This is done by <entity-id> owners to brand their <entity-id> \
             \ Branding Administrator must afterwards set this <pending-branding> data to live, \
@@ -493,11 +500,11 @@
         (P|UEV_IMC)
         (let
             (
-                (pending:object{BrandingV2.Schema} (UR_Branding entity-id true))
-                (p1:object{BrandingV2.Schema} (UDC_BrandingLogo pending logo))
-                (p2:object{BrandingV2.Schema} (UDC_BrandingDescription p1 description))
-                (p3:object{BrandingV2.Schema} (UDC_BrandingWebsite p2 website))
-                (p4:object{BrandingV2.Schema} (UDC_BrandingSocial p3 social))
+                (pending:object{BrandingV3.Schema} (UR_Branding entity-id true))
+                (p1:object{BrandingV3.Schema} (UDC_BrandingLogo pending logo))
+                (p2:object{BrandingV3.Schema} (UDC_BrandingDescription p1 description))
+                (p3:object{BrandingV3.Schema} (UDC_BrandingWebsite p2 website))
+                (p4:object{BrandingV3.Schema} (UDC_BrandingSocial p3 social))
             )
             (with-capability (SECURE)
                 (XI_UpdateBrandingData entity-id true p4)
@@ -533,8 +540,8 @@
         (with-capability (BRD|C>UPGRADE entity-id entity-owner-account months)
             (let
                 (
-                    (branding:object{BrandingV2.Schema} (UR_Branding entity-id false))
-                    (branding-pending:object{BrandingV2.Schema} (UR_Branding entity-id true))
+                    (branding:object{BrandingV3.Schema} (UR_Branding entity-id false))
+                    (branding-pending:object{BrandingV3.Schema} (UR_Branding entity-id true))
                     (flag:integer (UR_Flag entity-id false))
                     (premium:time (UR_PremiumUntil entity-id false))
                     (current:time (at "block-time" (chain-data)))
@@ -554,16 +561,16 @@
                         )
                     )
 
-                    (as-is1:object{BrandingV2.Schema} (UDC_BrandingFlag branding 1))
-                    (as-is2:object{BrandingV2.Schema} (UDC_BrandingPremium as-is1 premium-until))
+                    (as-is1:object{BrandingV3.Schema} (UDC_BrandingFlag branding 1))
+                    (as-is2:object{BrandingV3.Schema} (UDC_BrandingPremium as-is1 premium-until))
 
-                    (from-pending1:object{BrandingV2.Schema} (UDC_BrandingFlag branding-pending 1))
-                    (from-pending2:object{BrandingV2.Schema} (UDC_BrandingPremium from-pending1 premium-until))
+                    (from-pending1:object{BrandingV3.Schema} (UDC_BrandingFlag branding-pending 1))
+                    (from-pending2:object{BrandingV3.Schema} (UDC_BrandingPremium from-pending1 premium-until))
 
-                    (np1:object{BrandingV2.Schema} (UDC_BrandingLogo branding-pending BAR))
-                    (np2:object{BrandingV2.Schema} (UDC_BrandingDescription np1 BAR))
-                    (np3:object{BrandingV2.Schema} (UDC_BrandingWebsite np2 BAR))
-                    (np4:object{BrandingV2.Schema} (UDC_BrandingSocial np3 [SOCIAL|EMPTY]))
+                    (np1:object{BrandingV3.Schema} (UDC_BrandingLogo branding-pending BAR))
+                    (np2:object{BrandingV3.Schema} (UDC_BrandingDescription np1 BAR))
+                    (np3:object{BrandingV3.Schema} (UDC_BrandingWebsite np2 BAR))
+                    (np4:object{BrandingV3.Schema} (UDC_BrandingSocial np3 [SOCIAL|EMPTY]))
                 )
                 (if (= flag 3)
                     (do
@@ -578,7 +585,7 @@
     )
     ;;
     ;;Protection: Class 2 — SECURE
-    (defun XI_UpdateBrandingData (entity-id:string pending:bool branding:object{BrandingV2.Schema})
+    (defun XI_UpdateBrandingData (entity-id:string pending:bool branding:object{BrandingV3.Schema})
         (require-capability (SECURE))
         (if pending
             (update BRD|BrandingTable entity-id
@@ -599,21 +606,21 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership executor)
         )
         (with-capability (BRD|C>LIVE)
             (let
                 (
-                    (branding-pending:object{BrandingV2.Schema} (UR_Branding entity-id true))
+                    (branding-pending:object{BrandingV3.Schema} (UR_Branding entity-id true))
                     (flag:integer (UR_Flag entity-id false))
                     (updated-flag:integer (if (<= flag 1) flag 2))
-                    (updated-branding:object{BrandingV2.Schema} (UDC_BrandingFlag branding-pending updated-flag))
-                    (np1:object{BrandingV2.Schema} (UDC_BrandingLogo branding-pending BAR))
-                    (np2:object{BrandingV2.Schema} (UDC_BrandingDescription np1 BAR))
-                    (np3:object{BrandingV2.Schema} (UDC_BrandingWebsite np2 BAR))
-                    (np4:object{BrandingV2.Schema} (UDC_BrandingSocial np3 [SOCIAL|EMPTY]))
+                    (updated-branding:object{BrandingV3.Schema} (UDC_BrandingFlag branding-pending updated-flag))
+                    (np1:object{BrandingV3.Schema} (UDC_BrandingLogo branding-pending BAR))
+                    (np2:object{BrandingV3.Schema} (UDC_BrandingDescription np1 BAR))
+                    (np3:object{BrandingV3.Schema} (UDC_BrandingWebsite np2 BAR))
+                    (np4:object{BrandingV3.Schema} (UDC_BrandingSocial np3 [SOCIAL|EMPTY]))
                 )
                 (XI_UpdateBrandingData entity-id false updated-branding)
                 (XI_UpdateBrandingData entity-id true np4)
@@ -628,15 +635,15 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership executor)
         )
         (with-capability (BRD|C>ADMIN_SET flag)
             (let
                 (
-                    (existing-branding:object{BrandingV2.Schema} (UR_Branding entity-id false))
-                    (modified-branding:object{BrandingV2.Schema} (UDC_BrandingFlag existing-branding flag))
+                    (existing-branding:object{BrandingV3.Schema} (UR_Branding entity-id false))
+                    (modified-branding:object{BrandingV3.Schema} (UDC_BrandingFlag existing-branding flag))
                 )
                 (XI_UpdateBrandingData entity-id false modified-branding)
             )

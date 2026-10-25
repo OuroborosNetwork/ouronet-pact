@@ -3,7 +3,7 @@
 ;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact
 ;;
 ;; net: v2   ·   dev: v3   ;; bumped by the StoicSyntax refactor — deploy v3 then set net: v3
-(interface SwapperUsageV3
+(interface SwapperUsageV4
     @doc "Exposes Adding|Removing Liquidty and Swapping Functions of the SWP Module \
     \    V2: Added the already existing <UDC_SpawnSlippageBounds> to the interface \
     \    V2: Smart Swap slippage quote using fee-less multi-hop path tracing via <UDC_SpawnSmartSwapSlippageBounds> \
@@ -122,7 +122,7 @@
     (defun UDC_SpawnSmartSwapSlippageBounds:object{Slippage} (input-id:string input-amount:decimal output-id:string slippage:decimal))
     (defun UDC_SpawnSlippageBounds:object{Slippage} (swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage:decimal))
     (defun UDC_Slippage:object{Slippage} (a:decimal b:integer c:decimal))
-    (defun UDC_SlippageObject:object{Slippage} (swpair:string dsid:object{UtilitySwpV2.DirectSwapInputData} slippage-value:decimal))
+    (defun UDC_SlippageObject:object{Slippage} (swpair:string dsid:object{UtilitySwpV3.DirectSwapInputData} slippage-value:decimal))
     ;;{5.2}  Compute [UC]
     ;;
     ;;
@@ -134,10 +134,10 @@
     ;;#34 Phase 7: dedup + lookup helpers for the bundle's <stoa-paths>, built ahead of
     ;;Phase 8's actual wiring so that phase builds against a settled, tested shape.
     (defun URC_DedupFirstTokens:[string] (distinct-edges:[string]))
-    (defun URCi_ToggleSwapCapability:object{IgnisCollectorV3.OutputCumulator} (swpair:string toggle:bool))
-    (defun URCi_SmartSwap:object{IgnisCollectorV3.OutputCumulator} (account:string input-id:string input-amount:decimal output-id:string slippage:decimal slippage-bounds:object{Slippage}))
-    (defun URCi_SmartSwapWithBundle:object{IgnisCollectorV3.OutputCumulator} (account:string input-id:string input-amount:decimal output-id:string slippage:decimal slippage-bounds:object{Slippage} bundle:object{SmartSwapPathBundle}))
-    (defun URCi_Swap:object{IgnisCollectorV3.OutputCumulator} (account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage:decimal slippage-bounds:object{Slippage}))
+    (defun URCi_ToggleSwapCapability:object{IgnisCollectorV4.OutputCumulator} (swpair:string toggle:bool))
+    (defun URCi_SmartSwap:object{IgnisCollectorV4.OutputCumulator} (account:string input-id:string input-amount:decimal output-id:string slippage:decimal slippage-bounds:object{Slippage}))
+    (defun URCi_SmartSwapWithBundle:object{IgnisCollectorV4.OutputCumulator} (account:string input-id:string input-amount:decimal output-id:string slippage:decimal slippage-bounds:object{Slippage} bundle:object{SmartSwapPathBundle}))
+    (defun URCi_Swap:object{IgnisCollectorV4.OutputCumulator} (account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage:decimal slippage-bounds:object{Slippage}))
     ;;{5.4}  Validate [UEV/CAP]
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
@@ -147,8 +147,8 @@
     ;;  []C] Functions
     ;;
     ;;
-    (defun C_ToggleSwapCapability:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string swpair:string toggle:bool))
-    (defun CC_SmartSwap:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string input-id:string input-amount:decimal output-id:string slippage:decimal stoa-pid:decimal slippage-bounds:object{Slippage}))
+    (defun C_ToggleSwapCapability:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string swpair:string toggle:bool))
+    (defun CC_SmartSwap:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string input-id:string input-amount:decimal output-id:string slippage:decimal stoa-pid:decimal slippage-bounds:object{Slippage}))
     ;;#34 Phase 8: the bundle-based, dirty-read-injected SmartSwap — performs zero
     ;;internal searching (route, boost-path and stoa-paths are all supplied by the
     ;;caller, per SmartSwapPathBundle), built alongside CC_SmartSwap for direct gas
@@ -159,8 +159,16 @@
             stoa-pid:decimal slippage-bounds:object{Slippage} bundle:object{SmartSwapPathBundle}
         )
     )
-    (defun C_Swap:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage:decimal stoa-pid:decimal slippage-bounds:object{Slippage}))
+    (defun C_Swap:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage:decimal stoa-pid:decimal slippage-bounds:object{Slippage}))
 
+
+    ;;<=========================================================================>
+    ;; ADDED 2026-10-12 -- interface-membership sweep (StoicSyntax-Prefixes.md Sec5,
+    ;; owner ruling). Every one of these was already live in the module body; this
+    ;; closes the gap between what the module DOES and what its interface SAYS it does.
+    ;;<=========================================================================>
+    (defun UC_FilterSelfFromTargets:list (account:string targets:[string] amounts:[decimal]))
+    (defun UEV_Slippage (slippage:decimal))
 )
 ;;
 (module SWPU GOV
@@ -176,7 +184,7 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements SwapperUsageV3)
+    (implements SwapperUsageV4)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -193,7 +201,7 @@
     (defun GOV|SWP|SC_NAME ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|SWP|SC_NAME)
         )
@@ -201,7 +209,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -231,7 +239,7 @@
     (defun P|Info ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::P|Info)
         )
@@ -421,8 +429,8 @@
         (if toggle
             (let
                 (
-                    (ref-SWP:module{SwapperV4} SWP)
-                    (ref-SWPI:module{SwapperIssueV4} SWPI)
+                    (ref-SWP:module{SwapperV5} SWP)
+                    (ref-SWPI:module{SwapperIssueV5} SWPI)
                     (pool-worth:decimal (at 0 (ref-SWPI::URC_PoolValue swpair)))
                     (inactive-limit:decimal (ref-SWP::UR_InactiveLimit))
                 )
@@ -436,7 +444,7 @@
         (compose-capability (P|SWPU|CALLER))
     )
     (defcap SWPU|OPU|C>SINGL-SWAP-WITH-SLIPPAGE
-        (account:string swpair:string dsid:object{UtilitySwpV2.DirectSwapInputData} slippage:decimal slippage-bounds:object{SwapperUsageV3.Slippage})
+        (account:string swpair:string dsid:object{UtilitySwpV3.DirectSwapInputData} slippage:decimal slippage-bounds:object{SwapperUsageV4.Slippage})
         @event
         ;;RT-H-002: the slippage DOMAIN, checked where the value is USED rather than only in
         ;;the UI-side constructor. Validation belongs in the defcap (CLAUDE.md), and these four
@@ -445,12 +453,12 @@
         (compose-capability (SWPU|X>SWAP swpair dsid))
     )
     (defcap SWPU|OPU|C>SINGL-SWAP-NO-SLIPPAGE
-        (account:string swpair:string dsid:object{UtilitySwpV2.DirectSwapInputData} slippage:decimal)
+        (account:string swpair:string dsid:object{UtilitySwpV3.DirectSwapInputData} slippage:decimal)
         @event
         (compose-capability (SWPU|X>SWAP swpair dsid))
     )
     (defcap SWPU|OPU|C>MULTI-SWAP-WITH-SLIPPAGE
-        (account:string swpair:string dsid:object{UtilitySwpV2.DirectSwapInputData} slippage:decimal slippage-bounds:object{SwapperUsageV3.Slippage})
+        (account:string swpair:string dsid:object{UtilitySwpV3.DirectSwapInputData} slippage:decimal slippage-bounds:object{SwapperUsageV4.Slippage})
         @event
         ;;RT-H-002: the slippage DOMAIN, checked where the value is USED rather than only in
         ;;the UI-side constructor. Validation belongs in the defcap (CLAUDE.md), and these four
@@ -459,12 +467,12 @@
         (compose-capability (SWPU|X>SWAP swpair dsid))
     )
     (defcap SWPU|OPU|C>MULTI-SWAP-NO-SLIPPAGE
-        (account:string swpair:string dsid:object{UtilitySwpV2.DirectSwapInputData} slippage:decimal)
+        (account:string swpair:string dsid:object{UtilitySwpV3.DirectSwapInputData} slippage:decimal)
         @event
         (compose-capability (SWPU|X>SWAP swpair dsid))
     )
     (defcap SWPU|C>SINGL-SWAP-WITH-SLIPPAGE
-        (account:string swpair:string dsid:object{UtilitySwpV2.DirectSwapInputData} slippage:decimal slippage-bounds:object{SwapperUsageV3.Slippage})
+        (account:string swpair:string dsid:object{UtilitySwpV3.DirectSwapInputData} slippage:decimal slippage-bounds:object{SwapperUsageV4.Slippage})
         @event
         ;;RT-H-002: the slippage DOMAIN, checked where the value is USED rather than only in
         ;;the UI-side constructor. Validation belongs in the defcap (CLAUDE.md), and these four
@@ -473,12 +481,12 @@
         (compose-capability (SWPU|X>SWAP swpair dsid))
     )
     (defcap SWPU|C>SINGL-SWAP-NO-SLIPPAGE
-        (account:string swpair:string dsid:object{UtilitySwpV2.DirectSwapInputData} slippage:decimal)
+        (account:string swpair:string dsid:object{UtilitySwpV3.DirectSwapInputData} slippage:decimal)
         @event
         (compose-capability (SWPU|X>SWAP swpair dsid))
     )
     (defcap SWPU|C>MULTI-SWAP-WITH-SLIPPAGE
-        (account:string swpair:string dsid:object{UtilitySwpV2.DirectSwapInputData} slippage:decimal slippage-bounds:object{SwapperUsageV3.Slippage})
+        (account:string swpair:string dsid:object{UtilitySwpV3.DirectSwapInputData} slippage:decimal slippage-bounds:object{SwapperUsageV4.Slippage})
         @event
         ;;RT-H-002: the slippage DOMAIN, checked where the value is USED rather than only in
         ;;the UI-side constructor. Validation belongs in the defcap (CLAUDE.md), and these four
@@ -487,11 +495,11 @@
         (compose-capability (SWPU|X>SWAP swpair dsid))
     )
     (defcap SWPU|C>MULTI-SWAP-NO-SLIPPAGE
-        (account:string swpair:string dsid:object{UtilitySwpV2.DirectSwapInputData} slippage:decimal)
+        (account:string swpair:string dsid:object{UtilitySwpV3.DirectSwapInputData} slippage:decimal)
         @event
         (compose-capability (SWPU|X>SWAP swpair dsid))
     )
-    (defcap SWPU|X>SWAP (swpair:string dsid:object{UtilitySwpV2.DirectSwapInputData})
+    (defcap SWPU|X>SWAP (swpair:string dsid:object{UtilitySwpV3.DirectSwapInputData})
         (let
             (
                 ;;Unwrap Object Data
@@ -499,10 +507,10 @@
                 (input-amounts:[decimal] (at "input-amounts" dsid))
                 (output-id:string (at "output-id" dsid))
                 ;;
-                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+                (ref-U|SWP:module{UtilitySwpV3} U|SWP)
                 (ref-U|LST:module{StringProcessorV2} U|LST)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-SWP:module{SwapperV4} SWP)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-SWP:module{SwapperV5} SWP)
                 (l1:integer (length input-ids))
                 (l2:integer (length input-amounts))
                 (can-swap:bool (ref-SWP::UR_CanSwap swpair))
@@ -552,7 +560,7 @@
     (defcap SWPU|C>SMART-SWAP-WITH-SLIPPAGE
         (
             account:string input-id:string input-amount:decimal output-id:string slippage:decimal
-            slippage-bounds:object{SwapperUsageV3.Slippage} h-obj:object{SwapperIssueV4.Hopper}
+            slippage-bounds:object{SwapperUsageV4.Slippage} h-obj:object{SwapperIssueV5.Hopper}
         )
         @event
         (compose-capability (SWPU|X>SMART-SWAP account input-id input-amount output-id h-obj))
@@ -560,13 +568,13 @@
     (defcap SWPU|C>SMART-SWAP-NO-SLIPPAGE
         (
             account:string input-id:string input-amount:decimal output-id:string slippage:decimal
-            h-obj:object{SwapperIssueV4.Hopper}
+            h-obj:object{SwapperIssueV5.Hopper}
         )
         @event
         (compose-capability (SWPU|X>SMART-SWAP account input-id input-amount output-id h-obj))
     )
     (defcap SWPU|X>SMART-SWAP
-        (account:string input-id:string input-amount:decimal output-id:string h-obj:object{SwapperIssueV4.Hopper})
+        (account:string input-id:string input-amount:decimal output-id:string h-obj:object{SwapperIssueV5.Hopper})
         @doc "#65L fix: <h-obj> (the BFS path search) is now computed exactly ONCE by the \
             \ caller (CC_SmartSwap) and passed in here, instead of this defcap \
             \ independently re-running SWPI::URC_HopperActive's full-graph search and \
@@ -577,8 +585,8 @@
             \ already-known route instead of searching twice."
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-SWP:module{SwapperV4} SWP)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-SWP:module{SwapperV5} SWP)
                 (all-pool-tokens:[string] (ref-SWP::URC_AllPoolTokens))
                 (edges:[string] (at "edges" h-obj))
             )
@@ -610,7 +618,7 @@
     (defcap SWPU|C>SMART-SWAP-EXPLICIT-ROUTE-WITH-SLIPPAGE
         (
             account:string input-id:string input-amount:decimal output-id:string slippage:decimal
-            slippage-bounds:object{SwapperUsageV3.Slippage} bundle:object{SwapperUsageV3.SmartSwapPathBundle}
+            slippage-bounds:object{SwapperUsageV4.Slippage} bundle:object{SwapperUsageV4.SmartSwapPathBundle}
         )
         @event
         (compose-capability (SWPU|X>SMART-SWAP-EXPLICIT-ROUTE account input-id input-amount output-id bundle))
@@ -618,13 +626,13 @@
     (defcap SWPU|C>SMART-SWAP-EXPLICIT-ROUTE-NO-SLIPPAGE
         (
             account:string input-id:string input-amount:decimal output-id:string slippage:decimal
-            bundle:object{SwapperUsageV3.SmartSwapPathBundle}
+            bundle:object{SwapperUsageV4.SmartSwapPathBundle}
         )
         @event
         (compose-capability (SWPU|X>SMART-SWAP-EXPLICIT-ROUTE account input-id input-amount output-id bundle))
     )
     (defcap SWPU|X>SMART-SWAP-EXPLICIT-ROUTE
-        (account:string input-id:string input-amount:decimal output-id:string bundle:object{SwapperUsageV3.SmartSwapPathBundle})
+        (account:string input-id:string input-amount:decimal output-id:string bundle:object{SwapperUsageV4.SmartSwapPathBundle})
         @doc "All authorization/validation for the bundle-based path lives here, per this \
             \ codebase's client-defcap convention — XI_SmartSwapExplicitRoute below does \
             \ writes only, no enforce. Validates the SUPPLIED swap-route (structural \
@@ -634,8 +642,8 @@
             \ wrong-pair route must never be silently accepted."
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-SWPI:module{SwapperIssueV4} SWPI)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-SWPI:module{SwapperIssueV5} SWPI)
                 (nodes:[string] (at "nodes" (at "swap-route" bundle)))
                 (edges:[string] (at "edges" (at "swap-route" bundle)))
                 (le:integer (length nodes))
@@ -667,13 +675,13 @@
     (defun CT_EmptyCumulator ()
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (ref-IGNIS::UDC_EmptyOutputCumulatorV2)
         )
     )
     ;;
-    (defun UDC_SpawnSmartSwapSlippageBounds:object{SwapperUsageV3.Slippage}
+    (defun UDC_SpawnSmartSwapSlippageBounds:object{SwapperUsageV4.Slippage}
         (
             input-id:string 
             input-amount:decimal 
@@ -684,9 +692,9 @@
             \ Called by the UI to generate the slippage-bounds object before submitting the Smart Swap transaction."
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-SWPI:module{SwapperIssueV4} SWPI)
-                (h-obj:object{SwapperIssueV4.Hopper} (ref-SWPI::URC_HopperActive input-id output-id input-amount))
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-SWPI:module{SwapperIssueV5} SWPI)
+                (h-obj:object{SwapperIssueV5.Hopper} (ref-SWPI::URC_HopperActive input-id output-id input-amount))
                 (ovs:[decimal] (at "output-values" h-obj))
                 (expected:decimal (at 0 (take -1 ovs)))
                 (o-prec:integer (ref-DPTF::UR_Decimals output-id))
@@ -708,7 +716,7 @@
             (UDC_Slippage expected o-prec slippage)
         )
     )
-    (defun UDC_SpawnSlippageBounds:object{SwapperUsageV3.Slippage}
+    (defun UDC_SpawnSlippageBounds:object{SwapperUsageV4.Slippage}
         (
             swpair:string 
             input-ids:[string]
@@ -716,32 +724,32 @@
             output-id:string
             slippage:decimal
         )
-        @doc "Creates the <slippage-bounds:object{SwapperUsageV3.Slippage}> \
+        @doc "Creates the <slippage-bounds:object{SwapperUsageV4.Slippage}> \
             \ that needs to be passed to the Slippage Swap Functions,\
             \ using data from the UI"
         (let
             (
-                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
-                (dsid:object{UtilitySwpV2.DirectSwapInputData}
+                (ref-U|SWP:module{UtilitySwpV3} U|SWP)
+                (dsid:object{UtilitySwpV3.DirectSwapInputData}
                     (ref-U|SWP::UDC_DirectSwapInputData input-ids input-amounts output-id)
                 )
             )
             (UDC_SlippageObject swpair dsid slippage)
         )
     )
-    (defun UDC_Slippage:object{SwapperUsageV3.Slippage}
+    (defun UDC_Slippage:object{SwapperUsageV4.Slippage}
         (a:decimal b:integer c:decimal)
         {"expected-output-amount"   : a
         ,"output-precision"         : b
         ,"slippage-percent"         : c}
     )
-    (defun UDC_SlippageObject:object{SwapperUsageV3.Slippage}
-        (swpair:string dsid:object{UtilitySwpV2.DirectSwapInputData} slippage-value:decimal)
+    (defun UDC_SlippageObject:object{SwapperUsageV4.Slippage}
+        (swpair:string dsid:object{UtilitySwpV3.DirectSwapInputData} slippage-value:decimal)
         @doc "Makes a Slippage Object from <input amounts>"
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-SWPI:module{SwapperIssueV4} SWPI)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-SWPI:module{SwapperIssueV5} SWPI)
                 (o-prec:integer (ref-DPTF::UR_Decimals (at "output-id" dsid)))
                 (expected:decimal (ref-SWPI::URCv_Swap swpair dsid false))
             )
@@ -764,7 +772,7 @@
         )
     )
     ;;{5.2}  Compute [UC]
-    (defun UC_SlippageMinMax:[decimal] (input:object{SwapperUsageV3.Slippage})
+    (defun UC_SlippageMinMax:[decimal] (input:object{SwapperUsageV4.Slippage})
         (let
             (
                 (expected:decimal (at "expected-output-amount" input))
@@ -832,7 +840,7 @@
             \ price independently) collapse to a single lookup here."
         (let
             (
-                (ref-SWP:module{SwapperV4} SWP)
+                (ref-SWP:module{SwapperV5} SWP)
             )
             (distinct (map (lambda (sp:string) (at 0 (ref-SWP::UR_PoolTokens sp))) distinct-edges))
         )
@@ -859,13 +867,13 @@
             \ never required to route over can-swap=true pools only."
         (let*
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-ATS:module{AutostakeV3} ATS)
-                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
-                (ref-SWP:module{SwapperV4} SWP)
-                (ref-SWPT:module{SwapTracerV3} SWPT)
-                (ref-SWPI:module{SwapperIssueV4} SWPI)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-ATS:module{AutostakeV4} ATS)
+                (ref-U|SWP:module{UtilitySwpV3} U|SWP)
+                (ref-SWP:module{SwapperV5} SWP)
+                (ref-SWPT:module{SwapTracerV4} SWPT)
+                (ref-SWPI:module{SwapperIssueV5} SWPI)
                 (wstoa:string (ref-DALOS::UR_WrappedStoaID))
                 (sstoa:string (ref-DALOS::UR_SilverStoaID))
                 (current-lp-supply:decimal (ref-SWP::URC_LpCapacity swpair))
@@ -927,7 +935,7 @@
                                     -1.0
                                     (let*
                                         (
-                                            (h-obj:object{SwapperIssueV4.Hopper}
+                                            (h-obj:object{SwapperIssueV5.Hopper}
                                                 (ref-SWPI::URC_HopperForKnownRoute nodes edges first-token-supply)
                                             )
                                             (ovs:[decimal] (at "output-values" h-obj))
@@ -986,19 +994,19 @@
         )
     )
     ;;
-    (defun URCi_ToggleSwapCapability:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_ToggleSwapCapability:object{IgnisCollectorV4.OutputCumulator}
         (swpair:string toggle:bool)
         @doc "Cost preview for C_ToggleSwapCapability: delegates to SWP's add-or-swap toggle \
             \ cost (add-or-swap = false)."
         (let
             (
-                (ref-SWP:module{SwapperV4} SWP)
+                (ref-SWP:module{SwapperV5} SWP)
             )
             (ref-SWP::URCi_ToggleAddOrSwap swpair toggle false)
         )
     )
     (defun URCi_SmartSwapCore:list
-        (account:string input-amount:decimal ico-input:object{IgnisCollectorV3.OutputCumulator} nodes:[string] edges:[string] boost-path:object{SwapperUsageV3.CachedPathOrMiss})
+        (account:string input-amount:decimal ico-input:object{IgnisCollectorV4.OutputCumulator} nodes:[string] edges:[string] boost-path:object{SwapperUsageV4.CachedPathOrMiss})
         @doc "Exact cost of XI_SmartSwapCore's hop fold. Intermediate hops keep tokens inside \
             \ SWP and contribute only EOC; only the LAST hop emits the batched special-fee flush \
             \ (URCi_MultiBulkTransferCumulator over every earlier hop's targets), its own output \
@@ -1009,12 +1017,12 @@
             \ the per-hop FEED-SPECIAL-TARGETS events carry no cumulator cost and are omitted."
         (let
             (
-                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
-                (ref-SWP:module{SwapperV4} SWP)
-                (ref-SWPI:module{SwapperIssueV4} SWPI)
-                (ref-SWPL:module{SwapperLiquidityV2} SWPL)
-                (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
+                (ref-U|SWP:module{UtilitySwpV3} U|SWP)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
+                (ref-SWP:module{SwapperV5} SWP)
+                (ref-SWPI:module{SwapperIssueV5} SWPI)
+                (ref-SWPL:module{SwapperLiquidityV3} SWPL)
+                (ref-SWPLC:module{SwapperLiquidityClientV3} SWPLC)
                 (le:integer (length edges))
             )
             (take 2
@@ -1024,7 +1032,7 @@
                         (let*
                             (
                                 (current-input:decimal (at 0 acc))
-                                (acc-icos:[object{IgnisCollectorV3.OutputCumulator}] (at 1 acc))
+                                (acc-icos:[object{IgnisCollectorV4.OutputCumulator}] (at 1 acc))
                                 (carried-boost-in:decimal (at 2 acc))
                                 (sp-id-lst-in:[string] (at 3 acc))
                                 (sp-receiver-arr-in:[[string]] (at 4 acc))
@@ -1035,14 +1043,14 @@
                                 (iz-last:bool (= idx (- le 1)))
                                 ;;
                                 (pool-type:string (ref-U|SWP::UC_PoolType swpair))
-                                (fees:object{UtilitySwpV2.SwapFeez} (ref-SWPL::UDC_PoolFees swpair))
+                                (fees:object{UtilitySwpV3.SwapFeez} (ref-SWPL::UDC_PoolFees swpair))
                                 (A:decimal (ref-SWP::UR_Amplifier swpair))
                                 (X:[decimal] (ref-SWP::UR_PoolTokenSupplies swpair))
                                 (X-prec:[integer] (ref-SWP::UR_PoolTokenPrecisions swpair))
                                 (input-positions:[integer] (ref-SWPI::URCv_PoolTokenPositions swpair [i-id]))
                                 (output-position:integer (ref-SWP::URv_PoolTokenPosition swpair o-id))
                                 (W:[decimal] (ref-SWP::UR_Weigths swpair))
-                                (dtso:object{UtilitySwpV2.DirectTaxedSwapOutput}
+                                (dtso:object{UtilitySwpV3.DirectTaxedSwapOutput}
                                     (ref-SWPI::UC_BareboneSwapWithFeez account pool-type
                                         (ref-U|SWP::UDC_DirectSwapInputData [i-id] [current-input] o-id)
                                         fees A X X-prec input-positions output-position W))
@@ -1051,7 +1059,7 @@
                                 (o-id-liquid:decimal (at "o-id-liquid" dtso))
                                 (o-id-netto:decimal (at "o-id-netto" dtso))
                                 ;;
-                                (ico-fuel:object{IgnisCollectorV3.OutputCumulator}
+                                (ico-fuel:object{IgnisCollectorV4.OutputCumulator}
                                     (ref-SWPLC::URCi_Fuel account swpair lp-fuel false))
                                 (carried-boost-out:decimal
                                     (+
@@ -1082,11 +1090,11 @@
                                     (if (!= (length hop-f-targets) 0) (+ sp-receiver-arr-in [hop-f-targets]) sp-receiver-arr-in))
                                 (sp-amount-arr-out:[[decimal]]
                                     (if (!= (length hop-f-targets) 0) (+ sp-amount-arr-in [hop-f-amounts]) sp-amount-arr-in))
-                                (sp-flush:object{IgnisCollectorV3.OutputCumulator}
+                                (sp-flush:object{IgnisCollectorV4.OutputCumulator}
                                     (if (and iz-last (!= (length sp-id-lst-in) 0))
                                         (ref-TFT::URCi_MultiBulkTransferCumulator sp-id-lst-in SWP|SC_NAME sp-receiver-arr-in sp-amount-arr-in)
                                         EOC))
-                                (ico-special:object{IgnisCollectorV3.OutputCumulator}
+                                (ico-special:object{IgnisCollectorV4.OutputCumulator}
                                     (if iz-last
                                         (if (!= o-id-special 0.0)
                                             (let
@@ -1108,7 +1116,7 @@
                                             (ref-TFT::URCi_Transfer o-id SWP|SC_NAME account o-id-netto)
                                         )
                                         EOC))
-                                (boost:object{IgnisCollectorV3.OutputCumulator}
+                                (boost:object{IgnisCollectorV4.OutputCumulator}
                                     (if (and iz-last (!= carried-boost-out 0.0))
                                         (URCi_RawLiquidPump o-id carried-boost-out boost-path)
                                         EOC))
@@ -1129,14 +1137,14 @@
             )
         )
     )
-    (defun URCi_SmartSwapExec:object{IgnisCollectorV3.OutputCumulator}
-        (account:string input-id:string input-amount:decimal output-id:string nodes:[string] edges:[string] boost-path:object{SwapperUsageV3.CachedPathOrMiss})
+    (defun URCi_SmartSwapExec:object{IgnisCollectorV4.OutputCumulator}
+        (account:string input-id:string input-amount:decimal output-id:string nodes:[string] edges:[string] boost-path:object{SwapperUsageV4.CachedPathOrMiss})
         @doc "Exact cost of XI_SmartSwap: the user->SWP input transfer + the hop-fold cost + the \
             \ [final-netto hops pools distinct-edges] output. The STOA-pid OPU is a free write."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
                 (hop-result:list
                     (URCi_SmartSwapCore account input-amount
                         (ref-TFT::URCi_Transfer input-id account SWP|SC_NAME input-amount)
@@ -1148,16 +1156,16 @@
             )
         )
     )
-    (defun URCi_SmartSwap:object{IgnisCollectorV3.OutputCumulator}
-        (account:string input-id:string input-amount:decimal output-id:string slippage:decimal slippage-bounds:object{SwapperUsageV3.Slippage})
+    (defun URCi_SmartSwap:object{IgnisCollectorV4.OutputCumulator}
+        (account:string input-id:string input-amount:decimal output-id:string slippage:decimal slippage-bounds:object{SwapperUsageV4.Slippage})
         @doc "Exact cost preview for CC_SmartSwap (self-searching). Traces the route read-only via \
             \ URC_HopperActive, applies the same fee-less-output slippage floor vs the client-supplied \
             \ bounds, then prices the hop fold with NO_PATH (the boost route is re-derived read-only)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-SWPI:module{SwapperIssueV4} SWPI)
-                (h-obj:object{SwapperIssueV4.Hopper} (ref-SWPI::URC_HopperActive input-id output-id input-amount))
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-SWPI:module{SwapperIssueV5} SWPI)
+                (h-obj:object{SwapperIssueV5.Hopper} (ref-SWPI::URC_HopperActive input-id output-id input-amount))
             )
             (if (!= slippage -1.0)
                 (if (>= (at 0 (take -1 (at "output-values" h-obj))) (at 0 (UC_SlippageMinMax slippage-bounds)))
@@ -1168,8 +1176,8 @@
             )
         )
     )
-    (defun URCi_SmartSwapWithBundle:object{IgnisCollectorV3.OutputCumulator}
-        (account:string input-id:string input-amount:decimal output-id:string slippage:decimal slippage-bounds:object{SwapperUsageV3.Slippage} bundle:object{SwapperUsageV3.SmartSwapPathBundle})
+    (defun URCi_SmartSwapWithBundle:object{IgnisCollectorV4.OutputCumulator}
+        (account:string input-id:string input-amount:decimal output-id:string slippage:decimal slippage-bounds:object{SwapperUsageV4.Slippage} bundle:object{SwapperUsageV4.SmartSwapPathBundle})
         @doc "Exact cost preview for C_SmartSwap (bundle-based). Uses the dirty-read bundle's own \
             \ swap-route + boost-path (fed identically to exec and preview), validates the fee-less \
             \ output vs the client bounds, then prices the hop fold with the supplied boost-path. \
@@ -1177,8 +1185,8 @@
             \ precompute, not a cumulator cost)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-SWPI:module{SwapperIssueV4} SWPI)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-SWPI:module{SwapperIssueV5} SWPI)
                 (nodes:[string] (at "nodes" (at "swap-route" bundle)))
                 (edges:[string] (at "edges" (at "swap-route" bundle)))
             )
@@ -1191,8 +1199,8 @@
             )
         )
     )
-    (defun URCi_RawLiquidPump:object{IgnisCollectorV3.OutputCumulator}
-        (id:string amount:decimal boost-path:object{SwapperUsageV3.CachedPathOrMiss})
+    (defun URCi_RawLiquidPump:object{IgnisCollectorV4.OutputCumulator}
+        (id:string amount:decimal boost-path:object{SwapperUsageV4.CachedPathOrMiss})
         @doc "Exact cost of XI_RawLiquidPump's boost leg. The whole boost — regardless of route \
             \ length — is ONE SSTOA burn on SWP (or EOC when there is no active route to SSTOA). \
             \ The route search only decides existence + amount, both read-only; it never changes \
@@ -1201,15 +1209,15 @@
             \ path => URC_HopperForKnownRoute; empty output-values => EOC."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (sstoa:string (ref-DALOS::UR_SilverStoaID))
             )
             (if (= id sstoa)
                 (ref-DPTF::URCi_Burn sstoa SWP|SC_NAME)
                 (let
                     (
-                        (ref-SWPI:module{SwapperIssueV4} SWPI)
+                        (ref-SWPI:module{SwapperIssueV5} SWPI)
                         (is-sentinel:bool (= (at "nodes" boost-path) [BAR]))
                     )
                     (let
@@ -1239,28 +1247,28 @@
             )
         )
     )
-    (defun URCi_SwapCore:object{IgnisCollectorV3.OutputCumulator}
-        (account:string swpair:string dsid:object{UtilitySwpV2.DirectSwapInputData} boost-path:object{SwapperUsageV3.CachedPathOrMiss})
+    (defun URCi_SwapCore:object{IgnisCollectorV4.OutputCumulator}
+        (account:string swpair:string dsid:object{UtilitySwpV3.DirectSwapInputData} boost-path:object{SwapperUsageV4.CachedPathOrMiss})
         @doc "Exact cost of a single XI_Swap: input multi-transfer in + LP fuel (indirect => EOC) \
             \ + the output leg (special-fee bulk split or a plain netto transfer) + the liquid \
             \ boost. All amounts come from the PURE UC_BareboneSwapWithFeez swap math; output == \
             \ [o-id-netto]. The XE_UpdateSupplies / autonomous-swap-management writes carry no cost."
         (let
             (
-                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
-                (ref-SWP:module{SwapperV4} SWP)
-                (ref-SWPI:module{SwapperIssueV4} SWPI)
-                (ref-SWPL:module{SwapperLiquidityV2} SWPL)
-                (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
+                (ref-U|SWP:module{UtilitySwpV3} U|SWP)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
+                (ref-SWP:module{SwapperV5} SWP)
+                (ref-SWPI:module{SwapperIssueV5} SWPI)
+                (ref-SWPL:module{SwapperLiquidityV3} SWPL)
+                (ref-SWPLC:module{SwapperLiquidityClientV3} SWPLC)
                 ;;
                 (input-ids:[string] (at "input-ids" dsid))
                 (input-amounts:[decimal] (at "input-amounts" dsid))
                 (output-id:string (at "output-id" dsid))
                 ;;
                 (pool-type:string (ref-U|SWP::UC_PoolType swpair))
-                (fees:object{UtilitySwpV2.SwapFeez} (ref-SWPL::UDC_PoolFees swpair))
+                (fees:object{UtilitySwpV3.SwapFeez} (ref-SWPL::UDC_PoolFees swpair))
                 (A:decimal (ref-SWP::UR_Amplifier swpair))
                 (X:[decimal] (ref-SWP::UR_PoolTokenSupplies swpair))
                 (X-prec:[integer] (ref-SWP::UR_PoolTokenPrecisions swpair))
@@ -1268,18 +1276,18 @@
                 (output-position:integer (ref-SWP::URv_PoolTokenPosition swpair output-id))
                 (W:[decimal] (ref-SWP::UR_Weigths swpair))
                 ;;
-                (dtso:object{UtilitySwpV2.DirectTaxedSwapOutput}
+                (dtso:object{UtilitySwpV3.DirectTaxedSwapOutput}
                     (ref-SWPI::UC_BareboneSwapWithFeez account pool-type dsid fees A X X-prec input-positions output-position W))
                 (lp-fuel:[decimal] (at "lp-fuel" dtso))
                 (o-id-special:decimal (at "o-id-special" dtso))
                 (o-id-liquid:decimal (at "o-id-liquid" dtso))
                 (o-id-netto:decimal (at "o-id-netto" dtso))
                 ;;
-                (ico1:object{IgnisCollectorV3.OutputCumulator}
+                (ico1:object{IgnisCollectorV4.OutputCumulator}
                     (ref-TFT::URCi_MultiTransferCumulator input-ids account SWP|SC_NAME input-amounts))
-                (ico2:object{IgnisCollectorV3.OutputCumulator}
+                (ico2:object{IgnisCollectorV4.OutputCumulator}
                     (ref-SWPLC::URCi_Fuel account swpair lp-fuel false))
-                (ico3:object{IgnisCollectorV3.OutputCumulator}
+                (ico3:object{IgnisCollectorV4.OutputCumulator}
                     (if (!= o-id-special 0.0)
                         (let
                             (
@@ -1300,7 +1308,7 @@
                         (ref-TFT::URCi_Transfer output-id SWP|SC_NAME account o-id-netto)
                     )
                 )
-                (boost:object{IgnisCollectorV3.OutputCumulator}
+                (boost:object{IgnisCollectorV4.OutputCumulator}
                     (if (!= o-id-liquid 0.0)
                         (URCi_RawLiquidPump output-id o-id-liquid boost-path)
                         EOC
@@ -1310,8 +1318,8 @@
             (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3 boost] [o-id-netto])
         )
     )
-    (defun URCi_Swap:object{IgnisCollectorV3.OutputCumulator}
-        (account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage:decimal slippage-bounds:object{SwapperUsageV3.Slippage})
+    (defun URCi_Swap:object{IgnisCollectorV4.OutputCumulator}
+        (account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage:decimal slippage-bounds:object{SwapperUsageV4.Slippage})
         @doc "Exact cost preview for C_Swap (direct single/multi-pool swap; the STOA-pid OPU is a \
             \ free write). When slippage != -1.0, the read-only URCv_Swap actual output is checked \
             \ against the client-supplied (dirty-read) slippage-bounds min — exactly as the exec — \
@@ -1320,10 +1328,10 @@
             \ re-derives the route read-only)."
         (let
             (
-                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-SWPI:module{SwapperIssueV4} SWPI)
-                (dsid:object{UtilitySwpV2.DirectSwapInputData}
+                (ref-U|SWP:module{UtilitySwpV3} U|SWP)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-SWPI:module{SwapperIssueV5} SWPI)
+                (dsid:object{UtilitySwpV3.DirectSwapInputData}
                     (ref-U|SWP::UDC_DirectSwapInputData input-ids input-amounts output-id))
             )
             (if (= slippage -1.0)
@@ -1372,7 +1380,7 @@
     (defun XI_SmartSwapAndRegister:list
         (patron:string 
             account:string input-id:string input-amount:decimal output-id:string slippage:decimal
-            stoa-pid:decimal slippage-bounds:object{SwapperUsageV3.Slippage} bundle:object{SwapperUsageV3.SmartSwapPathBundle}
+            stoa-pid:decimal slippage-bounds:object{SwapperUsageV4.Slippage} bundle:object{SwapperUsageV4.SmartSwapPathBundle}
         )
         @doc "#34 Phase 8: C_SmartSwap's body, factored out so it runs entirely INSIDE \
             \ the caller's with-capability block (required for XI_RegisterBundlePaths' \
@@ -1381,7 +1389,7 @@
         (require-capability (SECURE))
         (let*
             (
-                (ico:object{IgnisCollectorV3.OutputCumulator}
+                (ico:object{IgnisCollectorV4.OutputCumulator}
                     (XI_SmartSwapExplicitRoute patron account input-id input-amount output-id slippage stoa-pid slippage-bounds bundle)
                 )
                 (out:list (at "output" ico))
@@ -1405,10 +1413,10 @@
         )
     )
     ;;Protection: Class 2 — SECURE
-    (defun XI_SmartSwapRouter:object{IgnisCollectorV3.OutputCumulator}
+    (defun XI_SmartSwapRouter:object{IgnisCollectorV4.OutputCumulator}
         (patron:string 
             account:string input-id:string input-amount:decimal output-id:string slippage:decimal
-            stoa-pid:decimal slippage-bounds:object{SwapperUsageV3.Slippage} h-obj:object{SwapperIssueV4.Hopper}
+            stoa-pid:decimal slippage-bounds:object{SwapperUsageV4.Slippage} h-obj:object{SwapperIssueV5.Hopper}
         )
         @doc "Routes Smart Swap: performs slippage check using fee-less multi-hop output, then executes. \
             \ #65L fix: <h-obj> is now supplied by the caller (CC_SmartSwap), computed \
@@ -1417,7 +1425,7 @@
         (require-capability (SECURE))
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 (nodes:[string] (at "nodes" h-obj))
                 (edges:[string] (at "edges" h-obj))
                 (ovs:[decimal] (at "output-values" h-obj))
@@ -1458,10 +1466,10 @@
         )
     )
     ;;Protection: Class 2 — SECURE
-    (defun XI_SmartSwapExplicitRoute:object{IgnisCollectorV3.OutputCumulator}
+    (defun XI_SmartSwapExplicitRoute:object{IgnisCollectorV4.OutputCumulator}
         (patron:string 
             account:string input-id:string input-amount:decimal output-id:string slippage:decimal
-            stoa-pid:decimal slippage-bounds:object{SwapperUsageV3.Slippage} bundle:object{SwapperUsageV3.SmartSwapPathBundle}
+            stoa-pid:decimal slippage-bounds:object{SwapperUsageV4.Slippage} bundle:object{SwapperUsageV4.SmartSwapPathBundle}
         )
         @doc "#34 Phase 8 — the bundle-based counterpart to XI_SmartSwapRouter: zero \
             \ internal searching. The route (structural connectivity, active-required, \
@@ -1475,11 +1483,11 @@
         (require-capability (SECURE))
         (let
             (
-                (ref-SWPI:module{SwapperIssueV4} SWPI)
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-SWPI:module{SwapperIssueV5} SWPI)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 (nodes:[string] (at "nodes" (at "swap-route" bundle)))
                 (edges:[string] (at "edges" (at "swap-route" bundle)))
-                (h-obj:object{SwapperIssueV4.Hopper} (ref-SWPI::URC_HopperForKnownRoute nodes edges input-amount))
+                (h-obj:object{SwapperIssueV5.Hopper} (ref-SWPI::URC_HopperForKnownRoute nodes edges input-amount))
                 (ovs:[decimal] (at "output-values" h-obj))
                 (feeless-final:decimal (at 0 (take -1 ovs)))
             )
@@ -1508,7 +1516,7 @@
         )
     )
     ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
-    (defun XI_RegisterBundlePaths (input-id:string output-id:string distinct-edges:[string] bundle:object{SwapperUsageV3.SmartSwapPathBundle})
+    (defun XI_RegisterBundlePaths (input-id:string output-id:string distinct-edges:[string] bundle:object{SwapperUsageV4.SmartSwapPathBundle})
         @doc "#34 Phase 8: cache self-warming — registers a bundle's <boost-path> and \
             \ each <stoa-paths> entry into SWPT|PathCache, ONLY when (a) the bundle \
             \ claims <is-new>=true AND (b) re-validated here from scratch (never trusting \
@@ -1542,9 +1550,9 @@
         (require-capability (SECURE))
         (let*
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-SWPT:module{SwapTracerV3} SWPT)
-                (ref-SWPI:module{SwapperIssueV4} SWPI)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-SWPT:module{SwapTracerV4} SWPT)
+                (ref-SWPI:module{SwapperIssueV5} SWPI)
                 (sstoa:string (ref-DALOS::UR_SilverStoaID))
                 (wstoa:string (ref-DALOS::UR_WrappedStoaID))
                 (swap-route:object{SwapRoute} (at "swap-route" bundle))
@@ -1620,10 +1628,10 @@
         )
     )
     ;;Protection: Class 2 — SECURE
-    (defun XI_SmartSwap:object{IgnisCollectorV3.OutputCumulator}
+    (defun XI_SmartSwap:object{IgnisCollectorV4.OutputCumulator}
         (patron:string 
             account:string input-id:string input-amount:decimal output-id:string
-            nodes:[string] edges:[string] stoa-pid:decimal boost-path:object{SwapperUsageV3.CachedPathOrMiss}
+            nodes:[string] edges:[string] stoa-pid:decimal boost-path:object{SwapperUsageV4.CachedPathOrMiss}
         )
         @doc "Executes the multi-hop Smart Swap. Transfers input from user, delegates hop iteration \
             \ to XI_SmartSwapCore, handles stoa-pid OURO price update, and returns final OutputCumulator. \
@@ -1635,22 +1643,22 @@
         (require-capability (SECURE))
         (let*
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
-                (ref-SWP:module{SwapperV4} SWP)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
+                (ref-SWP:module{SwapperV5} SWP)
                 (pp:string (ref-SWP::UR_PrimordialPool))
-                (ico-input:object{IgnisCollectorV3.OutputCumulator}
+                (ico-input:object{IgnisCollectorV4.OutputCumulator}
                     (ref-TFT::C_Transfer patron account SWP|SC_NAME input-id input-amount true)
                 )
                 (hop-result:list
                     (XI_SmartSwapCore patron account input-amount ico-input nodes edges boost-path)
                 )
                 (final-netto:decimal (at 0 hop-result))
-                (all-icos:[object{IgnisCollectorV3.OutputCumulator}] (at 1 hop-result))
+                (all-icos:[object{IgnisCollectorV4.OutputCumulator}] (at 1 hop-result))
                 (hops:integer (length edges))
                 (distinct-edges:[string] (distinct edges))
                 (pools:integer (length distinct-edges))
-                (final-ico:object{IgnisCollectorV3.OutputCumulator}
+                (final-ico:object{IgnisCollectorV4.OutputCumulator}
                     (ref-IGNIS::UDC_ConcatenateOutputCumulators all-icos [final-netto hops pools distinct-edges])
                 )
             )
@@ -1678,8 +1686,8 @@
     ;;Protection: Class 2 — SECURE
     (defun XI_SmartSwapCore:list
         (patron:string 
-            account:string input-amount:decimal ico-input:object{IgnisCollectorV3.OutputCumulator}
-            nodes:[string] edges:[string] boost-path:object{SwapperUsageV3.CachedPathOrMiss}
+            account:string input-amount:decimal ico-input:object{IgnisCollectorV4.OutputCumulator}
+            nodes:[string] edges:[string] boost-path:object{SwapperUsageV4.CachedPathOrMiss}
         )
         @doc "#34 Phase 8: <boost-path> — NO_PATH sentinel (self-searching caller, \
             \ XI_LiquidIndexPump searches internally as before) or a real bundle-supplied \
@@ -1714,12 +1722,12 @@
         (require-capability (SECURE))
         (let
             (
-                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
-                (ref-SWP:module{SwapperV4} SWP)
-                (ref-SWPI:module{SwapperIssueV4} SWPI)
-                (ref-SWPL:module{SwapperLiquidityV2} SWPL)
-                (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
+                (ref-U|SWP:module{UtilitySwpV3} U|SWP)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
+                (ref-SWP:module{SwapperV5} SWP)
+                (ref-SWPI:module{SwapperIssueV5} SWPI)
+                (ref-SWPL:module{SwapperLiquidityV3} SWPL)
+                (ref-SWPLC:module{SwapperLiquidityClientV3} SWPLC)
                 (le:integer (length edges))
             )
             (fold
@@ -1728,7 +1736,7 @@
                     (let*
                         (
                             (current-input:decimal (at 0 acc))
-                            (acc-icos:[object{IgnisCollectorV3.OutputCumulator}] (at 1 acc))
+                            (acc-icos:[object{IgnisCollectorV4.OutputCumulator}] (at 1 acc))
                             (carried-boost-in:decimal (at 2 acc))
                             (sp-id-lst-in:[string] (at 3 acc))
                             (sp-receiver-arr-in:[[string]] (at 4 acc))
@@ -1739,17 +1747,17 @@
                             (iz-last:bool (= idx (- le 1)))
                             ;;
                             (pool-type:string (ref-U|SWP::UC_PoolType swpair))
-                            (fees:object{UtilitySwpV2.SwapFeez} (ref-SWPL::UDC_PoolFees swpair))
+                            (fees:object{UtilitySwpV3.SwapFeez} (ref-SWPL::UDC_PoolFees swpair))
                             (A:decimal (ref-SWP::UR_Amplifier swpair))
                             (X:[decimal] (ref-SWP::UR_PoolTokenSupplies swpair))
                             (X-prec:[integer] (ref-SWP::UR_PoolTokenPrecisions swpair))
                             (input-positions:[integer] (ref-SWPI::URCv_PoolTokenPositions swpair [i-id]))
                             (output-position:integer (ref-SWP::URv_PoolTokenPosition swpair o-id))
                             (W:[decimal] (ref-SWP::UR_Weigths swpair))
-                            (dsid:object{UtilitySwpV2.DirectSwapInputData}
+                            (dsid:object{UtilitySwpV3.DirectSwapInputData}
                                 (ref-U|SWP::UDC_DirectSwapInputData [i-id] [current-input] o-id)
                             )
-                            (dtso:object{UtilitySwpV2.DirectTaxedSwapOutput}
+                            (dtso:object{UtilitySwpV3.DirectTaxedSwapOutput}
                                 (ref-SWPI::UC_BareboneSwapWithFeez account pool-type dsid fees A X X-prec input-positions output-position W)
                             )
                             (lp-fuel:[decimal] (at "lp-fuel" dtso))
@@ -1757,7 +1765,7 @@
                             (o-id-liquid:decimal (at "o-id-liquid" dtso))
                             (o-id-netto:decimal (at "o-id-netto" dtso))
                             ;;
-                            (ico-fuel:object{IgnisCollectorV3.OutputCumulator}
+                            (ico-fuel:object{IgnisCollectorV4.OutputCumulator}
                                 (ref-SWPLC::C_Fuel patron account swpair lp-fuel false false)
                             )
                             (pt-amounts-after-fuel:[decimal] (ref-SWP::UR_PoolTokenSupplies swpair))
@@ -1823,7 +1831,7 @@
                             ;;whole reason for the accumulator above. <sp-id-lst-in> (not
                             ;;-out) is correct here: this hop's own targets, if any, are
                             ;;handled separately by <ico-special> below, never appended.
-                            (sp-flush:object{IgnisCollectorV3.OutputCumulator}
+                            (sp-flush:object{IgnisCollectorV4.OutputCumulator}
                                 (if (and iz-last (!= (length sp-id-lst-in) 0))
                                     (ref-TFT::C_MultiBulkTransfer patron SWP|SC_NAME sp-receiver-arr-in sp-id-lst-in sp-amount-arr-in)
                                     EOC
@@ -1833,7 +1841,7 @@
                             ;;and only on the last hop — unchanged from the pre-batching logic
                             ;;for that one case. Every non-last hop's targets are handled above
                             ;;instead (event now, payment deferred to <sp-flush>).
-                            (ico-special:object{IgnisCollectorV3.OutputCumulator}
+                            (ico-special:object{IgnisCollectorV4.OutputCumulator}
                                 (if iz-last
                                     (if (!= o-id-special 0.0)
                                         (let*
@@ -1899,21 +1907,21 @@
         )
     )
     ;;Protection: Class 1 — Innate protection offered by XI_Swap
-    (defun XI_STOA-PID|Swap:object{IgnisCollectorV3.OutputCumulator}
+    (defun XI_STOA-PID|Swap:object{IgnisCollectorV4.OutputCumulator}
         (patron:string 
-            account:string swpair:string dsid:object{UtilitySwpV2.DirectSwapInputData}
-            slippage:decimal stoa-pid:decimal slippage-bounds:object{SwapperUsageV3.Slippage}
+            account:string swpair:string dsid:object{UtilitySwpV3.DirectSwapInputData}
+            slippage:decimal stoa-pid:decimal slippage-bounds:object{SwapperUsageV4.Slippage}
         )
         @doc "Swap with optional slippage. When slippage != -1.0, min/max are taken from client-supplied slippage-bounds (computed off-chain at quote time), so the check reflects pool state at execution time."
         (let
             (
-                (ico:object{IgnisCollectorV3.OutputCumulator}
+                (ico:object{IgnisCollectorV4.OutputCumulator}
                     (if (= slippage -1.0)
                         (XI_Swap patron account swpair dsid)
                         (let
                             (
-                                (ref-SWPI:module{SwapperIssueV4} SWPI)
-                                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                                (ref-SWPI:module{SwapperIssueV5} SWPI)
+                                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                                 (max-toa:decimal
                                     ;; Actual output at execution time (pool may have changed since quote)
                                     (ref-SWPI::URCv_Swap swpair dsid true)
@@ -1978,8 +1986,8 @@
         )
     )
     ;;Protection: Class 3 — Custom: SWPU|X>SWAP
-    (defun XI_Swap:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string account:string swpair:string dsid:object{UtilitySwpV2.DirectSwapInputData})
+    (defun XI_Swap:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string account:string swpair:string dsid:object{UtilitySwpV3.DirectSwapInputData})
         (require-capability (SWPU|X>SWAP swpair dsid))
         (let
             (
@@ -1988,17 +1996,17 @@
                 (input-amounts:[decimal] (at "input-amounts" dsid))
                 (output-id:string (at "output-id" dsid))
                 ;;
-                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
-                (ref-SWP:module{SwapperV4} SWP)
-                (ref-SWPI:module{SwapperIssueV4} SWPI)
-                (ref-SWPL:module{SwapperLiquidityV2} SWPL)
-                (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
+                (ref-U|SWP:module{UtilitySwpV3} U|SWP)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
+                (ref-SWP:module{SwapperV5} SWP)
+                (ref-SWPI:module{SwapperIssueV5} SWPI)
+                (ref-SWPL:module{SwapperLiquidityV3} SWPL)
+                (ref-SWPLC:module{SwapperLiquidityClientV3} SWPLC)
                 ;;
                 ;;
                 (pool-type:string (ref-U|SWP::UC_PoolType swpair))
-                (fees:object{UtilitySwpV2.SwapFeez} (ref-SWPL::UDC_PoolFees swpair))
+                (fees:object{UtilitySwpV3.SwapFeez} (ref-SWPL::UDC_PoolFees swpair))
                 (A:decimal (ref-SWP::UR_Amplifier swpair))
                 (X:[decimal] (ref-SWP::UR_PoolTokenSupplies swpair))
                 (X-prec:[integer] (ref-SWP::UR_PoolTokenPrecisions swpair))
@@ -2007,7 +2015,7 @@
                 (W:[decimal] (ref-SWP::UR_Weigths swpair))
                 ;;
                 ;;Do Swap Computation and Unwrap Object Data
-                (dtso:object{UtilitySwpV2.DirectTaxedSwapOutput}
+                (dtso:object{UtilitySwpV3.DirectTaxedSwapOutput}
                     (ref-SWPI::UC_BareboneSwapWithFeez account pool-type dsid fees A X X-prec input-positions output-position W)
                 )
                 (lp-fuel:[decimal] (at "lp-fuel" dtso))
@@ -2015,10 +2023,10 @@
                 (o-id-liquid:decimal (at "o-id-liquid" dtso))
                 (o-id-netto:decimal (at "o-id-netto" dtso))
                 ;;
-                (ico1:object{IgnisCollectorV3.OutputCumulator}
+                (ico1:object{IgnisCollectorV4.OutputCumulator}
                     (ref-TFT::C_MultiTransfer patron account SWP|SC_NAME input-ids input-amounts true)
                 )
-                (ico2:object{IgnisCollectorV3.OutputCumulator}
+                (ico2:object{IgnisCollectorV4.OutputCumulator}
                     (ref-SWPLC::C_Fuel patron account swpair lp-fuel false false)
                 )
                 (pt-amounts-after-fuel-update:[decimal] (ref-SWP::UR_PoolTokenSupplies swpair))
@@ -2026,7 +2034,7 @@
                 (dra-o:[decimal] (ref-SWPI::URC_DirectRefillAmounts swpair [output-id] [(fold (+) 0.0 [o-id-special o-id-liquid o-id-netto])]))
                 (remaining-amounts-for-update:[decimal] (zip (-) (zip (-) dra lp-fuel) dra-o))
                 (new-balances:[decimal] (zip (+) pt-amounts-after-fuel-update remaining-amounts-for-update))
-                (ico3:object{IgnisCollectorV3.OutputCumulator}
+                (ico3:object{IgnisCollectorV4.OutputCumulator}
                     (if (!= o-id-special 0.0)
                         (let*
                             (
@@ -2081,15 +2089,15 @@
         )
     )
     ;;Protection: Class 2 — SECURE
-    (defun XI_LiquidIndexPump:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string id:string amount:decimal boost-path:object{SwapperUsageV3.CachedPathOrMiss})
+    (defun XI_LiquidIndexPump:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string id:string amount:decimal boost-path:object{SwapperUsageV4.CachedPathOrMiss})
         @doc "#34 Phase 8: <boost-path> passthrough — NO_PATH sentinel from the \
             \ self-searching caller, or a real bundle-supplied path from the new \
             \ dirty-read-injected caller. See XI_RawLiquidPump's doc for validation."
         (require-capability (SECURE))
         (let
             (
-                (ico:object{IgnisCollectorV3.OutputCumulator}
+                (ico:object{IgnisCollectorV4.OutputCumulator}
                     (XI_RawLiquidPump patron id amount boost-path)
                 )
                 (raw-liquid-pump-data:list (at "output" ico))
@@ -2116,8 +2124,8 @@
         )
     )
     ;;Protection: Class 2 — SECURE
-    (defun XI_RawLiquidPump:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string id:string amount:decimal boost-path:object{SwapperUsageV3.CachedPathOrMiss})
+    (defun XI_RawLiquidPump:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string id:string amount:decimal boost-path:object{SwapperUsageV4.CachedPathOrMiss})
         @doc "Operation that pumps LiquidIndex, returns the Pump Increment in the output object \
             \ Can be used for a Pool Token that already exists in the SWP|SC_NAME. \
             \ P0.6 fix (SWP exhaustive-path-search HANDOFF doc): routes via \
@@ -2136,10 +2144,10 @@
         (require-capability (SECURE))
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-ATS:module{AutostakeV4} ATS)
                 ;;
                 (sstoa:string (ref-DALOS::UR_SilverStoaID))
                 (liquidindex:string (at 0 (ref-DPTF::UR_RewardBearingToken sstoa)))
@@ -2152,7 +2160,7 @@
                 )
                 (let
                     (
-                        (ref-SWPI:module{SwapperIssueV4} SWPI)
+                        (ref-SWPI:module{SwapperIssueV5} SWPI)
                         (is-sentinel:bool (= (at "nodes" boost-path) [BAR]))
                         ;;#34 Phase 8: a bundle-supplied path is never trusted blindly —
                         ;;re-validated active-required (structural connectivity + every
@@ -2174,7 +2182,7 @@
                                 )
                             )
                         )
-                        (h-obj:object{SwapperIssueV4.Hopper}
+                        (h-obj:object{SwapperIssueV5.Hopper}
                             (if is-sentinel
                                 (ref-SWPI::URC_HopperActiveShortest id sstoa amount)
                                 (if is-valid-supplied
@@ -2210,7 +2218,7 @@
                         (let
                             (
                                 (final-boost-output:decimal (at 0 (take -1 ovs)))
-                                (ico:object{IgnisCollectorV3.OutputCumulator}
+                                (ico:object{IgnisCollectorV4.OutputCumulator}
                                     (ref-DPTF::C_Burn patron SWP|SC_NAME sstoa final-boost-output)
                                 )
                             )
@@ -2230,7 +2238,7 @@
         (if (= (length raw-liquid-pump-data) 5)
             (let
                 (
-                    (ref-SWP:module{SwapperV4} SWP)
+                    (ref-SWP:module{SwapperV5} SWP)
                     (path-to-sstoa:[string] (at 1 raw-liquid-pump-data))
                     (edges:[string] (at 2 raw-liquid-pump-data))
                     (ovs:[decimal] (at 3 raw-liquid-pump-data))
@@ -2271,14 +2279,14 @@
             \ Ouro price moves more that 1 promile, update price"
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (iz-auto:bool (ref-DALOS::UR_OuroAutoPriceUpdate))
             )
             (if iz-auto
                 (let
                     (
-                        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                        (ref-SWPI:module{SwapperIssueV4} SWPI)
+                        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                        (ref-SWPI:module{SwapperIssueV5} SWPI)
                         (ouro-id:string (ref-DALOS::UR_OuroborosID))
                         (ouro-prec:integer (ref-DPTF::UR_Decimals ouro-id))
                         (stored-ouro-price:decimal (ref-DALOS::UR_OuroborosPrice))
@@ -2302,7 +2310,7 @@
         )
     )
     ;;{5.7}  User [A/C]
-    (defun C_ToggleSwapCapability:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_ToggleSwapCapability:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string swpair:string toggle:bool)
         @doc "Executor: ENFORCED INDIRECTLY, downstream, and nothing here proves it: SPWU|C>TOGGLE-SWAP \
             \ enforces only the pool-worth floor and takes no account at all. The proof is \
@@ -2313,7 +2321,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-SWP:module{SwapperV4} SWP)
+                (ref-SWP:module{SwapperV5} SWP)
             )
             (with-capability (SPWU|C>TOGGLE-SWAP swpair toggle)
                 ;;PROVISIONAL EXECUTOR SLOT CLEARED at this module's own turn (2026-09-22),
@@ -2327,8 +2335,8 @@
             )
         )
     )
-    (defun CC_SmartSwap:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string executor:string input-id:string input-amount:decimal output-id:string slippage:decimal stoa-pid:decimal slippage-bounds:object{SwapperUsageV3.Slippage})
+    (defun CC_SmartSwap:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string input-id:string input-amount:decimal output-id:string slippage:decimal stoa-pid:decimal slippage-bounds:object{SwapperUsageV4.Slippage})
         @doc "Executes a Smart Swap from <input-id> to <output-id> across multiple pools using BFS path tracing. \
             \ Each hop executes a full swap with fees (LP, special, boost via Option B). \
             \ When slippage != -1.0, slippage-bounds must be the pre-computed object from UDC_SpawnSmartSwapSlippageBounds. \
@@ -2350,8 +2358,8 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-SWPI:module{SwapperIssueV4} SWPI)
-                (h-obj:object{SwapperIssueV4.Hopper} (ref-SWPI::URC_HopperActive input-id output-id input-amount))
+                (ref-SWPI:module{SwapperIssueV5} SWPI)
+                (h-obj:object{SwapperIssueV5.Hopper} (ref-SWPI::URC_HopperActive input-id output-id input-amount))
             )
             (if (!= slippage -1.0)
                 (with-capability (SWPU|C>SMART-SWAP-WITH-SLIPPAGE executor input-id input-amount output-id slippage slippage-bounds h-obj)
@@ -2366,7 +2374,7 @@
     (defun C_SmartSwap:list
         (patron:string 
             executor:string input-id:string input-amount:decimal output-id:string slippage:decimal
-            stoa-pid:decimal slippage-bounds:object{SwapperUsageV3.Slippage} bundle:object{SwapperUsageV3.SmartSwapPathBundle}
+            stoa-pid:decimal slippage-bounds:object{SwapperUsageV4.Slippage} bundle:object{SwapperUsageV4.SmartSwapPathBundle}
         )
         @doc "#34 Phase 8 — the bundle-based, dirty-read-injected SmartSwap: performs \
             \ ZERO internal searching. <bundle> (SmartSwapPathBundle) is assembled \
@@ -2419,8 +2427,8 @@
             )
         )
     )
-    (defun C_Swap:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string executor:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage:decimal stoa-pid:decimal slippage-bounds:object{SwapperUsageV3.Slippage})
+    (defun C_Swap:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage:decimal stoa-pid:decimal slippage-bounds:object{SwapperUsageV4.Slippage})
         @doc "Execute swap. When slippage != -1.0, slippage-bounds must be the pre-computed slippage object from quote time (e.g. UDC_SlippageObject); when slippage == -1.0, pass a dummy object (e.g. UDC_Slippage 0.0 0 0.0). \
             \ \
             \ Executor: ENFORCED INDIRECTLY. No capability here proves it -- the swap caps take the \
@@ -2433,9 +2441,9 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
-                (ref-SWP:module{SwapperV4} SWP)
-                (dsid:object{UtilitySwpV2.DirectSwapInputData}
+                (ref-U|SWP:module{UtilitySwpV3} U|SWP)
+                (ref-SWP:module{SwapperV5} SWP)
+                (dsid:object{UtilitySwpV3.DirectSwapInputData}
                     (ref-U|SWP::UDC_DirectSwapInputData input-ids input-amounts output-id)
                 )
                 (pp:string (ref-SWP::UR_PrimordialPool))

@@ -25,8 +25,8 @@
 (print "--- [TX-DP-001 - register CNF (NF) to launchpad, fuel a nonce, retrieve it · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV4} TS02-DPAD)
         (id:string "CNF-98c486052a51")
         (patron:string KST.ANHD)
     )
@@ -65,8 +65,8 @@
 (print "--- [TX-DP-002 - SF (TSFS) register / fuel / retrieve · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV4} TS02-DPAD)
         (id:string "TSFS-98c486052a51")
         (patron:string KST.ANHD)
     )
@@ -99,7 +99,7 @@
 (print "--- [TX-DP-003 - TF (OURO) register / fuel / retrieve · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
+        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV4} TS02-DPAD)
         (id:string "OURO-98c486052a51")
         (patron:string KST.ANHD)
     )
@@ -148,9 +148,9 @@
 (print "--- [TX-DP-004 - OF: issue fresh DPOF, mint, register, fuel, retrieve · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV4} TS02-DPAD)
         (id:string "COF-98c486052a51")
         (patron:string KST.ANHD)
     )

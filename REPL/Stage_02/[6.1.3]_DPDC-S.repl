@@ -40,7 +40,7 @@
 (print "--- [TX-SET-001 - Issue + Create fresh SFT (10 nonces) and NFT (4 nonces) collections · 01 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (owner:string KST.ANHD)
         (dpsf-price:decimal (ref-DALOS::UR_UsagePrice "dpsf"))
         (dpnf-price:decimal (ref-DALOS::UR_UsagePrice "dpnf"))
@@ -74,10 +74,10 @@
 (print "--- [TX-SET-001 · 02 · issue + create native nonces] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-DPDC:module{DpdcV3} DPDC)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (owner:string KST.ANHD)
         (type:object{DpdcUdcV2.URI|Type} (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
     )
@@ -146,11 +146,11 @@
 (print "--- [TX-SET-002 - Define Primordial/Composite/Hybrid SFT sets + NFT Primordial set · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-DPDC-S:module{DpdcSetsV3} DPDC-S)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (owner:string KST.ANHD)
         (sft-id:string "TSFS-98c486052a51")
         (nft-id:string "TSFN-98c486052a51")
@@ -227,8 +227,8 @@
 (print "--- [TX-SET-003 - Primordial SFT Make -> Break round trip, exact conservation · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
         (owner:string KST.ANHD)
         (sft-id:string "TSFS-98c486052a51")
     )
@@ -260,8 +260,8 @@
 (print "--- [TX-SET-003 · 03 · Break the 5 SC1 sets; full-circle conservation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
         (owner:string KST.ANHD)
         (sft-id:string "TSFS-98c486052a51")
     )
@@ -312,8 +312,8 @@
 (print "--- [TX-SET-004 - Composite SFT Make -> Break round trip (built on SC1 units), exact conservation · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
         (owner:string KST.ANHD)
         (sft-id:string "TSFS-98c486052a51")
     )
@@ -343,8 +343,8 @@
 (print "--- [TX-SET-004 · 03 · Break 3 SC2 sets, then remaining 5 SC1; full-circle conservation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
         (owner:string KST.ANHD)
         (sft-id:string "TSFS-98c486052a51")
     )
@@ -413,8 +413,8 @@
 (print "--- [TX-SET-005 - Hybrid SFT Make -> Break round trip (primordial nonce 3 + composite SC1) · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
         (owner:string KST.ANHD)
         (sft-id:string "TSFS-98c486052a51")
     )
@@ -449,8 +449,8 @@
 (print "--- [TX-SET-005 · 03 · Break 2 SC3 sets, then remaining 5 SC1; full-circle conservation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
         (owner:string KST.ANHD)
         (sft-id:string "TSFS-98c486052a51")
     )
@@ -527,8 +527,8 @@
 (print "--- [TX-SET-006 - Primordial NFT Make -> Break round trip, exact conservation · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (owner:string KST.ANHD)
         (nft-id:string "TSFN-98c486052a51")
     )
@@ -560,8 +560,8 @@
 (print "--- [TX-SET-006 · 03 · Break the spawned instance (nonce 5); exact conservation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (owner:string KST.ANHD)
         (nft-id:string "TSFN-98c486052a51")
     )
@@ -612,9 +612,9 @@
 (print "--- [TX-SET-007 - Admin mutations: ToggleSet / RenameSet / EnableSetClassFragmentation · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+        (ref-DPDC-S:module{DpdcSetsV3} DPDC-S)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
         (owner:string KST.ANHD)
         (sft-id:string "TSFS-98c486052a51")
         (type:object{DpdcUdcV2.URI|Type} (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
@@ -664,9 +664,9 @@
 (print "--- [TX-SET-007 · 03 · RenameSet; EnableSetClassFragmentation on the now-active SC1 succeeds] ---")
 (let
     (
-        (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+        (ref-DPDC-S:module{DpdcSetsV3} DPDC-S)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
         (owner:string KST.ANHD)
         (sft-id:string "TSFS-98c486052a51")
         (type:object{DpdcUdcV2.URI|Type} (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
@@ -742,9 +742,9 @@
 (print "--- [TX-SET-008 - the set owner gate, which only the owner had ever driven · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+        (ref-DPDC-S:module{DpdcSetsV3} DPDC-S)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
         (attacker:string KST.EMMA)
         (sft-id:string "TSFS-98c486052a51")
         (sc:integer 2)
@@ -827,10 +827,10 @@
 (print "--- [TX-SET-009 - the NONCE-level owner gates, on this file's SFT fixture · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-DPDC-F:module{DpdcFragmentsV2} DPDC-F)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-DPDC-F:module{DpdcFragmentsV3} DPDC-F)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
         (attacker:string KST.EMMA)
         (victim:string KST.ANHD)
         (sft-id:string "TSFS-98c486052a51")
@@ -913,8 +913,8 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-DPDC-S:module{DpdcSetsV3} DPDC-S)
         (owner:string KST.ANHD)
         (sft-id:string "TSFS-98c486052a51")
     )
@@ -980,9 +980,9 @@
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-DPDC:module{DpdcV3} DPDC)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
         (attacker:string KST.EMMA)
         (victim:string KST.ANHD)
         (third:string KST.FLRN)
@@ -1132,9 +1132,9 @@
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-DPDC:module{DpdcV3} DPDC)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
         (attacker:string KST.EMMA)
         (victim:string KST.ANHD)
         (third:string KST.FLRN)
@@ -1290,9 +1290,9 @@
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
         (attacker:string KST.EMMA)
         (victim:string KST.ANHD)
         (smart:string KST.TALOS)

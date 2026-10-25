@@ -98,7 +98,7 @@
 (let*
     (
         (ref-U|LST:module{StringProcessorV2} U|LST)
-        (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+        (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
         (bar:string "|")
         (toint (lambda (x:string)
             (if (= (take 1 x) "-") (* -1 (str-to-int (drop 1 x))) (str-to-int x))))

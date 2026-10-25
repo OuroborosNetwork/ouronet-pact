@@ -98,9 +98,9 @@
 (print "--- [DPB-01 - the MULTISTEP add-liquidity door, billed end to end · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS01-CP:module{TalosStageOne_ClientPactsV4} TS01-CP)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
+        (ref-TS01-CP:module{TalosStageOne_ClientPactsV5} TS01-CP)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-SWPLC:module{SwapperLiquidityClientV3} SWPLC)
         (patron:string KST.ANHD)
         (pool:string "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
         (amounts:[decimal] [10.0 10.0 10.0])
@@ -225,7 +225,7 @@
 (print "--- [DPB-02 - the MULTISTEP pool issuance, billed end to end (the GS-04 proof) · 01 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (patron:string KST.ANHD)
         (dlk:string "DLK-98c486052a51")
     )
@@ -234,7 +234,7 @@
             (split-stoa:[decimal]
                 (ref-DALOS::URC_SplitSTOAPrices patron
                     (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))))
-            (pool-tokens:[object{SwapperV4.PoolTokens}]
+            (pool-tokens:[object{SwapperV5.PoolTokens}]
                 [
                     { "token-id":  "DLK-98c486052a51",  "token-supply": 5000.0}
                     { "token-id":  "BUSD-98c486052a51", "token-supply": 100000.0}
@@ -327,7 +327,7 @@
 (print "--- [DPB-03 - the STABLE pool defpact, preview vs charge · 01 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (patron:string KST.ANHD)
     )
     (let
@@ -335,7 +335,7 @@
             (split-stoa:[decimal]
                 (ref-DALOS::URC_SplitSTOAPrices patron
                     (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))))
-            (pool-tokens:[object{SwapperV4.PoolTokens}]
+            (pool-tokens:[object{SwapperV5.PoolTokens}]
                 [
                     ;;BUSD leads because SWPI::UEV_Issue enforces that the FIRST pool token is
                     ;;directly pooled with a Principal token. USDC first failed exactly there --
@@ -423,7 +423,7 @@
 (print "--- [DPB-04 - the WEIGHTED pool defpact, preview vs charge · 01 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (patron:string KST.ANHD)
     )
     (let
@@ -431,7 +431,7 @@
             (split-stoa:[decimal]
                 (ref-DALOS::URC_SplitSTOAPrices patron
                     (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))))
-            (pool-tokens:[object{SwapperV4.PoolTokens}]
+            (pool-tokens:[object{SwapperV5.PoolTokens}]
                 [
                     ;;A WEIGHTED pool is stricter than a stable one: SWPI::UEV_Issue enforces
                     ;;that the first token IS a Principal (amp = -1.0 branch), not merely that it
@@ -527,9 +527,9 @@
 (let
     (
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-        (ref-TS01-CP:module{TalosStageOne_ClientPactsV4} TS01-CP)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+        (ref-TS01-CP:module{TalosStageOne_ClientPactsV5} TS01-CP)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
         (patron:string KST.ANHD)
         (pool:string "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
         (amounts:[decimal] [10.0 10.0 10.0])

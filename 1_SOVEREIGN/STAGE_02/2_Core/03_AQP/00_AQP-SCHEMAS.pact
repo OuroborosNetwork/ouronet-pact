@@ -24,7 +24,7 @@
 
 (namespace "ouronet-ns")
 
-(interface AcquisitionSchemasV1
+(interface AcquisitionSchemasV3
 
     ;;<=========================================================================>
     ;;{1}  ANK   — anchors, boost classes, user boost
@@ -196,6 +196,19 @@
         triplet-id:string           ;;[..]  BAR until triplet issue; then T|bronze|silver|golden (immutable).
         ;;Score Information
         deb-boost:bool              ;;[.t]  Specifies if DEB boosting occurs.
+        ;; THE PERMANENT "THIS SCORE CANNOT DRIFT" LATCH. One-way to true, owner-gated, and
+        ;; settable ONLY while the score is provably drift-free: deb-boost false AND
+        ;; boost-class-link BAR. Those two are the only inputs to a weight that can move without
+        ;; the holder restaking -- an Elite tier change moves deb, a booster promile moves the
+        ;; boost -- so a score with neither is arithmetically frozen between stakes.
+        ;; WHY IT EXISTS: CC_InjectStream divides by the STORED total-deb mirror and pays each
+        ;; member against their STORED deb for the stream's whole duration, with no fix loop and
+        ;; no freshness enforce (memories/2026-10-23 §4). A mis-split there is not corrected
+        ;; retroactively. Requiring every member of a streaming FVT to be latched makes that
+        ;; impossible BY CONSTRUCTION rather than by a scan nobody can afford at drip time.
+        ;; Checked locally at every site that could introduce drift, so no reverse index and no
+        ;; cross-module lock is needed.
+        drift-locked:bool           ;;[.t]  Permanently drift-proof: deb-boost false + no boost class.
         precision:integer           ;;[.]   Decimal places for per-user weights and aggregate total-* fields on this score; range enforced at issuance; forward writers must respect it.
         total-base-score:decimal    ;;[M]   Sum of user base-scores; same decimal precision as precision field
         total-boosted-score:decimal ;;[M]   Sum of user boosted-scores; same decimal precision as precision field
@@ -554,6 +567,13 @@
         ;; OUT of available-rewards / G / the M1 sweep until the owner disposes it (withdraw / burn / fuel).
         ;; Always 0.0 on a non-delegation lane (Σ capture-weight == Σ capture-units ⇒ no shortfall).
         royalty-rewards:decimal
+        ;; The lane's FLOOR on a single injection, set by the FVT owner. Added 2026-10-23 because
+        ;; `CC_Inject` runs its stale-fix loop regardless of `amount` — so without a floor, one
+        ;; smallest-unit injection force-fixes an entire membership, and (when the owner is the
+        ;; injector) force-BILLS it. Defaults to CT_DEFAULT_MIN_INJECT at lane creation; every row
+        ;; written before this field existed is carried to the same default by the one-time
+        ;; AA_MigrateMinInject pass that ships with this round.
+        min-inject-amount:decimal
         ;;
         ;;Select Keys
         fvt-id:string
@@ -788,6 +808,16 @@
         can-change-owner:bool
         common-denominator:string                               ;;[Mu]  unsafe to change after ScoreEntityLinks
         oracle-on:bool                                          ;;[M]   DSA: node/uptime oracle governs capture. Default false.
+        ;; STREAMING LATCH. One-way to true, owner-gated, HEAVY to set: latching scans every
+        ;; enabled ScoreEntityLink and requires each member score to be drift-locked. Once true,
+        ;; C_AddScoreEntity / C_ToggleScoreEntityLink refuse any member that is not drift-locked,
+        ;; so the proof cannot be invalidated afterwards. CC_InjectStream refuses unless this is
+        ;; true. Defaults FALSE -- the fail-safe direction: an un-latched FVT simply cannot open
+        ;; NEW streams, while streams already running keep dripping (XI_ReleaseStream is not gated
+        ;; by the inject defcap, and halting a live vest would strand custodied tokens).
+        ;; LIVES HERE, NOT ON FVT|RewardAggregate: this is entity CONFIG, which is what this row
+        ;; holds, and it is read/written by AQP-FVT itself -- so it needs no cross-module hop.
+        stream-eligible:bool                                    ;;[.t]  May open time-streamed injects.
         ;; fvt-class, owner-konto, mosaic, membership-mode, split-mode + the reward aggregates
         ;; live in FVT|RewardAggregate (#75 B' Stage 1/2) — the reward engine reads/owns them.
         ;;Select Keys

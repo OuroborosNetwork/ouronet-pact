@@ -49,10 +49,10 @@
 (print "--- [DPDC-F-G2 - DPDC-F|C>ENABLE-FRAGMENTATION is not idempotent · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-DPDC-F:module{DpdcFragmentsV2} DPDC-F)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-DPDC-F:module{DpdcFragmentsV3} DPDC-F)
         (ref-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
         (frg:string "TFRG-98c486052a51")
     )
     (map print
@@ -103,8 +103,8 @@
 (print "--- [DPDC-F-G3 - DPDC-MNG|C>REMOVE-CLASS-ZERO-NONCES protects fragment collateral · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-DPDC-F:module{DpdcFragmentsV2} DPDC-F)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-DPDC-F:module{DpdcFragmentsV3} DPDC-F)
         (frg:string "TFRG-98c486052a51")
     )
     (let
@@ -154,8 +154,8 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (fr:string "TFRG-98c486052a51")
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
@@ -163,7 +163,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|MakeFragments patron patron fr 1 100))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|MakeFragments patron patron fr 1 100))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_MakeFragments patron patron fr 1 100))
         )
@@ -195,8 +195,8 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (fr:string "TFRG-98c486052a51")
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
@@ -208,7 +208,7 @@
     (ref-TS02-C1::DPSF|C_MakeFragments patron patron fr 1 100)
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|MergeFragments patron patron fr -1 100000))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|MergeFragments patron patron fr -1 100000))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_MergeFragments patron patron fr -1 100000))
         )
@@ -241,8 +241,8 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (fr:string "TFRG-98c486052a51")
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
@@ -250,7 +250,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|RepurposeFragments patron fr emma lumy [-1] [100000]))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|RepurposeFragments patron fr emma lumy [-1] [100000]))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             ;;patron IS the collection owner here (the tx is signed by ANHD), so patron and
             ;;executor read the same -- but they are answering different questions: who pays,
@@ -286,8 +286,8 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (fr:string "TFRG-98c486052a51")
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
@@ -295,7 +295,7 @@
     )
     (let
         (
-            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|TransferNonce patron fr patron lumy 1 100 false))
+            (predicted:object{OuronetInfoV3.ClientInfo} (INFO-TWO.INFO_DPSF|TransferNonce patron fr patron lumy 1 100 false))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (m (ref-TS02-C1::DPSF|C_TransferNonce patron patron lumy fr 1 100 false))
         )

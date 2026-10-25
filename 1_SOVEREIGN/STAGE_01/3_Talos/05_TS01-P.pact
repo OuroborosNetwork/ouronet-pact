@@ -5,7 +5,7 @@
 ;; retired the frozen-copy convention in favour of git history. The comment that claimed the
 ;; archive was 'frozen here' outlived the archive by two weeks — documentation that survives
 ;; what it describes is indistinguishable from correct, from the outside. See DEFECT-LEDGER §8.6.
-(interface TalosStageOne_ClientPactsV4
+(interface TalosStageOne_ClientPactsV5
     @doc "Exposes Ouronet Stage One Client Multistep Functions \
         \ Currently including functions from SWP Module. \
         \ V3: pooled issue caps use SwapperV4.PoolTokens (interface bump per versioning rule)."
@@ -51,9 +51,9 @@
     ;;
     ;;
     ;;Issue
-    (defun SWP|C_IssueStablePool (patron:string executor:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal amp:decimal p:bool))
-    (defun SWP|C_IssueWeightedPool (patron:string executor:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool))
-    (defun SWP|C_IssueStandardPool (patron:string executor:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal p:bool))
+    (defun SWP|C_IssueStablePool (patron:string executor:string pool-tokens:[object{SwapperV5.PoolTokens}] fee-lp:decimal amp:decimal p:bool))
+    (defun SWP|C_IssueWeightedPool (patron:string executor:string pool-tokens:[object{SwapperV5.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool))
+    (defun SWP|C_IssueStandardPool (patron:string executor:string pool-tokens:[object{SwapperV5.PoolTokens}] fee-lp:decimal p:bool))
     ;;
     (defun SWP|C_AddStandardLiquidity (patron:string executor:string swpair:string input-amounts:[decimal]))
     (defun SWP|C_AddIcedLiquidity (patron:string executor:string swpair:string input-amounts:[decimal]))
@@ -70,7 +70,7 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements TalosStageOne_ClientPactsV4)
+    (implements TalosStageOne_ClientPactsV5)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -86,7 +86,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -105,7 +105,7 @@
     (defcap P|TS ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (gap:bool (ref-DALOS::UR_GAP))
             )
             (enforce (not gap) "While Global Administrative Pause is online, no client Functions can be executed")
@@ -120,7 +120,7 @@
     (defun P|Info ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::P|Info)
         )
@@ -265,7 +265,7 @@
     ;;
     ;;
     ;;  [SWP PactStarters]
-    (defun SWP|C_IssueStablePool (patron:string executor:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal amp:decimal p:bool)
+    (defun SWP|C_IssueStablePool (patron:string executor:string pool-tokens:[object{SwapperV5.PoolTokens}] fee-lp:decimal amp:decimal p:bool)
         @doc "Similar outcome to <ref-TS01-C2::SWP|C_IssueStable>, but over 3 <steps> (0|1|2) via <defpact> \
             \ Calling this function runs the Step 0 of 2. To finalize SWPair creation, Steps 1 and 2 must also be executed \
             \ \
@@ -276,29 +276,29 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-MTX-SWP:module{SwapperMtxV4} MTX-SWP)
+                    (ref-MTX-SWP:module{SwapperMtxV5} MTX-SWP)
                 )
                 (ref-MTX-SWP::C_IssueStablePool patron executor pool-tokens fee-lp amp p)
             )
         )
     )
-    (defun SWP|C_IssueWeightedPool (patron:string executor:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool)
+    (defun SWP|C_IssueWeightedPool (patron:string executor:string pool-tokens:[object{SwapperV5.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool)
         @doc "Similar to <SWP|C_IssueStableMultiStep>, but issues a W (Weighted) Pool"
         (with-capability (P|TS)
             (let
                 (
-                    (ref-MTX-SWP:module{SwapperMtxV4} MTX-SWP)
+                    (ref-MTX-SWP:module{SwapperMtxV5} MTX-SWP)
                 )
                 (ref-MTX-SWP::C_IssueWeightedPool patron executor pool-tokens fee-lp weights p)
             )
         )
     )
-    (defun SWP|C_IssueStandardPool (patron:string executor:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal p:bool)
+    (defun SWP|C_IssueStandardPool (patron:string executor:string pool-tokens:[object{SwapperV5.PoolTokens}] fee-lp:decimal p:bool)
         @doc "Similar to <SWP|C_IssueStableMultiStep>, but issues a P (Standard) Pool"
         (with-capability (P|TS)
             (let
                 (
-                    (ref-MTX-SWP:module{SwapperMtxV4} MTX-SWP)
+                    (ref-MTX-SWP:module{SwapperMtxV5} MTX-SWP)
                 )
                 (ref-MTX-SWP::C_IssueStandardPool patron executor pool-tokens fee-lp p)
             )
@@ -312,7 +312,7 @@
                 (
                     (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
-                    (ref-MTX-SWP:module{SwapperMtxV4} MTX-SWP)
+                    (ref-MTX-SWP:module{SwapperMtxV5} MTX-SWP)
                 )
                 (ref-MTX-SWP::C_AddStandardLiquidity 
                     patron executor swpair input-amounts stoa-pid
@@ -327,7 +327,7 @@
                 (
                     (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
-                    (ref-MTX-SWP:module{SwapperMtxV4} MTX-SWP)
+                    (ref-MTX-SWP:module{SwapperMtxV5} MTX-SWP)
                 )
                 (ref-MTX-SWP::C_AddIcedLiquidity 
                     patron executor swpair input-amounts stoa-pid
@@ -342,7 +342,7 @@
                 (
                     (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
-                    (ref-MTX-SWP:module{SwapperMtxV4} MTX-SWP)
+                    (ref-MTX-SWP:module{SwapperMtxV5} MTX-SWP)
                 )
                 (ref-MTX-SWP::C_AddGlacialLiquidity 
                     patron executor swpair input-amounts stoa-pid
@@ -357,7 +357,7 @@
                 (
                     (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
-                    (ref-MTX-SWP:module{SwapperMtxV4} MTX-SWP)
+                    (ref-MTX-SWP:module{SwapperMtxV5} MTX-SWP)
                 )
                 (ref-MTX-SWP::C_AddFrozenLiquidity
                     patron executor swpair frozen-dptf input-amount stoa-pid
@@ -372,7 +372,7 @@
                 (
                     (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
-                    (ref-MTX-SWP:module{SwapperMtxV4} MTX-SWP)
+                    (ref-MTX-SWP:module{SwapperMtxV5} MTX-SWP)
                 )
                 (ref-MTX-SWP::C_AddSleepingLiquidity
                     patron executor swpair sleeping-dpof nonce stoa-pid

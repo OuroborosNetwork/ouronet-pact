@@ -21,7 +21,7 @@
 (print "--- [TX-NF-001 - Issue fresh NFT (owner ANHD, creator EMMA) + create 8 nonces · 01 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (owner:string KST.ANHD)
         (dpnf-price:decimal (ref-DALOS::UR_UsagePrice "dpnf"))
         (split-dpnf:[decimal] (ref-DALOS::URC_SplitSTOAPrices owner dpnf-price))
@@ -53,9 +53,9 @@
 (print "--- [TX-NF-001 · 02 · issue + create] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-DPDC:module{DpdcV3} DPDC)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (owner:string KST.ANHD)
         (type:object{DpdcUdcV2.URI|Type} (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
     )
@@ -108,8 +108,8 @@
 (print "--- [TX-NF-002 - DPNF role toggles / pause / role moves (owner + creator EMMA) · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (id:string "CNF-98c486052a51")
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
@@ -165,7 +165,7 @@
 (let
     (
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (id:string "CNF-98c486052a51")
         (patron:string KST.ANHD)
         (type:object{DpdcUdcV2.URI|Type} (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
@@ -205,8 +205,8 @@
 (print "--- [TX-NF-004 - DPNF burn / respawn / bulk-transfer · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (id:string "CNF-98c486052a51")
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
@@ -244,7 +244,7 @@
 (let
     (
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (id:string "CNF-98c486052a51")
         (patron:string KST.ANHD)
         (type:object{DpdcUdcV2.URI|Type} (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
@@ -295,7 +295,7 @@
 (let
     (
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (id:string "CNF-98c486052a51")
         (patron:string KST.ANHD)
         (sc:integer 1)
@@ -357,7 +357,7 @@
 (print "--- [TX-NF-007 - DPNF premium branding upgrade (STOA fee) · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (id:string "CNF-98c486052a51")
         (patron:string KST.ANHD)
     )
@@ -420,8 +420,8 @@
 (print "--- [TX-NF-008 - DPNF burn + respawn (EMMA holds 5,6; burn-role on EMMA) · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (id:string "CNF-98c486052a51")
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
@@ -459,9 +459,9 @@
 (print "--- [TX-NF-009 - DPNF wipes (fund + freeze EMMA/LUMY; owner-forced wipe) · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-DPDC-MNG:module{DpdcManagementV3} DPDC-MNG)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (id:string "CNF-98c486052a51")
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
@@ -511,9 +511,9 @@
 (print "--- [TX-NF-010 - DPNF fragments (enable -> make -> merge -> repurpose) · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-DPDC:module{DpdcV3} DPDC)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (id:string "CNF-98c486052a51")
         (patron:string KST.ANHD)
         (orbr:string KST.OURBR)

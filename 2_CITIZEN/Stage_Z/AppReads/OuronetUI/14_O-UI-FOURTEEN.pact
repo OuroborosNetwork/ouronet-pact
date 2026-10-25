@@ -97,7 +97,7 @@
     (defcap GOV ()                          (compose-capability (GOV|O_UI_FOURTEEN_ADMIN)))
     (defcap GOV|O_UI_FOURTEEN_ADMIN ()      (enforce-guard GOV|MD_O-UI-FOURTEEN))
     (defun GOV|Demiurgoi ()
-        (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi))
+        (let ((ref-DALOS:module{OuronetDalosV3} DALOS)) (ref-DALOS::GOV|Demiurgoi))
     )
 
     ;;{2}  CONSTANTS
@@ -135,9 +135,9 @@
             \ score is while disagreeing only about whose numbers are shown."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
+                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+                (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+                (ref-RPS:module{AcquisitionRewardPerShareV4} RPS)
                 (ref-U|CT:module{OuronetConstantsV2} U|CT)
             )
             (let
@@ -229,7 +229,7 @@
             \ -- the schema says so in as many words -- so bronze/silver/golden here name \
             \ positions and imply no ranking. Answers an empty list for a non-triplet rather \
             \ than aborting, so a caller can ask unconditionally."
-        (let ((ref-SCR:module{AcquisitionScoresV2} AQP-SCORE))
+        (let ((ref-SCR:module{AcquisitionScoresV5} AQP-SCORE))
             (if (ref-SCR::URC_TripletExists triplet-id)
                 [(ref-SCR::UR_SCR|TripletBronzeScoreId triplet-id)
                  (ref-SCR::UR_SCR|TripletSilverScoreId triplet-id)
@@ -246,7 +246,7 @@
             \ score carries `triplet-id`, so walking the scores finds every triplet that has a \
             \ member -- which is every triplet that can matter to anyone. A triplet with no \
             \ member scores would be invisible here and is also inert."
-        (let ((ref-SCR:module{AcquisitionScoresV2} AQP-SCORE))
+        (let ((ref-SCR:module{AcquisitionScoresV5} AQP-SCORE))
             (map (lambda (s:string)
                      (let ((def:object (URC_14|ScoreDefinition s)))
                          (+ def {"rungs": (URC_14|TripletRungs (at "triplet-id" def))})))
@@ -263,7 +263,7 @@
             \ tier did to (base + boost), and 1.0 when there is nothing to divide."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
             )
             (let
                 (
@@ -316,7 +316,7 @@
             \   than this module reaching across a boundary it has no reason to own."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
                 (ref-U|CT:module{OuronetConstantsV2} U|CT)
             )
             (+ (URC_14|MyScoreInPool account pool-id score-id)
@@ -381,7 +381,7 @@
             \ answer without an index this module does not own."
         (let*
             (
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
                 (ref-U|CT:module{OuronetConstantsV2} U|CT)
                 (hit:[string]
                     (filter (lambda (p:string) (= (ref-AQP::UR_AQP|PoolAssetId p) asset-id))
@@ -398,7 +398,7 @@
             \ that pool exactly once."
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
             )
             (distinct
                 (map (lambda (r:object) (at "pool-id" r))
@@ -422,7 +422,7 @@
             \ `URH_13|MyAnchorableAssets` measured above 150,000 and this reaches further."
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
             )
             ;;ZERO ROWS ARE DROPPED. An account that has unstaked keeps a row at 0 until it is
             ;;swept, and a list of scores you do not hold is noise on the one screen whose whole

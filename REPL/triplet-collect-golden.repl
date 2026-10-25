@@ -29,7 +29,7 @@
     (
         (patron:string KST.ANHD)
         (owner-konto:string KST.ANHD)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (split-stoa:[decimal] (ref-DALOS::URC_SplitSTOAPrices patron (* 4.0 (ref-DALOS::UR_UsagePrice "smart"))))
     )
     (env-sigs
@@ -64,7 +64,7 @@
     (
         (patron:string KST.ANHD)
         (owner-konto:string KST.ANHD)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
         (split-stoa:[decimal] (ref-DALOS::URC_SplitSTOAPrices patron (* 5.0 (ref-DALOS::UR_UsagePrice "smart"))))
     )
     (env-sigs

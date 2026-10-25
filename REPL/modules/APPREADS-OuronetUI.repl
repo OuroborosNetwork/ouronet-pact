@@ -707,7 +707,7 @@
 ;;caught (it sits above a select). DPL-UR's mapper called it anyway and lost the whole list.
 ;;This one reads UR_Sleeping first and emits a dead row.
 (let*
-    ( (ref-SWP:module{SwapperV4} SWP)
+    ( (ref-SWP:module{SwapperV5} SWP)
       (lp:string (ref-SWP::UR_TokenLP (at 0 (ref-SWP::URC_Swpairs))))
       (rows:[object] (O-UI-NINE.URC_05|SleepingLpList KST.ANHD [lp])) )
     (map print

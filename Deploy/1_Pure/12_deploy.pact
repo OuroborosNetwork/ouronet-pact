@@ -1,8 +1,8 @@
 ;; ---------------------------------------------------------------------------
-;; OURONET DEPLOY -- file 12 of 24
-;; This is STEP 12 of 25 in the full sequence (see Deploy/MANIFEST.md).
+;; OURONET DEPLOY -- file 12 of 25
+;; This is STEP 12 of 26 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-11 must have run first, including the init steps between deploys.
-;; 5 source file(s), 300,922 gas measured in the REPL gas model, 282,073 bytes
+;; 5 source file(s), 379,580 gas measured in the REPL gas model, 284,255 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/02_DPDC.pact
@@ -14,8 +14,8 @@
 ;; TOTAL: 6 interface(s), 5 module(s), 20 table(s)
 ;; What it DEPLOYS, in load order:
 ;;   -- 1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/02_DPDC.pact
-;;      interface  BrandingUsageTertiaryV2
-;;      interface  DpdcV2
+;;      interface  BrandingUsageTertiaryV3
+;;      interface  DpdcV3
 ;;      module     DPDC
 ;;      table      P|T
 ;;      table      P|MT
@@ -30,22 +30,22 @@
 ;;      table      DPNF|T|Account
 ;;      table      DPNF|T|AccountSupplies
 ;;   -- 1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/03_DPDC-C.pact
-;;      interface  DpdcCreateV2
+;;      interface  DpdcCreateV3
 ;;      module     DPDC-C
 ;;      table      P|T
 ;;      table      P|MT
 ;;   -- 1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/04_DPDC-I.pact
-;;      interface  DpdcIssueV2
+;;      interface  DpdcIssueV3
 ;;      module     DPDC-I
 ;;      table      P|T
 ;;      table      P|MT
 ;;   -- 1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/05_DPDC-R.pact
-;;      interface  DpdcRolesV2
+;;      interface  DpdcRolesV3
 ;;      module     DPDC-R
 ;;      table      P|T
 ;;      table      P|MT
 ;;   -- 1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/06_DPDC-MNG.pact
-;;      interface  DpdcManagementV2
+;;      interface  DpdcManagementV3
 ;;      module     DPDC-MNG
 ;;      table      P|T
 ;;      table      P|MT
@@ -61,7 +61,7 @@
 ;; History/shared registry: 1_SOVEREIGN/STAGE_02/0_Interfaces/02_Core.pact
 ;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface BrandingUsageTertiaryV2
+(interface BrandingUsageTertiaryV3
     @doc "Exposes Branding Functions for Semi-Fungibles (S) and Non-Fungibles (N)"
 
     ;;<=========================================================================>
@@ -103,13 +103,13 @@
     ;;{5.6}  Aux/X
     ;;{5.7}  User [A/C]
     ;;
-    (defun C_UpdatePendingBranding:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string entity-id:string son:bool logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
+    (defun C_UpdatePendingBranding:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string entity-id:string son:bool logo:string description:string website:string social:[object{BrandingV3.SocialSchema}]))
     (defun C_UpgradeBranding (patron:string executor:string entity-id:string son:bool months:integer))
 
 )
 
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface DpdcV2
+(interface DpdcV3
     @doc "Exposes Collectables Functions"
 
     ;;<=========================================================================>
@@ -234,7 +234,7 @@
     (defun URH_AccountNoncesWithSupplies:[object] (account:string id:string son:bool))
     ;;
     ;;  [URCi]  Branding cost readers — single source for exec billing + INFO preview
-    (defun URCi_UpdatePendingBranding:object{IgnisCollectorV3.OutputCumulator} (entity-id:string son:bool))
+    (defun URCi_UpdatePendingBranding:object{IgnisCollectorV4.OutputCumulator} (entity-id:string son:bool))
     (defun URCi_UpgradeBranding:decimal (months:integer))
     ;;{5.4}  Validate [UEV/CAP]
     ;;
@@ -342,6 +342,14 @@
     (defun XE_W|Supply (account:string id:string son:bool nonce-value:integer amount:integer))
     ;;{5.7}  User [A/C]
 
+
+    ;;<=========================================================================>
+    ;; ADDED 2026-10-12 -- interface-membership sweep (StoicSyntax-Prefixes.md Sec5,
+    ;; owner ruling). Every one of these was already live in the module body; this
+    ;; closes the gap between what the module DOES and what its interface SAYS it does.
+    ;;<=========================================================================>
+    (defun UC_ParseSignedInteger:integer (value:string))
+    (defun URH_AS-Keys:[string] (son:bool))
 )
 ;;
 (module DPDC GOV
@@ -357,8 +365,8 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements BrandingUsageTertiaryV2)
-    (implements DpdcV2)
+    (implements BrandingUsageTertiaryV3)
+    (implements DpdcV3)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -374,7 +382,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -409,7 +417,7 @@
     (defun P|Info ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::P|Info)
         )
@@ -570,7 +578,7 @@
     (defcap AHU ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (ah:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
             )
             (ref-DALOS::CAP_EnforceAccountOwnership ah)
@@ -1022,12 +1030,12 @@
         )
     )
     ;;
-    (defun URCi_UpdatePendingBranding:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_UpdatePendingBranding:object{IgnisCollectorV4.OutputCumulator}
         (entity-id:string son:bool)
         @doc "Cost preview for C_UpdatePendingBranding (Branding tier; son->4.0 else 5.0)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 (owner:string (UR_OwnerKonto entity-id son))
                 (multiplier:decimal (if son 4.0 5.0))
             )
@@ -1039,7 +1047,7 @@
             \ the exec path bills the same value via ref-BRD::XE_UpgradeBranding)."
         (let
             (
-                (ref-BRD:module{BrandingV2} BRD)
+                (ref-BRD:module{BrandingV3} BRD)
             )
             (ref-BRD::URCi_UpgradeBranding months)
         )
@@ -1244,8 +1252,8 @@
     (defun UEV_IgnisRoyalty (royalty:decimal)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 ;;
                 (ignis-id:string (ref-DALOS::UR_IgnisID))
                 (ignis-pr:integer (ref-DPTF::UR_Decimals ignis-id))
@@ -1370,7 +1378,7 @@
                 )
                 (let
                     (
-                        (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                        (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                         (nft-holder:string (UR_NonceHolder id false nonce))
                         (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                     )
@@ -1433,7 +1441,7 @@
         @doc "Enforces DPSF or DPNF Token ID Ownership"
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership (UR_OwnerKonto id son))
         )
@@ -1442,7 +1450,7 @@
         @doc "Enforces DPSF or DPNF Token ID Creator Ownership"
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership (UR_CreatorKonto id son))
         )
@@ -1473,7 +1481,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
             )
             (ref-DALOS::UEV_EnforceAccountExists account)
@@ -1506,7 +1514,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
             )
             (ref-DALOS::UEV_EnforceAccountExists account)
@@ -1623,7 +1631,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 (iz-bar:bool (if (= new-holder-account BAR) true false))
                 (sh:string
                     (if iz-bar
@@ -2038,8 +2046,8 @@
             {"id"       : id}
         )
     )
-    (defun C_UpdatePendingBranding:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string executor:string entity-id:string son:bool logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
+    (defun C_UpdatePendingBranding:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string entity-id:string son:bool logo:string description:string website:string social:[object{BrandingV3.SocialSchema}])
         @doc "ATTRIBUTION (patron/executor canon 2.2, 2026-09-22). The AUTHORITY is collectable \
             \ ownership -- DPDC|C>UPDATE-BRD calls CAP_Owner, which enforces on the DERIVED \
             \ (UR_OwnerKonto entity-id son) and names no actor: HANDOFF 4g. \
@@ -2049,7 +2057,7 @@
         (UEV_ExecutorIsOwnerKonto executor entity-id son)
         (let
             (
-                (ref-BRD:module{BrandingV2} BRD)
+                (ref-BRD:module{BrandingV3} BRD)
                 (owner:string (UR_OwnerKonto entity-id son))
                 (multiplier:decimal (if son 4.0 5.0))
             )
@@ -2067,8 +2075,8 @@
         (UEV_ExecutorIsOwnerKonto executor entity-id son)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-BRD:module{BrandingV2} BRD)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-BRD:module{BrandingV3} BRD)
                 (owner:string (UR_OwnerKonto entity-id son))
                 (stoa-payment:decimal
                     (with-capability (DPDC|C>UPGRADE-BRD entity-id son)
@@ -2115,7 +2123,7 @@
 ;; History/shared registry: 1_SOVEREIGN/STAGE_02/0_Interfaces/02_Core.pact
 ;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface DpdcCreateV2
+(interface DpdcCreateV3
     @doc "Exposes Collectables Create Functions, containining the Credit and Debit Variants"
 
     ;;<=========================================================================>
@@ -2160,7 +2168,7 @@
     ;;  [URCi]
     ;;
     (defun URCi_RegisterCollectablesPrice:decimal (id:string son:bool amounts:[integer]))
-    (defun URCi_CreateNewNonces:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool amounts:[integer]))
+    (defun URCi_CreateNewNonces:object{IgnisCollectorV4.OutputCumulator} (id:string son:bool amounts:[integer]))
     ;;{5.4}  Validate [UEV/CAP]
     ;;
     ;;  [UEV]
@@ -2202,14 +2210,14 @@
     ;;
     ;;  [C]
     ;;
-    (defun C_CreateNewNonce:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_CreateNewNonce:object{IgnisCollectorV4.OutputCumulator}
         (
             patron:string executor:string
             id:string son:bool nonce-class:integer amount:integer
             input-nonce-data:object{DpdcUdcV2.DPDC|NonceData} sft-set-mode:bool
         )
     )
-    (defun C_CreateNewNonces:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_CreateNewNonces:object{IgnisCollectorV4.OutputCumulator}
         (
             patron:string executor:string
             id:string son:bool amounts:[integer]
@@ -2217,6 +2225,15 @@
         )
     )
 
+
+    ;;<=========================================================================>
+    ;; ADDED 2026-10-12 -- interface-membership sweep (StoicSyntax-Prefixes.md Sec5,
+    ;; owner ruling). Every one of these was already live in the module body; this
+    ;; closes the gap between what the module DOES and what its interface SAYS it does.
+    ;;<=========================================================================>
+    (defun UEV_Amount (amount:integer))
+    (defun UEV_ExecutorIsCreateRole (executor:string id:string son:bool))
+    (defun UEV_FragmentCreditAmount (amount:integer))
 )
 ;;
 (module DPDC-C GOV
@@ -2232,7 +2249,7 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements DpdcCreateV2)
+    (implements DpdcCreateV3)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -2248,7 +2265,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -2275,7 +2292,7 @@
     (defun P|Info ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::P|Info)
         )
@@ -2444,7 +2461,7 @@
             \ (patron/executor canon 2.2, 2026-09-22.)"
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (enforce (= executor (ref-DPDC::UR_Verum5 id son))
                 "Executor is not the Collectable Create-Role account")
@@ -2454,8 +2471,8 @@
         (executor:string id:string son:bool amounts:[integer] input-nonce-datas:[object{DpdcUdcV2.DPDC|NonceData}] sft-set-mode:bool)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 ;;
                 (l1:integer (length amounts))
                 (l2:integer (length input-nonce-datas))
@@ -2606,8 +2623,8 @@
         (account:string id:string son:bool nonce:integer amount:integer fragments-or-native:bool wipe-mode:bool)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (if wipe-mode
                 (ref-DPDC::CAP_Owner id son)
@@ -2650,8 +2667,8 @@
         (account:string id:string son:bool nonces:[integer] amounts:[integer] wipe-mode:bool)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 ;;
                 (l1:integer (length nonces))
                 (l2:integer (length amounts))
@@ -2694,8 +2711,8 @@
             \ exec write and the INFO preview."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 (nu:integer (ref-DPDC::UR_NoncesUsed id son))
                 (s-amounts:integer (fold (+) 0 amounts))
                 (smallest:decimal (ref-IGNIS::UC_IgnisLeg "tier-smallest"))
@@ -2708,15 +2725,15 @@
             )
         )
     )
-    (defun URCi_CreateNewNonces:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_CreateNewNonces:object{IgnisCollectorV4.OutputCumulator}
         (id:string son:bool amounts:[integer])
         @doc "Cost preview for C_CreateNewNonce/C_CreateNewNonces: issue construct \
             \ priced via URCi_RegisterCollectablesPrice on the owner-konto payer, \
             \ empty output list (created collectable names are exec-only write products)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (URCi_RegisterCollectablesPrice id son amounts)
@@ -2732,7 +2749,7 @@
         (let
             (
                 (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 ;;
                 (empty-data-dc:object{DpdcUdcV2.DPDC|NonceData}
                     (ref-DPDC-UDC::UDC_ZeroNonceData)
@@ -3013,7 +3030,7 @@
         (let
             (
                 (ref-U|INT:module{OuronetIntegersV2} U|INT)
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 ;;
                 (split:object{OuronetIntegersV2.NonceSplitter} (ref-U|INT::UC_NonceSplitter nonces amounts))
                 (negative-nonces:[integer] (at "negative-nonces" split))
@@ -3111,7 +3128,7 @@
     ;;Protection: Class 1 — Innate protection offered by XI_RegisterSingleNonce,
     ;;Protection:          XI_RegisterMultipleNonces, XB_CreditSFT-Nonce,
     ;;Protection:          XB_CreditNFT-Nonce, XB_CreditSFT-Nonces, XB_CreditNFT-Nonces
-    (defun XI_RegisterCollectables:object{IgnisCollectorV3.OutputCumulator}
+    (defun XI_RegisterCollectables:object{IgnisCollectorV4.OutputCumulator}
         (
             executor:string
             id:string son:bool nonce-classes:[integer] amounts:[integer]
@@ -3119,8 +3136,8 @@
         )
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 (owner:string (ref-DPDC::UR_OwnerKonto id son))
                 ;;
                 (l:integer (length amounts))
@@ -3225,9 +3242,9 @@
         (require-capability (SECURE))
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 (new-element-nonce:integer (+ (ref-DPDC::UR_NoncesUsed id son) 1))
                 (account-for-supply-registering:string (ref-DPDC::UR_Verum5 id son))
                 (nonce-holder:string
@@ -3258,7 +3275,7 @@
     (defun XI_MappedUpdateOwnerNFT (id:string nonces:[integer] account:string iz-bar:bool)
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 (new-owner:string
                     (if iz-bar
                         BAR
@@ -3292,7 +3309,7 @@
     (defun XIv_CreditOrDebitDPDC (account:string id:string son:bool nonce:integer amount:integer cod:bool)
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 (read-current-supply:integer (ref-DPDC::UR_AccountNonceSupply account id son nonce))
                 (current-supply:integer 
                     (if (= read-current-supply -1)
@@ -3335,7 +3352,7 @@
         )
     )
     ;;{5.7}  User [A/C]
-    (defun C_CreateNewNonce:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_CreateNewNonce:object{IgnisCollectorV4.OutputCumulator}
         (
             patron:string executor:string
             id:string son:bool nonce-class:integer amount:integer
@@ -3354,7 +3371,7 @@
             (XI_RegisterCollectables executor id son [nonce-class] [amount] [input-nonce-data] sft-set-mode)
         )
     )
-    (defun C_CreateNewNonces:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_CreateNewNonces:object{IgnisCollectorV4.OutputCumulator}
         (
             patron:string executor:string
             id:string son:bool amounts:[integer]
@@ -3392,7 +3409,7 @@
 ;; History/shared registry: 1_SOVEREIGN/STAGE_02/0_Interfaces/02_Core.pact
 ;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface DpdcIssueV2
+(interface DpdcIssueV3
     @doc "Exposes Collectables Issue Functions"
 
     ;;<=========================================================================>
@@ -3434,7 +3451,7 @@
     ;;
     (defun URCi_IssueCollectionPrice:decimal (son:bool))
     (defun URCi_IssueCollectionStoa:decimal (son:bool))
-    (defun URCi_IssueDigitalCollection:object{IgnisCollectorV3.OutputCumulator} (son:bool owner-account:string))
+    (defun URCi_IssueDigitalCollection:object{IgnisCollectorV4.OutputCumulator} (son:bool owner-account:string))
     ;;{5.4}  Validate [UEV/CAP]
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
@@ -3446,7 +3463,7 @@
     ;; Talos entrypoint with no ownership check, let any signer force any existing account to associate
     ;; with any collection. Real auto-association always calls DPDC::XBv_DeployAccountSFT/NFT directly,
     ;; module-to-module (see DPDC-C/DPDC-F/DPDC-R/DPDC-S and this module's own Issue flow below).
-    (defun C_IssueDigitalCollection:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_IssueDigitalCollection:object{IgnisCollectorV4.OutputCumulator}
         (
             patron:string executor:string executee:string son:bool
             collection-name:string collection-ticker:string
@@ -3471,7 +3488,7 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements DpdcIssueV2)
+    (implements DpdcIssueV3)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -3487,7 +3504,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -3514,7 +3531,7 @@
     (defun P|Info ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::P|Info)
         )
@@ -3661,7 +3678,7 @@
         (let
             (
                 (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-U|DALOS::UEV_NameOrTicker collection-name true iz-special)
             (ref-U|DALOS::UEV_NameOrTicker collection-ticker false iz-special)
@@ -3697,7 +3714,7 @@
             \ Single source for the exec construct and the INFO preview."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_Issue" "issue-sft")
                     (ref-IGNIS::UC_IgnisPrice "DPNF|C_Issue" "issue-nft"))
@@ -3709,12 +3726,12 @@
             \ Single source for XE_CollectStoa and the INFO preview."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (if son (ref-IGNIS::UC_StoaPrice "issue-sft") (ref-IGNIS::UC_StoaPrice "issue-nft"))
         )
     )
-    (defun URCi_IssueDigitalCollection:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_IssueDigitalCollection:object{IgnisCollectorV4.OutputCumulator}
         (son:bool owner-account:string)
         @doc "Cost preview for C_IssueDigitalCollection: IGNIS construct priced via \
             \ URCi_IssueCollectionPrice on the owner payer, empty output (the created \
@@ -3722,7 +3739,7 @@
             \ separately via URCi_IssueCollectionStoa."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (URCi_IssueCollectionPrice son)
@@ -3749,7 +3766,7 @@
             (
                 (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
                 (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 (id:string (ref-U|DALOS::UDC_Makeid collection-ticker))
                 (specifications:object{DpdcUdcV2.DPDC|Properties}
                     (ref-DPDC-UDC::UDC_DPDC|Properties
@@ -3833,7 +3850,7 @@
     )
     ;;{5.7}  User [A/C]
     ;; C_DeployAccountSFT/NFT removed — DPDC Audit #35M: see interface-side removal note above.
-    (defun C_IssueDigitalCollection:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_IssueDigitalCollection:object{IgnisCollectorV4.OutputCumulator}
         (
             patron:string executor:string executee:string son:bool
             collection-name:string collection-ticker:string
@@ -3859,9 +3876,9 @@
         (with-capability (DPDC-I|C>ISSUE executor executee collection-name collection-ticker iz-special)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-BRD:module{BrandingV2} BRD)
-                    (ref-DPDC:module{DpdcV2} DPDC)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-BRD:module{BrandingV3} BRD)
+                    (ref-DPDC:module{DpdcV3} DPDC)
                     ;;
                     (ignis-price:decimal (URCi_IssueCollectionPrice son))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
@@ -3988,7 +4005,7 @@
 ;; History/shared registry: 1_SOVEREIGN/STAGE_02/0_Interfaces/02_Core.pact
 ;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface DpdcRolesV2
+(interface DpdcRolesV3
     @doc "Exposes Collectables Role Functions"
 
     ;;<=========================================================================>
@@ -4028,17 +4045,17 @@
     ;;
     ;;  [URCi]
     ;;
-    (defun URCi_ToggleAddQuantityRole:object{IgnisCollectorV3.OutputCumulator} (id:string))
-    (defun URCi_ToggleFreezeAccount:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool))
-    (defun URCi_ToggleExemptionRole:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool))
-    (defun URCi_ToggleBurnRole:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool))
-    (defun URCi_ToggleUpdateRole:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool))
-    (defun URCi_ToggleModifyCreatorRole:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool))
-    (defun URCi_ToggleModifyRoyaltiesRole:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool))
-    (defun URCi_ToggleTransferRole:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool))
-    (defun URCi_MoveCreateRole:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool))
-    (defun URCi_MoveRecreateRole:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool))
-    (defun URCi_MoveSetUriRole:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool))
+    (defun URCi_ToggleAddQuantityRole:object{IgnisCollectorV4.OutputCumulator} (id:string))
+    (defun URCi_ToggleFreezeAccount:object{IgnisCollectorV4.OutputCumulator} (id:string son:bool))
+    (defun URCi_ToggleExemptionRole:object{IgnisCollectorV4.OutputCumulator} (id:string son:bool))
+    (defun URCi_ToggleBurnRole:object{IgnisCollectorV4.OutputCumulator} (id:string son:bool))
+    (defun URCi_ToggleUpdateRole:object{IgnisCollectorV4.OutputCumulator} (id:string son:bool))
+    (defun URCi_ToggleModifyCreatorRole:object{IgnisCollectorV4.OutputCumulator} (id:string son:bool))
+    (defun URCi_ToggleModifyRoyaltiesRole:object{IgnisCollectorV4.OutputCumulator} (id:string son:bool))
+    (defun URCi_ToggleTransferRole:object{IgnisCollectorV4.OutputCumulator} (id:string son:bool))
+    (defun URCi_MoveCreateRole:object{IgnisCollectorV4.OutputCumulator} (id:string son:bool))
+    (defun URCi_MoveRecreateRole:object{IgnisCollectorV4.OutputCumulator} (id:string son:bool))
+    (defun URCi_MoveSetUriRole:object{IgnisCollectorV4.OutputCumulator} (id:string son:bool))
     ;;{5.4}  Validate [UEV/CAP]
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
@@ -4047,18 +4064,25 @@
     ;;  [C]
     ;;
 
-    (defun C_ToggleAddQuantityRole:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string toggle:bool))
-    (defun C_ToggleFreezeAccount:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string son:bool toggle:bool))
-    (defun C_ToggleExemptionRole:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string son:bool toggle:bool))
-    (defun C_ToggleBurnRole:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string son:bool toggle:bool))
-    (defun C_ToggleUpdateRole:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string son:bool toggle:bool))
-    (defun C_ToggleModifyCreatorRole:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string son:bool toggle:bool))
-    (defun C_ToggleModifyRoyaltiesRole:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string son:bool toggle:bool))
-    (defun C_ToggleTransferRole:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string son:bool toggle:bool))
-    (defun C_MoveCreateRole:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string son:bool))
-    (defun C_MoveRecreateRole:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string son:bool))
-    (defun C_MoveSetUriRole:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string son:bool))
+    (defun C_ToggleAddQuantityRole:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string executee:string id:string toggle:bool))
+    (defun C_ToggleFreezeAccount:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string executee:string id:string son:bool toggle:bool))
+    (defun C_ToggleExemptionRole:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string executee:string id:string son:bool toggle:bool))
+    (defun C_ToggleBurnRole:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string executee:string id:string son:bool toggle:bool))
+    (defun C_ToggleUpdateRole:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string executee:string id:string son:bool toggle:bool))
+    (defun C_ToggleModifyCreatorRole:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string executee:string id:string son:bool toggle:bool))
+    (defun C_ToggleModifyRoyaltiesRole:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string executee:string id:string son:bool toggle:bool))
+    (defun C_ToggleTransferRole:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string executee:string id:string son:bool toggle:bool))
+    (defun C_MoveCreateRole:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string executee:string id:string son:bool))
+    (defun C_MoveRecreateRole:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string executee:string id:string son:bool))
+    (defun C_MoveSetUriRole:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string executee:string id:string son:bool))
 
+
+    ;;<=========================================================================>
+    ;; ADDED 2026-10-12 -- interface-membership sweep (StoicSyntax-Prefixes.md Sec5,
+    ;; owner ruling). Every one of these was already live in the module body; this
+    ;; closes the gap between what the module DOES and what its interface SAYS it does.
+    ;;<=========================================================================>
+    (defun UEV_ExecutorIsCollectionOwner (executor:string id:string son:bool))
 )
 ;;
 (module DPDC-R GOV
@@ -4075,7 +4099,7 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements DpdcRolesV2)
+    (implements DpdcRolesV3)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -4091,7 +4115,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -4118,7 +4142,7 @@
     (defun P|Info ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::P|Info)
         )
@@ -4253,7 +4277,7 @@
         @event
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (ref-DPDC::UEV_ToggleSpecialRole id true toggle)
             (ref-DPDC::UEV_AccountAddQuantityState id account (not toggle))
@@ -4265,7 +4289,7 @@
         @event
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             ;; DPDC Audit #13H: <can-freeze> gates new freezes only — unfreeze is a release valve and
             ;; must stay available even after <can-freeze> has been renounced, or an already-frozen
@@ -4283,8 +4307,8 @@
         @event
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 (type:bool (ref-DALOS::UR_AccountType account))
             )
             (enforce type "Only Smart Ouronet Accounts can get this role")
@@ -4297,7 +4321,7 @@
         @event
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (ref-DPDC::UEV_ToggleSpecialRole id son toggle)
             (ref-DPDC::UEV_AccountBurnState id son account (not toggle))
@@ -4309,7 +4333,7 @@
         @event
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (ref-DPDC::UEV_ToggleSpecialRole id son toggle)
             (ref-DPDC::UEV_AccountUpdateState id son account (not toggle))
@@ -4321,7 +4345,7 @@
         @event
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (ref-DPDC::UEV_ToggleSpecialRole id son toggle)
             (ref-DPDC::UEV_AccountModifyCreatorState id son account (not toggle))
@@ -4333,7 +4357,7 @@
         @event
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (ref-DPDC::UEV_ToggleSpecialRole id son toggle)
             (ref-DPDC::UEV_AccountModifyRoyaltiesState id son account (not toggle))
@@ -4345,7 +4369,7 @@
         @event
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (ref-DPDC::UEV_ToggleSpecialRole id son toggle)
             (ref-DPDC::UEV_AccountTransferState id son account (not toggle))
@@ -4358,7 +4382,7 @@
         @event
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (ref-DPDC::UEV_CanAddSpecialRoleON id son)
             (ref-DPDC::UEV_AccountCreateState id son old-account true)
@@ -4371,7 +4395,7 @@
         @event
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (ref-DPDC::UEV_CanAddSpecialRoleON id son)
             (ref-DPDC::UEV_AccountRecreateState id son old-account true)
@@ -4384,7 +4408,7 @@
         @event
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (ref-DPDC::UEV_CanAddSpecialRoleON id son)
             (ref-DPDC::UEV_AccountSetUriState id son old-account true)
@@ -4411,26 +4435,26 @@
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;
     ;;
-    (defun URCi_ToggleAddQuantityRole:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_ToggleAddQuantityRole:object{IgnisCollectorV4.OutputCumulator}
         (id:string)
         @doc "Cost preview for C_ToggleAddQuantityRole (Big tier on owner-konto)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisPrice "DPSF|C_ToggleAddQuantityRole" "auth")
                 (ref-DPDC::UR_OwnerKonto id true) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_ToggleFreezeAccount:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_ToggleFreezeAccount:object{IgnisCollectorV4.OutputCumulator}
         (id:string son:bool)
         @doc "Cost preview for C_ToggleFreezeAccount (Biggest tier on owner-konto)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_ToggleFreezeAccount" "setup")
@@ -4438,13 +4462,13 @@
                 (ref-DPDC::UR_OwnerKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_ToggleExemptionRole:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_ToggleExemptionRole:object{IgnisCollectorV4.OutputCumulator}
         (id:string son:bool)
         @doc "Cost preview for C_ToggleExemptionRole (Biggest tier on owner-konto)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_ToggleExemptionRole" "auth")
@@ -4452,13 +4476,13 @@
                 (ref-DPDC::UR_OwnerKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_ToggleBurnRole:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_ToggleBurnRole:object{IgnisCollectorV4.OutputCumulator}
         (id:string son:bool)
         @doc "Cost preview for C_ToggleBurnRole (Big tier on owner-konto)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_ToggleBurnRole" "auth")
@@ -4466,13 +4490,13 @@
                 (ref-DPDC::UR_OwnerKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_ToggleUpdateRole:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_ToggleUpdateRole:object{IgnisCollectorV4.OutputCumulator}
         (id:string son:bool)
         @doc "Cost preview for C_ToggleUpdateRole (Big tier on owner-konto)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_ToggleUpdateRole" "auth")
@@ -4480,13 +4504,13 @@
                 (ref-DPDC::UR_OwnerKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_ToggleModifyCreatorRole:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_ToggleModifyCreatorRole:object{IgnisCollectorV4.OutputCumulator}
         (id:string son:bool)
         @doc "Cost preview for C_ToggleModifyCreatorRole (Big tier on owner-konto)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_ToggleModifyCreatorRole" "auth")
@@ -4494,13 +4518,13 @@
                 (ref-DPDC::UR_OwnerKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_ToggleModifyRoyaltiesRole:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_ToggleModifyRoyaltiesRole:object{IgnisCollectorV4.OutputCumulator}
         (id:string son:bool)
         @doc "Cost preview for C_ToggleModifyRoyaltiesRole (Big tier on owner-konto)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_ToggleModifyRoyaltiesRole" "fee")
@@ -4508,13 +4532,13 @@
                 (ref-DPDC::UR_OwnerKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_ToggleTransferRole:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_ToggleTransferRole:object{IgnisCollectorV4.OutputCumulator}
         (id:string son:bool)
         @doc "Cost preview for C_ToggleTransferRole (Big tier on owner-konto)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_ToggleTransferRole" "usage")
@@ -4522,13 +4546,13 @@
                 (ref-DPDC::UR_OwnerKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_MoveCreateRole:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_MoveCreateRole:object{IgnisCollectorV4.OutputCumulator}
         (id:string son:bool)
         @doc "Cost preview for C_MoveCreateRole (Biggest tier on owner-konto)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_MoveCreateRole" "auth")
@@ -4536,13 +4560,13 @@
                 (ref-DPDC::UR_OwnerKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_MoveRecreateRole:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_MoveRecreateRole:object{IgnisCollectorV4.OutputCumulator}
         (id:string son:bool)
         @doc "Cost preview for C_MoveRecreateRole (Biggest tier on owner-konto)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_MoveRecreateRole" "auth")
@@ -4550,13 +4574,13 @@
                 (ref-DPDC::UR_OwnerKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_MoveSetUriRole:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_MoveSetUriRole:object{IgnisCollectorV4.OutputCumulator}
         (id:string son:bool)
         @doc "Cost preview for C_MoveSetUriRole (Biggest tier on owner-konto)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_MoveSetUriRole" "auth")
@@ -4572,7 +4596,7 @@
         (require-capability (DPDC|C>TG_ADD-QTY-R id account toggle))
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (ref-DPDC::XE_U|Rnaq id account toggle)
             (ref-DPDC::XE_U|VerumRoles id true 3 toggle account)
@@ -4583,7 +4607,7 @@
         (require-capability (DPDC|C>FRZ-ACC id son account toggle))
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 ;;
             )
             (ref-DPDC::XE_U|Frozen id son account toggle)
@@ -4595,7 +4619,7 @@
         (require-capability (DPDC|C>TG_EXEMPTION-R id son account toggle))
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 ;;
             )
             (ref-DPDC::XE_U|Exemption id son account toggle)
@@ -4607,7 +4631,7 @@
         (require-capability (DPDC|C>TG_BURN-R id son account toggle))
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (ref-DPDC::XE_U|Burn id son account toggle)
             (ref-DPDC::XE_U|VerumRoles id son 4 toggle account)
@@ -4618,7 +4642,7 @@
         (require-capability (DPDC|C>TG_UPDATE-R id son account toggle))
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (ref-DPDC::XE_U|Update id son account toggle)
             (ref-DPDC::XE_U|VerumRoles id son 7 toggle account)
@@ -4629,7 +4653,7 @@
         (require-capability (DPDC|C>TG_MODIFY-CREATOR-R id son account toggle))
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (ref-DPDC::XE_U|ModifyCreator id son account toggle)
             (ref-DPDC::XE_U|VerumRoles id son 8 toggle account)
@@ -4640,7 +4664,7 @@
         (require-capability (DPDC|C>TG_MODIFY-ROYALTIES-R id son account toggle))
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (ref-DPDC::XE_U|ModifyRoyalties id son account toggle)
             (ref-DPDC::XE_U|VerumRoles id son 9 toggle account)
@@ -4651,7 +4675,7 @@
         (require-capability (DPDC|C>TG_TRANSFER-R id son account toggle))
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (ref-DPDC::XE_U|Transfer id son account toggle)
             (ref-DPDC::XE_U|VerumRoles id son 11 toggle account)
@@ -4663,7 +4687,7 @@
         (require-capability (DPDC|C>MV_CREATE-R id son old-account new-account))
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (ref-DPDC::XE_U|Create id son old-account false)
             (ref-DPDC::XE_U|VerumRoles id son 5 false old-account)
@@ -4676,7 +4700,7 @@
         (require-capability (DPDC|C>MV_RECREATE-R id son old-account new-account))
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (ref-DPDC::XE_U|Recreate id son old-account false)
             (ref-DPDC::XE_U|VerumRoles id son 6 false old-account)
@@ -4689,7 +4713,7 @@
         (require-capability (DPDC|C>MV_SET-URI-R id son old-account new-account))
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (ref-DPDC::XE_U|SetNewUri id son old-account false)
             (ref-DPDC::XE_U|VerumRoles id son 10 false old-account)
@@ -4718,12 +4742,12 @@
             \ only. (patron/executor canon 2.2, indirect route named.)"
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (ref-DPDC::UEV_ExecutorIsOwnerKonto executor id son)
         )
     )
-    (defun C_ToggleAddQuantityRole:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_ToggleAddQuantityRole:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string executee:string id:string toggle:bool)
         @doc "HANDOFF 4g (patron/executor canon 2.2, 2026-09-22). DPDC::CAP_Owner enforces on \
             \ the DERIVED (UR_OwnerKonto id son) and names no actor; UEV_ExecutorIsOwnerKonto \
@@ -4735,7 +4759,7 @@
         (UEV_ExecutorIsCollectionOwner executor id true)
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (with-capability (DPDC|C>TG_ADD-QTY-R id executee toggle)
                 (ref-DPDC::XE_DeployAccountWNE executee id true)
@@ -4744,7 +4768,7 @@
             )
         )
     )
-    (defun C_ToggleFreezeAccount:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_ToggleFreezeAccount:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string executee:string id:string son:bool toggle:bool)
         @doc "HANDOFF 4g (patron/executor canon 2.2, 2026-09-22). DPDC::CAP_Owner enforces on \
             \ the DERIVED (UR_OwnerKonto id son) and names no actor; UEV_ExecutorIsOwnerKonto \
@@ -4756,7 +4780,7 @@
         (UEV_ExecutorIsCollectionOwner executor id son)
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (with-capability (DPDC|C>FRZ-ACC id son executee toggle)
                 (ref-DPDC::XE_DeployAccountWNE executee id son)
@@ -4765,7 +4789,7 @@
             )
         )
     )
-    (defun C_ToggleExemptionRole:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_ToggleExemptionRole:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string executee:string id:string son:bool toggle:bool)
         @doc "HANDOFF 4g (patron/executor canon 2.2, 2026-09-22). DPDC::CAP_Owner enforces on \
             \ the DERIVED (UR_OwnerKonto id son) and names no actor; UEV_ExecutorIsOwnerKonto \
@@ -4777,7 +4801,7 @@
         (UEV_ExecutorIsCollectionOwner executor id son)
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (with-capability (DPDC|C>TG_EXEMPTION-R id son executee toggle)
                 (ref-DPDC::XE_DeployAccountWNE executee id son)
@@ -4786,7 +4810,7 @@
             )
         )
     )
-    (defun C_ToggleBurnRole:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_ToggleBurnRole:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string executee:string id:string son:bool toggle:bool)
         @doc "HANDOFF 4g (patron/executor canon 2.2, 2026-09-22). DPDC::CAP_Owner enforces on \
             \ the DERIVED (UR_OwnerKonto id son) and names no actor; UEV_ExecutorIsOwnerKonto \
@@ -4798,7 +4822,7 @@
         (UEV_ExecutorIsCollectionOwner executor id son)
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (with-capability (DPDC|C>TG_BURN-R id son executee toggle)
                 (ref-DPDC::XE_DeployAccountWNE executee id son)
@@ -4807,7 +4831,7 @@
             )
         )
     )
-    (defun C_ToggleUpdateRole:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_ToggleUpdateRole:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string executee:string id:string son:bool toggle:bool)
         @doc "HANDOFF 4g (patron/executor canon 2.2, 2026-09-22). DPDC::CAP_Owner enforces on \
             \ the DERIVED (UR_OwnerKonto id son) and names no actor; UEV_ExecutorIsOwnerKonto \
@@ -4819,7 +4843,7 @@
         (UEV_ExecutorIsCollectionOwner executor id son)
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (with-capability (DPDC|C>TG_UPDATE-R id son executee toggle)
                 (ref-DPDC::XE_DeployAccountWNE executee id son)
@@ -4828,7 +4852,7 @@
             )
         )
     )
-    (defun C_ToggleModifyCreatorRole:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_ToggleModifyCreatorRole:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string executee:string id:string son:bool toggle:bool)
         @doc "HANDOFF 4g (patron/executor canon 2.2, 2026-09-22). DPDC::CAP_Owner enforces on \
             \ the DERIVED (UR_OwnerKonto id son) and names no actor; UEV_ExecutorIsOwnerKonto \
@@ -4840,7 +4864,7 @@
         (UEV_ExecutorIsCollectionOwner executor id son)
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (with-capability (DPDC|C>TG_MODIFY-CREATOR-R id son executee toggle)
                 (ref-DPDC::XE_DeployAccountWNE executee id son)
@@ -4849,7 +4873,7 @@
             )
         )
     )
-    (defun C_ToggleModifyRoyaltiesRole:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_ToggleModifyRoyaltiesRole:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string executee:string id:string son:bool toggle:bool)
         @doc "HANDOFF 4g (patron/executor canon 2.2, 2026-09-22). DPDC::CAP_Owner enforces on \
             \ the DERIVED (UR_OwnerKonto id son) and names no actor; UEV_ExecutorIsOwnerKonto \
@@ -4861,7 +4885,7 @@
         (UEV_ExecutorIsCollectionOwner executor id son)
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (with-capability (DPDC|C>TG_MODIFY-ROYALTIES-R id son executee toggle)
                 (ref-DPDC::XE_DeployAccountWNE executee id son)
@@ -4870,7 +4894,7 @@
             )
         )
     )
-    (defun C_ToggleTransferRole:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_ToggleTransferRole:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string executee:string id:string son:bool toggle:bool)
         @doc "HANDOFF 4g (patron/executor canon 2.2, 2026-09-22). DPDC::CAP_Owner enforces on \
             \ the DERIVED (UR_OwnerKonto id son) and names no actor; UEV_ExecutorIsOwnerKonto \
@@ -4882,7 +4906,7 @@
         (UEV_ExecutorIsCollectionOwner executor id son)
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (with-capability (DPDC|C>TG_TRANSFER-R id son executee toggle)
                 (ref-DPDC::XE_DeployAccountWNE executee id son)
@@ -4892,7 +4916,7 @@
         )
     )
     ;;
-    (defun C_MoveCreateRole:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_MoveCreateRole:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string executee:string id:string son:bool)
         @doc "HANDOFF 4g (patron/executor canon 2.2, 2026-09-22). DPDC::CAP_Owner enforces on \
             \ the DERIVED (UR_OwnerKonto id son) and names no actor; UEV_ExecutorIsOwnerKonto \
@@ -4904,7 +4928,7 @@
         (UEV_ExecutorIsCollectionOwner executor id son)
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 (old-account:string (ref-DPDC::UR_Verum5 id son))
             )
             (with-capability (DPDC|C>MV_CREATE-R id son old-account executee)
@@ -4914,7 +4938,7 @@
             )
         )
     )
-    (defun C_MoveRecreateRole:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_MoveRecreateRole:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string executee:string id:string son:bool)
         @doc "HANDOFF 4g (patron/executor canon 2.2, 2026-09-22). DPDC::CAP_Owner enforces on \
             \ the DERIVED (UR_OwnerKonto id son) and names no actor; UEV_ExecutorIsOwnerKonto \
@@ -4926,7 +4950,7 @@
         (UEV_ExecutorIsCollectionOwner executor id son)
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 (old-account:string (ref-DPDC::UR_Verum6 id son))
             )
             (with-capability (DPDC|C>MV_RECREATE-R id son old-account executee)
@@ -4936,7 +4960,7 @@
             )
         )
     )
-    (defun C_MoveSetUriRole:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_MoveSetUriRole:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string executee:string id:string son:bool)
         @doc "HANDOFF 4g (patron/executor canon 2.2, 2026-09-22). DPDC::CAP_Owner enforces on \
             \ the DERIVED (UR_OwnerKonto id son) and names no actor; UEV_ExecutorIsOwnerKonto \
@@ -4948,7 +4972,7 @@
         (UEV_ExecutorIsCollectionOwner executor id son)
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 (old-account:string (ref-DPDC::UR_Verum10 id son))
             )
             (with-capability (DPDC|C>MV_SET-URI-R id son old-account executee)
@@ -4974,7 +4998,7 @@
 ;; History/shared registry: 1_SOVEREIGN/STAGE_02/0_Interfaces/02_Core.pact
 ;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface DpdcManagementV2
+(interface DpdcManagementV3
     @doc "Exposes Collectables Management Functions"
 
     ;;<=========================================================================>
@@ -5037,15 +5061,15 @@
     ;;
     ;;  [URCi]
     ;;
-    (defun URCi_Control:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool))
-    (defun URCi_TogglePause:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool))
-    (defun URCi_AddQuantity:object{IgnisCollectorV3.OutputCumulator} (id:string))
-    (defun URCi_RespawnNFT:object{IgnisCollectorV3.OutputCumulator} (id:string))
-    (defun URCi_BurnSFT:object{IgnisCollectorV3.OutputCumulator} (id:string))
-    (defun URCi_WipeSlim:object{IgnisCollectorV3.OutputCumulator} (id:string))
-    (defun URCi_BurnNFT:object{IgnisCollectorV3.OutputCumulator} (id:string))
-    (defun URCi_WipeNonce:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool))
-    (defun URCi_WipeCumulator:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool removable-nonces-obj:object{RemovableNonces}))
+    (defun URCi_Control:object{IgnisCollectorV4.OutputCumulator} (id:string son:bool))
+    (defun URCi_TogglePause:object{IgnisCollectorV4.OutputCumulator} (id:string son:bool))
+    (defun URCi_AddQuantity:object{IgnisCollectorV4.OutputCumulator} (id:string))
+    (defun URCi_RespawnNFT:object{IgnisCollectorV4.OutputCumulator} (id:string))
+    (defun URCi_BurnSFT:object{IgnisCollectorV4.OutputCumulator} (id:string))
+    (defun URCi_WipeSlim:object{IgnisCollectorV4.OutputCumulator} (id:string))
+    (defun URCi_BurnNFT:object{IgnisCollectorV4.OutputCumulator} (id:string))
+    (defun URCi_WipeNonce:object{IgnisCollectorV4.OutputCumulator} (id:string son:bool))
+    (defun URCi_WipeCumulator:object{IgnisCollectorV4.OutputCumulator} (id:string son:bool removable-nonces-obj:object{RemovableNonces}))
     ;;
     ;;  [URDC/URC/UDC]  RemovableNonces builders (dirty-read helpers, also used by INFO preview)
     (defun URHC_WipePure:object{RemovableNonces} (account:string id:string son:bool))
@@ -5058,32 +5082,40 @@
     ;;
     ;; [C]
     ;;
-    (defun C_Control:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string id:string son:bool cu:bool cco:bool ccc:bool casr:bool ctncr:bool cf:bool cw:bool cp:bool))
-    (defun C_TogglePause:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string id:string son:bool toggle:bool))
+    (defun C_Control:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string id:string son:bool cu:bool cco:bool ccc:bool casr:bool ctncr:bool cf:bool cw:bool cp:bool))
+    (defun C_TogglePause:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string id:string son:bool toggle:bool))
     ;;
     ;;  [CREDIT-SINGLE]
     ;;  [SFT]
-    (defun C_AddQuantity:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string id:string nonce:integer amount:integer))
+    (defun C_AddQuantity:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string id:string nonce:integer amount:integer))
     ;;  [NFT]
-    (defun C_RespawnNFT:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string id:string nonce:integer))
+    (defun C_RespawnNFT:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string id:string nonce:integer))
     ;;
     ;;  [DEBIT-SINGLE]
     ;;  [SFT]
-    (defun C_BurnSFT:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string id:string nonce:integer amount:integer))
-    (defun C_WipeSlim:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string nonce:integer amount:integer))
+    (defun C_BurnSFT:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string id:string nonce:integer amount:integer))
+    (defun C_WipeSlim:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string executee:string id:string nonce:integer amount:integer))
     ;;  [NFT]
-    (defun C_BurnNFT:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string id:string nonce:integer))
+    (defun C_BurnNFT:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string id:string nonce:integer))
     ;;  [SFT+NFT]
-    (defun C_WipeNonce:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string son:bool nonce:integer))
+    (defun C_WipeNonce:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string executee:string id:string son:bool nonce:integer))
     ;;
     ;;  [DEBIT-MULTIPLE]
     ;;  [SFT+NFT]
-    (defun CC_WipeHeavy:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string son:bool))
-    (defun C_WipePure:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string son:bool removable-nonces-obj:object{RemovableNonces}))
-    (defun C_WipeClean:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string son:bool nonces:[integer]))
-    (defun C_WipeDirty:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string son:bool nonces:[integer]))
-    (defun Cp_WipeSlice:object{IgnisCollectorV3.OutputCumulator} (account:string id:string son:bool removable-nonces-obj:object{RemovableNonces}))
+    (defun CC_WipeHeavy:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string executee:string id:string son:bool))
+    (defun C_WipePure:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string executee:string id:string son:bool removable-nonces-obj:object{RemovableNonces}))
+    (defun C_WipeClean:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string executee:string id:string son:bool nonces:[integer]))
+    (defun C_WipeDirty:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string executee:string id:string son:bool nonces:[integer]))
+    (defun Cp_WipeSlice:object{IgnisCollectorV4.OutputCumulator} (account:string id:string son:bool removable-nonces-obj:object{RemovableNonces}))
 
+
+    ;;<=========================================================================>
+    ;; ADDED 2026-10-12 -- interface-membership sweep (StoicSyntax-Prefixes.md Sec5,
+    ;; owner ruling). Every one of these was already live in the module body; this
+    ;; closes the gap between what the module DOES and what its interface SAYS it does.
+    ;;<=========================================================================>
+    (defun UC_CeilDiv:integer (numerator:integer denominator:integer))
+    (defun UEV_ExecutorIsCollectionOwner (executor:string id:string son:bool))
 )
 ;;
 (module DPDC-MNG GOV
@@ -5100,7 +5132,7 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements DpdcManagementV2)
+    (implements DpdcManagementV3)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -5116,7 +5148,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -5143,7 +5175,7 @@
     (defun P|Info ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
             (ref-DALOS::P|Info)
         )
@@ -5286,7 +5318,7 @@
         @event
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (ref-DPDC::CAP_Owner id son)
             (ref-DPDC::UEV_CanUpgradeON id son)
@@ -5296,7 +5328,7 @@
         @event
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (if toggle
                 (ref-DPDC::UEV_CanPauseON id son)
@@ -5326,8 +5358,8 @@
         (enforce (> nonce 0) "Invalid Data for Adding Quantity for an SFT Nonce")
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 (nonce-class:integer (ref-DPDC::UR_NonceClass id true nonce))
             )
             (enforce
@@ -5349,7 +5381,7 @@
         @event
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             ;;Account Ownership - via Debit Function
             ;;Correct burn role
@@ -5370,7 +5402,7 @@
         @event
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 (amounts:[integer] (ref-DPDC::UR_AccountNoncesSupplies account id true nonces))
             )
             (compose-capability (DPDC-MNG|C>WIPE-SFT account id nonces amounts))
@@ -5379,7 +5411,7 @@
     (defcap DPDC-MNG|C>WIPE-SFT (account:string id:string nonces:[integer] amounts:[integer])
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             ;;Semi-Fungible <id> is frozen on <account>
             (ref-DPDC::UEV_AccountFreezeState id true account true)
@@ -5396,8 +5428,8 @@
         @event
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             ;;Account Ownership
             (ref-DALOS::CAP_EnforceAccountOwnership account)
@@ -5413,7 +5445,7 @@
         @event
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             ;;Collection Must Exist. Placed FIRST because the role check below reports on a
             ;;collection it has not established: for an id that does not exist it answered
@@ -5442,7 +5474,7 @@
     (defcap DPDC-MNG|C>WIPE-NFT (account:string id:string nonces:[integer] amounts:[integer])
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             ;;Semi-Fungible <id> is frozen on <account>
             (ref-DPDC::UEV_AccountFreezeState id false account true)
@@ -5459,7 +5491,7 @@
         (account:string id:string son:bool nonces:[integer] amounts:[integer])
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
                 (l1:integer (length nonces))
                 (l2:integer (length amounts))
@@ -5475,7 +5507,7 @@
             ;; (enforced below, via the composed DPDC-MNG|C>IZ-CLASS-ZERO), so "is it fragmented" reduces
             ;; to "does it have non-zero split-data" — checked directly here, without needing a forward
             ;; reference to DPDC-F (which deploys after this module and cannot be referenced by interface
-            ;; type this early — confirmed live: referencing module{DpdcFragmentsV2} here throws "Cannot
+            ;; type this early — confirmed live: referencing module{DpdcFragmentsV3} here throws "Cannot
             ;; find module" at DPDC-MNG's own deploy step).
             (if (= account (ref-DPDC::GOV|DPDC|SC_NAME))
                 (enforce
@@ -5530,13 +5562,13 @@
         )
     )
     ;;
-    (defun UDC_RemovableNonces:object{DpdcManagementV2.RemovableNonces}
+    (defun UDC_RemovableNonces:object{DpdcManagementV3.RemovableNonces}
         (a:[integer] b:[integer])
         {"r-nonces"     : a
         ,"r-amounts"    : b}
     )
-    (defun UDC_WipeSlicePlan:object{DpdcManagementV2.DPDC-MNG|WipeSlicePlan}
-        (a:string b:string c:bool d:integer e:[object{DpdcManagementV2.RemovableNonces}])
+    (defun UDC_WipeSlicePlan:object{DpdcManagementV3.DPDC-MNG|WipeSlicePlan}
+        (a:string b:string c:bool d:integer e:[object{DpdcManagementV3.RemovableNonces}])
         {"account"      : a
         ,"id"           : b
         ,"son"          : c
@@ -5544,8 +5576,8 @@
         ,"slices"       : e}
     )
     ;;{5.2}  Compute [UC]
-    (defun UCv_TakePureWipe:object{DpdcManagementV2.RemovableNonces} (input:object{DpdcManagementV2.RemovableNonces} size:integer)
-        @doc "Takes <size> and returns a smaller |object{DpdcManagementV2.RemovableNonces}|"
+    (defun UCv_TakePureWipe:object{DpdcManagementV3.RemovableNonces} (input:object{DpdcManagementV3.RemovableNonces} size:integer)
+        @doc "Takes <size> and returns a smaller |object{DpdcManagementV3.RemovableNonces}|"
         (let
             (
                 (nonces:[integer] (at "r-nonces" input))
@@ -5577,8 +5609,8 @@
             (if (> raw 1) raw 1)
         )
     )
-    (defun UC_BuildWipeSlicePlan:object{DpdcManagementV2.DPDC-MNG|WipeSlicePlan}
-        (account:string id:string son:bool removable-nonces-obj:object{DpdcManagementV2.RemovableNonces} slice-count:integer)
+    (defun UC_BuildWipeSlicePlan:object{DpdcManagementV3.DPDC-MNG|WipeSlicePlan}
+        (account:string id:string son:bool removable-nonces-obj:object{DpdcManagementV3.RemovableNonces} slice-count:integer)
         @doc "Hydra wipe partitioner (pure compute, no table reads): splits a |RemovableNonces| \
             \ object into disjoint CONTIGUOUS slices via take/drop index ranges. The requested \
             \ <slice-count> is clamped to [1, nonce-count] and then recomputed from the per-slice \
@@ -5615,12 +5647,12 @@
         )
     )
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    (defun URCi_WipeCumulator:object{IgnisCollectorV3.OutputCumulator}
-        (id:string son:bool removable-nonces-obj:object{DpdcManagementV2.RemovableNonces})
+    (defun URCi_WipeCumulator:object{IgnisCollectorV4.OutputCumulator}
+        (id:string son:bool removable-nonces-obj:object{DpdcManagementV3.RemovableNonces})
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 (no-of-nonces:integer (length (at "r-nonces" removable-nonces-obj)))
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
@@ -5635,17 +5667,17 @@
             )
         )
     )
-    (defun URHC_WipePure:object{DpdcManagementV2.RemovableNonces} (account:string id:string son:bool)
-        @doc "Uses Expensive Read Functions to obtain a |object{DpdcManagementV2.RemovableNonces}| that can be used \
+    (defun URHC_WipePure:object{DpdcManagementV3.RemovableNonces} (account:string id:string son:bool)
+        @doc "Uses Expensive Read Functions to obtain a |object{DpdcManagementV3.RemovableNonces}| that can be used \
         \ to execute a <C_WipePure>, bypassing the expensive gas costs of using (keys...) or (select...) functions"
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (URC_FilterAccountViableNonces account id son (ref-DPDC::URH_AccountNonces account id son))
         )
     )
-    (defun URHC_BuildWipeSlicePlan:object{DpdcManagementV2.DPDC-MNG|WipeSlicePlan}
+    (defun URHC_BuildWipeSlicePlan:object{DpdcManagementV3.DPDC-MNG|WipeSlicePlan}
         (account:string id:string son:bool slice-count:integer)
         @doc "Hydra wipe PREFLIGHT (UI /local ONLY — the one heavy read of the flow): dirty-reads \
             \ the full viable wipeable set via <URHC_WipePure> and partitions it into the slice \
@@ -5657,7 +5689,7 @@
     (defun URC_FilterClassZeroNonces:[integer] (id:string son:bool nonces:[integer])
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (filter 
                 (lambda 
@@ -5668,7 +5700,7 @@
             )
         )
     )
-    (defun URC_FilterAccountViableNonces:object{DpdcManagementV2.RemovableNonces}
+    (defun URC_FilterAccountViableNonces:object{DpdcManagementV3.RemovableNonces}
         (account:string id:string son:bool nonces:[integer])
         ;;Empty input short-circuit: (enumerate 0 -1) DESCENDS ([0 -1]), so the fold below
         ;;would (at 0) an empty list. A finished Hydra campaign re-reads to an empty object.
@@ -5676,7 +5708,7 @@
         (UDC_RemovableNonces [] [])
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 (ref-U|LST:module{StringProcessorV2} U|LST)
                 (matrix:[[integer]]
                     (fold
@@ -5720,13 +5752,13 @@
     )
     ;;
     ;;  (URCi_WipeCumulator, above, covers the multiple-debit wipe family.)
-    (defun URCi_Control:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_Control:object{IgnisCollectorV4.OutputCumulator}
         (id:string son:bool)
         @doc "Cost preview for C_Control (Big if son else Biggest, on owner-konto)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 ;;RESTORED 2026-09-22. This binding IS read, two lines down, as the cumulator's
                 ;;active account. A blanket removal of `(owner:string (UR_OwnerKonto id son))`
                 ;;-- aimed at the two genuinely DEAD copies in C_Control and C_WipeNonce -- took
@@ -5741,13 +5773,13 @@
                 owner (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_TogglePause:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_TogglePause:object{IgnisCollectorV4.OutputCumulator}
         (id:string son:bool)
         @doc "Cost preview for C_TogglePause (Medium on owner-konto)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_TogglePause" "setup")
@@ -5755,13 +5787,13 @@
                 (ref-DPDC::UR_OwnerKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_AddQuantity:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_AddQuantity:object{IgnisCollectorV4.OutputCumulator}
         (id:string)
         @doc "Cost preview for C_AddQuantity (Small on SFT owner-konto)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 ;;minting-type op: NO special issuance price (owner 2026-09-06) — generic tier
@@ -5769,13 +5801,13 @@
                 (ref-DPDC::UR_OwnerKonto id true) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_RespawnNFT:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_RespawnNFT:object{IgnisCollectorV4.OutputCumulator}
         (id:string)
         @doc "Cost preview for C_RespawnNFT (Medium on NFT owner-konto)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 ;;minting-type op: NO special issuance price (owner 2026-09-06) — generic tier
@@ -5783,13 +5815,13 @@
                 (ref-DPDC::UR_OwnerKonto id false) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_BurnSFT:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_BurnSFT:object{IgnisCollectorV4.OutputCumulator}
         (id:string)
         @doc "Cost preview for C_BurnSFT (Small on SFT owner-konto)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 ;;NOTE: core reader name != Talos op name — billed as DPSF|C_Burn
@@ -5797,13 +5829,13 @@
                 (ref-DPDC::UR_OwnerKonto id true) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_WipeSlim:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_WipeSlim:object{IgnisCollectorV4.OutputCumulator}
         (id:string)
         @doc "Cost preview for C_WipeSlim (Smallest on SFT owner-konto)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 ;;NOTE: core reader name != Talos op name — billed as DPSF|C_WipeNoncePartialy
@@ -5811,13 +5843,13 @@
                 (ref-DPDC::UR_OwnerKonto id true) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_BurnNFT:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_BurnNFT:object{IgnisCollectorV4.OutputCumulator}
         (id:string)
         @doc "Cost preview for C_BurnNFT (Medium on NFT owner-konto)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 ;;NOTE: core reader name != Talos op name — billed as DPNF|C_Burn
@@ -5825,13 +5857,13 @@
                 (ref-DPDC::UR_OwnerKonto id false) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_WipeNonce:object{IgnisCollectorV3.OutputCumulator}
+    (defun URCi_WipeNonce:object{IgnisCollectorV4.OutputCumulator}
         (id:string son:bool)
         @doc "Cost preview for C_WipeNonce (Small if son else Big, on owner-konto)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-DPDC:module{DpdcV3} DPDC)
                 ;;RESTORED 2026-09-22. This binding IS read, two lines down, as the cumulator's
                 ;;active account. A blanket removal of `(owner:string (UR_OwnerKonto id son))`
                 ;;-- aimed at the two genuinely DEAD copies in C_Control and C_WipeNonce -- took
@@ -5854,7 +5886,7 @@
         (require-capability (DPDC-MNG|S>CTRL id son))
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (ref-DPDC::XE_U|Specs id son 
                 (ref-DPDC::UDC_Control id son cu cco ccc casr ctncr cf cw cp)
@@ -5866,7 +5898,7 @@
         (require-capability (DPDC-MNG|S>TG_PAUSE id son toggle))
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (ref-DPDC::XE_U|IsPaused id son toggle)
         )
@@ -5877,8 +5909,8 @@
         (require-capability (DPDC-MNG|C>ADD-QUANTITY account id nonce amount))
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
-                (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (ref-DPDC-C:module{DpdcCreateV3} DPDC-C)
                 (nonce-supply:integer (ref-DPDC::UR_NonceSupply id true nonce))
             )
             ;;Credit SFT Nonce
@@ -5895,8 +5927,8 @@
         (require-capability (DPDC-MNG|C>IZ-CLASS-ZERO id true nonces))
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
-                (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (ref-DPDC-C:module{DpdcCreateV3} DPDC-C)
                 ;;
                 (l1:integer (length nonces))
             )
@@ -5930,7 +5962,7 @@
         (require-capability (DPDC-MNG|C>IZ-CLASS-ZERO id false nonces))
         (let
             (
-                (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
+                (ref-DPDC-C:module{DpdcCreateV3} DPDC-C)
                 ;;
                 (l1:integer (length nonces))
             )
@@ -5958,12 +5990,12 @@
             \ (patron/executor canon 2.2, indirect route named, 2026-09-22.)"
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (ref-DPDC::UEV_ExecutorIsOwnerKonto executor id son)
         )
     )
-    (defun C_Control:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_Control:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string id:string son:bool cu:bool cco:bool ccc:bool casr:bool ctncr:bool cf:bool cw:bool cp:bool)
         @doc "Updates a collection's mutable specification flags. \
             \ \
@@ -5982,7 +6014,7 @@
             (URCi_Control id son)
         )
     )
-    (defun C_TogglePause:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_TogglePause:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string id:string son:bool toggle:bool)
         @doc "Pauses or unpauses a collection. \
             \ \
@@ -5999,7 +6031,7 @@
     ;;
     ;;  [CREDIT-SINGLE]
     ;;  [SFT]
-    (defun C_AddQuantity:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_AddQuantity:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string id:string nonce:integer amount:integer)
         @doc "Adds quantity to an existing SFT nonce. \
             \ \
@@ -6018,7 +6050,7 @@
         )
     )
     ;;  [NFT]
-    (defun C_RespawnNFT:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string id:string nonce:integer)
+    (defun C_RespawnNFT:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string id:string nonce:integer)
         @doc "Respawns a previously burned NFT. \
             \ \
             \ Executor: PROVEN DIRECTLY, and in THIS module rather than down the debit chain. The \
@@ -6032,7 +6064,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
+                (ref-DPDC-C:module{DpdcCreateV3} DPDC-C)
             )
             (with-capability (DPDC-MNG|C>RESPAWN-NFT executor id nonce)
                 (ref-DPDC-C::XB_CreditNFT-Nonce executor id nonce 1)
@@ -6043,7 +6075,7 @@
     ;;
     ;;  [DEBIT-SINGLE]
     ;;  [SFT]
-    (defun C_BurnSFT:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_BurnSFT:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string id:string nonce:integer amount:integer)
         @doc "Burns SFT quantity from the executor's own account. \
             \ \
@@ -6064,7 +6096,7 @@
             (URCi_BurnSFT id)
         )
     )
-    (defun C_WipeSlim:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_WipeSlim:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string executee:string id:string nonce:integer amount:integer)
         @doc "Partially wipes an SFT nonce from the executee. \
             \ \
@@ -6088,7 +6120,7 @@
         )
     )
     ;;  [NFT]
-    (defun C_BurnNFT:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string id:string nonce:integer)
+    (defun C_BurnNFT:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string id:string nonce:integer)
         @doc "Burns an NFT from the executor's own account. \
             \ \
             \ Executor: PROVEN DIRECTLY. The old <account> WAS the actor -- the debit chain bottoms \
@@ -6113,7 +6145,7 @@
         )
     )
     ;;  [SFT+NFT]
-    (defun C_WipeNonce:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_WipeNonce:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string executee:string id:string son:bool nonce:integer)
         @doc "Totally wipes one nonce from the executee. \
             \ \
@@ -6131,7 +6163,7 @@
         (UEV_ExecutorIsCollectionOwner executor id son)
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (if son
                 (let
@@ -6153,7 +6185,7 @@
     ;;
     ;;  [DEBIT-MULTIPLE]
     ;;  [SFT+NFT]
-    (defun CC_WipeHeavy:object{IgnisCollectorV3.OutputCumulator}
+    (defun CC_WipeHeavy:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string executee:string id:string son:bool)
         @doc "Wipes every viable nonce from the executee (heavy scan). \
             \ \
@@ -6171,8 +6203,8 @@
         (UEV_ExecutorIsCollectionOwner executor id son)
         (C_WipePure patron executor executee id son (URHC_WipePure executee id son))
     )
-    (defun C_WipePure:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string executor:string executee:string id:string son:bool removable-nonces-obj:object{DpdcManagementV2.RemovableNonces})
+    (defun C_WipePure:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string executee:string id:string son:bool removable-nonces-obj:object{DpdcManagementV3.RemovableNonces})
         @doc "Wipes a pre-computed removable-nonce set from the executee. \
             \ \
             \ HANDOFF 4g. Nothing in THIS module proves any account: the capability chain runs only \
@@ -6206,7 +6238,7 @@
             (URCi_WipeCumulator id son removable-nonces-obj)
         )
     )
-    (defun C_WipeClean:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_WipeClean:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string executee:string id:string son:bool nonces:[integer])
         @doc "Wipes the named nonces from the executee. \
             \ \
@@ -6224,7 +6256,7 @@
         (UEV_ExecutorIsCollectionOwner executor id son)
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC:module{DpdcV3} DPDC)
             )
             (C_WipePure patron executor executee id son
                 (UDC_RemovableNonces
@@ -6234,7 +6266,7 @@
             )
         )
     )
-    (defun C_WipeDirty:object{IgnisCollectorV3.OutputCumulator}
+    (defun C_WipeDirty:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string executee:string id:string son:bool nonces:[integer])
         @doc "Wipes the viable subset of the named nonces from the executee. \
             \ \
@@ -6252,8 +6284,8 @@
         (UEV_ExecutorIsCollectionOwner executor id son)
         (C_WipePure patron executor executee id son (URC_FilterAccountViableNonces executee id son nonces))
     )
-    (defun Cp_WipeSlice:object{IgnisCollectorV3.OutputCumulator}
-        (account:string id:string son:bool removable-nonces-obj:object{DpdcManagementV2.RemovableNonces})
+    (defun Cp_WipeSlice:object{IgnisCollectorV4.OutputCumulator}
+        (account:string id:string son:bool removable-nonces-obj:object{DpdcManagementV3.RemovableNonces})
         @doc "Hydra parallel wipe slice: wipes exactly ONE <URHC_BuildWipeSlicePlan> slice of \
             \ <account>'s <id> nonces (SFT if <son>, else NFT). Order-independent and retryable: \
             \ slices are disjoint by construction, the frozen target account cannot move nonces \

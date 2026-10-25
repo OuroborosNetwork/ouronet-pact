@@ -94,8 +94,8 @@
         (ouro-id:string "OURO-98c486052a51")
         (ouro-owner:string (AQP-ANK.URC_AnchorableAssetOwner ouro-id [true true]))
         (ref-U|CT:module{OuronetConstantsV2} U|CT)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (score-id:string (ref-U|DALOS::UDC_Makeid "StreamScore"))
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "StreamVault"))
@@ -111,9 +111,18 @@
     (ref-TS02-C3::AQP-FVT|C_Issue patron patron "StreamVault" 1 "|")
     (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron (AQP-FVT.UR_FVT|OwnerKonto fvt-id) fvt-id ouro-id false (ref-U|CT::CT_BAR))
     (ref-TS02-C3::AQP-FVT|C_AddScoreEntity patron (AQP-FVT.UR_FVT|OwnerKonto fvt-id) fvt-id 1 score-id)
+    ;; 4. STREAM ELIGIBILITY — a prerequisite of CC_InjectStream, not a nicety. A stream vests
+    ;;over up to 365 days and neither fixes nor requires DEB freshness, so a member score whose
+    ;;boost configuration can still drift would let the vesting schedule and the weights it pays
+    ;;against diverge mid-stream. The score latch must come FIRST: the vault latch SCANS every
+    ;;enabled member and refuses while any one of them is still unlocked.
+    (ref-TS02-C3::AQP-SCR|C_LockScoreDrift patron (AQP-SCORE.UR_SCR|ScoreOwnerKonto score-id) score-id)
+    (ref-TS02-C3::AQP-FVT|CC_LatchStreamEligible patron (AQP-FVT.UR_FVT|OwnerKonto fvt-id) fvt-id)
     (map print
         [ (format "<(vault stake-ready)> => {}" [(ref-FVT::URC_PoolEmployedScoresFvtStakeReady pool-id)])
-          (expect "<<T-STREAM-FIXTURE>> vault stake-ready" true (ref-FVT::URC_PoolEmployedScoresFvtStakeReady pool-id)) ]))
+          (expect "<<T-STREAM-FIXTURE>> vault stake-ready" true (ref-FVT::URC_PoolEmployedScoresFvtStakeReady pool-id))
+          (expect "<<T-STREAM-FIXTURE>> member score is drift-locked" true (AQP-SCORE.UR_SCR|ScoreDriftLocked score-id))
+          (expect "<<T-STREAM-FIXTURE>> vault is stream-eligible" true (ref-FVT::UR_FVT|StreamEligible fvt-id)) ]))
 (env-sigs [])
 (commit-tx)
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -138,9 +147,9 @@
         (ouro-id:string "OURO-98c486052a51")
         (ouro-owner:string (AQP-ANK.URC_AnchorableAssetOwner ouro-id [true true]))
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (score-id:string (ref-U|DALOS::UDC_Makeid "StreamScore"))
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "StreamVault"))
         (pool-id:string (ref-U|DALOS::UDC_Makeid "StreamPool"))
@@ -268,8 +277,8 @@
         (ouro-id:string "OURO-98c486052a51")
         (ouro-owner:string (AQP-ANK.URC_AnchorableAssetOwner ouro-id [true true]))
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (score-id:string (ref-U|DALOS::UDC_Makeid "StreamScore"))
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "StreamVault"))
         (t2:time (time "2026-12-01T00:00:00Z"))
@@ -339,7 +348,7 @@
         (ouro-id:string "OURO-98c486052a51")
         (ouro-owner:string (AQP-ANK.URC_AnchorableAssetOwner ouro-id [true true]))
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (score-id:string (ref-U|DALOS::UDC_Makeid "StreamScore"))
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "StreamVault"))
         (pool-id:string (ref-U|DALOS::UDC_Makeid "StreamPool"))
@@ -406,7 +415,7 @@
         (ouro-id:string "OURO-98c486052a51")
         (ouro-owner:string (AQP-ANK.URC_AnchorableAssetOwner ouro-id [true true]))
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "StreamVault"))
         (gs-key:string "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263")
     )
@@ -423,8 +432,31 @@
             (ref-TS02-C3::AQP-FVT|CC_InjectStream patron patron fvt-id ouro-id 240.0 1800))
           (expect-failure "<<T-STREAM-04>> duration > 365d rejected" "FVT|Stream: duration must be 1h"
             (ref-TS02-C3::AQP-FVT|CC_InjectStream patron patron fvt-id ouro-id 240.0 40000000))
+          ;; THE LANE FLOOR MUST BE LOWERED FOR THIS CASE TO BE REACHABLE AT ALL (2026-10-23).
+          ;;
+          ;; This assertion exercises the stream RATE guard (STREAM_MIN_UPS). It used to drive the
+          ;; rate down with a dust amount -- but `UEV_InjectContext` now applies the lane's AMOUNT
+          ;; floor BEFORE `UEV_StreamParams`, so dust trips the amount guard first and this stopped
+          ;; testing the rate guard at all. It failed loudly only because it pins the MESSAGE; had
+          ;; it merely asserted "something threw", the rate guard would have been silently shadowed.
+          ;;
+          ;; MEASURED, and the gap is not small: OURO carries 24 decimals, so the minimum rate is
+          ;; 10_000_000 / 10^24 = 1e-17 per second. Violating that even at the 365-day maximum
+          ;; needs an amount under 3.15e-10 -- about NINE ORDERS OF MAGNITUDE below the 1.0 default
+          ;; floor. So for a high-precision token at the default floor the rate guard is
+          ;; structurally unreachable, and no choice of amount can re-expose it. (It stays
+          ;; reachable for low-decimal tokens: at 12 decimals the trigger is amount < 315.4.)
+          ;;
+          ;; So the fixture now CREATES the configuration the guard governs, rather than pretending
+          ;; the default one reaches it: the vault owner drops this lane's floor, which is a real
+          ;; owner power, and the rate guard becomes testable again underneath it.
+          (format "<(T-STREAM-04 owner drops the lane floor so the RATE guard is reachable)> => \"{}\""
+            [(ref-TS02-C3::AQP-FVT|C_SetMinInjectAmount patron patron fvt-id ouro-id 0.000000000000000000000001)])
           (expect-failure "<<T-STREAM-04>> rate below min rejected" "FVT|Stream: duration must be 1h"
-            (ref-TS02-C3::AQP-FVT|CC_InjectStream patron patron fvt-id ouro-id 0.00000000001 31536000)) ])
+            (ref-TS02-C3::AQP-FVT|CC_InjectStream patron patron fvt-id ouro-id 0.00000000001 31536000))
+          ;; ...and the floor goes back, so nothing downstream inherits a dust-permitting lane.
+          (format "<(T-STREAM-04 floor restored)> => \"{}\""
+            [(ref-TS02-C3::AQP-FVT|C_SetMinInjectAmount patron patron fvt-id ouro-id 1.0)]) ])
     (env-sigs [])
 )
 (commit-tx)
@@ -450,7 +482,7 @@
         (ouro-id:string "OURO-98c486052a51")
         (ouro-owner:string (AQP-ANK.URC_AnchorableAssetOwner ouro-id [true true]))
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (score-id:string (ref-U|DALOS::UDC_Makeid "StreamScore"))
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "StreamVault"))
         (t5:time (time "2027-09-01T00:00:00Z"))
@@ -516,12 +548,12 @@
         (ouro-id:string "OURO-98c486052a51")
         (ouro-owner:string (AQP-ANK.URC_AnchorableAssetOwner ouro-id [true true]))
         (swpair:string "W|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
-        (ref-SWP:module{SwapperV4} SWP)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-SWP:module{SwapperV5} SWP)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
         (ref-U|CT:module{OuronetConstantsV2} U|CT)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
         (score-id:string (ref-U|DALOS::UDC_Makeid "FarmStreamScore"))
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "FarmStreamFvt"))
         (pool-id:string (ref-U|DALOS::UDC_Makeid "FarmStreamPool"))
@@ -547,6 +579,10 @@
         (ref-TS02-C3::AQP-FVT|C_Issue patron patron "FarmStreamFvt" 0 ouro-id)
         (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron (AQP-FVT.UR_FVT|OwnerKonto fvt-id) fvt-id ouro-id false (ref-U|CT::CT_BAR))
         (ref-TS02-C3::AQP-FVT|C_AddScoreEntity patron (AQP-FVT.UR_FVT|OwnerKonto fvt-id) fvt-id 1 score-id)
+        ;; stream eligibility, member-first — same prerequisite as the vault at <<T-STREAM-FIXTURE>>,
+        ;;and it applies to a class-0 FARM identically: the gate is on the FVT, not on its class.
+        (ref-TS02-C3::AQP-SCR|C_LockScoreDrift patron (AQP-SCORE.UR_SCR|ScoreOwnerKonto score-id) score-id)
+        (ref-TS02-C3::AQP-FVT|CC_LatchStreamEligible patron (AQP-FVT.UR_FVT|OwnerKonto fvt-id) fvt-id)
         (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron anhd anhd pool-id lp-id 1.0)
         ;;==== T-STREAM-06 · 02 · @t6: stream 240 OURO / 24h into the farm ====
         (print "--- [T-STREAM-06 · 02 · CC_InjectStream 240/24h into farm] ---")

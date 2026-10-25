@@ -55,10 +55,10 @@
 ;;discount change would look like a preview bug.
 (let*
     (
-        (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-TFT:module{TrueFungibleTransferV2} TFT)
-        (ref-I:module{OuronetInfoV2} IGNIS)
+        (ref-DEMIPAD:module{DemiourgosLaunchpadV3} DEMIPAD)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-TFT:module{TrueFungibleTransferV3} TFT)
+        (ref-I:module{OuronetInfoV3} IGNIS)
         (asset:string "TSFS-98c486052a51")
         (lpad:string (ref-DEMIPAD::GOV|DEMIPAD|SC_NAME))
         (amount:decimal (ref-DEMIPAD::URv_Funds asset 1))
@@ -67,9 +67,9 @@
         (charged:decimal
             (ref-I::OI|UC_IfpFromOutputCumulator
                 (ref-TFT::URCi_Transfer working-id lpad KST.ANHD amount)))
-        (preview:object{OuronetInfoV2.ClientInfo}
+        (preview:object{OuronetInfoV3.ClientInfo}
             (INFO-TWO.INFO_DEMIPAD|Withdraw KST.ANHD asset 1 KST.ANHD))
-        (ig:object{OuronetInfoV2.ClientIgnisCosts} (at "ignis" preview))
+        (ig:object{OuronetInfoV3.ClientIgnisCosts} (at "ignis" preview))
     )
     (map print
         [

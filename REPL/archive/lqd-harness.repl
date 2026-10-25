@@ -50,8 +50,8 @@
 (print "--- [TX-LQD-000 - deploy + register the Ouronet wrapped-UrStoa DPTF (boot gap fixture) · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
         (patron:string KST.ANHD)
         (dalos:string (ref-DALOS::GOV|DALOS|SC_NAME))
@@ -125,7 +125,7 @@
 (let
     (
         (ref-ur-coin:module{stoa-ns.ur-stoic-fungible-v1} coin)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         (patron:string KST.ANHD)
         (stoa-patron:string "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263")
     )
