@@ -585,14 +585,14 @@ def main():
     if _dp.returncode != 0:
         print(_dp.stdout + _dp.stderr)
         sys.exit("GATE FAILED: a module page's generated region is stale -- "
-                 "run tools/_docspages.py --write.")
+                 "run REPL/tools/_docspages.py --write.")
 
     _dr = subprocess.run([sys.executable, "tools/_docsref.py", "--check"],
                          capture_output=True, text=True)
     if _dr.returncode != 0:
         print(_dr.stdout + _dr.stderr)
         sys.exit("GATE FAILED: a generated reference page is stale -- "
-                 "run tools/_docsall.py --write.")
+                 "run REPL/tools/_docsall.py --write.")
 
     _df = subprocess.run([sys.executable, "tools/_docsfigures.py", "--check"],
                          capture_output=True, text=True)
@@ -606,13 +606,48 @@ def main():
     if _dm.returncode != 0:
         print(_dm.stdout + _dm.stderr)
         sys.exit("GATE FAILED: the documentation's module map is stale -- "
-                 "run tools/_docsmodules.py --write.")
+                 "run REPL/tools/_docsmodules.py --write.")
 
     _dl = subprocess.run([sys.executable, "tools/_docslinks.py", "--check"],
                          capture_output=True, text=True)
     if _dl.returncode != 0:
         print(_dl.stdout + _dl.stderr)
         sys.exit("GATE FAILED: the documentation has a dangling reference or a missing section.")
+
+    # CAN AN AGENT REACH THE GUIDANCE? `_docslinks.py` above validates references ORIGINATING in
+    # OuronetDocumentation/ and resolves them BY BASENAME across trees -- correct for prose, and
+    # blind to the one file that is not prose. CLAUDE.md is INSTRUCTIONS: exactly one file loads
+    # automatically here, so a path it names that does not resolve AS WRITTEN does not degrade the
+    # guidance, it deletes it, silently. Measured 2026-10-25: three of CLAUDE.md's explicit paths
+    # were dead after a reorganisation it was never updated for -- including the one in the
+    # sentence that states the interface CASCADE RULE, the single thing the V13 round got wrong
+    # five times running. Basename resolution would have called that link fine.
+    _sr = subprocess.run([sys.executable, "tools/_skillreach.py", "--check"],
+                         capture_output=True, text=True)
+    if _sr.returncode != 0:
+        print(_sr.stdout + _sr.stderr)
+        sys.exit("GATE FAILED: CLAUDE.md names guidance an agent cannot reach.")
+
+    # IS THE GUIDANCE CATALOGUE COMPLETE? `_skillreach.py` above reports a document nothing points
+    # at; this one makes pointing at it AUTOMATIC. SKILL-INDEX.md is GENERATED from the tree for the
+    # same reason TOOLS.md is: a hand-maintained list of what to read stops being complete the first
+    # time someone writes a doc and forgets a line, and the symptom is not an error -- it is an agent
+    # that never learns the rule. Measured 2026-10-25, before the index existed: a 1,318-line file
+    # calling itself "the standard for how Ouronet is tested" and a 366-line INFO_ procedure were
+    # both unreachable, and both were skipped in real work that week.
+    _si = subprocess.run([sys.executable, "tools/_skillindex.py", "--check"],
+                         capture_output=True, text=True)
+    if _si.returncode != 0:
+        print(_si.stdout + _si.stderr)
+        sys.exit("GATE FAILED: SKILL-INDEX.md does not catalogue every guidance document.")
+
+    # PACT SOURCE INDEX -- ADVISORY, never fatal. The Pact 5 clone is a SIBLING checkout that may
+    # legitimately be absent (fresh clone, CI, another machine), and the gate must not depend on
+    # one. Same rule _pkgsync.py follows for the npm package. Reported either way: a missing clone
+    # means the committed BUILTINS.md stands; a PRESENT clone that disagrees means Pact moved.
+    _ps = subprocess.run([sys.executable, "tools/_pactsource.py", "--check"],
+                         capture_output=True, text=True)
+    print((_ps.stdout + _ps.stderr).rstrip())
 
     # DEPLOY PIPELINE -- Deploy/ is GENERATED from the sovereign sources, and until 2026-09-19
     # nothing checked that it had been regenerated after a source change. Every other generated

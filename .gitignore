@@ -22,3 +22,9 @@ Deploy/.live-source-cache.json
 # Regenerate with `python3 REPL/tools/_arweave.py --multipact`.
 # The small committed format fixture is links/SAMPLE.multipact.json, NOT this.
 Deploy/4_Arweave/ROUND.multipact.json
+
+# The virtual chain `_livesandbox.py` builds from `describe-module` output: 389 .pact files,
+# 23 MB, rewritten in full on every run. Same class as `.live-source-cache.json` above --
+# fetched source, not authored source. Regenerate with
+# `python3 REPL/tools/_livesandbox.py --round <dir>`.
+Deploy/.livesandbox/

@@ -16,10 +16,14 @@ prefixes, EXCEPT the four documented exceptions:
   1. `...x` auxiliaries (UCx_/URCx_/URHCx_/UDCx_) -- private helpers, module-internal by design.
   2. `W...` writers (WI_/WU_/WU2_/WU3_/WU4_/WW_) -- raw persistence, never called via modref.
   3. `XI_` -- internal-only protected orchestration.
-  4. A function returning `object{Schema}` where `Schema` is a module-local defschema (not the
-     interface's) -- interface loads before module schemas exist, so it cannot be declared there.
-     Approximated here: the return annotation is `object{Bare}` (no dot-qualifier) AND `Bare` is
-     NOT one of the interface's own `defschema` names.
+  4. A function whose RETURN or any PARAM type is `object{Schema}` where `Schema` is a
+     module-local defschema (not the interface's) -- interface loads before module schemas
+     exist, so it cannot be declared there, in either position (CORRECTED 2026-10-12: this used
+     to check the return type only, which missed `CODEX::UDC_STG|WithRegisteredFlag`-shaped
+     functions -- untyped `object` return, module-local schema in a PARAM -- and a stub built
+     from that signature aborted the interface's own load with "Cannot find module"). Approximated
+     here: an `object{Bare}` reference (no dot-qualifier) in return or param position AND `Bare`
+     is NOT one of the interface's own `defschema` names.
 ALSO EXCLUDED: `P|*`-namespaced functions (policy-table plumbing -- `P|UEV_IMC`, `P|TS`, ...).
 `_modref.py` already measured 165 modref calls to undeclared `P|*` members and found it the
 established, accepted convention for that band (CLAUDE.md's STRUCTURAL colour family, distinct
@@ -66,6 +70,33 @@ def _top_level_block(text, start):
     return text[start:nxt if nxt != -1 else len(text)]
 
 
+def _find_matching_paren(text, start):
+    """Paren-balanced scan respecting string literals and `;` line comments (comments can
+    contain an unbalanced paren in plain English prose, which corrupts a naive depth count)."""
+    depth = 0
+    i = start
+    n = len(text)
+    while i < n:
+        c = text[i]
+        if c == '"':
+            i += 1
+            while i < n and text[i] != '"':
+                if text[i] == "\\":
+                    i += 1
+                i += 1
+        elif c == ";":
+            while i < n and text[i] != "\n":
+                i += 1
+        elif c == "(":
+            depth += 1
+        elif c == ")":
+            depth -= 1
+            if depth == 0:
+                return i
+        i += 1
+    raise ValueError(f"unbalanced parens from {start}")
+
+
 def _band(name):
     if POLICY_RE.match(name) or AUX_RE.match(name):
         return None
@@ -81,7 +112,7 @@ def scan():
     iface_members = collections.defaultdict(set)   # interface -> declared member names
     iface_schemas = collections.defaultdict(set)   # interface -> its own defschema names
     module_impl = collections.defaultdict(list)    # module -> [interface, ...] it implements
-    module_defs = {}                                # module -> { name: return-type-or-None }
+    module_defs = {}                                # module -> { name: (return-type-or-None, param-text) }
     module_file = {}
 
     for p in sources():
@@ -93,7 +124,7 @@ def scan():
                 iface_members[iname].add(d.group(1))
             for d in re.finditer(r'\(defschema\s+([A-Za-z0-9_|>\-]+)', block):
                 iface_schemas[iname].add(d.group(1))
-        for m in re.finditer(r'^\(module\s+([A-Za-z0-9_\-]+)[^\n]*', t, re.M):
+        for m in re.finditer(r'^\(module\s+([A-Za-z0-9_|+-]+)[^\n]*', t, re.M):
             mname = m.group(1)
             module_file[mname] = os.path.relpath(p, ROOT)
             body = _top_level_block(t, m.end())
@@ -101,11 +132,23 @@ def scan():
                 module_impl[mname].append(im.group(1))
             defs = module_defs.setdefault(mname, {})
             # `(defun NAME:RETTYPE (...) ...)` or `(defun NAME (...) ...)` -- capture the return
-            # annotation only when present, for the #4 module-schema-return exception.
+            # annotation when present, AND the full param-list text (paren-balanced, verbatim),
+            # for the #4 module-schema exception. That exception was originally checked against
+            # the RETURN type only, which missed the equally-real case of a PARAM referencing a
+            # module-local schema (`CODEX::UDC_STG|WithRegisteredFlag`'s `row:object{CODEX|S|
+            # StoicTag}` -- untyped `object` return, module-only schema in the PARAM position).
+            # Interface load order doesn't care which position the reference is in.
             for d in re.finditer(
                     r'\(defun\s+([A-Za-z0-9_|>\-]+)(?::(object\{[A-Za-z0-9_.]+\}|[A-Za-z0-9\[\]]+))?\s*\(',
                     body):
-                defs[d.group(1)] = d.group(2)
+                name = d.group(1)
+                paren_start = d.end() - 1
+                try:
+                    paren_end = _find_matching_paren(body, paren_start)
+                    param_text = body[paren_start:paren_end + 1]
+                except ValueError:
+                    param_text = ""
+                defs[name] = (d.group(2), param_text)
 
     gaps = {}
     for mname, defs in module_defs.items():
@@ -116,16 +159,20 @@ def scan():
             declared |= iface_members.get(iname, set())
             own_schemas |= iface_schemas.get(iname, set())
         recipe_missing, reader_missing = set(), set()
-        for name, rettype in defs.items():
+        for name, (rettype, param_text) in defs.items():
             band = _band(name)
             if band is None or name in declared:
                 continue
-            # exception #4: object{Bare} return where Bare is NOT this function's own
-            # interface's schema -- i.e. presumably module-local.
+            # exception #4: an unqualified object{Bare} reference -- return OR param position,
+            # load order doesn't distinguish them -- where Bare is NOT one of this function's
+            # own candidate interfaces' schemas, i.e. presumably module-local and thus unable to
+            # be declared in an interface that loads before the module's schemas exist.
+            bares = set()
             if rettype and rettype.startswith("object{") and "." not in rettype:
-                bare = rettype[len("object{"):-1]
-                if bare not in own_schemas:
-                    continue
+                bares.add(rettype[len("object{"):-1])
+            bares |= {b for b in re.findall(r"object\{([A-Za-z0-9_|-]+)\}", param_text)}
+            if bares and not (bares <= own_schemas):
+                continue
             (recipe_missing if band == "recipe" else reader_missing).add(name)
         if recipe_missing or reader_missing:
             gaps[mname] = {"recipe": recipe_missing, "reader": reader_missing,
@@ -142,22 +189,42 @@ def main():
     if only:
         gaps = {k: v for k, v in gaps.items() if k == only}
 
-    total_recipe = sum(len(v["recipe"]) for v in gaps.values())
-    total_reader = sum(len(v["reader"]) for v in gaps.values())
+    # OUT OF SCOPE, same shape and same convention `_executorplan.py` settled on for the
+    # patron/executor canon sweep (CLAUDE.md, owner ruling 2026-09-26): "citizen modules are
+    # free to construct functions as they please." That ruling was about a DIFFERENT canon, but
+    # this sweep hit the identical shape (HANDOFF-interface-membership-sweep.md flagged it as an
+    # open question before the 2026-10-12 sweep ran) and the 2026-10-12 owner instruction that
+    # triggered the sweep named only "the whole pact code stage 1 and stage 2 modules" --
+    # 1_SOVEREIGN. So: sovereign is the report: citizen prints separately, uncounted, as a
+    # stated boundary rather than a silent omission.
+    sov = {k: v for k, v in gaps.items() if "1_SOVEREIGN" in v["file"]}
+    cit = {k: v for k, v in gaps.items() if "1_SOVEREIGN" not in v["file"]}
+
+    total_recipe = sum(len(v["recipe"]) for v in sov.values())
+    total_reader = sum(len(v["reader"]) for v in sov.values())
 
     if not quiet:
-        print(f"modules scanned with a gap: {len(gaps)}")
+        print(f"modules scanned with a gap: {len(sov)}")
         print(f"RECIPE-band gaps (user/client functions -- the primary ruling): {total_recipe}")
         print(f"READER-band gaps (UR_/URC_/etc -- §5's fuller corollary): {total_reader}\n")
-        for mname in sorted(gaps, key=lambda k: -len(gaps[k]["recipe"]) - len(gaps[k]["reader"])):
-            g = gaps[mname]
+        for mname in sorted(sov, key=lambda k: -len(sov[k]["recipe"]) - len(sov[k]["reader"])):
+            g = sov[mname]
             ifaces = ", ".join(g["ifaces"]) or "(implements nothing -- cannot be modref'd)"
             print(f"  {mname}  ({g['file']}, implements {ifaces})")
             for n in sorted(g["recipe"]):
                 print(f"     RECIPE  {n}")
             for n in sorted(g["reader"]):
                 print(f"     reader  {n}")
-        print(f"\n{len(gaps)} module(s), {total_recipe} recipe-band + {total_reader} reader-band gap(s).")
+        print(f"\n{len(sov)} module(s), {total_recipe} recipe-band + {total_reader} reader-band gap(s).")
+        if cit:
+            cit_recipe = sum(len(v["recipe"]) for v in cit.values())
+            cit_reader = sum(len(v["reader"]) for v in cit.values())
+            print(f"\nOUT OF SCOPE (2_CITIZEN) -- {len(cit)} module(s), {cit_recipe} recipe-band "
+                  f"+ {cit_reader} reader-band gap(s), not counted above. NOT a backlog -- "
+                  f"citizen modules are free to construct functions as they please.")
+            for mname in sorted(cit, key=lambda k: -len(cit[k]["recipe"]) - len(cit[k]["reader"])):
+                print(f"   {mname:20s} {len(cit[mname]['recipe'])} recipe + "
+                      f"{len(cit[mname]['reader'])} reader")
 
     if total_recipe:
         return 1

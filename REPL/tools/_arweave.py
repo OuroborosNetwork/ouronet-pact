@@ -827,7 +827,7 @@ def fee_caps(usage):
     return [
         "(let",
         "    (",
-        "        (ref-DALOS:module{OuronetDalosV2} DALOS)",
+        "        (ref-DALOS:module{OuronetDalosV3} DALOS)",
         "        (owner:string KST.ANHD)",
         '        (price:decimal (ref-DALOS::UR_UsagePrice "%s"))' % usage,
         "        (split:[decimal] (ref-DALOS::URC_SplitSTOAPrices owner price))",
@@ -944,7 +944,7 @@ def selftest_repl():
     A(";;  rather than written down, so a price change does not silently underfund this.")
     A('(let')
     A('    (')
-    A('        (ref-DALOS:module{OuronetDalosV2} DALOS)')
+    A('        (ref-DALOS:module{OuronetDalosV3} DALOS)')
     A('        (owner:string KST.ANHD)')
     A('        (dpnf-price:decimal (ref-DALOS::UR_UsagePrice "dpnf"))')
     A('        (split-dpnf:[decimal] (ref-DALOS::URC_SplitSTOAPrices owner dpnf-price))')
@@ -979,9 +979,9 @@ def selftest_repl():
     A(";;  which is also what makes the migration observable rather than assumed.")
     A("(let")
     A("    (")
-    A("        (ref-DPDC:module{DpdcV2} DPDC)")
+    A("        (ref-DPDC:module{DpdcV3} DPDC)")
     A("        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)")
-    A("        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)")
+    A("        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)")
     A("        (owner:string KST.ANHD)")
     A("        (b:string \"|\")")
     A("    )")
@@ -1165,8 +1165,8 @@ def selftest_repl():
     A(";;  way round rather than the other.")
     A("(let")
     A("    (")
-    A("        (ref-DPDC:module{DpdcV2} DPDC)")
-    A("        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)")
+    A("        (ref-DPDC:module{DpdcV3} DPDC)")
+    A("        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)")
     A('        (id:string "ARWQ-98c486052a51")')
     A("        (owner:string KST.ANHD)")
     A("    )")
@@ -1253,9 +1253,9 @@ def selftest_repl():
     A('(print "--- [ARW-SHAPE-03 · 02 · issue SFT ARWS] ---")')
     A("(let")
     A("    (")
-    A("        (ref-DPDC:module{DpdcV2} DPDC)")
+    A("        (ref-DPDC:module{DpdcV3} DPDC)")
     A("        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)")
-    A("        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)")
+    A("        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)")
     A("        (owner:string KST.ANHD)")
     A('        (b:string "|")')
     A("    )")

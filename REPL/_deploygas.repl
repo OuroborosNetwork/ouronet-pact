@@ -1,0 +1,26 @@
+;;
+;; REPL/_deploygas.repl -- the gas-measurement driver for `_deploybundle.py`.
+;;
+;; WHY THIS FILE IS COMMITTED. `_deploybundle.py` plans the deploy round against MEASURED gas,
+;; one reading per `Costs {} GAS` echo in the deploy chain (82 in deploy-stage01, 41 in
+;; deploy-stage02 = 123). It read those from `/tmp/deploygas.log`, and its own error message
+;; told you to produce that log with `pact _tmp_deploygas.repl` -- a file that was NEVER
+;; COMMITTED and does not exist. So once `/tmp` was cleared, `--check` exited 1, `_gate.py`
+;; treats that as fatal, and the ONLY documented recovery pointed at a missing file. Found
+;; 2026-10-18 by running the check on a cleared `/tmp`.
+;;
+;; Stage 00 is loaded for the sandboxes and carries ZERO gas echoes, which is what keeps the
+;; readings aligned with the blocks `parse_chain()` enumerates -- it scans stage01+stage02 only,
+;; so a leading echo from stage 00 would shift every reading by one and silently mis-plan the
+;; round. If you add a `Costs {} GAS` echo to the Stage 00 chain, that invariant is gone.
+;;
+;;   cd REPL && pact _deploygas.repl > /tmp/deploygas.log 2>&1
+;;   python3 REPL/tools/_deploybundle.py --write        (refreshes Deploy/DEPLOY-GAS.json)
+;;
+(load "deploy-stage00.repl")
+(load "deploy-stage01.repl")
+(load "deploy-stage02.repl")
+(print "")
+(print "================================================================")
+(print "_deploygas.repl COMPLETE -- 123 gas readings expected downstream")
+(print "================================================================")

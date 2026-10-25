@@ -57,7 +57,7 @@ def scan():
             for d in re.finditer(r'\(def(?:un|cap|pact|const)\s+([A-Za-z0-9_|>\-]+)',
                                  _top_level_block(t, m.end())):
                 decl[m.group(1)].add(d.group(1))
-        for m in re.finditer(r'^\(module\s+([A-Za-z0-9_\-]+)[^\n]*', t, re.M):
+        for m in re.finditer(r'^\(module\s+([A-Za-z0-9_|+-]+)[^\n]*', t, re.M):
             body = _top_level_block(t, m.end())
             for im in re.finditer(r'\(implements\s+([A-Za-z0-9_]+)', body):
                 implementer[im.group(1)] = m.group(1)

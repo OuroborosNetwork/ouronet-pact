@@ -59,7 +59,18 @@ def strip_comments(src):
     return ''.join(out)
 
 def balanced(src, start, open_ch='(', close_ch=')'):
-    """Index of the delimiter closing the one at <start>, string-aware. -1 if unbalanced."""
+    """Index of the delimiter closing the one at <start>, string- AND comment-aware.
+    -1 if unbalanced.
+
+    COMMENT-AWARE SINCE 2026-10-12, and the module docstring's own lesson repeated: English
+    prose inside a `;;` comment routinely contains an unbalanced paren ("...power series) --
+    assessed and declined..." closes one that was never opened on this line, because the
+    sentence is not Pact and was never meant to balance). Without skipping comments, a long
+    `;;`-commented module can make this function return a closing index WAY too early -- found
+    via `_chaintxsim.py`'s surgical block-replace, which spliced a module's fetched real body in
+    at a boundary this function placed mid-module, after a comment with an odd paren count. Pact
+    comments run to end-of-line and cannot appear inside a string (a `;` inside a `"..."` is
+    just a character, handled by the `in_str` branch below, same as it always was)."""
     d, i, n, in_str, esc = 0, start, len(src), False, False
     while i < n:
         c = src[i]
@@ -68,6 +79,9 @@ def balanced(src, start, open_ch='(', close_ch=')'):
             elif c == '\\': esc = True
             elif c == '"': in_str = False
         elif c == '"': in_str = True
+        elif c == ';':
+            while i < n and src[i] != '\n': i += 1
+            continue
         elif c == open_ch: d += 1
         elif c == close_ch:
             d -= 1

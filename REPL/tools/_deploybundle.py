@@ -29,6 +29,8 @@ usage:
   python3 REPL/tools/_deploybundle.py --write    emit Deploy/
   python3 REPL/tools/_deploybundle.py --budget N override the per-transaction gas budget
 """
+import datetime
+import json
 import os
 import re
 import subprocess
@@ -211,7 +213,18 @@ ROUNDS = {
         # family is live -- this round deploys it for the first time. New modules get their
         # `(create-table ...)` calls ACTIVE; everything else in the round is an upgrade of a live
         # module, where create-table would abort because the table already exists.
-        "new": ["/03_AQP/", "04_AQP-BOOT.pact"],
+        # EMPTIED 2026-10-24. This said ["/03_AQP/", "04_AQP-BOOT.pact"] on an owner confirmation
+        # dated 2026-09-18 that none of the AQP family was live. It shipped since. The list was
+        # never re-checked, so the planner kept emitting `(create-table ...)` for a family whose
+        # tables now exist, and transaction 1 of the next round died with "Creation of user table
+        # ouronet-ns.AQP-ANK_P|T failed because the table already exists."
+        #
+        # DO NOT HAND-MAINTAIN THIS AGAIN. "Is it live?" is a question with an authoritative
+        # answer -- `describe-module` -- and a hardcoded belief about it is wrong from the moment
+        # the round it was written for ships. Verify with:
+        #     python3 REPL/tools/_livemodules.py --check        (cache coverage: deployed y/n)
+        # and treat anything already deployed as an UPGRADE (create-table stripped), never as new.
+        "new": [],
         # Modules the deploy REPL chain never loads but that this round must ship anyway, and the
         # module they must follow. 09_AQP-INFO is the AQP cost-preview surface: 1,405 lines, 18
         # test files reference it, it names a bumped interface, and no chain deploys it. With AQP
@@ -233,6 +246,158 @@ ROUNDS = {
         # transaction 20 and into 21 behind TS02-C3, which is the whole of the fix.
         "break_before": ["04_TS02-C3.pact", "01_Spark.pact", "04_AQP-BOOT.pact", "03_DSP+.pact"],
     },
+    "2026-10-interfaces": {
+        "why": "the 2026-10-12 interface-membership sweep (StoicSyntax-Prefixes.md Sec5, owner "
+               "ruling: every user/client function and every UR_/URC_/URH_/UEV_/CAP_/UDC_/UC_ "
+               "reader must sit in its module's own interface, not just the ones convenient to "
+               "add). 36 sovereign modules gained 307 defun STUBS across 38 bumped interfaces, "
+               "closing a gap that had been growing since the house stopped treating a new "
+               "function as a reason to touch the interface. No new tables, no new capabilities, "
+               "no new IMP registrations -- every stub declares a function the module body "
+               "already had. See REPL/tools/_ifacebump.py (the tool that did the mechanical "
+               "part) and REPL/tools/_ifacemembership.py (the scanner that is ground truth for "
+               "the gap). _dotpin.py --upgrade walked from every one of the 36 content changes "
+               "and the cascade is DEEP: DPOF/ATS/DPDC/DPDC-T/AQP-ANK/AQP-SCORE/AQP-POOL/RPS/"
+               "AQP-FVT/AQP-VCT/AQP-DSA/TS02-C3 each force a further redeploy (own tables, "
+               "pinned-hash abort, not staleness) reaching AQP-INFO, AQP-BOOT, MTX-AQP and AOZ "
+               "-- all already swept in by `interfaces` below since each one also NAMES a bumped "
+               "interface directly.",
+        # Scoped by the 38 bumped interface names, not `all_modules` -- round_modules() matches
+        # any .pact file containing one of these strings, which is EXACTLY the set the sweep
+        # touched (every `(implements OLD)` -> `(implements NEW)` and every consumer's
+        # `object{OLD.Schema}` / `module{OLD}` got rewritten to the new name, nothing else did).
+        # Cross-checked against an independent `git status` diff of 1_SOVEREIGN + 2_CITIZEN: same
+        # 88 files, modulo the four `excluded` below (which DO contain a new name -- they were
+        # swept too -- but are not live, so nothing on chain needs them this round).
+        "interfaces": [
+            "UtilitySwpV3", "OuronetDalosV3", "IgnisCollectorV4", "BrandingV3",
+            "DemiourgosPactOrtoFungibleV3", "AutostakeComputerV3", "AutostakeV4",
+            "AutostakeUsageV3", "VestingV3", "StoaLiquidStakingV3", "SwapTracerV4",
+            "SwapperV5", "SwapperIssueV5", "SwapperUsageV4", "SwapperMtxV5", "CodexV3",
+            "PythiaLedgerV4", "PythiaV6", "InfoOneV3", "DpdcV3", "DpdcCreateV3",
+            "DpdcRolesV3", "DpdcManagementV3", "DpdcTransferV3", "DpdcSetsV3", "DpdcNonceV3",
+            "DemiourgosLaunchpadV3", "AcquisitionAnchorsV2", "AcquisitionScoresV3",
+            "AcquisitionPoolsV2", "AcquisitionRewardPerShareV2",
+            "AcquisitionFarmsVaultsTreasuriesV2", "AcquisitionVacateV2", "DsaV2",
+            "TalosStageTwo_ClientOneV3", "TalosStageTwo_ClientTwoV3",
+            "TalosStageTwo_ClientThreeV3", "TalosStageTwo_DemiPadV3",
+            # SECOND-ORDER CASCADE, added after the first wallet simulation. These 21 are not
+            # user/client-function gaps -- `_ifacemembership.py` never flagged them -- they are
+            # interfaces whose OWN declared signatures type-reference one of the 38 above, so
+            # the original sweep's tree-wide consumer rewrite changed THEIR content too without
+            # bumping THEM. `_ifacecascade.py` found and bumped all 21 (walked to a fixed point,
+            # 3 waves). Listed here so `round_modules()` also catches every file that references
+            # ONE OF THESE but none of the 38 directly.
+            "BrandingUsagePrimaryV3", "BrandingUsageSecondaryV3", "BrandingUsageTertiaryV3",
+            "DemiourgosPactTrueFungibleV3", "DpdcFragmentsV3", "DpdcIssueV3", "InfoTwoV3",
+            "OuroborosV3", "OuronetInfoV3", "SaleCustodiansV3", "SaleSnakesV3", "SparksV3",
+            "StoicPayV4", "SwapperLiquidityClientV3", "SwapperLiquidityV3",
+            "TalosStageOne_ClientFourV9", "TalosStageOne_ClientOneV3",
+            "TalosStageOne_ClientPactsV5", "TalosStageOne_ClientThreeV5",
+            "TalosStageOne_ClientTwoV3", "TrueFungibleTransferV3",
+            # CORRECTED 2026-10-12: this slot used to read "EquityV3", on the belief that it was
+            # a pre-existing, never-shipped bump -- a one-off misread of `Deploy/LIVE-MODULES.
+            # json`, not re-verified against the chain. A direct `describe-module
+            # "ouronet-ns.EQUITY"` (hash-matched, so not drift -- the earlier reading was simply
+            # wrong) confirms `EquityV3` has been live since `Deploy/PureV4`. Its body references
+            # `IgnisCollectorV4` exactly like the 21 above (the tree-wide consumer-sweep touched
+            # it the same way), so it needed the SAME real cascade bump, not a straight re-ship
+            # under its already-live name: `EquityV4`.
+            "EquityV4",
+        ],
+        "init": [],
+        # Live AppReads modules that dot/modref into something this round touches, confirmed
+        # shipped (per the EXCLUDED dict's own "Shipped by PureVn" / "Gate-covered by RDUI-nn"
+        # notes below) and therefore due a byte-for-byte refresh even though no deploy chain
+        # loads them. O-UI-FOUR is the only one with a REAL dot-call (`STOAICO.`), so it is the
+        # only one anchored for correctness rather than convenience; the rest have none (checked:
+        # `grep -oE '\([A-Z][A-Za-z0-9|_-]*\.[A-Za-z]'` on each, modref-only or doc-only hits),
+        # so each is anchored after the sovereign module it reads, which is a courtesy to a
+        # reader of the plan, not a load-order requirement.
+        "extra": [
+            # Same ordering hazard the 2026-09-aqp round hit and documented above: AQP-INFO
+            # calls TS02-C3.URCi_IssueGenericEarningVault as a DIRECT module reference, which
+            # resolves at DEPLOY time, so it must be anchored AFTER TS02-C3 lands, not merely
+            # after the AQP core. 09_AQP-INFO names AcquisitionScoresV3/AcquisitionPoolsV2/
+            # AcquisitionRewardPerShareV2/AcquisitionFarmsVaultsTreasuriesV2/AcquisitionVacateV2/
+            # DsaV2/DpdcV3/TalosStageTwo_ClientThreeV3 -- eight of the 38, so it is caught by
+            # `round_modules()` but (like 2026-09-aqp) is in no deploy chain.
+            ("1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact", "04_TS02-C3.pact"),
+            # AppReads anchors -- CORRECTED after a real sequential replay caught 5 of these 8
+            # anchored on only ONE of the page's several `module{...}` type dependencies (the
+            # one found first), not the LATEST. A page that type-references an interface not
+            # yet deployed fails to LOAD, not merely to run -- `(ref-VST:module{VestingV3} VST)`
+            # inside a `let` aborted the whole transaction with "Cannot find module:
+            # ouronet-ns.VestingV3" the first time this was tried. Every one of the 8 below is
+            # now anchored on whichever of its `module{}` references resolves to the LATEST
+            # transaction in this round (checked exhaustively: `grep -oE 'module\{[A-Za-z0-9_]+\}'`
+            # per page, each name mapped to its owning file, the latest one wins).
+            ("2_CITIZEN/Stage_Z/AppReads/OuronetUI/04_O-UI-FOUR.pact", "05_STOAICO.pact"),
+            ("2_CITIZEN/Stage_Z/AppReads/OuronetUI/07_O-UI-SEVEN.pact", "21_CODEX.pact"),
+            # O-UI-EIGHT also needs SwapperIssueV5 (SWPI) -- later than its own ATS dependency.
+            ("2_CITIZEN/Stage_Z/AppReads/OuronetUI/08_O-UI-EIGHT.pact", "16_SWPI.pact"),
+            # O-UI-NINE also needs SwapperIssueV5 (SWPI) -- later than DPOF or VestingV3.
+            ("2_CITIZEN/Stage_Z/AppReads/OuronetUI/09_O-UI-NINE.pact", "16_SWPI.pact"),
+            # O-UI-TEN also needs DpdcFragmentsV3/DpdcSetsV3 (DPDC-F/DPDC-S) -- later than
+            # DPDC-UDC or DpdcV3.
+            ("2_CITIZEN/Stage_Z/AppReads/OuronetUI/10_O-UI-TEN.pact", "09_DPDC-F.pact"),
+            # O-UI-THIRTEEN also needs AcquisitionPoolsV2 (AQP-POOL) -- later than AQP-ANK.
+            ("2_CITIZEN/Stage_Z/AppReads/OuronetUI/13_O-UI-THIRTEEN.pact", "03_AQP.pact"),
+            # O-UI-FOURTEEN also needs AcquisitionRewardPerShareV2 (RPS) -- later than AQP-POOL.
+            ("2_CITIZEN/Stage_Z/AppReads/OuronetUI/14_O-UI-FOURTEEN.pact", "04_RPS.pact"),
+            ("2_CITIZEN/Stage_Z/AppReads/Pythia/01_P-UI-ONE.pact", "22_PYTHIA.pact"),
+        ],
+        # NOTE this round's `extra` tuples read (file-to-inject, anchor-already-in-round) -- the
+        # OPPOSITE argument order from 2026-09-aqp's `extra` above ("AQP-INFO after TS02-C3").
+        # Both the injected file and the anchor must already resolve inside THIS round's `keep`
+        # set; every anchor named above is one of the 38-interface matches, confirmed by the
+        # `round_modules()` scan this round runs.
+        "excluded": {
+            # These four contain one of the 38 bumped names too (the sweep rewrote their stale
+            # `object{}`/`module{}` refs for tree hygiene) but are NOT live -- the owner is
+            # wiring the AppReads read-layer migration personally, page by page, and DPL-UR
+            # stays authoritative until each page's reads are deployed BY THAT process, not this
+            # one. See the identical reasoning already on file in `2026-09-full`'s own
+            # `excluded` map for these same four paths.
+            "2_CITIZEN/Stage_Z/AppReads/OuronetUI/01_O-UI-ONE.pact":
+                "HELD BACK (owner, 2026-09-24) -- read-layer migration in progress personally, "
+                "page by page. Swept for tree hygiene only; not live, not in this round.",
+            "2_CITIZEN/Stage_Z/AppReads/OuronetUI/02_O-UI-TWO.pact":
+                "HELD BACK with the rest of the folder -- see 01_O-UI-ONE.pact's entry.",
+            "2_CITIZEN/Stage_Z/AppReads/OuronetUI/03_O-UI-THREE.pact":
+                "HELD BACK with the rest of the folder -- see 01_O-UI-ONE.pact's entry.",
+            "2_CITIZEN/Stage_Z/AppReads/OuronetUI/12_O-UI-TWELVE.pact":
+                "HELD BACK with the rest of the folder -- see 01_O-UI-ONE.pact's entry.",
+            # Owner-ruled exclusions that predate this round and apply unchanged -- copied
+            # rather than referenced because ROUNDS entries are read standalone by `--round`.
+            "1_SOVEREIGN/STAGE_01/2_Core/00_DPMF.pact":
+                "ARCHIVE MODE (owner, 2026-09-21) -- NOT REDEPLOYED, ever; a deployed module "
+                "cannot be removed in Pact so the live copy stays as it is. Its `ref-DALOS:"
+                "module{OuronetDalosV2}` type annotation was swept to V3 for tree hygiene, but "
+                "that reference is inside a `defconst` (`GOV|MD_DPMF`) evaluated ONCE at DPMF's "
+                "own original deploy time and cached forever -- it does not re-run when DALOS "
+                "upgrades, so leaving DPMF unredeployed carries no runtime risk from this round.",
+            "2_CITIZEN/6_OuronetBridge/03_CADUCEUS.pact":
+                "STAGE 3, NOT STARTED (owner, 2026-09-21) -- not live, nothing to upgrade.",
+            "2_CITIZEN/2_BloodshedMinter/01_BSD-L.pact": BLOODSHED,
+            "2_CITIZEN/2_BloodshedMinter/02_BSD-E.pact": BLOODSHED,
+            "2_CITIZEN/2_BloodshedMinter/03_BSD-R.pact": BLOODSHED,
+            "2_CITIZEN/2_BloodshedMinter/04_BSD-C.pact": BLOODSHED,
+            "2_CITIZEN/2_BloodshedMinter/05_BSD-SETS.pact": BLOODSHED,
+            "2_CITIZEN/3_NosferatuMinter/01_NOSFERATU.pact":
+                "MINT-ONLY, JOB DONE (owner, 2026-09-21) -- same disposition as BLOODSHED above.",
+            "2_CITIZEN/Stage_Z/01_DPL-UR.pact":
+                "READS-ONLY deployer module. BLOCKED ON A LIVE READ (owner, 2026-09-21): the "
+                "owner may have deployed reads directly on chain that never made it back into "
+                "this tree, so shipping the local copy could REGRESS live functionality. Also "
+                "deploys from its own separate `deploy-stagezz.repl` chain, last, by design -- "
+                "not this round's mechanism either way. Swept for tree hygiene only.",
+            "2_CITIZEN/Stage_Z/02_EXPLORER.pact":
+                "WORK IN PROGRESS, read-only (owner, 2026-09-21). BLOCKED ON A LIVE READ: "
+                "unknown whether it exists on mainnet at all. Same `deploy-stagezz.repl` chain "
+                "as DPL-UR above. Swept for tree hygiene only.",
+        },
+    },
     "2026-09-full": {
         "why": "FULL REDEPLOY. The tree has diverged from the 2026-08-30 live snapshot in 127 "
                ".pact files, and two of those changes are breaking across the whole cake: 17 "
@@ -251,7 +416,13 @@ ROUNDS = {
         # the whole-chain "Define IMC Policies" blocks -- those are genesis, and replaying them
         # duplicates guards. The upgrade-side registrations go in `imp_delta` below.
         "init": ["AQP-BOOT"],
-        "new": ["/03_AQP/", "04_AQP-BOOT.pact"],
+        # EMPTIED 2026-10-24 -- the AQP family and AQP-BOOT are LIVE. This entry dated from a
+        # 2026-09-18 confirmation that they were not, was never re-checked after they shipped, and
+        # kept `(create-table ...)` ACTIVE for a family whose tables now exist. Transaction 1 of
+        # the next round died on "Creation of user table ouronet-ns.AQP-ANK_P|T failed because the
+        # table already exists."  Verify with `_livesurface.py` (one `(list-modules)` call) before
+        # ever putting a name back here.
+        "new": [],
         # ANCHORED AFTER TALOS, NOT AFTER THE AQP CORE. 09_AQP-INFO calls
         # TS02-C3.URCi_IssueGenericEarningVault as a DIRECT module reference, and a direct
         # reference resolves at DEPLOY time -- unlike `ref-X::`, which resolves at runtime.
@@ -634,6 +805,27 @@ HEADER_RESERVE = 6_000
 # ---------------------------------------------------------------------------------------------
 TABLE_RE = __import__("re").compile(r'^\(create-table\s+([^\s)]+)\s*\)', __import__("re").M)
 GASLOG = "/tmp/deploygas.log"
+# THE MEASUREMENT HAS TO SURVIVE A CLEARED /tmp, and until 2026-10-18 it did not. `attach_gas`
+# read its 123 readings from GASLOG and exited when the file was absent -- telling you to produce
+# it with `pact _tmp_deploygas.repl`, A FILE THAT WAS NEVER COMMITTED AND DOES NOT EXIST. So the
+# sequence was: reboot, `/tmp` wiped, `--check` exits 1, `_gate.py` calls that FATAL, and the only
+# documented recovery names a missing file. The gate went red for a reason that had nothing to do
+# with the tree, and could not be made green by following its own instructions.
+#
+# Now the readings are a COMMITTED ARTEFACT. `--write` refreshes it from a fresh log; `--check`
+# falls back to it and stays offline, which is what the gate needs. The driver is committed too,
+# as `REPL/_deploygas.repl`.
+#
+# WHY A SEPARATE FILE AND NOT MANIFEST.MD, which already prints per-step gas: MANIFEST.md is
+# GENERATED BY THIS TOOL. Reading the gas back out of it would make `--check` compare the artefact
+# to itself -- the exact defect CLAUDE.md records for `OURONET-REGISTRY.json`, where both guards
+# "compare it to a copy of itself, not to the chain", so everything agreed with itself about a
+# surface that had moved. A sidecar written from the MEASUREMENT keeps the comparison honest:
+# regenerate MANIFEST.md from the sidecar and diff, and a stale sidecar is still a stale sidecar,
+# but it is not a tautology.
+GASCACHE = os.path.join(OUT, "DEPLOY-GAS.json")
+GAS_SOURCE = [None]
+GAS_READINGS = []
 
 
 def _expand(path):
@@ -703,6 +895,19 @@ def check_report():
     # per-file and carry reasons.
     KEEP = {"README.md", "00_MANUAL_rotate-s2-governor.pact",
             "00_MANUAL_probe-live-interfaces.pact",
+            # SCHEMA BACKFILL, 2026-10-23. The round that added `min-inject-amount` to
+            # FVT|RPS|Global left every pre-round lane row without the field, and
+            # `with-default-read` does not cover that case (it defaults an absent ROW, not an
+            # absent FIELD on a present row). So those lanes need a one-time pass, and this
+            # planner cannot emit it: it plans MODULE deploys and has no notion of "a schema
+            # gained a field". Hand-authored, named MANUAL, ordered in its own header.
+            "00_MANUAL_backfill-min-inject.pact",
+            # Same shape, V14 round (2026-10-25): SCR|Schema gained `drift-locked` and
+            # FVT|RewardAggregate gained `stream-eligible`, so every pre-existing score and
+            # FVT row needs the field written. Both are one-way latches, so BOTH passes are
+            # destructive if re-run after an owner has latched -- their headers say so.
+            "00_MANUAL_backfill-drift-locked.pact",
+            "00_MANUAL_backfill-stream-eligible.pact",
             # STAGE-Z ROUND, 2026-09-24. DPL-UR and EXPLORER deploy via `deploy-stagezz.repl`, a chain this
             # planner deliberately does not cover, so the generator cannot emit its transaction
             # -- but URC_0001_HeaderV3 shipped with twelve hardcoded token/pool ids and took the
@@ -751,17 +956,61 @@ def parse_chain():
     return blocks
 
 
+def read_gas_readings():
+    """The 123 measured readings, in execution order -- fresh log first, committed sidecar second.
+
+    A fresh `/tmp/deploygas.log` always WINS, so `--write` after a re-measurement picks up the new
+    numbers without being told to. The sidecar is the fallback, and it is what keeps `--check`
+    (and therefore `_gate.py`) runnable offline and after a reboot.
+    """
+    if os.path.exists(GASLOG):
+        vals = [int(m) for m in re.findall(r'Costs (\d+) GAS', open(GASLOG).read())]
+        if vals:
+            return vals, f"fresh log {GASLOG}"
+    if os.path.exists(GASCACHE):
+        d = json.load(open(GASCACHE, encoding="utf8"))
+        return d["readings"], f"sidecar {os.path.relpath(GASCACHE, ROOT)} (measured {d['measured']})"
+    sys.exit(f"no gas readings. Neither {GASLOG} nor {os.path.relpath(GASCACHE, ROOT)} exists.\n"
+             f"Produce the log with:\n"
+             f"  cd REPL && pact _deploygas.repl > {GASLOG} 2>&1\n"
+             f"then `python3 REPL/tools/_deploybundle.py --write` to refresh the sidecar.")
+
+
+def gascache_text(vals):
+    """The sidecar's content for `vals`, PRESERVING the recorded date when the numbers are the same.
+
+    The date says when these readings were last measured to be DIFFERENT, not when the tool last
+    ran. Stamping it every run would make `--check` report drift on a day where nothing changed,
+    and a check that cries wolf daily is one people start passing with `--write`.
+    """
+    when = datetime.date.today().isoformat()
+    if os.path.exists(GASCACHE):
+        try:
+            prev = json.load(open(GASCACHE, encoding="utf8"))
+            if prev.get("readings") == vals:
+                when = prev.get("measured", when)
+        except (ValueError, KeyError):
+            pass
+    return json.dumps({
+        "note": ("MEASURED deploy gas, one reading per `Costs {} GAS` echo in the deploy chain, "
+                 "in execution order. Produced by `cd REPL && pact _deploygas.repl` and recorded "
+                 "by `_deploybundle.py --write`. Committed so `--check` -- which `_gate.py` treats "
+                 "as fatal -- survives a cleared /tmp. See the GASCACHE comment in the tool."),
+        "driver": "REPL/_deploygas.repl",
+        "measured": when,
+        "count": len(vals),
+        "readings": vals,
+    }, indent=1) + "\n"
+
+
 def attach_gas(blocks):
     """Join measured gas, in execution order, onto the blocks that echo it."""
-    if not os.path.exists(GASLOG):
-        sys.exit(f"no gas log at {GASLOG}. Produce one with:\n"
-                 f"  cd REPL && pact _tmp_deploygas.repl > {GASLOG} 2>&1\n"
-                 f"(a driver that loads deploy-stage00/01/02)")
-    vals = [int(m) for m in re.findall(r'Costs (\d+) GAS', open(GASLOG).read())]
+    vals, GAS_SOURCE[0] = read_gas_readings()
     want = [b for b in blocks if b["gas"] == "pending"]
     if len(vals) < len(want):
         sys.exit(f"gas log has {len(vals)} readings but the chain has {len(want)} "
                  f"gas-echoing blocks -- the log is stale. Re-run it.")
+    GAS_READINGS[:] = vals[:len(want)]
     for b, v in zip(want, vals):
         b["gas"] = v
     for b in blocks:
@@ -862,6 +1111,7 @@ def main():
         initpat = [x.lower() for x in rnd["init"]]
 
     blocks = attach_gas(parse_chain())
+    emit(GASCACHE, gascache_text(GAS_READINGS))
     if rnd is not None:
         scoped = []
         for b in blocks:
@@ -1148,6 +1398,78 @@ DEPLOYABLE_RE = re.compile(r'^\((interface|module)\s+([A-Za-z0-9|_\-\.]+)', re.M
 # correct answer, and it is not "skip it".
 LIVE_INTERFACES = {
     "AgeOfZalmoxis": "a7345a4600ed8d83367a54714bab362d",   # unchanged since 21fa54f
+
+    # BULK ADD 2026-10-12, found by the interface-membership sweep's PureV10 round the hard way
+    # -- a real wallet simulation against mainnet, not this repo's own gate (which builds a
+    # chain from scratch, where declaring these for the first time is fine; only a live
+    # simulation can see "this is already there"). 36 modules needed their OWN interface
+    # bumped, and every one of those modules' FILES also co-host unrelated interfaces that
+    # were already live and unchanged -- 39 of them, discovered by diffing this round's
+    # `Deploy/PureV10/*.pact` against the 38 newly-bumped names. Two were investigated
+    # separately rather than added here (neither belongs in this dict -- do not copy this
+    # pattern for them without re-deriving the reasoning):
+    #   EquityV3  -- IS live (confirmed directly, `describe-module "ouronet-ns.EQUITY"`,
+    #     hash-matched against the cache so not drift -- an EARLIER reading here said "NOT
+    #     live" and that reading was simply wrong, caught by `_chaintxsim.py`'s full-round
+    #     replay self-colliding on it). But its OWN body references `IgnisCollectorV4`, same as
+    #     the 21 second-order-cascade interfaces above `round_modules()`'s `interfaces` list
+    #     names -- so it needed a REAL bump (`EquityV3` -> `EquityV4`) via `_ifacecascade.py`,
+    #     not a LIVE_INTERFACES entry. `EquityV4` is what ships this round.
+    #   InfoTwoV2 -- RESOLVED, also via the cascade: it references `SparksV2` (itself a
+    #     second-order-cascade interface), so its live status WAS resolvable after all -- it
+    #     needed a real bump too (now `InfoTwoV4`, after two cascade waves), not a skip.
+    #
+    # Confidence varies by entry and is worth knowing before trusting one blindly:
+    #   34 of the 37 below are CONFIRMED against `Deploy/LIVE-MODULES.json` (a `describe-
+    #     module` snapshot dated 2026-09-29) -- the interface appears in some ALREADY-
+    #     deployed module's own `interfaces` list, which Pact populated from the chain.
+    #   `DpofUdcV2` is NOT in that snapshot (nothing currently IMPLEMENTS it, so
+    #     `describe-module` never surfaces it), but `02_TS01-C1.pact` and
+    #     `02_INFO-ONE+.pact` -- both already-live modules -- type-reference
+    #     `object{DpofUdcV2.RemovableNonces}`, which could not have compiled when THEY were
+    #     deployed unless `DpofUdcV2` already existed on chain at that time.
+    #   `OUiThirteenV1` / `OUiFourteenV1` are NOT in the snapshot either (AppReads pages were
+    #     added to the probe's module list after 2026-09-29), but `Deploy/MANIFEST.md`
+    #     already carries a specific, independently-verified claim for both (shipped in
+    #     `PureV2/33` and `PureV3/08`+`PureV4/06` respectively, the second confirmed by a live
+    #     read: `URH_AQP|AllPoolIds` returning 7 only if that transaction ran).
+    # The hash is still the safety net regardless of how an entry got here: a LOCAL edit to
+    # any of these interfaces after this pin changes the hash and the tool refuses to guess.
+    "OuronetPolicyV2": "d8dc13f4d6316c11114b24260107001a",
+    "DpofUdcV2": "674fbd0200c02cf30f1bf16686df45a7",
+    "OUiNineV2": "b6f14f900d3a7a60166b8785dbc969f3",
+    "EliteV2": "7d8514f522d79012cf097ded3fce1ec2",
+    "OUiEightV2": "35ef5f6406f9c029a1ea595e1cadcd20",
+    "OUiSevenV1": "bb4736f8907c407d61e77c13e7402027",
+    "PUiOneV1": "4d131c3d8000206fd0369bb7adb71e76",
+    "TalosStageOne_AdminV2": "390ede4ff6175312d4e05ed8b6ba4d62",
+    "DpdcUdcV2": "75df368d83fd94230d1d0ccaf75112cf",
+    "OUiTenV1": "046cebaa232b028a4908784c9ed50203",
+    "OUiThirteenV1": "4cac842dfc8ddd592458909814ecd54c",
+    "OUiFourteenV1": "1ab48db4b4cbac74320d98d463f7f9b5",
+    "AqpMtxV1": "e4bf6c7eb90c394d333094182b80e7fb",
+    "OUiFourV1": "3d057676a98b2f150672eecab3a48ac9",
+    "CitizenLaunchpadTalosV1": "e4ccca0348ca6ecc3677167528ba7f12",
+    "AcquisitionPoolBootV1": "84152db1d6336d1a4e05e3c7f1ce2b09",
+    "DispenserV2": "07f7194b1f4d36a86d997f218fba27db",
+    # REMOVED 2026-10-12 (second pass): OuronetInfoV2, BrandingUsagePrimaryV2,
+    # DemiourgosPactTrueFungibleV2, TrueFungibleTransferV2, OuroborosV2, SwapperLiquidityV2,
+    # BrandingUsageSecondaryV2, SwapperLiquidityClientV2, TalosStageOne_ClientOneV2,
+    # TalosStageOne_ClientTwoV2, TalosStageOne_ClientThreeV4, TalosStageOne_ClientFourV8,
+    # TalosStageOne_ClientPactsV4, BrandingUsageTertiaryV2, DpdcIssueV2, DpdcFragmentsV2,
+    # SparksV2, SaleSnakesV2, SaleCustodiansV2, StoicPayV3 -- these were WRONGLY pinned here
+    # as "unchanged". A live wallet simulation found "Module ouronet-ns.IGNIS does not
+    # correctly implement the function OI|UC_IfpFromOutputCumulator from the interface" --
+    # OuronetInfoV2's OWN declared signature had been rewritten by the original sweep's
+    # tree-wide consumer pass (it type-references `object{IgnisCollectorV4.OutputCumulator}`,
+    # correctly updated so the TREE keeps compiling once IgnisCollectorV3 stops existing
+    # anywhere) without OuronetInfoV2 itself being version-bumped, so its CONTENT had
+    # genuinely changed relative to what's live even though nothing flagged it as
+    # interface-INCOMPLETE. `REPL/tools/_ifacecascade.py` found all 21 (walked to a fixed
+    # point, 3 waves) and bumped each one for real (OuronetInfoV2 -> OuronetInfoV3, etc.) --
+    # they no longer belong in this dict at all, confirmed-unchanged or otherwise, because
+    # they no longer exist under their old names in the tree for `strip_live_interfaces` to
+    # even match. See `Deploy/PureV10/README.md` for the full account.
 }
 
 
@@ -1312,6 +1634,10 @@ def write(steps, budget, maxbytes, mode="upgrade", existing=frozenset()):
     _verb = "regenerated (in memory)" if CHECK else "wrote"
     print(f"\n{_verb} {os.path.relpath(OUT, ROOT)}/ -- "
           f"{sum(1 for m in manifest if m[2] == 'DEPLOY')} deploy files + MANIFEST.md")
+    # SAY WHERE THE GAS CAME FROM. Every batch boundary in this round is a consequence of these
+    # numbers, so "which measurement planned this?" is not a detail -- a plan plotted against a
+    # stale sidecar looks exactly like one plotted against a fresh run.
+    print(f"gas readings: {len(GAS_READINGS)} from {GAS_SOURCE[0]}")
     # SIZE-CHECK THE EMITTED FILES, not the planned module bytes. The planner budgets on the
     # size of the module SOURCES; what actually gets pasted is source + header. When the header
     # grew (2026-09-21, to list interfaces/modules/tables instead of file paths) it added ~2 KB
@@ -1529,6 +1855,39 @@ def write_manifest(manifest, steps, budget, maxbytes, mode="upgrade"):
              "must **not** reach mainnet. Each is listed below with its source location so you can "
              "lift the real calls out of it. **Do not skip them:** a module deployed after an init "
              "step may depend on that step having run.\n")
+
+    # HAND-AUTHORED MANUAL STEPS MUST APPEAR IN THE PLAN, 2026-10-23.
+    #
+    # They did not, and the omission was the same defect this file already names for modules:
+    # "an absent module is indistinguishable from a forgotten one". A MANUAL step sat checked in
+    # under Deploy/2_Init/ with its ordering written in its OWN header and nowhere else, so an
+    # operator working down MANIFEST.md -- which is what this document is FOR -- never saw it.
+    # `00_MANUAL_rotate-s2-governor.pact` had been in that position since it was written: its
+    # header says "RUN THIS AFTER Deploy/1_Pure/24_deploy.pact" and the plan never mentioned it.
+    #
+    # Listing them by scanning the directory, not from a hardcoded list, so a MANUAL step added
+    # later cannot repeat this by being forgotten in a second place.
+    manual = sorted(f for f in os.listdir(INIT)
+                    if f.startswith("00_MANUAL_") and f.endswith(".pact")) if os.path.isdir(INIT) else []
+    if manual:
+        L.append("## ⚠ MANUAL steps -- hand-authored, NOT in the numbered sequence below\n")
+        L.append("These are real transactions that must be run, but no generator can emit them: "
+                 "each needs data, signatures or an ordering only the owner can supply. **They do "
+                 "not appear in the numbered steps**, so working down that list alone will skip "
+                 "them. Each file states its own position in its header -- read it before "
+                 "deploying, not after.\n")
+        for f in manual:
+            why = ""
+            try:
+                head = open(os.path.join(INIT, f), encoding="utf-8").read(4000).splitlines()
+                lab = next((l.split("Label :", 1)[1].strip() for l in head if "Label :" in l), "")
+                run = next((l.lstrip(";; ").strip() for l in head if "RUN THIS" in l), "")
+                why = f" -- {lab}" + (f"  \n  &nbsp;&nbsp;*{run}*" if run else "")
+            except OSError:
+                pass
+            L.append(f"- `Deploy/2_Init/{f}`{why}")
+        L.append("")
+
     if ORPHANS:
         L.append("## ⚠ Modules that must redeploy but are in no deploy chain\n")
         L.append("These name an interface that bumped this round, so Pact's cascade rule requires "

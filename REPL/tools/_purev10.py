@@ -1,66 +1,55 @@
 #!/usr/bin/env python3
 """Emit and verify the PureV10 hand-deploy round.
 
-ROUND V10 -- three features (true-fungible beneficiary reassignment; the sleeping-leg multiplier
-reader the UI needed; a naming correction on the two already-live OF/collectable reassigns,
-`CCp_Reassign*` -> `CC_Reassign*`, because the `p` claimed a Hydra parallel-slice shape neither
-function has) plus the dot-pin cascade all three together force.
+WIDENED 2026-10-12. The original V10 (three features: TF beneficiary reassignment, the
+sleeping-leg multiplier reader, the `CCp_`->`CC_` naming correction -- 6 transactions) is
+SUPERSEDED, not appended to: the owner ruling that triggered the interface-membership sweep
+("do the sweep now ... widen pure V10, for the whole pact code stage 1 and stage 2 modules")
+asked for ONE round, and the sweep's own dot-pin cascade already reaches every module the old
+V10 touched (AQP-SCORE, RPS, AQP-FVT, AQP-VCT/MTX-AQP/AQP-DSA, TS02-C3, AQP-INFO, AQP-BOOT are
+all inside the new round's `interfaces` scope). Deploying the old 6 first would just mean
+re-deploying the same modules again moments later inside the new 22 -- strictly wasted gas, no
+safety benefit, since the new round's content is a superset.
 
-Unlike V9 (and V6-V8 before it), this round does NOT re-derive its transaction bodies from
-module source with a bespoke `create-table`-stripping pass: `_deploybundle.py --write` already
-regenerates every stale file in upgrade mode as part of the FULL round, and the gate already
-diffs those byte-for-byte against the sovereign sources (`_deploybundle.py --check`, fatal in
-`_gate.py`). Re-deriving a second time here would be a second implementation of the same
-transformation, free to drift from the first. This tool instead just COPIES the already-correct
-files out of the full round and watches that they stay copied.
+WHAT THIS ROUND IS: every user/client function and every reader must sit in its module's own
+interface (StoicSyntax-Prefixes.md Sec5, owner ruling, 2026-10-12) -- not just the ones convenient
+to add when the interface was last touched. `REPL/tools/_ifacemembership.py` is ground truth for
+the gap (307 defun stubs were missing across 36 sovereign modules); `REPL/tools/_ifacebump.py`
+closed it mechanically (bump each module's own co-located interface by exactly one, insert the
+missing stubs, rewrite every `module{OLD}`/`object{OLD.Schema}` consumer tree-wide). This tool
+packages the result for mainnet.
 
-SIX TRANSACTIONS, not three -- the dot-pin cascade from AQP-SCORE's content change alone reaches
-RPS, which in turn is dot-pinned by AQP-VCT/MTX-AQP/AQP-DSA; AQP-FVT and TS02-C3's content
-changes are each dot-pinned by AQP-BOOT. Walked with `_dotpin.py --upgrade <module>` from each
-content change outward until it stopped reporting new modules -- see the SOURCES table below for
-the full dependency chain. See Deploy/PureV10/README.md for the full writeup (mechanism, defcap
-shape, the REPL regression test and what it caught, and the dot-pin cascade in detail).
+HOW THIS DIFFERS FROM V2-V9's OWN TOOLS, and why: those copy NAMED transactions out of
+`Deploy/1_Pure/NN_deploy.pact` by number, because their round's module set was a small, known
+subset of the full chain's OWN bin-packing -- copying transaction 15 verbatim out of the full
+round was safe because the full round's packer and the narrow round's packer would have binned
+AQP-SCORE the same way regardless. That assumption breaks here: this round touches 74 of the
+full chain's ~79 modules, so a SEPARATE, SCOPED run of the planner (`_deploybundle.py --round
+2026-10-interfaces`) bins the surviving ~74 into fewer, differently-shaped transactions than the
+full round does (22 here vs 24 for everything) -- transaction N of this round is NOT transaction
+N of `Deploy/1_Pure`. The tool therefore RUNS THE PLANNER SCOPED rather than lifting files out of
+an already-run full plan.
+
+THE DANCE THIS TOOL AUTOMATES, and why it needs automating rather than running by hand once:
+`_deploybundle.py --write` ALWAYS writes to `Deploy/1_Pure/` + `Deploy/MANIFEST.md` +
+`Deploy/TABLES.md`, regardless of `--round` -- there is no separate output directory per round.
+Running the scoped round's `--write` therefore OVERWRITES the full chain's own generated
+artefacts (24 files -> 22, different content) that `_gate.py`'s `_deploybundle.py --check` (fatal,
+DEFAULT_ROUND-scoped) expects to find. So: back up `Deploy/`, run the scoped round, copy its 22
+files out, DELETE the scoped output, restore the backup, and verify `--check` is clean again
+before declaring success. Skipping the restore step leaves the gate permanently red.
 
     python3 REPL/tools/_purev10.py --plan / --write / --check / --multipact
 """
-import sys, os, re, json, io
+import sys, os, re, json, io, shutil, subprocess, tempfile
 
-# Same ceiling every round since V3 has used, for the same measured reason (gas_size scales as
-# the 7th power of transaction size -- see _purev8.py for the derivation). Both this round's
-# files are already comfortably under it (~271 KB / ~299 KB of the ~395 KB practical ceiling).
 BLOCK_GAS_LIMIT = 2_000_000
 MAXBYTES = 320_000
+ROUND_NAME = "2026-10-interfaces"
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 DEPLOY = os.path.join(ROOT, "Deploy", "PureV10")
-PURE = os.path.join(ROOT, "Deploy", "1_Pure")
-
-# deploy file (this round) -> source transaction in the full round it is a verbatim copy of, in
-# DEPLOY ORDER -- which, conveniently, is also numeric order in the full round's own sequence
-# (the full round is already topologically sorted by dependency, so lifting a contiguous-by-
-# dependency subset out of it preserves order for free).
-#
-# THREE REAL CONTENT CHANGES (15, 18, 21) and THREE RE-PIN-ONLY SENDS (17, 19, 23), found by
-# walking `_dotpin.py --upgrade <module>` from each content change outward until it stopped
-# reporting new modules:
-#   AQP-SCORE (15, new sleeping-leg multiplier reader) -> dot-pinned by RPS, AQP-INFO
-#   RPS (17, re-pin only)                              -> dot-pinned by AQP-FVT, AQP-VCT,
-#                                                          MTX-AQP, AQP-DSA, AQP-INFO
-#   AQP-FVT (18, TF reassign + Cp_->CC_ rename)          -> dot-pinned by AQP-INFO, AQP-BOOT
-#   AQP-VCT/MTX-AQP/AQP-DSA (19, re-pin only, co-packed) -> dot-pinned by AQP-INFO only (already
-#                                                          covered by 21); MTX-AQP itself is a
-#                                                          dot-pin LEAF (nothing re-pins to it)
-#   TS02-C3 (21, Talos wrapper + Cp_->CC_ rename)        -> dot-pinned by AQP-BOOT
-#   AQP-INFO (co-packed in 21, new INFO preview + rename)-> dot-pin LEAF (nothing re-pins to it)
-#   AQP-BOOT (23, re-pin only)                           -> dot-pin LEAF -- cascade terminates here
-SOURCES = {
-    "01_deploy.pact": "15_deploy.pact",   # AQP-SCORE
-    "02_deploy.pact": "17_deploy.pact",   # RPS -- re-pin only, no content change
-    "03_deploy.pact": "18_deploy.pact",   # AQP-FVT
-    "04_deploy.pact": "19_deploy.pact",   # AQP-VCT, MTX-AQP, AQP-DSA -- re-pin only, co-packed
-    "05_deploy.pact": "21_deploy.pact",   # TS02-C3, AQP-INFO, TS02-DPAD
-    "06_deploy.pact": "23_deploy.pact",   # AQP-BOOT -- re-pin only
-}
+FULL = os.path.join(ROOT, "Deploy")
 
 
 def module_names(path):
@@ -71,46 +60,105 @@ def gas(nbytes):
     return 95_225 * ((nbytes / 1024) / 256) ** 7
 
 
+def _run_scoped_round(write_dest=None):
+    """Back up Deploy/, run the planner SCOPED to ROUND_NAME, capture the emitted
+    `NN_deploy.pact` files (+ MANIFEST.md), restore Deploy/ to exactly what it was, and verify
+    the restore with `--check`. Returns (files_by_name, manifest_text). Raises on any failure --
+    a half-finished dance that leaves Deploy/ scoped is worse than refusing to run."""
+    backup = tempfile.mkdtemp(prefix="deploy_backup_")
+    shutil.copytree(FULL, os.path.join(backup, "Deploy"))
+    try:
+        # `_deploybundle.py --write` never DELETES a `Deploy/1_Pure/NN_deploy.pact` it no longer
+        # emits -- confirmed the hard way: the full round emits 25, this round emits 22, and the
+        # first draft of this function read 23/24/25 back as if the scoped round had produced
+        # them too. Clear the slate first so every file read back afterward is one THIS run
+        # actually wrote.
+        pure = os.path.join(FULL, "1_Pure")
+        for f in os.listdir(pure):
+            if re.match(r"^\d+_deploy\.pact$", f):
+                os.remove(os.path.join(pure, f))
+        r = subprocess.run(
+            [sys.executable, "tools/_deploybundle.py", "--round", ROUND_NAME, "--write"],
+            cwd=os.path.join(ROOT, "REPL"), capture_output=True, text=True)
+        if r.returncode != 0:
+            raise SystemExit(f"scoped round write failed:\n{r.stdout}\n{r.stderr}")
+        pure = os.path.join(FULL, "1_Pure")
+        files = {}
+        for f in sorted(os.listdir(pure)):
+            if re.match(r"^\d+_deploy\.pact$", f):
+                files[f] = open(os.path.join(pure, f), encoding="utf8").read()
+        manifest = open(os.path.join(FULL, "MANIFEST.md"), encoding="utf8").read()
+    finally:
+        # restore no matter what the scoped run did or didn't produce
+        shutil.rmtree(FULL)
+        shutil.move(os.path.join(backup, "Deploy"), FULL)
+        shutil.rmtree(backup, ignore_errors=True)
+    r = subprocess.run([sys.executable, "tools/_deploybundle.py", "--check"],
+                        cwd=os.path.join(ROOT, "REPL"), capture_output=True, text=True)
+    if r.returncode != 0 or "deploy pipeline: clean" not in r.stdout:
+        raise SystemExit("RESTORE VERIFICATION FAILED -- Deploy/ may not match the full round "
+                          f"any more. Investigate before doing anything else.\n{r.stdout}\n{r.stderr}")
+    # the scoped round emits however many transactions it binned to; keep only the
+    # `NN_deploy.pact` ones in numeric order, however many that turned out to be
+    ordered = sorted(files, key=lambda f: int(f.split("_")[0]))
+    return {f: files[f] for f in ordered}, manifest
+
+
 def check_or_write(write):
+    files, _ = _run_scoped_round()
     bad = 0
-    for name, src_name in sorted(SOURCES.items()):
-        src = os.path.join(PURE, src_name)
-        dst = os.path.join(DEPLOY, name)
-        if not os.path.exists(src):
-            print(f"  MISSING-SOURCE  {src_name} -- run `cd REPL && python3 tools/_deploybundle.py --write` first")
-            bad += 1
-            continue
-        want = open(src, encoding="utf8").read()
+    want_names = set(files)
+    have_names = {f for f in os.listdir(DEPLOY) if re.match(r"^\d+_deploy\.pact$", f)}
+    stale = have_names - want_names
+    for f in sorted(stale):
+        print(f"  STALE-ORPHAN  {f} -- in Deploy/PureV10/ but not in the current scoped plan")
+        bad += 1
+    for name in sorted(files, key=lambda f: int(f.split("_")[0])):
+        want = files[name]
         n = len(want.encode())
         if n > MAXBYTES:
             print(f"  TOO BIG  {name} -- {n:,} bytes over the {MAXBYTES:,} cap")
             bad += 1
+        dst = os.path.join(DEPLOY, name)
         cur = open(dst, encoding="utf8").read() if os.path.exists(dst) else None
         if cur == want:
             continue
         if write:
             open(dst, "w", encoding="utf8").write(want)
-            print(f"  wrote    {name}  <- {src_name}  ({n:,} bytes, ~{gas(n):,.0f} gas)")
+            print(f"  wrote    {name}  ({n:,} bytes, ~{gas(n):,.0f} gas)")
         else:
-            print(f"  STALE    {name} -- out of sync with Deploy/1_Pure/{src_name}")
+            print(f"  STALE    {name} -- out of sync with the scoped plan")
             bad += 1
+    if write:
+        for f in stale:
+            os.remove(os.path.join(DEPLOY, f))
+            print(f"  removed  {f} (orphaned by a packing change)")
     if bad and not write:
         print(f"PureV10: {bad} problem(s). Run REPL/tools/_purev10.py --write")
     elif not bad:
-        print(f"PureV10: clean -- {len(SOURCES)} transaction(s) match Deploy/1_Pure/")
+        print(f"PureV10: clean -- {len(files)} transaction(s) match the scoped round plan")
     return bad
+
+
+#: Hand-authored, non-generated transactions that ride after the 22 generated ones --
+#: `(id, filename, label)`. Not matched by `NN_deploy.pact`, so `check_or_write` never sees them
+#: (same invisibility `Deploy/2_Init/00_MANUAL_rotate-s2-governor.pact` relies on); listed here
+#: explicitly so `--multipact` can fold them into the SAME round as a second sequential group.
+MANUAL_FOLLOWUPS = [
+    ("23_repair", "23_repair.pact", "23 — STOAICO repair (A_MigrateGeneralFields)"),
+    ("24_contribution", "24_contribution.pact", "24 — STOAICO contribution (A_Stake 4200.0)"),
+]
 
 
 def emit_multipact():
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     import _multipact as MP
 
-    txs, missing = [], []
-    for name in sorted(SOURCES):
+    names = sorted((f for f in os.listdir(DEPLOY) if re.match(r"^\d+_deploy\.pact$", f)),
+                    key=lambda f: int(f.split("_")[0]))
+    txs = []
+    for name in names:
         path = os.path.join(DEPLOY, name)
-        if not os.path.exists(path):
-            missing.append(name)
-            continue
         code = io.open(path, encoding="utf-8").read()
         nbytes = len(code.encode())
         mods = ", ".join(module_names(path))
@@ -118,26 +166,46 @@ def emit_multipact():
             name.replace(".pact", ""), code, label=f"{name[:2]} — {mods}",
             gas_limit=BLOCK_GAS_LIMIT, est_gas=int(gas(nbytes))))
 
-    if missing:
-        print("  MISSING: " + ", ".join(missing) + "\n  Run `--write` first.")
-        return 1
-
     grp = MP.group(
-        "PureV10 — TF reassignment, sleeping-leg multiplier, CCp_->CC_ naming correction",
-        "sequential",
-        txs,
-        note="STRICTLY ORDERED, same reason as every dot-pin round: 01 (AQP-SCORE) must land "
-             "before 02 (RPS, re-pin only) and 05 (AQP-INFO, dot-pins both); 03 (AQP-FVT) and "
-             "05 (TS02-C3) must land before 06 (AQP-BOOT, re-pin only); 02 (RPS) must land before "
-             "04 (AQP-VCT/MTX-AQP/AQP-DSA, re-pin only). Sending out of order leaves a dot-pinned "
-             "caller aborting with 'hash not blessed' until its own re-pin send catches up.")
+        "PureV10 — interface-membership sweep (38 interfaces, 36 sovereign modules)",
+        "sequential", txs,
+        note="STRICTLY ORDERED -- this is a dependency-ordered chain, not a batch that must "
+             "clear atomically, but sending out of order leaves a dot-pinned caller aborting "
+             "with 'hash not blessed' until its own re-pin send catches up. See README.md for "
+             "the full dot-pin cascade.")
+
+    groups = [grp]
+    followups = []
+    for tx_id, fname, label in MANUAL_FOLLOWUPS:
+        path = os.path.join(DEPLOY, fname)
+        if not os.path.exists(path):
+            continue
+        code = io.open(path, encoding="utf-8").read()
+        nbytes = len(code.encode())
+        followups.append(MP.transaction(
+            tx_id, code, label=label, gas_limit=BLOCK_GAS_LIMIT, est_gas=int(gas(nbytes))))
+    if followups:
+        groups.append(MP.group(
+            "PureV10 follow-ups — STOAICO repair + contribution (MANUAL, not generated)",
+            "sequential", followups,
+            note="Runs AFTER the 22 deploys above are fully confirmed -- tx23 calls a function "
+                 "tx21 is what deploys, and tx24 depends on tx23 having landed first. Not part "
+                 "of the interface-membership sweep; folded into this same round because both "
+                 "fix/use the STOAICO redeploy this round already carries. See "
+                 "Deploy/PureV10/23_repair.pact and 24_contribution.pact for the full reasoning "
+                 "behind each, including how each was verified against real live chain content "
+                 "before being added here.")
+
+        )
+
     doc = MP.manifest(
-        name="Ouronet PureV10",
-        source="python3 REPL/tools/_purev10.py --multipact",
-        groups=[grp], draft=False,
+        name="Ouronet PureV10", source="python3 REPL/tools/_purev10.py --multipact",
+        groups=groups, draft=False,
         signer={"role": "module governance keyset",
-                "note": "Every transaction upgrades a module in ouronet-ns and is signed by "
-                        "that module's governance keyset."},
+                "note": "Transactions 1-22 upgrade a module in ouronet-ns and are signed by "
+                        "that module's governance keyset. Transactions 23-24 (if present) call "
+                        "STOAICO admin functions and are signed by STOAICO's own admin key -- "
+                        "the same keyset, since STOAICO's governance is the Demiurgoi key."},
         defaults={"gasLimit": BLOCK_GAS_LIMIT})
 
     errs = MP.validate(doc)
@@ -158,17 +226,17 @@ def emit_multipact():
 
 def main():
     if "--plan" in sys.argv:
+        names = sorted((f for f in os.listdir(DEPLOY) if re.match(r"^\d+_deploy\.pact$", f)),
+                        key=lambda f: int(f.split("_")[0]))
         tot, gt = 0, 0.0
-        for name, src_name in sorted(SOURCES.items()):
+        for name in names:
             path = os.path.join(DEPLOY, name)
-            src = os.path.join(PURE, src_name)
-            b = os.path.getsize(path) if os.path.exists(path) else (
-                os.path.getsize(src) if os.path.exists(src) else 0)
+            b = os.path.getsize(path)
             tot, gt = tot + b, gt + gas(b)
-            mods = ", ".join(module_names(src)) if os.path.exists(src) else "?"
+            mods = ", ".join(module_names(path))
             flag = "  !! OVER CAP" if b > MAXBYTES else ""
             print(f"  {name}  {b:7,} bytes  ~{gas(b):9,.0f} gas   {mods}{flag}")
-        print(f"\n  {len(SOURCES)} transactions, {tot:,} emitted bytes, ~{gt:,.0f} gas total")
+        print(f"\n  {len(names)} transactions, {tot:,} emitted bytes, ~{gt:,.0f} gas total")
         return 0
 
     if "--multipact" in sys.argv:

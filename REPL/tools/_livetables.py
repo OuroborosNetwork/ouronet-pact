@@ -57,15 +57,13 @@ NODE = ("https://node2.stoachain.com/chainweb/0.0/stoa/chain/0/pact/api/v1/local
 # This is a QUEUE, not an excuse list: once the table is created and re-probed, the entry must
 # be deleted, and the tool reports a stale entry rather than letting it rot into a permanent
 # waiver.
-SHIPPING = {
-    "SWPT.SWPT|Graph":               "Deploy/PureV2/15_deploy.pact",
-    "SWPT.SWPT|PathCache":           "Deploy/PureV2/15_deploy.pact",
-    "SWPT.SWPT|TopologyVersion":     "Deploy/PureV2/15_deploy.pact",
-    "TS02-C3.P|T":                   "Deploy/PureV2/15_deploy.pact",
-    "TS02-C3.P|MT":                  "Deploy/PureV2/15_deploy.pact",
-    "TS02-CPAD.P|T":                 "Deploy/PureV2/15_deploy.pact",
-    "TS02-CPAD.P|MT":                "Deploy/PureV2/15_deploy.pact",
-}
+# EMPTIED 2026-10-24, by the tool's own stale-entry report. All seven entries
+# (SWPT|Graph, SWPT|PathCache, SWPT|TopologyVersion, TS02-C3.P|T, TS02-C3.P|MT,
+# TS02-CPAD.P|T, TS02-CPAD.P|MT -- all queued behind Deploy/PureV2/15_deploy.pact) came back
+# EXISTS on a fresh `--probe`, so the deploy that was pending when they were written has since
+# been sent. The self-check worked as specified: the queue did not rot into a permanent waiver,
+# it reported itself stale the first time anyone re-probed.
+SHIPPING = {}
 
 # A MISSING TABLE HAS TWO CAUSES AND ONLY ONE SAFE REPAIR EACH.  Either it was never created --
 # create it -- or the SOURCE RENAMED IT and the data sits under the old name, in which case

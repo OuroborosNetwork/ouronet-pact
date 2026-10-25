@@ -67,6 +67,12 @@ def figures():
         "sponsored":          sponsored,
         "unsponsored":        len(eps) - sponsored,
         "ownership_resolved": resolved,
+        # DERIVED, AND GUARDED BECAUSE THE PROSE STATES IT. `entrypoints` and
+        # `ownership_resolved` were both checked while their DIFFERENCE -- which the chapter
+        # quotes as "the remaining N" -- was not. It read 39 against an actual 40, and did so
+        # before the registry moved as well: a figure nobody computed, in a chapter whose rule is
+        # that figures are read rather than remembered.
+        "ownership_unresolved": len(eps) - resolved,
         "ownership_always":   always,
         "ownership_cond":     cond,
         "own_via_parameter":  via_param,
@@ -83,9 +89,9 @@ def figures():
 
 # (file, the exact substring the prose must contain, key into figures(), how it is written)
 CLAIMS = [
-    ("03-cost-preview.md", "**422 of the 438 entrypoints have a preview", "preview_params_diff", 422),
+    ("03-cost-preview.md", "**426 of the 442 entrypoints have a preview", "preview_params_diff", 426),
     ("03-cost-preview.md", "Only 16 match",                          "preview_params_same", 16),
-    ("03-cost-preview.md", "carries **443** of them",                "previews",            443),
+    ("03-cost-preview.md", "carries **447** of them",                "previews",            447),
     # PAIRED IS NOT THE ENTRYPOINT COUNT, and conflating them is how this line went stale once
     # already. CORRECTED 2026-10-10: the gap it described is CLOSED -- all 437 entrypoints now
     # have an `INFO_` preview, because PureV6 gave the four `CC_Vacate*` the previews they had
@@ -93,15 +99,16 @@ CLAIMS = [
     # the two look interchangeable the first time. They are still different questions; this row
     # checks `paired`, and it will diverge again the next time an entrypoint ships ahead of its
     # preview.
-    ("03-cost-preview.md", "**all 438** client",                     "paired",              438),
+    ("03-cost-preview.md", "**all 442** client",                     "paired",              442),
     ("03-cost-preview.md", "**Twenty-one** entrypoints have a reader", "alias_paired",      21),
-    ("02-signing-and-caps.md", "430 of the 438 client entrypoints",  "sponsored",           430),
-    ("02-signing-and-caps.md", "Every one of those 430",             "sponsored",           430),
+    ("02-signing-and-caps.md", "434 of the 442 client entrypoints",  "sponsored",           434),
+    ("02-signing-and-caps.md", "Every one of those 434",             "sponsored",           434),
     ("02-signing-and-caps.md", "### The eight that are NOT sponsored", "unsponsored",        8),
-    ("02-signing-and-caps.md", "**398 of 438** entrypoints",         "ownership_resolved",  398),
-    ("02-signing-and-caps.md", "185 requirements always bind",       "ownership_always",    185),
-    ("02-signing-and-caps.md", "395 are reached inside an `if`",     "ownership_cond",      395),
-    ("02-signing-and-caps.md", "420 requirements name an account",   "own_via_parameter",   420),
+    ("02-signing-and-caps.md", "**402 of 442** entrypoints",         "ownership_resolved",  402),
+    ("02-signing-and-caps.md", "The remaining 40 reach an ownership", "ownership_unresolved", 40),
+    ("02-signing-and-caps.md", "186 requirements always bind",       "ownership_always",    186),
+    ("02-signing-and-caps.md", "399 are reached inside an `if`",     "ownership_cond",      399),
+    ("02-signing-and-caps.md", "425 requirements name an account",   "own_via_parameter",   425),
     ("02-signing-and-caps.md", "160 name one the contract",          "own_via_reader",      160),
     ("02-signing-and-caps.md", "Four launchpad purchases require",   "external_caps",       4),
     ("05-reading-data.md", "It contains\n**zero reader functions**",     "readers_indexed",     0),
