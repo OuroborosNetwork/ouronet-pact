@@ -17,7 +17,7 @@ The family's first module, holding the types everything above it uses.
 
 | | |
 |---|---|
-| module hash | `Ka0Ycln3JwoNGVkbeOOpzN18yenzIyNGEz0dnWshCuo` |
+| module hash | `Cttb_sDHOq4sCmjNQNKH3-RO8zFP6L_ydL3EZwuFPs8` |
 | deployed size | 15,430 characters |
 | implements | `OuronetPolicyV2`, `DpdcUdcV2` |
 | repository source | `1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/01_DPDC-UDC.pact` |

@@ -17,8 +17,8 @@ One read module per display entity, deployed after everything it reads. Numbered
 
 | | |
 |---|---|
-| module hash | `7DDsHeKwHDnsiqaiOHEBZLO3i_rQGgcRDjgOzu0R0N0` |
-| deployed size | 18,918 characters |
+| module hash | `l5_5qeDYdISPTrscJI3jBJuwLPSGjMKCN9p48JTLbzA` |
+| deployed size | 19,037 characters |
 | implements | `OUiEightV2` |
 | repository source | `2_CITIZEN/Stage_Z/AppReads/OuronetUI/08_O-UI-EIGHT.pact` |
 

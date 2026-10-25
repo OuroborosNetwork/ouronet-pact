@@ -17,9 +17,9 @@ Above the state core.
 
 | | |
 |---|---|
-| module hash | `U3KIFJDj3akYpm662y5JjozuBZvgFSnTeuOlCzTYBYQ` |
+| module hash | `qxRRzRUHNRoEJKbj1prF0dzGcov6dBQ6kZr1WhvJmh4` |
 | deployed size | 39,844 characters |
-| implements | `OuronetPolicyV2`, `DpdcRolesV2` |
+| implements | `OuronetPolicyV2`, `DpdcRolesV3` |
 | repository source | `1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/05_DPDC-R.pact` |
 
 **Tables it owns** — 2

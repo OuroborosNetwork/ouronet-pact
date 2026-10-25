@@ -17,8 +17,8 @@ A leaf read-only module deployed after everything it describes. It has no interf
 
 | | |
 |---|---|
-| module hash | `vENJazSL5VTJaynu7DJ39sNZHn7YzQG0Ci48_eqOsv0` |
-| deployed size | 88,149 characters |
+| module hash | `xgbZB_kTCHcXTTE5dvaTQL7jGxwAM8MBYQvvKF62EJE` |
+| deployed size | 114,115 characters |
 | implements | — |
 | repository source | `1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact` |
 
@@ -26,29 +26,27 @@ A leaf read-only module deployed after everything it describes. It has no interf
 
 `GOV`, `GOV|INFO|AQP_ADMIN`
 
-**Functions** — 86, grouped by what their prefix promises
+**Functions** — 105, grouped by what their prefix promises
 
 | family | n | the promise | names |
 |---|---:|---|---|
-| *(unclassified)* | 86 | carries no StoicSyntax prefix | `CT_Bar`, `GOV|Demiurgoi`, `INFO_AQP-ANK|IssueNonFungibleAnchor`, `INFO_AQP-ANK|IssueNonFungibleSetAnchor`, `INFO_AQP-ANK|IssueSemiFungibleAnchor`, `INFO_AQP-ANK|IssueTrueFungibleAnchor` …+80 |
+| *(unclassified)* | 105 | carries no StoicSyntax prefix | `CT_Bar`, `GOV|Demiurgoi`, `INFO_AQP-ANK|IssueNonFungibleAnchor`, `INFO_AQP-ANK|IssueNonFungibleSetAnchor`, `INFO_AQP-ANK|IssueSemiFungibleAnchor`, `INFO_AQP-ANK|IssueTrueFungibleAnchor` …+99 |
 
-> **The repository differs from what is deployed.** Everything above describes the CHAIN, which is what a caller actually reaches. The difference is stated rather than resolved:
->
-> - **functions** in the repository only: `INFO_AQP-FVT|ClearPoolSweep`, `INFO_AQP-FVT|FvtFixSlice`, `INFO_AQP-POOL|BackfillScoreSlice`, `INFO_AQP-POOL|BeginScoreRevoke`, `INFO_AQP-POOL|DrainScoreSlice`, `INFO_AQP-POOL|FinalizeScoreRevoke`, `INFO_AQP-POOL|ReassignCollectableStakeBeneficiary`, `INFO_AQP-POOL|ReassignOrtoStakeBeneficiary`
+> Repository and chain agree on every declared shape.
 
 **Capabilities** -- 2
 
 `GOV`, `GOV|INFO|AQP_ADMIN`
 
-**Functions** -- 86, grouped by what the prefix promises
+**Functions** -- 105, grouped by what the prefix promises
 
 *Governance* (1) — keysets and protocol constants
 
 `GOV|Demiurgoi`
 
-*Previews* (84) — operation previews for clients
+*Previews* (103) — operation previews for clients
 
-`INFO_AQP-ANK|IssueNonFungibleAnchor`, `INFO_AQP-ANK|IssueNonFungibleSetAnchor`, `INFO_AQP-ANK|IssueSemiFungibleAnchor`, `INFO_AQP-ANK|IssueTrueFungibleAnchor`, `INFO_AQP-ANK|RevokeAnchor`, `INFO_AQP-ANK|RevokeBoostClass`, `INFO_AQP-DSA|BurnRoyalty`, `INFO_AQP-DSA|DefineDelegationVault`, `INFO_AQP-DSA|FuelRoyalty`, `INFO_AQP-DSA|OpenAgency`, `INFO_AQP-DSA|OracleWrite`, `INFO_AQP-DSA|RecomputeCapture`, `INFO_AQP-DSA|SetAgencyFee`, `INFO_AQP-DSA|SetOracleAuth`, `INFO_AQP-DSA|SetOracleValidity`, `INFO_AQP-DSA|ToggleExternalOracle`, `INFO_AQP-DSA|WithdrawRoyalty`, `INFO_AQP-FVT|AddRewardLink`, `INFO_AQP-FVT|AddScoreEntity`, `INFO_AQP-FVT|Collect`, `INFO_AQP-FVT|Control`, `INFO_AQP-FVT|Inject`, `INFO_AQP-FVT|InjectFinalize`, `INFO_AQP-FVT|InjectFixChunk`, `INFO_AQP-FVT|InjectStream`, `INFO_AQP-FVT|Issue`, `INFO_AQP-FVT|IssueGenericEarningVault`, `INFO_AQP-FVT|IssueMultipletFamily`, `INFO_AQP-FVT|RotateOwnership`, `INFO_AQP-FVT|SetCommonDenominator`, `INFO_AQP-FVT|SetMosaic`, `INFO_AQP-FVT|SetQualitySplit`, `INFO_AQP-FVT|SetSplitMode`, `INFO_AQP-FVT|SweepBegin`, `INFO_AQP-FVT|SweepRecomputeChunk`, `INFO_AQP-FVT|SweepRevokeAnchor`, `INFO_AQP-FVT|ToggleRewardLink`, `INFO_AQP-FVT|ToggleScoreEntityLink`, `INFO_AQP-FVT|UnstaleAll`, `INFO_AQP-FVT|UnstaleMyScores`, `INFO_AQP-MTX|2Inject`, `INFO_AQP-MTX|2SweepRevokeAnchor`, `INFO_AQP-POOL|AbortVacate`, `INFO_AQP-POOL|AddScore`, `INFO_AQP-POOL|BatchDrainCollectable`, `INFO_AQP-POOL|BatchDrainOrtoFungible`, `INFO_AQP-POOL|BatchDrainTrueFungible`, `INFO_AQP-POOL|BatchVacateCollectables`, `INFO_AQP-POOL|BatchVacateOrtoFungible`, `INFO_AQP-POOL|BatchVacateTrueFungible`, `INFO_AQP-POOL|DisablePoolStake`, `INFO_AQP-POOL|EnablePoolStake`, `INFO_AQP-POOL|FinalizeVacate`, `INFO_AQP-POOL|FullVacate`, `INFO_AQP-POOL|Issue`, `INFO_AQP-POOL|RevokeScore`, `INFO_AQP-POOL|StakeNonFungibleCollectable`, `INFO_AQP-POOL|StakeOrtoFungible`, `INFO_AQP-POOL|StakeSemiFungibleCollectable`, `INFO_AQP-POOL|StakeTrueFungible`, `INFO_AQP-POOL|SyncNonFungibleAnchors`, `INFO_AQP-POOL|SyncSemiFungibleAnchors`, `INFO_AQP-POOL|SyncTrueFungibleAnchors`, `INFO_AQP-POOL|UnstakeNonFungibleCollectable`, `INFO_AQP-POOL|UnstakeOrtoFungible`, `INFO_AQP-POOL|UnstakeSemiFungibleCollectable`, `INFO_AQP-POOL|UnstakeTrueFungible`, `INFO_AQP-SCR|CombineTripletScoreModel`, `INFO_AQP-SCR|ControlScore`, `INFO_AQP-SCR|CreateScoreBoostClassLink`, `INFO_AQP-SCR|CreateScoreBoostLink`, `INFO_AQP-SCR|EnableDebBoost`, `INFO_AQP-SCR|IssueLiquidityScore`, `INFO_AQP-SCR|IssueNonFungibleScore`, `INFO_AQP-SCR|IssueNonFungibleScoreDefinition`, `INFO_AQP-SCR|IssueNonFungibleSetScoreDefinition`, `INFO_AQP-SCR|IssueOrtoFungibleScore`, `INFO_AQP-SCR|IssueScoreFromModel`, `INFO_AQP-SCR|IssueSemiFungibleScore`, `INFO_AQP-SCR|IssueSemiFungibleScoreDefinition`, `INFO_AQP-SCR|IssueSingleScoreModel`, `INFO_AQP-SCR|IssueTriplet`, `INFO_AQP-SCR|IssueTrueFungibleScore`, `INFO_AQP-SCR|RotateScoreOwnership`
+`INFO_AQP-ANK|IssueNonFungibleAnchor`, `INFO_AQP-ANK|IssueNonFungibleSetAnchor`, `INFO_AQP-ANK|IssueSemiFungibleAnchor`, `INFO_AQP-ANK|IssueTrueFungibleAnchor`, `INFO_AQP-ANK|RevokeAnchor`, `INFO_AQP-ANK|RevokeBoostClass`, `INFO_AQP-DSA|BurnRoyalty`, `INFO_AQP-DSA|DefineDelegationVault`, `INFO_AQP-DSA|FuelRoyalty`, `INFO_AQP-DSA|OpenAgency`, `INFO_AQP-DSA|OracleWrite`, `INFO_AQP-DSA|RecomputeCapture`, `INFO_AQP-DSA|SetAgencyFee`, `INFO_AQP-DSA|SetOracleAuth`, `INFO_AQP-DSA|SetOracleValidity`, `INFO_AQP-DSA|ToggleExternalOracle`, `INFO_AQP-DSA|WithdrawRoyalty`, `INFO_AQP-FVT|AddRewardLink`, `INFO_AQP-FVT|AddScoreEntity`, `INFO_AQP-FVT|ClearPoolSweep`, `INFO_AQP-FVT|Collect`, `INFO_AQP-FVT|Control`, `INFO_AQP-FVT|FvtFixSlice`, `INFO_AQP-FVT|Inject`, `INFO_AQP-FVT|InjectFinalize`, `INFO_AQP-FVT|InjectFixChunk`, `INFO_AQP-FVT|InjectStream`, `INFO_AQP-FVT|Issue`, `INFO_AQP-FVT|IssueGenericEarningVault`, `INFO_AQP-FVT|IssueMultipletFamily`, `INFO_AQP-FVT|LatchStreamEligible`, `INFO_AQP-FVT|RotateOwnership`, `INFO_AQP-FVT|SetCommonDenominator`, `INFO_AQP-FVT|SetMinInjectAmount`, `INFO_AQP-FVT|SetMosaic`, `INFO_AQP-FVT|SetQualitySplit`, `INFO_AQP-FVT|SetSplitMode`, `INFO_AQP-FVT|SweepBegin`, `INFO_AQP-FVT|SweepRecomputeChunk`, `INFO_AQP-FVT|SweepRevokeAnchor`, `INFO_AQP-FVT|ToggleRewardLink`, `INFO_AQP-FVT|ToggleScoreEntityLink`, `INFO_AQP-FVT|UnstaleAll`, `INFO_AQP-FVT|UnstaleMyScores`, `INFO_AQP-MTX|2Inject`, `INFO_AQP-MTX|2SweepRevokeAnchor`, `INFO_AQP-POOL|AbortVacate`, `INFO_AQP-POOL|AddScore`, `INFO_AQP-POOL|BackfillScoreSlice`, `INFO_AQP-POOL|BatchDrainCollectable`, `INFO_AQP-POOL|BatchDrainOrtoFungible`, `INFO_AQP-POOL|BatchDrainTrueFungible`, `INFO_AQP-POOL|BatchVacateCollectables`, `INFO_AQP-POOL|BatchVacateOrtoFungible`, `INFO_AQP-POOL|BatchVacateTrueFungible`, `INFO_AQP-POOL|BeginScoreRevoke`, `INFO_AQP-POOL|DisablePoolStake`, `INFO_AQP-POOL|DrainScoreSlice`, `INFO_AQP-POOL|EnablePoolStake`, `INFO_AQP-POOL|FinalizeScoreRevoke`, `INFO_AQP-POOL|FinalizeVacate`, `INFO_AQP-POOL|FullVacate`, `INFO_AQP-POOL|Issue`, `INFO_AQP-POOL|ReassignCollectableStakeBeneficiary`, `INFO_AQP-POOL|ReassignOrtoStakeBeneficiary`, `INFO_AQP-POOL|ReassignTrueFungibleStakeBeneficiary`, `INFO_AQP-POOL|ReleaseSpecialCustodial`, `INFO_AQP-POOL|RevokeScore`, `INFO_AQP-POOL|StakeNonFungibleCollectable`, `INFO_AQP-POOL|StakeOrtoFungible`, `INFO_AQP-POOL|StakeSemiFungibleCollectable`, `INFO_AQP-POOL|StakeSpecialCustodial`, `INFO_AQP-POOL|StakeTrueFungible`, `INFO_AQP-POOL|SyncNonFungibleAnchors`, `INFO_AQP-POOL|SyncSemiFungibleAnchors`, `INFO_AQP-POOL|SyncTrueFungibleAnchors`, `INFO_AQP-POOL|UnstakeNonFungibleCollectable`, `INFO_AQP-POOL|UnstakeOrtoFungible`, `INFO_AQP-POOL|UnstakeSemiFungibleCollectable`, `INFO_AQP-POOL|UnstakeTrueFungible`, `INFO_AQP-POOL|UpdateScoreMultipliers`, `INFO_AQP-POOL|VacateNonFungible`, `INFO_AQP-POOL|VacateOrtoFungible`, `INFO_AQP-POOL|VacateSemiFungible`, `INFO_AQP-POOL|VacateTrueFungible`, `INFO_AQP-SCR|CombineTripletScoreModel`, `INFO_AQP-SCR|ControlScore`, `INFO_AQP-SCR|CreateScoreBoostClassLink`, `INFO_AQP-SCR|CreateScoreBoostLink`, `INFO_AQP-SCR|EnableDebBoost`, `INFO_AQP-SCR|IssueLiquidityScore`, `INFO_AQP-SCR|IssueNonFungibleScore`, `INFO_AQP-SCR|IssueNonFungibleScoreDefinition`, `INFO_AQP-SCR|IssueNonFungibleSetScoreDefinition`, `INFO_AQP-SCR|IssueOrtoFungibleScore`, `INFO_AQP-SCR|IssueScoreFromModel`, `INFO_AQP-SCR|IssueSemiFungibleScore`, `INFO_AQP-SCR|IssueSemiFungibleScoreDefinition`, `INFO_AQP-SCR|IssueSingleScoreModel`, `INFO_AQP-SCR|IssueTriplet`, `INFO_AQP-SCR|IssueTrueFungibleScore`, `INFO_AQP-SCR|LockScoreDrift`, `INFO_AQP-SCR|RotateScoreOwnership`
 
 *Unclassified* (1) — no known prefix -- worth asking why
 

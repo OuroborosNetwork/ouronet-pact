@@ -19,9 +19,9 @@ The last swap-family module.
 
 | | |
 |---|---|
-| module hash | `IAHAD-gi2epkh6ya2iWlVvxXnwsT3l57c9MVUevjAiE` |
+| module hash | `Tyr4wBW3ckIdz5FW-T3vorQObjrTgdg558k3vPH3J7c` |
 | deployed size | 58,471 characters |
-| implements | `OuronetPolicyV2`, `SwapperMtxV4` |
+| implements | `OuronetPolicyV2`, `SwapperMtxV5` |
 | repository source | `1_SOVEREIGN/STAGE_01/2_Core/20_MTX-SWP.pact` |
 
 **Tables it owns** — 2

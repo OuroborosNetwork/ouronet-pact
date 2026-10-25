@@ -21,7 +21,7 @@ A read-layer module deployed after everything it describes.
 
 | | |
 |---|---|
-| module hash | `LI_UBB66mCnjNl9QU0TLU5QjJYF7BSzdQQ9nxhhBF80` |
+| module hash | `mAD0_Y1lNxBBOJNzgAjDFsWUS-2tAjCC7PXYNdNh5a8` |
 | deployed size | 73,464 characters |
 | implements | — |
 | repository source | `1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact` |

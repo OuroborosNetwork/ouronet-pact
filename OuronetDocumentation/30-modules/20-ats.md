@@ -23,9 +23,9 @@ A Stage-1 core above the token modules. Four live pools chain into a ladder, eac
 
 | | |
 |---|---|
-| module hash | `q9egSXL5o_RR7TZyMOFRO9WW3G275XQwEaFSU4aSpps` |
+| module hash | `RWIsI5wm5eS1F4WJ723hvBNBi6sjjh1CWhilUIeQ2JA` |
 | deployed size | 130,920 characters |
-| implements | `OuronetPolicyV2`, `BrandingUsagePrimaryV2`, `AutostakeV3`, `AutostakeComputerV2` |
+| implements | `OuronetPolicyV2`, `BrandingUsagePrimaryV3`, `AutostakeV4`, `AutostakeComputerV3` |
 | repository source | `1_SOVEREIGN/STAGE_01/2_Core/08_ATS.pact` |
 
 **Tables it owns** — 4

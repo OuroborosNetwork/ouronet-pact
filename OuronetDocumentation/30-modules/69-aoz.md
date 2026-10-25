@@ -17,7 +17,7 @@ A citizen module above Stage 1.
 
 | | |
 |---|---|
-| module hash | `UgDNqvR2Khy4A1ZQEK9ic0Kdetuoc_kDsgD_2_mOL88` |
+| module hash | `Vv8hBl9V817gcqYo6dH7wUSNpXjIpFCjHN3r66Pu_3g` |
 | deployed size | 14,340 characters |
 | implements | `AgeOfZalmoxis` |
 | repository source | `2_CITIZEN/1_AOZ/01_AOZ+.pact` |

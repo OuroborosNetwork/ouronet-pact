@@ -15,8 +15,8 @@ A citizen module above the launchpad venue.
 
 | | |
 |---|---|
-| module hash | `Dnke_sFhj34abRwvKeuo2dkN9ltxwxZizVBCDB5RLIg` |
-| deployed size | 51,629 characters |
+| module hash | `LZAEoYS_jv-A8SWs55JZLFjvbpfcH75EBEYK4nafSuU` |
+| deployed size | 55,655 characters |
 | implements | `OuronetPolicyV2` |
 | repository source | `2_CITIZEN/7_Launchpad/5_StoicIco/05_STOAICO.pact` |
 
@@ -28,11 +28,11 @@ A citizen module above the launchpad venue.
 
 `GeneralContributionSchema`, `UserContributionSchema`
 
-**Capabilities** — 13
+**Capabilities** — 14
 
-`GOV`, `GOV|STOAICO_ADMIN`, `INIT-ICO-DISTRIBUTION`, `P|PAD-STOAICO|REMOTE-GOV`, `P|SECURE-CALLER`, `P|STOAICO|CALLER`, `SECURE`, `STOAICO|ADD-CONTRIBUTION`, `STOAICO|ADMIN`, `STOAICO|FLUSH`, `STOAICO|INJECT`, `STOAICO|REDEEM-CONTRIBUTION`, `STOAICO|REMOVE-CONTRIBUTION`
+`GOV`, `GOV|MIGRATE-GENERAL-FIELDS`, `GOV|STOAICO_ADMIN`, `INIT-ICO-DISTRIBUTION`, `P|PAD-STOAICO|REMOTE-GOV`, `P|SECURE-CALLER`, `P|STOAICO|CALLER`, `SECURE`, `STOAICO|ADD-CONTRIBUTION`, `STOAICO|ADMIN`, `STOAICO|FLUSH`, `STOAICO|INJECT`, `STOAICO|REDEEM-CONTRIBUTION`, `STOAICO|REMOVE-CONTRIBUTION`
 
-**Functions** — 67, grouped by what their prefix promises
+**Functions** — 68, grouped by what their prefix promises
 
 | family | n | the promise | names |
 |---|---:|---|---|
@@ -45,18 +45,18 @@ A citizen module above the launchpad venue.
 | `XI_` protected (internal) | 17 | this module only | `XI_CollectFor`, `XI_IncrementDistributionRound`, `XI_InitialiseDistributionVault`, `XI_MarkCollected`, `XI_ResetPendingRewards`, `XI_ResetUnclaimedCount` …+11 |
 | `AA_` admin (heavy) | 1 | admin key; reaches a scan somewhere in its tree | `AA_FlushUncollected` |
 | `Ap_` admin recipe | 1 | multi-transaction | `Ap_FlushUncollectedSlice` |
-| `A_` admin | 4 | admin-key mutations | `A_InitialiseDistributionVault`, `A_Inject`, `A_Stake`, `A_Unstake` |
+| `A_` admin | 5 | admin-key mutations | `A_InitialiseDistributionVault`, `A_Inject`, `A_MigrateGeneralFields`, `A_Stake`, `A_Unstake` |
 | `C_` client | 1 | reached via Talos, never called directly | `C_Collect` |
 | `P|` policy | 9 | inter-module authorisation | `P|A_Add`, `P|A_AddIMP`, `P|A_Define`, `P|A_RemoveIMP`, `P|A_SetIMP`, `P|Info` …+3 |
 | *(unclassified)* | 7 | carries no StoicSyntax prefix | `CT_Bar`, `CT_Info`, `CT_Namespace`, `GOV|DEMIPAD|PBL`, `GOV|DEMIPAD|SC_NAME`, `GOV|Demiurgoi` …+1 |
 
 > Repository and chain agree on every declared shape.
 
-**Capabilities** -- 13
+**Capabilities** -- 14
 
-`GOV`, `GOV|STOAICO_ADMIN`, `INIT-ICO-DISTRIBUTION`, `P|PAD-STOAICO|REMOTE-GOV`, `P|SECURE-CALLER`, `P|STOAICO|CALLER`, `SECURE`, `STOAICO|ADD-CONTRIBUTION`, `STOAICO|ADMIN`, `STOAICO|FLUSH`, `STOAICO|INJECT`, `STOAICO|REDEEM-CONTRIBUTION`, `STOAICO|REMOVE-CONTRIBUTION`
+`GOV`, `GOV|MIGRATE-GENERAL-FIELDS`, `GOV|STOAICO_ADMIN`, `INIT-ICO-DISTRIBUTION`, `P|PAD-STOAICO|REMOTE-GOV`, `P|SECURE-CALLER`, `P|STOAICO|CALLER`, `SECURE`, `STOAICO|ADD-CONTRIBUTION`, `STOAICO|ADMIN`, `STOAICO|FLUSH`, `STOAICO|INJECT`, `STOAICO|REDEEM-CONTRIBUTION`, `STOAICO|REMOVE-CONTRIBUTION`
 
-**Functions** -- 67, grouped by what the prefix promises
+**Functions** -- 68, grouped by what the prefix promises
 
 *Cost readers* (1) — price an operation; the exec path and the preview both call these
 
@@ -90,9 +90,9 @@ A citizen module above the launchpad venue.
 
 `AA_FlushUncollected`
 
-*Admin* (9) — admin-key mutations
+*Admin* (10) — admin-key mutations
 
-`A_InitialiseDistributionVault`, `A_Inject`, `A_Stake`, `A_Unstake`, `P|A_Add`, `P|A_AddIMP`, `P|A_Define`, `P|A_RemoveIMP`, `P|A_SetIMP`
+`A_InitialiseDistributionVault`, `A_Inject`, `A_MigrateGeneralFields`, `A_Stake`, `A_Unstake`, `P|A_Add`, `P|A_AddIMP`, `P|A_Define`, `P|A_RemoveIMP`, `P|A_SetIMP`
 
 *Internal writes* (17) — this module only; writes under a capability
 

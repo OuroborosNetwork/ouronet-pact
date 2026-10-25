@@ -3,17 +3,17 @@
 > **This page is GENERATED.** Edit `REPL/tools/_docsref.py`, never this file — the
 > gate regenerates it and diffs the result. It carries no prose for that reason.
 
-Every client entrypoint Ouronet exposes — **438** of them — with the preview
+Every client entrypoint Ouronet exposes — **442** of them — with the preview
 that prices it and whether the gas station pays for it.
 
 **Bind preview arguments by NAME, never by position.** A preview's parameter list
-differs from its entrypoint's in **422**
+differs from its entrypoint's in **426**
 cases. Positional binding does not fail — the values are mostly strings, so a wrong
 mapping type-checks and returns a confident price for a different question.
 
 | sponsorship | entrypoints |
 |---|---:|
-| fully sponsored | 420 |
+| fully sponsored | 424 |
 | step-0-only | 10 |
 | not sponsored | 8 |
 
@@ -410,6 +410,7 @@ mapping type-checks and returns a confident price for a different question.
 | `AQP-FVT|CC_Inject` | `AQP-INFO.INFO_AQP-FVT|Inject` | yes |
 | `AQP-FVT|CC_InjectFinalize` | `AQP-INFO.INFO_AQP-FVT|InjectFinalize` | yes |
 | `AQP-FVT|CC_InjectStream` | `AQP-INFO.INFO_AQP-FVT|InjectStream` | yes |
+| `AQP-FVT|CC_LatchStreamEligible` | `AQP-INFO.INFO_AQP-FVT|LatchStreamEligible` | yes |
 | `AQP-FVT|CC_SweepBegin` | `AQP-INFO.INFO_AQP-FVT|SweepBegin` | yes |
 | `AQP-FVT|CC_SweepRevokeAnchor` | `AQP-INFO.INFO_AQP-FVT|SweepRevokeAnchor` | yes |
 | `AQP-FVT|CC_UnstaleMyScores` | `AQP-INFO.INFO_AQP-FVT|UnstaleMyScores` | yes |
@@ -425,6 +426,7 @@ mapping type-checks and returns a confident price for a different question.
 | `AQP-FVT|C_IssueMultipletFamily` | `AQP-INFO.INFO_AQP-FVT|IssueMultipletFamily` | yes |
 | `AQP-FVT|C_RotateOwnership` | `AQP-INFO.INFO_AQP-FVT|RotateOwnership` | yes |
 | `AQP-FVT|C_SetCommonDenominator` | `AQP-INFO.INFO_AQP-FVT|SetCommonDenominator` | yes |
+| `AQP-FVT|C_SetMinInjectAmount` | `AQP-INFO.INFO_AQP-FVT|SetMinInjectAmount` | yes |
 | `AQP-FVT|C_SetMosaic` | `AQP-INFO.INFO_AQP-FVT|SetMosaic` | yes |
 | `AQP-FVT|C_SetQualitySplit` | `AQP-INFO.INFO_AQP-FVT|SetQualitySplit` | yes |
 | `AQP-FVT|C_SetSplitMode` | `AQP-INFO.INFO_AQP-FVT|SetSplitMode` | yes |
@@ -432,6 +434,9 @@ mapping type-checks and returns a confident price for a different question.
 | `AQP-FVT|C_ToggleScoreEntityLink` | `AQP-INFO.INFO_AQP-FVT|ToggleScoreEntityLink` | yes |
 | `AQP-POOL|CC_FinalizeScoreRevoke` | `AQP-INFO.INFO_AQP-POOL|FinalizeScoreRevoke` | yes |
 | `AQP-POOL|CC_FullVacate` | `AQP-INFO.INFO_AQP-POOL|FullVacate` | yes |
+| `AQP-POOL|CC_ReassignCollectableStakeBeneficiary` | `AQP-INFO.INFO_AQP-POOL|ReassignCollectableStakeBeneficiary` | yes |
+| `AQP-POOL|CC_ReassignOrtoStakeBeneficiary` | `AQP-INFO.INFO_AQP-POOL|ReassignOrtoStakeBeneficiary` | yes |
+| `AQP-POOL|CC_ReassignTrueFungibleStakeBeneficiary` | `AQP-INFO.INFO_AQP-POOL|ReassignTrueFungibleStakeBeneficiary` | yes |
 | `AQP-POOL|CC_StakeNonFungibleCollectable` | `AQP-INFO.INFO_AQP-POOL|StakeNonFungibleCollectable` | yes |
 | `AQP-POOL|CC_StakeOrtoFungible` | `AQP-INFO.INFO_AQP-POOL|StakeOrtoFungible` | yes |
 | `AQP-POOL|CC_StakeSemiFungibleCollectable` | `AQP-INFO.INFO_AQP-POOL|StakeSemiFungibleCollectable` | yes |
@@ -452,8 +457,6 @@ mapping type-checks and returns a confident price for a different question.
 | `AQP-POOL|CCp_BatchVacateCollectables` | `AQP-INFO.INFO_AQP-POOL|BatchVacateCollectables` | yes |
 | `AQP-POOL|CCp_BatchVacateOrtoFungible` | `AQP-INFO.INFO_AQP-POOL|BatchVacateOrtoFungible` | yes |
 | `AQP-POOL|CCp_BatchVacateTrueFungible` | `AQP-INFO.INFO_AQP-POOL|BatchVacateTrueFungible` | yes |
-| `AQP-POOL|CCp_ReassignCollectableStakeBeneficiary` | `AQP-INFO.INFO_AQP-POOL|ReassignCollectableStakeBeneficiary` | yes |
-| `AQP-POOL|CCp_ReassignOrtoStakeBeneficiary` | `AQP-INFO.INFO_AQP-POOL|ReassignOrtoStakeBeneficiary` | yes |
 | `AQP-POOL|CCp_ReleaseSpecialCustodial` | `AQP-INFO.INFO_AQP-POOL|ReleaseSpecialCustodial` | yes |
 | `AQP-POOL|CCp_StakeSpecialCustodial` | `AQP-INFO.INFO_AQP-POOL|StakeSpecialCustodial` | yes |
 | `AQP-POOL|C_AbortVacate` | `AQP-INFO.INFO_AQP-POOL|AbortVacate` | yes |
@@ -484,6 +487,7 @@ mapping type-checks and returns a confident price for a different question.
 | `AQP-SCR|C_IssueSingleScoreModel` | `AQP-INFO.INFO_AQP-SCR|IssueSingleScoreModel` | yes |
 | `AQP-SCR|C_IssueTriplet` | `AQP-INFO.INFO_AQP-SCR|IssueTriplet` | yes |
 | `AQP-SCR|C_IssueTrueFungibleScore` | `AQP-INFO.INFO_AQP-SCR|IssueTrueFungibleScore` | yes |
+| `AQP-SCR|C_LockScoreDrift` | `AQP-INFO.INFO_AQP-SCR|LockScoreDrift` | yes |
 | `AQP-SCR|C_RotateScoreOwnership` | `AQP-INFO.INFO_AQP-SCR|RotateScoreOwnership` | yes |
 | `MTX-AQP|2|CC_Inject` | `AQP-INFO.INFO_AQP-MTX|2Inject` | *step-0-only* |
 | `MTX-AQP|2|CC_SweepRevokeAnchor` | `AQP-INFO.INFO_AQP-MTX|2SweepRevokeAnchor` | *step-0-only* |

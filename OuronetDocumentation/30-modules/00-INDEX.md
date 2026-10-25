@@ -1,6 +1,6 @@
 # The modules
 
-One page per deployed module — **96 of them** — in **deploy order**, which
+One page per deployed module — **98 of them** — in **deploy order**, which
 is also dependency order: a module may only call what is already deployed, so reading
 downward is reading foundations first.
 
@@ -143,4 +143,6 @@ is not touched by that.
 | 93 | [`O-UI-NINE`](93-o-ui-nine.md) | orto-fungible reads |
 | 94 | [`O-UI-TEN`](94-o-ui-ten.md) | collectable reads |
 | 95 | [`O-UI-TWELVE`](95-o-ui-twelve.md) | pool reads |
-| 96 | [`P-UI-ONE`](96-p-ui-one.md) | external-data reads |
+| 96 | [`O-UI-THIRTEEN`](96-o-ui-thirteen.md) |  |
+| 97 | [`O-UI-FOURTEEN`](97-o-ui-fourteen.md) |  |
+| 98 | [`P-UI-ONE`](98-p-ui-one.md) |  |

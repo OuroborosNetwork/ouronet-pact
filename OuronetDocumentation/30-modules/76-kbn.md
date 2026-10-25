@@ -17,8 +17,8 @@ A citizen module above the collectables family.
 
 | | |
 |---|---|
-| module hash | `5nVlXL2e0s3PFdhxzwWFmIgcl52ka49pIeIDJEjsqZs` |
-| deployed size | 11,486 characters |
+| module hash | `pQQChv5WPxgMVODFTw2KCIUPlfkKqp0zlDHn37ZsMrk` |
+| deployed size | 13,651 characters |
 | implements | — |
 | repository source | `2_CITIZEN/4_BunniesMinter/02_KBunnies.pact` |
 

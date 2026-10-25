@@ -17,9 +17,9 @@ A citizen module above the launchpad venue.
 
 | | |
 |---|---|
-| module hash | `csRhpwj30XRuSWKSJ-yAMf2c5n1RSzTwZMXWvUuP744` |
+| module hash | `dgQNCGpqpN5LQ1nlxSj4dETMKX-lNODCNenFmfRpPUM` |
 | deployed size | 25,109 characters |
-| implements | `OuronetPolicyV2`, `StoicPayV3` |
+| implements | `OuronetPolicyV2`, `StoicPayV4` |
 | repository source | `2_CITIZEN/7_Launchpad/4_StoicPay/04_STOICPAY.pact` |
 
 **Tables it owns** — 3

@@ -19,9 +19,9 @@ Above the liquidity mathematics, below Talos.
 
 | | |
 |---|---|
-| module hash | `UrpNTeCvu3iR8m-H_xcLgbu3wBDUujwd4-aN4ofYTnE` |
+| module hash | `ryzMXFpu8IudxiDm8VDrvrgYtSGZ0ou2UZxt3-d68M4` |
 | deployed size | 74,171 characters |
-| implements | `OuronetPolicyV2`, `BrandingUsageSecondaryV2`, `SwapperLiquidityClientV2` |
+| implements | `OuronetPolicyV2`, `BrandingUsageSecondaryV3`, `SwapperLiquidityClientV3` |
 | repository source | `1_SOVEREIGN/STAGE_01/2_Core/18_SWPLC.pact` |
 
 **Tables it owns** — 2

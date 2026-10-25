@@ -17,9 +17,9 @@ Beside the distributor, for the operations that must be split.
 
 | | |
 |---|---|
-| module hash | `GnaBHgIWqnoLahra8cBN_0dLMdCAqAFmL1wi1NmJdzo` |
-| deployed size | 26,317 characters |
-| implements | `OuronetPolicyV2`, `AqpMtxV1` |
+| module hash | `rXOrP1iEjV9_Nl9fZ7H3R4VJWO70_5-wAke9pZmg0aA` |
+| deployed size | 27,939 characters |
+| implements | `OuronetPolicyV2`, `AqpMtxV2` |
 | repository source | `1_SOVEREIGN/STAGE_02/2_Core/03_AQP/07_MTX-AQP.pact` |
 
 **Tables it owns** — 2

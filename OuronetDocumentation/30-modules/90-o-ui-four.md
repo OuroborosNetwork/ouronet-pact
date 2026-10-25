@@ -17,7 +17,7 @@ One read module per display entity, deployed after everything it reads. Numbered
 
 | | |
 |---|---|
-| module hash | `X1ju3aQh4tnCQHYhc5f-Mw16WJoCVnp1TZgS78n9-rQ` |
+| module hash | `MK6CAxicaBA_ww54aQqQ0rvbarcVeHoHNiYr8V2pwX4` |
 | deployed size | 3,711 characters |
 | implements | `OUiFourV1` |
 | repository source | `2_CITIZEN/Stage_Z/AppReads/OuronetUI/04_O-UI-FOUR.pact` |

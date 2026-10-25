@@ -19,9 +19,9 @@ Above the registry and the graph. It is the largest module in the family.
 
 | | |
 |---|---|
-| module hash | `jqBfiYRyhqH6NPpeQlRf_rDNjFbvXdZUquoAO0J--b8` |
-| deployed size | 136,106 characters |
-| implements | `OuronetPolicyV2`, `SwapperIssueV4` |
+| module hash | `GgonYOslDKdpoKPm2prn1xFwDjUemnhkJntnR7cQtko` |
+| deployed size | 136,091 characters |
+| implements | `OuronetPolicyV2`, `SwapperIssueV5` |
 | repository source | `1_SOVEREIGN/STAGE_01/2_Core/16_SWPI.pact` |
 
 **Tables it owns** — 2

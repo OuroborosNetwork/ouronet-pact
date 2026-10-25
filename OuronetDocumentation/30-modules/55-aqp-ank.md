@@ -19,9 +19,9 @@ Below the scoring module, which reads a single aggregated value from it.
 
 | | |
 |---|---|
-| module hash | `9eFnctlln356ylLHbnCCkGiHb-qNcygdAy3-eNkqn00` |
-| deployed size | 121,847 characters |
-| implements | `OuronetPolicyV2`, `AcquisitionAnchorsV1` |
+| module hash | `FjO4M8jjqkmyqBARkK3oC4QQR_w0QVDohe0etb3Kook` |
+| deployed size | 129,132 characters |
+| implements | `OuronetPolicyV2`, `AcquisitionAnchorsV3` |
 | repository source | `1_SOVEREIGN/STAGE_02/2_Core/03_AQP/01_ANK.pact` |
 
 **Tables it owns** — 8
@@ -32,14 +32,14 @@ Below the scoring module, which reads a single aggregated value from it.
 
 `ANK|C>BUMP-BOOST-CLASS-LINKS`, `ANK|C>ISSUE-DPNF`, `ANK|C>ISSUE-DPNF-SET`, `ANK|C>ISSUE-DPSF`, `ANK|C>ISSUE-DPTF`, `ANK|C>REVOKE`, `ANK|C>REVOKE-BOOST-CLASS`, `ANK|C>REVOKE-BOOST-CLASS-ENTRY`, `ANK|C>UPDATE-DPDC`, `ANK|C>UPDATE-DPNF`, `ANK|C>UPDATE-DPSF`, `ANK|C>UPDATE-DPTF`, `ANK|XE>SWEEP`, `ANK|XE>SWEEP-REVOKE`, `ANK|XI>ISSUE-DPNF-COMMON`, `AQP|GOV`, `GOV`, `GOV|ANK_ADMIN`, `P|ANK|CALLER`, `P|SECURE-CALLER`, `SECURE`
 
-**Functions** — 124, grouped by what their prefix promises
+**Functions** — 126, grouped by what their prefix promises
 
 | family | n | the promise | names |
 |---|---:|---|---|
 | `URCi_` cost readers | 4 | returns what an operation will charge | `URCi_IssueAnchor`, `URCi_IssueAnchorStoa`, `URCi_RevokeAnchor`, `URCi_RevokeBoostClass` |
-| `URCv_` derived reads (validating) | 1 | read + derive, with an intrinsic guard | `URCv_CoreDptf` |
+| `URCv_` derived reads (validating) | 2 | read + derive, with an intrinsic guard | `URCv_AnchorableDptfAuthority`, `URCv_CoreDptf` |
 | `URC_` derived reads | 10 | read and derive; no enforce | `URC_AnchorableAssetOwner`, `URC_ConformNonces`, `URC_ConformNoncesByClass`, `URC_NonFungibleAnchorPromile`, `URC_NonFungibleAnchorPromileAbsolute`, `URC_SemiFungibleAnchorPromile` …+4 |
-| `UEV_` validators | 8 | read and enforce; may abort the transaction | `UEV_AnkFungibility`, `UEV_AssetAnchorCap`, `UEV_ExecutorIzAnchorAuthority`, `UEV_ExecutorIzAssetAuthority`, `UEV_ExecutorIzClassOwner`, `UEV_IssueAnchor` …+2 |
+| `UEV_` validators | 9 | read and enforce; may abort the transaction | `UEV_AnkFungibility`, `UEV_AssetAnchorCap`, `UEV_ExecutorIzAnchorAuthority`, `UEV_ExecutorIzAssetAuthority`, `UEV_ExecutorIzClassOwner`, `UEV_ExecutorNotCustodial` …+3 |
 | `UDC_` constructors | 4 | named object constructors | `UDC_AccountAnchor`, `UDC_BoostClass`, `UDC_EmptyInternalGroup`, `UDC_UserBoost` |
 | `UCk_` pure compute (key) | 2 | builds a composite table key | `UCk_Anchors`, `UCk_UserBoost` |
 | `CAP_` ownership gates | 1 | account-ownership enforcement | `CAP_Owner` |
@@ -51,15 +51,13 @@ Below the scoring module, which reads a single aggregated value from it.
 | `P|` policy | 9 | inter-module authorisation | `P|A_Add`, `P|A_AddIMP`, `P|A_Define`, `P|A_RemoveIMP`, `P|A_SetIMP`, `P|Info` …+3 |
 | *(unclassified)* | 60 | carries no StoicSyntax prefix | `CAP_TF|Owner`, `CT_Bar`, `CT_Namespace`, `GOV|AQP|PBL`, `GOV|AQP|SC_NAME`, `GOV|AqpKey` …+54 |
 
-> **The repository differs from what is deployed.** Everything above describes the CHAIN, which is what a caller actually reaches. The difference is stated rather than resolved:
->
-> - **functions** in the repository only: `UEV_ExecutorNotCustodial`, `URCv_AnchorableDptfAuthority`
+> Repository and chain agree on every declared shape.
 
 **Capabilities** -- 21
 
 `ANK|C>BUMP-BOOST-CLASS-LINKS`, `ANK|C>ISSUE-DPNF`, `ANK|C>ISSUE-DPNF-SET`, `ANK|C>ISSUE-DPSF`, `ANK|C>ISSUE-DPTF`, `ANK|C>REVOKE`, `ANK|C>REVOKE-BOOST-CLASS`, `ANK|C>REVOKE-BOOST-CLASS-ENTRY`, `ANK|C>UPDATE-DPDC`, `ANK|C>UPDATE-DPNF`, `ANK|C>UPDATE-DPSF`, `ANK|C>UPDATE-DPTF`, `ANK|XE>SWEEP`, `ANK|XE>SWEEP-REVOKE`, `ANK|XI>ISSUE-DPNF-COMMON`, `AQP|GOV`, `GOV`, `GOV|ANK_ADMIN`, `P|ANK|CALLER`, `P|SECURE-CALLER`, `SECURE`
 
-**Functions** -- 124, grouped by what the prefix promises
+**Functions** -- 126, grouped by what the prefix promises
 
 *Cost readers* (4) — price an operation; the exec path and the preview both call these
 
@@ -77,9 +75,9 @@ Below the scoring module, which reads a single aggregated value from it.
 
 `P|UR_IMP`, `UR_AA|AnchorsActive`, `UR_AA|Data`, `UR_AA|GroupsActive`, `UR_ANK-U|Account`, `UR_ANK-U|Data`, `UR_ANK-U|ID`, `UR_ANK-U|Promile`, `UR_ANK|AnchoredAsset`, `UR_ANK|AnchorsForAsset`, `UR_ANK|BoostClassId`, `UR_ANK|Data`, `UR_ANK|Fungibility`, `UR_ANK|ID`, `UR_ANK|NFNonceClass`, `UR_ANK|NFTraitKey`, `UR_ANK|NFTraitValue`, `UR_ANK|Precision`, `UR_ANK|Promile`, `UR_ANK|SFNonce`, `UR_ANK|State`, `UR_ANK|TFAmount`, `UR_BC|Active`, `UR_BC|Anchors`, `UR_BC|Data`, `UR_BC|ID`, `UR_BC|ScoreLinkCount`, `UR_BC|ScoreLinks`, `UR_UB|AggregatePromile`, `UR_UB|Data`
 
-*Validators* (9) — read and enforce; failure aborts
+*Validators* (10) — read and enforce; failure aborts
 
-`P|UEV_IMC`, `UEV_AnkFungibility`, `UEV_AssetAnchorCap`, `UEV_ExecutorIzAnchorAuthority`, `UEV_ExecutorIzAssetAuthority`, `UEV_ExecutorIzClassOwner`, `UEV_IssueAnchor`, `UEV_LiveAnchor`, `UEV_Promile`
+`P|UEV_IMC`, `UEV_AnkFungibility`, `UEV_AssetAnchorCap`, `UEV_ExecutorIzAnchorAuthority`, `UEV_ExecutorIzAssetAuthority`, `UEV_ExecutorIzClassOwner`, `UEV_ExecutorNotCustodial`, `UEV_IssueAnchor`, `UEV_LiveAnchor`, `UEV_Promile`
 
 *Constructors* (11) — build objects
 
@@ -113,9 +111,9 @@ Below the scoring module, which reads a single aggregated value from it.
 
 `GOV|AQP|PBL`, `GOV|AQP|SC_NAME`, `GOV|AqpKey`, `GOV|Demiurgoi`
 
-*Unclassified* (15) — no known prefix -- worth asking why
+*Unclassified* (16) — no known prefix -- worth asking why
 
-`CT_Bar`, `CT_Namespace`, `UCk_Anchors`, `UCk_UserBoost`, `URCv_CoreDptf`, `WI_Anchor`, `WI_BoostClass`, `WU_Anchor|State`, `WU_BC|AddScoreLink`, `WU_BC|RemoveScoreLink`, `WU_BoostClass|Active`, `WW_Anchors`, `WW_AssetAnchors`, `WW_BoostClass`, `WW_UserBoost`
+`CT_Bar`, `CT_Namespace`, `UCk_Anchors`, `UCk_UserBoost`, `URCv_AnchorableDptfAuthority`, `URCv_CoreDptf`, `WI_Anchor`, `WI_BoostClass`, `WU_Anchor|State`, `WU_BC|AddScoreLink`, `WU_BC|RemoveScoreLink`, `WU_BoostClass|Active`, `WW_Anchors`, `WW_AssetAnchors`, `WW_BoostClass`, `WW_UserBoost`
 <!-- @end:module-page:AQP-ANK -->
 
 ## Traps

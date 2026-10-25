@@ -25,9 +25,9 @@ before you send it.
 
 | | |
 |---|---|
-| module hash | `JyAEdHn7uh41Uo8apC06aWsipneVZG9Fl_oUJu9DXoI` |
+| module hash | `yTt058C7SSF2Gy3rIgUd-IbJVZWoeyAaqo5imJdQJDA` |
 | deployed size | 222,145 characters |
-| implements | `InfoOneV2` |
+| implements | `InfoOneV3` |
 | repository source | `1_SOVEREIGN/STAGE_01/Z_Reads/02_INFO-ONE+.pact` |
 
 **Schemas** — 1, with no tables of its own

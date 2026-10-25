@@ -17,9 +17,9 @@ A citizen module above the launchpad venue.
 
 | | |
 |---|---|
-| module hash | `1SZJcKAoE7JZhNWn4MFIfO-dHxv9FcovmE0e7ju8soA` |
+| module hash | `yeBxzmY8whQUtCL0kQY9pEsCQzmMRgE_s8R47WFyouQ` |
 | deployed size | 32,823 characters |
-| implements | `OuronetPolicyV2`, `SparksV2` |
+| implements | `OuronetPolicyV2`, `SparksV3` |
 | repository source | `2_CITIZEN/7_Launchpad/1_Spark/01_Spark.pact` |
 
 **Tables it owns** — 3

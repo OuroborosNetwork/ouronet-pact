@@ -19,9 +19,9 @@ The top of the swap family, below Talos.
 
 | | |
 |---|---|
-| module hash | `3MDyxoGaDge26FYI1VgqwY_lzuJB13PwUXOB2TzYwaE` |
+| module hash | `u5yfokah49DbSK8RXLL5DXvk2JgigvN6TeY5f7TPORo` |
 | deployed size | 132,572 characters |
-| implements | `OuronetPolicyV2`, `SwapperUsageV3` |
+| implements | `OuronetPolicyV2`, `SwapperUsageV4` |
 | repository source | `1_SOVEREIGN/STAGE_01/2_Core/19_SWPU.pact` |
 
 **Tables it owns** — 2

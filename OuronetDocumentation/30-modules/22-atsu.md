@@ -19,9 +19,9 @@ A Stage-1 core above the pool state module. Its two hibernating siblings — con
 
 | | |
 |---|---|
-| module hash | `ETxfRkJU8ZjBesAThHR06VRP1M3ClMS-gq6tcLg8dF0` |
+| module hash | `zj_WLbRBjm5-Hs2rVpO6xebqU-qhy1lez3_aLi-K-XM` |
 | deployed size | 115,343 characters |
-| implements | `OuronetPolicyV2`, `AutostakeUsageV2` |
+| implements | `OuronetPolicyV2`, `AutostakeUsageV3` |
 | repository source | `1_SOVEREIGN/STAGE_01/2_Core/10_ATSU.pact` |
 
 **Tables it owns** — 2

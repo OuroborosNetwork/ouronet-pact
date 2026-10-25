@@ -19,9 +19,9 @@ A computation module below the liquidity client. It holds the mathematics; the c
 
 | | |
 |---|---|
-| module hash | `fb9yb4TOkESqB4QK4jNUgP-_3PLUtzc704q4UtpacWg` |
+| module hash | `3gpA5dZkCEOvKtWIUNHaJ2vGYsirnyf-Bs9ATduVRRM` |
 | deployed size | 96,884 characters |
-| implements | `OuronetPolicyV2`, `SwapperLiquidityV2` |
+| implements | `OuronetPolicyV2`, `SwapperLiquidityV3` |
 | repository source | `1_SOVEREIGN/STAGE_01/2_Core/17_SWPL.pact` |
 
 **Tables it owns** — 2

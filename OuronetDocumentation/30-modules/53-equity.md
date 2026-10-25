@@ -19,9 +19,9 @@ The last module in the collectables family.
 
 | | |
 |---|---|
-| module hash | `hGPNFoA8xk3_PckYuuvMqDKfm33vepnWcNTdPq7DUpk` |
-| deployed size | 43,388 characters |
-| implements | `OuronetPolicyV2`, `EquityV2` |
+| module hash | `nSAHukohYMtKdtoov26jKeADguNhFzE7y57lVmATIiQ` |
+| deployed size | 44,196 characters |
+| implements | `OuronetPolicyV2`, `EquityV4` |
 | repository source | `1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/11_EQUITY+.pact` |
 
 **Tables it owns** — 2
@@ -32,12 +32,12 @@ The last module in the collectables family.
 
 `EQUITY|C>BREAK`, `EQUITY|C>CONVERT`, `EQUITY|C>MAKE`, `GOV`, `GOV|EQUITY_ADMIN`, `P|EQUITY|CALLER`, `P|EQUITY|REMOTE-GOV`, `P|GOV-CALLER`, `P|SECURE-CALLER`, `SECURE`
 
-**Functions** — 31, grouped by what their prefix promises
+**Functions** — 32, grouped by what their prefix promises
 
 | family | n | the promise | names |
 |---|---:|---|---|
 | `URCi_` cost readers | 2 | returns what an operation will charge | `URCi_IssueShareholderCollection`, `URCi_MorphPackageShares` |
-| `URC_` derived reads | 4 | read and derive; no enforce | `URC_CombineCapacity`, `URC_MakeSharePackage`, `URC_SharesPerMillion`, `URC_SingleSharePerMillions` |
+| `URC_` derived reads | 5 | read and derive; no enforce | `URC_CombineCapacity`, `URC_IzEquitySemiFungible`, `URC_MakeSharePackage`, `URC_SharesPerMillion`, `URC_SingleSharePerMillions` |
 | `UEV_` validators | 5 | read and enforce; may abort the transaction | `UEV_Convert`, `UEV_EquitySemiFungibleID`, `UEV_Morph`, `UEV_ShareAmountsForMaking`, `UEV_SharePackageTier` |
 | `UC_` pure compute | 3 | arguments only -- no reads, no enforce | `UC_Convert`, `UC_Description`, `UC_Name` |
 | `UR_` readers | 1 | table reads; no enforce, no writes | `UR_TierSupplies` |
@@ -46,23 +46,21 @@ The last module in the collectables family.
 | `P|` policy | 9 | inter-module authorisation | `P|A_Add`, `P|A_AddIMP`, `P|A_Define`, `P|A_RemoveIMP`, `P|A_SetIMP`, `P|Info` …+3 |
 | *(unclassified)* | 2 | carries no StoicSyntax prefix | `CT_Bar`, `GOV|Demiurgoi` |
 
-> **The repository differs from what is deployed.** Everything above describes the CHAIN, which is what a caller actually reaches. The difference is stated rather than resolved:
->
-> - **functions** in the repository only: `URC_IzEquitySemiFungible`
+> Repository and chain agree on every declared shape.
 
 **Capabilities** -- 10
 
 `EQUITY|C>BREAK`, `EQUITY|C>CONVERT`, `EQUITY|C>MAKE`, `GOV`, `GOV|EQUITY_ADMIN`, `P|EQUITY|CALLER`, `P|EQUITY|REMOTE-GOV`, `P|GOV-CALLER`, `P|SECURE-CALLER`, `SECURE`
 
-**Functions** -- 31, grouped by what the prefix promises
+**Functions** -- 32, grouped by what the prefix promises
 
 *Cost readers* (2) — price an operation; the exec path and the preview both call these
 
 `URCi_IssueShareholderCollection`, `URCi_MorphPackageShares`
 
-*Derived reads* (4) — read and compute; no enforce
+*Derived reads* (5) — read and compute; no enforce
 
-`URC_CombineCapacity`, `URC_MakeSharePackage`, `URC_SharesPerMillion`, `URC_SingleSharePerMillions`
+`URC_CombineCapacity`, `URC_IzEquitySemiFungible`, `URC_MakeSharePackage`, `URC_SharesPerMillion`, `URC_SingleSharePerMillions`
 
 *Point reads* (2) — one row or field by key
 

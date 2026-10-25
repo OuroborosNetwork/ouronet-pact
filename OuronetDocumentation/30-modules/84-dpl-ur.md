@@ -15,7 +15,7 @@ A tombstone. Its successors are the per-page read modules.
 
 | | |
 |---|---|
-| module hash | `CrjYQUkBpQkpqanjdJvh7AAPtko0jbkcOv_jQvVzBVY` |
+| module hash | `_hWloWqX2xYSrRIbTFuOZOpyh5zGlVvpLwZY0WFjzOk` |
 | deployed size | 1,960 characters |
 | implements | — |
 | repository source | `2_CITIZEN/Stage_Z/01_DPL-UR.pact` |

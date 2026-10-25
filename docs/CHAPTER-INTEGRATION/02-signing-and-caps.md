@@ -31,8 +31,8 @@ consumer never has to infer it from a name.
 
 ## 1. The standard transaction shape
 
-430 of the 438 client entrypoints are **gas-sponsored**: the Ouronet gas station pays the
-Kadena-level gas, and the user pays only IGNIS. Every one of those 430 uses the same capability:
+434 of the 442 client entrypoints are **gas-sponsored**: the Ouronet gas station pays the
+Kadena-level gas, and the user pays only IGNIS. Every one of those 434 uses the same capability:
 
 ```
 ouronet-ns.DALOS.GAS_PAYER
@@ -75,18 +75,18 @@ do not assume the gas station covers it.
 
 ## 2. Whose ownership is actually enforced
 
-The registry resolves this for **398 of 438** entrypoints. The remaining 39 reach an ownership
+The registry resolves this for **402 of 442** entrypoints. The remaining 40 reach an ownership
 check deeper in the call tree whose subject is named for a callee's parameter rather than the
 entrypoint's — mapping those back needs argument threading, so they are **listed rather than
 guessed**. Treat an unresolved entry as "read the contract", not as "no ownership required".
 
 Two things a client must not flatten:
 
-**`ALWAYS` versus `CONDITIONAL`.** 185 requirements always bind; 395 are reached inside an `if`
+**`ALWAYS` versus `CONDITIONAL`.** 186 requirements always bind; 399 are reached inside an `if`
 and bind on one path only. A conditional requirement presented as mandatory makes a UI demand a
 signature the operation may not need.
 
-**`parameter` versus `reader`.** 420 requirements name an account the caller passes directly;
+**`parameter` versus `reader`.** 425 requirements name an account the caller passes directly;
 160 name one the contract *looks up* — a pool's owner, a token's issuer. The second kind cannot
 be known from the form the user filled in. It has to be read first.
 

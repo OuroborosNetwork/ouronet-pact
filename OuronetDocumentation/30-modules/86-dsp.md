@@ -17,9 +17,9 @@ Deployed last among the citizen modules.
 
 | | |
 |---|---|
-| module hash | `otPjv-z6iIQKqMILhC1E8z0G29ItCaiR2I0CtkkFSfM` |
+| module hash | `kHyLxxtskv9C2EqFKl0uLIGQYmNkPhqLbFsOjv0j_dI` |
 | deployed size | 61,738 characters |
-| implements | `OuronetPolicyV2`, `DispenserV2` |
+| implements | `OuronetPolicyV2`, `DispenserV3` |
 | repository source | `2_CITIZEN/Stage_Z/03_DSP+.pact` |
 
 **Tables it owns** — 2

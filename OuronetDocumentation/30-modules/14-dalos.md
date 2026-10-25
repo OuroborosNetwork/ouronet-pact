@@ -21,9 +21,9 @@ That position has a consequence worth knowing: DALOS deploys *before* the gas mo
 
 | | |
 |---|---|
-| module hash | `ks6sIIhHoPr3y_aSoBXERCEm1deE3NMr3D8HPsPW814` |
-| deployed size | 85,632 characters |
-| implements | `gas-payer-v1`, `OuronetPolicyV2`, `OuronetDalosV2` |
+| module hash | `E4-z-_vNXN56Dl2APSKaC90E14FLJOlHuw4FBmroI98` |
+| deployed size | 86,942 characters |
+| implements | `gas-payer-v1`, `OuronetPolicyV2`, `OuronetDalosV3` |
 | repository source | `1_SOVEREIGN/STAGE_01/2_Core/01_DALOS.pact` |
 
 **Tables it owns** — 7

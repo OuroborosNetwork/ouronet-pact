@@ -106,7 +106,10 @@ module page itself says so.
 | `30-modules/93-o-ui-nine.md` | `—` |
 | `30-modules/94-o-ui-ten.md` | `—` |
 | `30-modules/95-o-ui-twelve.md` | `—` |
+| `30-modules/96-o-ui-thirteen.md` | `—` |
 | `30-modules/96-p-ui-one.md` | `—` |
+| `30-modules/97-o-ui-fourteen.md` | `—` |
+| `30-modules/98-p-ui-one.md` | `—` |
 
 ## Prose sections
 

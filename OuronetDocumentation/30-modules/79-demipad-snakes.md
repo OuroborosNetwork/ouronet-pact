@@ -17,9 +17,9 @@ A citizen module above the launchpad venue and the equity module.
 
 | | |
 |---|---|
-| module hash | `4yM3Yf4_ZbQN6xhd1dOB1aHcOottQqy9Y2cGUVkTRto` |
+| module hash | `xQ-HwSY7faFwnYP6qOxvFjHyW51F7ZWV8xacttjFJQA` |
 | deployed size | 22,323 characters |
-| implements | `OuronetPolicyV2`, `SaleSnakesV2` |
+| implements | `OuronetPolicyV2`, `SaleSnakesV3` |
 | repository source | `2_CITIZEN/7_Launchpad/2_Snakes/02_Snakes.pact` |
 
 **Tables it owns** — 3

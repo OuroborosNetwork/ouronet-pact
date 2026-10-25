@@ -18,9 +18,9 @@ A Stage-1 core near the top, below its Talos wrapper.
 
 | | |
 |---|---|
-| module hash | `L3H75v1TeU8IG6LUbweAXjw4KwV5AufNkBjgpsf4F5I` |
+| module hash | `5d_8vAslezaPrY5OipSztCkUt_yhBjOJMdZvYpuRSwA` |
 | deployed size | 47,794 characters |
-| implements | `CodexV2`, `OuronetPolicyV2` |
+| implements | `CodexV3`, `OuronetPolicyV2` |
 | repository source | `1_SOVEREIGN/STAGE_01/2_Core/21_CODEX.pact` |
 
 **Tables it owns** — 6

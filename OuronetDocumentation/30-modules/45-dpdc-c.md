@@ -17,9 +17,9 @@ Above the state core, below everything that issues or moves a collectable.
 
 | | |
 |---|---|
-| module hash | `IcLk0rRSSFFM20KIurtArOv-bhBTDGpp00Cm-YcBlHI` |
+| module hash | `vyf_mbw8VOBaebIRRKdowjsDimBGzuKvS22ClQMQaeA` |
 | deployed size | 57,541 characters |
-| implements | `OuronetPolicyV2`, `DpdcCreateV2` |
+| implements | `OuronetPolicyV2`, `DpdcCreateV3` |
 | repository source | `1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/03_DPDC-C.pact` |
 
 **Tables it owns** — 2

@@ -1,6 +1,11 @@
 # Time-streamed reward inject (linear vesting release) — Phase-0 design
 
-**Status:** ✅ IMPLEMENTED & TESTED (owner-approved 2026-08-23). All 7 build steps landed; AQP audit ALL GREEN
+**Status:** ⚠️ IMPLEMENTED, PARTIALLY MIS-DOCUMENTED — see **D10** (corrected 2026-10-25). The seven
+build steps below did land and are tested; what was **not** true is D10's claim that the enforced-fresh
+gate covers the streamed path. It never covered it. That gap is closed by the V14 round's drift-lock /
+stream-eligible latches, not by the work described here. Treating this line's original
+"✅ IMPLEMENTED & TESTED" as covering D10 is exactly what hid the gap from every later reader.
+*(original: owner-approved 2026-08-23, AQP audit ALL GREEN)*
 (1,384 asserts, 7 suites incl. the dedicated `Kursan/AQP-stream-tests.repl`). Behavioral proof: vault smoke
 120/120/240, late-staker 180/60, superposition (D4), zero-weight→zombie (D9), guard bounds, vault drip gas
 (~24k O(1)), farm (class-0) drip. Commits f8c0749 → e4baa7c.
@@ -37,6 +42,33 @@ injects cumulated IGNIS gas over 24h — "gas earned by validators like a real c
   `amount − released`) guarantees per-stream conservation; sub-token crumbs stay conserved to the last claimant
   exactly as today (proven by `[6.4]_AQP-TRIPLET-COLLECT` CL04 / `[6.2.4]_AQP-FVT` FVT-09).
 - **D10 — Enforced-fresh gate stays at inject** (`CC_Inject` Phase-0 stale-fix runs before a streamed inject too).
+  - **❌ CORRECTED 2026-10-25 — THIS WAS NEVER TRUE, and the header above claimed it was tested.**
+    `CC_InjectStream` does **not** run `CC_Inject`'s Phase-0 fix, and never did: `FVT|C>INJECT-STREAM`
+    validates `UEV_InjectContext` + `UEV_StreamParams` and nothing else — no stale scan, no stale
+    `enforce`, no fix. So a stream could be opened over a stale membership, and because the drip
+    (`XI_ReleaseStream` → `XI_DistributeInjectAmount`) divides by the **stored** `total-deb-score`
+    mirror while each member is paid against their **stored** deb, the mis-split then persisted for
+    the stream's whole duration and was never corrected retroactively. Measured and recorded in
+    `memories/2026-10-23-interface-bump-default-and-inject-paths.md` §4.
+  - **D10′ — RESOLVED IN THE V14 ROUND, by construction rather than by a scan.** Rather than give the
+    stream path a fix loop (gas on a path that has none) or make it enforce zero-stale (it would
+    refuse most of the time), the invariant is moved to a pair of one-way latches:
+    `SCR|Schema.drift-locked` (a score with `deb-boost` false and no boost-class link cannot drift)
+    and `FVT|RewardAggregate.stream-eligible` (set only after proving every enabled member is
+    drift-locked). `CC_InjectStream` now refuses unless the FVT is latched, and
+    `UEV_StreamEligibleMemberOk` keeps the proof true at every later admission/re-enable. Streams
+    opened before the round keep dripping — the drip is not gated by the inject defcap.
+  - **D10″ — THE LATCH IS A BREAKING CHANGE TO EVERY STREAM FIXTURE, and `Z.repl` cannot see it.**
+    Making eligibility a precondition means no existing test could open a stream any more. Three
+    fixtures needed the two latches added, member-score first:
+    `Kursan/AQP-stream-tests.repl` `<<T-STREAM-FIXTURE>>` (the class-1 vault) and `<<T-STREAM-06>>`
+    (the class-0 farm), plus a new committed `<<TX-INFO-GT-STREAM-PRE>>` ahead of
+    `[6.5.1]`'s `<<TX-INFO-GT-STREAM>>` price groundtruth. **`Z.repl` ran green through all of
+    this** — it loads none of those three — and the breakage surfaced only under
+    `REPL/tools/_gate.py`, as two suites reported `BROKEN` with a **failure count of zero**,
+    because a load-time abort is not an assertion failure. That is the concrete case behind
+    CLAUDE.md's *"`Z.repl` is the fast path, not the gate"*: a green fast path here meant
+    "the new behaviour works", never "the old tests still do".
 - **D11 — Talos exposes both** a *direct* (instant) and a *delayed* (streamed) inject wrapper. Add
   `URC_LiveClaimable` for real-time UI. **No public `poke`** — the UI reader is a live *projection* (derives vested
   value from the clock, not stored state), so it never goes stale; the stored accumulator self-heals on the next

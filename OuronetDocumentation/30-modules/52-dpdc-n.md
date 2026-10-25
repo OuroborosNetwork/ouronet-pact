@@ -17,9 +17,9 @@ Above the state core.
 
 | | |
 |---|---|
-| module hash | `sDeOCTlLRtTR5-2g2Q6FyqwyLbj7IMiBCO_T2Fs2-9E` |
+| module hash | `slP2OqVGNvgNmDFkR8HbK0aJqaxsYGU85zxW0AFZ-48` |
 | deployed size | 39,058 characters |
-| implements | `OuronetPolicyV2`, `DpdcNonceV2` |
+| implements | `OuronetPolicyV2`, `DpdcNonceV3` |
 | repository source | `1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/10_DPDC-N.pact` |
 
 **Tables it owns** — 2

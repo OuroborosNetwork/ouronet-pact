@@ -15,9 +15,9 @@ A Stage-1 core near the top of the stack. It is one of the four recipients of pr
 
 | | |
 |---|---|
-| module hash | `fPn76dBt1-u5WKQDDKFFDcevs86h1b_GgNUtBACjIBg` |
-| deployed size | 27,612 characters |
-| implements | `OuronetPolicyV2`, `StoaLiquidStakingV2` |
+| module hash | `VNpKH1GsuaAbFqbMvFERu4quJY5rEOyo7NO5DI7PG7I` |
+| deployed size | 27,614 characters |
+| implements | `OuronetPolicyV2`, `StoaLiquidStakingV3` |
 | repository source | `1_SOVEREIGN/STAGE_01/2_Core/12_LIQUID.pact` |
 
 **Tables it owns** — 2

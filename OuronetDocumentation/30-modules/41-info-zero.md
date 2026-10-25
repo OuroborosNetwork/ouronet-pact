@@ -17,7 +17,7 @@ Nominally the first read-layer module. In practice a historical artefact.
 
 | | |
 |---|---|
-| module hash | `rztvKQOaSR6KvKN3CJYBKfZWF5HgpVbT5I_W3fdLMm4` |
+| module hash | `bBnrYKcWrxNCMyjyGJjiRI1sB5Ty463-bG3kQfk_-ps` |
 | deployed size | 1,854 characters |
 | implements | — |
 | repository source | `1_SOVEREIGN/STAGE_01/Z_Reads/01_INFO-ZERO.pact` |

@@ -17,9 +17,9 @@ A utility below the entire swap family. The mathematics is here; the state, rout
 
 | | |
 |---|---|
-| module hash | `qVgNWdtqTADrrWB4PXjOrsSMoPrKTCc63xa2D3qKlDc` |
+| module hash | `MfmOK0BLqNp6MkSsnTCS9C0PFumiP_FuVjEaXBmQ494` |
 | deployed size | 43,510 characters |
-| implements | `UtilitySwpV2` |
+| implements | `UtilitySwpV3` |
 | repository source | `1_SOVEREIGN/STAGE_01/1_Utilities/12_U_SWP.pact` |
 
 **Capabilities** — 2

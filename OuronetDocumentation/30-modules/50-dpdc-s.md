@@ -19,9 +19,9 @@ Above the state and transfer modules.
 
 | | |
 |---|---|
-| module hash | `itgzaFgxE5Egd4GWHObP4_8u0eyqek10ubfnid4V6Tg` |
-| deployed size | 78,077 characters |
-| implements | `OuronetPolicyV2`, `DpdcSetsV2` |
+| module hash | `BPlRunipbLSqIauANIjivZSnIFWzvcRAN9z3ikIer1w` |
+| deployed size | 80,114 characters |
+| implements | `OuronetPolicyV2`, `DpdcSetsV3` |
 | repository source | `1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/08_DPDC-S.pact` |
 
 **Tables it owns** — 4

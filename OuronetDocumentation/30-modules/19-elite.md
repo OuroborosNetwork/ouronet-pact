@@ -17,7 +17,7 @@ A small Stage-1 core holding no domain tables of its own. It reads the account c
 
 | | |
 |---|---|
-| module hash | `wKvH9cF7zORiYHJ_FGj5rK4bm_ovDQUv5b7bpo_b4wY` |
+| module hash | `djJLYqRa69ZRKyMR4kcftHXEEKH_-zTTwdHs1_C7IRY` |
 | deployed size | 12,832 characters |
 | implements | `OuronetPolicyV2`, `EliteV2` |
 | repository source | `1_SOVEREIGN/STAGE_01/2_Core/07_ELITE.pact` |

@@ -15,7 +15,7 @@ Deployed **last** — after the sales it wraps.
 
 | | |
 |---|---|
-| module hash | `DvLbtKVBl02gLcsLCq4NQKlnqGZdGRCTH7Fg3S6UIK8` |
+| module hash | `kZJnKKMM4J3A_7ss5mCfdc6vhJJM5ihClbU3soBuSOs` |
 | deployed size | 12,333 characters |
 | implements | `OuronetPolicyV2`, `CitizenLaunchpadTalosV1` |
 | repository source | `2_CITIZEN/7_Launchpad/99_TS02-CPAD.pact` |

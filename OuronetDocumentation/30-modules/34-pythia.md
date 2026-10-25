@@ -19,9 +19,9 @@ A Stage-1 core near the top, below its Talos wrapper.
 
 | | |
 |---|---|
-| module hash | `KPTmyuIIismmZ0cHaYWDdsmydKMVNGNR4ylzCMbIsiQ` |
+| module hash | `g-JkSLqwUMhh7vVwN5LXk61NWq1uD91-nHg5zrXXNEo` |
 | deployed size | 75,563 characters |
-| implements | `PythiaV5`, `PythiaLedgerV3`, `OuronetPolicyV2` |
+| implements | `PythiaV6`, `PythiaLedgerV4`, `OuronetPolicyV2` |
 | repository source | `1_SOVEREIGN/STAGE_01/2_Core/22_PYTHIA.pact` |
 
 **Tables it owns** — 8

@@ -19,9 +19,9 @@ The first swap-family module, deployed before the registry that fills it.
 
 | | |
 |---|---|
-| module hash | `-g_ye7oMhwnGmEdjZpQkC8C24VMmmkDTxDuOQvQklpk` |
+| module hash | `wyaH8_JL4kr9DFwEvDdB_gYdX_mMdSvLblFMmwAf_lo` |
 | deployed size | 60,726 characters |
-| implements | `OuronetPolicyV2`, `SwapTracerV3` |
+| implements | `OuronetPolicyV2`, `SwapTracerV4` |
 | repository source | `1_SOVEREIGN/STAGE_01/2_Core/14_SWPT.pact` |
 
 **Tables it owns** — 5

@@ -17,9 +17,9 @@ At the top of the Stage-1 stack, above everything it prices against.
 
 | | |
 |---|---|
-| module hash | `6kA1wWQkFddog57qbeG86xkHz8wv1MwqjZpaKuGb7_0` |
-| deployed size | 40,209 characters |
-| implements | `OuronetPolicyV2`, `OuroborosV2` |
+| module hash | `AqKat7EIflxDVqmAm3QIWeRPG7sBplAMAPv7D9F8ehg` |
+| deployed size | 40,196 characters |
+| implements | `OuronetPolicyV2`, `OuroborosV3` |
 | repository source | `1_SOVEREIGN/STAGE_01/2_Core/13_OUROBOROS.pact` |
 
 **Tables it owns** — 2

@@ -13,38 +13,38 @@ Counts are of definitions in the tree, interface declarations included.
 
 | prefix | uses | what it promises |
 |---|---:|---|
-| `UR_` | 1,470 | reads one row or field by key |
-| `C_` | 1,380 | client entry — builds the bill; reachable only through Talos |
+| `UR_` | 1,545 | reads one row or field by key |
+| `C_` | 1,390 | client entry — builds the bill; reachable only through Talos |
 | `URC_` | 794 | reads and derives; no `enforce` |
-| `INFO_` | 641 | operation preview returning a client-facing cost and description |
-| `URCi_` | 629 | **cost reader** — the single source both billing and the preview call |
-| `UEV_` | 604 | reads and `enforce`s; failure aborts the transaction |
-| `A_` | 555 | admin-key mutation |
-| `UC_` | 452 | pure compute on arguments only — no table reads, no `enforce` |
-| `XI_` | 392 | internal write, this module only, under a capability |
-| `XE_` | 332 | entry point for other modules only |
-| `UDC_` | 330 | data construction — a named constructor for an object |
+| `UEV_` | 672 | reads and `enforce`s; failure aborts the transaction |
+| `INFO_` | 644 | operation preview returning a client-facing cost and description |
+| `URCi_` | 633 | **cost reader** — the single source both billing and the preview call |
+| `A_` | 557 | admin-key mutation |
+| `UC_` | 524 | pure compute on arguments only — no table reads, no `enforce` |
+| `XI_` | 395 | internal write, this module only, under a capability |
+| `XE_` | 358 | entry point for other modules only |
+| `UDC_` | 346 | data construction — a named constructor for an object |
 | `CT_` | 279 | a constant, exposed as a function |
+| `URH_` | 167 | **scan** — walks a table. Off the execution path; cost grows with data |
 | `GOV|` | 160 | governance — keysets and protocol constants |
-| `URH_` | 159 | **scan** — walks a table. Off the execution path; cost grows with data |
+| `CC_` | 122 | client entry that reaches a **scan** |
 | `P|` | 121 | policy — inter-module authorisation |
-| `CC_` | 106 | client entry that reaches a **scan** |
-| `WU_` | 64 | write — update |
+| `UCk_` | 74 | **key builder** — composes a table's composite row key. Pure; returns a string, not a table |
+| `WU_` | 67 | write — update |
 | `XB_` | 62 | callable both internally and externally |
-| `UCk_` | 61 | **key builder** — composes a table's composite row key. Pure; returns a string, not a table |
 | `SC_` | 52 | smart-contract account name — a constant, exposed as a function |
-| `CCp_` | 44 | client recipe that reaches a scan |
+| `CCp_` | 52 | client recipe that reaches a scan |
+| `CAP_` | 40 | account-ownership enforcement |
 | `URCv_` | 37 | `URC_` with an intrinsic guard |
+| `URHC_` | 36 | scan and derive. Off the execution path |
 | `UCv_` | 34 | `UC_` whose `enforce` is intrinsic to its own computation |
-| `CAP_` | 33 | account-ownership enforcement |
 | `WW_` | 28 | write — upsert |
-| `URHC_` | 28 | scan and derive. Off the execution path |
 | `URCx_` | 27 | `URC_` auxiliary |
 | `AU_` | 22 | admin utility |
 | `WI_` | 20 | write — insert |
+| `AA_` | 17 | admin mutation that reaches a **scan** |
 | `UCx_` | 15 | pure-compute auxiliary — a helper factored out of a `UC_` |
-| `Cp_` | 12 | client multi-transaction recipe, no scan |
-| `AA_` | 11 | admin mutation that reaches a **scan** |
+| `Cp_` | 14 | client multi-transaction recipe, no scan |
 | `XBv_` | 10 | `XB_` with an intrinsic guard |
 | `UDCx_` | 9 | constructor auxiliary |
 | `XIv_` | 8 | internal write with an intrinsic guard |

@@ -17,7 +17,7 @@ One read module per display entity, deployed after everything it reads. Numbered
 
 | | |
 |---|---|
-| module hash | `G2NpjCXfBAxx8MQyAK9j_HlVmY-2ykggvW-b6cRVTO0` |
+| module hash | `eyJyOKkzucQXD5EAw_n0XJ2DT2-MBa8mNYZ0ikB1DKI` |
 | deployed size | 14,305 characters |
 | implements | `OUiTenV1` |
 | repository source | `2_CITIZEN/Stage_Z/AppReads/OuronetUI/10_O-UI-TEN.pact` |

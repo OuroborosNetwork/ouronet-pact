@@ -17,9 +17,9 @@ The family's state module. Everything else reads it.
 
 | | |
 |---|---|
-| module hash | `XnlPyILDe7wvmX6sfo4XxQyGwhQWjfuQF1ERIoNzL0s` |
+| module hash | `gpvuIJMiIJ6MebkP0uP1j-qIw-n-xJgn3oG8I7goEwE` |
 | deployed size | 70,519 characters |
-| implements | `OuronetPolicyV2`, `BrandingUsageTertiaryV2`, `DpdcV2` |
+| implements | `OuronetPolicyV2`, `BrandingUsageTertiaryV3`, `DpdcV3` |
 | repository source | `1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/02_DPDC.pact` |
 
 **Tables it owns** — 12

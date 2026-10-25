@@ -15,9 +15,9 @@ A Stage-1 core deployed early, because four different module families implement 
 
 | | |
 |---|---|
-| module hash | `p6Cjo5-TwpVd2n_pb3o3fvsCen46MP07yJAKdD4a_KA` |
+| module hash | `c9MBQPTQyREnXFgDaLzQwBXYod8kbwZ2IeuRi-HBDyI` |
 | deployed size | 24,498 characters |
-| implements | `OuronetPolicyV2`, `BrandingV2` |
+| implements | `OuronetPolicyV2`, `BrandingV3` |
 | repository source | `1_SOVEREIGN/STAGE_01/2_Core/04_BRD.pact` |
 
 **Tables it owns** — 3

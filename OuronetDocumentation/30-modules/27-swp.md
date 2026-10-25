@@ -17,9 +17,9 @@ The swap family's state module. Everything else in the family reads it.
 
 | | |
 |---|---|
-| module hash | `vrGyFrynLlEB57ujiG438aENUasqHI2_ppDhLJ6coRg` |
-| deployed size | 100,437 characters |
-| implements | `OuronetPolicyV2`, `BrandingUsagePrimaryV2`, `SwapperV4` |
+| module hash | `cUF_vfl7b2Q4ya6HYJeAVz6l054OfD0c1UBDYQVqVPQ` |
+| deployed size | 100,439 characters |
+| implements | `OuronetPolicyV2`, `BrandingUsagePrimaryV3`, `SwapperV5` |
 | repository source | `1_SOVEREIGN/STAGE_01/2_Core/15_SWP.pact` |
 
 **Tables it owns** — 7

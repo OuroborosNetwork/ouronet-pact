@@ -17,9 +17,9 @@ A Stage-1 core above the true-fungible token core and below everything that move
 
 | | |
 |---|---|
-| module hash | `tZGJC60jG03FvaiJmGWD9kSM_U4Ozey6jAMPZlCoKtA` |
+| module hash | `nIb8-m8d15DHZaIeWw6KBlzxaUdD38CTGI6ZkibGWRc` |
 | deployed size | 89,480 characters |
-| implements | `OuronetPolicyV2`, `TrueFungibleTransferV2` |
+| implements | `OuronetPolicyV2`, `TrueFungibleTransferV3` |
 | repository source | `1_SOVEREIGN/STAGE_01/2_Core/09_TFT.pact` |
 
 **Tables it owns** — 2

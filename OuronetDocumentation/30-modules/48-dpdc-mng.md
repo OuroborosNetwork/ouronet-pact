@@ -17,9 +17,9 @@ Above the state and create modules.
 
 | | |
 |---|---|
-| module hash | `AY_6AZS-OL1SmgnHwZJ0UH5YebfIxZQh7cbFp8BOMJw` |
+| module hash | `Vbj2qMeDN88-KOc4-TszUcFAeQB4BlwuZHzZ74soyEc` |
 | deployed size | 57,849 characters |
-| implements | `OuronetPolicyV2`, `DpdcManagementV2` |
+| implements | `OuronetPolicyV2`, `DpdcManagementV3` |
 | repository source | `1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/06_DPDC-MNG.pact` |
 
 **Tables it owns** — 2

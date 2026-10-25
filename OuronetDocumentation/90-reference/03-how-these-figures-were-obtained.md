@@ -7,7 +7,10 @@ The rule exists for a specific reason: three separate rounds of this project fou
 figures that had gone stale while **every document agreed with every other one**. Internal
 consistency is not evidence. Re-running a command is.
 
-Measured 2026-09-27 against the deployed tree.
+Measured 2026-09-27 against the deployed tree. Re-measured 2026-10-12 after the
+interface-membership sweep (StoicSyntax-Prefixes.md §5, owner ruling) added 302 `defun` stubs
+to 38 interfaces across 36 sovereign modules -- the only two figures below it moved are `lines`
+and `defun`; the rest were unaffected because the sweep adds interface declarations only.
 
 ---
 
@@ -31,14 +34,14 @@ scope; quoting one with the other's label is the mistake to avoid.
 find 1_SOVEREIGN 2_CITIZEN -name "*.pact" | wc -l                            # 107
 
 # lines
-find 1_SOVEREIGN 2_CITIZEN -name "*.pact" -exec cat {} + | wc -l             # 128,968
+find 1_SOVEREIGN 2_CITIZEN -name "*.pact" -exec cat {} + | wc -l             # 130,457
 
 # definitions, by kind
 for k in defun defcap defschema deftable defpact; do
   printf "%-10s %s\n" "$k" \
     "$(grep -rhoE "^\s*\($k " --include=*.pact 1_SOVEREIGN 2_CITIZEN | wc -l)"
 done
-# defun 9020 · defcap 1017 · defschema 207 · deftable 232 · defpact 6
+# defun 9370 · defcap 1021 · defschema 207 · deftable 232 · defpact 6
 
 # modules and interfaces -- count the FORMS, at column 0
 grep -rhoE '^\(module [^ ]+'    --include=*.pact 1_SOVEREIGN 2_CITIZEN | wc -l          # 101
@@ -69,7 +72,7 @@ file, one line below the rule. The lesson is not "be careful": it is that **a co
 next to a figure is not the same as a command that produced it.** Which is why the figures that
 matter are now regenerated and diffed by a tool rather than transcribed — see `../MAINTAINING.md`.
 
-**A caveat on `defun` 9,020.** Pact declares a function in the interface AND defines it in the
+**A caveat on `defun` 9,370.** Pact declares a function in the interface AND defines it in the
 implementing module, so that count includes both. It is the number of `defun` FORMS in the tree,
 which is what the command measures and what this documentation claims — not the number of
 distinct callable functions. Where the distinct figure matters, the registry's 427 client

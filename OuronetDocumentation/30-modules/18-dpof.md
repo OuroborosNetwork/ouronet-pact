@@ -19,9 +19,9 @@ A Stage-1 core beside the true-fungible one, and the successor to the archived m
 
 | | |
 |---|---|
-| module hash | `ww5ZiESbMsAY8GpyC6BabJSxKb0QR75dCesJbv4JXZo` |
+| module hash | `KaHdTynztVA2Dh8KLipuQdif8NKJP6LWHko2Ey5mdKk` |
 | deployed size | 128,815 characters |
-| implements | `OuronetPolicyV2`, `BrandingUsagePrimaryV2`, `DemiourgosPactOrtoFungibleV2` |
+| implements | `OuronetPolicyV2`, `BrandingUsagePrimaryV3`, `DemiourgosPactOrtoFungibleV3` |
 | repository source | `1_SOVEREIGN/STAGE_01/2_Core/06_DPOF.pact` |
 
 **Tables it owns** — 6

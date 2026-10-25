@@ -17,9 +17,9 @@ Above the state core, below the launchpad sales that move collectables.
 
 | | |
 |---|---|
-| module hash | `RZEeQgiEpyInidQmQnW2Rj3Wnori6vlDmYwuMHBaViY` |
+| module hash | `FB9MKoF5NVLatkHPmisPsC_n0fYaLzIB37lW2-4RG80` |
 | deployed size | 47,216 characters |
-| implements | `OuronetPolicyV2`, `DpdcTransferV2` |
+| implements | `OuronetPolicyV2`, `DpdcTransferV3` |
 | repository source | `1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/07_DPDC-T.pact` |
 
 **Tables it owns** — 2

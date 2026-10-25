@@ -17,9 +17,9 @@ A small module above the create engine.
 
 | | |
 |---|---|
-| module hash | `WI9qGgIJXiwgpyAIoyiCRX7QcWQdivj_oMaV0x4eeDk` |
+| module hash | `zf_nHZRlPouilzVuNcqcOb9DAiCSJXOYUWTVEjMUb9o` |
 | deployed size | 23,598 characters |
-| implements | `OuronetPolicyV2`, `DpdcIssueV2` |
+| implements | `OuronetPolicyV2`, `DpdcIssueV3` |
 | repository source | `1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/04_DPDC-I.pact` |
 
 **Tables it owns** — 2

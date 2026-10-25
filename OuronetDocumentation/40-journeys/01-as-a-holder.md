@@ -76,7 +76,7 @@ This is not an estimate. The preview and the charge call **the same cost functio
 disagree.
 
 One thing to know if you are reading previews directly rather than through an interface: **414 of
-the 427 previews take a different parameter list from the operation they describe** — different
+the 424 previews take a different parameter list from the operation they describe** — different
 names, order, arity. Only 13 match. Bind arguments by name.
 
 ---

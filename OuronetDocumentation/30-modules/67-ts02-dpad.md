@@ -17,9 +17,9 @@ Above the launchpad venue. The **citizen** sale wrappers live in a separate modu
 
 | | |
 |---|---|
-| module hash | `dLztzfE3wr8Rv2uTgBd8LOJx7OVW79Rr0LO7UvPKQ1c` |
+| module hash | `rVKjURldVF5tGuZhJF3zhyUJlbSeg-YQkts4E0tTT8E` |
 | deployed size | 22,210 characters |
-| implements | `OuronetPolicyV2`, `TalosStageTwo_DemiPadV2` |
+| implements | `OuronetPolicyV2`, `TalosStageTwo_DemiPadV4` |
 | repository source | `1_SOVEREIGN/STAGE_02/3_Talos/05_TS02-DPAD.pact` |
 
 **Tables it owns** — 2

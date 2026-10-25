@@ -17,9 +17,9 @@ A citizen module above the launchpad venue.
 
 | | |
 |---|---|
-| module hash | `HSABls9p5hiaRIVxVYOLlBGcJhGEXJCzaHgeutlUxiQ` |
+| module hash | `aMYspM5XxMde1EiZRwTE4bkQheHd7AkIdP3L5YYKXQQ` |
 | deployed size | 22,054 characters |
-| implements | `OuronetPolicyV2`, `SaleCustodiansV2` |
+| implements | `OuronetPolicyV2`, `SaleCustodiansV3` |
 | repository source | `2_CITIZEN/7_Launchpad/3_Custodians/03_Custodians.pact` |
 
 **Tables it owns** — 3

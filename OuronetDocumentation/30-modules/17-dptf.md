@@ -19,9 +19,9 @@ A Stage-1 core, deployed after the account and gas cores and before everything t
 
 | | |
 |---|---|
-| module hash | `Rqg1FTijxUvIMYG3NBiAgc0Mgeg-gN6tGGuK7-CQPTo` |
+| module hash | `bNUN_Hrtn16-W7e4rPiAVfjGbgNl2SDuNH7-l0gAxtA` |
 | deployed size | 122,663 characters |
-| implements | `OuronetPolicyV2`, `BrandingUsagePrimaryV2`, `DemiourgosPactTrueFungibleV2` |
+| implements | `OuronetPolicyV2`, `BrandingUsagePrimaryV3`, `DemiourgosPactTrueFungibleV3` |
 | repository source | `1_SOVEREIGN/STAGE_01/2_Core/05_DPTF.pact` |
 
 **Tables it owns** — 5
