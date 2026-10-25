@@ -1,6 +1,8 @@
 
 # Recipe-cap validation
 
+<!-- purpose: Each public C_ recipe owns exactly one master capability — how to structure that. -->
+
 ## Master `C_*` cap (rule of law — all AQP sovereign modules)
 
 Every public **`C_*`** recipe entry owns exactly one **master** capability:

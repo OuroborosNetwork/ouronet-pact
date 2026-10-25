@@ -1,5 +1,7 @@
 # StoicSyntax — Prefix Denominations (single source of truth)
 
+<!-- purpose: Every prefix decoded left-to-right, plus the patron/executor canon and the archive-mode spec. -->
+
 > **This is the authoritative registry of every function/capability name prefix in the Ouronet
 > Pact codebase.** It is an **addendum to `StoicSyntax.md`** and supersedes the inline prefix
 > tables there. **Any change to the prefix vocabulary is made HERE first**, then propagated.

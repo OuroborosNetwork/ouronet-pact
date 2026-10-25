@@ -1,5 +1,7 @@
 # Issuing the Stage Two dispensing bucket
 
+<!-- purpose: Stage-2 dispensing-bucket issuance design. -->
+
 > **For the owner to execute.** Fill in the two placeholders, run the two forms, then the emission
 > code switches to it. Until it exists, `DSP1|SC_NAME` stays the dispenser.
 

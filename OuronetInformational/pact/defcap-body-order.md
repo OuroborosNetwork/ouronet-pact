@@ -1,5 +1,7 @@
 # `defcap` validation body order (Ouronet)
 
+<!-- purpose: The strict order of validation forms inside a defcap body. -->
+
 For component / recipe caps with inline validation (e.g. **`AQP|XE>TRUE-FUNGIBLE-POOL-CUSTODY`**, **`SCR|XI>ISSUE-SCORE`**):
 
 ## Order (strict)

@@ -1,5 +1,7 @@
 # Ouronet — accumulated context
 
+<!-- purpose: Consolidated project facts, vocabulary and stage definitions — read early for shared language. -->
+
 _Last updated: 2026-05-06_
 
 ## What Ouronet is

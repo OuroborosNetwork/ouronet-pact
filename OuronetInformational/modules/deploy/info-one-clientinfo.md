@@ -1,5 +1,7 @@
 # INFO-ONE+ and `OuronetInfoV1.ClientInfo` pairing
 
+<!-- purpose: Workflow for constructing an INFO_ reader and pairing it with OuronetInfoV*.ClientInfo. -->
+
 ## Workflow (constructing a new INFO function)
 
 1. **Locate execution** — Talos `*|C_*` or sovereign `C_*` / `ATSU::*` / `VST::*` that ends in `IGNIS::C_Collect` (or equivalent). Open the **lowest** module that builds `OutputCumulator` (often `UDC_ConcatenateOutputCumulators` with an ordered list).

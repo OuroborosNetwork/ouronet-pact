@@ -1,5 +1,7 @@
 # Post-audit MAIN roadmap — the master checklist
 
+<!-- purpose: Tracker for work queued once the audit worktrees land on main. -->
+
 The single tracker for everything queued once the audit worktrees land on `main`.
 Created 2026-08-27 · last reorganised 2026-08-30 (4-level numbering). Specs are cross-referenced.
 
@@ -296,7 +298,7 @@ and partially). This phase both *simplifies* the existing INFO and *completes* t
       `C_`/`CC_`/`A_`/`AA_` client/admin entrypoint (Stage 1 + Stage 2, all modules) and build an INFO
       preview for each that lacks one — thin composer-`URCi` callers. This is the bulk of the rehaul:
       a ton of INFO functions are currently missing. Track coverage in a checklist (mirror the
-      `aqp-entrypoint-surface.md` catalog approach, extended repo-wide).
+      `entrypoint-surface.md` catalog approach, extended repo-wide).
 
 #### 1.2.2 · Subphase — Consolidate & relocate
 - [ ] ❌ **1.2.2.1 Consolidate to one INFO module per stage** and **relocate to a new

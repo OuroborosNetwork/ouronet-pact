@@ -19,7 +19,7 @@ High-level guidance for automated helpers (including **Kursan**, the Pact agent 
 
 1. Write it under **`OuronetInformational/`** (correct subfolder: pact / ouronet / modules).
 2. Optional dated note in **`OuronetInformational/memories/`**.
-3. Do **not** store canonical rules only in `.cursor/skills/` — stubs may point here, but **this repo folder is source of truth**.
+3. Do **not** store canonical rules only in a skill stub — `.claude/skills/` is GENERATED routing, and **this repo folder is source of truth**.
 
 ## Style
 

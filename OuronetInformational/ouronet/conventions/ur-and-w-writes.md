@@ -1,5 +1,7 @@
 # UR reads vs W writes vs XI orchestration (Ouronet)
 
+<!-- purpose: Which layer may touch a table: UR_ reads vs W_ writes vs XI_ orchestration. -->
+
 ## Rule
 
 | Layer | Table access |

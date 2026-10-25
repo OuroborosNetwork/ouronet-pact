@@ -1,5 +1,7 @@
 # `let` binding layout (Ouronet Pact)
 
+<!-- purpose: How to lay out a let that binds module references alongside local variables. -->
+
 When a **`let`** binds **module references** and **local variables** together:
 
 ```pact

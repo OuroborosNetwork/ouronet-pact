@@ -1,5 +1,7 @@
 # Deep Dive — all Pact modules
 
+<!-- purpose: Module-by-module structural index across the sovereign and citizen trees. -->
+
 This document indexes module-level structure across sovereign and citizen code:
 
 - function/cap/table/schema counts,

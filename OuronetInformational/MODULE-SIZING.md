@@ -1,5 +1,7 @@
 # Pact module sizing — a HARD RULE for Ouronet contract code
 
+<!-- purpose: Measured per-module source sizes against StoaChain's 2M block gas limit. -->
+
 > Applies to **every** module and interface written in this repo. Section 6 is the
 > user-facing text for the Ouronet informational / docs section (roughly verbatim).
 > Source: owner directive 2026-08-27.

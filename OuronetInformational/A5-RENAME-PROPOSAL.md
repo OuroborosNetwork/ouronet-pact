@@ -1,5 +1,7 @@
 # A5 Rename Proposal — StoicSyntax sweep #90 (owner approval gate)
 
+<!-- purpose: Unadopted proposal to rename functions lacking a canon prefix. -->
+
 Every function below currently blocks the reorder tool (no canon prefix → `UNCLASSIFIED`).
 Renames are **owner-gated** — nothing here is applied until you approve. Classifications
 (`XI`/`XE`/`XB`) come from whole-repo call-site evidence (internal-only → `XI`; external

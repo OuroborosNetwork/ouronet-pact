@@ -1,6 +1,8 @@
 # OuronetInformational
 
-Persistent notes about **Ouronet** for humans and for AI assistants. **Everything durable lives in this folder** — Cursor `.cursor/skills/ouronet-*` files are thin pointers here so knowledge survives machine changes.
+<!-- purpose: What this folder is: persistent context for humans and AI; Claude skill route stubs are generated pointers only. -->
+
+Persistent notes about **Ouronet** for humans and for AI assistants. **Everything durable lives in this folder** — `.claude/skills/ouronet-*` route stubs are GENERATED pointers into this tree, so knowledge survives machine changes. (Cursor was dropped 2026-10-25.)
 
 ## How to use
 

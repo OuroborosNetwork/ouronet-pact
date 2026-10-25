@@ -1,6 +1,8 @@
 
 # XB + IMC cross-module writes
 
+<!-- purpose: When a shared table write needs an XB_ entrypoint behind UEV_IMC rather than an XI_. -->
+
 Use when the **same table write** is invoked from:
 - the **home module** (`C_*` with owner/event caps + IGNIS), and
 - a **peer module** (e.g. FVT vacate recipe) without a second public API or forward-only cap.

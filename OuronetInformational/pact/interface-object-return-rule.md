@@ -31,4 +31,4 @@ Applied for **AQP-ANK**, **AQP-SCORE**, and **CodexV1**.
 
 External callers use **`module{CodexV1}`** for accessors / **`DataOrNull`**. Full typed row reads stay on the **CODEX** module implementation.
 
-**Cursor skill:** `OuronetInformational/pact/enforce.md` is unrelated; interface work has no dedicated Cursor skill yet — use this file.
+**Cursor skill:** `OuronetInformational/pact/enforce.md` is unrelated; interface work has no dedicated dedicated route stub yet — use this file.

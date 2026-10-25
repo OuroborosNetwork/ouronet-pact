@@ -1,6 +1,8 @@
 
 # W writes (WI_ / WU_ / WW_)
 
+<!-- purpose: How to organise W_ write helpers: one section per deftable, in schema order. -->
+
 **Scope:** **`1_SOVEREIGN/STAGE_02/2_Core/03_AQP/`** (`01_ANK` … `05_VCT`). Legacy modules keep existing patterns until explicitly migrated.
 
 ## Role

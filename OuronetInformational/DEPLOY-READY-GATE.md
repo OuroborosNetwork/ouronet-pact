@@ -1,5 +1,19 @@
 # Deploy-ready gate (#83 / roadmap 1.7 deploy proof)
 
+<!-- purpose: Historical roadmap-1.7 deploy-readiness proof; its source-line gas cliff figure is superseded. -->
+
+> ## ⚠ HISTORICAL RECORD — one figure below is SUPERSEDED.
+>
+> Marked 2026-10-25. The text states the practical cliff as **"≈ 6,635 source lines"**. That was
+> derived before the size charge was understood. The measured model is
+> `gas_size(S) ≈ 95_225 × (S_KB/256)^7`, giving **~395 KB / ~7,769 lines** at the 2.00M limit, and
+> `_deploybundle.py` caps emitted transactions at a conservative **320,000 bytes**. See CLAUDE.md
+> §*Deployment order and interface versioning* and `HOW-DEPLOY-ROUNDS-WORK.md` item 9.
+>
+> The two PROVEN claims below — fresh top-to-bottom deploy, and every module under the ceiling —
+> stand as a roadmap-1.7 record. For building an actual round, `HOW-DEPLOY-ROUNDS-WORK.md` is the
+> procedure.
+
 The frozen shape must (a) deploy fresh top-to-bottom in dependency order and (b) keep every module
 under StoaChain's module-load gas ceiling (~2M gas; module-load gas grows ~7th-power of tx size, so
 the practical cliff is ≈ 6,635 source lines). Both are demonstrated below. (The actual *mainnet*

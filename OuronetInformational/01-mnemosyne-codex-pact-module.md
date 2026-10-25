@@ -1,5 +1,7 @@
 # Handoff: `mnemosyne.CODEX` Pact module
 
+<!-- purpose: Design note for the Mnemosyne cloud codex-management service and its Apollo identity pairing. -->
+
 **Audience:** another agent (Cursor, Claude, or human) tasked with writing the Pact module that backs Mnemosyne's on-chain Codex Identity registry + Arweave upload tracker.
 
 **Author:** Claude (Opus, 2026-05-28); originally drafted earlier in the day, **rewritten 2026-05-28 (PM) to reflect**:

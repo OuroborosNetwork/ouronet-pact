@@ -1,5 +1,7 @@
 # Ouronet Comprehensive Documentation — capstone workstream #3
 
+<!-- purpose: Superseded plan for the OuronetDocumentation book; its BUILD-PLAN.md is now authoritative. -->
+
 Owner directive, 2026-08-27. The THIRD capstone deliverable (after #1 the post-audit Pact work,
 #2 the UI incorporation). A **full, proper written documentation of everything the Ouronet code
 does** — published on the Ouronet Website alongside the Audit Book, in a **Documentation + Audit

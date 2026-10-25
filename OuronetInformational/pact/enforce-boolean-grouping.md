@@ -1,5 +1,7 @@
 # Pact: one `enforce`, multiple booleans (Ouronet)
 
+<!-- purpose: How to combine 1, 2 or 3+ boolean checks into a single enforce with one failure message. -->
+
 When several **boolean** checks should share **one** failure message in **`defcap`** or **`defun`** bodies:
 
 1. **One predicate** — `(enforce p "msg")`

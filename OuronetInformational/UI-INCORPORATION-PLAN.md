@@ -1,5 +1,7 @@
 # Ouronet UI incorporation — the capstone (workstream #2)
 
+<!-- purpose: Plan for wiring the Pact surface into OuronetUI. -->
+
 Owner directive, 2026-08-27. This is the **second** major thing to do (workstream #1 is the
 post-audit Pact plan in `POST-AUDIT-MAIN-ROADMAP.md`). It is the CAPSTONE: a **document of
 incorporation** that an AI agent (the "OuronetUI agent") follows to implement the **entire**
@@ -26,7 +28,7 @@ Only then is the client/admin/INFO surface stable and total — which is what th
 
 ## The KEY synergy — workstream #1 IS the bridge to the UI
 This is the crucial insight: **the completed INFO surface + the repo-wide entrypoint catalog
-(Phase 2.3 + `aqp-entrypoint-surface.md` extended) are a machine-readable spec of "every action a
+(Phase 2.3 + `entrypoint-surface.md` extended) are a machine-readable spec of "every action a
 user can take, what it costs, and what state to show."** That is *already* 80% of a UI spec:
 - every client `C_`/`CC_` → a **button** (an action the user can take);
 - its **INFO** function → the **cost/preview** shown before they commit (IGNIS + STOA);

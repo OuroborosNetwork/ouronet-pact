@@ -1,5 +1,7 @@
 # Moved
 
+<!-- purpose: Migration table only — this folder moved into the organized tree; start at INDEX.md. -->
+
 Skills and conventions now live under the organized tree. Start at:
 
 **[`../INDEX.md`](../INDEX.md)**
@@ -17,4 +19,4 @@ Skills and conventions now live under the organized tree. Start at:
 | `OuronetInformational/modules/stage01/codex-repl.md` | `../modules/stage01/codex-repl.md` |
 | `deploy-handoff-checklist.md` | `../modules/deploy/handoff-checklist.md` |
 
-Cursor **`.cursor/skills/ouronet-*`** files are pointers only — canonical text is in **`OuronetInformational/`**.
+**`.claude/skills/ouronet-*`** route stubs are GENERATED pointers — canonical text is in **`OuronetInformational/`**. (Cursor was dropped 2026-10-25.)

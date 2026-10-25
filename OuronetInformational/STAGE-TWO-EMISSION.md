@@ -1,5 +1,7 @@
 # The Stage Two daily emission — construction, cost, and the parallel fallback
 
+<!-- purpose: Stage-2 OURO emission economics and the minter signature it implies. -->
+
 > **Audience: the UI, and whoever runs the emission.** Subject: `DSP.AA_OuroMinterStageTwo`.
 > Status of this document: **analysis + design COMPLETE, the parallel functions are NOT BUILT YET.**
 > Everything under *What exists today* is in the tree and gate-green; everything under

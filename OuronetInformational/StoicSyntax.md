@@ -1,5 +1,7 @@
 # StoicSyntax — a discipline for writing Pact
 
+<!-- purpose: The naming and structure discipline the whole codebase is written in: prefix = contract. -->
+
 | | |
 |--|--|
 | **Version** | **1.11.0** |

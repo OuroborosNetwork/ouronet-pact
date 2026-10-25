@@ -1,6 +1,8 @@
 
 # Ouronet UR layout
 
+<!-- purpose: Where table reads may live, and how UR_ groups are ordered against the schema. -->
+
 ## When editing `UR_*` in sovereign modules
 
 0. **Call sites vs `UR_*` bodies** — Never **`read`** / **`at`+`read`** on domain **`deftable`** rows in **`defcap`**, **`C_*`**, **`X_*`**, **`UEV_*`**, etc. Use the module’s **`UR_*`** functions. **Inside** **`UR_*`**, per-field readers normally use **`(at "field" (read table key ["field"]))`** (original efficient form); full-row **`UR_*`** uses **`(read table key)`**. Do not “fix” **`UR_*`** by routing every field through the full-row reader unless you explicitly want that.

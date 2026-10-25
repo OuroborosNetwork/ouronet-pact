@@ -1,5 +1,21 @@
 # Live interface versions on StoaChain (`ouronet-ns`)
 
+<!-- purpose: SUPERSEDED historical snapshot of live interface versions — do NOT use to pick a version; poll the chain. -->
+
+> ## ⛔ SUPERSEDED — DO NOT USE THIS TO PICK AN INTERFACE VERSION. ASK THE CHAIN.
+>
+> Marked 2026-10-25. This file is a CACHE of "what is live", and caching that is now explicitly
+> forbidden: see `HOW-DEPLOY-ROUNDS-WORK.md` §*Never cache "what is live"* and §2b, which require
+> polling `describe-module` for EVERY version, never stopping at the first miss.
+>
+> **The evidence against it is in its own header below:** the first bump map built from this file
+> misread `Autostake`. A second, independent 40-minute false alarm on 2026-10-24 came from reading
+> the repo against a stale cached "live" value. Two wrong diagnoses, one cause.
+>
+> It is deliberately **not** linked from `SKILL.md` or the load order, and
+> `REPL/tools/_skillreach.py` records that exclusion with this reason so the orphan status is a
+> decision rather than an accident. Kept only as a dated historical record of the pre-bump chain.
+
 > Snapshot 2026-08-30 via the Pythia keyless dirty-read (`describe-module` → `interfaces`).
 > **Roadmap Phase 0.4.** For any interface whose code changes at Phase 7, the target suffix = **live + 1**.
 > `OuronetPolicyV1` (every module implements it) omitted for brevity.

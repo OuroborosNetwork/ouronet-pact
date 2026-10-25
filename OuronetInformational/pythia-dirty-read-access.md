@@ -1,5 +1,7 @@
 # Pythia — live-chain dirty reads / broadcast (StoaChain) — access notes
 
+<!-- purpose: How to keyless dirty-read live chain code and state via describe-module, for comparing repo against chain. -->
+
 **What it is:** Pythia is a keyless relay in front of the StoaChain (Ouronet) Chainweb nodes. "One base URL, the
 same shape on every chain." Use it to **dirty-read live on-chain code/state** (e.g. `describe-module`) and to compare
 the deployed contract against the local repo, or to broadcast caller-signed txs.
