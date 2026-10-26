@@ -80,14 +80,14 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_ToggleRewardLink` | `C_ToggleRewardLink` | SETUP | **61** | — | $0.61 | deter:fvt-link-toggle 50 + components:AQP-FVT|C_ToggleRewardLink 11 |
 | `C_ToggleScoreEntityLink` | `C_ToggleScoreEntityLink` | SETUP | **61** | — | $0.61 | deter:fvt-link-toggle 50 + components:AQP-FVT|C_ToggleScoreEntityLink 11 |
 | `CC_ClearPoolSweep` | `CC_ClearPoolSweep` | USAGE | **≥ 55** | — | COMPLEX | heavy / parallel-slice op; legs: deter:backfill 50 + components:AQP-FVT|CC_ClearPoolSweep 5 |
-| `CC_Collect` | `CC_Collect` | USAGE | **≥ 557** | — | COMPLEX | heavy / parallel-slice op; legs: deter:aqp-collect 500 + components:AQP-FVT|CC_Collect 57 |
-| `CC_Inject` | `CC_Inject` | USAGE | **≥ 500** | — | COMPLEX | heavy / parallel-slice op; legs: deter:aqp-inject 500 |
-| `CC_InjectFinalize` | `CC_InjectFinalize` | USAGE | **≥ 500** | — | COMPLEX | heavy / parallel-slice op; legs: deter:aqp-inject 500 |
-| `CC_InjectStream` | `CC_InjectStream` | USAGE | **≥ 500** | — | COMPLEX | heavy / parallel-slice op; legs: deter:aqp-inject 500 |
+| `CC_Collect` | `CC_Collect` | USAGE | **≥ 57** | — | COMPLEX | heavy / parallel-slice op; legs: deter:aqp-collect 0 + components:AQP-FVT|CC_Collect 57 |
+| `CC_Inject` | `CC_Inject` | USAGE | **≥ 0** | — | COMPLEX | heavy / parallel-slice op; legs: deter:aqp-inject 0 |
+| `CC_InjectFinalize` | `CC_InjectFinalize` | USAGE | **≥ 0** | — | COMPLEX | heavy / parallel-slice op; legs: deter:aqp-inject 0 |
+| `CC_InjectStream` | `CC_InjectStream` | USAGE | **≥ 0** | — | COMPLEX | heavy / parallel-slice op; legs: deter:aqp-inject 0 |
 | `CC_LatchStreamEligible` | `CC_LatchStreamEligible` | SETUP | **≥ 28** | — | COMPLEX | heavy / parallel-slice op; legs: deter:setup 5 + components:AQP-FVT|CC_LatchStreamEligible 23 |
 | `CC_SweepBegin` | `CC_SweepBegin` | USAGE | **0** | — | free | free by design — Talos wrapper collects no IGNIS and no STOA |
 | `CC_SweepRevokeAnchor` | `CC_SweepRevokeAnchor` | USAGE | **0** | — | free | core op returns an empty cumulator — charges nothing |
-| `CC_UnstaleMyScores` | `CC_UnstaleMyScores` | USAGE | **≥ 111** | — | COMPLEX | heavy / parallel-slice op; legs: deter:unstale 100 + components:AQP-FVT|CC_UnstaleMyScores 11 |
+| `CC_UnstaleMyScores` | `CC_UnstaleMyScores` | USAGE | **≥ 61** | — | COMPLEX | heavy / parallel-slice op; legs: deter:unstale 50 + components:AQP-FVT|CC_UnstaleMyScores 11 |
 | `CCp_FvtFixSlice` | `CCp_FvtFixSlice` | USAGE | **0** | — | free | core op returns an empty cumulator — charges nothing |
 | `CCp_InjectFixChunk` | `CCp_InjectFixChunk` | USAGE | **0** | — | free | core op returns an empty cumulator — charges nothing |
 | `CCp_SweepRecomputeChunk` | `CCp_SweepRecomputeChunk` | USAGE | **0** | — | free | core op returns an empty cumulator — charges nothing |
@@ -496,7 +496,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 
 | Talos function | core op | role | IGNIS | STOA | $ (ignis) | charge breakdown |
 |----------------|---------|------|------:|-----:|----------:|------------------|
-| 2\|CC_Inject | C_2\|Inject | USAGE | **≥ 500** | — | COMPLEX | charge multiplies by an item count; legs: deter:aqp-inject 500 |
+| 2\|CC_Inject | C_2\|Inject | USAGE | **≥ 0** | — | COMPLEX | charge multiplies by an item count; legs: deter:aqp-inject 0 |
 | 2\|CC_SweepRevokeAnchor | C_2\|SweepRevokeAnchor | USAGE | **0** | — | free | free by design — Talos wrapper collects no IGNIS and no STOA |
 
 ## ORBR

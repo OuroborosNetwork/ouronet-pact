@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 2 of 25
 ;; This is STEP 2 of 26 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-1 must have run first, including the init steps between deploys.
-;; 3 source file(s), 205,369 gas measured in the REPL gas model, 239,576 bytes
+;; 3 source file(s), 205,369 gas measured in the REPL gas model, 240,786 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/01_DALOS.pact
@@ -2631,7 +2631,10 @@
         ,"pool-stake-toggle" : 50.0
         ,"fvt-split-setup"   : 100.0
         ,"fvt-link-toggle"   : 50.0
-        ,"unstale"           : 100.0
+        ;;100 -> 50 (owner, 2026-10-26). Unstaling is permissionless maintenance that makes
+        ;;someone ELSE's inject cheaper, so it belongs with `sync-anchors` (50) rather than at
+        ;;twice its price.
+        ,"unstale"           : 50.0
         ,"frag-enable"       : 100.0
         ;; legacy-honored flat values (owner batch did NOT reprice these — values preserved,
         ;; now sourced from here instead of module-local GAS| defconsts; substage 5 rewire):
@@ -2643,8 +2646,20 @@
         ,"issue-multiplet"   : 500.0
         ,"add-score-entity"  : 500.0
         ,"add-reward-link"   : 500.0
-        ,"aqp-inject"        : 500.0
-        ,"aqp-collect"       : 500.0
+        ;;COLLECT AND INJECT CARRY NO DETERRENCE (owner ruling, 2026-10-26). Both were 500 and
+        ;;both were sitting in the "legacy-honored" block below, never actually repriced -- so
+        ;;they inherited an ISSUANCE tier. Deterrence exists to make SPAM CREATION expensive;
+        ;;these two are the opposite of creation. Collecting is a holder claiming earnings he
+        ;;has already accrued, done daily across several aggregators; injecting is an owner
+        ;;funding his own lane, which is the entire point of having created it. Charging either
+        ;;a creation-tier flat fee taxes the system's most routine actions hardest: four daily
+        ;;collects cost ~2,230 IGNIS just to be paid.
+        ;;
+        ;;ZERO IS THE DETERRENCE, NOT THE PRICE. `UC_IgnisPrice` is (deter + components), so
+        ;;both ops still pay their REAL computed work -- 57 for CC_Collect, and the inject's own
+        ;;component cost. What is removed is the arbitrary flat charge on top of it.
+        ,"aqp-inject"        : 0.0
+        ,"aqp-collect"       : 0.0
         ,"sync-anchors"      : 50.0
         ;;Re-rating is permissionless maintenance, like the anchor syncs it sits beside, so it
         ;;carries their deterrence rather than a settings-change tier. The charge is FLAT per

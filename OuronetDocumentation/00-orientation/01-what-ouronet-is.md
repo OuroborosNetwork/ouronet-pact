@@ -12,7 +12,7 @@ That is its designation, and each of the three words is load-bearing:
 - **Layer** — it is not a separate chain and does not pretend to be. Every operation executes on
   StoaChain, in Pact, inside the transaction that requested it.
 
-All of it is smart-contract code: **130,457 lines of Pact across 107 source files**, visible on chain
+All of it is smart-contract code: **130,472 lines of Pact across 107 source files**, visible on chain
 as deployed.
 
 > **On "virtual blockchain".** You will find that phrase in older material, including this
@@ -101,7 +101,7 @@ accounting, not a defence.
 | `.pact` source files | 107 |
 | modules declared | 101 forms, 100 distinct names |
 | interfaces declared | 100 |
-| lines of Pact | 130,457 |
+| lines of Pact | 130,472 |
 | `defun` forms | 9,370 |
 | capabilities (`defcap`) | 992 |
 | schemas / tables | 206 / 231 |

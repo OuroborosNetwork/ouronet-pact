@@ -1,7 +1,7 @@
 # What the complexity buys
 
 The previous two chapters compare Ouronet to specific alternatives. This one answers the question
-underneath them: **130,457 lines is a lot. What is it for?**
+underneath them: **130,472 lines is a lot. What is it for?**
 
 The answer is a ledger, not an argument. Each row is a cost this documentation has already
 established, paired with what it purchases.

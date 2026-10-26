@@ -173,7 +173,7 @@ checker enforces that every one resolves; if you rewrite links for the web, keep
 one-to-one or the checker becomes meaningless.
 
 **Figures are load-bearing and checked.** Five cross-cutting numbers — 427 client entrypoints, 409
-sponsored, 424 divergent previews, 130,457 contract lines, 9,370 functions — are re-derived from
+sponsored, 424 divergent previews, 130,472 contract lines, 9,370 functions — are re-derived from
 the tree on every gate run and must appear in the prose. **Do not "round for readability" anywhere
 in your output**: the check looks for the exact figure, and a near-miss is reported as a stale
 copy.
