@@ -1173,9 +1173,59 @@ def build(probe):
     # must be cut with it. Getting this wrong is the quiet failure -- two arrays that line up by
     # length and are misaligned withdraw the wrong quantity from the wrong nonce, with no error.
     if os.path.exists(AUTHORED):
-        for key, blk in json.load(io.open(AUTHORED, encoding="utf8")).get("partition", {}).items():
+        _auth = json.load(io.open(AUTHORED, encoding="utf8"))
+        for key, blk in _auth.get("partition", {}).items():
             if key in entries:
                 entries[key]["execution"]["partition"] = blk
+
+        # THE ARCHITECTURAL ROUTE IS DERIVED, NOT AUTHORED. Every defpact already names its
+        # single-transaction twin in `preferInstead`; inverting that pointer is the whole job, so
+        # the ten architectural routes cannot drift from the ten pairs the check above already
+        # validates in the other direction. Hand-authoring them would be ten more things to
+        # forget, and this repo's own rule is to never hand-maintain a list that can be generated.
+        #
+        # WHY A DEFPACT CAN ONLY EXPRESS AN ARCHITECTURAL SPLIT (owner ruling 2026-10-27, and the
+        # distinction the taxonomy was missing): a defpact's step count is FIXED by its
+        # definition, while a list has no fixed length. So a defpact can express a decomposition
+        # whose piece-count is INTRINSIC to the operation -- ordered phases, each depending on
+        # what the last one left behind, which is what continuation state is for -- and it cannot
+        # express a split whose piece-count comes from measuring a list. A 2-step defpact caps
+        # the work at two steps forever.
+        #
+        # SUPERSEDED PAIRS ARE EXCLUDED, with their reason recorded: a defpact written for what
+        # is really a list-shaped workload is the wrong tool, and the two AQP ones are exactly
+        # that -- see `architecturalSuperseded` in the authored file.
+        _superseded = _auth.get("architecturalSuperseded", {})
+        for dp_key, dp in sorted(entries.items()):
+            ex = dp["execution"]
+            if ex.get("mode") != "defpact":
+                continue
+            twin = ex.get("preferInstead")
+            if not twin or twin not in entries:
+                continue
+            if dp_key in _superseded:
+                continue
+            tex = entries[twin]["execution"]
+            if tex.get("partition"):          # an authored block wins; never overwritten
+                continue
+            tex["partition"] = {
+                "kind": "architectural",
+                "via": dp_key,
+                "steps": ex.get("steps"),
+                "reason": (
+                    f"The decomposition is ARCHITECTURAL, not list-based: this operation has no "
+                    f"list argument whose length decides the piece count -- it has "
+                    f"{ex.get('steps')} ORDERED PHASES intrinsic to itself, each depending on "
+                    f"what the previous one left behind. That is continuation state, so a "
+                    f"defpact is the only expression of it, and `{dp_key}` is where it lives. "
+                    f"DERIVED by inverting that twin's own `preferInstead` pointer, so the two "
+                    f"directions cannot disagree. TRIGGERED BY MEASUREMENT ONLY: the single "
+                    f"transaction is the route whenever it fits, which is why these stayed "
+                    f"`supported: false` -- at a 2,000,000 gas limit the SWP family measures 21% "
+                    f"of budget and this route never fires. It would fire at the old 150,000."
+                ),
+            }
+
 
     # NAME COLLISIONS. Entries are keyed MODULE.function, so the registry itself is unambiguous.
     # A consumer resolving by the BARE name is not, and that is the exact habit this registry
@@ -1302,6 +1352,70 @@ def main():
                 pbad.append(f"{key}: ORPHAN -- no such entrypoint (drop the entry or fix the key)")
                 continue
             types = {p["name"]: p["type"] for p in doc["entrypoints"][key]["params"]}
+            kind = blk.get("kind")
+            if kind not in ("list", "cursor", "architectural"):
+                pbad.append(f"{key}: kind is {kind!r}, not 'list', 'cursor' or 'architectural'")
+                continue
+
+            # A CURSOR ROUTE: the work is list-SHAPED but the list lives in chain STATE, not in
+            # the signature, so a client has nothing to cut. The scalable expression is a pager
+            # that advances stored progress -- unbounded in calls, and STRICTLY SEQUENTIAL,
+            # because two of them race the cursor. Declaring one of these as `list` would invite
+            # a client to slice an argument that does not exist; declaring it `architectural`
+            # would cap an unbounded workload at a defpact's fixed step count.
+            if kind == "cursor":
+                via = blk.get("via")
+                if via not in doc["entrypoints"]:
+                    pbad.append(f"{key}: cursor via {via!r} is not an entrypoint")
+                else:
+                    vex = doc["entrypoints"][via]["execution"]
+                    if vex.get("mode") != "indirect-sequential":
+                        pbad.append(f"{key}: cursor via {via} is mode {vex.get('mode')!r}, not "
+                                    f"'indirect-sequential' -- it is not a pager")
+                    if vex.get("shape") != "cursor pager":
+                        pbad.append(f"{key}: cursor via {via} has shape {vex.get('shape')!r}, "
+                                    f"not 'cursor pager'")
+                    want = list(blk.get("progress") or [])
+                    have = list(vex.get("preflight") or [])
+                    if want != have:
+                        pbad.append(f"{key}: cursor progress {want} does not match {via}'s own "
+                                    f"preflight {have} -- the completion signal must be the "
+                                    f"pager's, or a client cannot know when to stop")
+                for forbidden in ("axis", "lockstep", "inner", "shape", "rounds"):
+                    if blk.get(forbidden) is not None:
+                        pbad.append(f"{key}: cursor route must not carry {forbidden!r} -- there "
+                                    f"is no list argument to describe")
+                if not blk.get("reason"):
+                    pbad.append(f"{key}: no 'reason'")
+                continue
+
+            # AN ARCHITECTURAL ROUTE is DERIVED by inverting a defpact's `preferInstead`, so a
+            # hand-authored one is a sign the derivation was bypassed. Checked anyway, because
+            # the authored layer can still write one.
+            if kind == "architectural":
+                via = blk.get("via")
+                if via not in doc["entrypoints"]:
+                    pbad.append(f"{key}: architectural via {via!r} is not an entrypoint")
+                else:
+                    vex = doc["entrypoints"][via]["execution"]
+                    if vex.get("mode") != "defpact":
+                        pbad.append(f"{key}: architectural via {via} is mode "
+                                    f"{vex.get('mode')!r}, not 'defpact' -- an ordered "
+                                    f"decomposition can only be a defpact")
+                    if vex.get("preferInstead") != key:
+                        pbad.append(f"{key}: architectural via {via} does not point BACK here "
+                                    f"({vex.get('preferInstead')!r}) -- the inversion is broken")
+                    if blk.get("steps") != vex.get("steps"):
+                        pbad.append(f"{key}: architectural steps {blk.get('steps')!r} disagrees "
+                                    f"with {via}'s {vex.get('steps')!r}")
+                for forbidden in ("axis", "lockstep", "inner", "shape", "rounds"):
+                    if blk.get(forbidden) is not None:
+                        pbad.append(f"{key}: architectural route must not carry {forbidden!r}")
+                if not blk.get("reason"):
+                    pbad.append(f"{key}: no 'reason'")
+                continue
+
+            # --- kind == "list" from here: the axis rules that already existed ---------------
             shape = blk.get("shape")
             axis = blk.get("axis")
             if shape not in ("partition", "reduction"):
@@ -1357,11 +1471,62 @@ def main():
                 pbad.append(f"{key}: partition carries a 'rounds' note -- it has one round")
             if not blk.get("reason"):
                 pbad.append(f"{key}: no 'reason' -- an unexplained split permission is not one")
-        # And the merge must actually have happened, or every consumer reads "unclassified".
-        merged = sum(1 for v in doc["entrypoints"].values() if v["execution"].get("partition"))
-        if authored_part and merged != len(authored_part):
-            pbad.append(f"{len(authored_part)} authored partition block(s) but {merged} merged "
-                        f"into the artefact -- regenerate with --probe")
+        # EVERY AUTHORED BLOCK MUST HAVE MERGED, or that entrypoint reads as unclassified to every
+        # consumer. Counted per-KEY rather than as a total, because architectural routes are
+        # DERIVED from `preferInstead` inversion and are legitimately present without being
+        # authored -- an earlier version compared the authored count to the total and reported
+        # the derivation itself as drift.
+        unmerged = [k for k in sorted(authored_part)
+                    if k in doc["entrypoints"]
+                    and not doc["entrypoints"][k]["execution"].get("partition")]
+        if unmerged:
+            pbad.append(f"{len(unmerged)} authored partition block(s) did not merge into the "
+                        f"artefact -- regenerate with --probe: {', '.join(unmerged[:4])}")
+
+        # AND EVERY DERIVED ROUTE MUST STILL BE DERIVABLE. A defpact that loses its
+        # `preferInstead`, or gains a `architecturalSuperseded` entry, must not leave a stale
+        # architectural route behind on its twin -- the same orphan problem as a vanished site.
+        sup = {}
+        if os.path.exists(AUTHORED):
+            sup = json.load(io.open(AUTHORED, encoding="utf8")).get("architecturalSuperseded", {})
+        for key, v in sorted(doc["entrypoints"].items()):
+            blk = v["execution"].get("partition")
+            if not blk or blk.get("kind") != "architectural" or key in authored_part:
+                continue
+            via = blk.get("via")
+            if via in sup:
+                pbad.append(f"{key}: derived architectural route via {via}, which is listed as "
+                            f"SUPERSEDED -- the route should not exist")
+        for dp in sorted(k for k in sup if k != "note"):
+            if dp not in doc["entrypoints"]:
+                pbad.append(f"architecturalSuperseded: {dp} is not an entrypoint (ORPHAN)")
+            elif doc["entrypoints"][dp]["execution"].get("mode") != "defpact":
+                pbad.append(f"architecturalSuperseded: {dp} is not a defpact")
+
+        # THE TWO MECHANISMS MUST BE JOINTLY EXHAUSTIVE. Every defpact that names a twin is
+        # either DERIVED into an architectural route on that twin, or explicitly SUPERSEDED. A
+        # defpact that is neither has been silently forgotten -- and found by negative testing,
+        # that is exactly what dropping a supersession entry looked like: the twin already
+        # carried an authored `cursor` block, the derivation skipped it (authored always wins),
+        # and nothing objected. The record of WHY a defpact is not the route would have
+        # evaporated while the behaviour stayed correct by accident, which is the state that
+        # rots -- the next person removes the cursor block and the derivation silently makes an
+        # unbounded workload architectural again.
+        for dp_key, dv in sorted(doc["entrypoints"].items()):
+            dex = dv["execution"]
+            if dex.get("mode") != "defpact":
+                continue
+            twin = dex.get("preferInstead")
+            if not twin or twin not in doc["entrypoints"]:
+                continue
+            if dp_key in sup:
+                continue
+            tblk = doc["entrypoints"][twin]["execution"].get("partition") or {}
+            if tblk.get("kind") == "architectural" and tblk.get("via") == dp_key:
+                continue
+            pbad.append(f"{dp_key}: defpact names twin {twin} but is NEITHER derived into an "
+                        f"architectural route there (twin kind is {tblk.get('kind')!r}) NOR "
+                        f"listed in architecturalSuperseded -- say which it is")
         if pbad:
             print(f"registry: {len(pbad)} partition claim(s) do not hold")
             for b in pbad[:12]:

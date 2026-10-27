@@ -1630,6 +1630,7 @@
     "mode": "direct",
     "note": "the provided inputs suffice; nothing is read off-chain first",
     "partition": {
+     "kind": "list",
      "shape": "partition",
      "axis": "executee-lst",
      "lockstep": [
@@ -2243,19 +2244,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_Konto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_Konto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -2334,19 +2335,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_Konto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_Konto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -2526,19 +2527,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_Konto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_Konto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -2623,19 +2624,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_Konto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_Konto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -2716,19 +2717,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_Konto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_Konto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -2811,19 +2812,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_Konto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_Konto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -3014,19 +3015,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_Konto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_Konto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -3394,19 +3395,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_Konto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_Konto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -3513,19 +3514,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_Konto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_Konto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -3728,19 +3729,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_Konto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_Konto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -3774,6 +3775,7 @@
     "mode": "direct",
     "note": "the provided inputs suffice; nothing is read off-chain first",
     "partition": {
+     "kind": "list",
      "shape": "partition",
      "axis": "executee-lst",
      "lockstep": [
@@ -3916,17 +3918,17 @@
     "resolved": true,
     "requires": [
      {
+      "account": "executor",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `executor`",
+      "when": "ALWAYS"
+     },
+     {
       "account": "patron",
       "via": "parameter",
       "meaning": "the caller must hold the key for the account passed as `patron`",
       "when": "CONDITIONAL",
       "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
-      "account": "executor",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `executor`",
-      "when": "ALWAYS"
      }
     ],
     "unmapped": [
@@ -4000,13 +4002,6 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "executor",
       "via": "parameter",
       "meaning": "the caller must hold the key for the account passed as `executor`",
@@ -4016,6 +4011,13 @@
       "account": "executee",
       "via": "parameter",
       "meaning": "the caller must hold the key for the account passed as `executee`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
       "when": "CONDITIONAL",
       "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
@@ -4657,6 +4659,7 @@
     "mode": "direct",
     "note": "the provided inputs suffice; nothing is read off-chain first",
     "partition": {
+     "kind": "list",
      "shape": "partition",
      "axis": "id-lst",
      "lockstep": [
@@ -4778,6 +4781,7 @@
     "mode": "direct",
     "note": "the provided inputs suffice; nothing is read off-chain first",
     "partition": {
+     "kind": "list",
      "shape": "partition",
      "axis": "id-lst",
      "lockstep": [
@@ -4922,19 +4926,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_Konto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_Konto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -5194,19 +5198,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_Konto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_Konto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -5288,19 +5292,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_Konto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_Konto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -5381,19 +5385,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_Konto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_Konto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -5569,19 +5573,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_Konto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_Konto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -5668,19 +5672,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_Konto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_Konto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -5765,19 +5769,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_Konto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_Konto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -5858,19 +5862,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_Konto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_Konto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -5949,19 +5953,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_Konto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_Konto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -6145,19 +6149,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_Konto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_Konto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -6247,19 +6251,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_Konto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_Konto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -8271,19 +8275,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_Konto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_Konto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -8365,19 +8369,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_Konto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_Konto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -11065,19 +11069,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_Konto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_Konto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -11884,6 +11888,7 @@
     "mode": "direct",
     "note": "the provided inputs suffice; nothing is read off-chain first",
     "partition": {
+     "kind": "list",
      "shape": "reduction",
      "axis": "nonces",
      "rounds": "Re-read the holder's nonce set after the round settles and merge again until one nonce remains. The round count is NOT known in advance -- it follows from the per-transaction capacity, which is measured -- and the next round's nonce ids do not exist until this one lands, because XIv_MergeNonces mints at (+ 1 nonces-used).",
@@ -12182,6 +12187,7 @@
     "mode": "direct",
     "note": "the provided inputs suffice; nothing is read off-chain first",
     "partition": {
+     "kind": "list",
      "shape": "reduction",
      "axis": "nonces",
      "rounds": "Re-read the holder's nonce set after the round settles and merge again until one nonce remains. The round count is NOT known in advance -- it follows from the per-transaction capacity, which is measured -- and the next round's nonce ids do not exist until this one lands, because XIv_MergeNonces mints at (+ 1 nonces-used).",
@@ -12484,6 +12490,7 @@
     "mode": "direct",
     "note": "the provided inputs suffice; nothing is read off-chain first",
     "partition": {
+     "kind": "list",
      "shape": "reduction",
      "axis": "nonces",
      "rounds": "Re-read the holder's nonce set after the round settles and merge again until one nonce remains. The round count is NOT known in advance -- it follows from the per-transaction capacity, which is measured -- and the next round's nonce ids do not exist until this one lands, because XIv_MergeNonces mints at (+ 1 nonces-used).",
@@ -12870,6 +12877,7 @@
     "mode": "direct",
     "note": "the provided inputs suffice; nothing is read off-chain first",
     "partition": {
+     "kind": "list",
      "shape": "reduction",
      "axis": "nonces",
      "rounds": "Re-read the holder's nonce set after the round settles and merge again until one nonce remains. The round count is NOT known in advance -- it follows from the per-transaction capacity, which is measured -- and the next round's nonce ids do not exist until this one lands, because XIv_MergeNonces mints at (+ 1 nonces-used).",
@@ -13871,7 +13879,13 @@
    },
    "execution": {
     "mode": "direct",
-    "note": "the provided inputs suffice; nothing is read off-chain first"
+    "note": "the provided inputs suffice; nothing is read off-chain first",
+    "partition": {
+     "kind": "architectural",
+     "via": "TS01-CP.SWP|C_AddFrozenLiquidity",
+     "steps": 3,
+     "reason": "The decomposition is ARCHITECTURAL, not list-based: this operation has no list argument whose length decides the piece count -- it has 3 ORDERED PHASES intrinsic to itself, each depending on what the previous one left behind. That is continuation state, so a defpact is the only expression of it, and `TS01-CP.SWP|C_AddFrozenLiquidity` is where it lives. DERIVED by inverting that twin's own `preferInstead` pointer, so the two directions cannot disagree. TRIGGERED BY MEASUREMENT ONLY: the single transaction is the route whenever it fits, which is why these stayed `supported: false` -- at a 2,000,000 gas limit the SWP family measures 21% of budget and this route never fires. It would fire at the old 150,000."
+    }
    },
    "preview": "INFO-ONE.INFO_SWP|AddFrozenLiquidity",
    "ghost": {
@@ -13943,7 +13957,13 @@
    },
    "execution": {
     "mode": "direct",
-    "note": "the provided inputs suffice; nothing is read off-chain first"
+    "note": "the provided inputs suffice; nothing is read off-chain first",
+    "partition": {
+     "kind": "architectural",
+     "via": "TS01-CP.SWP|C_AddGlacialLiquidity",
+     "steps": 3,
+     "reason": "The decomposition is ARCHITECTURAL, not list-based: this operation has no list argument whose length decides the piece count -- it has 3 ORDERED PHASES intrinsic to itself, each depending on what the previous one left behind. That is continuation state, so a defpact is the only expression of it, and `TS01-CP.SWP|C_AddGlacialLiquidity` is where it lives. DERIVED by inverting that twin's own `preferInstead` pointer, so the two directions cannot disagree. TRIGGERED BY MEASUREMENT ONLY: the single transaction is the route whenever it fits, which is why these stayed `supported: false` -- at a 2,000,000 gas limit the SWP family measures 21% of budget and this route never fires. It would fire at the old 150,000."
+    }
    },
    "preview": "INFO-ONE.INFO_SWP|AddGlacialLiquidity",
    "ghost": {
@@ -14016,7 +14036,13 @@
    },
    "execution": {
     "mode": "direct",
-    "note": "the provided inputs suffice; nothing is read off-chain first"
+    "note": "the provided inputs suffice; nothing is read off-chain first",
+    "partition": {
+     "kind": "architectural",
+     "via": "TS01-CP.SWP|C_AddIcedLiquidity",
+     "steps": 3,
+     "reason": "The decomposition is ARCHITECTURAL, not list-based: this operation has no list argument whose length decides the piece count -- it has 3 ORDERED PHASES intrinsic to itself, each depending on what the previous one left behind. That is continuation state, so a defpact is the only expression of it, and `TS01-CP.SWP|C_AddIcedLiquidity` is where it lives. DERIVED by inverting that twin's own `preferInstead` pointer, so the two directions cannot disagree. TRIGGERED BY MEASUREMENT ONLY: the single transaction is the route whenever it fits, which is why these stayed `supported: false` -- at a 2,000,000 gas limit the SWP family measures 21% of budget and this route never fires. It would fire at the old 150,000."
+    }
    },
    "preview": "INFO-ONE.INFO_SWP|AddIcedLiquidity",
    "ghost": {
@@ -14065,19 +14091,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `swpair`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "swpair",
       "meaning": "`swpair` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -14113,7 +14139,13 @@
    },
    "execution": {
     "mode": "direct",
-    "note": "the provided inputs suffice; nothing is read off-chain first"
+    "note": "the provided inputs suffice; nothing is read off-chain first",
+    "partition": {
+     "kind": "architectural",
+     "via": "TS01-CP.SWP|C_AddStandardLiquidity",
+     "steps": 3,
+     "reason": "The decomposition is ARCHITECTURAL, not list-based: this operation has no list argument whose length decides the piece count -- it has 3 ORDERED PHASES intrinsic to itself, each depending on what the previous one left behind. That is continuation state, so a defpact is the only expression of it, and `TS01-CP.SWP|C_AddStandardLiquidity` is where it lives. DERIVED by inverting that twin's own `preferInstead` pointer, so the two directions cannot disagree. TRIGGERED BY MEASUREMENT ONLY: the single transaction is the route whenever it fits, which is why these stayed `supported: false` -- at a 2,000,000 gas limit the SWP family measures 21% of budget and this route never fires. It would fire at the old 150,000."
+    }
    },
    "preview": "INFO-ONE.INFO_SWP|AddLiquidity",
    "ghost": {
@@ -14190,7 +14222,13 @@
    },
    "execution": {
     "mode": "direct",
-    "note": "the provided inputs suffice; nothing is read off-chain first"
+    "note": "the provided inputs suffice; nothing is read off-chain first",
+    "partition": {
+     "kind": "architectural",
+     "via": "TS01-CP.SWP|C_AddSleepingLiquidity",
+     "steps": 3,
+     "reason": "The decomposition is ARCHITECTURAL, not list-based: this operation has no list argument whose length decides the piece count -- it has 3 ORDERED PHASES intrinsic to itself, each depending on what the previous one left behind. That is continuation state, so a defpact is the only expression of it, and `TS01-CP.SWP|C_AddSleepingLiquidity` is where it lives. DERIVED by inverting that twin's own `preferInstead` pointer, so the two directions cannot disagree. TRIGGERED BY MEASUREMENT ONLY: the single transaction is the route whenever it fits, which is why these stayed `supported: false` -- at a 2,000,000 gas limit the SWP family measures 21% of budget and this route never fires. It would fire at the old 150,000."
+    }
    },
    "preview": "INFO-ONE.INFO_SWP|AddSleepingLiquidity",
    "ghost": {
@@ -14240,19 +14278,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `swpair`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "swpair",
       "meaning": "`swpair` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -14326,19 +14364,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `swpair`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "swpair",
       "meaning": "`swpair` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -14704,7 +14742,13 @@
    },
    "execution": {
     "mode": "direct",
-    "note": "the provided inputs suffice; nothing is read off-chain first"
+    "note": "the provided inputs suffice; nothing is read off-chain first",
+    "partition": {
+     "kind": "architectural",
+     "via": "TS01-CP.SWP|C_IssueStablePool",
+     "steps": 3,
+     "reason": "The decomposition is ARCHITECTURAL, not list-based: this operation has no list argument whose length decides the piece count -- it has 3 ORDERED PHASES intrinsic to itself, each depending on what the previous one left behind. That is continuation state, so a defpact is the only expression of it, and `TS01-CP.SWP|C_IssueStablePool` is where it lives. DERIVED by inverting that twin's own `preferInstead` pointer, so the two directions cannot disagree. TRIGGERED BY MEASUREMENT ONLY: the single transaction is the route whenever it fits, which is why these stayed `supported: false` -- at a 2,000,000 gas limit the SWP family measures 21% of budget and this route never fires. It would fire at the old 150,000."
+    }
    },
    "preview": "INFO-ONE.INFO_SWP|IssueStable",
    "ghost": {
@@ -14801,7 +14845,13 @@
    },
    "execution": {
     "mode": "direct",
-    "note": "the provided inputs suffice; nothing is read off-chain first"
+    "note": "the provided inputs suffice; nothing is read off-chain first",
+    "partition": {
+     "kind": "architectural",
+     "via": "TS01-CP.SWP|C_IssueStandardPool",
+     "steps": 3,
+     "reason": "The decomposition is ARCHITECTURAL, not list-based: this operation has no list argument whose length decides the piece count -- it has 3 ORDERED PHASES intrinsic to itself, each depending on what the previous one left behind. That is continuation state, so a defpact is the only expression of it, and `TS01-CP.SWP|C_IssueStandardPool` is where it lives. DERIVED by inverting that twin's own `preferInstead` pointer, so the two directions cannot disagree. TRIGGERED BY MEASUREMENT ONLY: the single transaction is the route whenever it fits, which is why these stayed `supported: false` -- at a 2,000,000 gas limit the SWP family measures 21% of budget and this route never fires. It would fire at the old 150,000."
+    }
    },
    "preview": "INFO-ONE.INFO_SWP|IssueStandard",
    "ghost": {
@@ -14901,7 +14951,13 @@
    },
    "execution": {
     "mode": "direct",
-    "note": "the provided inputs suffice; nothing is read off-chain first"
+    "note": "the provided inputs suffice; nothing is read off-chain first",
+    "partition": {
+     "kind": "architectural",
+     "via": "TS01-CP.SWP|C_IssueWeightedPool",
+     "steps": 3,
+     "reason": "The decomposition is ARCHITECTURAL, not list-based: this operation has no list argument whose length decides the piece count -- it has 3 ORDERED PHASES intrinsic to itself, each depending on what the previous one left behind. That is continuation state, so a defpact is the only expression of it, and `TS01-CP.SWP|C_IssueWeightedPool` is where it lives. DERIVED by inverting that twin's own `preferInstead` pointer, so the two directions cannot disagree. TRIGGERED BY MEASUREMENT ONLY: the single transaction is the route whenever it fits, which is why these stayed `supported: false` -- at a 2,000,000 gas limit the SWP family measures 21% of budget and this route never fires. It would fire at the old 150,000."
+    }
    },
    "preview": "INFO-ONE.INFO_SWP|IssueWeighted",
    "ghost": {
@@ -14957,19 +15013,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `swpair`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "swpair",
       "meaning": "`swpair` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -15047,19 +15103,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `swpair`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "swpair",
       "meaning": "`swpair` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -15869,19 +15925,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `swpair`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "swpair",
       "meaning": "`swpair` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -15961,19 +16017,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `swpair`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "swpair",
       "meaning": "`swpair` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -16153,19 +16209,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `swpair`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "swpair",
       "meaning": "`swpair` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -16247,19 +16303,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `swpair`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "swpair",
       "meaning": "`swpair` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -16545,19 +16601,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `swpair`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "swpair",
       "meaning": "`swpair` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -16815,17 +16871,17 @@
     "resolved": true,
     "requires": [
      {
+      "account": "executor",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `executor`",
+      "when": "ALWAYS"
+     },
+     {
       "account": "patron",
       "via": "parameter",
       "meaning": "the caller must hold the key for the account passed as `patron`",
       "when": "CONDITIONAL",
       "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
-      "account": "executor",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `executor`",
-      "when": "ALWAYS"
      }
     ],
     "unmapped": [
@@ -17048,17 +17104,17 @@
     "resolved": true,
     "requires": [
      {
+      "account": "executor",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `executor`",
+      "when": "ALWAYS"
+     },
+     {
       "account": "patron",
       "via": "parameter",
       "meaning": "the caller must hold the key for the account passed as `patron`",
       "when": "CONDITIONAL",
       "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
-      "account": "executor",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `executor`",
-      "when": "ALWAYS"
      }
     ],
     "unmapped": [
@@ -18234,13 +18290,6 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "executor",
       "via": "parameter",
       "meaning": "the caller must hold the key for the account passed as `executor`",
@@ -18253,6 +18302,13 @@
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -18287,6 +18343,7 @@
     "mode": "direct",
     "note": "the provided inputs suffice; nothing is read off-chain first",
     "partition": {
+     "kind": "list",
      "shape": "partition",
      "axis": "executee-lst",
      "lockstep": [
@@ -18385,17 +18442,17 @@
     "resolved": true,
     "requires": [
      {
+      "account": "executor",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `executor`",
+      "when": "ALWAYS"
+     },
+     {
       "account": "patron",
       "via": "parameter",
       "meaning": "the caller must hold the key for the account passed as `patron`",
       "when": "CONDITIONAL",
       "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
-      "account": "executor",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `executor`",
-      "when": "ALWAYS"
      }
     ],
     "unmapped": [
@@ -18432,6 +18489,7 @@
     "mode": "direct",
     "note": "the provided inputs suffice; nothing is read off-chain first",
     "partition": {
+     "kind": "list",
      "shape": "partition",
      "axis": "ids",
      "lockstep": [
@@ -18520,19 +18578,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -18711,19 +18769,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -18816,13 +18874,6 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "executor",
       "via": "parameter",
       "meaning": "the caller must hold the key for the account passed as `executor`",
@@ -18835,6 +18886,13 @@
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -18869,6 +18927,7 @@
     "mode": "direct",
     "note": "the provided inputs suffice; nothing is read off-chain first",
     "partition": {
+     "kind": "list",
      "shape": "partition",
      "axis": "executee-lst",
      "lockstep": [
@@ -19174,19 +19233,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -19332,19 +19391,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -19498,19 +19557,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -19824,19 +19883,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -19969,19 +20028,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -20363,19 +20422,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -20465,19 +20524,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -20564,19 +20623,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -20667,13 +20726,6 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "executor",
       "via": "parameter",
       "meaning": "the caller must hold the key for the account passed as `executor`",
@@ -20686,6 +20738,13 @@
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -20768,19 +20827,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -20950,19 +21009,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -21222,19 +21281,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -21326,19 +21385,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -21439,19 +21498,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -21544,19 +21603,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -21641,19 +21700,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -21738,19 +21797,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -21835,19 +21894,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -21932,19 +21991,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -22029,19 +22088,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -22313,19 +22372,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -22410,19 +22469,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -22515,17 +22574,17 @@
     "resolved": true,
     "requires": [
      {
+      "account": "executor",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `executor`",
+      "when": "ALWAYS"
+     },
+     {
       "account": "patron",
       "via": "parameter",
       "meaning": "the caller must hold the key for the account passed as `patron`",
       "when": "CONDITIONAL",
       "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
-      "account": "executor",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `executor`",
-      "when": "ALWAYS"
      },
      {
       "account": "owner of `id`",
@@ -22631,17 +22690,17 @@
     "resolved": true,
     "requires": [
      {
+      "account": "executor",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `executor`",
+      "when": "ALWAYS"
+     },
+     {
       "account": "patron",
       "via": "parameter",
       "meaning": "the caller must hold the key for the account passed as `patron`",
       "when": "CONDITIONAL",
       "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
-      "account": "executor",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `executor`",
-      "when": "ALWAYS"
      },
      {
       "account": "owner of `id`",
@@ -24910,19 +24969,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -25010,19 +25069,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -25110,19 +25169,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -25212,19 +25271,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -25311,19 +25370,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -25422,13 +25481,6 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "account",
       "via": "parameter",
       "meaning": "the caller must hold the key for the account passed as `account`",
@@ -25442,6 +25494,13 @@
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -25735,13 +25794,6 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "executor",
       "via": "parameter",
       "meaning": "the caller must hold the key for the account passed as `executor`",
@@ -25754,6 +25806,13 @@
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -25788,6 +25847,7 @@
     "mode": "direct",
     "note": "the provided inputs suffice; nothing is read off-chain first",
     "partition": {
+     "kind": "list",
      "shape": "partition",
      "axis": "executee-lst",
      "lockstep": [
@@ -26084,19 +26144,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -26731,19 +26791,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -26876,19 +26936,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -27154,19 +27214,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -27256,19 +27316,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -27355,19 +27415,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -27450,19 +27510,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -27632,19 +27692,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -27904,19 +27964,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -28008,19 +28068,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -28121,19 +28181,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -28318,19 +28378,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -28415,19 +28475,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -28512,19 +28572,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -28609,19 +28669,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -28706,19 +28766,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -28990,19 +29050,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -29087,19 +29147,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -29192,17 +29252,17 @@
     "resolved": true,
     "requires": [
      {
+      "account": "executor",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `executor`",
+      "when": "ALWAYS"
+     },
+     {
       "account": "patron",
       "via": "parameter",
       "meaning": "the caller must hold the key for the account passed as `patron`",
       "when": "CONDITIONAL",
       "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
-      "account": "executor",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `executor`",
-      "when": "ALWAYS"
      },
      {
       "account": "owner of `id`",
@@ -29308,17 +29368,17 @@
     "resolved": true,
     "requires": [
      {
+      "account": "executor",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `executor`",
+      "when": "ALWAYS"
+     },
+     {
       "account": "patron",
       "via": "parameter",
       "meaning": "the caller must hold the key for the account passed as `patron`",
       "when": "CONDITIONAL",
       "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
-      "account": "executor",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `executor`",
-      "when": "ALWAYS"
      },
      {
       "account": "owner of `id`",
@@ -31687,19 +31747,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -31787,19 +31847,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `id`",
       "via": "reader",
       "reader": "UR_OwnerKonto",
       "subject": "id",
       "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -33616,13 +33676,6 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "executor",
       "via": "parameter",
       "meaning": "the caller must hold the key for the account passed as `executor`",
@@ -33633,6 +33686,13 @@
       "via": "parameter",
       "meaning": "the caller must hold the key for the account passed as `patron`",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -33761,7 +33821,15 @@
    },
    "execution": {
     "mode": "direct",
-    "note": "the provided inputs suffice; nothing is read off-chain first"
+    "note": "the provided inputs suffice; nothing is read off-chain first",
+    "partition": {
+     "kind": "cursor",
+     "via": "TS02-C3.AQP-FVT|CCp_InjectFixChunk",
+     "progress": [
+      "AQP-FVT.URH_FvtStalePresentUsers"
+     ],
+     "reason": "The work is LIST-SHAPED but the list is not in the signature -- this entrypoint takes no list at all, and the set it traverses lives in chain state. So a client has nothing to cut, and `kind: list` would invite it to slice an argument that does not exist.\n\nA DEFPACT IS THE WRONG TOOL HERE, which is the distinction the taxonomy was missing (owner, 2026-10-27): a defpact's step count is FIXED by its definition while this workload has no fixed length, so a 2-step twin caps it at two steps forever. The scalable expression is the pager below -- unbounded in calls, each advancing stored progress, and STRICTLY SEQUENTIAL because two of them race the cursor. Repeat until the progress read says done.\n\nMEASURED LIVE: an inject on a 5-score pool cost ~257,000 gas, and it scales with the score and present-user sets -- so this is the first route in the registry expected to be needed in practice rather than in principle."
+    }
    },
    "preview": "AQP-INFO.INFO_AQP-FVT|Inject",
    "ghost": {
@@ -34174,7 +34242,16 @@
    },
    "execution": {
     "mode": "direct",
-    "note": "the provided inputs suffice; nothing is read off-chain first"
+    "note": "the provided inputs suffice; nothing is read off-chain first",
+    "partition": {
+     "kind": "cursor",
+     "via": "TS02-C3.AQP-FVT|CCp_SweepRecomputeChunk",
+     "progress": [
+      "AQP-FVT.UR_FVT|SweepProgress",
+      "AQP-FVT.UR_FVT|SweepActive"
+     ],
+     "reason": "The work is LIST-SHAPED but the list is not in the signature -- this entrypoint takes no list at all, and the set it traverses lives in chain state. So a client has nothing to cut, and `kind: list` would invite it to slice an argument that does not exist.\n\nA DEFPACT IS THE WRONG TOOL HERE, which is the distinction the taxonomy was missing (owner, 2026-10-27): a defpact's step count is FIXED by its definition while this workload has no fixed length, so a 2-step twin caps it at two steps forever. The scalable expression is the pager below -- unbounded in calls, each advancing stored progress, and STRICTLY SEQUENTIAL because two of them race the cursor. Repeat until the progress read says done."
+    }
    },
    "preview": "AQP-INFO.INFO_AQP-FVT|SweepRevokeAnchor",
    "ghost": {
@@ -34215,17 +34292,17 @@
     "resolved": true,
     "requires": [
      {
+      "account": "executor",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `executor`",
+      "when": "ALWAYS"
+     },
+     {
       "account": "patron",
       "via": "parameter",
       "meaning": "the caller must hold the key for the account passed as `patron`",
       "when": "CONDITIONAL",
       "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
-      "account": "executor",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `executor`",
-      "when": "ALWAYS"
      }
     ],
     "unmapped": [
@@ -34344,6 +34421,7 @@
     "fedParams": null,
     "note": "a preflight read is cut into slices, each fed to its own transaction. Order-independent, so the slices MAY be submitted in parallel",
     "partition": {
+     "kind": "list",
      "shape": "partition",
      "axis": "users",
      "reason": "A Hydra fed slice: the Hydra canon has the UI run a URH_ preflight and partition its output into capacity-bounded slices, so cutting this list client-side IS the intended use. `execution.mode` already says the slices are order-independent; what it does not say is WHICH parameter is the slice, which is why this block is needed before any consumer may cut one. This entrypoint EXISTS to parallelise the sequential fixer -- INFO_ calls it \"the sequential fixer it parallelises\" -- so per-user independence is the premise of its own existence. Gas-station subsidised, so splitting costs the patron nothing either."
@@ -36125,17 +36203,17 @@
     "resolved": true,
     "requires": [
      {
+      "account": "owner",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `owner`",
+      "when": "ALWAYS"
+     },
+     {
       "account": "patron",
       "via": "parameter",
       "meaning": "the caller must hold the key for the account passed as `patron`",
       "when": "CONDITIONAL",
       "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
-      "account": "owner",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `owner`",
-      "when": "ALWAYS"
      }
     ],
     "unmapped": [
@@ -36238,17 +36316,17 @@
     "resolved": true,
     "requires": [
      {
+      "account": "owner",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `owner`",
+      "when": "ALWAYS"
+     },
+     {
       "account": "patron",
       "via": "parameter",
       "meaning": "the caller must hold the key for the account passed as `patron`",
       "when": "CONDITIONAL",
       "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
-      "account": "owner",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `owner`",
-      "when": "ALWAYS"
      }
     ],
     "unmapped": [
@@ -36346,17 +36424,17 @@
     "resolved": true,
     "requires": [
      {
+      "account": "owner",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `owner`",
+      "when": "ALWAYS"
+     },
+     {
       "account": "patron",
       "via": "parameter",
       "meaning": "the caller must hold the key for the account passed as `patron`",
       "when": "CONDITIONAL",
       "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
-      "account": "owner",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `owner`",
-      "when": "ALWAYS"
      }
     ],
     "unmapped": [
@@ -36494,6 +36572,7 @@
     "mode": "direct",
     "note": "the provided inputs suffice; nothing is read off-chain first",
     "partition": {
+     "kind": "list",
      "shape": "partition",
      "axis": "nonces",
      "reason": "Nonces are independent: each one gets its own tracker row and its own rollup leg, and the score delta is recomputed from the resulting totals rather than accumulated per call. Fitted against mainnet 2026-10-27, the IGNIS curve is 58 + 9N with zero residual over eight nonce counts from 1 to 420 -- a clean fixed-plus-marginal shape, which is what makes k batches cost k x 58 more and nothing else differ."
@@ -36698,6 +36777,7 @@
     "mode": "direct",
     "note": "the provided inputs suffice; nothing is read off-chain first",
     "partition": {
+     "kind": "list",
      "shape": "partition",
      "axis": "nonces",
      "reason": "Nonces are independent: each one gets its own tracker row and its own rollup leg, and the score delta is recomputed from the resulting totals rather than accumulated per call. Fitted against mainnet 2026-10-27, the IGNIS curve is 58 + 9N with zero residual over eight nonce counts from 1 to 420 -- a clean fixed-plus-marginal shape, which is what makes k batches cost k x 58 more and nothing else differ."
@@ -36906,6 +36986,7 @@
     "mode": "direct",
     "note": "the provided inputs suffice; nothing is read off-chain first",
     "partition": {
+     "kind": "list",
      "shape": "partition",
      "axis": "nonces",
      "lockstep": [
@@ -37120,6 +37201,7 @@
     "mode": "direct",
     "note": "the provided inputs suffice; nothing is read off-chain first",
     "partition": {
+     "kind": "list",
      "shape": "partition",
      "axis": "nonces",
      "lockstep": [
@@ -37379,19 +37461,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `pool-id`",
       "via": "reader",
       "reader": "URC_AqpOwnerKonto",
       "subject": "pool-id",
       "meaning": "`pool-id` is an ENTITY id, NOT an account. Read `URC_AqpOwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -37472,19 +37554,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `pool-id`",
       "via": "reader",
       "reader": "URC_AqpOwnerKonto",
       "subject": "pool-id",
       "meaning": "`pool-id` is an ENTITY id, NOT an account. Read `URC_AqpOwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -37562,19 +37644,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `pool-id`",
       "via": "reader",
       "reader": "URC_AqpOwnerKonto",
       "subject": "pool-id",
       "meaning": "`pool-id` is an ENTITY id, NOT an account. Read `URC_AqpOwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -37651,19 +37733,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `pool-id`",
       "via": "reader",
       "reader": "URC_AqpOwnerKonto",
       "subject": "pool-id",
       "meaning": "`pool-id` is an ENTITY id, NOT an account. Read `URC_AqpOwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -37783,6 +37865,7 @@
     "fedParams": null,
     "note": "a preflight read is cut into slices, each fed to its own transaction. Order-independent, so the slices MAY be submitted in parallel",
     "partition": {
+     "kind": "list",
      "shape": "partition",
      "axis": "beneficiaries",
      "reason": "A Hydra fed slice: the Hydra canon has the UI run a URH_ preflight and partition its output into capacity-bounded slices, so cutting this list client-side IS the intended use. `execution.mode` already says the slices are order-independent; what it does not say is WHICH parameter is the slice, which is why this block is needed before any consumer may cut one. Per-holder by the contract's own account: INFO_ states it is \"PRICED PER HOLDER, matching the execution path exactly: the transaction recomputes one target and writes one delta per account\". No cross-holder term, so any subset is a valid slice."
@@ -37850,19 +37933,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `pool-id`",
       "via": "reader",
       "reader": "URC_AqpOwnerKonto",
       "subject": "pool-id",
       "meaning": "`pool-id` is an ENTITY id, NOT an account. Read `URC_AqpOwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -37978,19 +38061,19 @@
     "resolved": true,
     "requires": [
      {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     },
+     {
       "account": "owner of `pool-id`",
       "via": "reader",
       "reader": "URC_AqpOwnerKonto",
       "subject": "pool-id",
       "meaning": "`pool-id` is an ENTITY id, NOT an account. Read `URC_AqpOwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
-     },
-     {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -38095,19 +38178,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `pool-id`",
       "via": "reader",
       "reader": "URC_AqpOwnerKonto",
       "subject": "pool-id",
       "meaning": "`pool-id` is an ENTITY id, NOT an account. Read `URC_AqpOwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -38462,19 +38545,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `pool-id`",
       "via": "reader",
       "reader": "URC_AqpOwnerKonto",
       "subject": "pool-id",
       "meaning": "`pool-id` is an ENTITY id, NOT an account. Read `URC_AqpOwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -38717,6 +38800,7 @@
     "fedParams": null,
     "note": "a preflight read is cut into slices, each fed to its own transaction. Order-independent, so the slices MAY be submitted in parallel",
     "partition": {
+     "kind": "list",
      "shape": "partition",
      "axis": "nonces",
      "reason": "A Hydra fed slice: the Hydra canon has the UI run a URH_ preflight and partition its output into capacity-bounded slices, so cutting this list client-side IS the intended use. `execution.mode` already says the slices are order-independent; what it does not say is WHICH parameter is the slice, which is why this block is needed before any consumer may cut one. INFO_ states it is \"IDENTICAL IGNIS TO AN ORDINARY ORTO STAKE, and that is a fact about the code rather than an approximation: custody runs the SAME phase chain (XI_OrtoStakePhases)\" -- so it inherits the per-nonce independence already recorded for the ordinary collectable stakes above."
@@ -38768,19 +38852,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `pool-id`",
       "via": "reader",
       "reader": "URC_AqpOwnerKonto",
       "subject": "pool-id",
       "meaning": "`pool-id` is an ENTITY id, NOT an account. Read `URC_AqpOwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -39308,19 +39392,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `aqp-class`",
       "via": "reader",
       "reader": "URC_AqpOwnerKontoFromClassAndAsset",
       "subject": "aqp-class",
       "meaning": "`aqp-class` is an ENTITY id, NOT an account. Read `URC_AqpOwnerKontoFromClassAndAsset` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -39403,19 +39487,19 @@
     "resolved": true,
     "requires": [
      {
-      "account": "patron",
-      "via": "parameter",
-      "meaning": "the caller must hold the key for the account passed as `patron`",
-      "when": "CONDITIONAL",
-      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
-     },
-     {
       "account": "owner of `pool-id`",
       "via": "reader",
       "reader": "URC_AqpOwnerKonto",
       "subject": "pool-id",
       "meaning": "`pool-id` is an ENTITY id, NOT an account. Read `URC_AqpOwnerKonto` with it to get the account whose key is required",
       "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
      }
     ],
     "unmapped": [
@@ -39768,6 +39852,7 @@
     "fedParams": null,
     "note": "a preflight read is cut into slices, each fed to its own transaction. Order-independent, so the slices MAY be submitted in parallel",
     "partition": {
+     "kind": "list",
      "shape": "partition",
      "axis": "accounts",
      "reason": "A Hydra fed slice: the Hydra canon has the UI run a URH_ preflight and partition its output into capacity-bounded slices, so cutting this list client-side IS the intended use. `execution.mode` already says the slices are order-independent; what it does not say is WHICH parameter is the slice, which is why this block is needed before any consumer may cut one. Per-holder on the same evidence: \"one read and one delta write each, so the quote tracks the slice the caller means to send\"."
@@ -54810,5 +54895,5 @@
  },
  "divergences": [],
  "notDeployed": [],
- "surfaceHash": "65c983178cb70985"
+ "surfaceHash": "ab8e2031f3fc0be5"
 }

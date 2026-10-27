@@ -28,3 +28,8 @@ Deploy/4_Arweave/ROUND.multipact.json
 # fetched source, not authored source. Regenerate with
 # `python3 REPL/tools/_livesandbox.py --round <dir>`.
 Deploy/.livesandbox/
+
+# Stray tool caches. The Pact repo has no npm project; a vitest run from a sibling
+# directory created node_modules/.vitest-cache here and it got committed with the
+# registry change on 2026-10-27. Ignored so it cannot happen twice.
+node_modules/

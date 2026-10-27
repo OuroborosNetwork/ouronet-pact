@@ -45,16 +45,25 @@
  },
  "partitionNote": [
   "HAND-AUTHORED, like `ghost` above, and for the same reason: a contract states that a parameter",
-  "is a list, never that cutting that list in half yields the same outcome as one call. Only a",
-  "reading of the operation can say that, so only a human can write it here.",
+  "THREE KINDS OF SPLIT, and the kind is the first thing to read (owner ruling, 2026-10-27).",
   "",
-  "ABSENCE MEANS DO NOT SPLIT. A consumer that finds no block for an entrypoint sends one",
-  "transaction or refuses -- it never guesses. That default is the safety property: a wrong",
-  "permission silently turns an ATOMIC operation into a partially-applied one, and nothing",
-  "downstream can detect it. 105 entrypoints take a list; the ones below are the ones that have",
-  "actually been read. The rest are UNCLASSIFIED, which is a different statement from",
-  "'unsplittable' and is made by saying nothing.",
+  "  kind=list          The list is an ARGUMENT. A client cuts it, the piece count comes from",
+  "                     MEASUREMENT and is unbounded, and the pieces are independent (shape",
+  "                     =partition) or feed back round by round (shape=reduction).",
+  "  kind=cursor        The work is list-shaped but the list lives in chain STATE -- this",
+  "                     entrypoint takes no list. A pager advances stored progress: unbounded",
+  "                     calls, STRICTLY SEQUENTIAL, repeat until the progress read says done.",
+  "  kind=architectural The operation decomposes into ORDERED PHASES intrinsic to itself, each",
+  "                     depending on what the last left behind. That is continuation state, so a",
+  "                     defpact is its only expression. DERIVED by inverting the defpact's own",
+  "                     `preferInstead`; never authored here.",
   "",
+  "WHY A DEFPACT CANNOT CARRY A LIST SPLIT: its step count is fixed by its definition and a list",
+  "has no fixed length. A 2-step twin caps the work at two steps forever. That is why the two AQP",
+  "defpacts are recorded as SUPERSEDED rather than as architectural routes.",
+  "",
+  "ABSENCE STILL MEANS DO NOT SPLIT. A consumer finding no block sends one transaction or",
+  "refuses. 105 entrypoints take a list; only the ones read are classified.",
   "  shape=partition  cutting the axis yields pieces whose combined effect equals the one call.",
   "                   One round, order-independent, fire them all at once.",
   "  shape=reduction  each piece yields a NEW intermediate that must be fed back in. Parallel",
@@ -63,12 +72,6 @@
   "  lockstep         parameters POSITIONAL against the axis, which must be cut WITH it. The",
   "                   failure here is silent: two arrays that line up by length and are",
   "                   misaligned move the wrong amount to the wrong place, with no error.",
-  "",
-  "DELIBERATELY ABSENT: the SWP liquidity and pool-issue ops. Their legs are priced against pool",
-  "state that an earlier batch has already moved, and the 40% deviation ceiling is evaluated per",
-  "call -- so a split is not the same operation at a different granularity, it is a different",
-  "operation. They have 3-step defpact twins for exactly this, reachable via preferInstead.",
-  "",
   "HELD FOR AN OWNER RULING -- the six AQP batch drain/vacate fed slices:",
   "  CCp_BatchDrain{TrueFungible,OrtoFungible,Collectable}",
   "  CCp_BatchVacate{TrueFungible,OrtoFungible,Collectables}",
@@ -78,14 +81,9 @@
   "changes when -- or whether -- the settle fires. The vacate trio carries a \"per-beneficiary",
   "score unwind\" with the same question, since a beneficiary appearing in two slices has it run",
   "twice and nothing read here says that is idempotent.",
-  "",
   "It probably converges: UserUnn reaches zero only after the last leg, whichever order they land",
-  "in. But 'probably converges' is not the standard for a permission that silently turns an",
   "atomic operation into a partially-applied one, and these are the ops that move staked assets",
   "out of a pool. Unclassified until read properly -- which costs a client nothing today, because",
-  "the slice still comes from the URH_ preflight that already bounds it.",
-  "",
-  "ALSO FINE WITHOUT A BLOCK, deliberately:",
   "  Cp_WipeSlice (DPOF/DPSF/DPNF) -- the slicer is ON CHAIN (URHC_BuildWipeSlicePlan, named in",
   "    fedParams.slicedBy). A client asks for slices; it must not invent them.",
   "  CCp_{SweepRecomputeChunk,InjectFixChunk,UnstaleAll} -- cursor pagers, mode",
@@ -96,6 +94,7 @@
  ],
  "partition": {
   "TS01-C1.DPTF|C_BulkTransfer": {
+   "kind": "list",
    "shape": "partition",
    "axis": "executee-lst",
    "lockstep": [
@@ -104,6 +103,7 @@
    "reason": "Each leg of a bulk/multi transfer is an independent debit-credit against a distinct recipient (or a distinct token), so the union of two batches moves exactly what one call would. The sender's total is checked per call, which splitting cannot evade: the sum across batches is the same sum. PARTIAL COMPLETION IS THE ONE REAL DIFFERENCE -- one transaction is atomic, k are not, so a refused batch leaves some recipients paid and some not. That is acceptable for a transfer fan-out and is NOT acceptable for an op whose legs are priced against each other; it is why liquidity ops are absent from this file."
   },
   "TS01-C1.DPTF|C_MultiTransfer": {
+   "kind": "list",
    "shape": "partition",
    "axis": "id-lst",
    "lockstep": [
@@ -112,6 +112,7 @@
    "reason": "Each leg of a bulk/multi transfer is an independent debit-credit against a distinct recipient (or a distinct token), so the union of two batches moves exactly what one call would. The sender's total is checked per call, which splitting cannot evade: the sum across batches is the same sum. PARTIAL COMPLETION IS THE ONE REAL DIFFERENCE -- one transaction is atomic, k are not, so a refused batch leaves some recipients paid and some not. That is acceptable for a transfer fan-out and is NOT acceptable for an op whose legs are priced against each other; it is why liquidity ops are absent from this file. Here the axis is the TOKEN list: one recipient, many tokens."
   },
   "TS01-C1.DPTF|C_MultiBulkTransfer": {
+   "kind": "list",
    "shape": "partition",
    "axis": "id-lst",
    "lockstep": [
@@ -128,6 +129,7 @@
    }
   },
   "TS01-C1.DPOF|C_BulkTransfer": {
+   "kind": "list",
    "shape": "partition",
    "axis": "executee-lst",
    "lockstep": [
@@ -140,6 +142,7 @@
    }
   },
   "TS02-C1.DPSF|C_BulkTransfer": {
+   "kind": "list",
    "shape": "partition",
    "axis": "executee-lst",
    "lockstep": [
@@ -156,6 +159,7 @@
    }
   },
   "TS02-C2.DPNF|C_BulkTransfer": {
+   "kind": "list",
    "shape": "partition",
    "axis": "executee-lst",
    "lockstep": [
@@ -172,6 +176,7 @@
    }
   },
   "TS02-C1.DPDC|C_BulkTransfer": {
+   "kind": "list",
    "shape": "partition",
    "axis": "executee-lst",
    "lockstep": [
@@ -188,6 +193,7 @@
    }
   },
   "TS02-C1.DPDC|C_MultiTransfer": {
+   "kind": "list",
    "shape": "partition",
    "axis": "ids",
    "lockstep": [
@@ -205,16 +211,19 @@
    }
   },
   "TS02-C3.AQP-POOL|CC_StakeNonFungibleCollectable": {
+   "kind": "list",
    "shape": "partition",
    "axis": "nonces",
    "reason": "Nonces are independent: each one gets its own tracker row and its own rollup leg, and the score delta is recomputed from the resulting totals rather than accumulated per call. Fitted against mainnet 2026-10-27, the IGNIS curve is 58 + 9N with zero residual over eight nonce counts from 1 to 420 -- a clean fixed-plus-marginal shape, which is what makes k batches cost k x 58 more and nothing else differ."
   },
   "TS02-C3.AQP-POOL|CC_StakeSemiFungibleCollectable": {
+   "kind": "list",
    "shape": "partition",
    "axis": "nonces",
    "reason": "Nonces are independent: each one gets its own tracker row and its own rollup leg, and the score delta is recomputed from the resulting totals rather than accumulated per call. Fitted against mainnet 2026-10-27, the IGNIS curve is 58 + 9N with zero residual over eight nonce counts from 1 to 420 -- a clean fixed-plus-marginal shape, which is what makes k batches cost k x 58 more and nothing else differ."
   },
   "TS02-C3.AQP-POOL|CC_UnstakeNonFungibleCollectable": {
+   "kind": "list",
    "shape": "partition",
    "axis": "nonces",
    "lockstep": [
@@ -223,6 +232,7 @@
    "reason": "Nonces are independent: each one gets its own tracker row and its own rollup leg, and the score delta is recomputed from the resulting totals rather than accumulated per call. Fitted against mainnet 2026-10-27, the IGNIS curve is 58 + 9N with zero residual over eight nonce counts from 1 to 420 -- a clean fixed-plus-marginal shape, which is what makes k batches cost k x 58 more and nothing else differ. `nonce-amounts` is caller-supplied and POSITIONAL against `nonces` (the owner no longer holds the rows, so the contract cannot re-derive it) -- the one case in this file where a mis-cut withdraws a real quantity from the wrong nonce without erroring."
   },
   "TS02-C3.AQP-POOL|CC_UnstakeSemiFungibleCollectable": {
+   "kind": "list",
    "shape": "partition",
    "axis": "nonces",
    "lockstep": [
@@ -231,48 +241,98 @@
    "reason": "Nonces are independent: each one gets its own tracker row and its own rollup leg, and the score delta is recomputed from the resulting totals rather than accumulated per call. Fitted against mainnet 2026-10-27, the IGNIS curve is 58 + 9N with zero residual over eight nonce counts from 1 to 420 -- a clean fixed-plus-marginal shape, which is what makes k batches cost k x 58 more and nothing else differ. `nonce-amounts` is caller-supplied and POSITIONAL against `nonces`."
   },
   "TS01-C2.VST|C_Merge": {
+   "kind": "list",
    "shape": "reduction",
    "axis": "nonces",
    "rounds": "Re-read the holder's nonce set after the round settles and merge again until one nonce remains. The round count is NOT known in advance -- it follows from the per-transaction capacity, which is measured -- and the next round's nonce ids do not exist until this one lands, because XIv_MergeNonces mints at (+ 1 nonces-used).",
    "reason": "Every input nonce is WIPED and ONE new nonce is minted carrying the pooled locked amount and the amount-weighted mean unlock time (VST.XIv_MergeNonces -> UC_MergeAll). So a batch does not complete the operation, it reduces it: 860 nonces at 123 per call leaves 7, which are merged again. ROUNDS ARE EXACT, NOT APPROXIMATE -- the weight is sum(balance x stu) / sum(balance), a true weighted mean, and round 1 mints an ABSOLUTE release-date, so wall-clock passing between rounds does not shift it. The only drift is the floor() to whole seconds, once per round, under a second each."
   },
   "TS01-C2.VST|C_Slumber": {
+   "kind": "list",
    "shape": "reduction",
    "axis": "nonces",
    "rounds": "Re-read the holder's nonce set after the round settles and merge again until one nonce remains. The round count is NOT known in advance -- it follows from the per-transaction capacity, which is measured -- and the next round's nonce ids do not exist until this one lands, because XIv_MergeNonces mints at (+ 1 nonces-used).",
    "reason": "Every input nonce is WIPED and ONE new nonce is minted carrying the pooled locked amount and the amount-weighted mean unlock time (VST.XIv_MergeNonces -> UC_MergeAll). So a batch does not complete the operation, it reduces it: 860 nonces at 123 per call leaves 7, which are merged again. ROUNDS ARE EXACT, NOT APPROXIMATE -- the weight is sum(balance x stu) / sum(balance), a true weighted mean, and round 1 mints an ABSOLUTE release-date, so wall-clock passing between rounds does not shift it. The only drift is the floor() to whole seconds, once per round, under a second each."
   },
   "TS01-C2.VST|C_RepurposeMerge": {
+   "kind": "list",
    "shape": "reduction",
    "axis": "nonces",
    "rounds": "Re-read the holder's nonce set after the round settles and merge again until one nonce remains. The round count is NOT known in advance -- it follows from the per-transaction capacity, which is measured -- and the next round's nonce ids do not exist until this one lands, because XIv_MergeNonces mints at (+ 1 nonces-used).",
    "reason": "Every input nonce is WIPED and ONE new nonce is minted carrying the pooled locked amount and the amount-weighted mean unlock time (VST.XIv_MergeNonces -> UC_MergeAll). So a batch does not complete the operation, it reduces it: 860 nonces at 123 per call leaves 7, which are merged again. ROUNDS ARE EXACT, NOT APPROXIMATE -- the weight is sum(balance x stu) / sum(balance), a true weighted mean, and round 1 mints an ABSOLUTE release-date, so wall-clock passing between rounds does not shift it. The only drift is the floor() to whole seconds, once per round, under a second each."
   },
   "TS01-C2.VST|C_RepurposeSlumber": {
+   "kind": "list",
    "shape": "reduction",
    "axis": "nonces",
    "rounds": "Re-read the holder's nonce set after the round settles and merge again until one nonce remains. The round count is NOT known in advance -- it follows from the per-transaction capacity, which is measured -- and the next round's nonce ids do not exist until this one lands, because XIv_MergeNonces mints at (+ 1 nonces-used).",
    "reason": "Every input nonce is WIPED and ONE new nonce is minted carrying the pooled locked amount and the amount-weighted mean unlock time (VST.XIv_MergeNonces -> UC_MergeAll). So a batch does not complete the operation, it reduces it: 860 nonces at 123 per call leaves 7, which are merged again. ROUNDS ARE EXACT, NOT APPROXIMATE -- the weight is sum(balance x stu) / sum(balance), a true weighted mean, and round 1 mints an ABSOLUTE release-date, so wall-clock passing between rounds does not shift it. The only drift is the floor() to whole seconds, once per round, under a second each."
   },
   "TS02-C3.AQP-POOL|CCp_BackfillScoreSlice": {
+   "kind": "list",
    "shape": "partition",
    "axis": "beneficiaries",
    "reason": "A Hydra fed slice: the Hydra canon has the UI run a URH_ preflight and partition its output into capacity-bounded slices, so cutting this list client-side IS the intended use. `execution.mode` already says the slices are order-independent; what it does not say is WHICH parameter is the slice, which is why this block is needed before any consumer may cut one. Per-holder by the contract's own account: INFO_ states it is \"PRICED PER HOLDER, matching the execution path exactly: the transaction recomputes one target and writes one delta per account\". No cross-holder term, so any subset is a valid slice."
   },
   "TS02-C3.AQP-POOL|Cp_DrainScoreSlice": {
+   "kind": "list",
    "shape": "partition",
    "axis": "accounts",
    "reason": "A Hydra fed slice: the Hydra canon has the UI run a URH_ preflight and partition its output into capacity-bounded slices, so cutting this list client-side IS the intended use. `execution.mode` already says the slices are order-independent; what it does not say is WHICH parameter is the slice, which is why this block is needed before any consumer may cut one. Per-holder on the same evidence: \"one read and one delta write each, so the quote tracks the slice the caller means to send\"."
   },
   "TS02-C3.AQP-FVT|CCp_FvtFixSlice": {
+   "kind": "list",
    "shape": "partition",
    "axis": "users",
    "reason": "A Hydra fed slice: the Hydra canon has the UI run a URH_ preflight and partition its output into capacity-bounded slices, so cutting this list client-side IS the intended use. `execution.mode` already says the slices are order-independent; what it does not say is WHICH parameter is the slice, which is why this block is needed before any consumer may cut one. This entrypoint EXISTS to parallelise the sequential fixer -- INFO_ calls it \"the sequential fixer it parallelises\" -- so per-user independence is the premise of its own existence. Gas-station subsidised, so splitting costs the patron nothing either."
   },
   "TS02-C3.AQP-POOL|CCp_StakeSpecialCustodial": {
+   "kind": "list",
    "shape": "partition",
    "axis": "nonces",
    "reason": "A Hydra fed slice: the Hydra canon has the UI run a URH_ preflight and partition its output into capacity-bounded slices, so cutting this list client-side IS the intended use. `execution.mode` already says the slices are order-independent; what it does not say is WHICH parameter is the slice, which is why this block is needed before any consumer may cut one. INFO_ states it is \"IDENTICAL IGNIS TO AN ORDINARY ORTO STAKE, and that is a fact about the code rather than an approximation: custody runs the SAME phase chain (XI_OrtoStakePhases)\" -- so it inherits the per-nonce independence already recorded for the ordinary collectable stakes above."
+  },
+  "TS02-C3.AQP-FVT|CC_Inject": {
+   "kind": "cursor",
+   "via": "TS02-C3.AQP-FVT|CCp_InjectFixChunk",
+   "progress": [
+    "AQP-FVT.URH_FvtStalePresentUsers"
+   ],
+   "reason": "The work is LIST-SHAPED but the list is not in the signature -- this entrypoint takes no list at all, and the set it traverses lives in chain state. So a client has nothing to cut, and `kind: list` would invite it to slice an argument that does not exist.\n\nA DEFPACT IS THE WRONG TOOL HERE, which is the distinction the taxonomy was missing (owner, 2026-10-27): a defpact's step count is FIXED by its definition while this workload has no fixed length, so a 2-step twin caps it at two steps forever. The scalable expression is the pager below -- unbounded in calls, each advancing stored progress, and STRICTLY SEQUENTIAL because two of them race the cursor. Repeat until the progress read says done.\n\nMEASURED LIVE: an inject on a 5-score pool cost ~257,000 gas, and it scales with the score and present-user sets -- so this is the first route in the registry expected to be needed in practice rather than in principle."
+  },
+  "TS02-C3.AQP-FVT|CC_SweepRevokeAnchor": {
+   "kind": "cursor",
+   "via": "TS02-C3.AQP-FVT|CCp_SweepRecomputeChunk",
+   "progress": [
+    "AQP-FVT.UR_FVT|SweepProgress",
+    "AQP-FVT.UR_FVT|SweepActive"
+   ],
+   "reason": "The work is LIST-SHAPED but the list is not in the signature -- this entrypoint takes no list at all, and the set it traverses lives in chain state. So a client has nothing to cut, and `kind: list` would invite it to slice an argument that does not exist.\n\nA DEFPACT IS THE WRONG TOOL HERE, which is the distinction the taxonomy was missing (owner, 2026-10-27): a defpact's step count is FIXED by its definition while this workload has no fixed length, so a 2-step twin caps it at two steps forever. The scalable expression is the pager below -- unbounded in calls, each advancing stored progress, and STRICTLY SEQUENTIAL because two of them race the cursor. Repeat until the progress read says done."
+  }
+ },
+ "architecturalSuperseded": {
+  "note": [
+   "Defpacts whose `preferInstead` twin must NOT be given a derived architectural route.",
+   "",
+   "A defpact expresses an ARCHITECTURAL split: ordered phases intrinsic to the operation,",
+   "a count fixed by its own definition. These two were written for work that is really",
+   "LIST-SHAPED -- unbounded, its length decided by chain state -- and a fixed 2-step",
+   "defpact caps that at two steps forever. They are superseded by cursor pagers, which",
+   "are unbounded by construction, and the twins carry `kind: cursor` instead.",
+   "",
+   "Owner, 2026-10-27: \"we also have the last 2 defpacts which are not architectural but",
+   "list based which is why defpacts is not ideal for list based split because the list can",
+   "be longer than the number of steps defined in the defpacts\" -- and, on why they exist",
+   "at all: \"i dont even know why we made them in the first place\". They are the first",
+   "attempt, kept deployed because a deployed module cannot be removed."
+  ],
+  "TS02-C3.MTX-AQP|2|CC_Inject": {
+   "supersededBy": "TS02-C3.AQP-FVT|CCp_InjectFixChunk",
+   "reason": "2 fixed steps against an unbounded stale-present-user set."
+  },
+  "TS02-C3.MTX-AQP|2|CC_SweepRevokeAnchor": {
+   "supersededBy": "TS02-C3.AQP-FVT|CCp_SweepRecomputeChunk",
+   "reason": "2 fixed steps against an unbounded anchor sweep."
   }
  }
 }
