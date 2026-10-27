@@ -1145,6 +1145,38 @@ def build(probe):
             g["source"] = ("composed, then overridden per-parameter by "
                            "OURONET-REGISTRY.authored.json")
 
+    # HOW A CALL MAY BE SPLIT ACROSS TRANSACTIONS -- hand-authored, for the same reason ghost
+    # values are: it cannot be derived from a contract. The source says a parameter is
+    # `[integer]`; it does not say that cutting that list in half yields the same outcome as one
+    # call. 105 of the entrypoints here take a list, and only a reading of the operation can say
+    # which of those may be partitioned.
+    #
+    # ABSENCE MEANS "DO NOT SPLIT". A consumer that finds no `partition` block must send one
+    # transaction or refuse -- never guess. That default is the whole safety property: a wrong
+    # `true` silently converts an ATOMIC operation into a partially-applied one, and no assertion
+    # downstream can see it. An op with no entry here is unclassified, not unsplittable; the
+    # difference is recorded by saying nothing rather than by claiming either.
+    #
+    # TWO SHAPES, because one flag cannot carry both (and this repo has already paid for that
+    # conflation -- StoicSyntax-Prefixes.md's CORRECTION 2026-09-14, where the `p` suffix was
+    # overloaded to mean "multi-transaction" rather than "parallel" and a strictly sequential
+    # cursor pager ended up wearing a prefix promising parallel safety):
+    #
+    #   partition  cutting the axis yields pieces whose combined effect equals the single call.
+    #              One round, order-independent, fire them all at once.
+    #   reduction  each piece produces a NEW intermediate that must be fed back in -- merging 860
+    #              nonces 123 at a time leaves 7 nonces, which are then merged again. Parallel
+    #              WITHIN a round, strictly sequential BETWEEN rounds, and the next round's
+    #              arguments do not exist until the current one lands on chain.
+    #
+    # `lockstep` is orthogonal to both: the parameters that are POSITIONAL against the axis and
+    # must be cut with it. Getting this wrong is the quiet failure -- two arrays that line up by
+    # length and are misaligned withdraw the wrong quantity from the wrong nonce, with no error.
+    if os.path.exists(AUTHORED):
+        for key, blk in json.load(io.open(AUTHORED, encoding="utf8")).get("partition", {}).items():
+            if key in entries:
+                entries[key]["execution"]["partition"] = blk
+
     # NAME COLLISIONS. Entries are keyed MODULE.function, so the registry itself is unambiguous.
     # A consumer resolving by the BARE name is not, and that is the exact habit this registry
     # exists to break -- OuronetUI and the Codex package both hardcoded bare names. Four SWP
@@ -1246,6 +1278,93 @@ def main():
         if broken:
             print(f"registry: {len(broken)} preferInstead pointer(s) are broken")
             for b in broken[:10]:
+                print(f"    {b}")
+            return 1
+
+        # PARTITION CLAIMS ARE CHECKED AGAINST THE SIGNATURE. The SEMANTIC half -- "cutting this
+        # list really is equivalent" -- cannot be checked by a tool; it is a human reading, and
+        # that is why it lives in the authored sidecar. The SHAPE half can be, and is: an axis
+        # that is not a parameter, or is not a list, is a typo that would make a consumer slice
+        # something that does not exist. Partial mechanical verification of a human declaration
+        # is the best available, and far better than none.
+        #
+        # ORPHANS ARE FATAL, and that rule is borrowed rather than invented: _patronslots.py
+        # carried five registry entries that had OUTLIVED THEIR SITES, and because a vanished
+        # site is simply skipped by a scan, they were never consulted again while the tool went on
+        # reporting success. An entry here with no entrypoint is a standing permission to split
+        # bound to a name -- and the next function to take that name inherits it.
+        pbad = []
+        authored_part = {}
+        if os.path.exists(AUTHORED):
+            authored_part = json.load(io.open(AUTHORED, encoding="utf8")).get("partition", {})
+        for key, blk in sorted(authored_part.items()):
+            if key not in doc["entrypoints"]:
+                pbad.append(f"{key}: ORPHAN -- no such entrypoint (drop the entry or fix the key)")
+                continue
+            types = {p["name"]: p["type"] for p in doc["entrypoints"][key]["params"]}
+            shape = blk.get("shape")
+            axis = blk.get("axis")
+            if shape not in ("partition", "reduction"):
+                pbad.append(f"{key}: shape is {shape!r}, not 'partition' or 'reduction'")
+            if axis not in types:
+                pbad.append(f"{key}: axis {axis!r} is not a parameter of this entrypoint")
+            elif not types[axis].startswith("["):
+                pbad.append(f"{key}: axis {axis!r} is {types[axis]}, not a list -- nothing to cut")
+            for comp in blk.get("lockstep", []):
+                if comp == axis:
+                    pbad.append(f"{key}: lockstep repeats the axis {axis!r}")
+                elif comp not in types:
+                    pbad.append(f"{key}: lockstep {comp!r} is not a parameter of this entrypoint")
+                elif not types[comp].startswith("["):
+                    pbad.append(f"{key}: lockstep {comp!r} is {types[comp]}, not a list")
+            # THE SECOND LEVEL. Cutting the outer axis of a multi-bulk transfer yields fewer
+            # TOKENS per transaction; it does nothing about one token carrying 1,000 recipients.
+            # So `inner` names the outer companions whose PER-ELEMENT arrays are cut as well.
+            #
+            # The invariant that makes this checkable: every inner name must be a NESTED list
+            # (`[[...]]`) and must already be the outer axis or one of its outer companions. That
+            # forbids the two levels from describing unrelated parameters, which is the way a
+            # hand-written nested declaration would otherwise go wrong -- an inner axis pointing
+            # at a list that is not indexed by the outer one cuts along the WRONG DIMENSION, and
+            # every resulting transaction would be internally consistent and wrong.
+            inner = blk.get("inner")
+            if inner is not None:
+                outer_names = set([axis] + list(blk.get("lockstep", [])))
+                for nm in [inner.get("axis")] + list(inner.get("lockstep", [])):
+                    if nm not in types:
+                        pbad.append(f"{key}: inner {nm!r} is not a parameter of this entrypoint")
+                    elif not types[nm].startswith("[["):
+                        pbad.append(f"{key}: inner {nm!r} is {types[nm]}, not a nested list -- "
+                                    f"there is no second level to cut")
+                    elif nm not in outer_names:
+                        pbad.append(f"{key}: inner {nm!r} is not the outer axis nor one of its "
+                                    f"lockstep companions, so it is not indexed by the outer "
+                                    f"axis and cutting it would cross dimensions")
+                if inner.get("axis") in (inner.get("lockstep") or []):
+                    pbad.append(f"{key}: inner lockstep repeats the inner axis")
+                if not inner.get("note"):
+                    pbad.append(f"{key}: inner level carries no 'note'")
+                if shape == "reduction":
+                    pbad.append(f"{key}: a reduction must not declare an inner level -- its "
+                                f"rounds are the second dimension")
+            # A reduction MUST say how the next round is formed, because a consumer cannot derive
+            # it: the intermediate's identity is assigned on chain. A partition must NOT, because
+            # it has exactly one round by definition and a `rounds` note there reads as a promise
+            # that something further is required.
+            if shape == "reduction" and not blk.get("rounds"):
+                pbad.append(f"{key}: reduction carries no 'rounds' note")
+            if shape == "partition" and blk.get("rounds"):
+                pbad.append(f"{key}: partition carries a 'rounds' note -- it has one round")
+            if not blk.get("reason"):
+                pbad.append(f"{key}: no 'reason' -- an unexplained split permission is not one")
+        # And the merge must actually have happened, or every consumer reads "unclassified".
+        merged = sum(1 for v in doc["entrypoints"].values() if v["execution"].get("partition"))
+        if authored_part and merged != len(authored_part):
+            pbad.append(f"{len(authored_part)} authored partition block(s) but {merged} merged "
+                        f"into the artefact -- regenerate with --probe")
+        if pbad:
+            print(f"registry: {len(pbad)} partition claim(s) do not hold")
+            for b in pbad[:12]:
                 print(f"    {b}")
             return 1
 

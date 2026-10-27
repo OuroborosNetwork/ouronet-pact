@@ -42,5 +42,237 @@
    "dpof": "<selected-token>",
    "nonce": 1
   }
+ },
+ "partitionNote": [
+  "HAND-AUTHORED, like `ghost` above, and for the same reason: a contract states that a parameter",
+  "is a list, never that cutting that list in half yields the same outcome as one call. Only a",
+  "reading of the operation can say that, so only a human can write it here.",
+  "",
+  "ABSENCE MEANS DO NOT SPLIT. A consumer that finds no block for an entrypoint sends one",
+  "transaction or refuses -- it never guesses. That default is the safety property: a wrong",
+  "permission silently turns an ATOMIC operation into a partially-applied one, and nothing",
+  "downstream can detect it. 105 entrypoints take a list; the ones below are the ones that have",
+  "actually been read. The rest are UNCLASSIFIED, which is a different statement from",
+  "'unsplittable' and is made by saying nothing.",
+  "",
+  "  shape=partition  cutting the axis yields pieces whose combined effect equals the one call.",
+  "                   One round, order-independent, fire them all at once.",
+  "  shape=reduction  each piece yields a NEW intermediate that must be fed back in. Parallel",
+  "                   WITHIN a round, strictly sequential BETWEEN rounds, and the next round's",
+  "                   arguments do not exist until the current one lands on chain.",
+  "  lockstep         parameters POSITIONAL against the axis, which must be cut WITH it. The",
+  "                   failure here is silent: two arrays that line up by length and are",
+  "                   misaligned move the wrong amount to the wrong place, with no error.",
+  "",
+  "DELIBERATELY ABSENT: the SWP liquidity and pool-issue ops. Their legs are priced against pool",
+  "state that an earlier batch has already moved, and the 40% deviation ceiling is evaluated per",
+  "call -- so a split is not the same operation at a different granularity, it is a different",
+  "operation. They have 3-step defpact twins for exactly this, reachable via preferInstead.",
+  "",
+  "HELD FOR AN OWNER RULING -- the six AQP batch drain/vacate fed slices:",
+  "  CCp_BatchDrain{TrueFungible,OrtoFungible,Collectable}",
+  "  CCp_BatchVacate{TrueFungible,OrtoFungible,Collectables}",
+  "They look like clean per-leg fan-outs and they are NOT obviously so. BatchDrain's own INFO_",
+  "reads \"settle-on-last-drain only for beneficiaries fully drained THIS ROUND (live UserUnn)\",",
+  "which is a CROSS-LEG condition: splitting one beneficiary's legs across two transactions",
+  "changes when -- or whether -- the settle fires. The vacate trio carries a \"per-beneficiary",
+  "score unwind\" with the same question, since a beneficiary appearing in two slices has it run",
+  "twice and nothing read here says that is idempotent.",
+  "",
+  "It probably converges: UserUnn reaches zero only after the last leg, whichever order they land",
+  "in. But 'probably converges' is not the standard for a permission that silently turns an",
+  "atomic operation into a partially-applied one, and these are the ops that move staked assets",
+  "out of a pool. Unclassified until read properly -- which costs a client nothing today, because",
+  "the slice still comes from the URH_ preflight that already bounds it.",
+  "",
+  "ALSO FINE WITHOUT A BLOCK, deliberately:",
+  "  Cp_WipeSlice (DPOF/DPSF/DPNF) -- the slicer is ON CHAIN (URHC_BuildWipeSlicePlan, named in",
+  "    fedParams.slicedBy). A client asks for slices; it must not invent them.",
+  "  CCp_{SweepRecomputeChunk,InjectFixChunk,UnstaleAll} -- cursor pagers, mode",
+  "    indirect-sequential. They take a chunk SIZE, not a list, and firing two concurrently races",
+  "    the stored cursor. Correctly described already; a partition block would be a licence to do",
+  "    the one thing they forbid.",
+  "  CCp_ReleaseSpecialCustodial -- no list parameter, so there is nothing to cut."
+ ],
+ "partition": {
+  "TS01-C1.DPTF|C_BulkTransfer": {
+   "shape": "partition",
+   "axis": "executee-lst",
+   "lockstep": [
+    "transfer-amount-lst"
+   ],
+   "reason": "Each leg of a bulk/multi transfer is an independent debit-credit against a distinct recipient (or a distinct token), so the union of two batches moves exactly what one call would. The sender's total is checked per call, which splitting cannot evade: the sum across batches is the same sum. PARTIAL COMPLETION IS THE ONE REAL DIFFERENCE -- one transaction is atomic, k are not, so a refused batch leaves some recipients paid and some not. That is acceptable for a transfer fan-out and is NOT acceptable for an op whose legs are priced against each other; it is why liquidity ops are absent from this file."
+  },
+  "TS01-C1.DPTF|C_MultiTransfer": {
+   "shape": "partition",
+   "axis": "id-lst",
+   "lockstep": [
+    "transfer-amount-lst"
+   ],
+   "reason": "Each leg of a bulk/multi transfer is an independent debit-credit against a distinct recipient (or a distinct token), so the union of two batches moves exactly what one call would. The sender's total is checked per call, which splitting cannot evade: the sum across batches is the same sum. PARTIAL COMPLETION IS THE ONE REAL DIFFERENCE -- one transaction is atomic, k are not, so a refused batch leaves some recipients paid and some not. That is acceptable for a transfer fan-out and is NOT acceptable for an op whose legs are priced against each other; it is why liquidity ops are absent from this file. Here the axis is the TOKEN list: one recipient, many tokens."
+  },
+  "TS01-C1.DPTF|C_MultiBulkTransfer": {
+   "shape": "partition",
+   "axis": "id-lst",
+   "lockstep": [
+    "executee-array",
+    "transfer-amount-array"
+   ],
+   "reason": "Each leg of a bulk/multi transfer is an independent debit-credit against a distinct recipient (or a distinct token), so the union of two batches moves exactly what one call would. The sender's total is checked per call, which splitting cannot evade: the sum across batches is the same sum. PARTIAL COMPLETION IS THE ONE REAL DIFFERENCE -- one transaction is atomic, k are not, so a refused batch leaves some recipients paid and some not. That is acceptable for a transfer fan-out and is NOT acceptable for an op whose legs are priced against each other; it is why liquidity ops are absent from this file. TWO VALID AXES EXIST and the outer one is chosen deliberately: splitting by `id-lst` cuts whole tokens out, keeping each token's recipient set intact in one transaction. The inner axis -- splitting one token's `executee-array` across transactions -- is also sound and is NOT declared here, because which one a client should prefer is a product decision and an undeclared axis is safer than a guessed one.",
+   "inner": {
+    "axis": "executee-array",
+    "lockstep": [
+     "transfer-amount-array"
+    ],
+    "note": "Cutting `id-lst` yields fewer TOKENS per transaction and does nothing about one token carrying 1,000 recipients. The inner level cuts that token's own recipient list, and each piece is still a complete bulk transfer of that token to a subset of its receivers -- the legs are independent debits, so the union is identical. Both levels together are what make a 100-token x 1,000-recipient manifest expressible: 100,000 legs, cut to whatever a transaction actually fits."
+   }
+  },
+  "TS01-C1.DPOF|C_BulkTransfer": {
+   "shape": "partition",
+   "axis": "executee-lst",
+   "lockstep": [
+    "nonces-array"
+   ],
+   "reason": "Each leg of a bulk/multi transfer is an independent debit-credit against a distinct recipient (or a distinct token), so the union of two batches moves exactly what one call would. The sender's total is checked per call, which splitting cannot evade: the sum across batches is the same sum. PARTIAL COMPLETION IS THE ONE REAL DIFFERENCE -- one transaction is atomic, k are not, so a refused batch leaves some recipients paid and some not. That is acceptable for a transfer fan-out and is NOT acceptable for an op whose legs are priced against each other; it is why liquidity ops are absent from this file.",
+   "inner": {
+    "axis": "nonces-array",
+    "note": "Cutting the recipient list yields fewer RECIPIENTS per transaction; a single recipient taking 1,000 nonces is still too large. The inner level cuts that recipient's own nonce list, in step with its amounts. Each nonce is an independent move, so the union is identical."
+   }
+  },
+  "TS02-C1.DPSF|C_BulkTransfer": {
+   "shape": "partition",
+   "axis": "executee-lst",
+   "lockstep": [
+    "nonces-array",
+    "amounts-array"
+   ],
+   "reason": "Each leg of a bulk/multi transfer is an independent debit-credit against a distinct recipient (or a distinct token), so the union of two batches moves exactly what one call would. The sender's total is checked per call, which splitting cannot evade: the sum across batches is the same sum. PARTIAL COMPLETION IS THE ONE REAL DIFFERENCE -- one transaction is atomic, k are not, so a refused batch leaves some recipients paid and some not. That is acceptable for a transfer fan-out and is NOT acceptable for an op whose legs are priced against each other; it is why liquidity ops are absent from this file.",
+   "inner": {
+    "axis": "nonces-array",
+    "lockstep": [
+     "amounts-array"
+    ],
+    "note": "Cutting the recipient list yields fewer RECIPIENTS per transaction; a single recipient taking 1,000 nonces is still too large. The inner level cuts that recipient's own nonce list, in step with its amounts. Each nonce is an independent move, so the union is identical."
+   }
+  },
+  "TS02-C2.DPNF|C_BulkTransfer": {
+   "shape": "partition",
+   "axis": "executee-lst",
+   "lockstep": [
+    "nonces-array",
+    "amounts-array"
+   ],
+   "reason": "Each leg of a bulk/multi transfer is an independent debit-credit against a distinct recipient (or a distinct token), so the union of two batches moves exactly what one call would. The sender's total is checked per call, which splitting cannot evade: the sum across batches is the same sum. PARTIAL COMPLETION IS THE ONE REAL DIFFERENCE -- one transaction is atomic, k are not, so a refused batch leaves some recipients paid and some not. That is acceptable for a transfer fan-out and is NOT acceptable for an op whose legs are priced against each other; it is why liquidity ops are absent from this file.",
+   "inner": {
+    "axis": "nonces-array",
+    "lockstep": [
+     "amounts-array"
+    ],
+    "note": "Cutting the recipient list yields fewer RECIPIENTS per transaction; a single recipient taking 1,000 nonces is still too large. The inner level cuts that recipient's own nonce list, in step with its amounts. Each nonce is an independent move, so the union is identical."
+   }
+  },
+  "TS02-C1.DPDC|C_BulkTransfer": {
+   "shape": "partition",
+   "axis": "executee-lst",
+   "lockstep": [
+    "nonces-array",
+    "amounts-array"
+   ],
+   "reason": "Each leg of a bulk/multi transfer is an independent debit-credit against a distinct recipient (or a distinct token), so the union of two batches moves exactly what one call would. The sender's total is checked per call, which splitting cannot evade: the sum across batches is the same sum. PARTIAL COMPLETION IS THE ONE REAL DIFFERENCE -- one transaction is atomic, k are not, so a refused batch leaves some recipients paid and some not. That is acceptable for a transfer fan-out and is NOT acceptable for an op whose legs are priced against each other; it is why liquidity ops are absent from this file.",
+   "inner": {
+    "axis": "nonces-array",
+    "lockstep": [
+     "amounts-array"
+    ],
+    "note": "Cutting the recipient list yields fewer RECIPIENTS per transaction; a single recipient taking 1,000 nonces is still too large. The inner level cuts that recipient's own nonce list, in step with its amounts. Each nonce is an independent move, so the union is identical."
+   }
+  },
+  "TS02-C1.DPDC|C_MultiTransfer": {
+   "shape": "partition",
+   "axis": "ids",
+   "lockstep": [
+    "sons",
+    "nonces-array",
+    "amounts-array"
+   ],
+   "reason": "Each leg of a bulk/multi transfer is an independent debit-credit against a distinct recipient (or a distinct token), so the union of two batches moves exactly what one call would. The sender's total is checked per call, which splitting cannot evade: the sum across batches is the same sum. PARTIAL COMPLETION IS THE ONE REAL DIFFERENCE -- one transaction is atomic, k are not, so a refused batch leaves some recipients paid and some not. That is acceptable for a transfer fan-out and is NOT acceptable for an op whose legs are priced against each other; it is why liquidity ops are absent from this file. The axis is the TOKEN list, and `sons` is positional against it -- a fungibility discriminator per token, so cutting `ids` without it sends the wrong discriminator for every token in the batch.",
+   "inner": {
+    "axis": "nonces-array",
+    "lockstep": [
+     "amounts-array"
+    ],
+    "note": "Cutting `ids` yields fewer TOKENS; one token with 1,000 nonces is still too large. The inner level cuts that token's nonce list in step with its amounts."
+   }
+  },
+  "TS02-C3.AQP-POOL|CC_StakeNonFungibleCollectable": {
+   "shape": "partition",
+   "axis": "nonces",
+   "reason": "Nonces are independent: each one gets its own tracker row and its own rollup leg, and the score delta is recomputed from the resulting totals rather than accumulated per call. Fitted against mainnet 2026-10-27, the IGNIS curve is 58 + 9N with zero residual over eight nonce counts from 1 to 420 -- a clean fixed-plus-marginal shape, which is what makes k batches cost k x 58 more and nothing else differ."
+  },
+  "TS02-C3.AQP-POOL|CC_StakeSemiFungibleCollectable": {
+   "shape": "partition",
+   "axis": "nonces",
+   "reason": "Nonces are independent: each one gets its own tracker row and its own rollup leg, and the score delta is recomputed from the resulting totals rather than accumulated per call. Fitted against mainnet 2026-10-27, the IGNIS curve is 58 + 9N with zero residual over eight nonce counts from 1 to 420 -- a clean fixed-plus-marginal shape, which is what makes k batches cost k x 58 more and nothing else differ."
+  },
+  "TS02-C3.AQP-POOL|CC_UnstakeNonFungibleCollectable": {
+   "shape": "partition",
+   "axis": "nonces",
+   "lockstep": [
+    "nonce-amounts"
+   ],
+   "reason": "Nonces are independent: each one gets its own tracker row and its own rollup leg, and the score delta is recomputed from the resulting totals rather than accumulated per call. Fitted against mainnet 2026-10-27, the IGNIS curve is 58 + 9N with zero residual over eight nonce counts from 1 to 420 -- a clean fixed-plus-marginal shape, which is what makes k batches cost k x 58 more and nothing else differ. `nonce-amounts` is caller-supplied and POSITIONAL against `nonces` (the owner no longer holds the rows, so the contract cannot re-derive it) -- the one case in this file where a mis-cut withdraws a real quantity from the wrong nonce without erroring."
+  },
+  "TS02-C3.AQP-POOL|CC_UnstakeSemiFungibleCollectable": {
+   "shape": "partition",
+   "axis": "nonces",
+   "lockstep": [
+    "nonce-amounts"
+   ],
+   "reason": "Nonces are independent: each one gets its own tracker row and its own rollup leg, and the score delta is recomputed from the resulting totals rather than accumulated per call. Fitted against mainnet 2026-10-27, the IGNIS curve is 58 + 9N with zero residual over eight nonce counts from 1 to 420 -- a clean fixed-plus-marginal shape, which is what makes k batches cost k x 58 more and nothing else differ. `nonce-amounts` is caller-supplied and POSITIONAL against `nonces`."
+  },
+  "TS01-C2.VST|C_Merge": {
+   "shape": "reduction",
+   "axis": "nonces",
+   "rounds": "Re-read the holder's nonce set after the round settles and merge again until one nonce remains. The round count is NOT known in advance -- it follows from the per-transaction capacity, which is measured -- and the next round's nonce ids do not exist until this one lands, because XIv_MergeNonces mints at (+ 1 nonces-used).",
+   "reason": "Every input nonce is WIPED and ONE new nonce is minted carrying the pooled locked amount and the amount-weighted mean unlock time (VST.XIv_MergeNonces -> UC_MergeAll). So a batch does not complete the operation, it reduces it: 860 nonces at 123 per call leaves 7, which are merged again. ROUNDS ARE EXACT, NOT APPROXIMATE -- the weight is sum(balance x stu) / sum(balance), a true weighted mean, and round 1 mints an ABSOLUTE release-date, so wall-clock passing between rounds does not shift it. The only drift is the floor() to whole seconds, once per round, under a second each."
+  },
+  "TS01-C2.VST|C_Slumber": {
+   "shape": "reduction",
+   "axis": "nonces",
+   "rounds": "Re-read the holder's nonce set after the round settles and merge again until one nonce remains. The round count is NOT known in advance -- it follows from the per-transaction capacity, which is measured -- and the next round's nonce ids do not exist until this one lands, because XIv_MergeNonces mints at (+ 1 nonces-used).",
+   "reason": "Every input nonce is WIPED and ONE new nonce is minted carrying the pooled locked amount and the amount-weighted mean unlock time (VST.XIv_MergeNonces -> UC_MergeAll). So a batch does not complete the operation, it reduces it: 860 nonces at 123 per call leaves 7, which are merged again. ROUNDS ARE EXACT, NOT APPROXIMATE -- the weight is sum(balance x stu) / sum(balance), a true weighted mean, and round 1 mints an ABSOLUTE release-date, so wall-clock passing between rounds does not shift it. The only drift is the floor() to whole seconds, once per round, under a second each."
+  },
+  "TS01-C2.VST|C_RepurposeMerge": {
+   "shape": "reduction",
+   "axis": "nonces",
+   "rounds": "Re-read the holder's nonce set after the round settles and merge again until one nonce remains. The round count is NOT known in advance -- it follows from the per-transaction capacity, which is measured -- and the next round's nonce ids do not exist until this one lands, because XIv_MergeNonces mints at (+ 1 nonces-used).",
+   "reason": "Every input nonce is WIPED and ONE new nonce is minted carrying the pooled locked amount and the amount-weighted mean unlock time (VST.XIv_MergeNonces -> UC_MergeAll). So a batch does not complete the operation, it reduces it: 860 nonces at 123 per call leaves 7, which are merged again. ROUNDS ARE EXACT, NOT APPROXIMATE -- the weight is sum(balance x stu) / sum(balance), a true weighted mean, and round 1 mints an ABSOLUTE release-date, so wall-clock passing between rounds does not shift it. The only drift is the floor() to whole seconds, once per round, under a second each."
+  },
+  "TS01-C2.VST|C_RepurposeSlumber": {
+   "shape": "reduction",
+   "axis": "nonces",
+   "rounds": "Re-read the holder's nonce set after the round settles and merge again until one nonce remains. The round count is NOT known in advance -- it follows from the per-transaction capacity, which is measured -- and the next round's nonce ids do not exist until this one lands, because XIv_MergeNonces mints at (+ 1 nonces-used).",
+   "reason": "Every input nonce is WIPED and ONE new nonce is minted carrying the pooled locked amount and the amount-weighted mean unlock time (VST.XIv_MergeNonces -> UC_MergeAll). So a batch does not complete the operation, it reduces it: 860 nonces at 123 per call leaves 7, which are merged again. ROUNDS ARE EXACT, NOT APPROXIMATE -- the weight is sum(balance x stu) / sum(balance), a true weighted mean, and round 1 mints an ABSOLUTE release-date, so wall-clock passing between rounds does not shift it. The only drift is the floor() to whole seconds, once per round, under a second each."
+  },
+  "TS02-C3.AQP-POOL|CCp_BackfillScoreSlice": {
+   "shape": "partition",
+   "axis": "beneficiaries",
+   "reason": "A Hydra fed slice: the Hydra canon has the UI run a URH_ preflight and partition its output into capacity-bounded slices, so cutting this list client-side IS the intended use. `execution.mode` already says the slices are order-independent; what it does not say is WHICH parameter is the slice, which is why this block is needed before any consumer may cut one. Per-holder by the contract's own account: INFO_ states it is \"PRICED PER HOLDER, matching the execution path exactly: the transaction recomputes one target and writes one delta per account\". No cross-holder term, so any subset is a valid slice."
+  },
+  "TS02-C3.AQP-POOL|Cp_DrainScoreSlice": {
+   "shape": "partition",
+   "axis": "accounts",
+   "reason": "A Hydra fed slice: the Hydra canon has the UI run a URH_ preflight and partition its output into capacity-bounded slices, so cutting this list client-side IS the intended use. `execution.mode` already says the slices are order-independent; what it does not say is WHICH parameter is the slice, which is why this block is needed before any consumer may cut one. Per-holder on the same evidence: \"one read and one delta write each, so the quote tracks the slice the caller means to send\"."
+  },
+  "TS02-C3.AQP-FVT|CCp_FvtFixSlice": {
+   "shape": "partition",
+   "axis": "users",
+   "reason": "A Hydra fed slice: the Hydra canon has the UI run a URH_ preflight and partition its output into capacity-bounded slices, so cutting this list client-side IS the intended use. `execution.mode` already says the slices are order-independent; what it does not say is WHICH parameter is the slice, which is why this block is needed before any consumer may cut one. This entrypoint EXISTS to parallelise the sequential fixer -- INFO_ calls it \"the sequential fixer it parallelises\" -- so per-user independence is the premise of its own existence. Gas-station subsidised, so splitting costs the patron nothing either."
+  },
+  "TS02-C3.AQP-POOL|CCp_StakeSpecialCustodial": {
+   "shape": "partition",
+   "axis": "nonces",
+   "reason": "A Hydra fed slice: the Hydra canon has the UI run a URH_ preflight and partition its output into capacity-bounded slices, so cutting this list client-side IS the intended use. `execution.mode` already says the slices are order-independent; what it does not say is WHICH parameter is the slice, which is why this block is needed before any consumer may cut one. INFO_ states it is \"IDENTICAL IGNIS TO AN ORDINARY ORTO STAKE, and that is a fact about the code rather than an approximation: custody runs the SAME phase chain (XI_OrtoStakePhases)\" -- so it inherits the per-nonce independence already recorded for the ordinary collectable stakes above."
+  }
  }
 }
