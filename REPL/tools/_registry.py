@@ -1431,6 +1431,30 @@ def main():
                     pbad.append(f"{key}: lockstep {comp!r} is not a parameter of this entrypoint")
                 elif not types[comp].startswith("["):
                     pbad.append(f"{key}: lockstep {comp!r} is {types[comp]}, not a list")
+            # A GROUP BOUNDARY. Some list splits are safe only if a given key's legs stay
+            # TOGETHER in one transaction. The AQP vacate slices are the case: their
+            # per-beneficiary unwind is UNGATED and is fed that slice's partial sum, so two of
+            # its six legs are delta-based and add up correctly while the other four -- bank,
+            # anchor-refresh, book, checkpoint -- would run once per slice instead of once per
+            # beneficiary. The sibling DRAIN path gates that same triple behind
+            # `UR_AQP|UserUnn == 0` precisely so it fires once; vacate does not, which is what
+            # tells you its design assumes a beneficiary never spans two slices.
+            #
+            # So `groupBy` names the parameter whose value must not be split across batches. It
+            # must be the axis itself or one of its lockstep companions -- a key that is not
+            # positional against the axis cannot define a boundary in it.
+            group = blk.get("groupBy")
+            if group is not None:
+                if group not in types:
+                    pbad.append(f"{key}: groupBy {group!r} is not a parameter of this entrypoint")
+                elif not types[group].startswith("["):
+                    pbad.append(f"{key}: groupBy {group!r} is {types[group]}, not a list -- it "
+                                f"cannot define a boundary in the axis")
+                elif group != axis and group not in (blk.get("lockstep") or []):
+                    pbad.append(f"{key}: groupBy {group!r} is neither the axis nor one of its "
+                                f"lockstep companions, so it is not aligned with the axis and "
+                                f"cannot say where a cut is allowed")
+
             # THE SECOND LEVEL. Cutting the outer axis of a multi-bulk transfer yields fewer
             # TOKENS per transaction; it does nothing about one token carrying 1,000 recipients.
             # So `inner` names the outer companions whose PER-ELEMENT arrays are cut as well.
