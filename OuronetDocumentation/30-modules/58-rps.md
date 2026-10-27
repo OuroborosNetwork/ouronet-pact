@@ -58,7 +58,10 @@ A leaf module extracted from the distributor when that grew undeployable. The di
 | `P|` policy | 9 | inter-module authorisation | `P|A_Add`, `P|A_AddIMP`, `P|A_Define`, `P|A_RemoveIMP`, `P|A_SetIMP`, `P|Info` …+3 |
 | *(unclassified)* | 139 | carries no StoicSyntax prefix | `CT_AqpScName`, `CT_Bar`, `GOV|Demiurgoi`, `UDC_FVT|MultipletFamily`, `UDC_FVT|RPS|Global`, `UDC_FVT|RPS|Member` …+133 |
 
-> Repository and chain agree on every declared shape.
+> **The repository differs from what is deployed.** Everything above describes the CHAIN, which is what a caller actually reaches. The difference is stated rather than resolved:
+>
+> - **functions** on chain only: `XI_2|EnsureRpsUserRow`
+> - **functions** in the repository only: `UDC_LadderPreview`, `URC_CollectLadderPreview`
 
 **Capabilities** -- 10
 

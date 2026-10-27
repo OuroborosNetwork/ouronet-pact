@@ -1,0 +1,142 @@
+;;
+;; REPL/_scratch_gasdecomp.repl — BASELINE gas decomposition of the triplet MULTIPLET_BASE collect
+;;   Measures: CC_Collect (whole op) and the per-leg primitives it composes
+;;   (TFT transfer, ATSU C_Coil, ATSU C_Curl, second-hop C_Coil, URC_RewardBearingTokenAmounts).
+;;   Legend: ">>> GAS <leg> = <n>" lines are the measurements; "ZZZ" lines are derived arithmetic.
+;;
+(load "triplet-collect-golden.repl")
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "TX-GD01 - resolve ladder ids + inject OURO so claimable is non-zero")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 100000000)
+(print "")
+(print "=== TX-GD01 — ladder ids + inject =============================================")
+(let
+    (
+        (patron:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-RPS:module{AcquisitionRewardPerShareV4} RPS)
+        (ouro-id:string "OURO-98c486052a51")
+        (farm-id:string (ref-U|DALOS::UDC_Makeid "OuroLpFarm"))
+    )
+    (let
+        (
+            (mf-id:string (ref-RPS::UR_FVT-RG|MultipletFamilyId farm-id ouro-id))
+        )
+        (print (format "ZZZ mf-id    = {}" [mf-id]))
+        (print (format "ZZZ token-0  = {}" [(ref-RPS::UR_FVT-MF|Token0Id mf-id)]))
+        (print (format "ZZZ token-1  = {}" [(ref-RPS::UR_FVT-MF|Token1Id mf-id)]))
+        (print (format "ZZZ token-2  = {}" [(ref-RPS::UR_FVT-MF|Token2Id mf-id)]))
+        (print (format "ZZZ ats-01   = {}" [(ref-RPS::UR_FVT-MF|Ats01Id mf-id)]))
+        (print (format "ZZZ ats-12   = {}" [(ref-RPS::UR_FVT-MF|Ats12Id mf-id)]))
+    )
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (env-gas 0)
+    (print (format "<(CC_Inject 100 OURO)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|CC_Inject patron patron farm-id ouro-id 100.0)]))
+    (print (format ">>> GAS  CC_Inject                      = {}" [(env-gas)]))
+)
+(env-sigs [])
+(commit-tx)
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "TX-GD02 - BASELINE: whole triplet MULTIPLET_BASE collect")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 100000000)
+(print "")
+(print "=== TX-GD02 — BASELINE CC_Collect (triplet heterogeneous lane) =================")
+(let
+    (
+        (owner:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-RPS:module{AcquisitionRewardPerShareV4} RPS)
+        (ouro-id:string "OURO-98c486052a51")
+        (farm-id:string (ref-U|DALOS::UDC_Makeid "OuroLpFarm"))
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "DHOuroLp"))
+        (silver-score:string (ref-U|DALOS::UDC_Makeid "SilverSnakePower"))
+        (bronze-score:string (ref-U|DALOS::UDC_Makeid "BronzeSnakePower"))
+        (golden-score:string (ref-U|DALOS::UDC_Makeid "GoldenSnakePower"))
+    )
+    (let ((triplet-id:string (concat ["T" "|" bronze-score "|" silver-score "|" golden-score])))
+        (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+        (print (format "ZZZ claimable = {}"
+            [(ref-FVT::URC_CollectClaimableRewards owner pool-id farm-id 3 triplet-id ouro-id)]))
+        (env-gas 0)
+        (print (format "<(CC_Collect)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|CC_Collect owner owner farm-id 3 triplet-id ouro-id)]))
+        (print (format ">>> GAS  CC_Collect  (BASELINE)         = {}" [(env-gas)]))
+    )
+)
+(env-sigs [])
+(commit-tx)
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "TX-GD03 - per-leg primitive costs")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 100000000)
+(print "")
+(print "=== TX-GD03 — per-leg primitives ==============================================")
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV5} TS01-C1)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV5} TS01-C2)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-RPS:module{AcquisitionRewardPerShareV4} RPS)
+        (ouro-id:string "OURO-98c486052a51")
+        (farm-id:string (ref-U|DALOS::UDC_Makeid "OuroLpFarm"))
+    )
+    (let*
+        (
+            (mf-id:string (ref-RPS::UR_FVT-RG|MultipletFamilyId farm-id ouro-id))
+            (ats-01:string (ref-RPS::UR_FVT-MF|Ats01Id mf-id))
+            (ats-12:string (ref-RPS::UR_FVT-MF|Ats12Id mf-id))
+            (token-1:string (ref-RPS::UR_FVT-MF|Token1Id mf-id))
+        )
+        (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+        ;;==== TX-GD03 · 01 · URC_RewardBearingTokenAmounts (pure derivation) ====
+        (print "--- [TX-GD03 · 01 · derivation] ---")
+        (env-gas 0)
+        (print (format "ZZZ rbt(ats-01,OURO,10) = {}" [(ref-ATS::URC_RewardBearingTokenAmounts ats-01 ouro-id 10.0)]))
+        (print (format ">>> GAS  URC_RewardBearingTokenAmounts  = {}" [(env-gas)]))
+        ;;==== TX-GD03 · 02 · TFT transfer via Talos ====
+        (print "--- [TX-GD03 · 02 · transfer] ---")
+        (env-gas 0)
+        (print (format "<(DPTF|C_Transfer 1 OURO)> => \"{}\"" [(ref-TS01-C1::DPTF|C_Transfer patron owner emma ouro-id 1.0 true)]))
+        (print (format ">>> GAS  DPTF|C_Transfer (1 leg, Talos) = {}" [(env-gas)]))
+        ;;==== TX-GD03 · 03 · C_Coil on ats-01 ====
+        (print "--- [TX-GD03 · 03 · coil hop1] ---")
+        (env-gas 0)
+        (print (format "<(ATS|C_Coil ats-01 OURO 10)> => \"{}\"" [(ref-TS01-C2::ATS|C_Coil patron owner ats-01 ouro-id 10.0)]))
+        (print (format ">>> GAS  ATS|C_Coil  (hop1, Talos)      = {}" [(env-gas)]))
+        ;;==== TX-GD03 · 04 · C_Curl across both ====
+        (print "--- [TX-GD03 · 04 · curl hop1+hop2] ---")
+        (env-gas 0)
+        (print (format "<(ATS|C_Curl ats-01 ats-12 OURO 10)> => \"{}\"" [(ref-TS01-C2::ATS|C_Curl patron owner ats-01 ats-12 ouro-id 10.0)]))
+        (print (format ">>> GAS  ATS|C_Curl  (hop1+2, Talos)    = {}" [(env-gas)]))
+        ;;==== TX-GD03 · 05 · C_Coil on ats-12 (the second-hop coil the optimisation uses) ====
+        (print "--- [TX-GD03 · 05 · coil hop2 standalone] ---")
+        (env-gas 0)
+        (print (format "<(ATS|C_Coil ats-12 AURYN 1)> => \"{}\"" [(ref-TS01-C2::ATS|C_Coil patron owner ats-12 token-1 1.0)]))
+        (print (format ">>> GAS  ATS|C_Coil  (hop2, Talos)      = {}" [(env-gas)]))
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+(print "=== END GAS DECOMPOSITION =====================================================")

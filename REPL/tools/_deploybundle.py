@@ -246,6 +246,102 @@ ROUNDS = {
         # transaction 20 and into 21 behind TS02-C3, which is the whole of the fix.
         "break_before": ["04_TS02-C3.pact", "01_Spark.pact", "04_AQP-BOOT.pact", "03_DSP+.pact"],
     },
+    "2026-10-v15-rps": {
+        "why": "ONE defect, two lines of Pact: WU_RpsUser|LastRps and WU_RpsUser|PendingRewards "
+               "UPDATED FVT|T|RPS|User, while every READER of that row goes through "
+               "UR_FVT-RU|RpsUser's with-default-read at last-rps 0.0. So a reward lane added "
+               "AFTER a user staked priced correctly for the reader and had no row for the write "
+               "side to update, and EVERY collect from that lane aborted with 'No row found "
+               "during update' -- reported live 2026-10-26 on a WSTOA lane added to "
+               "SubsidiaryTreasury after its holders had staked. Both writers now WRITE, "
+               "carrying the sibling field over at its read-side default. That is the whole "
+               "\n\n"
+               "AND A SECOND DEFECT ON THE SAME ROOT CAUSE, WHICH WAS WORSE BECAUSE IT WAS "
+               "SILENT. XI_1|EnsureScoreRewardRows (stake phase 2.2) inserted the absent row at "
+               "last-rps = L_i -- right for a NEWCOMER, who must not be paid for the period "
+               "before they arrived, and wrong for a holder new only to the LANE, who has been "
+               "accruing since its index left zero. Phase 2.3 then banked deb x (L_i - L_i) = 0. "
+               "Measured: reader quoted 300.0, staked, reader quoted 0.0, and the collect "
+               "reported 'Successfully collected 0.0' -- no abort, no refusal, no event. Had "
+               "only the writers been fixed, the first affected user to stake before collecting "
+               "would have lost the whole accrual, quietly. The user-row ensure is dropped: "
+               "phase 2.3 now writes the row at 0.0 and banks the full accrual as pending, and "
+               "phase 2.4 (XI_CheckpointStakeRps) checkpoints last-rps to L_i afterwards -- "
+               "correct for both populations, since a newcomer has deb-old 0. The MEMBER row is "
+               "still ensured. Pinned by <<TX-AQP-C02S>>, negative-tested by restoring the line "
+               "(fails got=0.0 expected=300.0). No repair transaction exists or is needed: "
+               "CCp_FvtFixSlice was tested and DECLINES ('0 of 1 listed staker(s), 1 were "
+               "already fresh') because it gates on staleness and these holders are not stale -- "
+               "an absent row is not corrupt state, it READS as (0.0, 0.0), which is correct."
+               "\n\n"
+               "Together: no new function, no new table, no new capability, NO INTERFACE BUMP "
+               "(AcquisitionRewardPerShareV4 is untouched -- the two writers' signatures and "
+               "return types are identical, and only their XE_ wrappers are interface members). "
+               "\n\n"
+               "WHY THIS ROUND IS SIX MODULES AND NOT ONE. With no interface bump the cascade "
+               "rule says nothing has to follow, and that reasoning is WRONG here: "
+               "`_dotpin.py --upgrade RPS` reports 5 modules that DOT-call into RPS and so pin "
+               "its hash -- AQP-FVT (65 sites), AQP-VCT (72), MTX-AQP (13), AQP-DSA (25), "
+               "AQP-INFO (27). RPS reads its own tables, so a pinned caller does not go stale, "
+               "it ABORTS with 'hash not blessed', and the tree blesses nothing. They ship "
+               "together or the AQP family stops answering. The closure was walked to a fixed "
+               "point: none of the five has a pinned caller of its own, so six is the whole "
+               "round. Fix pinned by REPL/Stage_02/[6.3]_AQP-COMPREHENSIVE.repl "
+               "<<TX-AQP-C02L>>, which asserts the payout EQUALS what the reader quoted while "
+               "the row was still absent -- the assertion that fails if the row is materialised "
+               "at the current index instead of 0.0, which pays exactly zero.",
+        # Scoped by module-declaration strings, not interface names: nothing was bumped, so there
+        # is no interface whose name selects this set. Each string below occurs in exactly one
+        # .pact file in the tree (checked).
+        "interfaces": ["(module RPS GOV", "(module AQP-FVT GOV", "(module AQP-VCT GOV",
+                       "(module MTX-AQP GOV", "(module AQP-DSA GOV", "(module AQP-INFO GOV"],
+        # No init step: the change is two function bodies. No table is created, no P|A_Define
+        # registration is added, so there is nothing an upgrade would fail to re-run.
+        "init": [],
+        # AQP-INFO sits in no deploy chain, so the chain scan cannot place it. The existing
+        # rounds anchor it after 04_TS02-C3.pact, which is NOT in this round -- anchor it after
+        # 08_DSA.pact, the last AQP core module here and its immediate predecessor in load order.
+        "extra": [("1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact", "08_DSA.pact")],
+    },
+    "2026-10-v16-unstale-events": {
+        "why": "OBSERVABILITY, ONE MODULE. Every un-staling path already fired an @event; each one "
+               "announced the REQUEST and not the RESULT. FVT|C>INJECT-FIX, FVT|C>UNSTALE-ALL and "
+               "FVT|C>SWEEP-DRAIN carry `chunk` -- the page size ASKED FOR -- while "
+               "FVT|C>UNSTALE-MY-SCORES carries only the caller. Nothing said how many stakers were "
+               "actually refreshed, and the writes themselves go through RPS|XE>WRITE, which "
+               "composes SECURE and carries no @event at all. "
+               "\n\n"
+               "REPORTED FROM PRODUCTION. An owner injected 100 OURO into OuroLpFarm (486,732 gas) "
+               "and then 50 OURO into the same lane (388,534 gas), saw the IDENTICAL five events on "
+               "both transactions, and reasonably concluded the inject engine had regressed. It had "
+               "not: CC_Inject PHASE 0 fixes the whole stale set it scans -- 'fixing the whole "
+               "scanned set implies ZERO stale afterward' -- so the first inject paid down the debt "
+               "and the second had nothing left to fix. The ~98k delta was real work, correctly "
+               "done, and completely invisible. The forced-fix counts were persisted and readable "
+               "via UR_FVT-FFC|Count the whole time: the DATA existed and the SIGNAL did not. "
+               "\n\n"
+               "ONE new event-only capability, FVT|C>UNSTALED (op, subject, lane, fixed-count, "
+               "penalized), emitted ONCE PER TRANSACTION from all seven paths that un-stale: "
+               "CC_Inject, CCp_InjectFixChunk, CCp_FvtFixSlice, CCp_UnstaleAll, CC_UnstaleMyScores "
+               "(deb half) and CCp_SweepRecomputeChunk, CC_SweepRevokeAnchor (booster half). It "
+               "fires even when the count is 0, because 'this ran and found nothing to do' is the "
+               "answer that settles the question an operator is asking. "
+               "\n\n"
+               "NO INTERFACE BUMP AND NO CASCADE: the AQP-FVT interface declares zero defcaps, so a "
+               "new capability obliges nothing of any consumer. Verified against the DEPLOYED "
+               "artefact rather than against git -- re-emitting the V15 round and diffing it "
+               "transaction by transaction against Deploy/PureV15 shows 01 (RPS), 03 (VCT/MTX/DSA) "
+               "and 04 (AQP-INFO) byte-identical to what is live, and only 02 (AQP-FVT) changed. "
+               "Hence one transaction. Also collapsed a duplicate heavy read in CC_Inject, which "
+               "called URH_FvtStalePresentUsers inside BOTH arms of its owner/non-owner branch; it "
+               "is now bound once, which is also what makes the count available to the event "
+               "(_pricesync records the per-function component count moving 12 -> 11).",
+        "interfaces": ["(module AQP-FVT GOV"],
+        # No init step: one new defcap and seven emit-event calls. No table is created, no schema
+        # gains a field, no P|A_Define registration is added -- nothing an upgrade would fail to
+        # re-run, and nothing a pre-existing row could be missing.
+        "init": [],
+    },
     "2026-10-interfaces": {
         "why": "the 2026-10-12 interface-membership sweep (StoicSyntax-Prefixes.md Sec5, owner "
                "ruling: every user/client function and every UR_/URC_/URH_/UEV_/CAP_/UDC_/UC_ "
@@ -1435,6 +1531,21 @@ LIVE_INTERFACES = {
     #     read: `URH_AQP|AllPoolIds` returning 7 only if that transaction ran).
     # The hash is still the safety net regardless of how an entry got here: a LOCAL edit to
     # any of these interfaces after this pin changes the hash and the tool refuses to guess.
+    # ADDED 2026-10-26 for the V15 RPS round, and found the way the two blocks above were:
+    # a REAL `/local` simulation (`_chainsim.py --round Deploy/PureV15`) failed batch 1 with
+    # `Interface cannot be upgraded: ouronet-ns.AcquisitionRewardPerShareV4`. The gate could
+    # not see it -- it builds a chain from scratch, where declaring these the first time is
+    # correct; only a live call knows they are already there.
+    #
+    # All five shipped in the V13/V14 rounds and all five are CONFIRMED live by a direct
+    # `describe-module "ouronet-ns.<name>"` against mainnet on 2026-10-26, not inferred from
+    # a snapshot. The V15 round changes two function BODIES in RPS and removes one dead
+    # internal; it touches no interface, which is why these are skips rather than bumps.
+    "AcquisitionRewardPerShareV4": "f8048d31ba41d24e5569a7c776c7bf26",
+    "AcquisitionFarmsVaultsTreasuriesV4": "326f1113e75af8805cf99f9fd824b2c3",
+    "AcquisitionVacateV4": "2265ecf7435d9c732925555c2463b736",
+    "AqpMtxV2": "9f5877785b42e9203faa330530e19825",
+    "DsaV3": "a59a37539bb19328986cc6a89cdd0ea0",
     "OuronetPolicyV2": "d8dc13f4d6316c11114b24260107001a",
     "DpofUdcV2": "674fbd0200c02cf30f1bf16686df45a7",
     "OUiNineV2": "b6f14f900d3a7a60166b8785dbc969f3",

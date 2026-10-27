@@ -755,6 +755,29 @@
         ,"pre-member-debs"  : pre-member-debs}
     )
 
+    (defun UDC_LadderPreview:object
+        (
+            mode:string
+            payout:decimal
+            token-0-id:string token-0-amount:decimal
+            token-1-id:string token-1-amount:decimal
+            token-2-id:string token-2-amount:decimal
+        )
+        @doc "Constructor for URC_CollectLadderPreview's answer: the per-token amounts a collect \
+            \ actually pays out, plus the `mode` that decided the routing and the `payout` basis \
+            \ they sum to. BARE object by design -- it describes no table row, and a schema would \
+            \ have to live in AcquisitionSchemasV3 and bump it for a read-only client preview. \
+            \ `mode` is BAR for a non-ladder lane, where the whole payout lands on token-0."
+        {"mode"             : mode
+        ,"payout"           : payout
+        ,"token-0-id"       : token-0-id
+        ,"token-0-amount"   : token-0-amount
+        ,"token-1-id"       : token-1-id
+        ,"token-1-amount"   : token-1-amount
+        ,"token-2-id"       : token-2-id
+        ,"token-2-amount"   : token-2-amount}
+    )
+
     (defun UCk_ScoreEntityLink:string (fvt-id:string score-entity-id:string)
         @doc "Composite key for FVT|T|ScoreEntityLink: fvt-id | score-entity-id."
         (concat [fvt-id BAR score-entity-id])
@@ -2631,7 +2654,9 @@
 
     (defun URC_HeterogeneousLaneRouteIgnis:decimal
         (patron:string fvt-id:string reward-dptf-id:string mf-id:string amt-b:decimal amt-s:decimal amt-g:decimal prec:integer)
-        @doc "IGNIS ifp mirror of XI_1|HeterogeneousLaneRoute: pre-fund token-0 (two transfers) + Coil(total-t1) + Curl(total-t2)."
+        @doc "IGNIS ifp mirror of XI_1|HeterogeneousLaneRoute: ONE token-0 pre-fund of the whole payout + \
+            \ Coil(total-t1+total-t2) on ats-01 + Coil(remainder) on ats-12. Mirrors the exec leg for leg; \
+            \ the leg list here and the leg list there are the same three branches."
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
@@ -2653,31 +2678,147 @@
                 (total-t1:decimal (+ b1 (+ s1 g1)))
                 (total-t2:decimal (- (+ amt-b (+ amt-s amt-g)) (+ total-t0 total-t1)))
                 (fund-12:decimal (+ total-t1 total-t2))
-                (coil-ok:bool
-                    (if (> total-t1 0.0)
-                        (> (at "rbt-amount" (ref-ATS::URC_RewardBearingTokenAmounts ats-01 token-0 total-t1)) 0.0)
-                        false))
-                (curl-ok:bool
-                    (if (> total-t2 0.0)
-                        (let
-                            (
-                                (h1:object (ref-ATS::URC_RewardBearingTokenAmounts ats-01 token-0 total-t2))
-                            )
-                            (if (> (at "rbt-amount" h1) 0.0)
-                                (> (at "rbt-amount"
-                                        (ref-ATS::URC_RewardBearingTokenAmounts ats-12 (at "rbt-id" h1) (at "rbt-amount" h1)))
-                                   0.0)
-                                false)
-                        )
-                        false))
+                (payout-all:decimal (+ total-t0 fund-12))
             )
-            (fold (+) 0.0
-                [ (URC_CollectXferIgnis token-0 patron total-t0)
-                  (URC_CollectXferIgnis token-0 patron fund-12)
-                  (if coil-ok (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_Coil patron ats-01 token-0 total-t1)) 0.0)
-                  (if curl-ok (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_Curl patron ats-01 ats-12 token-0 total-t2)) 0.0)
-                ])
+            (if (<= fund-12 0.0)
+                (URC_CollectXferIgnis token-0 patron payout-all)
+                (let
+                    (
+                        (h-all:object{AutostakeV4.CoilData}
+                            (ref-ATS::URC_RewardBearingTokenAmounts ats-01 token-0 fund-12))
+                        (rbt1-keep:decimal
+                            (if (> total-t1 0.0)
+                                (at "rbt-amount" (ref-ATS::URC_RewardBearingTokenAmounts ats-01 token-0 total-t1))
+                                0.0))
+                    )
+                    (let
+                        (
+                            (rbt1-id:string (at "rbt-id" h-all))
+                            (rbt1-ladder:decimal (- (at "rbt-amount" h-all) rbt1-keep))
+                        )
+                        (fold (+) 0.0
+                            [ (URC_CollectXferIgnis token-0 patron payout-all)
+                              (if (> (at "rbt-amount" h-all) 0.0)
+                                  (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_Coil patron ats-01 token-0 fund-12))
+                                  0.0)
+                              (if (and (> rbt1-ladder 0.0)
+                                       (> (at "rbt-amount" (ref-ATS::URC_RewardBearingTokenAmounts ats-12 rbt1-id rbt1-ladder)) 0.0))
+                                  (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_Coil patron ats-12 rbt1-id rbt1-ladder))
+                                  0.0)
+                            ])
+                    )
+                )
+            )
         ))
+
+    (defun URC_CollectLadderPreview:object
+        (collector:string pool-id:string fvt-id:string score-entity-type:integer
+         score-entity-id:string reward-dptf-id:string)
+        @doc "AMOUNT preview for a collect: what the collector actually RECEIVES, per token. \
+            \ A MULTIPLET_BASE triplet lane pays in up to THREE tokens, so a client showing one \
+            \ figure in one ticker names a denomination the collector will not receive. Returns \
+            \ {mode, payout, token-N-id, token-N-amount} for N in 0..2; a non-ladder lane answers \
+            \ the whole payout on token-0 with BAR/0.0 above it. \
+            \ Mirrors XI_TransferRewardDptfFromVault leg for leg, INCLUDING both precision skips: \
+            \ when hop 1 rounds to zero the collector keeps the whole payout as token-0, and when \
+            \ hop 2 rounds to zero they keep ALL of token-1 rather than the token-1 keep-share. \
+            \ Returns a BARE object, so by the interface object-return rule it is module-only -- \
+            \ a client reaches it as `ouronet-ns.RPS.URC_CollectLadderPreview`, the same way it \
+            \ must already reach URC_ComputeTripletLanes. Pinned against real balance deltas by \
+            \ REPL/Stage_02/[6.4]_AQP-LADDER-PREVIEW.repl -- a preview nothing compares to \
+            \ execution is a fourth copy of the ladder waiting to drift."
+        (let
+            (
+                (ref-ATS:module{AutostakeV4} ATS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (reward-kind:string (UR_FVT-RG|RewardKind fvt-id reward-dptf-id))
+                (payout:decimal (URC_CollectClaimableRewards collector pool-id fvt-id score-entity-type score-entity-id reward-dptf-id))
+            )
+            ;;BRANCH ON KIND BEFORE AMOUNT, deliberately. Short-circuiting on `payout <= 0`
+            ;;first was the obvious shape and it was wrong for the common case: EVERY lane the
+            ;;user is not currently owed anything on has payout 0, and answering those with BAR
+            ;;token ids leaves a client unable to tell a drained LADDER lane from a plain one --
+            ;;so it renders one unknown ticker instead of three tokens at zero.
+            (if (not (and (= reward-kind CT_REWARD_KIND_MULTIPLET_BASE)
+                          (= score-entity-type CT_SCORE_ENTITY_TRIPLET)))
+                ;;plain lane: one token, the whole payout, nothing above it.
+                (UDC_LadderPreview BAR payout reward-dptf-id payout BAR 0.0 BAR 0.0)
+                (if (<= payout 0.0)
+                    ;;drained LADDER lane: the identities and the mode are still the truth about
+                    ;;this lane, and they cost three row reads -- no lane scan, no ATS derivation.
+                    (let
+                        (
+                            (mf-id:string (UR_FVT-RG|MultipletFamilyId fvt-id reward-dptf-id))
+                        )
+                        (UDC_LadderPreview (UR_FVT-QS|Mode fvt-id reward-dptf-id) 0.0
+                            (UR_FVT-MF|Token0Id mf-id) 0.0
+                            (UR_FVT-MF|Token1Id mf-id) 0.0
+                            (UR_FVT-MF|Token2Id mf-id) 0.0)
+                    )
+                (let*
+                    (
+                        (mf-id:string (UR_FVT-RG|MultipletFamilyId fvt-id reward-dptf-id))
+                        (lanes:object (URC_ComputeTripletLanes collector pool-id score-entity-id))
+                        (w-total:decimal (at "w-user" lanes))
+                        (token-0:string (UR_FVT-MF|Token0Id mf-id))
+                        (ats-01:string (UR_FVT-MF|Ats01Id mf-id))
+                        (ats-12:string (UR_FVT-MF|Ats12Id mf-id))
+                        (prec:integer (ref-DPTF::UR_Decimals token-0))
+                        (mode:string (UR_FVT-QS|Mode fvt-id reward-dptf-id))
+                        (amt-b:decimal (if (> w-total 0.0) (floor (* payout (/ (at "lane-b" lanes) w-total)) prec) 0.0))
+                        (amt-s:decimal (if (> w-total 0.0) (floor (* payout (/ (at "lane-s" lanes) w-total)) prec) 0.0))
+                        (amt-g:decimal (- payout (+ amt-b amt-s)))
+                        ;;HOMOGENEOUS routes lane->one token; HETEROGENEOUS splits EACH lane across
+                        ;;all three per the per-mille matrix. Either way the route reduces to the
+                        ;;same three figures: raw token-0, the amount coiled once, the remainder.
+                        (raw:decimal
+                            (if (= mode CT_REWARD_MODE_HETEROGENEOUS)
+                                (+ (floor (/ (* amt-b (dec (at 0 (UR_FVT-QS|BronzeSplit fvt-id reward-dptf-id)))) 1000.0) prec)
+                                   (+ (floor (/ (* amt-s (dec (at 0 (UR_FVT-QS|SilverSplit fvt-id reward-dptf-id)))) 1000.0) prec)
+                                      (floor (/ (* amt-g (dec (at 0 (UR_FVT-QS|GoldSplit   fvt-id reward-dptf-id)))) 1000.0) prec)))
+                                amt-b))
+                        (once:decimal
+                            (if (= mode CT_REWARD_MODE_HETEROGENEOUS)
+                                (+ (floor (/ (* amt-b (dec (at 1 (UR_FVT-QS|BronzeSplit fvt-id reward-dptf-id)))) 1000.0) prec)
+                                   (+ (floor (/ (* amt-s (dec (at 1 (UR_FVT-QS|SilverSplit fvt-id reward-dptf-id)))) 1000.0) prec)
+                                      (floor (/ (* amt-g (dec (at 1 (UR_FVT-QS|GoldSplit   fvt-id reward-dptf-id)))) 1000.0) prec)))
+                                amt-s))
+                    )
+                    (let*
+                        (
+                            (fund:decimal (- payout raw))
+                            (token-1:string (UR_FVT-MF|Token1Id mf-id))
+                            (token-2:string (UR_FVT-MF|Token2Id mf-id))
+                            ;;hop 1 on the WHOLE laddering amount, exactly as the route coils it
+                            (h-all:object{AutostakeV4.CoilData}
+                                (if (> fund 0.0)
+                                    (ref-ATS::URC_RewardBearingTokenAmounts ats-01 token-0 fund)
+                                    (ref-ATS::URC_RewardBearingTokenAmounts ats-01 token-0 0.0)))
+                            (rbt1-total:decimal (at "rbt-amount" h-all))
+                            (rbt1-id:string (at "rbt-id" h-all))
+                            (rbt1-keep:decimal
+                                (if (> once 0.0)
+                                    (at "rbt-amount" (ref-ATS::URC_RewardBearingTokenAmounts ats-01 token-0 once))
+                                    0.0))
+                            (rbt1-ladder:decimal (- rbt1-total rbt1-keep))
+                            (rbt2:decimal
+                                (if (> rbt1-ladder 0.0)
+                                    (at "rbt-amount" (ref-ATS::URC_RewardBearingTokenAmounts ats-12 rbt1-id rbt1-ladder))
+                                    0.0))
+                        )
+                        (if (<= rbt1-total 0.0)
+                            ;;hop 1 rounds away: nothing is coiled, the single pre-fund already
+                            ;;handed the collector the entire payout as token-0.
+                            (UDC_LadderPreview mode payout token-0 payout token-1 0.0 token-2 0.0)
+                            (if (> rbt2 0.0)
+                                (UDC_LadderPreview mode payout token-0 raw token-1 rbt1-keep token-2 rbt2)
+                                ;;hop 2 rounds away: the collector keeps ALL of token-1, not the keep-share.
+                                (UDC_LadderPreview mode payout token-0 raw token-1 rbt1-total token-2 0.0)))
+                    )
+                ))
+            )
+        )
+    )
 
     (defun URC_CollectTransferLegIgnis:decimal
         (patron:string pool-id:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
@@ -2711,32 +2852,33 @@
                             (amt-s:decimal (if (> w-total 0.0) (floor (* payout (/ lane-s w-total)) prec) 0.0))
                             (amt-g:decimal (- payout (+ amt-b amt-s)))
                             (fund-sg:decimal (+ amt-s amt-g))
-                            (coil-s-ok:bool
-                                (if (> amt-s 0.0)
-                                    (> (at "rbt-amount" (ref-ATS::URC_RewardBearingTokenAmounts ats-01 token-0 amt-s)) 0.0)
-                                    false))
-                            (curl-g-ok:bool
-                                (if (> amt-g 0.0)
-                                    (let
-                                        (
-                                            (h1:object (ref-ATS::URC_RewardBearingTokenAmounts ats-01 token-0 amt-g))
-                                        )
-                                        (if (> (at "rbt-amount" h1) 0.0)
-                                            (> (at "rbt-amount"
-                                                    (ref-ATS::URC_RewardBearingTokenAmounts ats-12 (at "rbt-id" h1) (at "rbt-amount" h1)))
-                                               0.0)
-                                            false)
-                                    )
-                                    false))
                         )
                         (if (= mode CT_REWARD_MODE_HETEROGENEOUS)
                             (URC_HeterogeneousLaneRouteIgnis patron fvt-id reward-dptf-id mf-id amt-b amt-s amt-g prec)
-                            (fold (+) 0.0
-                                [ (URC_CollectXferIgnis token-0 patron amt-b)
-                                  (URC_CollectXferIgnis token-0 patron fund-sg)
-                                  (if coil-s-ok (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_Coil patron ats-01 token-0 amt-s)) 0.0)
-                                  (if curl-g-ok (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_Curl patron ats-01 ats-12 token-0 amt-g)) 0.0)
-                                ]))
+                            (if (<= fund-sg 0.0)
+                                (URC_CollectXferIgnis token-0 patron payout)
+                                (let*
+                                    (
+                                        (h-all:object{AutostakeV4.CoilData}
+                                            (ref-ATS::URC_RewardBearingTokenAmounts ats-01 token-0 fund-sg))
+                                        (rbt1-keep:decimal
+                                            (if (> amt-s 0.0)
+                                                (at "rbt-amount" (ref-ATS::URC_RewardBearingTokenAmounts ats-01 token-0 amt-s))
+                                                0.0))
+                                        (rbt1-id:string (at "rbt-id" h-all))
+                                        (rbt1-ladder:decimal (- (at "rbt-amount" h-all) rbt1-keep))
+                                    )
+                                    (fold (+) 0.0
+                                        [ (URC_CollectXferIgnis token-0 patron payout)
+                                          (if (> (at "rbt-amount" h-all) 0.0)
+                                              (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_Coil patron ats-01 token-0 fund-sg))
+                                              0.0)
+                                          (if (and (> rbt1-ladder 0.0)
+                                                   (> (at "rbt-amount" (ref-ATS::URC_RewardBearingTokenAmounts ats-12 rbt1-id rbt1-ladder)) 0.0))
+                                              (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_Coil patron ats-12 rbt1-id rbt1-ladder))
+                                              0.0)
+                                        ])
+                                )))
                     )
                     (URC_CollectXferIgnis reward-dptf-id patron payout)))
         ))
@@ -3349,16 +3491,28 @@
 
     (defun WU_RpsUser|LastRps:string
         (user-id:string fvt-id:string score-entity-id:string dptf-id:string last-rps:decimal)
-        @doc "Update last-rps on FVT|T|RPS|User."
+        @doc "Set last-rps on FVT|T|RPS|User. WRITES rather than UPDATES, and the asymmetry \
+            \ that removes is the whole point -- see WU_RpsUser|PendingRewards below."
         (require-capability (SECURE))
-        (update FVT|T|RPS|User (UCk_RpsUser user-id fvt-id score-entity-id dptf-id) {"last-rps": last-rps})
+        (write FVT|T|RPS|User (UCk_RpsUser user-id fvt-id score-entity-id dptf-id)
+            (UDC_FVT|RPS|User last-rps (UR_FVT-RU|PendingRewards user-id fvt-id score-entity-id dptf-id)
+                user-id fvt-id score-entity-id dptf-id))
     )
 
     (defun WU_RpsUser|PendingRewards:string
         (user-id:string fvt-id:string score-entity-id:string dptf-id:string pending-rewards:decimal)
-        @doc "Update pending-rewards on FVT|T|RPS|User."
+        @doc "Set pending-rewards on FVT|T|RPS|User. WRITES rather than UPDATES, because \
+            \ UR_FVT-RU|RpsUser READS this row via with-default-read at 0.0: a lane added after \
+            \ a user staked priced correctly for every reader with no row for the write side to \
+            \ update, and the update aborted the whole collect. C_AddRewardLink cannot backfill \
+            \ (unbounded in present stakers), and 0.0 is the checkpoint such a holder has, so \
+            \ carrying the sibling over at its read-side default invents no entitlement. Fixed \
+            \ in the two field writers -- the ONLY updates on this table -- so every caller is \
+            \ covered by construction. Live 2026-10-26; [6.3] <<TX-AQP-C02L>>."
         (require-capability (SECURE))
-        (update FVT|T|RPS|User (UCk_RpsUser user-id fvt-id score-entity-id dptf-id) {"pending-rewards": pending-rewards})
+        (write FVT|T|RPS|User (UCk_RpsUser user-id fvt-id score-entity-id dptf-id)
+            (UDC_FVT|RPS|User (UR_FVT-RU|LastRps user-id fvt-id score-entity-id dptf-id) pending-rewards
+                user-id fvt-id score-entity-id dptf-id))
     )
 
     (defun WU_AgencyFee:string (fvt-id:string score-entity-id:string operator-konto:string fee-per-mille:integer)
@@ -3606,39 +3760,60 @@
                             (amt-s:decimal (if (> w-total 0.0) (floor (* payout (/ lane-s w-total)) prec) 0.0))
                             (amt-g:decimal (- payout (+ amt-b amt-s)))
                             (fund-sg:decimal (+ amt-s amt-g))
-                            ;; #10 precision fallback: preview each lane's ATS conversion; when a tiny amount's
-                            ;; pool-index result rounds below token precision to 0, SKIP the Coil/Curl — the patron
-                            ;; keeps that portion as token-0 (already funded via fund-sg). No ATSU change; value preserved.
-                            (coil-s-ok:bool
-                                (if (> amt-s 0.0)
-                                    (> (at "rbt-amount" (ref-ATS::URC_RewardBearingTokenAmounts ats-01 token-0 amt-s)) 0.0)
-                                    false))
-                            (curl-g-ok:bool
-                                (if (> amt-g 0.0)
-                                    (let
-                                        (
-                                            (h1:object (ref-ATS::URC_RewardBearingTokenAmounts ats-01 token-0 amt-g))
-                                        )
-                                        (if (> (at "rbt-amount" h1) 0.0)
-                                            (> (at "rbt-amount"
-                                                    (ref-ATS::URC_RewardBearingTokenAmounts ats-12 (at "rbt-id" h1) (at "rbt-amount" h1)))
-                                               0.0)
-                                            false)
-                                    )
-                                    false))
                         )
+                        ;;MOVED 2026-10-26: the two ATS viability probes used to live in the binding
+                        ;;group ABOVE, which Pact evaluates in full before this branch is taken --
+                        ;;so the HETEROGENEOUS path paid for three CoilData derivations it then
+                        ;;discarded, because it routes by the split matrix and never reads amt-s or
+                        ;;amt-g as lane amounts. They are now inside the branch that uses them.
                         (if (= mode CT_REWARD_MODE_HETEROGENEOUS)
                             ;; heterogeneous: each lane → all 3 ladder tokens per the FVT|QualitySplit matrix
-                            (XI_1|HeterogeneousLaneRoute collector fvt-id reward-dptf-id mf-id amt-b amt-s amt-g prec)
-                            ;; homogeneous (default): bronze → token-0 raw, silver → token-1 (coil), gold → token-2 (curl)
-                            (ref-IGNIS::UDC_ConcatenateOutputCumulators
-                                [
-                                    (if (> amt-b 0.0) (ref-TFT::C_Transfer patron AQP|SC_NAME collector token-0 amt-b true) (UC_EmptyOc))
-                                    (if (> fund-sg 0.0) (ref-TFT::C_Transfer patron AQP|SC_NAME collector token-0 fund-sg true) (UC_EmptyOc))
-                                    (if coil-s-ok (ref-ATSU::C_Coil patron collector ats-01 token-0 amt-s) (UC_EmptyOc))
-                                    (if curl-g-ok (ref-ATSU::C_Curl patron collector ats-01 ats-12 token-0 amt-g) (UC_EmptyOc))
-                                ]
-                                []
+                            (XI_1|HeterogeneousLaneRoute patron collector fvt-id reward-dptf-id mf-id amt-b amt-s amt-g prec)
+                            ;; homogeneous (default): bronze → token-0 raw, silver → token-1, gold → token-2.
+                            ;;ONE pre-fund of the whole payout, then Coil(amt-s+amt-g) on ats-01 and
+                            ;;Coil(remainder) on ats-12 -- a Curl being a double Coil, Coil/Coil lands in
+                            ;;the same place for one fewer token-0 hop, one fewer mint and one fewer
+                            ;;derivation, using only the existing ATSU API.
+                            (if (<= fund-sg 0.0)
+                                (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                                    [
+                                        (if (> payout 0.0) (ref-TFT::C_Transfer patron AQP|SC_NAME collector token-0 payout true) (UC_EmptyOc))
+                                    ]
+                                    []
+                                )
+                                (let
+                                    (
+                                        ;; #10 precision fallback: when a tiny amount's pool-index result rounds
+                                        ;; below token precision to 0, SKIP that hop — the collector keeps the
+                                        ;; portion as token-0 (already funded by the single pre-fund above).
+                                        (h-all:object{AutostakeV4.CoilData}
+                                            (ref-ATS::URC_RewardBearingTokenAmounts ats-01 token-0 fund-sg))
+                                        ;;the token-1 the collector KEEPS, from amt-s ALONE: the pre-merge
+                                        ;;Coil(amt-s) figure, bit for bit. amt-g is the dust-free remainder of
+                                        ;;the lane split and so carries the merge rounding.
+                                        (rbt1-keep:decimal
+                                            (if (> amt-s 0.0)
+                                                (at "rbt-amount" (ref-ATS::URC_RewardBearingTokenAmounts ats-01 token-0 amt-s))
+                                                0.0))
+                                    )
+                                    (let
+                                        (
+                                            (rbt1-id:string (at "rbt-id" h-all))
+                                            (rbt1-ladder:decimal (- (at "rbt-amount" h-all) rbt1-keep))
+                                        )
+                                        (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                                            [
+                                                (if (> payout 0.0) (ref-TFT::C_Transfer patron AQP|SC_NAME collector token-0 payout true) (UC_EmptyOc))
+                                                (if (> (at "rbt-amount" h-all) 0.0) (ref-ATSU::C_Coil patron collector ats-01 token-0 fund-sg) (UC_EmptyOc))
+                                                (if (and (> rbt1-ladder 0.0)
+                                                         (> (at "rbt-amount" (ref-ATS::URC_RewardBearingTokenAmounts ats-12 rbt1-id rbt1-ladder)) 0.0))
+                                                    (ref-ATSU::C_Coil patron collector ats-12 rbt1-id rbt1-ladder)
+                                                    (UC_EmptyOc))
+                                            ]
+                                            []
+                                        )
+                                    )
+                                )
                             )
                         )
                     )
@@ -3877,12 +4052,11 @@
         )
     )
 
-    ;;Protection: Class 1 — Innate protection offered by XI_2|EnsureRpsMemberRow,
-    ;;Protection:          XI_2|EnsureRpsUserRow
+    ;;Protection: Class 1 — Innate protection offered by XI_2|EnsureRpsMemberRow
     (defun XI_1|EnsureScoreRewardRows
         (beneficiary-id:string plan:object{AcquisitionSchemasV3.FVT|SettleScorePlan})
         @doc "Phase 2.2 — UrStoa ≡ insert UrStoaVaultUser when account absent (IzAccount false)."
-        ;; SECURE: granted by XI_2|EnsureRpsMemberRow / XI_2|EnsureRpsUserRow (underlying W_).
+        ;; SECURE: granted by XI_2|EnsureRpsMemberRow (underlying W_).
         (let
             (
                 (fvt-id:string (at "fvt-id" plan))
@@ -3893,10 +4067,10 @@
             (map
                 (lambda (reward-dptf-id:string)
                     (if (UR_FVT-RG|RewardEnabled fvt-id reward-dptf-id)
-                        (do
-                            (XI_2|EnsureRpsMemberRow fvt-id score-entity-id reward-dptf-id)
-                            (XI_2|EnsureRpsUserRow beneficiary-id fvt-id score-entity-id reward-dptf-id)
-                        )
+                        ;; USER ROW DELIBERATELY NOT ENSURED: inserting at last-rps = L_i
+                        ;; is right for a newcomer and a silent total loss on a lane added
+                        ;; after the stake. 2.3 writes it at 0.0 and banks; 2.4 checkpoints.
+                        (XI_2|EnsureRpsMemberRow fvt-id score-entity-id reward-dptf-id)
                         true
                     )
                 )
@@ -4024,25 +4198,6 @@
         )
     )
 
-    ;;Protection: Class 1 — Innate protection offered by WI_RpsUser
-    (defun XI_2|EnsureRpsUserRow
-        (beneficiary-id:string fvt-id:string score-entity-id:string reward-dptf-id:string)
-        @doc "Internal (phase 2.1 · depth 2 · 2.0]): ensure FVT|T|RPS|User row; insert with last-rps=L_i when absent (UrStoa IzAccount)."
-        ;; SECURE: granted by WI_RpsUser (underlying W_).
-        (if (not (URC_FvtRpsUserRowExists beneficiary-id fvt-id score-entity-id reward-dptf-id))
-            (WI_RpsUser beneficiary-id fvt-id score-entity-id reward-dptf-id
-                (UDC_FVT|RPS|User
-                    (URC_FvtTier1IndexRps fvt-id score-entity-id reward-dptf-id)
-                    0.0
-                    beneficiary-id
-                    fvt-id
-                    score-entity-id
-                    reward-dptf-id
-                )
-            )
-            true
-        )
-    )
 
     ;;Protection: Class 1 — Innate protection offered by WI_RpsMember, WW_RpsMember,
     ;;Protection:          WU_MemberVault|AvailableRewards, WU_RpsUser|PendingRewards
@@ -4141,12 +4296,13 @@
                             )
                             ;; DSA operator fee: credit the whole fee slice DIRECT to the operator's pending
                             ;; (survives deb refresh — pending is a free additive term, never scaled by weight).
+                            ;; No row pre-creation: this used to ensure the row at L_i, so an
+                            ;; operator who is ALSO a staker here forfeited their own Tier-1
+                            ;; accrual to receive a fee. WU_ writes at the read-side default,
+                            ;; harmless when deb is 0 and correct when it is not.
                             (if (> member-slice-fee 0.0)
-                                (do
-                                    (XI_2|EnsureRpsUserRow operator fvt-id score-entity-id reward-dptf-id)
-                                    (WU_RpsUser|PendingRewards operator fvt-id score-entity-id reward-dptf-id
-                                        (+ (UR_FVT-RU|PendingRewards operator fvt-id score-entity-id reward-dptf-id) member-slice-fee))
-                                )
+                                (WU_RpsUser|PendingRewards operator fvt-id score-entity-id reward-dptf-id
+                                    (+ (UR_FVT-RU|PendingRewards operator fvt-id score-entity-id reward-dptf-id) member-slice-fee))
                                 true
                             )
                             ;; thread the uptime-shortfall accumulator (royalty-i is 0 for a normal member)
@@ -5008,11 +5164,23 @@
 
     ;;Protection: Class 2 — SECURE
     (defun XI_1|HeterogeneousLaneRoute:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string fvt-id:string reward-dptf-id:string mf-id:string amt-b:decimal amt-s:decimal amt-g:decimal prec:integer)
+        (patron:string collector:string fvt-id:string reward-dptf-id:string mf-id:string amt-b:decimal amt-s:decimal amt-g:decimal prec:integer)
         @doc "Heterogeneous MULTIPLET_BASE collect: split EACH lane amount across the 3 ladder tokens per the \
-            \ FVT|QualitySplit matrix (per-mille rows), aggregate the 3 tokens, and route total-t0 raw / total-t1 \
-            \ via one ATS leg / total-t2 via two — reusing the homogeneous per-leg primitives (pre-fund token-0, \
-            \ then Coil/Curl). total-t2 is the dust-free remainder. require SECURE."
+            \ FVT|QualitySplit matrix (per-mille rows), aggregate the 3 tokens, then pay the WHOLE payout out \
+            \ to the collector in ONE token-0 transfer and ladder it with Coil(total-t1+total-t2) on ats-01 \
+            \ followed by Coil(remainder) on ats-12. A Curl is a double Coil, so Coil/Coil reaches the same \
+            \ place as the old Coil/Curl while buying one fewer token-0 hop, one fewer mint and one fewer \
+            \ CoilData derivation. The token-1 KEPT by the collector is still derived from total-t1 alone, so \
+            \ it is the pre-merge figure bit for bit; total-t2 is the dust-free remainder and carries the \
+            \ merge rounding. \
+            \ TAKES BOTH patron AND collector, since 2026-10-26. It used to take one parameter NAMED \
+            \ `patron` and was CALLED with `collector`, then used that single value as the IGNIS payer \
+            \ AND the payout recipient -- so a SPONSORED collect in heterogeneous mode billed the \
+            \ collector for their own gas, while the cost mirror (which receives the real patron) \
+            \ disagreed about who paid. The HOMOGENEOUS sibling always kept the two distinct; this is \
+            \ now consistent with it. Unreachable on mainnet at the time of the fix -- FVT|T|QualitySplit \
+            \ holds zero rows, so every live lane is HOMOGENEOUS -- and reachable the first time any FVT \
+            \ owner calls C_SetQualitySplit. require SECURE."
         (require-capability (SECURE))
         (let
             (
@@ -5037,32 +5205,56 @@
                 (total-t1:decimal (+ b1 (+ s1 g1)))
                 (total-t2:decimal (- (+ amt-b (+ amt-s amt-g)) (+ total-t0 total-t1)))
                 (fund-12:decimal (+ total-t1 total-t2))
-                (coil-ok:bool
-                    (if (> total-t1 0.0)
-                        (> (at "rbt-amount" (ref-ATS::URC_RewardBearingTokenAmounts ats-01 token-0 total-t1)) 0.0)
-                        false))
-                (curl-ok:bool
-                    (if (> total-t2 0.0)
-                        (let
-                            (
-                                (h1:object (ref-ATS::URC_RewardBearingTokenAmounts ats-01 token-0 total-t2))
-                            )
-                            (if (> (at "rbt-amount" h1) 0.0)
-                                (> (at "rbt-amount"
-                                        (ref-ATS::URC_RewardBearingTokenAmounts ats-12 (at "rbt-id" h1) (at "rbt-amount" h1)))
-                                   0.0)
-                                false)
-                        )
-                        false))
+                ;;ONE pre-fund. The two legs used to be two C_Transfer calls of the SAME token in
+                ;;the SAME direction (AQP -> collector), which is one transfer leg bought twice.
+                (payout-all:decimal (+ total-t0 fund-12))
             )
-            (ref-IGNIS::UDC_ConcatenateOutputCumulators
-                [
-                    (if (> total-t0 0.0) (ref-TFT::C_Transfer patron AQP|SC_NAME patron token-0 total-t0 true) (UC_EmptyOc))
-                    (if (> fund-12 0.0) (ref-TFT::C_Transfer patron AQP|SC_NAME patron token-0 fund-12 true) (UC_EmptyOc))
-                    (if coil-ok (ref-ATSU::C_Coil patron patron ats-01 token-0 total-t1) (UC_EmptyOc))
-                    (if curl-ok (ref-ATSU::C_Curl patron patron ats-01 ats-12 token-0 total-t2) (UC_EmptyOc))
-                ]
-                []
+            ;;A Curl IS a double Coil, so the ladder does not need C_Curl: Coil(total-t1+total-t2)
+            ;;on ats-01 mints the collector's token-1 for the WHOLE laddering amount, and a second
+            ;;Coil on ats-12 ladders the part that is owed as token-2. That removes one token-0
+            ;;hop into ats-01, one DPTF mint and one CoilData derivation per collect, using only
+            ;;the existing ATSU API -- no new ATSU surface, so ATSU|C>COIL still fires per hop and
+            ;;the coil identity is preserved by the cap that was always going to run.
+            (if (<= fund-12 0.0)
+                ;;token-0 only (quality split routes nothing to the ladder): one transfer, no coil.
+                (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                    [
+                        (if (> payout-all 0.0) (ref-TFT::C_Transfer patron AQP|SC_NAME collector token-0 payout-all true) (UC_EmptyOc))
+                    ]
+                    []
+                )
+                (let
+                    (
+                        ;;hop-1 CoilData on the whole laddering amount -- also the hop-1 viability
+                        ;;probe, so the derivation is bought once and used twice.
+                        (h-all:object{AutostakeV4.CoilData}
+                            (ref-ATS::URC_RewardBearingTokenAmounts ats-01 token-0 fund-12))
+                        ;;the token-1 the collector KEEPS, derived from total-t1 ALONE -- i.e. the
+                        ;;same figure the old Coil(total-t1) leg paid out, bit for bit. The merge's
+                        ;;rounding therefore lands on the ladder leg below, never on the keep.
+                        (rbt1-keep:decimal
+                            (if (> total-t1 0.0)
+                                (at "rbt-amount" (ref-ATS::URC_RewardBearingTokenAmounts ats-01 token-0 total-t1))
+                                0.0))
+                    )
+                    (let
+                        (
+                            (rbt1-id:string (at "rbt-id" h-all))
+                            (rbt1-ladder:decimal (- (at "rbt-amount" h-all) rbt1-keep))
+                        )
+                        (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                            [
+                                (if (> payout-all 0.0) (ref-TFT::C_Transfer patron AQP|SC_NAME collector token-0 payout-all true) (UC_EmptyOc))
+                                (if (> (at "rbt-amount" h-all) 0.0) (ref-ATSU::C_Coil patron collector ats-01 token-0 fund-12) (UC_EmptyOc))
+                                (if (and (> rbt1-ladder 0.0)
+                                         (> (at "rbt-amount" (ref-ATS::URC_RewardBearingTokenAmounts ats-12 rbt1-id rbt1-ladder)) 0.0))
+                                    (ref-ATSU::C_Coil patron collector ats-12 rbt1-id rbt1-ladder)
+                                    (UC_EmptyOc))
+                            ]
+                            []
+                        )
+                    )
+                )
             )
         )
     )

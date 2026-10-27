@@ -176,6 +176,246 @@
 (print "")
 (print "")
 ;;
+(begin-tx "TX-AQP-C02L - a lane added AFTER the stake must still be collectable")
+(print "")
+(print "=== TX-AQP-C02L — LANE-AFTER-STAKE: the row the write side needs ==========")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;====================================================================================
+;; REPORTED LIVE, 2026-10-26. A WSTOA lane was added to SubsidiaryTreasury after its 11
+;; holders had already staked. Every collect from it aborted in GAS SIMULATION with
+;;
+;;     Error during database operation: Update failed because no such record
+;;
+;; and never reached the chain -- which is the gas probe doing its job, not a near miss.
+;;
+;; THE ASYMMETRY IS THE WHOLE BUG. `UR_FVT-RU|RpsUser` reads through `with-default-read`,
+;; so an absent row reads as (last-rps 0.0, pending 0.0) and the preview happily priced a
+;; 2.06 WSTOA payout. `XI_2|BankUserTier1Pending` then `update`s that row -- and `update`
+;; requires it to exist. The read half and the write half of one data model disagreed, and
+;; only the write half ever found out.
+;;
+;; Rows are created by `XI_1|EnsureScoreRewardRows` on the STAKE path, over the lanes
+;; enabled AT THAT MOMENT. `C_AddRewardLink` does not backfill (it must not -- that is
+;; unbounded in present users). So any lane added to a live aggregator was uncollectable
+;; for every existing staker.
+;;
+;; THE FIX IS NOT `XI_2|EnsureRpsUserRow`, AND THAT IS THE POINT OF THIS TEST. That one
+;; writes last-rps = the CURRENT index, which is correct on the stake path (a newcomer must
+;; not be paid for before they arrived) and catastrophic here: claimable is
+;; deb x (index - last-rps), so materialising at the current index pays EXACTLY ZERO. It
+;; would have turned an abort into a silent total loss.
+;;
+;; The fix is in `WU_RpsUser|LastRps` / `WU_RpsUser|PendingRewards`, which now WRITE the row
+;; (carrying the sibling field over at its READ-SIDE DEFAULT of 0.0) rather than UPDATE it.
+;; An earlier attempt sat in `XI_2|BankUserTier1Pending`, reasoned about as the single choke
+;; point for Tier-1 accrual -- IT IS NOT ONE, and this test is what found that:
+;; `AQP-FVT.CC_Collect` reaches the row through `XE_WU_RpsUser|*` DIRECTLY (phases 2 and 4).
+;; The two field writers are the only `update` sites on this table, so fixing them covers
+;; every caller by construction instead of by a list that was already wrong once.
+;;
+;; STILL OPEN, AND MEASURED 2026-10-26 -- this fix does NOT cover the STAKE path. Phase 2.2
+;; (`XI_1|EnsureScoreRewardRows`) runs BEFORE phase 2.3 (`XI_1|BankScorePendingRewards`) at
+;; 04_RPS.pact:3879-3880, so a stake on a late lane inserts the row at last-rps = L_i and
+;; phase 2.3 then banks deb x (L_i - L_i) = 0. Reproduced: reader quoted 300.0, staked,
+;; reader quoted 0.0, collect reported "Successfully collected 0.0". A holder who stakes
+;; before collecting loses the whole accrual, silently. See the V15 README.
+;;
+;; So the assertions below are in two halves, and the second matters more than the first:
+;;   1. the collect SUCCEEDS where it used to abort;
+;;   2. the amount is UNCHANGED from what the reader quoted before the write existed.
+;;====================================================================================
+;;==== TX-AQP-C02L · 01 · add a lane, then collect from it ====
+(print "--- [TX-AQP-C02L · 01 · add a lane, then collect from it] ---")
+(let
+    (
+        (patron:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-RPS:module{AcquisitionRewardPerShareV4} RPS)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "DHCodingDivision"))
+        (score-id:string (ref-U|DALOS::UDC_Makeid "TheCodingDivision"))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "CodingDivisionTreasury"))
+        ;; A SECOND lane, added now -- i.e. AFTER TX-AQP-C02 staked into this treasury.
+        (late-id:string (ref-DALOS::UR_AurynID))
+        (inject-amount:decimal 500.0)
+    )
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (print (format "<(TS02-C3.AQP-FVT|C_AddRewardLink late-lane={})> => \"{}\"" [late-id
+        (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron patron fvt-id late-id false "|")
+    ]))
+    ;; THE ROW MUST BE ABSENT HERE. If this ever reads true the scenario has stopped being
+    ;; the reported one and every assertion below is measuring something else.
+    (map print
+        [
+            (expect "<<TX-AQP-C02L>> the staker has NO RPS|User row on a lane added after the stake"
+                false (ref-RPS::URC_FvtRpsUserRowExists patron fvt-id score-id late-id))
+        ]
+    )
+    (print (format "<(TS02-C3.AQP-FVT|CC_Inject late-lane {})> => \"{}\"" [inject-amount
+        (ref-TS02-C3::AQP-FVT|CC_Inject patron patron fvt-id late-id inject-amount)
+    ]))
+    (let
+        (
+            ;; WHAT THE READER QUOTES WHILE THE ROW IS STILL ABSENT -- the figure the preview
+            ;; showed the user, computed entirely from the with-default-read default.
+            (quoted:decimal
+                (ref-FVT::URC_UserTier1AvailableRewards patron fvt-id score-id late-id
+                    (ref-RPS::URC_ScoreEntityUserWeight patron fvt-id pool-id 1 score-id)))
+            (bal-pre:decimal (ref-DPTF::UR_AccountSupply late-id patron))
+        )
+        (map print
+            [
+                (expect (format "<<TX-AQP-C02L>> the reader quotes a real payout while the row is absent got={}" [quoted])
+                    true (> quoted 0.0))
+            ]
+        )
+        ;; THE COLLECT THAT USED TO ABORT.
+        (print (format "<(TS02-C3.AQP-FVT|CC_Collect late-lane)> => \"{}\"" [
+            (ref-TS02-C3::AQP-FVT|CC_Collect patron patron fvt-id 1 score-id late-id)
+        ]))
+        (let
+            (
+                (bal-post:decimal (ref-DPTF::UR_AccountSupply late-id patron))
+            )
+            (map print
+                [
+                    (expect "<<TX-AQP-C02L>> the row exists after the collect"
+                        true (ref-RPS::URC_FvtRpsUserRowExists patron fvt-id score-id late-id))
+                    ;; THE ASSERTION THAT WOULD HAVE CAUGHT THE WRONG FIX. Materialising at the
+                    ;; current index instead of 0.0 makes this payout exactly 0.0 -- the collect
+                    ;; succeeds, nothing is refused, and the holder is quietly paid nothing.
+                    (expect (format "<<TX-AQP-C02L>> paid exactly what was quoted got={} expected={}"
+                                [(- bal-post bal-pre) quoted])
+                        quoted (- bal-post bal-pre))
+                ]
+            )
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
+;;
+(begin-tx "TX-AQP-C02S - STAKING on a late lane must not destroy the accrual")
+(print "")
+(print "=== TX-AQP-C02S — LANE-AFTER-STAKE: staking must not wipe the accrual ======")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;====================================================================================
+;; THE SECOND HALF OF THE SAME DEFECT, AND THE EXPENSIVE HALF. <<TX-AQP-C02L>> above
+;; proves a late lane is COLLECTABLE. This proves it is still collectable AFTER A STAKE,
+;; which it was not, and the failure was silent rather than loud.
+;;
+;; `XI_1|EnsureScoreRewardRows` (phase 2.2) used to insert the absent user row at
+;; last-rps = L_i -- correct for a NEWCOMER, who must not be paid for the period before
+;; they arrived. But a holder meeting a lane added AFTER their stake is NOT a newcomer to
+;; the FVT, only to the lane, and they have been accruing since the lane's index left
+;; zero. Phase 2.3 then banked deb x (L_i - L_i) = 0 and the entitlement was gone.
+;;
+;; MEASURED 2026-10-26, before the fix, on exactly this fixture:
+;;     reader quoted 300.0  ->  STAKE  ->  reader quoted 0.0
+;;     collect reported "Successfully collected 0.0"
+;; No abort, no refusal, no event: the holder is simply paid nothing and told it worked.
+;; That is strictly worse than <<TX-AQP-C02L>>'s abort, which at least cost nothing and
+;; announced itself.
+;;
+;; The fix is to NOT ensure the user row on the stake prelude at all. Phase 2.3's
+;; `WU_RpsUser|PendingRewards` now WRITES it at the read-side default 0.0 and banks the
+;; full accrual as pending; phase 2.4 (`XI_CheckpointStakeRps`) advances last-rps to L_i
+;; afterwards. Correct for both populations -- a genuine newcomer has deb-old 0, so banks
+;; 0 and is checkpointed to L_i exactly as before.
+;;
+;; THIS TEST IS THE ONLY THING STOPPING THAT LINE BEING PUT BACK. Re-adding
+;; `XI_2|EnsureRpsUserRow` to phase 2.2 makes the final assertion read 0.0, and nothing
+;; else in the suite notices.
+;;====================================================================================
+;;==== TX-AQP-C02S · 01 · add a lane, stake, then collect ====
+(print "--- [TX-AQP-C02S · 01 · add a lane, stake, then collect] ---")
+(let
+    (
+        (patron:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+        (ref-RPS:module{AcquisitionRewardPerShareV4} RPS)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (dpsf-id:string "DHCD-98c486052a51")
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "DHCodingDivision"))
+        (score-id:string (ref-U|DALOS::UDC_Makeid "TheCodingDivision"))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "CodingDivisionTreasury"))
+        ;; A THIRD LANE, and the choice is constrained: AURYN is <<TX-AQP-C02L>>'s, Wstoa is
+        ;; <<TX-AQP-C02>>'s, and OURO is [6.5.1]_AQP-INFO-GROUNDTRUTH's on this same treasury
+        ;; (it asserts the link is fresh, so taking OURO here breaks it downstream). DEMIURGOI
+        ;; is not a candidate at all -- UR_DemiurgoiID returns [string], not a token id.
+        (late-id:string (ref-DALOS::UR_EliteAurynID))
+        (nonces:[integer] (ref-DPDC::URH_AccountNonces patron dpsf-id true))
+        (inject-amount:decimal 500.0)
+    )
+    (enforce (> (length nonces) 1) "fixture needs a 2nd DHCD nonce to stake with")
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (print (format "<(TS02-C3.AQP-FVT|C_AddRewardLink late-lane={})> => \"{}\"" [late-id
+        (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron patron fvt-id late-id false "|")
+    ]))
+    (print (format "<(TS02-C3.AQP-FVT|CC_Inject late-lane {})> => \"{}\"" [inject-amount
+        (ref-TS02-C3::AQP-FVT|CC_Inject patron patron fvt-id late-id inject-amount)
+    ]))
+    (let
+        (
+            (quoted:decimal
+                (ref-FVT::URC_UserTier1AvailableRewards patron fvt-id score-id late-id
+                    (ref-RPS::URC_ScoreEntityUserWeight patron fvt-id pool-id 1 score-id)))
+        )
+        (map print
+            [
+                (expect "<<TX-AQP-C02S>> the staker has NO RPS|User row on a lane added after the stake"
+                    false (ref-RPS::URC_FvtRpsUserRowExists patron fvt-id score-id late-id))
+                (expect (format "<<TX-AQP-C02S>> the reader quotes a real payout before the stake got={}" [quoted])
+                    true (> quoted 0.0))
+            ]
+        )
+        ;; THE STAKE THAT USED TO WIPE IT.
+        (print (format "<(TS02-C3.AQP-POOL|CC_StakeSemiFungibleCollectable nonce={})> => \"{}\"" [(at 1 nonces)
+            (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable
+                patron patron patron pool-id dpsf-id [(at 1 nonces)])
+        ]))
+        (let
+            (
+                (bal-pre:decimal (ref-DPTF::UR_AccountSupply late-id patron))
+            )
+            (print (format "<(TS02-C3.AQP-FVT|CC_Collect late-lane)> => \"{}\"" [
+                (ref-TS02-C3::AQP-FVT|CC_Collect patron patron fvt-id 1 score-id late-id)
+            ]))
+            (map print
+                [
+                    ;; THE ASSERTION. Re-add XI_2|EnsureRpsUserRow to phase 2.2 and this is 0.0,
+                    ;; with a "Successfully collected 0.0" to go with it.
+                    (expect (format "<<TX-AQP-C02S>> staking did NOT wipe the accrual got={} expected={}"
+                                [(- (ref-DPTF::UR_AccountSupply late-id patron) bal-pre) quoted])
+                        quoted (- (ref-DPTF::UR_AccountSupply late-id patron) bal-pre))
+                ]
+            )
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
+;;
 (begin-tx "TX-AQP-C02b - Company + WonderCoach stakes (inject denominators)")
 (print "")
 (print "=== TX-AQP-C02b — Stakes for Snakes / Subsidiary / Shares inject tests =========")

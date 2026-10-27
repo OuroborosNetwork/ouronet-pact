@@ -24,7 +24,7 @@ The answer has to be "one page, one heading, and a tool said which" — not "gre
 ## 0. The evidence, because this argument has a control group
 
 There is already a hand-written, code-accurate Ouronet documentation. It is
-`websites/ouronetwork-website/OuronetWhitepaper/` — the *Living Whitepaper*, 9,241 words (coincidentally close to the unrelated 9,370 `defun` count tracked elsewhere) across
+`websites/ouronetwork-website/OuronetWhitepaper/` — the *Living Whitepaper*, 9,241 words (coincidentally close to the unrelated 9,371 `defun` count tracked elsewhere) across
 thirteen entity chapters, last touched **2026-06-14**. Its own README says:
 
 > "**Code-accurate.** Function names, parameters, schema fields and Talos wiring are taken directly

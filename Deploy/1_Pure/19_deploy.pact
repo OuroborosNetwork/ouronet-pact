@@ -9,20 +9,17 @@
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/07_MTX-AQP.pact
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/08_DSA.pact
 ;;
-;; TOTAL: 3 interface(s), 3 module(s), 9 table(s)
+;; TOTAL: 0 interface(s), 3 module(s), 9 table(s)
 ;; What it DEPLOYS, in load order:
 ;;   -- 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/06_VCT.pact
-;;      interface  AcquisitionVacateV4
 ;;      module     AQP-VCT
 ;;      table      P|T
 ;;      table      P|MT
 ;;   -- 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/07_MTX-AQP.pact
-;;      interface  AqpMtxV2
 ;;      module     MTX-AQP
 ;;      table      P|T
 ;;      table      P|MT
 ;;   -- 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/08_DSA.pact
-;;      interface  DsaV3
 ;;      module     AQP-DSA
 ;;      table      P|T
 ;;      table      P|MT
@@ -38,122 +35,8 @@
 
 ;; ===== 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/06_VCT.pact ==============
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface AcquisitionVacateV4
-    @doc "Interface for the AQP pool-vacate subsystem. Declares UC_ helpers for slice \
-        \ sizing, URC_/URH_ readers for vacate progress, per-asset inventory and gas-bounded \
-        \ owner-array checks, URHC_ slice-plan builders, per-fungibility XB_Vacate leg \
-        \ writers, the CC_FullVacate drain flow, and C_AbortVacate/C_FinalizeVacate client \
-        \ entrypoints returning IGNIS OutputCumulators."
+;; AcquisitionVacateV4: already deployed and unchanged -- see LIVE_INTERFACES
 
-    ;;<=========================================================================>
-    ;;{1}  GOVERNANCE
-    ;;{G1}  constants
-    ;;{G2}  schemas
-    ;;{G3}  tables  ⟨cannot exist in an interface⟩
-    ;;{G4}  capabilities
-    ;;{G5}  functions
-    (defun GOV|Demiurgoi ())
-
-    ;;<=========================================================================>
-    ;;{2}  POLICY
-    ;;{P1}  constants
-    ;;{P2}  schemas
-    ;;{P3}  tables  ⟨cannot exist in an interface⟩
-    ;;{P4}  capabilities
-    ;;{P5}  functions
-
-    ;;<=========================================================================>
-    ;;{3}  CST
-    ;;{3.1}  constants
-    ;;{3.2}  schemas
-    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
-
-    ;;<=========================================================================>
-    ;;{4}  CAPABILITIES
-    ;;{C1}  Trivial [bronze]
-    ;;{C2}  Simple
-    ;;{C3}  Composed
-    ;;{C4}  Ownership [gold]
-
-    ;;<=========================================================================>
-    ;;{5}  FUNCTIONS
-    ;;{5.1}  Construct [CT/UDC]
-    ;;{5.2}  Compute [UC]
-    ;; [UC]  compute
-    (defun UC_ComputeMinSliceCount:integer (unit-count:integer vacate-kind:integer))
-    (defun UC_ZeroIntAmountsMatrix:[[integer]] (nonces-array:[[integer]]))
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    ;; [UR]  read
-    (defun UR_VacateInProgress:bool (pool-id:string))
-    (defun URC_PoolFullyVacated:bool (pool-id:string))
-    (defun URC_TfOwnerArraysGasOk:bool (owner-ids:[string] beneficiary-ids:[string] amounts:[decimal]))
-    (defun URC_BatchOwnerArraysGasOk:bool (owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] gas-max:integer))
-    ;; [URH] heavy-read
-    (defun URHC_BuildVacateSlicePlan:object
-        (pool-id:string asset-id:string vacate-kind:integer slice-count:integer))
-    (defun URHC_VacateUnitCountForKind:integer
-        (pool-id:string asset-id:string vacate-kind:integer))
-    (defun URH_VacateTfInventory:object (pool-id:string dptf-id:string))
-    (defun URH_VacateOfInventory:object (pool-id:string dpof-id:string))
-    (defun URH_VacateCollectableInventory:object (pool-id:string collectable-id:string son:bool))
-    ;;{5.4}  Validate [UEV/CAP]
-    ;;{5.5}  Write [W]
-    ;;{5.6}  Aux/X
-    ;; [XB]
-    (defun XB_VacateTrueFungible:object{IgnisCollectorV4.OutputCumulator} (executor:string pool-id:string))
-    (defun XB_VacateOrtoFungible:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string pool-id:string dpof-id:string))
-    (defun XB_VacateSemiFungible:object{IgnisCollectorV4.OutputCumulator} (executor:string pool-id:string dpsf-id:string))
-    (defun XB_VacateNonFungible:object{IgnisCollectorV4.OutputCumulator} (executor:string pool-id:string dpnf-id:string))
-    ;;{5.7}  User [A/C]
-    ;; [C]   client
-    (defun CC_FullVacate:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string pool-id:string))
-    (defun CCp_BatchVacateTrueFungible:object{IgnisCollectorV4.OutputCumulator}
-        (pool-id:string dptf-id:string owner-ids:[string] beneficiary-ids:[string] amounts:[decimal]))
-    (defun CCp_BatchVacateOrtoFungible:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string pool-id:string dpof-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]]))
-    (defun CCp_BatchVacateCollectables:object{IgnisCollectorV4.OutputCumulator}
-        (pool-id:string collectable-id:string son:bool owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]]))
-    (defun CCp_BatchDrainTrueFungible:object{IgnisCollectorV4.OutputCumulator}
-        (pool-id:string dptf-id:string owner-ids:[string] beneficiary-ids:[string] amounts:[decimal]))
-    (defun CCp_BatchDrainOrtoFungible:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string pool-id:string dpof-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]]))
-    (defun CCp_BatchDrainCollectable:object{IgnisCollectorV4.OutputCumulator}
-        (pool-id:string collectable-id:string son:bool owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]]))
-    (defun C_AbortVacate:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string pool-id:string))
-    (defun C_FinalizeVacate:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string pool-id:string))
-
-
-    ;;<=========================================================================>
-    ;; ADDED 2026-10-12 -- interface-membership sweep (StoicSyntax-Prefixes.md Sec5,
-    ;; owner ruling). Every one of these was already live in the module body; this
-    ;; closes the gap between what the module DOES and what its interface SAYS it does.
-    ;;<=========================================================================>
-    (defun CAP_VctVacatePoolOwner (pool-id:string))
-    (defun UC_BatchNonceTotal:integer (nonces-array:[[integer]]))
-    (defun UC_CeilDiv:integer (numerator:integer denominator:integer))
-    (defun UC_DecimalAmountsMatrixToInt:[[integer]] (rows:[[decimal]]))
-    (defun UC_DecimalAmountsRowToInt:[integer] (amounts:[decimal]))
-    (defun UC_EmptyOc:object{IgnisCollectorV4.OutputCumulator} ())
-    (defun UC_GasMaxForKind:integer (vacate-kind:integer))
-    (defun UC_OwnerRowNonceTotal:integer (owner-rows:[object{AcquisitionSchemasV3.VCT|VacateNonceLeg}]))
-    (defun UC_VacateCollectableLegsToVacateArrays:object (legs:[object{AcquisitionSchemasV3.VCT|VacateNonceLeg}]))
-    (defun UC_VacateDecimalAmountsToIntegers:[integer] (amounts:[decimal]))
-    (defun UC_VacateKindSon:bool (vacate-kind:integer))
-    (defun UC_VacateMergeDecimalNonceRowsForBeneficiary:object (beneficiary-id:string beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[decimal]]))
-    (defun UC_VacateMergeIntNonceRowsForBeneficiary:object (beneficiary-id:string beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]]))
-    (defun UC_VacateOfLegsToVacateArrays:object (legs:[object{AcquisitionSchemasV3.VCT|VacateNonceLeg}]))
-    (defun UC_VacateOrtoDestinations:[string] (owner-ids:[string] beneficiary-ids:[string]))
-    (defun UC_VacateSumAmountForBeneficiaryFromLegs:decimal (beneficiary-id:string legs:[object{AcquisitionSchemasV3.VCT|VacateTfLeg}]))
-    (defun UC_VacateTfLegsToTftBulkArrays:object (legs:[object{AcquisitionSchemasV3.VCT|VacateTfLeg}]))
-    (defun UC_VacateUniqueBeneficiaries:[string] (beneficiary-ids:[string]))
-    (defun UC_VacateUniqueBeneficiariesFromLegs:[string] (legs:[object{AcquisitionSchemasV3.VCT|VacateTfLeg}]))
-    (defun UC_ZeroIntAmountsRow:[integer] (nonces:[integer]))
-    (defun UEV_ExecutorIzVacatePoolOwner (executor:string pool-id:string))
-    (defun UEV_TrueFungibleStakeNotReserved (dptf-id:string))
-    (defun URHC_VacateNonceTotalForKind:integer (pool-id:string asset-id:string vacate-kind:integer))
-    (defun URHC_VacateOwnerCountForKind:integer (pool-id:string asset-id:string vacate-kind:integer))
-    (defun UR_VacateSessionFields:object (pool-id:string))
-)
 
 ;; =============================================================================
 ;; AQP-VCT — Acquisition Vacate (pool-owner forced unstake)
@@ -3680,53 +3563,8 @@
 ;; Holds ALL AQP multi-transaction (defpact) functions. M3 #12 (deb-staleness): the spike-fallback inject.
 ;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface AqpMtxV2
-    @doc "Exposes AQP MultiStep (defpact) client functions. Currently: the tiered enforced-fresh FVT inject \
-        \ (MTX|n|C_Inject) — the spike fallback for CC_Inject when the stale set exceeds one transaction."
+;; AqpMtxV2: already deployed and unchanged -- see LIVE_INTERFACES
 
-    ;;<=========================================================================>
-    ;;{1}  GOVERNANCE
-    ;;{G1}  constants
-    ;;{G2}  schemas
-    ;;{G3}  tables  ⟨cannot exist in an interface⟩
-    ;;{G4}  capabilities
-    ;;{G5}  functions
-
-    ;;<=========================================================================>
-    ;;{2}  POLICY
-    ;;{P1}  constants
-    ;;{P2}  schemas
-    ;;{P3}  tables  ⟨cannot exist in an interface⟩
-    ;;{P4}  capabilities
-    ;;{P5}  functions
-
-    ;;<=========================================================================>
-    ;;{3}  CST
-    ;;{3.1}  constants
-    ;;{3.2}  schemas
-    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
-
-    ;;<=========================================================================>
-    ;;{4}  CAPABILITIES
-    ;;{C1}  Trivial [bronze]
-    ;;{C2}  Simple
-    ;;{C3}  Composed
-    ;;{C4}  Ownership [gold]
-
-    ;;<=========================================================================>
-    ;;{5}  FUNCTIONS
-    ;;{5.1}  Construct [CT/UDC]
-    ;;{5.2}  Compute [UC]
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    ;;{5.4}  Validate [UEV/CAP]
-    ;;{5.5}  Write [W]
-    ;;{5.6}  Aux/X
-    ;;{5.7}  User [A/C]
-    ;;
-    (defun C_2|Inject (patron:string executor:string fvt-id:string reward-dptf-id:string amount:decimal))
-    (defun C_2|SweepRevokeAnchor (patron:string executor:string anchor-id:string))
-
-)
 ;;
 (module MTX-AQP GOV
     @doc "Holds all AQP multi-transaction (defpact) flows. Provides C_2|Inject — a 2-step \
@@ -4289,99 +4127,8 @@
 ;;   agency open (Phase 2); capture recompute + delegated oracle (Phase 3); royalty disposal + collect (later).
 ;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface DsaV3
-    @doc "Delegated Staking Agencies — client/reader surface (v1; grows as the module is built)."
+;; DsaV3: already deployed and unchanged -- see LIVE_INTERFACES
 
-    ;;<=========================================================================>
-    ;;{1}  GOVERNANCE
-    ;;{G1}  constants
-    ;;{G2}  schemas
-    ;;{G3}  tables  ⟨cannot exist in an interface⟩
-    ;;{G4}  capabilities
-    ;;{G5}  functions
-
-    ;;<=========================================================================>
-    ;;{2}  POLICY
-    ;;{P1}  constants
-    ;;{P2}  schemas
-    ;;{P3}  tables  ⟨cannot exist in an interface⟩
-    ;;{P4}  capabilities
-    ;;{P5}  functions
-
-    ;;<=========================================================================>
-    ;;{3}  CST
-    ;;{3.1}  constants
-    ;;{3.2}  schemas
-    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
-
-    ;;<=========================================================================>
-    ;;{4}  CAPABILITIES
-    ;;{C1}  Trivial [bronze]
-    ;;{C2}  Simple
-    ;;{C3}  Composed
-    ;;{C4}  Ownership [gold]
-
-    ;;<=========================================================================>
-    ;;{5}  FUNCTIONS
-    ;;{5.1}  Construct [CT/UDC]
-    ;;{5.2}  Compute [UC]
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    ;;
-    (defun UR_DSA-TMP|UnitScore:integer (fvt-id:string))
-    (defun UR_DSA-TMP|Active:bool (fvt-id:string))
-    (defun UR_DSA-AGN|Operator:string (fvt-id:string score-entity-id:string))
-    (defun UR_DSA-AGN|Nodes:integer (fvt-id:string score-entity-id:string))
-    (defun UR_DSA-AGN|Uptime:integer (fvt-id:string score-entity-id:string))
-    ;;
-    ;; [URCi]   cost readers — single source for exec billing + INFO preview
-    (defun URCi_DefineDelegationVault:object{IgnisCollectorV4.OutputCumulator} (patron:string output:[string]))
-    (defun URCi_OpenAgency:object{IgnisCollectorV4.OutputCumulator} (patron:string output:[string]))
-    (defun URCi_RecomputeCapture:object{IgnisCollectorV4.OutputCumulator} (patron:string output:[string]))
-    (defun URCi_SetOracleAuth:object{IgnisCollectorV4.OutputCumulator} (patron:string output:[string]))
-    (defun URCi_OracleWrite:object{IgnisCollectorV4.OutputCumulator} (patron:string output:[string]))
-    (defun URCi_WithdrawRoyalty:object{IgnisCollectorV4.OutputCumulator} (patron:string output:[string]))
-    (defun URCi_BurnRoyalty:object{IgnisCollectorV4.OutputCumulator} (patron:string output:[string]))
-    (defun URCi_FuelRoyalty:object{IgnisCollectorV4.OutputCumulator} (patron:string output:[string]))
-    (defun URCi_SetAgencyFee:object{IgnisCollectorV4.OutputCumulator} (patron:string output:[string]))
-    ;;{5.4}  Validate [UEV/CAP]
-    (defun UEV_OpenGate:bool (fvt-id:string score-entity-id:string))
-    ;;{5.5}  Write [W]
-    ;;{5.6}  Aux/X
-    ;;{5.7}  User [A/C]
-    ;;
-    (defun C_DefineDelegationVault:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string executor:string fvt-id:string model-id:string unit-score:integer))
-    (defun C_AdmitAgency:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string executor:string fvt-id:string score-entity-id:string fee-per-mille:integer))
-    (defun C_RecomputeCapture:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string fvt-id:string score-entity-id:string))
-    (defun C_SetOracleAuth:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string executor:string fvt-id:string oracle-guard:guard))
-    (defun C_OracleWrite:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string fvt-id:string score-entity-id:string nodes:integer uptime:integer))
-    (defun C_WithdrawRoyalty:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string executor:string fvt-id:string reward-dptf-id:string))
-    (defun C_BurnRoyalty:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string executor:string fvt-id:string reward-dptf-id:string))
-    (defun C_FuelRoyalty:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string executor:string fvt-id:string reward-dptf-id:string swpair:string))
-    (defun C_SetAgencyFee:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string executor:string fvt-id:string score-entity-id:string fee-per-mille:integer))
-    (defun A_ToggleExternalOracle:string (patron:string executor:string on:bool))
-    (defun A_SetOracleValidity:string (patron:string executor:string seconds:integer))
-
-
-    ;;<=========================================================================>
-    ;; ADDED 2026-10-12 -- interface-membership sweep (StoicSyntax-Prefixes.md Sec5,
-    ;; owner ruling). Every one of these was already live in the module body; this
-    ;; closes the gap between what the module DOES and what its interface SAYS it does.
-    ;;<=========================================================================>
-    (defun UC_CaptureWeight:decimal (capture-units:decimal uptime:integer))
-    (defun UCk_Agency:string (fvt-id:string score-entity-id:string))
-    (defun UR_DSA-AGN|FeePerMille:integer (fvt-id:string score-entity-id:string))
-    (defun UR_DSA-ORA|Guard:guard (fvt-id:string))
-    (defun UR_DSA-TMP|ModelId:string (fvt-id:string))
-)
 ;;
 (module AQP-DSA GOV
     @doc "Delegated Staking Agencies — a delegation layer over AQP-FVT's two-tier farm \

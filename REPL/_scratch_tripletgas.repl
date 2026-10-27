@@ -1,0 +1,212 @@
+;;
+;; REPL/_scratch_tripletgas.repl — BASELINE gas of the REAL heterogeneous triplet collect
+;;   The dhourolp-equivalent lane: a MULTIPLET_BASE OURO reward on a triplet score-entity with a
+;;   HETEROGENEOUS quality split, so one collect pays OURO + Auryn + Elite-Auryn — i.e.
+;;   pre-fund(x2) + Coil(total-t1) + Curl(total-t2) in RPS XI_1|HeterogeneousLaneRoute.
+;;   Fixture: the Custodians DSA vault committed by [6.2.9] TX-BOOT-1314 (Steps 13/14). The oracle
+;;   write and the inject that [6.2.9] performs live inside its ROLLED-BACK experiment block, so
+;;   they are redone here.
+;;   Legend: ">>> GAS" = measurement; "ZZZ" = derived/observed value.
+;;
+;;triplet-collect-golden.repl is the boot chain: sandboxes + Stage 1 + Stage 2 deploy + the
+;;three populate suites + AQP-BOOT Step4/Step5 (WITHOUT which [6.2.9] Step7 dies on a missing
+;;TheCodingDivision score) + [6.2.9]_AQP-BOOT-FULL + [6.4]_AQP-TRIPLET-COLLECT.
+(load "triplet-collect-golden.repl")
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
+(begin-tx "TX-TG01 - CoilData ADDITIVITY sweep (the precondition of the merge)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 100000000)
+(print "")
+(print "=== TX-TG01 — CoilData additivity sweep =======================================")
+;;==== TX-TG01 - CoilData ADDITIVITY sweep · 01 · sweep ==== ======================================
+(print "--- [TX-TG01 · 01 · sweep] ---")
+;;Merging Coil(t1)+Curl(t2) into Coil(t1+t2)+Coil(share) is faithful only if EVERY field of
+;;CoilData is additive over the split: rbt-amount, first-input-amount and royalty-fee. One
+;;sample proves nothing, so sweep a spread of magnitudes and dust values.
+(let
+    (
+        (ouro-id:string "OURO-98c486052a51")
+        (fvt-id:string (U|DALOS.UDC_Makeid "CustodiansVault"))
+    )
+    (let*
+        (
+            (mf-id:string (RPS.UR_FVT-RG|MultipletFamilyId fvt-id ouro-id))
+            (ats-01:string (RPS.UR_FVT-MF|Ats01Id mf-id))
+            (pairs:[[decimal]]
+                [ [7.0 13.0] [1.0 999.0] [0.123456 7.654321] [1199.61999 151.966597]
+                  [0.000001 0.000001] [333.333333 666.666667] [1.5 2.5] [99999.0 1.0] ])
+        )
+        (print (format "ZZZ ats-01 = {}" [ats-01]))
+        (map print
+            (map
+                (lambda (p:[decimal])
+                    (let*
+                        (
+                            (a:decimal (at 0 p))
+                            (b:decimal (at 1 p))
+                            (ca:object (ATS.URC_RewardBearingTokenAmounts ats-01 ouro-id a))
+                            (cb:object (ATS.URC_RewardBearingTokenAmounts ats-01 ouro-id b))
+                            (cs:object (ATS.URC_RewardBearingTokenAmounts ats-01 ouro-id (+ a b)))
+                            (d-rbt:decimal   (- (at "rbt-amount" cs)         (+ (at "rbt-amount" ca)         (at "rbt-amount" cb))))
+                            (d-input:decimal (- (at "first-input-amount" cs) (+ (at "first-input-amount" ca) (at "first-input-amount" cb))))
+                            (d-roy:decimal   (- (at "royalty-fee" cs)        (+ (at "royalty-fee" ca)        (at "royalty-fee" cb))))
+                        )
+                        (format "ZZZ ADD {} + {}  d-rbt={} d-input={} d-royalty={} additive={}"
+                            [a b d-rbt d-input d-roy
+                             (and (= d-rbt 0.0) (and (= d-input 0.0) (= d-roy 0.0)))])
+                    )
+                )
+                pairs
+            )
+        )
+        ""
+    )
+)
+(commit-tx)
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
+(begin-tx "TX-TG02 - oracle the ANHD agency, then inject, so the triplet lane has a payout")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 200000000)
+(print "")
+(print "=== TX-TG02 — oracle + inject =================================================")
+;;==== TX-TG02 - oracle + inject · 01 · let / invocation ==== =====================================
+(print "--- [TX-TG02 · 01 · let / invocation] ---")
+(env-data { "dsa-oracle": { "keys": ["dsa-oracle-key"], "pred": "keys-all" } })
+(let
+    (
+        (patron:string KST.ANHD)
+        (ouro-id:string "OURO-98c486052a51")
+        (fvt-id:string (U|DALOS.UDC_Makeid "CustodiansVault"))
+    )
+    (let
+        (
+            (anhd-triplet:string (AQP-SCORE.UC_ComputeTripletId
+                (U|DALOS.UDC_Makeid "OuronetPrimeBronze")
+                (U|DALOS.UDC_Makeid "OuronetPrimeSilver")
+                (U|DALOS.UDC_Makeid "OuronetPrimeGolden")))
+        )
+        (env-sigs
+            [ { "key": "PK_AncientHodler", "caps": [] }
+              { "key": "dsa-oracle-key", "caps": [] } ])
+        (print (format "ZZZ capture BEFORE oracle = {}" [(AQP-DSA.URC_CaptureUnits fvt-id anhd-triplet)]))
+        (TS02-C3.AQP-DSA|C_SetOracleAuth patron patron fvt-id (read-keyset "dsa-oracle"))
+        (TS02-C3.AQP-DSA|C_OracleWrite patron fvt-id anhd-triplet 2 1000)
+        (print (format "ZZZ capture AFTER  oracle = {}" [(AQP-DSA.URC_CaptureUnits fvt-id anhd-triplet)]))
+        (env-gas 0)
+        (print (format "<(CC_Inject 3000 OURO)> => \"{}\"" [(TS02-C3.AQP-FVT|CC_Inject patron patron fvt-id ouro-id 3000.0)]))
+        (print (format ">>> GAS  CC_Inject                        = {}" [(env-gas)]))
+    )
+)
+(env-sigs [])
+(commit-tx)
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
+(begin-tx "TX-TG03 - BASELINE: the heterogeneous triplet collect, all three tokens")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 200000000)
+(print "")
+(print "=== TX-TG03 — BASELINE heterogeneous triplet collect ==========================")
+;;==== TX-TG03 - BASELINE triplet collect · 01 · let / invocation ==== ============================
+(print "--- [TX-TG03 · 01 · let / invocation] ---")
+(let
+    (
+        (patron:string KST.ANHD)
+        (ouro-id:string "OURO-98c486052a51")
+        (fvt-id:string (U|DALOS.UDC_Makeid "CustodiansVault"))
+        (pool-id:string (U|DALOS.UDC_Makeid "CustodiansPool"))
+    )
+    (let*
+        (
+            (auryn:string (DALOS.UR_AurynID))
+            (elite:string (DALOS.UR_EliteAurynID))
+            (anhd-triplet:string (AQP-SCORE.UC_ComputeTripletId
+                (U|DALOS.UDC_Makeid "OuronetPrimeBronze")
+                (U|DALOS.UDC_Makeid "OuronetPrimeSilver")
+                (U|DALOS.UDC_Makeid "OuronetPrimeGolden")))
+            (o0:decimal (DPTF.UR_AccountSupply ouro-id patron))
+            (a0:decimal (DPTF.UR_AccountSupply auryn   patron))
+            (e0:decimal (DPTF.UR_AccountSupply elite   patron))
+        )
+        (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+        (print (format "ZZZ claimable = {}"
+            [(AQP-FVT.URC_CollectClaimableRewards patron pool-id fvt-id 3 anhd-triplet ouro-id)]))
+        (env-gas 0)
+        (print (format "<(CC_Collect)> => \"{}\"" [(TS02-C3.AQP-FVT|CC_Collect patron patron fvt-id 3 anhd-triplet ouro-id)]))
+        (print (format ">>> GAS  CC_Collect (TRIPLET, BASELINE)   = {}" [(env-gas)]))
+        (print (format "ZZZ gained ouro={} auryn={} elite={}"
+            [(- (DPTF.UR_AccountSupply ouro-id patron) o0)
+             (- (DPTF.UR_AccountSupply auryn   patron) a0)
+             (- (DPTF.UR_AccountSupply elite   patron) e0)]))
+    )
+)
+(env-sigs [])
+(commit-tx)
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
+(begin-tx "TX-TG04 - per-leg primitive costs on the same ladder")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 200000000)
+(print "")
+(print "=== TX-TG04 — per-leg primitives ==============================================")
+;;==== TX-TG04 - per-leg primitives · 01 · let / invocation ==== ==================================
+(print "--- [TX-TG04 · 01 · let / invocation] ---")
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (ouro-id:string "OURO-98c486052a51")
+        (fvt-id:string (U|DALOS.UDC_Makeid "CustodiansVault"))
+    )
+    (let*
+        (
+            (mf-id:string (RPS.UR_FVT-RG|MultipletFamilyId fvt-id ouro-id))
+            (ats-01:string (RPS.UR_FVT-MF|Ats01Id mf-id))
+            (ats-12:string (RPS.UR_FVT-MF|Ats12Id mf-id))
+            (token-1:string (RPS.UR_FVT-MF|Token1Id mf-id))
+        )
+        (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+        (print "--- [TX-TG04 · 02 · one CoilData derivation] ---")
+        (env-gas 0)
+        (print (format "ZZZ rbt = {}" [(at "rbt-amount" (ATS.URC_RewardBearingTokenAmounts ats-01 ouro-id 10.0))]))
+        (print (format ">>> GAS  URC_RewardBearingTokenAmounts x1 = {}" [(env-gas)]))
+        (print "--- [TX-TG04 · 03 · one TFT transfer leg (via Talos)] ---")
+        (env-gas 0)
+        (print (format "<(DPTF|C_Transfer 1 OURO)> => \"{}\"" [(TS01-C1.DPTF|C_Transfer patron owner emma ouro-id 1.0 true)]))
+        (print (format ">>> GAS  DPTF|C_Transfer (Talos, 1 leg)   = {}" [(env-gas)]))
+        (print "--- [TX-TG04 · 04 · C_Coil on ats-01] ---")
+        (env-gas 0)
+        (print (format "<(ATS|C_Coil ats-01 OURO 10)> => \"{}\"" [(TS01-C2.ATS|C_Coil patron owner ats-01 ouro-id 10.0)]))
+        (print (format ">>> GAS  ATS|C_Coil  hop1  (Talos)        = {}" [(env-gas)]))
+        (print "--- [TX-TG04 · 05 · C_Curl across ats-01 + ats-12] ---")
+        (env-gas 0)
+        (print (format "<(ATS|C_Curl ats-01 ats-12 OURO 10)> => \"{}\"" [(TS01-C2.ATS|C_Curl patron owner ats-01 ats-12 ouro-id 10.0)]))
+        (print (format ">>> GAS  ATS|C_Curl  hop1+hop2 (Talos)    = {}" [(env-gas)]))
+        (print "--- [TX-TG04 · 06 · C_Coil on ats-12 (the optimisation's second hop)] ---")
+        (env-gas 0)
+        (print (format "<(ATS|C_Coil ats-12 AURYN 1)> => \"{}\"" [(TS01-C2.ATS|C_Coil patron owner ats-12 token-1 1.0)]))
+        (print (format ">>> GAS  ATS|C_Coil  hop2  (Talos)        = {}" [(env-gas)]))
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+(print "=== END TRIPLET GAS BASELINE ==================================================")

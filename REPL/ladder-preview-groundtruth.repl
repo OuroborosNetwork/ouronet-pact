@@ -1,0 +1,443 @@
+;;
+;; REPL/ladder-preview-groundtruth.repl — RPS.URC_CollectLadderPreview vs REAL balance deltas
+;;   Legend (terminal observability): "ZZZ" = observed value; <(…)> = module/Talos echo.
+;;   Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each group.
+;;   REPL tests: <<LPG-nn>>.
+;;
+;;WHY THIS EXISTS. A MULTIPLET_BASE triplet lane pays in up to THREE tokens, and the collect's
+;;ladder shape is now encoded in FOUR places that must agree: the exec route
+;;(XI_TransferRewardDptfFromVault / XI_1|HeterogeneousLaneRoute), its IGNIS mirror
+;;(URC_CollectTransferLegIgnis / URC_HeterogeneousLaneRouteIgnis), and the client AMOUNT preview
+;;(URC_CollectLadderPreview). Nothing in the language makes them agree. This suite is what makes
+;;them agree: it reads the preview BEFORE the collect and asserts it against the DELTAS the
+;;collect actually produced on the three token balances. A preview compared only to itself is a
+;;fourth copy of the ladder waiting to drift -- which is exactly what
+;;Audit/module-audits/AQP/MULTIPLET-COLLECT-OPTIMISATION.md §3 reports had already happened
+;;three ways by composition.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/ladder-preview-groundtruth.repl")
+(print "================================================================")
+(print "")
+;;triplet-collect-golden.repl is the boot chain: sandboxes + Stage 1 + Stage 2 deploy + the three
+;;populate suites + AQP-BOOT Step4/Step5 + [6.2.9]_AQP-BOOT-FULL (which COMMITS the Custodians
+;;vault in TX-BOOT-1314 -- Steps 13/14 -- while its economic experiment is rolled back) +
+;;[6.4]_AQP-TRIPLET-COLLECT.
+(load "triplet-collect-golden.repl")
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
+(begin-tx "TX-LPG-01 - oracle the ANHD agency and inject, so the ladder lane has a payout")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 200000000)(env-gas 0)
+(print "")
+(print "=== TX-LPG-01 — oracle + inject ===============================================")
+;;==== TX-LPG-01 - oracle + inject · 01 · let / invocation ==== ===================================
+(print "--- [TX-LPG-01 - oracle + inject · 01 · let / invocation] ---")
+;;The Custodians vault is the ONLY fixture in the tree with a HETEROGENEOUS quality split, so it
+;;is the only one that reaches XI_1|HeterogeneousLaneRoute at all. capture-units =
+;;min(floor(Q / unit-score), NODES) and `nodes` starts at 0, so the agency earns nothing until an
+;;oracle reports -- [6.2.9] does this inside its ROLLED-BACK block, hence the redo here.
+(env-data { "dsa-oracle": { "keys": ["dsa-oracle-key"], "pred": "keys-all" } })
+(let
+    (
+        (patron:string KST.ANHD)
+        (ouro-id:string "OURO-98c486052a51")
+        (fvt-id:string (U|DALOS.UDC_Makeid "CustodiansVault"))
+    )
+    (let
+        (
+            (anhd-triplet:string (AQP-SCORE.UC_ComputeTripletId
+                (U|DALOS.UDC_Makeid "OuronetPrimeBronze")
+                (U|DALOS.UDC_Makeid "OuronetPrimeSilver")
+                (U|DALOS.UDC_Makeid "OuronetPrimeGolden")))
+        )
+        (env-sigs
+            [ { "key": "PK_AncientHodler", "caps": [] }
+              { "key": "dsa-oracle-key", "caps": [] } ])
+        (TS02-C3.AQP-DSA|C_SetOracleAuth patron patron fvt-id (read-keyset "dsa-oracle"))
+        (TS02-C3.AQP-DSA|C_OracleWrite patron fvt-id anhd-triplet 2 1000)
+        (print (format "ZZZ capture after oracle = {}" [(AQP-DSA.URC_CaptureUnits fvt-id anhd-triplet)]))
+        (print (format "<(CC_Inject 3000 OURO)> => \"{}\""
+            [(TS02-C3.AQP-FVT|CC_Inject patron patron fvt-id ouro-id 3000.0)]))
+    )
+)
+(env-sigs [])
+(commit-tx)
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
+(begin-tx "TX-LPG-02 - the preview, then the collect, then the deltas")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 200000000)(env-gas 0)
+(print "")
+(print "=== TX-LPG-02 — preview vs real deltas (HETEROGENEOUS ladder) ==================")
+;;==== TX-LPG-02 - preview vs deltas · 01 · read the preview BEFORE collecting ==== ===============
+(print "--- [TX-LPG-02 - preview vs deltas · 01 · read the preview BEFORE collecting] ---")
+(let
+    (
+        (patron:string KST.ANHD)
+        (ouro-id:string "OURO-98c486052a51")
+        (fvt-id:string (U|DALOS.UDC_Makeid "CustodiansVault"))
+        (pool-id:string (U|DALOS.UDC_Makeid "CustodiansPool"))
+    )
+    (let*
+        (
+            (auryn:string (DALOS.UR_AurynID))
+            (elite:string (DALOS.UR_EliteAurynID))
+            (anhd-triplet:string (AQP-SCORE.UC_ComputeTripletId
+                (U|DALOS.UDC_Makeid "OuronetPrimeBronze")
+                (U|DALOS.UDC_Makeid "OuronetPrimeSilver")
+                (U|DALOS.UDC_Makeid "OuronetPrimeGolden")))
+            ;;THE PREVIEW, read while the reward is still unclaimed.
+            (pv:object (RPS.URC_CollectLadderPreview patron pool-id fvt-id 3 anhd-triplet ouro-id))
+            (o0:decimal (DPTF.UR_AccountSupply ouro-id patron))
+            (a0:decimal (DPTF.UR_AccountSupply auryn   patron))
+            (e0:decimal (DPTF.UR_AccountSupply elite   patron))
+        )
+        (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+        (print (format "ZZZ preview = {}" [pv]))
+        (print (format "<(CC_Collect)> => \"{}\""
+            [(TS02-C3.AQP-FVT|CC_Collect patron patron fvt-id 3 anhd-triplet ouro-id)]))
+        ;;==== TX-LPG-02 - preview vs deltas · 02 · assertions ==== ===============================
+        (print "--- [TX-LPG-02 - preview vs deltas · 02 · assertions] ---")
+        (let
+            (
+                (d-ouro:decimal  (- (DPTF.UR_AccountSupply ouro-id patron) o0))
+                (d-auryn:decimal (- (DPTF.UR_AccountSupply auryn   patron) a0))
+                (d-elite:decimal (- (DPTF.UR_AccountSupply elite   patron) e0))
+            )
+            (print (format "ZZZ deltas ouro={} auryn={} elite={}" [d-ouro d-auryn d-elite]))
+            (map print
+                [
+                    ;;THE WHOLE POINT: the three predicted amounts are the three amounts paid.
+                    (expect (format "<<LPG-01>> preview token-0 == real OURO delta (got={})" [d-ouro])
+                        d-ouro (at "token-0-amount" pv))
+                    (expect (format "<<LPG-02>> preview token-1 == real AURYN delta (got={})" [d-auryn])
+                        d-auryn (at "token-1-amount" pv))
+                    (expect (format "<<LPG-03>> preview token-2 == real ELITE-AURYN delta (got={})" [d-elite])
+                        d-elite (at "token-2-amount" pv))
+                    ;;...and it names the tokens it is quoting, so a client cannot mislabel them.
+                    (expect "<<LPG-04>> preview names token-0 as the family's token-0"
+                        ouro-id (at "token-0-id" pv))
+                    (expect "<<LPG-05>> preview names token-1 as the family's token-1"
+                        auryn (at "token-1-id" pv))
+                    (expect "<<LPG-06>> preview names token-2 as the family's token-2"
+                        elite (at "token-2-id" pv))
+                    ;;the mode that decided the routing is reported, not inferred by the client
+                    (expect "<<LPG-07>> preview reports the HETEROGENEOUS mode it routed under"
+                        "HETEROGENEOUS" (at "mode" pv))
+                    ;;the basis is conserved: nothing is created or stranded by the ladder.
+                    ;;NOT an equality against `payout`: hop-1 coils (t1+t2) in ONE derivation where
+                    ;;the pre-2026-10-26 route coiled t1 and t2 separately, and flooring is not
+                    ;;additive -- so the ladder legs may differ from the payout by single ulps of
+                    ;;the ladder tokens, which are DIFFERENT tokens with their own precision. The
+                    ;;conserved quantity is token-0 + what was laddered, not a sum across tickers.
+                    (expect (format "<<LPG-08>> every leg is non-negative (ouro={} auryn={} elite={})"
+                                [d-ouro d-auryn d-elite])
+                        true (and (>= d-ouro 0.0) (and (>= d-auryn 0.0) (>= d-elite 0.0))))
+                    (expect (format "<<LPG-09>> the ladder paid all three tokens (payout={})" [(at "payout" pv)])
+                        true (and (> d-ouro 0.0) (and (> d-auryn 0.0) (> d-elite 0.0))))
+                    (expect (format "<<LPG-10>> preview payout basis == URC_CollectClaimableRewards" [])
+                        3000.0 (at "payout" pv))
+                ])
+            ""
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
+(begin-tx "TX-LPG-03 - a NON-ladder lane answers the whole payout on token-0")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 200000000)(env-gas 0)
+(print "")
+(print "=== TX-LPG-03 — non-ladder lane degenerates correctly =========================")
+;;==== TX-LPG-03 - non-ladder lane · 01 · assertions ==== =========================================
+(print "--- [TX-LPG-03 - non-ladder lane · 01 · assertions] ---")
+;;A collected-out lane has payout 0, which is the branch a client hits most often (every lane the
+;;user is not currently owed anything on). It must answer with the lane's own token and zeros
+;;above it -- NOT with BAR on token-0, which would make a client render an unknown ticker.
+(let
+    (
+        (patron:string KST.ANHD)
+        (ouro-id:string "OURO-98c486052a51")
+        (fvt-id:string (U|DALOS.UDC_Makeid "CustodiansVault"))
+        (pool-id:string (U|DALOS.UDC_Makeid "CustodiansPool"))
+    )
+    (let*
+        (
+            (auryn:string (DALOS.UR_AurynID))
+            (elite:string (DALOS.UR_EliteAurynID))
+            (anhd-triplet:string (AQP-SCORE.UC_ComputeTripletId
+                (U|DALOS.UDC_Makeid "OuronetPrimeBronze")
+                (U|DALOS.UDC_Makeid "OuronetPrimeSilver")
+                (U|DALOS.UDC_Makeid "OuronetPrimeGolden")))
+            (pv:object (RPS.URC_CollectLadderPreview patron pool-id fvt-id 3 anhd-triplet ouro-id))
+        )
+        (print (format "ZZZ drained preview = {}" [pv]))
+        (map print
+            [
+                (expect "<<LPG-11>> a drained lane previews payout 0"
+                    0.0 (at "payout" pv))
+                (expect "<<LPG-13>> a drained lane previews zero on every leg"
+                    [0.0 0.0 0.0]
+                    [(at "token-0-amount" pv) (at "token-1-amount" pv) (at "token-2-amount" pv)])
+                ;;THE REGRESSION. The first cut short-circuited on `payout <= 0` BEFORE looking at
+                ;;the reward kind, so a drained LADDER lane answered mode=BAR with BAR token ids --
+                ;;indistinguishable from a plain single-token lane, and that is the branch every
+                ;;lane the user is not currently owed anything on takes. A client cannot render
+                ;;three tokens at zero from an answer that names one unknown ticker.
+                (expect "<<LPG-12>> a drained LADDER lane still names all THREE ladder tokens"
+                    [ouro-id auryn elite]
+                    [(at "token-0-id" pv) (at "token-1-id" pv) (at "token-2-id" pv)])
+                (expect "<<LPG-14>> ...and still reports the mode it would route under"
+                    "HETEROGENEOUS" (at "mode" pv))
+            ])
+        ""
+    )
+)
+(env-sigs [])
+(commit-tx)
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
+(begin-tx "TX-LPG-04 - the HOMOGENEOUS ladder: does the second coil fit the user's scores?")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 200000000)(env-gas 0)
+(print "")
+(print "=== TX-LPG-04 — HOMOGENEOUS ladder, per-score branching =======================")
+;;==== TX-LPG-04 - homogeneous ladder · 01 · flip the lane to HOMOGENEOUS ==== ====================
+(print "--- [TX-LPG-04 - homogeneous ladder · 01 · flip the lane to HOMOGENEOUS] ---")
+;;WHY FLIP AN EXISTING LANE INSTEAD OF BUILDING A NEW FVT. The two modes route completely
+;;differently and the DANGEROUS one is HOMOGENEOUS: there, bronze -> token-0, silver -> token-1
+;;(one coil) and golden -> token-2 (TWO coils), so "how much to coil on the second hop" is decided
+;;by WHICH scores the holder actually has. HETEROGENEOUS splits every lane across all three tokens
+;;per the per-mille matrix, which MASKS that branching entirely -- a holder with no golden score
+;;still receives token-2. So the heterogeneous assertions above, and every number measured on the
+;;Custodians vault, say nothing about the per-score logic.
+;;
+;;OuroLpFarm is the tree's only homogeneous MULTIPLET lane, and post-boot it reads
+;;lanes={lane-b 0, lane-s 0, lane-g 0, w-user 0} -- no staked weight, so claimable is 0 whatever is
+;;injected. [6.4]_AQP-TRIPLET-COLLECT does reach it with a SILVER-ONLY profile (deb 110 on silver),
+;;which proves the second coil is correctly SKIPPED. What that cannot reach is a GOLDEN lane, where
+;;the second coil actually fires. The Custodians triplet has real weight on all three legs, and
+;;`mode` is a parameter of C_SetQualitySplit -- so flipping it is the cheapest honest fixture.
+(let
+    (
+        (patron:string KST.ANHD)
+        (ouro-id:string "OURO-98c486052a51")
+        (fvt-id:string (U|DALOS.UDC_Makeid "CustodiansVault"))
+    )
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (print (format "<(C_SetQualitySplit -> HOMOGENEOUS)> => \"{}\""
+        [(TS02-C3.AQP-FVT|C_SetQualitySplit patron (AQP-FVT.UR_FVT|OwnerKonto fvt-id) fvt-id ouro-id
+            "HOMOGENEOUS" [200 400 400] [400 300 300] [600 200 200])]))
+    (print (format "ZZZ mode now = {}" [(RPS.UR_FVT-QS|Mode fvt-id ouro-id)]))
+    (print (format "<(CC_Inject 3000 OURO)> => \"{}\""
+        [(TS02-C3.AQP-FVT|CC_Inject patron patron fvt-id ouro-id 3000.0)]))
+)
+(env-sigs [])
+(commit-tx)
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
+(begin-tx "TX-LPG-05 - HOMOGENEOUS preview vs real deltas, asserted against the LANES")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 200000000)(env-gas 0)
+(print "")
+(print "=== TX-LPG-05 — HOMOGENEOUS preview vs deltas =================================")
+;;==== TX-LPG-05 - homogeneous preview · 01 · preview, collect, compare ==== ======================
+(print "--- [TX-LPG-05 - homogeneous preview · 01 · preview, collect, compare] ---")
+(let
+    (
+        (patron:string KST.ANHD)
+        (ouro-id:string "OURO-98c486052a51")
+        (fvt-id:string (U|DALOS.UDC_Makeid "CustodiansVault"))
+        (pool-id:string (U|DALOS.UDC_Makeid "CustodiansPool"))
+    )
+    (let*
+        (
+            (auryn:string (DALOS.UR_AurynID))
+            (elite:string (DALOS.UR_EliteAurynID))
+            (anhd-triplet:string (AQP-SCORE.UC_ComputeTripletId
+                (U|DALOS.UDC_Makeid "OuronetPrimeBronze")
+                (U|DALOS.UDC_Makeid "OuronetPrimeSilver")
+                (U|DALOS.UDC_Makeid "OuronetPrimeGolden")))
+            (lanes:object (RPS.URC_ComputeTripletLanes patron pool-id anhd-triplet))
+            (pv:object (RPS.URC_CollectLadderPreview patron pool-id fvt-id 3 anhd-triplet ouro-id))
+            (o0:decimal (DPTF.UR_AccountSupply ouro-id patron))
+            (a0:decimal (DPTF.UR_AccountSupply auryn   patron))
+            (e0:decimal (DPTF.UR_AccountSupply elite   patron))
+        )
+        (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+        (print (format "ZZZ lanes   = {}" [lanes]))
+        (print (format "ZZZ preview = {}" [pv]))
+        (print (format "<(CC_Collect)> => \"{}\""
+            [(TS02-C3.AQP-FVT|CC_Collect patron patron fvt-id 3 anhd-triplet ouro-id)]))
+        ;;==== TX-LPG-05 - homogeneous preview · 02 · assertions ==== =============================
+        (print "--- [TX-LPG-05 - homogeneous preview · 02 · assertions] ---")
+        (let
+            (
+                (d-ouro:decimal  (- (DPTF.UR_AccountSupply ouro-id patron) o0))
+                (d-auryn:decimal (- (DPTF.UR_AccountSupply auryn   patron) a0))
+                (d-elite:decimal (- (DPTF.UR_AccountSupply elite   patron) e0))
+            )
+            (print (format "ZZZ deltas ouro={} auryn={} elite={}" [d-ouro d-auryn d-elite]))
+            (map print
+                [
+                    (expect (format "<<LPG-15>> HOMOGENEOUS preview token-0 == real OURO delta (got={})" [d-ouro])
+                        d-ouro (at "token-0-amount" pv))
+                    (expect (format "<<LPG-16>> HOMOGENEOUS preview token-1 == real AURYN delta (got={})" [d-auryn])
+                        d-auryn (at "token-1-amount" pv))
+                    (expect (format "<<LPG-17>> HOMOGENEOUS preview token-2 == real ELITE delta (got={})" [d-elite])
+                        d-elite (at "token-2-amount" pv))
+                    (expect "<<LPG-18>> ...and it reports the HOMOGENEOUS mode it routed under"
+                        "HOMOGENEOUS" (at "mode" pv))
+                    ;;THE PROPERTY THE OWNER ASKED FOR, stated as an assertion rather than as
+                    ;;reasoning: in HOMOGENEOUS mode each ladder token is paid EXACTLY WHEN the
+                    ;;score that feeds it carries weight. token-2 being paid is the same thing as
+                    ;;"the holder has a golden score", which is the same thing as "the second coil
+                    ;;was needed". If the second-hop amount were derived from anything other than
+                    ;;the golden share, one of these three breaks.
+                    (expect (format "<<LPG-19>> token-0 paid IFF the bronze lane carries weight (lane-b={})" [(at "lane-b" lanes)])
+                        (> (at "lane-b" lanes) 0.0) (> d-ouro 0.0))
+                    (expect (format "<<LPG-20>> token-1 paid IFF the silver lane carries weight (lane-s={})" [(at "lane-s" lanes)])
+                        (> (at "lane-s" lanes) 0.0) (> d-auryn 0.0))
+                    (expect (format "<<LPG-21>> token-2 paid IFF the golden lane carries weight (lane-g={})" [(at "lane-g" lanes)])
+                        (> (at "lane-g" lanes) 0.0) (> d-elite 0.0))
+                ])
+            ""
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
+(begin-tx "TX-LPG-06 - HOMOGENEOUS with BOTH silver and golden: the keep/ladder SPLIT")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 200000000)(env-gas 0)
+(print "")
+(print "=== TX-LPG-06 — HOMOGENEOUS, silver AND golden (the subtraction case) =========")
+;;==== TX-LPG-06 - keep/ladder split · 01 · give the holder a SILVER lane too ==== ================
+(print "--- [TX-LPG-06 - keep/ladder split · 01 · give the holder a SILVER lane too] ---")
+;;THE LAST CELL OF THE MATRIX, and the only one where the arithmetic matters. With silver ALONE
+;;rbt1-ladder is exactly 0 (both sides are the same call on the same argument); with golden ALONE
+;;rbt1-keep is 0 and the ladder takes everything. Only when BOTH lanes carry weight does the
+;;collect actually evaluate
+;;      rbt1-ladder = RBT(ats-01, token-0, silver+golden) - RBT(ats-01, token-0, silver)
+;;and only then can the second coil be fed the wrong amount. ANHD's agency is golden-only
+;;(lane-g 10,000,000), so staking a SILVER Custodians nonce is what reaches this branch.
+;;Custodians nonce 2 = Silver, 10 000 quintessence per whole unit (BOOT|CUSTODIANS_* values).
+(let
+    (
+        (patron:string KST.ANHD)
+        (ouro-id:string "OURO-98c486052a51")
+        (dhoc-id:string "DHOC-98c486052a51")
+        (fvt-id:string (U|DALOS.UDC_Makeid "CustodiansVault"))
+        (pool-id:string (U|DALOS.UDC_Makeid "CustodiansPool"))
+    )
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (print (format "<(ANHD stakes 1x nonce 2 = SILVER)> => \"{}\""
+        [(TS02-C3.AQP-POOL|CC_StakeSemiFungibleCollectable patron patron patron pool-id dhoc-id [2])]))
+    (print (format "<(CC_Inject 3000 OURO)> => \"{}\""
+        [(TS02-C3.AQP-FVT|CC_Inject patron patron fvt-id ouro-id 3000.0)]))
+)
+(env-sigs [])
+(commit-tx)
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
+(begin-tx "TX-LPG-07 - and the split pays BOTH token-1 and token-2, as previewed")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 200000000)(env-gas 0)
+(print "")
+(print "=== TX-LPG-07 — keep AND ladder both non-zero ================================")
+;;==== TX-LPG-07 - keep/ladder split · 01 · preview, collect, compare ==== ========================
+(print "--- [TX-LPG-07 - keep/ladder split · 01 · preview, collect, compare] ---")
+(let
+    (
+        (patron:string KST.ANHD)
+        (ouro-id:string "OURO-98c486052a51")
+        (fvt-id:string (U|DALOS.UDC_Makeid "CustodiansVault"))
+        (pool-id:string (U|DALOS.UDC_Makeid "CustodiansPool"))
+    )
+    (let*
+        (
+            (auryn:string (DALOS.UR_AurynID))
+            (elite:string (DALOS.UR_EliteAurynID))
+            (anhd-triplet:string (AQP-SCORE.UC_ComputeTripletId
+                (U|DALOS.UDC_Makeid "OuronetPrimeBronze")
+                (U|DALOS.UDC_Makeid "OuronetPrimeSilver")
+                (U|DALOS.UDC_Makeid "OuronetPrimeGolden")))
+            (lanes:object (RPS.URC_ComputeTripletLanes patron pool-id anhd-triplet))
+            (pv:object (RPS.URC_CollectLadderPreview patron pool-id fvt-id 3 anhd-triplet ouro-id))
+            (o0:decimal (DPTF.UR_AccountSupply ouro-id patron))
+            (a0:decimal (DPTF.UR_AccountSupply auryn   patron))
+            (e0:decimal (DPTF.UR_AccountSupply elite   patron))
+        )
+        (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+        (print (format "ZZZ lanes   = {}" [lanes]))
+        (print (format "ZZZ preview = {}" [pv]))
+        (print (format "<(CC_Collect)> => \"{}\""
+            [(TS02-C3.AQP-FVT|CC_Collect patron patron fvt-id 3 anhd-triplet ouro-id)]))
+        ;;==== TX-LPG-07 - keep/ladder split · 02 · assertions ==== ===============================
+        (print "--- [TX-LPG-07 - keep/ladder split · 02 · assertions] ---")
+        (let
+            (
+                (d-ouro:decimal  (- (DPTF.UR_AccountSupply ouro-id patron) o0))
+                (d-auryn:decimal (- (DPTF.UR_AccountSupply auryn   patron) a0))
+                (d-elite:decimal (- (DPTF.UR_AccountSupply elite   patron) e0))
+            )
+            (print (format "ZZZ deltas ouro={} auryn={} elite={}" [d-ouro d-auryn d-elite]))
+            (map print
+                [
+                    (expect (format "<<LPG-22>> split preview token-1 == real AURYN delta (got={})" [d-auryn])
+                        d-auryn (at "token-1-amount" pv))
+                    (expect (format "<<LPG-23>> split preview token-2 == real ELITE delta (got={})" [d-elite])
+                        d-elite (at "token-2-amount" pv))
+                    (expect (format "<<LPG-24>> split preview token-0 == real OURO delta (got={})" [d-ouro])
+                        d-ouro (at "token-0-amount" pv))
+                    ;;THE POINT OF THIS TRANSACTION: both halves of the subtraction are live, so a
+                    ;;second coil fed the wrong amount would show up here and nowhere else.
+                    (expect (format "<<LPG-25>> the silver lane now carries weight (lane-s={})" [(at "lane-s" lanes)])
+                        true (> (at "lane-s" lanes) 0.0))
+                    (expect (format "<<LPG-26>> BOTH the keep and the ladder paid out (auryn={} elite={})" [d-auryn d-elite])
+                        true (and (> d-auryn 0.0) (> d-elite 0.0)))
+                ])
+            ""
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+
+(print "")
+(print "=== END LADDER PREVIEW GROUNDTRUTH ============================================")

@@ -90,6 +90,12 @@ SCRATCH_PROOFS = [
     "_scratch_urs_m18_overblock.repl",
 ]
 GATE = (["ZALL.repl", "AQP-FULL.repl", "AQP-core-vct.repl", "triplet-collect-golden.repl",
+         # ADDED 2026-10-26 with the Coil/Coil collect ladder. It is the ONLY thing in the tree
+         # that executes XI_1|HeterogeneousLaneRoute at all, and the only thing that compares
+         # RPS.URC_CollectLadderPreview against the balance deltas a collect actually produces --
+         # a client amount preview nothing diffs against execution is a fourth copy of the ladder
+         # waiting to drift (Audit/module-audits/AQP/MULTIPLET-COLLECT-OPTIMISATION.md §3).
+         "ladder-preview-groundtruth.repl",
          "launchpad-groundtruth.repl", "Stage00b_Run.repl", "Stage00b_RunGas.repl"]
         + sorted(glob.glob("deb-staleness-*.repl"))
         + sorted(glob.glob("modules/*.repl"))

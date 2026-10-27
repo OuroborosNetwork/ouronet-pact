@@ -1,0 +1,37 @@
+;; Does a FARM inject cost less the second time, with no LP value movement between?
+;; XI_SyncFarmGhostTvlForInject runs only for FvtClass 0 and only WRITES when W_live != W_cached,
+;; so two identical injects back-to-back should differ: the first reconciles, the second finds it
+;; already in sync. If so, a 486k -> 388k drop on OuroLpFarm is state, not a regression.
+(load "triplet-collect-golden.repl")
+(begin-tx "TX-IT01 - inject twice into the FARM, and once into a TREASURY for contrast")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 200000000)
+(print "")
+(print "=== TX-IT01 — farm inject x2 vs treasury inject ===============================")
+(let
+    (
+        (patron:string KST.ANHD)
+        (ouro-id:string "OURO-98c486052a51")
+        (farm-id:string (U|DALOS.UDC_Makeid "OuroLpFarm"))
+        (sub-id:string (U|DALOS.UDC_Makeid "SubsidiaryTreasury"))
+    )
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (print (format "ZZZ farm class = {}   treasury class = {}"
+        [(AQP-FVT.UR_FVT|FvtClass farm-id) (AQP-FVT.UR_FVT|FvtClass sub-id)]))
+    (env-gas 0)
+    (env-events true)
+    (TS02-C3.AQP-FVT|CC_Inject patron patron farm-id ouro-id 50.0)
+    (print (format ">>> GAS  farm inject #1 = {}" [(env-gas)]))
+    (print (format "ZZZ EVENTS #1 = {}"
+        [(map (lambda (e:object) [(at "name" e) (at "params" e)]) (env-events true))]))
+    (env-gas 0)
+    (TS02-C3.AQP-FVT|CC_Inject patron patron farm-id ouro-id 50.0)
+    (print (format ">>> GAS  farm inject #2 = {}" [(env-gas)]))
+    (print (format "ZZZ EVENTS #2 = {}"
+        [(map (lambda (e:object) [(at "name" e) (at "params" e)]) (env-events true))]))
+    (env-gas 0)
+    (TS02-C3.AQP-FVT|CC_Inject patron patron farm-id ouro-id 50.0)
+    (print (format ">>> GAS  farm inject #3 = {}" [(env-gas)]))
+)
+(env-sigs [])
+(commit-tx)

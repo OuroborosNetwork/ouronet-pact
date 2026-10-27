@@ -1148,6 +1148,38 @@
         )
     )
     )
+    (defcap FVT|C>UNSTALED
+        (op:string subject:string lane:string fixed-count:integer penalized:bool)
+        @doc "THE RESULT OF AN UN-STALING, for every path that performs one. ONE event per \
+            \ transaction, carrying how much work actually happened: \
+            \   `op`          the entrypoint that did it (CC_Inject, CCp_UnstaleAll, ...) \
+            \   `subject`     the fvt-id, or the anchor-id for a booster sweep, or the caller for \
+            \                 the self-service path -- whatever the un-staling was scoped to \
+            \   `lane`        the reward token, or the boost class for a sweep, BAR when neither \
+            \   `fixed-count` HOW MANY were actually refreshed -- not how many were asked for \
+            \   `penalized`   whether the 2e forced-fix count was recorded against them \
+            \ Event-only: it guards nothing, is never acquired with with-capability, and \
+            \ `emit-event` is its sole use. \
+            \ \
+            \ WHY IT EXISTS, 2026-10-27. Every un-staling write runs through RPS|XE>WRITE, which \
+            \ composes SECURE and carries NO @event, so the work itself was invisible. The \
+            \ operation capabilities that DO fire -- FVT|C>INJECT-FIX, FVT|C>UNSTALE-ALL, \
+            \ FVT|C>SWEEP-DRAIN -- announce the REQUEST (`chunk`, the page size asked for) and not \
+            \ the RESULT, and FVT|C>UNSTALE-MY-SCORES carries only the caller. So a reader of the \
+            \ chain could see that a sweep was ATTEMPTED and never what it DID. An owner compared \
+            \ two OuroLpFarm injects -- 486,732 gas then 388,534 -- saw the identical five events \
+            \ both times, and reasonably concluded the inject engine had regressed. It had not: \
+            \ the first paid down the stale set and the second had nothing left to fix. The \
+            \ forced-fix counts were persisted and readable via UR_FVT-FFC|Count the whole time -- \
+            \ the DATA existed and the SIGNAL did not, and a ~98k gas swing with no event is \
+            \ indistinguishable from a bug. \
+            \ \
+            \ EMITTED EVEN WHEN `fixed-count` IS 0, deliberately. 'This op ran and found nothing to \
+            \ do' is the answer that settles the question; an event that fires only on the \
+            \ expensive path leaves the cheap path looking like the broken one all over again."
+        @event
+        true
+    )
     (defcap FVT|C>INJECT
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "Inject reward DPTF into FVT RPS (UrStoa URV|INJECT). Farm: S>0; vault/treasury: total-deb-score>0; reward-enabled. \
@@ -2153,11 +2185,45 @@
             ats-0-1-id:string
             ats-1-2-id:string
         )
-        @doc "C_IssueMultipletFamily: distinct issued DPTF ids, distinct ATS pairs; ATS ladder must match Coil/Curl chain."
+        @doc "C_IssueMultipletFamily: distinct issued DPTF ids, distinct ATS pairs; ATS ladder must match Coil/Curl chain. \
+            \ BOTH ATS PAIRS MUST HAVE HIBERNATION OFF, and that is a correctness gate rather than a \
+            \ preference. The collect ladder can only ever use Coil/Curl (XI_TransferRewardDptfFromVault), \
+            \ whose own capabilities refuse on hibernation -- ATSU|C>COIL enforces (not h) and ATSU|C>CURL \
+            \ enforces (and (not h1) (not h2)). Their hibernated counterparts, Brumate and Constrict, take \
+            \ a `dayz` lockup argument that no collect can supply: a lockup cannot be chosen per collection, \
+            \ and asking the user for one at claim time is not a flow this system supports. So a family \
+            \ built over a hibernated pair is not merely suboptimal, it is UNCOLLECTABLE -- every collect on \
+            \ every lane using it aborts in the capability. Checked here, at family issue, because that is \
+            \ the one place the operator names the pairs. \
+            \ \
+            \ NOT SUFFICIENT, AND THE GAP IS STRUCTURAL. ATS|S>CONTROL -> XI_Control can switch hibernation \
+            \ ON afterwards, which would break every collect on this family with nothing refusing the toggle. \
+            \ The symmetric guard (refuse to hibernate a pair a live family references, as C_SetMosaic is \
+            \ refused while ScoreEntityLink rows exist) is NOT reachable: that check belongs in ATS, which is \
+            \ STAGE 1, and the MultipletFamily table lives in RPS, which is STAGE 2 -- deploy order forbids \
+            \ a Stage-1 module from reading it. Closing it would mean mirroring a lock flag onto the ATS pair \
+            \ row, i.e. an AutostakeV4 schema change. Recorded, not attempted."
         (let
             (
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (ref-ATS:module{AutostakeV4} ATS)
+            )
+            ;; FIRST, and deliberately so. Hibernation is a property of the PAIR alone, so it is
+            ;; decidable before any token wiring is examined, it is the cheapest check here (two
+            ;; reads), and it is a hard REACHABILITY gate: if a pair is hibernated, nothing else
+            ;; about the family matters because no collect can ever run. Ordering it first also
+            ;; makes it isolable by a test -- a hibernated pair reports hibernation rather than
+            ;; whichever token guard happened to fire first. The token guards below stay reachable
+            ;; for every non-hibernated input, which is the normal case (nothing is hibernated by
+            ;; default), so this hides nothing. See this function's @doc for why it must exist.
+            (enforce
+                (fold (and) true
+                    [
+                        (not (ref-ATS::UR_Hibernate ats-0-1-id))
+                        (not (ref-ATS::UR_Hibernate ats-1-2-id))
+                    ]
+                )
+                "MultipletFamily requires Hibernation OFF on both ATS pairs: the collect ladder can only Coil/Curl"
             )
             (enforce
                 (ref-DPTF::URC_IzRBTg ats-0-1-id token-1-id)
@@ -3257,9 +3323,33 @@
                             )
                             ;; DRIP each reward lane once (checkpoint) before the fix loop → users settle at now's index
                             (map (lambda (d:string) (ref-RPS::XE_XI_ReleaseStream fvt-id d)) reward-rows)
-                            (if iz-owner
-                                (map (lambda (u:string) (ref-RPS::XE_XI_FixUserFvtDebPenalizedIn fvt-id reward-dptf-id u members reward-rows)) (ref-RPS::URH_FvtStalePresentUsers fvt-id))
-                                (map (lambda (u:string) (ref-RPS::XE_XI_FixUserFvtDeb u fvt-id)) (ref-RPS::URH_FvtStalePresentUsers fvt-id))
+                            (let
+                                (
+                                    ;;BOUND ONCE, and it used to be read twice -- once inside each arm of the
+                                    ;;`if` below. Only one arm runs, so it cost one read either way; binding it
+                                    ;;is what makes the COUNT available to the event.
+                                    (stale:[string] (ref-RPS::URH_FvtStalePresentUsers fvt-id))
+                                )
+                                (if iz-owner
+                                    (map (lambda (u:string) (ref-RPS::XE_XI_FixUserFvtDebPenalizedIn fvt-id reward-dptf-id u members reward-rows)) stale)
+                                    (map (lambda (u:string) (ref-RPS::XE_XI_FixUserFvtDeb u fvt-id)) stale)
+                                )
+                                ;;SAY WHAT PHASE 0 DID. Added 2026-10-27 after an owner compared two injects of
+                                ;;the SAME lane -- 486,732 gas then 388,534 -- and reasonably suspected a
+                                ;;regression, because the two transactions carried the IDENTICAL five events.
+                                ;;They were not identical: the first fixed the FVT's stale stakers and the
+                                ;;second had none left to fix ("fixing the whole scanned set ⟹ ZERO stale
+                                ;;afterward"), so ~98k of settle-at-old-deb + SCORE-deb refresh + resync
+                                ;;happened once and was invisible. Every write in that loop goes through
+                                ;;RPS|XE>WRITE, which composes SECURE and is NOT @event, so nothing announced
+                                ;;it. The forced-fix COUNT was persisted and readable via UR_FVT-FFC|Count --
+                                ;;the data existed, the SIGNAL did not, and a 98k gas swing with no event is
+                                ;;indistinguishable from a bug to anyone reading the chain.
+                                ;;
+                                ;;EMITTED EVEN WHEN ZERO, deliberately. "Phase 0 ran and found nothing" is the
+                                ;;answer that settles the question; an event that only fires on the expensive
+                                ;;path leaves the cheap path looking like the broken one all over again.
+                                (emit-event (FVT|C>UNSTALED "CC_Inject" fvt-id reward-dptf-id (length stale) iz-owner))
                             )
                             (UC_EmptyOc)
                         )
@@ -3333,6 +3423,10 @@
                                 (ref-RPS::XE_XI_FixUserFvtDebPenalizedIn
                                     fvt-id reward-dptf-id u members reward-rows))
                             batch)
+                        ;;SAY WHAT THE SLICE DID. `batch` is `users` FILTERED to the actually-stale,
+                        ;;so this is the refreshed count, not the listed count -- the distinction the
+                        ;;acquired FVT|C>INJECT-FIX cannot make, since it carries (length users).
+                        (emit-event (FVT|C>UNSTALED "CCp_FvtFixSlice" fvt-id reward-dptf-id (length batch) true))
                         (format "Fix slice: refreshed {} of {} listed staker(s) ({} were already fresh). Complete when URH_FvtStalePresentUsers returns []."
                             [(length batch) (length users) (- (length users) (length batch))])
                     )
@@ -3377,6 +3471,9 @@
                         (
                             (remaining:integer (- (length stale) (length batch)))
                         )
+                        ;;The acquired FVT|C>INJECT-FIX carries `chunk` -- the page size ASKED FOR.
+                        ;;This carries what the page actually refreshed.
+                        (emit-event (FVT|C>UNSTALED "CCp_InjectFixChunk" fvt-id reward-dptf-id (length batch) true))
                         (format "Inject-fix: fixed {} of {} stale staker(s) — {} remain{}." [(length batch) (length stale) remaining (if (= remaining 0) " (ready to CC_InjectFinalize)" ", keep paging")])
                     )
                 )
@@ -3455,6 +3552,11 @@
                         (
                             (remaining:integer (- (length stale) (length batch)))
                         )
+                        ;;Emitted on BOTH arms, including the all-fresh one: "the owner ran
+                        ;;unstale-all and there was nothing to do" is exactly the state an operator
+                        ;;needs confirmed before injecting, and it is the arm whose cheapness would
+                        ;;otherwise look like a failure.
+                        (emit-event (FVT|C>UNSTALED "CCp_UnstaleAll" fvt-id reward-dptf-id (length batch) true))
                         (if (= (length stale) 0)
                             (format "Unstale-all: FVT {} lane {} — all present stakers up to date (injection-ready)." [fvt-id reward-dptf-id])
                             (format "Unstale-all: unstaled {} of {} stale staker(s) — {} remain{}." [(length batch) (length stale) remaining (if (= remaining 0) " (injection-ready)" ", keep paging")]))
@@ -3507,6 +3609,15 @@
                     score-ids)
                 ;; 4. UNFREEZE
                 (map (lambda (sid:string) (ref-AQP::XE_SetSweepInProgress (ref-SCR::UR_SCR|ScoreAqpoolLink sid) false)) score-ids)
+                ;;THE SINGLE-TX BOOSTER SWEEP. `fixed-count` is the EMPLOYING SCORE count, not a
+                ;;holder count, and that is a deliberate limit rather than an oversight: step 3 maps
+                ;;XE_XI_FvtSweepRecomputeChunk over the scores and each call recomputes its own
+                ;;present set without returning how many it touched, so a holder count is not
+                ;;obtainable here without re-reading every present set a second time. The paginated
+                ;;sibling CCp_SweepRecomputeChunk DOES report holders, because
+                ;;XE_XI_FvtSweepRecomputeWindow returns `n`. Read this event as "the sweep ran across
+                ;;N employing scores"; read the chunked one for per-holder counts.
+                (emit-event (FVT|C>UNSTALED "CC_SweepRevokeAnchor" anchor-id boost-class-id (length score-ids) false))
                 (format "Sweep-retired anchor {} (BoostClass {}): recomputed holders across {} employing score(s)." [anchor-id boost-class-id (length score-ids)])
             )
         )
@@ -4016,6 +4127,15 @@
                             (
                                 (n:integer (ref-RPS::XE_XI_FvtSweepRecomputeWindow score-ids boost-class-id offset win-hi))
                             )
+                            ;;THE BOOSTER HALF of the un-stale family. A re-score sweep refreshes
+                            ;;holders because a BOOST CLASS changed, not because their Elite-DEB
+                            ;;drifted -- different cause, same invisibility: the acquired
+                            ;;FVT|C>SWEEP-DRAIN carries `chunk`, the window size asked for, while `n`
+                            ;;is the holders the window actually recomputed. `subject` is the ANCHOR
+                            ;;being retired and `lane` the boost class, since neither a reward token
+                            ;;nor an FVT scopes this op.
+                            ;;NON-penalized: a sweep is owner-initiated upkeep and bills no 2e.
+                            (emit-event (FVT|C>UNSTALED "CCp_SweepRecomputeChunk" anchor-id boost-class-id n false))
                             (if (>= win-hi total)
                                 ;; FINAL chunk — recompute set exhausted: unfreeze every affected pool + close the cursor
                                 (do
@@ -4057,8 +4177,23 @@
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
                     [
                         ;; fix ALL the caller's stale members across the listed FVTs (each fresh member no-ops)
-                        (do
+                        (let
+                            (
+                                ;;COUNTED BEFORE THE FIX, because afterwards there is nothing left to
+                                ;;count. `(length fvt-ids)` would be the REQUEST -- the same mistake
+                                ;;the acquired FVT|C>UNSTALE-MY-SCORES makes by carrying only the
+                                ;;caller -- so this asks which of the listed FVTs the caller was
+                                ;;genuinely stale in. One read per listed FVT, and this op is
+                                ;;documented as "single-tx and bounded (a user's own FVT set is
+                                ;;small)", which is what makes that affordable.
+                                (stale-in:[string]
+                                    (filter (lambda (f:string) (ref-RPS::URC_FvtUserHasStaleMember f patron)) fvt-ids))
+                            )
                             (map (lambda (fvt-id:string) (ref-RPS::XE_XI_FixUserFvtDeb patron fvt-id)) fvt-ids)
+                            ;;NON-penalized: self-service is the cheap path, only inject-forced fixes
+                            ;;bill the 2e. `subject` is the CALLER here, not an FVT -- this op is
+                            ;;scoped to a person across their FVTs, not to one entity.
+                            (emit-event (FVT|C>UNSTALED "CC_UnstaleMyScores" executor BAR (length stale-in) false))
                             (UC_EmptyOc))
                         ;; GAS — the user pays for their own refresh
                         (URCi_UnstaleMyScores patron [(format "{}" [(length fvt-ids)])])

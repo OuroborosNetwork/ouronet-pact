@@ -497,10 +497,49 @@
         (coding-pre:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore anhd coding-pool coding-score))
         (mirror-pre:decimal (ref-FVT::UR_FVT|TotalDebScore fvt-id))
         (g-pre:decimal (ref-FVT::UR_FVT-RG|CurrentRps fvt-id auryn-id))
+        ;;THE STALE SET PHASE 0 IS ABOUT TO FIX, read before the inject destroys it.
+        (stale-pre:integer (length (ref-FVT::URH_FvtStalePresentUsers fvt-id)))
     )
     (expect "<<TX-AQP-DEB06>> pre: ANHD Bunnies score STALE" true (ref-SCR::URC_U-SCR|UserScoreDebStale anhd bunnies-pool bunnies-score))
     (expect "<<TX-AQP-DEB06>> pre: ANHD CodingDivision score STALE" true (ref-SCR::URC_U-SCR|UserScoreDebStale anhd coding-pool coding-score))
+    (env-events true)
     (print (format "<(DEB06 CC_Inject)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|CC_Inject anhd anhd fvt-id auryn-id inject-amt)]))
+    ;;==== TX-AQP-DEB06 · 03 · the Phase-0 event says what it fixed ==== ==========================
+    (print "--- [TX-AQP-DEB06 · 03 · the Phase-0 event says what it fixed] ---")
+    ;;WHY THIS ASSERTION EXISTS. Phase 0's un-staling writes all run through RPS|XE>WRITE, which
+    ;;composes SECURE and carries no @event, so for the whole of V15 an inject that fixed N stakers
+    ;;and one that fixed none emitted the IDENTICAL event list while differing by ~98k gas. An owner
+    ;;compared two OuroLpFarm injects (486,732 then 388,534), saw five events both times, and
+    ;;reasonably concluded the inject engine had broken -- it had not; the first had paid down the
+    ;;stale set and the second had nothing left to fix. FVT|C>INJECT-FIXED closes that, and this
+    ;;pins its COUNT to the set the fix loop actually ran over. Without it the event could report a
+    ;;plausible-looking constant and nothing would notice: a count nothing compares to the stale set
+    ;;is decoration, not observability.
+    (let
+        (
+            ;;params are (op subject lane fixed-count penalized) -- index 3 is the count.
+            (evts:[object]
+                (filter (lambda (e:object) (= (at "name" e) "ouronet-ns.AQP-FVT.FVT|C>UNSTALED"))
+                    (env-events true)))
+        )
+        (map print
+            [
+                (format "<(DEB06 Phase-0 event)> => {} (stale before inject = {})"
+                    [(map (lambda (e:object) (at "params" e)) evts) stale-pre])
+                ;;ONE event per transaction is the contract -- not one per fixed user.
+                (expect "<<TX-AQP-DEB06-EVT>> exactly one FVT|C>UNSTALED for the whole transaction"
+                    1 (length evts))
+                (expect "<<TX-AQP-DEB06-EVT>> it names the op that did the un-staling"
+                    "CC_Inject" (at 0 (at "params" (at 0 evts))))
+                (expect (format "<<TX-AQP-DEB06-EVT>> its count IS the stale set it fixed ({})" [stale-pre])
+                    stale-pre (at 3 (at "params" (at 0 evts))))
+                (expect "<<TX-AQP-DEB06-EVT>> non-zero -- this fixture sits on the EXPENSIVE path"
+                    true (> (at 3 (at "params" (at 0 evts))) 0))
+                ;;the owner injected, so the 2e forced-fix count WAS recorded against the fixed user
+                (expect "<<TX-AQP-DEB06-EVT>> penalized is true -- the FVT owner injected"
+                    true (at 4 (at "params" (at 0 evts))))
+            ])
+        "")
     (let
         (
             (bunnies-post:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore anhd bunnies-pool bunnies-score))

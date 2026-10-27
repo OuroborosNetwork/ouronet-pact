@@ -42,6 +42,19 @@ SRC_CACHE = os.path.join(ROOT, "Deploy", ".live-source-cache.json")
 PROGRESS = "--progress" in sys.argv
 
 
+def workdir_arg():
+    """`--workdir DIR` -- where the virtual chain and the replay script are written.
+
+    Exists for the multi-tenant case: see the note at its use site. Returns None when absent so
+    the single-operator default is unchanged."""
+    if "--workdir" in sys.argv:
+        i = sys.argv.index("--workdir") + 1
+        if i < len(sys.argv):
+            return os.path.abspath(sys.argv[i])
+        sys.exit("_livesandbox: --workdir needs a directory")
+    return None
+
+
 def _imp(name, path):
     sp = importlib.util.spec_from_file_location(name, path)
     m = importlib.util.module_from_spec(sp)
@@ -135,8 +148,16 @@ def fetch_sources(ns, names, rpc):
             if key:
                 cache[key] = r["code"]
         progress("fetch", i, total, f"{n} ({hits} cached)")
+    # ATOMIC, because this file is shared by every run on the box while `out_dir` is not. A
+    # plain `open(...,"w")` truncates first, so a concurrent reader can observe an empty or
+    # half-written file and a crash mid-dump leaves one permanently. The cache is keyed by module
+    # HASH, so entries never conflict in meaning -- last-writer-wins costs at most a re-fetch,
+    # whereas a truncated file costs every future run its cache.
     try:
-        json.dump(cache, open(SRC_CACHE, "w", encoding="utf-8"))
+        tmp = f"{SRC_CACHE}.{os.getpid()}.tmp"
+        with open(tmp, "w", encoding="utf-8") as fh:
+            json.dump(cache, fh)
+        os.replace(tmp, SRC_CACHE)
     except OSError:
         pass
     return out, fetched, hits
@@ -424,7 +445,14 @@ def main():
     print(f"load order derived: {len(order)} entries "
           f"(first: {', '.join(order[:3])} ... last: {', '.join(order[-3:])})")
 
-    out_dir = os.path.join(ROOT, "Deploy", ".livesandbox")
+    # ISOLATED PER RUN WHEN ASKED. The default is the historical shared path, because a human at
+    # a terminal wants to inspect the sandbox afterwards and a fresh directory per invocation
+    # would hide it. But `out_dir` and the `_replay.repl` inside it are the ONLY writable state a
+    # run has, so two SIMULTANEOUS runs sharing them overwrite each other's replay script and
+    # module files -- each would then be simulating a hybrid of two rounds and reporting the
+    # result as if it were its own. That is invisible rather than loud: both runs still produce
+    # a plausible verdict. A server serving more than one operator MUST pass --workdir.
+    out_dir = (workdir_arg() or os.path.join(ROOT, "Deploy", ".livesandbox"))
     os.makedirs(out_dir, exist_ok=True)
     for n in order:
         with open(os.path.join(out_dir, f"{n.replace('|','_')}.pact"), "w", encoding="utf-8") as fh:

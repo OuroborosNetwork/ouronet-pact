@@ -138,7 +138,7 @@ the part a DeFi reader arrives for.
 | `04-the-launchpad.md` | DemiPad: the sovereign rules and the citizen sales that use them. |
 
 > **PRIOR ART — read it before writing these.** `websites/ouronetwork-website/OuronetWhitepaper/`
-> is a 9,241-word hand-written predecessor (coincidentally close to the unrelated 9,370 `defun`
+> is a 9,241-word hand-written predecessor (coincidentally close to the unrelated 9,371 `defun`
 > count tracked elsewhere -- one is a word count, the other a function count), thirteen
 > chapters, June 2026. Its **prose is still
 > good** and its organising idea is worth weighing: it documents *entities* — logical subsystems,
@@ -166,7 +166,7 @@ Each file follows one template, so a reader who has read two can navigate any of
 ## Sources                  (file path, line counts, and where figures came from)
 ```
 
-**Do not read 130,472 lines by hand.** `OuronetInformational/MODULE-INDEX.md` is GENERATED from
+**Do not read 130,799 lines by hand.** `OuronetInformational/MODULE-INDEX.md` is GENERATED from
 the tree and already carries, per module: its path, its tables, its function list and a one-line
 purpose. Start there, then open the source for the functions that need the "how" and the "why"
 — which the index does not have and cannot generate.

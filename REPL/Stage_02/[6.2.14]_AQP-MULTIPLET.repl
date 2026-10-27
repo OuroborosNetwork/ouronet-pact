@@ -12,6 +12,82 @@
 (print "")
 
 ;;================================================================================
+(begin-tx "TX-MF-000 - a HIBERNATED ATS pair must be refused a MultipletFamily")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;====================================================================================
+;; THE COLLECT LADDER CAN ONLY EVER COIL/CURL, SO THE FAMILY MUST BE BUILT OVER PAIRS
+;; THAT PERMIT IT. ATSU|C>COIL enforces (not hibernate); ATSU|C>CURL enforces it on BOTH
+;; pairs. The hibernated counterparts -- Brumate and Constrict -- take a `dayz` lockup
+;; argument, and no collect can supply one: a lockup cannot be chosen per collection and
+;; prompting a claimant for one is not a flow this system supports.
+;;
+;; So a family issued over a hibernated pair is not slower or costlier, it is
+;; UNCOLLECTABLE: every collect on every lane using it aborts inside the capability. That
+;; is the same class of failure as a lane added after a stake (<<TX-AQP-C02L>>) and it is
+;; worth catching at the one moment an operator names the pairs, which is here.
+;;
+;; THE SECOND ASSERTION IS THE POSITIVE CONTROL. TX-MF-001 below issues the same family
+;; over the same pairs once hibernation is back off. If the guard were wrong in the other
+;; direction -- refusing a legitimate pair -- that transaction would fail instead, so the
+;; two together pin both edges rather than just the refusal.
+;;====================================================================================
+;;==== TX-MF-000 · 01 · a hibernated pair is refused ====
+(print "--- [TX-MF-000 · 01 · a hibernated pair is refused] ---")
+(let
+    (
+        (patron:string KST.ANHD)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-ATS:module{AutostakeV4} ATS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+        (ouro-id:string "OURO-98c486052a51")
+        (auryn-id:string (ref-DALOS::UR_AurynID))
+        (elite-auryn-id:string (ref-DALOS::UR_EliteAurynID))
+        (ats-1-2-id:string "EliteAuryndex-98c486052a51")
+        ;; KORIndex is hibernated by [4.0]_Sovereign-Executor (ATS|C_Control ... true). It is the
+        ;; only hibernated pair in the fixture, and it has to be: ATS|S>CONTROL enforces
+        ;; DPTF.UEV_Hibernation on the pair's reward token, so hibernation cannot simply be switched
+        ;; on for Auryndex -- AURYN has no hibernation counterpart. That guard is itself worth
+        ;; knowing about: it means the post-issue hazard described in UEV_IssueMultipletFamilyContext
+        ;; is NARROWER than it first appears, since hibernating a live pair needs token-level setup
+        ;; that does not exist for the ladder tokens today.
+        (hibernated-pair:string "KORIndex-98c486052a51")
+    )
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (map print
+        [
+            ;; fixture: without this the refusal below proves nothing
+            (expect "<<TX-MF-000>> fixture: KORIndex really is hibernated"
+                true (ref-ATS::UR_Hibernate hibernated-pair))
+            (expect "<<TX-MF-000>> fixture: Auryndex is NOT hibernated (the positive control's pair)"
+                false (ref-ATS::UR_Hibernate "Auryndex-98c486052a51"))
+            ;; THE ASSERTION. Matched on the MESSAGE, which is what distinguishes this refusal from
+            ;; the token-wiring refusals that would also reject these arguments -- the hibernation
+            ;; enforce is ordered first precisely so this is the one that speaks.
+            ;;
+            ;; WHAT THIS DOES AND DOES NOT PROVE, stated because the negative test made the limit
+            ;; explicit. Removing the guard from UEV_IssueMultipletFamilyContext makes this line
+            ;; fail with 'token-1 must be reward-bearing on first ATS pair' instead -- so in THIS
+            ;; fixture a hibernated pair is also caught incidentally by the wiring checks, and the
+            ;; assertion is a message-discrimination test rather than a would-have-been-accepted
+            ;; one. The case that actually motivates the guard -- a CORRECTLY wired ladder whose
+            ;; pair is hibernated -- is not constructible here: ATS|S>CONTROL enforces
+            ;; DPTF.UEV_Hibernation on the reward token, so hibernating Auryndex would first need a
+            ;; hibernating link created for AURYN, which mutates the shared economy token every
+            ;; later suite depends on. Left un-built deliberately; if the guard is ever relaxed,
+            ;; strengthen this before trusting it.
+            (expect-failure "<<TX-MF-000>> a MultipletFamily over a hibernated ATS pair is refused"
+                "MultipletFamily requires Hibernation OFF on both ATS pairs"
+                (ref-TS02-C3::AQP-FVT|C_IssueMultipletFamily patron patron
+                    ouro-id auryn-id elite-auryn-id hibernated-pair ats-1-2-id))
+        ]
+    )
+)
+(env-sigs [])
+(print "===^^^===")
+(commit-tx)
+(print "")
+;;================================================================================
 (begin-tx "TX-MF-001 - issue MultipletFamily OURO->Auryn->Elite-Auryn")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
