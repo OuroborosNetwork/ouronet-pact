@@ -1,7 +1,7 @@
 ;; net: v1   ·   dev: v1   ;; NEW MODULE 2026-10-29. Never deployed, so its interface stays V1.
 ;; Deploy: load THIS file — interface + module ship together.
 ;; ==============================================================================
-;; AQP-RPSCC — the RPS COST & CLIENT surface, split out of 04_RPS.pact.
+;; AQP-RPSC — the RPS COST & CLIENT surface, split out of 04_RPS.pact.
 ;;
 ;; WHY IT EXISTS, and the number that forced it. 04_RPS.pact reached 336,132 bytes
 ;; and its emitted deploy transaction reached 318,758 of _deploybundle.py's 320,000
@@ -19,7 +19,7 @@
 ;; WHAT MOVED, and how the seam was chosen. Not by taste — by fixpoint. Starting
 ;; from every URCi_*, every URC_*Ignis/*Preview and every client entrypoint, the
 ;; set was shrunk until no function LEFT BEHIND in RPS calls anything that moved,
-;; because RPSCC deploys AFTER RPS and a backward call is unbuildable. 25 members
+;; because AQP-RPSC deploys AFTER RPS and a backward call is unbuildable. 25 members
 ;; survived that, 38,310 bytes.
 ;;
 ;; FOUR WERE PULLED BACK and stay in RPS, each named by the stayer that calls it:
@@ -81,7 +81,7 @@
     ;;{5.7}  User [A/C]
 )
 
-(module RPSCC GOV
+(module AQP-RPSC GOV
     @doc "AQP reward-engine COST and CLIENT surface. Reads RPS's state through its interface and \
         \ derives every IGNIS figure the Talos layer and AQP-INFO quote; writes nothing, owns no \
         \ table, holds no capability. See the file header for why it is a separate module."
@@ -93,10 +93,10 @@
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
     ;;{G1}  constants
-    (defconst GOV|MD_RPSCC (keyset-ref-guard (GOV|Demiurgoi)))
+    (defconst GOV|MD_RPSC (keyset-ref-guard (GOV|Demiurgoi)))
     ;;{G4}  capabilities
-    (defcap GOV () (compose-capability (GOV|RPSCC_ADMIN)))
-    (defcap GOV|RPSCC_ADMIN () (enforce-guard GOV|MD_RPSCC))
+    (defcap GOV () (compose-capability (GOV|RPSC_ADMIN)))
+    (defcap GOV|RPSC_ADMIN () (enforce-guard GOV|MD_RPSC))
     ;;{G5}  functions
     (defun GOV|Demiurgoi ()
         (let
@@ -119,7 +119,7 @@
     ;;COPIED LITERALS, AND THE DUPLICATION IS PRE-EXISTING RATHER THAN INTRODUCED HERE:
     ;;04_RPS.pact and 05_FVT.pact ALREADY carry their own copies of all four (see
     ;;05_FVT.pact's {3.1} block). A third copy follows that practice, so it is pinned
-    ;;instead of trusted -- the REPL suite asserts RPS, FVT and RPSCC agree on every
+    ;;instead of trusted -- the REPL suite asserts RPS, FVT and AQP-RPSC agree on every
     ;;one. A constant duplicated three ways and checked nowhere is how a reward kind
     ;;silently stops matching.
     (defconst CT_FORCED_FIX_RATE:decimal                10.0)

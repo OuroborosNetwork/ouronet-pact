@@ -32,7 +32,7 @@
         (print (format "<(CC_Inject 500 OURO)> => \"{}\"" [(TS02-C3.AQP-FVT|CC_Inject patron patron farm-id ouro-id 500.0)]))
         (print (format "ZZZ claimable AFTER inject = {}" [(AQP-FVT.URC_CollectClaimableRewards patron pool-id farm-id 3 triplet-id ouro-id)]))
         (print (format "ZZZ L_i AFTER   = {}" [(AQP-FVT.UR_FVT-RM|MemberDebRps farm-id triplet-id ouro-id)]))
-        (print (format "ZZZ PREVIEW     = {}" [(RPSCC.URC_CollectLadderPreview patron pool-id farm-id 3 triplet-id ouro-id)]))
+        (print (format "ZZZ PREVIEW     = {}" [(AQP-RPSC.URC_CollectLadderPreview patron pool-id farm-id 3 triplet-id ouro-id)]))
     )
 )
 (env-sigs [])

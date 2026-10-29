@@ -2108,7 +2108,7 @@
 ;;
 ;;WHY THIS PREVIEW QUOTES A DIFFERENTLY-NAMED COST READER, and why that is correct rather than a
 ;;copy-paste slip. `C_SetMinInjectAmount` has no price key of its own: it ends on
-;;`RPSCC.URCi_ToggleRewardLink`, billing through `AQP-FVT|C_ToggleRewardLink`'s `fvt-link-toggle`
+;;`AQP-RPSC.URCi_ToggleRewardLink`, billing through `AQP-FVT|C_ToggleRewardLink`'s `fvt-link-toggle`
 ;;tier. The preview therefore quotes the SAME function the client returns — which is exactly the
 ;;AQP-INFO golden rule ("mirror the execution's cost logic byte-for-byte"), applied honestly rather
 ;;than by matching names. This block is what turns that from a claim into a measurement.

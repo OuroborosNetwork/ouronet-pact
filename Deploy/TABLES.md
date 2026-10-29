@@ -359,7 +359,7 @@ It returns a row per table that exists and errors on the first that does not, so
 | `02_SCORE.pact` | `P|T`, `P|MT`, `SCR|T|Score`, `SCR|T|UserScore`, `SCR|T|SleepStake`, `SCR|T|SF|Score`, `SCR|T|NF|TraitScore`, `SCR|T|NF|ClassScore`, `SCR|T|SF|DefRevision`, `SCR|T|NF|DefRevision`, `SCR|T|NF|TraitKeys`, `SCR|T|Triplet`, `SCR|T|ScoreEntityModel` |
 | `03_AQP.pact` | `P|T`, `P|MT`, `AQP|T|Pool`, `AQP|T|DPTFTracker`, `AQP|T|DPOFTracker`, `AQP|T|DPSFTracker`, `AQP|T|DPNFTracker`, `AQP|T|BenDptfTotal`, `AQP|T|BenDpsfNonceTotal`, `AQP|T|BenDpnfNonceTotal`, `AQP|T|BenDpsfAnkMeta`, `AQP|T|BenDpnfAnkMeta`, `AQP|T|UserOccupancy` |
 | `04_RPS.pact` | `P|T`, `P|MT`, `FVT|T|RPS|Global`, `FVT|T|RPS|Member`, `FVT|T|RPS|User`, `FVT|T|RPS|Stream`, `FVT|T|MemberUserWeight`, `FVT|T|MemberVault`, `FVT|T|ForcedFixCount`, `FVT|T|RewardAggregate`, `FVT|T|ScoreEntityLink`, `FVT|T|MultipletFamily`, `FVT|T|UserPresence`, `FVT|T|AgencyFee`, `FVT|T|QualitySplit`, `FVT|T|DsaOracleConfig` |
-| `04b_RPSCC.pact` | *none* |
+| `04b_RPSC.pact` | *none* |
 | `05_FVT.pact` | `P|T`, `P|MT`, `FVT|T`, `FVT|T|VacateFreeze`, `FVT|T|SweepProgress` |
 | `06_VCT.pact` | `P|T`, `P|MT` |
 | `07_MTX-AQP.pact` | `P|T`, `P|MT` |

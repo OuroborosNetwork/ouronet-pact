@@ -1,5 +1,5 @@
 ;;
-;; REPL/ladder-preview-groundtruth.repl — RPSCC.URC_CollectLadderPreview vs REAL balance deltas
+;; REPL/ladder-preview-groundtruth.repl — AQP-RPSC.URC_CollectLadderPreview vs REAL balance deltas
 ;;   Legend (terminal observability): "ZZZ" = observed value; <(…)> = module/Talos echo.
 ;;   Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each group.
 ;;   REPL tests: <<LPG-nn>>.
@@ -97,7 +97,7 @@
                 (U|DALOS.UDC_Makeid "OuronetPrimeSilver")
                 (U|DALOS.UDC_Makeid "OuronetPrimeGolden")))
             ;;THE PREVIEW, read while the reward is still unclaimed.
-            (pv:object (RPSCC.URC_CollectLadderPreview patron pool-id fvt-id 3 anhd-triplet ouro-id))
+            (pv:object (AQP-RPSC.URC_CollectLadderPreview patron pool-id fvt-id 3 anhd-triplet ouro-id))
             (o0:decimal (DPTF.UR_AccountSupply ouro-id patron))
             (a0:decimal (DPTF.UR_AccountSupply auryn   patron))
             (e0:decimal (DPTF.UR_AccountSupply elite   patron))
@@ -185,7 +185,7 @@
                 (U|DALOS.UDC_Makeid "OuronetPrimeBronze")
                 (U|DALOS.UDC_Makeid "OuronetPrimeSilver")
                 (U|DALOS.UDC_Makeid "OuronetPrimeGolden")))
-            (pv:object (RPSCC.URC_CollectLadderPreview patron pool-id fvt-id 3 anhd-triplet ouro-id))
+            (pv:object (AQP-RPSC.URC_CollectLadderPreview patron pool-id fvt-id 3 anhd-triplet ouro-id))
         )
         (print (format "ZZZ drained preview = {}" [pv]))
         (map print
@@ -283,7 +283,7 @@
                 (U|DALOS.UDC_Makeid "OuronetPrimeSilver")
                 (U|DALOS.UDC_Makeid "OuronetPrimeGolden")))
             (lanes:object (RPS.URC_ComputeTripletLanes patron pool-id anhd-triplet))
-            (pv:object (RPSCC.URC_CollectLadderPreview patron pool-id fvt-id 3 anhd-triplet ouro-id))
+            (pv:object (AQP-RPSC.URC_CollectLadderPreview patron pool-id fvt-id 3 anhd-triplet ouro-id))
             (o0:decimal (DPTF.UR_AccountSupply ouro-id patron))
             (a0:decimal (DPTF.UR_AccountSupply auryn   patron))
             (e0:decimal (DPTF.UR_AccountSupply elite   patron))
@@ -398,7 +398,7 @@
                 (U|DALOS.UDC_Makeid "OuronetPrimeSilver")
                 (U|DALOS.UDC_Makeid "OuronetPrimeGolden")))
             (lanes:object (RPS.URC_ComputeTripletLanes patron pool-id anhd-triplet))
-            (pv:object (RPSCC.URC_CollectLadderPreview patron pool-id fvt-id 3 anhd-triplet ouro-id))
+            (pv:object (AQP-RPSC.URC_CollectLadderPreview patron pool-id fvt-id 3 anhd-triplet ouro-id))
             (o0:decimal (DPTF.UR_AccountSupply ouro-id patron))
             (a0:decimal (DPTF.UR_AccountSupply auryn   patron))
             (e0:decimal (DPTF.UR_AccountSupply elite   patron))

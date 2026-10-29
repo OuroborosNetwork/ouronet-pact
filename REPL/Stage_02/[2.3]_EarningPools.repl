@@ -124,20 +124,20 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
 (print "")
-(begin-tx "TX-01 [1c] - RPSCC Module")
+(begin-tx "TX-01 [1c] - AQP-RPSC Module")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
-;;==== TX-01 [1c] - RPSCC Module (RPS cost/client surface, after RPS, before FVT) · 01 · env-sigs ====
-(print "--- [TX-01 [1c] - RPSCC Module (RPS cost/client surface) · 01 · env-sigs (caps)] ---")
+;;==== TX-01 [1c] - AQP-RPSC Module (RPS cost/client surface, after RPS, before FVT) · 01 · env-sigs ====
+(print "--- [TX-01 [1c] - AQP-RPSC Module (RPS cost/client surface) · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
-;;==== TX-01 [1c] - RPSCC Module · 02 · load module ==== ==========================================
-(print "--- [TX-01 [1c] - RPSCC Module · 02 · load module] ---")
-;;BETWEEN RPS AND FVT, and the position is forced rather than chosen. RPSCC dot-calls RPS, so RPS
-;;must already be deployed; AQP-FVT's facade calls RPSCC.URCi_CollectFull, so RPSCC must be
+;;==== TX-01 [1c] - AQP-RPSC Module · 02 · load module ==== ==========================================
+(print "--- [TX-01 [1c] - AQP-RPSC Module · 02 · load module] ---")
+;;BETWEEN RPS AND FVT, and the position is forced rather than chosen. AQP-RPSC dot-calls RPS, so RPS
+;;must already be deployed; AQP-FVT's facade calls AQP-RPSC.URCi_CollectFull, so AQP-RPSC must be
 ;;deployed before FVT. There is exactly one slot that satisfies both.
-(load "../../1_SOVEREIGN/STAGE_02/2_Core/03_AQP/04b_RPSCC.pact")
-(print (format "<<<<<<<RPSCC Costs {} GAS>>>>>>>" [(env-gas)]))
+(load "../../1_SOVEREIGN/STAGE_02/2_Core/03_AQP/04b_RPSC.pact")
+(print (format "<<<<<<<AQP-RPSC Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>

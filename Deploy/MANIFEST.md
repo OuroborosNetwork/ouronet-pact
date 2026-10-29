@@ -5,7 +5,7 @@
 - per-transaction gas budget: **1,700,000** (StoaChain block limit 2,000,000)
 - module-deploy transactions: **26**
 - modules deployed: **80**
-- measured module gas: **6,679,113**
+- measured module gas: **6,678,685**
 
 ## Read this before deploying
 
@@ -129,9 +129,9 @@ Read top to bottom. **`step`** is the position in the full sequence; **`file`** 
 | 15 | **15** | DEPLOY 1 modules: 02_SCORE | 269,902 | `Deploy/1_Pure/15_deploy.pact` |
 | 16 | **16** | DEPLOY 1 modules: 03_AQP | 242,927 | `Deploy/1_Pure/16_deploy.pact` |
 | 17 | **17** | DEPLOY 1 modules: 04_RPS | 327,281 | `Deploy/1_Pure/17_deploy.pact` |
-| 18 | **18** | DEPLOY 1 modules: 04b_RPSCC | 129,013 | `Deploy/1_Pure/18_deploy.pact` |
-| 19 | **19** | DEPLOY 1 modules: 05_FVT | 303,105 | `Deploy/1_Pure/19_deploy.pact` |
-| 20 | **20** | DEPLOY 3 modules: 06_VCT, 07_MTX-AQP, 08_DSA | 418,945 | `Deploy/1_Pure/20_deploy.pact` |
+| 18 | **18** | DEPLOY 1 modules: 04b_RPSC | 129,099 | `Deploy/1_Pure/18_deploy.pact` |
+| 19 | **19** | DEPLOY 1 modules: 05_FVT | 302,583 | `Deploy/1_Pure/19_deploy.pact` |
+| 20 | **20** | DEPLOY 3 modules: 06_VCT, 07_MTX-AQP, 08_DSA | 418,953 | `Deploy/1_Pure/20_deploy.pact` |
 | 21 | **21** | DEPLOY 2 modules: 01_TS02-C1, 02_TS02-C2 | 235,433 | `Deploy/1_Pure/21_deploy.pact` |
 | 22 | **22** | DEPLOY 2 modules: 04_TS02-C3, 09_AQP-INFO | 206,806 | `Deploy/1_Pure/22_deploy.pact` |
 | 23 | **23** | DEPLOY 1 modules: 05_TS02-DPAD | 25,538 | `Deploy/1_Pure/23_deploy.pact` |

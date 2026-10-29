@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 20 of 26
 ;; This is STEP 20 of 27 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-19 must have run first, including the init steps between deploys.
-;; 3 source file(s), 418,945 gas measured in the REPL gas model, 279,691 bytes
+;; 3 source file(s), 418,953 gas measured in the REPL gas model, 279,694 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/06_VCT.pact
@@ -4720,33 +4720,33 @@
             \ of the exec's UDC_ConcatenateOutputCumulators [gas custody]."
         (let
             (
-                (ref-RPSCC:module{AcquisitionRewardCostsV1} RPSCC)
+                (ref-RPSC:module{AcquisitionRewardCostsV1} AQP-RPSC)
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
             )
             (+ (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (URCi_WithdrawRoyalty patron [fvt-id]))
-               (ref-RPSCC::URCi_WithdrawRoyaltyCustody fvt-id reward-dptf-id (RPS.UR_FVT|OwnerKonto fvt-id)))
+               (ref-RPSC::URCi_WithdrawRoyaltyCustody fvt-id reward-dptf-id (RPS.UR_FVT|OwnerKonto fvt-id)))
         ))
     (defun URCi_BurnRoyaltyFull:decimal (patron:string fvt-id:string reward-dptf-id:string)
         @doc "FULL reconstructed IGNIS ifp of C_BurnRoyalty: GAS|BURN-ROYALTY gas leg + the FVT custody-burn leg \
             \ (FVT::URCi_BurnRoyaltyCustody mirroring XE_BurnRoyalty). Read-only mirror of the exec's concat."
         (let
             (
-                (ref-RPSCC:module{AcquisitionRewardCostsV1} RPSCC)
+                (ref-RPSC:module{AcquisitionRewardCostsV1} AQP-RPSC)
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
             )
             (+ (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (URCi_BurnRoyalty patron [fvt-id]))
-               (ref-RPSCC::URCi_BurnRoyaltyCustody fvt-id reward-dptf-id))
+               (ref-RPSC::URCi_BurnRoyaltyCustody fvt-id reward-dptf-id))
         ))
     (defun URCi_FuelRoyaltyFull:decimal (patron:string fvt-id:string reward-dptf-id:string swpair:string)
         @doc "FULL reconstructed IGNIS ifp of C_FuelRoyalty: GAS|FUEL-ROYALTY gas leg + the FVT custody-fuel leg \
             \ (FVT::URCi_FuelRoyaltyCustody mirroring XE_FuelRoyalty into <swpair>). Read-only mirror of the exec's concat."
         (let
             (
-                (ref-RPSCC:module{AcquisitionRewardCostsV1} RPSCC)
+                (ref-RPSC:module{AcquisitionRewardCostsV1} AQP-RPSC)
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
             )
             (+ (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (URCi_FuelRoyalty patron [fvt-id]))
-               (ref-RPSCC::URCi_FuelRoyaltyCustody fvt-id reward-dptf-id swpair))
+               (ref-RPSC::URCi_FuelRoyaltyCustody fvt-id reward-dptf-id swpair))
         ))
     (defun URCi_SetAgencyFee:object{IgnisCollectorV4.OutputCumulator} (patron:string output:[string])
         (let

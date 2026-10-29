@@ -7,7 +7,7 @@
 |---|---|
 | version | **3.0** |
 | released | 2026-09-22 |
-| built from commit | `d63ca58b+dirty` |
+| built from commit | `bb7cb4ef+dirty` |
 | pages | 248 |
 | chapters | 28 |
 

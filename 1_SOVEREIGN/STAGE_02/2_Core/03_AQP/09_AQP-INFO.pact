@@ -611,7 +611,7 @@
             \ + RPS + anchor + score-delta + book + checkpoint); no STOA. Cost reconstructed byte-for-byte."
         (let
             (
-                (ref-RPSCC:module{AcquisitionRewardCostsV1} RPSCC)
+                (ref-RPSC:module{AcquisitionRewardCostsV1} AQP-RPSC)
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -619,7 +619,7 @@
                  "Executes via TS02-C3.AQP-POOL|CC_StakeTrueFungible."]
                 [(format "Staked {} of {} into pool {} for {}." [amount dptf-id pool-id beneficiary-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
-                    (ref-RPSCC::URCi_TrueFungibleStakeFlow pool-id owner-id beneficiary-id dptf-id amount true))
+                    (ref-RPSC::URCi_TrueFungibleStakeFlow pool-id owner-id beneficiary-id dptf-id amount true))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [amount])
         )
@@ -630,7 +630,7 @@
             \ reversed (vault→owner); no STOA. Cost reconstructed byte-for-byte."
         (let
             (
-                (ref-RPSCC:module{AcquisitionRewardCostsV1} RPSCC)
+                (ref-RPSC:module{AcquisitionRewardCostsV1} AQP-RPSC)
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -638,7 +638,7 @@
                  "Executes via TS02-C3.AQP-POOL|CC_UnstakeTrueFungible."]
                 [(format "Unstaked {} of {} from pool {} for {}." [amount dptf-id pool-id beneficiary-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
-                    (ref-RPSCC::URCi_TrueFungibleStakeFlow pool-id owner-id beneficiary-id dptf-id amount false))
+                    (ref-RPSC::URCi_TrueFungibleStakeFlow pool-id owner-id beneficiary-id dptf-id amount false))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [amount])
         )
@@ -649,7 +649,7 @@
             \ + class-matched score-delta + book + checkpoint); no STOA. Reconstructed byte-for-byte."
         (let
             (
-                (ref-RPSCC:module{AcquisitionRewardCostsV1} RPSCC)
+                (ref-RPSC:module{AcquisitionRewardCostsV1} AQP-RPSC)
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -657,7 +657,7 @@
                  "Executes via TS02-C3.AQP-POOL|CC_StakeOrtoFungible."]
                 [(format "Staked {} nonces of {} into pool {} for {}." [(length nonces) dpof-id pool-id beneficiary-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
-                    (ref-RPSCC::URCi_OrtoFungibleStakeFlow pool-id owner-id beneficiary-id dpof-id nonces true))
+                    (ref-RPSC::URCi_OrtoFungibleStakeFlow pool-id owner-id beneficiary-id dpof-id nonces true))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [(length nonces)])
         )
@@ -667,7 +667,7 @@
         @doc "Cost preview for AQP-POOL|CC_UnstakeOrtoFungible. Same legs as OF stake; no STOA. Reconstructed byte-for-byte."
         (let
             (
-                (ref-RPSCC:module{AcquisitionRewardCostsV1} RPSCC)
+                (ref-RPSC:module{AcquisitionRewardCostsV1} AQP-RPSC)
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -675,7 +675,7 @@
                  "Executes via TS02-C3.AQP-POOL|CC_UnstakeOrtoFungible."]
                 [(format "Unstaked {} nonces of {} from pool {} for {}." [(length nonces) dpof-id pool-id beneficiary-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
-                    (ref-RPSCC::URCi_OrtoFungibleStakeFlow pool-id owner-id beneficiary-id dpof-id nonces false))
+                    (ref-RPSC::URCi_OrtoFungibleStakeFlow pool-id owner-id beneficiary-id dpof-id nonces false))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [(length nonces)])
         )
@@ -691,7 +691,7 @@
             \ checkpoint -- so the quote is exact, not a stand-in. No STOA."
         (let
             (
-                (ref-RPSCC:module{AcquisitionRewardCostsV1} RPSCC)
+                (ref-RPSC:module{AcquisitionRewardCostsV1} AQP-RPSC)
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -701,7 +701,7 @@
                 [(format "Staked {} sleeping nonce(s) of {} into pool {} under custody for {}."
                     [(length nonces) dpof-id pool-id beneficiary-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
-                    (ref-RPSCC::URCi_OrtoFungibleStakeFlow pool-id owner-id beneficiary-id dpof-id nonces true))
+                    (ref-RPSC::URCi_OrtoFungibleStakeFlow pool-id owner-id beneficiary-id dpof-id nonces true))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [(length nonces)])
         )
@@ -808,7 +808,7 @@
             \ (transfer + tracker×|nonces| + rollup×|nonces| + RPS + flat anchor + class-3 score-delta + book + checkpoint); no STOA."
         (let
             (
-                (ref-RPSCC:module{AcquisitionRewardCostsV1} RPSCC)
+                (ref-RPSC:module{AcquisitionRewardCostsV1} AQP-RPSC)
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -816,7 +816,7 @@
                  "Executes via TS02-C3.AQP-POOL|CC_StakeSemiFungibleCollectable."]
                 [(format "Staked {} DPSF nonces of {} into pool {} for {}." [(length nonces) collectable-id pool-id beneficiary-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
-                    (ref-RPSCC::URCi_CollectableStakeFlow pool-id owner-id beneficiary-id collectable-id true nonces
+                    (ref-RPSC::URCi_CollectableStakeFlow pool-id owner-id beneficiary-id collectable-id true nonces
                         (DPDC.UR_AccountNoncesSupplies owner-id collectable-id true nonces) true))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [(length nonces)])
@@ -828,7 +828,7 @@
             \ nonce-amounts is caller-supplied (the staked quantities — owner no longer holds them). No STOA."
         (let
             (
-                (ref-RPSCC:module{AcquisitionRewardCostsV1} RPSCC)
+                (ref-RPSC:module{AcquisitionRewardCostsV1} AQP-RPSC)
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -836,7 +836,7 @@
                  "Executes via TS02-C3.AQP-POOL|CC_UnstakeSemiFungibleCollectable."]
                 [(format "Unstaked {} DPSF nonces of {} from pool {} for {}." [(length nonces) collectable-id pool-id beneficiary-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
-                    (ref-RPSCC::URCi_CollectableStakeFlow pool-id owner-id beneficiary-id collectable-id true nonces nonce-amounts false))
+                    (ref-RPSC::URCi_CollectableStakeFlow pool-id owner-id beneficiary-id collectable-id true nonces nonce-amounts false))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [(length nonces)])
         )
@@ -847,7 +847,7 @@
             \ (transfer + tracker×|nonces| + rollup×|nonces| + RPS + flat anchor + class-4 score-delta + book + checkpoint); no STOA."
         (let
             (
-                (ref-RPSCC:module{AcquisitionRewardCostsV1} RPSCC)
+                (ref-RPSC:module{AcquisitionRewardCostsV1} AQP-RPSC)
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -855,7 +855,7 @@
                  "Executes via TS02-C3.AQP-POOL|CC_StakeNonFungibleCollectable."]
                 [(format "Staked {} DPNF nonces of {} into pool {} for {}." [(length nonces) collectable-id pool-id beneficiary-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
-                    (ref-RPSCC::URCi_CollectableStakeFlow pool-id owner-id beneficiary-id collectable-id false nonces
+                    (ref-RPSC::URCi_CollectableStakeFlow pool-id owner-id beneficiary-id collectable-id false nonces
                         (DPDC.UR_AccountNoncesSupplies owner-id collectable-id false nonces) true))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [(length nonces)])
@@ -867,7 +867,7 @@
             \ nonce-amounts is caller-supplied (the staked quantities — owner no longer holds them). No STOA."
         (let
             (
-                (ref-RPSCC:module{AcquisitionRewardCostsV1} RPSCC)
+                (ref-RPSC:module{AcquisitionRewardCostsV1} AQP-RPSC)
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -875,7 +875,7 @@
                  "Executes via TS02-C3.AQP-POOL|CC_UnstakeNonFungibleCollectable."]
                 [(format "Unstaked {} DPNF nonces of {} from pool {} for {}." [(length nonces) collectable-id pool-id beneficiary-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
-                    (ref-RPSCC::URCi_CollectableStakeFlow pool-id owner-id beneficiary-id collectable-id false nonces nonce-amounts false))
+                    (ref-RPSC::URCi_CollectableStakeFlow pool-id owner-id beneficiary-id collectable-id false nonces nonce-amounts false))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [(length nonces)])
         )
@@ -1262,13 +1262,13 @@
         @doc "Cost preview for AQP-FVT|C_RotateOwnership. IGNIS 'ignis|medium'; no STOA."
         (let
             (
-                (ref-RPSCC:module{AcquisitionRewardCostsV1} RPSCC)
+                (ref-RPSC:module{AcquisitionRewardCostsV1} AQP-RPSC)
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Transfer an FVT's owner-konto." "Executes via TS02-C3.AQP-FVT|C_RotateOwnership."]
                 [(format "FVT {} ownership moved to {}." [fvt-id new-owner-konto])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-RPSCC::URCi_RotateOwnership fvt-id)))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-RPSC::URCi_RotateOwnership fvt-id)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [])
         )
@@ -1278,13 +1278,13 @@
         @doc "Cost preview for AQP-FVT|C_Control. IGNIS 'ignis|medium'; no STOA."
         (let
             (
-                (ref-RPSCC:module{AcquisitionRewardCostsV1} RPSCC)
+                (ref-RPSC:module{AcquisitionRewardCostsV1} AQP-RPSC)
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Set an FVT's can-upgrade / can-change-owner flags." "Executes via TS02-C3.AQP-FVT|C_Control."]
                 [(format "FVT {} control flags updated." [fvt-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-RPSCC::URCi_Control fvt-id)))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-RPSC::URCi_Control fvt-id)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [])
         )
@@ -1294,13 +1294,13 @@
         @doc "Cost preview for AQP-FVT|C_SetCommonDenominator. IGNIS GAS|SET-COMMON-DENOMINATOR; no STOA."
         (let
             (
-                (ref-RPSCC:module{AcquisitionRewardCostsV1} RPSCC)
+                (ref-RPSC:module{AcquisitionRewardCostsV1} AQP-RPSC)
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Set a farm's common-denominator (before any links)." "Executes via TS02-C3.AQP-FVT|C_SetCommonDenominator."]
                 [(format "FVT {} common-denominator set to {}." [fvt-id common-denominator])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-RPSCC::URCi_SetCommonDenominator fvt-id [])))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-RPSC::URCi_SetCommonDenominator fvt-id [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [])
         )
@@ -1310,13 +1310,13 @@
         @doc "Cost preview for AQP-FVT|C_SetMosaic. IGNIS GAS|SET-MOSAIC; no STOA."
         (let
             (
-                (ref-RPSCC:module{AcquisitionRewardCostsV1} RPSCC)
+                (ref-RPSC:module{AcquisitionRewardCostsV1} AQP-RPSC)
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Toggle a farm's mosaic membership policy." "Executes via TS02-C3.AQP-FVT|C_SetMosaic."]
                 [(format "FVT {} mosaic set to {}." [fvt-id mosaic])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-RPSCC::URCi_SetMosaic fvt-id [])))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-RPSC::URCi_SetMosaic fvt-id [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [])
         )
@@ -1327,13 +1327,13 @@
             \ reward-split mode alongside the requested one."
         (let
             (
-                (ref-RPSCC:module{AcquisitionRewardCostsV1} RPSCC)
+                (ref-RPSC:module{AcquisitionRewardCostsV1} AQP-RPSC)
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Set a farm's reward-split mode (SPLIT|STAKED participation | SPLIT|TVL pool-size)." "Executes via TS02-C3.AQP-FVT|C_SetSplitMode."]
                 [(format "Farm {} reward-split mode: {} -> {}." [fvt-id (RPS.UR_FVT|SplitMode fvt-id) split-mode])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-RPSCC::URCi_SetSplitMode fvt-id [])))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-RPSC::URCi_SetSplitMode fvt-id [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [])
         )
@@ -1354,14 +1354,14 @@
             \ do."
         (let
             (
-                (ref-RPSCC:module{AcquisitionRewardCostsV1} RPSCC)
+                (ref-RPSC:module{AcquisitionRewardCostsV1} AQP-RPSC)
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Set the per-injection floor on one reward lane (future injections only)." "Executes via TS02-C3.AQP-FVT|C_SetMinInjectAmount."]
                 [(format "Lane {} on FVT {} minimum inject: {} -> {}."
                     [reward-dptf-id fvt-id (RPS.UR_FVT-RG|MinInjectAmount fvt-id reward-dptf-id) min-inject-amount])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-RPSCC::URCi_ToggleRewardLink fvt-id [])))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-RPSC::URCi_ToggleRewardLink fvt-id [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [])
         )
@@ -1390,13 +1390,13 @@
         @doc "Cost preview for AQP-FVT|C_AddScoreEntity. IGNIS GAS|ADD-SCORE-ENTITY; no STOA."
         (let
             (
-                (ref-RPSCC:module{AcquisitionRewardCostsV1} RPSCC)
+                (ref-RPSC:module{AcquisitionRewardCostsV1} AQP-RPSC)
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Register a score (type 1) or triplet (type 3) on an FVT." "Executes via TS02-C3.AQP-FVT|C_AddScoreEntity."]
                 [(format "Score-entity {} (type {}) registered on FVT {}." [score-entity-id score-entity-type fvt-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-RPSCC::URCi_AddScoreEntity fvt-id [])))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-RPSC::URCi_AddScoreEntity fvt-id [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [])
         )
@@ -1406,13 +1406,13 @@
         @doc "Cost preview for AQP-FVT|C_ToggleScoreEntityLink. IGNIS GAS|TOGGLE-SCORE-ENTITY-LINK; no STOA."
         (let
             (
-                (ref-RPSCC:module{AcquisitionRewardCostsV1} RPSCC)
+                (ref-RPSC:module{AcquisitionRewardCostsV1} AQP-RPSC)
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Enable/disable a ScoreEntityLink on an FVT." "Executes via TS02-C3.AQP-FVT|C_ToggleScoreEntityLink."]
                 [(format "FVT {} score-entity {} enabled={}." [fvt-id score-entity-id enabled])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-RPSCC::URCi_ToggleScoreEntityLink fvt-id [])))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-RPSC::URCi_ToggleScoreEntityLink fvt-id [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [])
         )
@@ -1460,13 +1460,13 @@
         @doc "Cost preview for AQP-FVT|C_AddRewardLink. IGNIS GAS|ADD-REWARD-LINK; no STOA."
         (let
             (
-                (ref-RPSCC:module{AcquisitionRewardCostsV1} RPSCC)
+                (ref-RPSC:module{AcquisitionRewardCostsV1} AQP-RPSC)
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Register a reward DPTF on an FVT." "Executes via TS02-C3.AQP-FVT|C_AddRewardLink."]
                 [(format "Reward {} linked on FVT {} (family {})." [reward-dptf-id fvt-id multiplet-family-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-RPSCC::URCi_AddRewardLink fvt-id [])))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-RPSC::URCi_AddRewardLink fvt-id [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [])
         )
@@ -1476,13 +1476,13 @@
         @doc "Cost preview for AQP-FVT|C_ToggleRewardLink. IGNIS GAS|TOGGLE-REWARD-LINK; no STOA."
         (let
             (
-                (ref-RPSCC:module{AcquisitionRewardCostsV1} RPSCC)
+                (ref-RPSC:module{AcquisitionRewardCostsV1} AQP-RPSC)
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Toggle a reward link's enabled flag." "Executes via TS02-C3.AQP-FVT|C_ToggleRewardLink."]
                 [(format "FVT {} reward {} enabled={}." [fvt-id reward-dptf-id enabled])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-RPSCC::URCi_ToggleRewardLink fvt-id [])))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-RPSC::URCi_ToggleRewardLink fvt-id [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [])
         )
@@ -1492,13 +1492,13 @@
         @doc "Cost preview for AQP-FVT|C_SetQualitySplit. IGNIS GAS|SET-QUALITY-SPLIT; no STOA."
         (let
             (
-                (ref-RPSCC:module{AcquisitionRewardCostsV1} RPSCC)
+                (ref-RPSC:module{AcquisitionRewardCostsV1} AQP-RPSC)
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Set a MULTIPLET_BASE reward's quality-split mode + matrix." "Executes via TS02-C3.AQP-FVT|C_SetQualitySplit."]
                 [(format "FVT {} reward {} quality-split mode={}." [fvt-id reward-dptf-id mode])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-RPSCC::URCi_SetQualitySplit fvt-id [])))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-RPSC::URCi_SetQualitySplit fvt-id [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [])
         )
@@ -1508,7 +1508,7 @@
         @doc "Cost preview for AQP-FVT|CC_InjectStream. IGNIS GAS|INJECT; STOA none (custody transfer)."
         (let
             (
-                (ref-RPSCC:module{AcquisitionRewardCostsV1} RPSCC)
+                (ref-RPSC:module{AcquisitionRewardCostsV1} AQP-RPSC)
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -1524,7 +1524,7 @@
                     ;;inject family shared this. Measured and pinned for CC_Inject at
                     ;;`Stage_02/[6.5.1]_AQP-INFO-GROUNDTRUTH.repl <<TX-INFO-GT-INJECT>>`; the other
                     ;;three route through the identical core, so the same reader fixes them.
-                    (ref-RPSCC::URCi_InjectFull "AQP-FVT|CC_InjectStream" patron fvt-id reward-dptf-id amount))
+                    (ref-RPSC::URCi_InjectFull "AQP-FVT|CC_InjectStream" patron fvt-id reward-dptf-id amount))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [amount])
         )
@@ -1534,7 +1534,7 @@
         @doc "Cost preview for AQP-FVT|CC_Inject (enforced-fresh single-tx inject). IGNIS GAS|INJECT; STOA none."
         (let
             (
-                (ref-RPSCC:module{AcquisitionRewardCostsV1} RPSCC)
+                (ref-RPSC:module{AcquisitionRewardCostsV1} AQP-RPSC)
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -1548,7 +1548,7 @@
                     ;;cumulator. URCi_InjectFull counts both, matching how URCi_CollectFull and
                     ;;URCi_TrueFungibleStakeFlow already count theirs. Pinned by
                     ;;`Stage_02/[6.5.1]_AQP-INFO-GROUNDTRUTH.repl <<TX-INFO-GT-INJECT>>`.
-                    (ref-RPSCC::URCi_InjectFull "AQP-FVT|CC_Inject" patron fvt-id reward-dptf-id amount))
+                    (ref-RPSC::URCi_InjectFull "AQP-FVT|CC_Inject" patron fvt-id reward-dptf-id amount))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [amount])
         )
@@ -1558,7 +1558,7 @@
         @doc "Cost preview for AQP-FVT|CC_InjectFinalize. IGNIS GAS|INJECT; STOA none."
         (let
             (
-                (ref-RPSCC:module{AcquisitionRewardCostsV1} RPSCC)
+                (ref-RPSC:module{AcquisitionRewardCostsV1} AQP-RPSC)
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -1574,7 +1574,7 @@
                     ;;inject family shared this. Measured and pinned for CC_Inject at
                     ;;`Stage_02/[6.5.1]_AQP-INFO-GROUNDTRUTH.repl <<TX-INFO-GT-INJECT>>`; the other
                     ;;three route through the identical core, so the same reader fixes them.
-                    (ref-RPSCC::URCi_InjectFull "AQP-FVT|CC_InjectFinalize" patron fvt-id reward-dptf-id amount))
+                    (ref-RPSC::URCi_InjectFull "AQP-FVT|CC_InjectFinalize" patron fvt-id reward-dptf-id amount))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [amount])
         )
@@ -1635,7 +1635,7 @@
             \ Reconstructed on the current claimable state (exact for un-streamed / settled lanes)."
         (let
             (
-                (ref-RPSCC:module{AcquisitionRewardCostsV1} RPSCC)
+                (ref-RPSC:module{AcquisitionRewardCostsV1} AQP-RPSC)
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -1643,7 +1643,7 @@
                  "Full IGNIS shown: payout transfer/ladder + any forced-fix penalty + gas (reconstructed byte-for-byte)."
                  "Executes via TS02-C3.AQP-FVT|CC_Collect."]
                 [(format "Collected reward token {} from score-entity {}." [reward-dptf-id score-entity-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-RPSCC::URCi_CollectFull patron fvt-id score-entity-type score-entity-id reward-dptf-id))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-RPSC::URCi_CollectFull patron fvt-id score-entity-type score-entity-id reward-dptf-id))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [])
         )
@@ -1939,7 +1939,7 @@
         @doc "Cost preview for MTX-AQP|2|CC_Inject (2-step enforced-fresh inject). IGNIS GAS|INJECT (inner XB_FvtInject); STOA none."
         (let
             (
-                (ref-RPSCC:module{AcquisitionRewardCostsV1} RPSCC)
+                (ref-RPSC:module{AcquisitionRewardCostsV1} AQP-RPSC)
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -1955,7 +1955,7 @@
                     ;;inject family shared this. Measured and pinned for CC_Inject at
                     ;;`Stage_02/[6.5.1]_AQP-INFO-GROUNDTRUTH.repl <<TX-INFO-GT-INJECT>>`; the other
                     ;;three route through the identical core, so the same reader fixes them.
-                    (ref-RPSCC::URCi_InjectFull "MTX-AQP|2|CC_Inject" patron fvt-id reward-dptf-id amount))
+                    (ref-RPSC::URCi_InjectFull "MTX-AQP|2|CC_Inject" patron fvt-id reward-dptf-id amount))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [amount])
         )

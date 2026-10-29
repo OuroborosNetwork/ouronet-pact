@@ -3953,18 +3953,18 @@
         [
             ;;URC_CollectXferIgnis — "0 when amount<=0"
             (expect "<<AQP-F2>> URC_CollectXferIgnis is 0.0 at a zero amount"
-                0.0 (RPSCC.URC_CollectXferIgnis ouro KST.ANHD 0.0))
+                0.0 (AQP-RPSC.URC_CollectXferIgnis ouro KST.ANHD 0.0))
             (expect "<<AQP-F2>> ...and at a negative one"
-                0.0 (RPSCC.URC_CollectXferIgnis ouro KST.ANHD -5.0))
+                0.0 (AQP-RPSC.URC_CollectXferIgnis ouro KST.ANHD -5.0))
             ;;THE OTHER ARM: a real transfer costs something. Without this the two above are
             ;;satisfied by a function that never charges at all.
             (expect "<<AQP-F2>> ...but a REAL amount is priced above zero"
-                true (> (RPSCC.URC_CollectXferIgnis ouro KST.ANHD 100.0) 0.0))
+                true (> (AQP-RPSC.URC_CollectXferIgnis ouro KST.ANHD 100.0) 0.0))
             ;;...and the price does not depend on the amount (it mirrors ONE transfer, not a
             ;;per-unit charge) -- which is the shape a reviewer would most likely get wrong.
             (expect "<<AQP-F2>> ...and it is a FLAT per-transfer price, not proportional to the amount"
-                (RPSCC.URC_CollectXferIgnis ouro KST.ANHD 100.0)
-                (RPSCC.URC_CollectXferIgnis ouro KST.ANHD 1000000.0))
+                (AQP-RPSC.URC_CollectXferIgnis ouro KST.ANHD 100.0)
+                (AQP-RPSC.URC_CollectXferIgnis ouro KST.ANHD 1000000.0))
         ]
     )
     ""
@@ -4047,9 +4047,9 @@
         (map print
             [
                 (expect "<<AQP-F2>> a TF stake flow is quoted above zero"
-                    true (> (RPSCC.URCi_TrueFungibleStakeFlow pool KST.ANHD KST.ANHD ouro 10.0 true) 0.0))
+                    true (> (AQP-RPSC.URCi_TrueFungibleStakeFlow pool KST.ANHD KST.ANHD ouro 10.0 true) 0.0))
                 (expect "<<AQP-F2>> ...and so is the unstake direction"
-                    true (> (RPSCC.URCi_TrueFungibleStakeFlow pool KST.ANHD KST.ANHD ouro 10.0 false) 0.0))
+                    true (> (AQP-RPSC.URCi_TrueFungibleStakeFlow pool KST.ANHD KST.ANHD ouro 10.0 false) 0.0))
                 ;;THE TWO DIRECTIONS PRICE THE SAME HERE, and the first draft of this block asserted
                 ;;they would DIFFER -- wrong, and worth keeping the correction visible. <direction>
                 ;;does not select a different set of legs: all nine legs are direction-independent.
@@ -4064,8 +4064,8 @@
                 ;;a dropped flag, so the classification itself is pinned below -- that is what
                 ;;explains the equality instead of merely recording it.
                 (expect "<<AQP-F2>> ...and the two directions price the same, because the transfer CLASS is symmetric here"
-                    (RPSCC.URCi_TrueFungibleStakeFlow pool KST.ANHD KST.ANHD ouro 10.0 true)
-                    (RPSCC.URCi_TrueFungibleStakeFlow pool KST.ANHD KST.ANHD ouro 10.0 false))
+                    (AQP-RPSC.URCi_TrueFungibleStakeFlow pool KST.ANHD KST.ANHD ouro 10.0 true)
+                    (AQP-RPSC.URCi_TrueFungibleStakeFlow pool KST.ANHD KST.ANHD ouro 10.0 false))
                 (expect "<<AQP-F2>> ...which is the reason: OURO classifies identically in both directions"
                     (at "type" (TFT.URC_TransferClasses ouro KST.ANHD AQP-POOL.AQP|SC_NAME 10.0))
                     (at "type" (TFT.URC_TransferClasses ouro AQP-POOL.AQP|SC_NAME KST.ANHD 10.0)))
@@ -4073,8 +4073,8 @@
                 ;;total is strictly above the single transfer leg it contains, i.e. the other eight
                 ;;legs are present too.
                 (expect "<<AQP-F2>> ...and the quote covers more than the transfer leg alone"
-                    true (> (RPSCC.URCi_TrueFungibleStakeFlow pool KST.ANHD KST.ANHD ouro 10.0 true)
-                            (RPSCC.URC_CollectXferIgnis ouro KST.ANHD 10.0)))
+                    true (> (AQP-RPSC.URCi_TrueFungibleStakeFlow pool KST.ANHD KST.ANHD ouro 10.0 true)
+                            (AQP-RPSC.URC_CollectXferIgnis ouro KST.ANHD 10.0)))
             ]
         )
     )
@@ -4673,26 +4673,26 @@
                             ;;the DISCOUNT dividing it is the patron's. This is a SELF-collect fixture,
                             ;;so the two roles are one account -- which is also what keeps the identity
                             ;;below true, since URCi_CollectFull passes <patron> for both.
-                            [ (RPSCC.URC_CollectTransferLegIgnis KST.ANHD pool fvt 1 score ouro)
-                              (RPSCC.URC_CollectForcedFixIgnis KST.ANHD KST.ANHD fvt ouro)
+                            [ (AQP-RPSC.URC_CollectTransferLegIgnis KST.ANHD pool fvt 1 score ouro)
+                              (AQP-RPSC.URC_CollectForcedFixIgnis KST.ANHD KST.ANHD fvt ouro)
                               (ref-INFO::OI|UC_IfpFromOutputCumulator
-                                  (RPSCC.URCi_Collect fvt [fvt score ouro])) ])
-                        (RPSCC.URCi_CollectFull KST.ANHD fvt 1 score ouro))
+                                  (AQP-RPSC.URCi_Collect fvt [fvt score ouro])) ])
+                        (AQP-RPSC.URCi_CollectFull KST.ANHD fvt 1 score ouro))
                     ;;non-vacuity: the total is not zero, so the identity is not 0 = 0 + 0 + 0
                     (expect "<<AQP-F9>> ...and the quoted total is above zero"
-                        true (> (RPSCC.URCi_CollectFull KST.ANHD fvt 1 score ouro) 0.0))
+                        true (> (AQP-RPSC.URCi_CollectFull KST.ANHD fvt 1 score ouro) 0.0))
                     ;;the forced-fix leg's documented zero-guard: "0 when ffc<=0". This account has no
                     ;;forced-fix count on this lane, so the penalty term is absent -- which is also
                     ;;why the identity above is dominated by the other two legs.
                     (expect "<<AQP-F9>> the forced-fix penalty is 0 for an account with no stale-fix count"
-                        0.0 (RPSCC.URC_CollectForcedFixIgnis KST.ANHD KST.ANHD fvt ouro))
+                        0.0 (AQP-RPSC.URC_CollectForcedFixIgnis KST.ANHD KST.ANHD fvt ouro))
                     ;;...so the remaining two legs alone must already account for the whole total.
                     ;;This is what stops the identity passing on a function that silently ignores a leg.
                     (expect "<<AQP-F9>> ...so payout-leg + collect-leg alone reproduce the total"
-                        (+ (RPSCC.URC_CollectTransferLegIgnis KST.ANHD pool fvt 1 score ouro)
+                        (+ (AQP-RPSC.URC_CollectTransferLegIgnis KST.ANHD pool fvt 1 score ouro)
                            (ref-INFO::OI|UC_IfpFromOutputCumulator
-                               (RPSCC.URCi_Collect fvt [fvt score ouro])))
-                        (RPSCC.URCi_CollectFull KST.ANHD fvt 1 score ouro))
+                               (AQP-RPSC.URCi_Collect fvt [fvt score ouro])))
+                        (AQP-RPSC.URCi_CollectFull KST.ANHD fvt 1 score ouro))
                     ;;and the pool the function derives is a real one, not BAR -- the derivation is
                     ;;silent on failure, so an unlinked score would price against a ghost pool
                     (expect "<<AQP-F9>> the derived pool-id is a real pool, not the BAR sentinel"
@@ -5167,12 +5167,12 @@
                 ;;both quote something -- non-vacuity before any comparison
                 (expect "<<AQP-F13>> both flows quote a positive price"
                     [true true]
-                    [(> (RPSCC.URCi_OrtoFungibleStakeFlow of-pool KST.ANHD KST.ANHD mvst [1] true) 0.0)
-                     (> (RPSCC.URCi_CollectableStakeFlow sf-pool KST.ANHD KST.ANHD dhcd true [1] [1] true) 0.0)])
+                    [(> (AQP-RPSC.URCi_OrtoFungibleStakeFlow of-pool KST.ANHD KST.ANHD mvst [1] true) 0.0)
+                     (> (AQP-RPSC.URCi_CollectableStakeFlow sf-pool KST.ANHD KST.ANHD dhcd true [1] [1] true) 0.0)])
                 ;;ORTO: direction-INDEPENDENT, exactly as documented
                 (expect "<<AQP-F13>> the ORTO flow prices both directions identically, as its @doc says"
-                    (RPSCC.URCi_OrtoFungibleStakeFlow of-pool KST.ANHD KST.ANHD mvst [1] true)
-                    (RPSCC.URCi_OrtoFungibleStakeFlow of-pool KST.ANHD KST.ANHD mvst [1] false))
+                    (AQP-RPSC.URCi_OrtoFungibleStakeFlow of-pool KST.ANHD KST.ANHD mvst [1] true)
+                    (AQP-RPSC.URCi_OrtoFungibleStakeFlow of-pool KST.ANHD KST.ANHD mvst [1] false))
                 ;;COLLECTABLE: its @doc says "direction-dependent", and I first asserted the two
                 ;;directions would therefore DIFFER. They do not, and the distinction between the two
                 ;;flows is sharper than "dependent vs independent" -- it is STRUCTURAL vs INCIDENTAL:
@@ -5188,8 +5188,8 @@
                 ;;Asserting the equality alone would not distinguish that from a dropped flag, so the
                 ;;symmetry of the underlying cumulator is pinned too -- that is what explains it.
                 (expect "<<AQP-F13>> ...and the COLLECTABLE flow happens to match here, for a symmetric transfer"
-                    (RPSCC.URCi_CollectableStakeFlow sf-pool KST.ANHD KST.ANHD dhcd true [1] [1] true)
-                    (RPSCC.URCi_CollectableStakeFlow sf-pool KST.ANHD KST.ANHD dhcd true [1] [1] false))
+                    (AQP-RPSC.URCi_CollectableStakeFlow sf-pool KST.ANHD KST.ANHD dhcd true [1] [1] true)
+                    (AQP-RPSC.URCi_CollectableStakeFlow sf-pool KST.ANHD KST.ANHD dhcd true [1] [1] false))
                 ;;THE REASON, and it is finer than "the cumulators are equal" -- they are NOT. Swapping
                 ;;sender and receiver produces cumulators with DIFFERENT `interactor` fields (BAR one
                 ;;way, the vault account the other) but the SAME `ignis` figure. `URCi_CollectableStakeFlow`
@@ -5212,10 +5212,10 @@
                 ;;cost strictly more than one. A preview that priced per-CALL would be flat here.
                 (expect "<<AQP-F13>> both flows scale with the nonce count, not per call"
                     [true true]
-                    [(> (RPSCC.URCi_OrtoFungibleStakeFlow of-pool KST.ANHD KST.ANHD mvst [1 2] true)
-                        (RPSCC.URCi_OrtoFungibleStakeFlow of-pool KST.ANHD KST.ANHD mvst [1] true))
-                     (> (RPSCC.URCi_CollectableStakeFlow sf-pool KST.ANHD KST.ANHD dhcd true [1 2] [1 1] true)
-                        (RPSCC.URCi_CollectableStakeFlow sf-pool KST.ANHD KST.ANHD dhcd true [1] [1] true))])
+                    [(> (AQP-RPSC.URCi_OrtoFungibleStakeFlow of-pool KST.ANHD KST.ANHD mvst [1 2] true)
+                        (AQP-RPSC.URCi_OrtoFungibleStakeFlow of-pool KST.ANHD KST.ANHD mvst [1] true))
+                     (> (AQP-RPSC.URCi_CollectableStakeFlow sf-pool KST.ANHD KST.ANHD dhcd true [1 2] [1 1] true)
+                        (AQP-RPSC.URCi_CollectableStakeFlow sf-pool KST.ANHD KST.ANHD dhcd true [1] [1] true))])
                 ;;...and the orto increment DECOMPOSES exactly. My first attempt asserted it was one
                 ;;medium tier -- the @doc's "tracker(medium x |nonces|)" -- and got 4.0 against a
                 ;;medium of 3.0. The @doc is not wrong, it is partial: TWO legs scale with the nonce
@@ -5226,8 +5226,8 @@
                     (+ (ref-RPS::URC_TierMedium)
                        (- (IGNIS.OI|UC_IfpFromOutputCumulator (DPOF.URCi_MoveCumulator mvst [1 2] false))
                           (IGNIS.OI|UC_IfpFromOutputCumulator (DPOF.URCi_MoveCumulator mvst [1] false))))
-                    (- (RPSCC.URCi_OrtoFungibleStakeFlow of-pool KST.ANHD KST.ANHD mvst [1 2] true)
-                       (RPSCC.URCi_OrtoFungibleStakeFlow of-pool KST.ANHD KST.ANHD mvst [1] true)))
+                    (- (AQP-RPSC.URCi_OrtoFungibleStakeFlow of-pool KST.ANHD KST.ANHD mvst [1 2] true)
+                       (AQP-RPSC.URCi_OrtoFungibleStakeFlow of-pool KST.ANHD KST.ANHD mvst [1] true)))
                 ;;...and BOTH components are non-zero, so the sum above is not one term in disguise
                 (expect "<<AQP-F13>> ...and both of those components are genuinely non-zero"
                     [true true]
@@ -5698,17 +5698,17 @@
                 ;;and real swap pairs. Recorded here so the split is deliberate rather than a gap.
                 (expect "<<AQP-F17>> burn and withdraw are both priced above zero"
                     [true true]
-                    [(> (RPSCC.URCi_BurnRoyaltyCustody fvt ouro) 0.0)
-                     (> (RPSCC.URCi_WithdrawRoyaltyCustody fvt ouro KST.ANHD) 0.0)])
+                    [(> (AQP-RPSC.URCi_BurnRoyaltyCustody fvt ouro) 0.0)
+                     (> (AQP-RPSC.URCi_WithdrawRoyaltyCustody fvt ouro KST.ANHD) 0.0)])
                 ;;...and they are DIFFERENT numbers. Two distinct operations with distinct leg sets;
                 ;;a shared constant would mean one preview is wrong and nothing else would show it.
                 (expect "<<AQP-F17>> ...and burning is priced differently from withdrawing"
-                    false (= (RPSCC.URCi_BurnRoyaltyCustody fvt ouro)
-                             (RPSCC.URCi_WithdrawRoyaltyCustody fvt ouro KST.ANHD)))
+                    false (= (AQP-RPSC.URCi_BurnRoyaltyCustody fvt ouro)
+                             (AQP-RPSC.URCi_WithdrawRoyaltyCustody fvt ouro KST.ANHD)))
                 ;;...and FUEL genuinely cannot be priced here, for the stated reason
                 (expect-failure "<<AQP-F17>> ...while FUEL aborts here: this harness has no swap pairs at all"
                     "No value found in table"
-                    (RPSCC.URCi_FuelRoyaltyCustody fvt ouro swpair))
+                    (AQP-RPSC.URCi_FuelRoyaltyCustody fvt ouro swpair))
                 (expect "<<AQP-F17>> ...confirmed: the swpair registry is empty in this harness"
                     0 (length (SWP.URC_Swpairs)))
             ]

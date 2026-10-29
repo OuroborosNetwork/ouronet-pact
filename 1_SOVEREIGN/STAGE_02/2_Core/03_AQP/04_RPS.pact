@@ -1,5 +1,5 @@
 ;; net: v1   ·   dev: v2   ;; AcquisitionRewardPerShare V4 -> V5 (2026-10-29): 14 declarations
-;; REMOVED -- the cost/client surface moved to AQP-RPSCC (04b_RPSCC.pact) to free deploy
+;; REMOVED -- the cost/client surface moved to AQP-RPSC (04b_RPSC.pact) to free deploy
 ;; bytes for the AQP|SC_NAME reward ladder. See that file's header for the seam.
 (interface AcquisitionRewardPerShareV5
     @doc "RPS reward-per-share ledger interface (extracted from AQP-FVT, #75). Per-field \
@@ -172,8 +172,44 @@
     (defun UR_OracleValidity:integer ())
 )
 
+
+;; ==============================================================================
+;; THIS MODULE SHOULD HAVE BEEN CALLED `AQP-RPS`, AND NO LONGER CAN BE.
+;;
+;; It is the ONE member of the ten-module AQP family without the family prefix:
+;;   AQP-ANK  AQP-SCORE  AQP-POOL  AQP-FVT  AQP-VCT  AQP-DSA  AQP-INFO
+;;   AQP-RPSC  MTX-AQP  ...  and `RPS`.
+;; The name was a mistake at issue, and it is now permanent. Recorded here rather
+;; than left for the next reader to notice and wonder whether it is fixable.
+;;
+;; WHY IT CANNOT BE FIXED. A Pact module's name IS its identity, and `deftable`
+;; binds storage to it: redeploying as `AQP-RPS` would create EMPTY tables beside
+;; the live ones. Modules cannot be deleted in Pact, so `RPS` would persist either
+;; way. There is no database-level rename — this is consensus state, with no
+;; administrative channel to rewrite a module name.
+;;
+;; WHY MIGRATING IS WORSE THAN IT SOUNDS. Copying the rows out needs a
+;; cross-module `keys`/`select`, which Pact admin-gates on the OWNING module —
+;; `_conformance.py`'s `cross-module-scan` rule records the consequence: it
+;; "aborts with `Module admin necessary for operation but has not been acquired`
+;; for every caller on every chain -- there is no signer who can satisfy it". So
+;; the exporters would have to be added INSIDE this module (one more RPS deploy),
+;; every consumer re-pointed, and `RPS` would remain on chain forever as a dead
+;; shell. A great deal of risk against a live reward ledger, for a prefix.
+;;
+;; THE PRECEDENT IS ALREADY IN THIS TREE. DPMF was retired by ARCHIVE MODE rather
+;; than replacement, for exactly this reason — see StoicSyntax-Prefixes.md §7.21
+;; and CLAUDE.md: "a deployed module cannot be removed in Pact, so the live copy
+;; stays as it is". Keep the readers, drop the writers, bump the interface; the
+;; name survives regardless.
+;;
+;; OWNER RULING, 2026-10-29: leave it. The sibling split out of it on the same day
+;; carries the CORRECT name, `AQP-RPSC` (04b_RPSC.pact), so the family convention
+;; is right from here on and this file is the single documented exception.
+;; ==============================================================================
 (module RPS GOV
     @doc "Reward-per-share (RPS) ledger/accountant extracted from AQP-FVT (task #75). \
+        \ NAME: should have been AQP-RPS -- see the block above for why it cannot be. \
         \ Owns the RPS global/member/user/stream tables, member vaults, member-user \
         \ weight mirror, forced-fix counts and royalty custody, plus the settle / inject / \
         \ drip / deb-fix math. Leaf module: FVT drives it via XE_ entrypoints; structure \
