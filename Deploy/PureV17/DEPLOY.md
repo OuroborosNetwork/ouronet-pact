@@ -1,4 +1,4 @@
-# Deploy/PureV18 — DEPLOY CARD
+# Deploy/PureV17 — DEPLOY CARD
 
 **Everything needed to send this round is in THIS folder. It is EIGHT transactions plus ONE init
 transaction, in order.** Nothing from `Deploy/1_Pure`, `2_Init`, `3_Assets` or `MANIFEST.md`.
@@ -90,12 +90,29 @@ exist and `create-table` on an existing table ABORTS the whole transaction.
 ~697–698). It is a genuinely new module — `_livemodules.py --check` reports it NEVER PROBED because
 the source did not exist before 2026-10-29 — so its two policy tables must be created.
 
-> **After this round ships, remove `"new": ["08b_EVCT.pact"]` from the `2026-10-v18-eviction` entry
+> **After this round ships, remove `"new": ["08b_EVCT.pact"]` from the `2026-10-v17-eviction` entry
 > in `_deploybundle.py`.** Leaving it in makes the NEXT round abort transaction 1 with *"Creation of
 > user table ouronet-ns.AQP-EVCT_P|T failed because the table already exists"* — which is exactly
 > how the 2026-10-24 incident went.
 
 `AQP-RPSC` needs no such exception: it declares **zero** `deftable`s.
+
+## This round is numbered 17 because 17 is next
+
+It was built and committed as `PureV18` on 2026-10-29 — commit messages from that day name a V18
+that no longer exists — and renumbered once the owner confirmed the earlier V17 had never been
+deployed. **The folder number is the DEPLOY sequence**, not the build order: V16 is the last round
+on chain, so the next one out is 17 whatever it was called while being assembled.
+
+The two folders that previously held 16 and 17 are deleted, and both are verifiably SUBSUMED by
+this round — see `README.md` for the byte-level table, including the one row that matters: the old
+V17's cost mirrors are in **transaction 4** here, because the RPS split moved them to AQP-RPSC, so
+that card's own verification check now reports 0 against this round's RPS file and would read as
+"the fix did not land".
+
+**The zero-collect defect is live on mainnet right now.** Transaction
+`_n8jEM6Pu5lZn7kVVnaqsPieo6IJwcEakC_TF5CiiTw` collected `0.000000000000` WSTOA and was billed for
+it; the refusal that closes it ships in transaction 5.
 
 ## Five interfaces are deliberately ABSENT, and that is not an omission
 
@@ -118,42 +135,42 @@ Six interfaces DO ship, and they are the four bumps plus the two new ones listed
 cd "$(git rev-parse --show-toplevel)"
 
 # 1 — exactly six interfaces across the round, and they are the right six
-grep -h '^(interface ' Deploy/PureV18/0*_deploy.pact | sort      # => the 6 in the table, nothing else
+grep -h '^(interface ' Deploy/PureV17/0*_deploy.pact | sort      # => the 6 in the table, nothing else
 
 # 2 — reward eviction reached the client surface: THREE shapes x paid/gasless = 6 wrappers
-grep -c 'defun AQP-EVCT|' Deploy/PureV18/07_deploy.pact          # => 12 (6 declarations + 6 bodies)
+grep -c 'defun AQP-EVCT|' Deploy/PureV17/07_deploy.pact          # => 12 (6 declarations + 6 bodies)
 
 # 2b — and all three shapes are present in the core, not just renamed
 for n in CC_EvictSingleReward CCp_EvictMultiRewards CC_FullEvictRewards; do
-  printf '%s %s\n' "$(grep -c "defun $n" Deploy/PureV18/07_deploy.pact)" "$n"   # => 2 each
+  printf '%s %s\n' "$(grep -c "defun $n" Deploy/PureV17/07_deploy.pact)" "$n"   # => 2 each
 done
 
 # 3 — the gasless pair is admin-gated, not merely P|TS
-grep -c 'P|ADMINISTRATIVE-SUMMONER' Deploy/PureV18/07_deploy.pact   # => 9  (defcap + 3 uses + doc refs)
+grep -c 'P|ADMINISTRATIVE-SUMMONER' Deploy/PureV17/07_deploy.pact   # => 9  (defcap + 3 uses + doc refs)
 
 # 4 — AQP-EVCT's tables are CREATED, everything else is upgrade mode
-grep -c '^(create-table' Deploy/PureV18/07_deploy.pact           # => 2
-grep -c '^(create-table' Deploy/PureV18/05_deploy.pact           # => 0
+grep -c '^(create-table' Deploy/PureV17/07_deploy.pact           # => 2
+grep -c '^(create-table' Deploy/PureV17/05_deploy.pact           # => 0
 
 # 5 — the ladder coils from the pool account, not the beneficiary
-grep -c 'XB_Coil' Deploy/PureV18/01_deploy.pact                  # => >=2  (ATSU: declaration + body)
-grep -c 'C_Coil' Deploy/PureV18/03_deploy.pact                   # => 0    (RPS has none left)
+grep -c 'XB_Coil' Deploy/PureV17/01_deploy.pact                  # => >=2  (ATSU: declaration + body)
+grep -c 'C_Coil' Deploy/PureV17/03_deploy.pact                   # => 0    (RPS has none left)
 
 # 6 — the cost readers really did move out of RPS. Match the DEFINITION, not the string: RPS
 #     still carries one COMMENT naming the reader (module-qualified, so it resolves), and a bare
 #     string grep here reported 1 and read as a leftover.
-grep -c 'defun URC_CollectLadderPreview' Deploy/PureV18/03_deploy.pact # => 0
-grep -c 'defun URC_CollectLadderPreview' Deploy/PureV18/04_deploy.pact # => 2  (interface + body)
+grep -c 'defun URC_CollectLadderPreview' Deploy/PureV17/03_deploy.pact # => 0
+grep -c 'defun URC_CollectLadderPreview' Deploy/PureV17/04_deploy.pact # => 2  (interface + body)
 
 # 7 — no transaction exceeds the evidence-backed byte cap
-for f in Deploy/PureV18/0*_deploy.pact; do printf '%8d %s\n' "$(stat -c%s "$f")" "$f"; done | sort -rn | head -1
+for f in Deploy/PureV17/0*_deploy.pact; do printf '%8d %s\n' "$(stat -c%s "$f")" "$f"; done | sort -rn | head -1
 #   => 317,569 — under the 320,000 cap; the planner's "OVER BUDGET ALONE" warning is on the
 #      SOURCE-byte proxy (AQP-FVT's source is 320,863), and upgrade mode strips enough
 #      create-table to bring the EMITTED file under. Nothing was waived.
 ```
 
 If any count is wrong the artefacts predate a fix. Regenerate with
-`python3 REPL/tools/_deploybundle.py --round 2026-10-v18-eviction --write`, then re-copy
+`python3 REPL/tools/_deploybundle.py --round 2026-10-v17-eviction --write`, then re-copy
 `01..08_deploy.pact` from `Deploy/1_Pure/` and `01_init.pact` to `09_init.pact`, and **restore
 `Deploy/1_Pure` and `Deploy/2_Init` with `python3 REPL/tools/_deploybundle.py --write`** — a
 `--round` run overwrites them with the round's subset, and the gate checks them against the

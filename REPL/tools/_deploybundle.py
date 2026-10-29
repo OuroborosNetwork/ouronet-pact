@@ -511,7 +511,7 @@ ROUNDS = {
                 "as DPL-UR above. Swept for tree hygiene only.",
         },
     },
-    "2026-10-v18-eviction": {
+    "2026-10-v17-eviction": {
         "why": "REWARD EVICTION + THE RPS SPLIT. Two new modules and a four-interface cascade. "
                "AQP-EVCT lets an FVT owner collect on behalf of every staker with a positive "
                "claimable (owner ask, 2026-10-29: 'Evicts the Rewards to their beneficiaries, "
@@ -1708,7 +1708,7 @@ LIVE_INTERFACES = {
     "CitizenLaunchpadTalosV1": "e4ccca0348ca6ecc3677167528ba7f12",
     "AcquisitionPoolBootV1": "84152db1d6336d1a4e05e3c7f1ce2b09",
     "DispenserV2": "07f7194b1f4d36a86d997f218fba27db",
-    # ADDED 2026-10-29 for the V18 eviction round, and the five below are the SUCCESSORS of
+    # ADDED 2026-10-29 for the V17 eviction round, and the five below are the SUCCESSORS of
     # entries already in this dict -- `AcquisitionPoolBootV1` and `DispenserV2` are two lines
     # up. That is the tell: these names were bumped by the 2026-10-12 interface-membership
     # cascade and SHIPPED by PureV10/V13/V14, so the tree's current names are now the live ones
