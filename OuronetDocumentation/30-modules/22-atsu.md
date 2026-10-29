@@ -47,7 +47,9 @@ A Stage-1 core above the pool state module. Its two hibernating siblings — con
 | `P|` policy | 9 | inter-module authorisation | `P|A_Add`, `P|A_AddIMP`, `P|A_Define`, `P|A_RemoveIMP`, `P|A_SetIMP`, `P|Info` …+3 |
 | *(unclassified)* | 5 | carries no StoicSyntax prefix | `CT_Bar`, `CT_EmptyCumulator`, `GOV|AutostakeKey`, `GOV|Demiurgoi`, `XIv_StoreUnstakeObject` |
 
-> Repository and chain agree on every declared shape.
+> **The repository differs from what is deployed.** Everything above describes the CHAIN, which is what a caller actually reaches. The difference is stated rather than resolved:
+>
+> - **functions** in the repository only: `URCi_CoilTo`, `XB_Coil`
 
 **Capabilities** -- 27
 

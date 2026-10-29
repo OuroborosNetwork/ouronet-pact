@@ -807,7 +807,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
-                    (ref-ATSU:module{AutostakeUsageV3} ATSU)
+                    (ref-ATSU:module{AutostakeUsageV4} ATSU)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-ATSU::CC_RemoveSecondary patron executor ats reward-token)
@@ -823,7 +823,7 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
-                    (ref-ATSU:module{AutostakeUsageV3} ATSU)
+                    (ref-ATSU:module{AutostakeUsageV4} ATSU)
                     (st:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -840,7 +840,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
-                    (ref-ATSU:module{AutostakeUsageV3} ATSU)
+                    (ref-ATSU:module{AutostakeUsageV4} ATSU)
                     (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-ATSU::C_KickStart patron executor ats rt-amounts rbt-request-amount)
                     )
@@ -857,7 +857,7 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (ref-ATS:module{AutostakeV4} ATS)
-                    (ref-ATSU:module{AutostakeUsageV3} ATSU)
+                    (ref-ATSU:module{AutostakeUsageV4} ATSU)
                     (prev-index:decimal (ref-ATS::URC_Index ats))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -876,7 +876,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
-                    (ref-ATSU:module{AutostakeUsageV3} ATSU)
+                    (ref-ATSU:module{AutostakeUsageV4} ATSU)
                     (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-ATSU::C_Coil patron executor ats rt amount)
                     )
@@ -894,7 +894,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
-                    (ref-ATSU:module{AutostakeUsageV3} ATSU)
+                    (ref-ATSU:module{AutostakeUsageV4} ATSU)
                     (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-ATSU::C_Curl patron executor ats1 ats2 rt amount)
                     )
@@ -920,7 +920,7 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (ref-ATS:module{AutostakeV4} ATS)
-                    (ref-ATSU:module{AutostakeUsageV3} ATSU)
+                    (ref-ATSU:module{AutostakeUsageV4} ATSU)
                     (ref-VST:module{VestingV3} VST)
                     ;;
                     (coil-data:object{AutostakeV4.CoilData} 
@@ -955,7 +955,7 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (ref-ATS:module{AutostakeV4} ATS)
-                    (ref-ATSU:module{AutostakeUsageV3} ATSU)
+                    (ref-ATSU:module{AutostakeUsageV4} ATSU)
                     (ref-VST:module{VestingV3} VST)
                     ;;
                     (coil1-data:object{AutostakeV4.CoilData} 
@@ -1028,7 +1028,7 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
-                    (ref-ATSU:module{AutostakeUsageV3} ATSU)
+                    (ref-ATSU:module{AutostakeUsageV4} ATSU)
                     (st:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -1046,7 +1046,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
-                    (ref-ATSU:module{AutostakeUsageV3} ATSU)
+                    (ref-ATSU:module{AutostakeUsageV4} ATSU)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-ATSU::C_ColdRecovery patron executor ats ra)
@@ -1064,7 +1064,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
-                    (ref-ATSU:module{AutostakeUsageV3} ATSU)
+                    (ref-ATSU:module{AutostakeUsageV4} ATSU)
                     (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-ATSU::C_Cull patron executor ats)
                     )
@@ -1087,7 +1087,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
-                    (ref-ATSU:module{AutostakeUsageV3} ATSU)
+                    (ref-ATSU:module{AutostakeUsageV4} ATSU)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-ATSU::C_HotRecovery patron executor ats ra)
@@ -1104,7 +1104,7 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
-                    (ref-ATSU:module{AutostakeUsageV3} ATSU)
+                    (ref-ATSU:module{AutostakeUsageV4} ATSU)
                     (ats:string (ref-DPOF::UR_RewardBearingToken id))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -1121,7 +1121,7 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
-                    (ref-ATSU:module{AutostakeUsageV3} ATSU)
+                    (ref-ATSU:module{AutostakeUsageV4} ATSU)
                     (ats:string (ref-DPOF::UR_RewardBearingToken id))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
@@ -1138,7 +1138,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
-                    (ref-ATSU:module{AutostakeUsageV3} ATSU)
+                    (ref-ATSU:module{AutostakeUsageV4} ATSU)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-ATSU::C_DirectRecovery patron executor ats ra)

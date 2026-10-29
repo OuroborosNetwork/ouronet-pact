@@ -18,7 +18,7 @@ Counts are of definitions in the tree, interface declarations included.
 | `URC_` | 795 | reads and derives; no `enforce` |
 | `UEV_` | 672 | reads and `enforce`s; failure aborts the transaction |
 | `INFO_` | 644 | operation preview returning a client-facing cost and description |
-| `URCi_` | 633 | **cost reader** — the single source both billing and the preview call |
+| `URCi_` | 635 | **cost reader** — the single source both billing and the preview call |
 | `A_` | 557 | admin-key mutation |
 | `UC_` | 524 | pure compute on arguments only — no table reads, no `enforce` |
 | `XI_` | 394 | internal write, this module only, under a capability |
@@ -31,7 +31,7 @@ Counts are of definitions in the tree, interface declarations included.
 | `P|` | 121 | policy — inter-module authorisation |
 | `UCk_` | 74 | **key builder** — composes a table's composite row key. Pure; returns a string, not a table |
 | `WU_` | 67 | write — update |
-| `XB_` | 62 | callable both internally and externally |
+| `XB_` | 64 | callable both internally and externally |
 | `SC_` | 52 | smart-contract account name — a constant, exposed as a function |
 | `CCp_` | 52 | client recipe that reaches a scan |
 | `CAP_` | 40 | account-ownership enforcement |

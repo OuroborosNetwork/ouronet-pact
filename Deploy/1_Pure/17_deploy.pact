@@ -2515,7 +2515,7 @@
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
-                (ref-ATSU:module{AutostakeUsageV3} ATSU)
+                (ref-ATSU:module{AutostakeUsageV4} ATSU)
                 (ref-ATS:module{AutostakeV4} ATS)
                 (bs:[integer] (UR_FVT-QS|BronzeSplit fvt-id reward-dptf-id))
                 (ss:[integer] (UR_FVT-QS|SilverSplit fvt-id reward-dptf-id))
@@ -2681,7 +2681,7 @@
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
-                (ref-ATSU:module{AutostakeUsageV3} ATSU)
+                (ref-ATSU:module{AutostakeUsageV4} ATSU)
                 (ref-ATS:module{AutostakeV4} ATS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (reward-kind:string (UR_FVT-RG|RewardKind fvt-id reward-dptf-id))
@@ -3605,7 +3605,7 @@
         (let
             (
                 (ref-TFT:module{TrueFungibleTransferV3} TFT)
-                (ref-ATSU:module{AutostakeUsageV3} ATSU)
+                (ref-ATSU:module{AutostakeUsageV4} ATSU)
                 (ref-ATS:module{AutostakeV4} ATS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
@@ -5068,7 +5068,7 @@
         (let
             (
                 (ref-TFT:module{TrueFungibleTransferV3} TFT)
-                (ref-ATSU:module{AutostakeUsageV3} ATSU)
+                (ref-ATSU:module{AutostakeUsageV4} ATSU)
                 (ref-ATS:module{AutostakeV4} ATS)
                 (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 (bs:[integer] (UR_FVT-QS|BronzeSplit fvt-id reward-dptf-id))

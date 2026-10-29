@@ -2330,7 +2330,7 @@
             (
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 (ref-ATS:module{AutostakeV4} ATS)
-                (ref-ATSU:module{AutostakeUsageV3} ATSU)
+                (ref-ATSU:module{AutostakeUsageV4} ATSU)
                 ;;
                 (coil-data:object{AutostakeV4.CoilData}
                     (ref-ATS::URC_RewardBearingTokenAmounts ats rt amount)
@@ -2418,7 +2418,7 @@
             (
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 (ref-ATS:module{AutostakeV4} ATS)
-                (ref-ATSU:module{AutostakeUsageV3} ATSU)
+                (ref-ATSU:module{AutostakeUsageV4} ATSU)
                 ;;
                 ;;<ats1>
                 (coil1-data:object{AutostakeV4.CoilData}
@@ -2540,7 +2540,7 @@
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (ref-ATS:module{AutostakeV4} ATS)
-                (ref-ATSU:module{AutostakeUsageV3} ATSU)
+                (ref-ATSU:module{AutostakeUsageV4} ATSU)
                 (ref-DALOS:module{OuronetDalosV3} DALOS)
                 ;;
                 (index-name:string (ref-ATS::UR_IndexName ats))
@@ -2611,7 +2611,7 @@
                 (ref-U|DEC:module{OuronetDecimalsV2} U|DEC)
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 (ref-ATS:module{AutostakeV4} ATS)
-                (ref-ATSU:module{AutostakeUsageV3} ATSU)
+                (ref-ATSU:module{AutostakeUsageV4} ATSU)
                 ;;
                 (c0:[decimal] (at "summed-culled-values" (ref-ATSU::URC_MultiCull ats culler)))
                 (c1:[decimal] (ref-ATSU::URC_SingleCull ats culler 1))
@@ -2655,7 +2655,7 @@
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (ref-ATS:module{AutostakeV4} ATS)
-                (ref-ATSU:module{AutostakeUsageV3} ATSU)
+                (ref-ATSU:module{AutostakeUsageV4} ATSU)
                 ;;
                 ;;THE COST READER IS BOUND FIRST, and that ordering is load-bearing. URCi_
                 ;;DirectRecovery carries the op's own state guard, so binding it first makes this
@@ -2956,7 +2956,7 @@
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
-                (ref-ATSU:module{AutostakeUsageV3} ATSU)
+                (ref-ATSU:module{AutostakeUsageV4} ATSU)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount fueler))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -2969,7 +2969,7 @@
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
-                (ref-ATSU:module{AutostakeUsageV3} ATSU)
+                (ref-ATSU:module{AutostakeUsageV4} ATSU)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Places {} into Hot Recovery on ATS-Pair {}" [ra ats])]
@@ -2981,7 +2981,7 @@
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
-                (ref-ATSU:module{AutostakeUsageV3} ATSU)
+                (ref-ATSU:module{AutostakeUsageV4} ATSU)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: KickStarts ATS-Pair {} with RT amounts {} for {} RBT" [ats rt-amounts rbt-request-amount])]
@@ -2993,7 +2993,7 @@
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
-                (ref-ATSU:module{AutostakeUsageV3} ATSU)
+                (ref-ATSU:module{AutostakeUsageV4} ATSU)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Redeems {} Nonce {} on its ATS-Pair" [id nonce])]
@@ -3005,7 +3005,7 @@
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
-                (ref-ATSU:module{AutostakeUsageV3} ATSU)
+                (ref-ATSU:module{AutostakeUsageV4} ATSU)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Reverses (Recovers) {} Nonce {}" [id nonce])]
@@ -3017,7 +3017,7 @@
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
-                (ref-ATSU:module{AutostakeUsageV3} ATSU)
+                (ref-ATSU:module{AutostakeUsageV4} ATSU)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount syphon-target))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -3030,7 +3030,7 @@
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
-                (ref-ATSU:module{AutostakeUsageV3} ATSU)
+                (ref-ATSU:module{AutostakeUsageV4} ATSU)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount target))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -3047,7 +3047,7 @@
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 (ref-ATS:module{AutostakeV4} ATS)
-                (ref-ATSU:module{AutostakeUsageV3} ATSU)
+                (ref-ATSU:module{AutostakeUsageV4} ATSU)
                 (ref-VST:module{VestingV3} VST)
                 ;;
                 (coil-data:object{AutostakeV4.CoilData} (ref-ATS::URC_RewardBearingTokenAmounts ats coil-token amount))
@@ -3074,7 +3074,7 @@
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 (ref-ATS:module{AutostakeV4} ATS)
-                (ref-ATSU:module{AutostakeUsageV3} ATSU)
+                (ref-ATSU:module{AutostakeUsageV4} ATSU)
                 (ref-VST:module{VestingV3} VST)
                 ;;
                 (coil1-data:object{AutostakeV4.CoilData} (ref-ATS::URC_RewardBearingTokenAmounts ats1 curl-token amount))
@@ -3150,7 +3150,7 @@
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
-                (ref-ATSU:module{AutostakeUsageV3} ATSU)
+                (ref-ATSU:module{AutostakeUsageV4} ATSU)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount remover))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo

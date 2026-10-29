@@ -1,9 +1,12 @@
+;; net: v1   ·   dev: v2   ;; AutostakeUsage V3 -> V4 (2026-10-29): XB_Coil -- a coil whose
+;; FUNDER and RECIPIENT are separate accounts, so the AQP reward ladder can coil as
+;; AQP|SC_NAME and credit a beneficiary who is not signing. C_Coil now delegates to it.
 ;(namespace "n_9d612bcfe2320d6ecbbaa99b47aab60138a2adea")
 ;; Deploy: load THIS file — interface(s) + module ship together.
 ;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact
 ;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface AutostakeUsageV3
+(interface AutostakeUsageV4
     @doc "Exposes Autostake Usage Functions, which involve Token Transfers"
 
     ;;<=========================================================================>
@@ -53,6 +56,7 @@
     (defun URCi_KickStart:object{IgnisCollectorV4.OutputCumulator} (kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal))
     (defun URCi_Fuel:object{IgnisCollectorV4.OutputCumulator} (fueler:string ats:string reward-token:string amount:decimal))
     (defun URCi_Coil:object{IgnisCollectorV4.OutputCumulator} (coiler:string ats:string rt:string amount:decimal))
+    (defun URCi_CoilTo:object{IgnisCollectorV4.OutputCumulator} (funder:string recipient:string ats:string rt:string amount:decimal))
     (defun URCi_Curl:object{IgnisCollectorV4.OutputCumulator} (curler:string ats1:string ats2:string rt:string amount:decimal))
     (defun URCi_ColdRecovery:object{IgnisCollectorV4.OutputCumulator} (recoverer:string ats:string ra:decimal))
     (defun URCi_Cull:object{IgnisCollectorV4.OutputCumulator} (culler:string ats:string))
@@ -85,6 +89,14 @@
         ;;
     (defun C_KickStart:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal))
     (defun C_Fuel:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string ats:string reward-token:string amount:decimal))
+    ;;XB_Coil is C_Coil with the funder and the recipient SPLIT, for a caller that must coil out of
+    ;;one account and credit another -- the AQP reward ladder coiling as AQP|SC_NAME on behalf of a
+    ;;beneficiary who is not signing. C_Coil KEEPS ITS OWN BODY rather than delegating: moving the
+    ;;three legs behind an XB_ made `_ignis_price_sheet.py` re-quote C_Coil from `>= 93` to `87`
+    ;;claimed exact, dropping both transfer legs. The duplication is pinned by assertion instead.
+    ;;URCi_CoilTo is this one's cost mirror -- URCi_Coil cannot serve it, because a transfer's IGNIS
+    ;;class depends on WHICH accounts it runs between.
+    (defun XB_Coil:object{IgnisCollectorV4.OutputCumulator} (patron:string funder:string recipient:string ats:string rt:string amount:decimal))
     (defun C_Coil:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string ats:string rt:string amount:decimal))
     (defun C_Curl:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string ats1:string ats2:string rt:string amount:decimal))
         ;;
@@ -120,7 +132,7 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements AutostakeUsageV3)
+    (implements AutostakeUsageV4)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -943,6 +955,49 @@
                 )
                 (ico3:object{IgnisCollectorV4.OutputCumulator}
                     (ref-TFT::URCi_Transfer c-rbt ATS|SC_NAME coiler c-rbt-amount)
+                )
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3] [c-rbt-amount])
+        )
+    )
+    (defun URCi_CoilTo:object{IgnisCollectorV4.OutputCumulator}
+        (funder:string recipient:string ats:string rt:string amount:decimal)
+        @doc "Cost preview for <XB_Coil>: the same Concatenate[transfer, mint, transfer] as \
+            \ <URCi_Coil>, but with the two transfer ENDPOINTS kept apart. \
+            \ \
+            \ IT EXISTS BECAUSE <URCi_Coil> CANNOT BE REUSED, and the reason is a bug that was just \
+            \ fixed one module over. A transfer's IGNIS class is chosen by <URC_TransferClasses>, \
+            \ which reaches <URC_IzSimpleTransfer> and reads \
+            \ `(UR_AccountRoleFeeExemption id receiver)` -- so the price depends on WHICH ACCOUNTS \
+            \ the transfer runs between. <URCi_Coil> names <coiler> on both legs; quoting a coil \
+            \ that funds from AQP|SC_NAME and credits a beneficiary through it would price both \
+            \ legs against the wrong account. \
+            \ \
+            \ That is exactly the shape of the five-site patron/collector defect in 04_RPS.pact \
+            \ (2026-10-29), where every cost mirror named the payer where the execution paid the \
+            \ beneficiary, and was latent only because the two were the same account in a \
+            \ self-collect. Reward eviction makes them NEVER the same, so this reader takes both."
+        (let
+            (
+                (ref-ATS:module{AutostakeV4} ATS)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                ;;
+                (coil-data:object{AutostakeV4.CoilData}
+                    (ref-ATS::URC_RewardBearingTokenAmounts ats rt amount)
+                )
+                (c-rbt:string (at "rbt-id" coil-data))
+                (c-rbt-amount:decimal (at "rbt-amount" coil-data))
+                ;;
+                (ico1:object{IgnisCollectorV4.OutputCumulator}
+                    (ref-TFT::URCi_Transfer rt funder ATS|SC_NAME amount)
+                )
+                (ico2:object{IgnisCollectorV4.OutputCumulator}
+                    (ref-DPTF::URCi_Mint c-rbt ATS|SC_NAME false)
+                )
+                (ico3:object{IgnisCollectorV4.OutputCumulator}
+                    (ref-TFT::URCi_Transfer c-rbt ATS|SC_NAME recipient c-rbt-amount)
                 )
             )
             (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3] [c-rbt-amount])
@@ -1804,11 +1859,92 @@
             )
         )
     )
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          ATSU|C>COIL
+    (defun XB_Coil:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string funder:string recipient:string ats:string rt:string amount:decimal)
+        @doc "Autostakes <amount> of <rt> on <ats>, FUNDED BY <funder> and CREDITED TO <recipient>. \
+            \ <C_Coil> is this with the two roles collapsed onto one account. \
+            \ \
+            \ WHY THE ROLES HAD TO SPLIT, 2026-10-29. A coil's first leg is a transfer OUT of the \
+            \ coiler, so <TFT::C_Transfer> enforces account ownership on it. That is right for a \
+            \ user coiling their own tokens, and it makes the AQP triplet reward ladder reachable \
+            \ ONLY by the beneficiary -- the collect path coils as <collector>, which works solely \
+            \ because the beneficiary is the one signing. Reward EVICTION has no such signature: \
+            \ the FVT owner triggers it for somebody else. \
+            \ \
+            \ So the ladder now coils as <AQP|SC_NAME> -- whose ownership the AQP remote-governor \
+            \ guard satisfies -- and credits the beneficiary directly. ONE core serves both collect \
+            \ and evict, which is the whole point: a second ladder would be a fourth copy of a \
+            \ computation this tree already warns is drifting (see URC_CollectLadderPreview). \
+            \ \
+            \ AMOUNTS ARE UNAFFECTED, which is what makes the two paths comparable. <c-rbt-amount> \
+            \ is a pure function of (ats, rt, amount) through URC_RewardBearingTokenAmounts, and \
+            \ <XE_UpdateRUR> takes no account, so no per-account ATS state depends on who coiled. \
+            \ Only the transfer ENDPOINTS move. \
+            \ \
+            \ MODELLED ON <OUROBOROS::XB_Compress>, which exists for the identical reason: its own \
+            \ doc says it omits the standard-account restriction 'so a SMART account (e.g. \
+            \ AQP|SC_NAME custody) may normalize an IGNIS royalty leg'. P|UEV_IMC gates the caller \
+            \ module; the <funder>'s transfer is authorized by whatever capability that caller holds \
+            \ for it."
+        (P|UEV_IMC)
+        (with-capability (ATSU|C>COIL ats rt)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-ATS:module{AutostakeV4} ATS)
+                    (ref-TFT:module{TrueFungibleTransferV3} TFT)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                    ;;
+                    ;;<ats>
+                    (coil-data:object{AutostakeV4.CoilData} 
+                        (ref-ATS::URC_RewardBearingTokenAmounts ats rt amount)
+                    )
+                    (input-amount:decimal (at "first-input-amount" coil-data))
+                    (royalty-fee:decimal (at "royalty-fee" coil-data))
+                    (c-rbt:string (at "rbt-id" coil-data))
+                    (c-rbt-amount:decimal (at "rbt-amount" coil-data))
+                    ;;
+                    (ico1:object{IgnisCollectorV4.OutputCumulator}
+                        (ref-TFT::C_Transfer patron funder ATS|SC_NAME rt amount true)
+                    )
+                    (ico2:object{IgnisCollectorV4.OutputCumulator}
+                        (ref-DPTF::C_Mint patron ATS|SC_NAME c-rbt c-rbt-amount false)
+                    )
+                    (ico3:object{IgnisCollectorV4.OutputCumulator}
+                        (ref-TFT::C_Transfer patron ATS|SC_NAME recipient c-rbt c-rbt-amount true)
+                    )
+                )
+                (ref-ATS::XE_UpdateRUR ats rt 1 true input-amount)
+                (if (!= royalty-fee 0.0)
+                    (ref-ATS::XE_UpdateRUR ats rt 3 true royalty-fee)
+                    true
+                )
+                (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3] [c-rbt-amount])
+            )  
+        )
+    )
     (defun C_Coil:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string ats:string rt:string amount:decimal)
         @doc "Autostakes an <rt> Token on <ats> ATS-Pair. \
             \ If Hibernate is on, retains the <c-rbt-amount>, which will then be hibernated \
-            \ from the TALOS module, and sent as Hibernated H| Token to the <executor>"
+            \ from the TALOS module, and sent as Hibernated H| Token to the <executor> \
+            \ \
+            \ \
+            \ KEPT ITS OWN BODY, and the first attempt at this made it delegate to <XB_Coil>. That \
+            \ was reverted on the evidence: `_ignis_price_sheet.py` reconstructs an op's price by \
+            \ walking its body, and with the three legs moved behind an XB_ the generated sheet \
+            \ re-quoted this op from `>= 93` (floor, 'composes other client ops') to `87` claimed \
+            \ EXACT -- dropping both transfer legs and asserting a precision it does not have. \
+            \ <URCi_Coil> settles which figure is true: it re-derives Transfer + Mint + Transfer and \
+            \ says it is 'cost-equivalent to C_Coil's billed cumulator (same IGNIS)'. So 93 was \
+            \ faithful and the delegation degraded a gate-enforced artefact. \
+            \ \
+            \ The duplication that buys back is three legs of boilerplate -- NOT the reward-ladder \
+            \ arithmetic, which was the thing worth refusing to copy. It is converted into a pinned \
+            \ equivalence instead: <XB_Coil> with funder == recipient must produce the identical \
+            \ cumulator and the identical balance deltas as this function."
         (P|UEV_IMC)
         (with-capability (ATSU|C>COIL ats rt)
             (let

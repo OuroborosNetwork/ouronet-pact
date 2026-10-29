@@ -3959,7 +3959,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
-                    (ref-ATSU:module{AutostakeUsageV3} ATSU)
+                    (ref-ATSU:module{AutostakeUsageV4} ATSU)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-ATSU::AA_RemoveSecondary patron executor ats reward-token accounts-with-ats-data)
@@ -3976,7 +3976,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
-                    (ref-ATSU:module{AutostakeUsageV3} ATSU)
+                    (ref-ATSU:module{AutostakeUsageV4} ATSU)
                 )
                 ;;A_ on the blessed path: the collection runs EXACTLY as any C_'s does -- it is
                 ;;simply served by GASLESS-PATRON, the one account IGNIS::XE_CollectIgnis exempts. The

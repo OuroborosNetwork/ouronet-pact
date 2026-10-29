@@ -461,7 +461,7 @@
                 (ref-U|DEC:module{OuronetDecimalsV2} U|DEC)
                 (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (ref-ATS:module{AutostakeV4} ATS)
-                (ref-ATSU:module{AutostakeUsageV3} ATSU)
+                (ref-ATSU:module{AutostakeUsageV4} ATSU)
                 ;;
                 (toggle-cold:bool (ref-ATS::UR_ToggleColdRecovery ats))
                 (toggle-hot:bool (ref-ATS::UR_ToggleHotRecovery ats))
