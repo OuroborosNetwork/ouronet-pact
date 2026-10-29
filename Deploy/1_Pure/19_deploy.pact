@@ -2,14 +2,15 @@
 ;; OURONET DEPLOY -- file 19 of 26
 ;; This is STEP 19 of 27 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-18 must have run first, including the init steps between deploys.
-;; 1 source file(s), 302,583 gas measured in the REPL gas model, 315,164 bytes
+;; 1 source file(s), 302,583 gas measured in the REPL gas model, 320,863 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/05_FVT.pact
 ;;
-;; TOTAL: 0 interface(s), 1 module(s), 5 table(s)
+;; TOTAL: 1 interface(s), 1 module(s), 5 table(s)
 ;; What it DEPLOYS, in load order:
 ;;   -- 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/05_FVT.pact
+;;      interface  AcquisitionFarmsVaultsTreasuriesV5
 ;;      module     AQP-FVT
 ;;      table      P|T
 ;;      table      P|MT
@@ -28,8 +29,307 @@
 ;; latch -- UR_FVT|StreamEligible, UEV_DriftLockedScoreEntity, UEV_StreamEligibleMemberOk,
 ;; CC_LatchStreamEligible, URCi_LatchStreamEligible. CC_InjectStream now refuses on an un-latched
 ;; FVT. PRIOR: bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-;; AcquisitionFarmsVaultsTreasuriesV4: already deployed and unchanged -- see LIVE_INTERFACES
+(interface AcquisitionFarmsVaultsTreasuriesV5
+    @doc "Interface for the AQP reward-distribution layer (Farms/Vaults/Treasuries). \
+        \ Declares readers for FVT config, member score-entity links, RPS (reward-per-share) \
+        \ global/member/user/stream accumulators, and per-user presence/weight state; UC_ \
+        \ key builders; and the CC_*StakeFlow, CC_Inject/InjectStream/InjectFinalize, \
+        \ CC_Collect, CC_SweepRevokeAnchor/SweepBegin, CC_UnstaleMyScores and FVT config C_ \
+        \ entrypoints returning IGNIS OutputCumulators."
 
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables  ⟨cannot exist in an interface⟩
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+    (defun GOV|Demiurgoi ())
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables  ⟨cannot exist in an interface⟩
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
+    ;; [UC]  compute
+    ;;
+    (defun UCk_ScoreEntityLink:string (fvt-id:string score-entity-id:string))
+    (defun UCk_RpsGlobal:string (fvt-id:string dptf-id:string))
+    (defun UCk_RpsMember:string (fvt-id:string score-entity-id:string dptf-id:string))
+    (defun UCk_RpsUser:string (user-id:string fvt-id:string score-entity-id:string dptf-id:string))
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;; [UR]  read
+    ;;
+    (defun UR_FVT|CanUpgrade:bool (fvt-id:string))
+    (defun UR_FVT|CanChangeOwner:bool (fvt-id:string))
+    (defun UR_FVT|VacateFrozen:bool (fvt-id:string))
+    (defun UR_FVT|CommonDenominator:string (fvt-id:string))
+    (defun UR_FVT|OracleOn:bool (fvt-id:string))
+    (defun UR_FVT|FvtId:string (fvt-id:string))
+    ;;
+    ;;
+    ;;
+    ;;
+    ;;
+    (defun UR_FVT|SweepActive:bool (anchor-id:string))
+    ;; [URH] heavy-read
+    ;;
+    ;; [URCi]   cost readers — single source for exec billing + INFO preview
+    (defun URCi_Issue:object{IgnisCollectorV4.OutputCumulator} (owner-konto:string output:[string]))
+    (defun URCi_IssueStoa:decimal ())
+    (defun URCi_IssueMultipletFamily:object{IgnisCollectorV4.OutputCumulator} (patron:string output:[string]))
+    (defun URCi_UnstaleMyScores:object{IgnisCollectorV4.OutputCumulator} (patron:string output:[string]))
+    (defun URCi_LatchStreamEligible:object{IgnisCollectorV4.OutputCumulator} (fvt-id:string output:[string]))
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;; [XE]
+    ;;REWARD EVICTION, 2026-10-29. The FVT owner runs a collect FOR a beneficiary who is not
+    ;;signing, so these two exist instead of CC_Collect -- which enforces the claimant's own
+    ;;ownership and therefore cannot serve. They call the SAME XI_CollectDrip / XI_CollectPay the
+    ;;collect path calls, which is what makes the two paths identical by construction rather than
+    ;;by test. TWO entrypoints, not one, because the claimable ENFORCE sits between them and an
+    ;;XE_ may not enforce: AQP-EVCT drips, checks, then pays.
+    (defun XE_EvictDrip:string
+        (evictor:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string))
+    (defun XE_EvictPay:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string evictor:string beneficiary:string fvt-id:string score-entity-type:integer
+         score-entity-id:string reward-dptf-id:string))
+    (defun XE_SweepBegin:string (anchor-id:string))
+    (defun XE_SweepEnd:string (anchor-id:string))
+    (defun XE_SetFvtVacateFrozen:string (fvt-id:string frozen:bool))
+    (defun XE_SetFvtOracleOn:string (fvt-id:string oracle-on:bool))
+    (defun XE_RefreshTrueFungibleStakeAnchors:object{IgnisCollectorV4.OutputCumulator}
+        (beneficiary-id:string dptf-id:string)
+    )
+    (defun XE_RefreshCollectableStakeAnchors:object{IgnisCollectorV4.OutputCumulator}
+        (
+            beneficiary-id:string
+            collectable-id:string
+            son:bool
+            nonces:[integer]
+            nonce-amounts:[integer]
+            direction:bool
+        )
+    )
+    ;; [XB]
+    (defun XB_FvtInject:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string fvt-id:string reward-dptf-id:string amount:decimal)
+    )
+    ;;{5.7}  User [A/C]
+    (defun C_SetQualitySplit:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string fvt-id:string reward-dptf-id:string mode:string bronze-split:[integer] silver-split:[integer] gold-split:[integer])
+    )
+    ;; [C]   client
+    ;;
+    (defun CC_TrueFungibleStakeFlow:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string executee:string pool-id:string dptf-id:string amount:decimal direction:bool)
+    )
+    (defun CC_OrtoFungibleStakeFlow:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string executee:string pool-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal] direction:bool)
+    )
+    (defun CC_CollectableStakeFlow:object{IgnisCollectorV4.OutputCumulator}
+        (
+            patron:string
+            executor:string
+            executee:string
+            pool-id:string
+            collectable-id:string
+            son:bool
+            nonces:[integer]
+            nonce-amounts:[integer]
+            direction:bool
+        )
+    )
+    ;;
+    (defun C_Issue:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string fvt-name:string fvt-class:integer common-denominator:string)
+    )
+    (defun C_RotateOwnership:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string executee:string fvt-id:string)
+    )
+    (defun C_Control:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string fvt-id:string new-can-upgrade:bool new-can-change-owner:bool)
+    )
+    (defun C_SetCommonDenominator:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string fvt-id:string common-denominator:string)
+    )
+    (defun C_SetMosaic:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string fvt-id:string mosaic:bool)
+    )
+    (defun C_SetSplitMode:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string fvt-id:string split-mode:string)
+    )
+    (defun C_AddScoreEntity:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string fvt-id:string score-entity-type:integer score-entity-id:string)
+    )
+    (defun C_ToggleScoreEntityLink:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string fvt-id:string score-entity-type:integer score-entity-id:string enabled:bool)
+    )
+    (defun C_IssueMultipletFamily:object{IgnisCollectorV4.OutputCumulator}
+        (
+            patron:string
+            executor:string
+            token-0-id:string
+            token-1-id:string
+            token-2-id:string
+            ats-0-1-id:string
+            ats-1-2-id:string
+        )
+    )
+    (defun C_AddRewardLink:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string fvt-id:string reward-dptf-id:string segmentation:bool multiplet-family-id:string)
+    )
+    (defun C_ToggleRewardLink:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string fvt-id:string reward-dptf-id:string enabled:bool)
+    )
+    (defun C_SetMinInjectAmount:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string fvt-id:string reward-dptf-id:string min-inject-amount:decimal)
+    )
+    (defun UR_FVT-RG|MinInjectAmount:decimal (fvt-id:string dptf-id:string))
+    (defun CC_LatchStreamEligible:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string fvt-id:string)
+    )
+    (defun CC_InjectStream:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
+    )
+    (defun CC_Inject:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string fvt-id:string reward-dptf-id:string amount:decimal)
+    )
+    (defun CCp_InjectFixChunk:string
+        (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
+    )
+    (defun CC_InjectFinalize:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string fvt-id:string reward-dptf-id:string amount:decimal)
+    )
+    (defun CCp_UnstaleAll:string
+        (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
+    )
+    (defun CC_SweepRevokeAnchor:string (patron:string executor:string anchor-id:string))
+    (defun CC_SweepBegin:string (patron:string executor:string anchor-id:string))
+    (defun CCp_SweepRecomputeChunk:string (patron:string anchor-id:string chunk:integer))
+    (defun CC_UnstaleMyScores:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string fvt-ids:[string]))
+    (defun CC_Collect:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
+    )
+
+
+    ;;<=====================================================================>
+    ;;  #75 FACADE — reward-engine readers re-exported from RPS (see 04_RPS.pact)
+    (defun URC_CollectClaimableRewards:decimal (patron:string pool-id:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string))
+    (defun URC_FvtUserStillPresent:bool (fvt-id:string user-id:string))
+    (defun URC_InjectDenominator:decimal (fvt-id:string))
+    (defun URC_LiveClaimable:decimal (user-id:string fvt-id:string pool-id:string score-entity-type:integer score-entity-id:string dptf-id:string))
+    (defun URC_MemberEffectiveCapture:decimal (fvt-id:string score-entity-id:string))
+    (defun URC_MemberLevel2Weight:decimal (fvt-id:string score-entity-type:integer score-entity-id:string swpair:string))
+    (defun URC_PoolEmployedScoresFvtStakeReady:bool (pool-id:string))
+    (defun URC_ScoreEntityUserWeight:decimal (user-id:string fvt-id:string pool-id:string score-entity-type:integer score-entity-id:string))
+    (defun URC_StakeScoreDeltaSum:decimal (pool-id:string))
+    (defun URC_StreamStatus:object (fvt-id:string dptf-id:string))
+    (defun URC_UserTier1AvailableRewards:decimal (user-id:string fvt-id:string score-entity-id:string dptf-id:string deb-user:decimal))
+    (defun URCi_CollectFull:decimal (patron:string collector:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string))
+    (defun URH_FvtEnabledScoreEntityIdsForFvt:[string] (fvt-id:string))
+    (defun URH_FvtPresentUsers:[string] (fvt-id:string))
+    (defun URH_FvtStalePresentUsers:[string] (fvt-id:string))
+    (defun UR_ExternalOracle:bool ())
+    (defun UR_FVT-FFC|Count:integer (fvt-id:string dptf-id:string user-id:string))
+    (defun UR_FVT-MV|AvailableRewards:decimal (fvt-id:string score-entity-id:string dptf-id:string))
+    (defun UR_FVT-QS|BronzeSplit:[integer] (fvt-id:string dptf-id:string))
+    (defun UR_FVT-QS|GoldSplit:[integer] (fvt-id:string dptf-id:string))
+    (defun UR_FVT-QS|Mode:string (fvt-id:string dptf-id:string))
+    (defun UR_FVT-RG|AvailableRewards:decimal (fvt-id:string dptf-id:string))
+    (defun UR_FVT-RG|CurrentRps:decimal (fvt-id:string dptf-id:string))
+    (defun UR_FVT-RG|RewardEnabled:bool (fvt-id:string dptf-id:string))
+    (defun UR_FVT-RG|RewardKind:string (fvt-id:string dptf-id:string))
+    (defun UR_FVT-RG|RoyaltyRewards:decimal (fvt-id:string dptf-id:string))
+    (defun UR_FVT-RG|StreamCount:integer (fvt-id:string dptf-id:string))
+    (defun UR_FVT-RG|StreamUnreleased:decimal (fvt-id:string dptf-id:string))
+    (defun UR_FVT-RG|UnclaimedCount:integer (fvt-id:string dptf-id:string))
+    (defun UR_FVT-RG|ZombieRewards:decimal (fvt-id:string dptf-id:string))
+    (defun UR_FVT-RM|LastFarmRpsG:decimal (fvt-id:string score-entity-id:string dptf-id:string))
+    (defun UR_FVT-RM|MemberDebRps:decimal (fvt-id:string score-entity-id:string dptf-id:string))
+    (defun UR_FVT-RU|LastRps:decimal (user-id:string fvt-id:string score-entity-id:string dptf-id:string))
+    (defun UR_FVT-RU|PendingRewards:decimal (user-id:string fvt-id:string score-entity-id:string dptf-id:string))
+    (defun UR_FVT-SEL|CaptureUnits:decimal (fvt-id:string score-entity-id:string))
+    (defun UR_FVT-SEL|CaptureWeight:decimal (fvt-id:string score-entity-id:string))
+    (defun UR_FVT-SEL|Delegation:bool (fvt-id:string score-entity-id:string))
+    (defun UR_FVT-SEL|Enabled:bool (fvt-id:string score-entity-id:string))
+    (defun UR_FVT-SEL|GhostTvlWeight:decimal (fvt-id:string score-entity-id:string))
+    (defun UR_FVT-SEL|OracleTs:time (fvt-id:string score-entity-id:string))
+    (defun UR_FVT-SEL|ScoreEntityType:integer (fvt-id:string score-entity-id:string))
+    (defun UR_FVT-SEL|Swpair:string (fvt-id:string score-entity-id:string))
+    (defun UR_FVT-SEL|TotalLaneWeight:decimal (fvt-id:string score-entity-id:string))
+    (defun UR_FVT-UP|IsPresent:bool (fvt-id:string ouronet-account:string))
+    (defun UR_FVT|EnabledRewardCount:integer (fvt-id:string))
+    (defun UR_FVT|FvtClass:integer (fvt-id:string))
+    (defun UR_FVT|MembershipMode:string (fvt-id:string))
+    (defun UR_FVT|Mosaic:bool (fvt-id:string))
+    (defun UR_FVT|OwnerKonto:string (fvt-id:string))
+    (defun UR_FVT|SplitMode:string (fvt-id:string))
+    (defun UR_FVT|StreamEligible:bool (fvt-id:string))
+    (defun AA_MigrateStreamEligible:string ())
+    (defun UR_FVT|TotalDebScore:decimal (fvt-id:string))
+    (defun UR_FVT|TotalGhostTvlWeight:decimal (fvt-id:string))
+    (defun UR_OracleValidity:integer ())
+
+    ;;<=========================================================================>
+    ;; ADDED 2026-10-12 -- interface-membership sweep (StoicSyntax-Prefixes.md Sec5,
+    ;; owner ruling). Every one of these was already live in the module body; this
+    ;; closes the gap between what the module DOES and what its interface SAYS it does.
+    ;;<=========================================================================>
+    (defun CC_ClearPoolSweep:object{IgnisCollectorV4.OutputCumulator} (patron:string pool-id:string))
+    (defun CC_ReassignCollectableStakeBeneficiary:object{IgnisCollectorV4.OutputCumulator} (patron:string owner:string pool-id:string collectable-id:string son:bool nonce:integer
+         current-beneficiary:string new-beneficiary:string))
+    (defun CC_ReassignOrtoStakeBeneficiary:object{IgnisCollectorV4.OutputCumulator} (patron:string owner:string pool-id:string dpof-id:string nonce:integer
+         current-beneficiary:string new-beneficiary:string))
+    (defun CC_ReassignTrueFungibleStakeBeneficiary:object{IgnisCollectorV4.OutputCumulator} (patron:string owner:string pool-id:string dptf-id:string amount:decimal
+         current-beneficiary:string new-beneficiary:string))
+    (defun CCp_FvtFixSlice:string (patron:string fvt-id:string reward-dptf-id:string users:[string]))
+    (defun CCp_ReleaseSpecialCustodial:object{IgnisCollectorV4.OutputCumulator} (patron:string pool-id:string executee:string dpof-id:string nonce:integer))
+    (defun CCp_StakeSpecialCustodial:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string executee:string pool-id:string dpof-id:string
+         nonces:[integer] nonce-amounts:[decimal]))
+    (defun UC_EmptyOc:object{IgnisCollectorV4.OutputCumulator} ())
+    (defun UEV_AddScoreEntityContext (fvt-id:string score-entity-type:integer score-entity-id:string swpair:string ghost-weight:decimal))
+    (defun UEV_DriftLockedScoreEntity (score-entity-type:integer score-entity-id:string))
+    (defun UEV_StreamEligibleMemberOk (fvt-id:string score-entity-type:integer score-entity-id:string))
+    (defun UEV_AddScoreEntityScoreContext (fvt-id:string score-id:string swpair:string ghost-weight:decimal))
+    (defun UEV_AddScoreEntityTripletContext (fvt-id:string triplet-id:string swpair:string ghost-weight:decimal))
+    (defun UEV_CollectContext (patron:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string))
+    (defun UEV_ExecutorIzFvtOwner (executor:string fvt-id:string))
+    (defun UEV_FVT|PoolReleasable (pool-id:string))
+    (defun UEV_InjectContext (patron:string fvt-id:string reward-dptf-id:string amount:decimal))
+    (defun UEV_IssueMultipletFamilyContext (
+            token-0-id:string
+            token-1-id:string
+            token-2-id:string
+            ats-0-1-id:string
+            ats-1-2-id:string
+        ))
+    (defun UEV_SetCommonDenominatorContext (fvt-id:string common-denominator:string))
+    (defun UEV_SetMosaicContext (fvt-id:string mosaic:bool))
+    (defun UEV_StreamParams:bool (reward-dptf-id:string amount:decimal duration:integer))
+    (defun URH_FVT|ActiveSweepCoversPool:bool (pool-id:string))
+)
 (module AQP-FVT GOV
     @doc "Large sovereign reward-accounting module for AQP farms (class 0), vaults (1) and \
         \ treasuries (2). Uses a UrStoa-style RPS (reward-per-share) model across \
@@ -43,7 +343,7 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements AcquisitionFarmsVaultsTreasuriesV4)
+    (implements AcquisitionFarmsVaultsTreasuriesV5)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -4112,6 +4412,82 @@
             )
         )
     )
+    (defcap FVT|XE>EVICT-REWARD
+        (evictor:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
+        @doc "Reward EVICTION of one (beneficiary x score-entity x reward-lane) leg, authorised by the \
+            \ FVT OWNER rather than by the beneficiary. \
+            \ \
+            \ THE CONTRAST WITH FVT|C>COLLECT IS THE POINT. That capability validates the CONTEXT and \
+            \ proves NO account, because CC_Collect proves the CLAIMANT separately -- only the claimant \
+            \ may trigger its own claim. Eviction inverts the actor: the owner acts FOR a beneficiary \
+            \ who is not present to sign, so the authority moved to the owner konto and the beneficiary \
+            \ is an EXECUTEE -- acted upon, needing no signature. That is why it is safe for no \
+            \ ownership check to run on it. \
+            \ \
+            \ AUTHORISATION BEFORE VALIDATION (owner ruling 2026-09-14). A business rule placed first \
+            \ shadows the gate behind it, and a red-team test then proves nothing -- delete the gate and \
+            \ the test still passes. So the owner is proven before UEV_CollectContext runs. \
+            \ \
+            \ Composes the SAME two policies as FVT|C>COLLECT: P|SECURE-CALLER for the RPS phases and \
+            \ P|FVT|REMOTE-GOV for the AQP|SC_NAME custody legs the payout moves through."
+        @event
+        (UEV_ExecutorIzFvtOwner evictor fvt-id)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-RPS:module{AcquisitionRewardPerShareV5} RPS)
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership (ref-RPS::UR_FVT|OwnerKonto fvt-id))
+        )
+        (UEV_CollectContext evictor fvt-id score-entity-type score-entity-id reward-dptf-id)
+        (compose-capability (P|SECURE-CALLER))
+        (compose-capability (P|FVT|REMOTE-GOV))
+    )
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          FVT|XE>EVICT-REWARD
+    (defun XE_EvictDrip:string
+        (evictor:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
+        @doc "Forward (AQP-EVCT): PHASE 0 of an eviction leg -- the same XI_CollectDrip a self-collect \
+            \ runs. Separate from XE_EvictPay because the caller must check the claimable BETWEEN them: \
+            \ a streamed lane reads zero before the drip, and an XE_ may not enforce."
+        (P|UEV_IMC)
+        (with-capability (FVT|XE>EVICT-REWARD evictor fvt-id score-entity-type score-entity-id reward-dptf-id)
+            (XI_CollectDrip fvt-id score-entity-type score-entity-id reward-dptf-id)
+        )
+    )
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          FVT|XE>EVICT-REWARD
+    (defun XE_EvictPay:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string evictor:string beneficiary:string fvt-id:string score-entity-type:integer
+         score-entity-id:string reward-dptf-id:string)
+        @doc "Forward (AQP-EVCT): PHASES 1-6 of an eviction leg plus the billing leg -- XI_CollectPay \
+            \ verbatim, so the beneficiary receives exactly what a self-collect would pay them. \
+            \ \
+            \ AND IT ZEROES THE FORCED-FIX COUNT. Owner ruling, 2026-10-29: an evicted user never pays \
+            \ the inject-forced-fix penalty, because with an automaton evicting daily they might never \
+            \ self-collect -- the count would grow unpayable and a deterrent would become a trap. The \
+            \ zeroing is HERE rather than in the caller so it cannot be forgotten: no eviction path \
+            \ pays without clearing it. The penalty still bites the user who is unstaled by an inject \
+            \ and then collects for themselves, which is the behaviour the charge exists for. \
+            \ \
+            \ AFTER the payment, mirroring where PHASE 7 sits in CC_Collect."
+        (P|UEV_IMC)
+        (with-capability (FVT|XE>EVICT-REWARD evictor fvt-id score-entity-type score-entity-id reward-dptf-id)
+            (let
+                (
+                    (ref-RPS:module{AcquisitionRewardPerShareV5} RPS)
+                    ;;
+                    (oc:object{IgnisCollectorV4.OutputCumulator}
+                        (XI_CollectPay patron beneficiary
+                            (URC_CollectPoolId score-entity-type score-entity-id)
+                            fvt-id score-entity-type score-entity-id reward-dptf-id)
+                    )
+                )
+                (ref-RPS::XE_WU_FvtForcedFixCount|Zero fvt-id reward-dptf-id beneficiary)
+                oc
+            )
+        )
+    )
     ;;Protection: Class 2 — SECURE
     (defun XI_CollectForcedFixPenalty:object{IgnisCollectorV4.OutputCumulator}
         (patron:string collector:string fvt-id:string reward-dptf-id:string)
@@ -4698,9 +5074,9 @@
         @doc "Facade: delegates to the RPS reward engine (post-#75 split)."
         (RPS.URC_UserTier1AvailableRewards user-id fvt-id score-entity-id dptf-id deb-user)
     )
-    (defun URCi_CollectFull:decimal (patron:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
+    (defun URCi_CollectFull:decimal (patron:string collector:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
         @doc "Facade: delegates to the RPS reward engine (post-#75 split)."
-        (AQP-RPSC.URCi_CollectFull patron fvt-id score-entity-type score-entity-id reward-dptf-id)
+        (AQP-RPSC.URCi_CollectFull patron collector fvt-id score-entity-type score-entity-id reward-dptf-id)
     )
     (defun URH_FVT|ActiveSweepCoversPool:bool (pool-id:string)
         @doc "HEAVY. True when some ANCHOR sweep is still open over a boost class whose scores \

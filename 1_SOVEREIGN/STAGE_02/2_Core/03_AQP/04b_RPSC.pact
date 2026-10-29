@@ -71,7 +71,7 @@
     (defun URC_CollectLadderPreview:object (collector:string pool-id:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string))
     (defun URC_CollectTransferLegIgnis:decimal (collector:string pool-id:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string))
     (defun URC_CollectForcedFixIgnis:decimal (patron:string collector:string fvt-id:string reward-dptf-id:string))
-    (defun URCi_CollectFull:decimal (patron:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string))
+    (defun URCi_CollectFull:decimal (patron:string collector:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string))
     (defun URCi_TrueFungibleStakeFlow:decimal (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool))
     (defun URCi_OrtoFungibleStakeFlow:decimal (pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer] direction:bool))
     (defun URCi_CollectableStakeFlow:decimal (pool-id:string owner-id:string beneficiary-id:string collectable-id:string son:bool nonces:[integer] nonce-amounts:[integer] direction:bool))
@@ -645,7 +645,7 @@
                              (ref-IGNIS::URC_IsVirtualGasZero)))
         ))
     (defun URCi_CollectFull:decimal
-        (patron:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
+        (patron:string collector:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
         @doc "FULL reconstructed IGNIS ifp of CC_Collect = reward-payout leg (URC_CollectTransferLegIgnis) + Phase-7 \
             \ forced-fix penalty (URC_CollectForcedFixIgnis) + the URCi_Collect leg. Residual: the payout is read pre-drip, so \
             \ a lane carrying a LIVE stream (whose exec drip vests extra reward before payout) can shift the transfer \
@@ -660,24 +660,19 @@
                         (ref-SCR::UR_SCR|ScoreAqpoolLink (ref-SCR::UR_SCR|TripletSilverScoreId score-entity-id))
                         (ref-SCR::UR_SCR|ScoreAqpoolLink score-entity-id)))
             )
-            ;;THE ONE REMAINING PATRON/COLLECTOR CONFLATION, AND IT IS DELIBERATE. The four
-            ;;mirrors below now take a COLLECTOR -- payout, lane split, transfer class and
-            ;;forced-fix count are all properties of the account being PAID, not of the one
-            ;;paying. Renamed 2026-10-29; no value changes for a self-collect.
+            ;;THE CONFLATION IS GONE, 2026-10-29. This read <patron> for BOTH roles, because
+            ;;adding a parameter meant bumping a LIVE interface. AQP-FVT's interface had to bump
+            ;;to V5 anyway -- for the XE_EvictDrip/XE_EvictPay eviction surface -- so the fix rode
+            ;;that bump at near-zero marginal cost, which is why it waited rather than shipping as
+            ;;its own cascade round.
             ;;
-            ;;This entry point cannot take one yet: it is declared on
-            ;;AcquisitionFarmsVaultsTreasuriesV4 (05_FVT.pact:212) and V4 IS LIVE -- confirmed by
-            ;;`_livemodules.py --diff` against the chain, not from a cached snapshot. A parameter
-            ;;means V5, cascading to the six files that name it plus INFO_AQP-FVT|Collect's arity,
-            ;;which moves the registry and every client built from it.
-            ;;
-            ;;So <patron> is passed for BOTH roles here, in one place: a SPONSORED collect quotes
-            ;;the sponsor's claimable, lane split and forced-fix count. Nothing sponsors a collect
-            ;;in the UI today, so every live call is correct. One token at the next FVT bump.
-            ;;EVCT's previews do not inherit this -- new functions on a new V1 interface.
+            ;;<collector> is the REWARD SUBJECT: its claimable is computed, its triplet lane split
+            ;;is read from ITS deb scores, the transfer class depends on IT as receiver, and the
+            ;;forced-fix count is ITS count. <patron> only supplies the IGNIS discount. A sponsored
+            ;;collect now quotes the right account; before, it quoted the sponsor's figures.
             (fold (+) 0.0
-                [ (URC_CollectTransferLegIgnis patron pool-id fvt-id score-entity-type score-entity-id reward-dptf-id)
-                  (URC_CollectForcedFixIgnis patron patron fvt-id reward-dptf-id)
+                [ (URC_CollectTransferLegIgnis collector pool-id fvt-id score-entity-type score-entity-id reward-dptf-id)
+                  (URC_CollectForcedFixIgnis patron collector fvt-id reward-dptf-id)
                   (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (URCi_Collect fvt-id [fvt-id score-entity-id reward-dptf-id]))
                 ])
         ))

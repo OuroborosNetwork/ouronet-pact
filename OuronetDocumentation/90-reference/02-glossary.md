@@ -22,7 +22,7 @@ Counts are of definitions in the tree, interface declarations included.
 | `A_` | 557 | admin-key mutation |
 | `UC_` | 524 | pure compute on arguments only — no table reads, no `enforce` |
 | `XI_` | 397 | internal write, this module only, under a capability |
-| `XE_` | 358 | entry point for other modules only |
+| `XE_` | 362 | entry point for other modules only |
 | `UDC_` | 348 | data construction — a named constructor for an object |
 | `CT_` | 281 | a constant, exposed as a function |
 | `URH_` | 167 | **scan** — walks a table. Off the execution path; cost grows with data |

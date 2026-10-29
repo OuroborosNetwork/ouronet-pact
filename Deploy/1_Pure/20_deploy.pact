@@ -2279,7 +2279,7 @@
             (
                 (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
                 (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
                 (fvt-ids:[string]
                     (distinct
                         (filter
@@ -2431,7 +2431,7 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
                 (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
                 ;;
                 (settle-bundle:object
@@ -2546,7 +2546,7 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
                 (unique-beneficiaries:[string] (UC_VacateUniqueBeneficiariesFromLegs legs))
             )
             ;; Phase A — per-leg tracker-zero (nns--/unn--) + cross-pool rollup decrement (side effects first)
@@ -2786,7 +2786,7 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
                 (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
                 ;;
                 (settle-bundle:object
@@ -3134,7 +3134,7 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
                 (L:integer (length owner-ids))
                 (unique-beneficiaries:[string] (UC_VacateUniqueBeneficiaries beneficiary-ids))
             )
@@ -3958,7 +3958,7 @@
         (step
             (let
                 (
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
                 )
                 (require-capability (MTX-AQP|C>INJECT patron fvt-id reward-dptf-id amount))
               (let
@@ -4012,7 +4012,7 @@
                         (let
                             (
                                 (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
-                                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+                                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
                                 (stale:[string] (RPS.URH_FvtStalePresentUsers fvt-id))
                                 ;; Same owner/non-owner split as step 0 — see its note. A defpact
                                 ;; that penalized only on its SECOND step would be the same
@@ -4048,7 +4048,7 @@
             (let
                 (
                     (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
                 )
                 (require-capability (MTX-AQP|C>SWEEP-REVOKE patron executor anchor-id))
                 (let
@@ -4094,7 +4094,7 @@
                     (with-capability (MTX-AQP|C>SWEEP-REVOKE patron executor anchor-id)
                         (let
                             (
-                                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+                                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
                                 (total:integer (URC_SweepTotalPresent score-ids))
                             )
                             (let
@@ -4861,7 +4861,7 @@
         (with-capability (DSA|C>SET-ORACLE-AUTH patron executor fvt-id)
             (let
                 (
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )

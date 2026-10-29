@@ -1862,7 +1862,7 @@
             (
                 (predicted:decimal
                     (at "ignis-need" (at "ignis"
-                        (AQP-INFO.INFO_AQP-FVT|Collect patron fvt-id 1 score-id wstoa-id))))
+                        (AQP-INFO.INFO_AQP-FVT|Collect patron patron fvt-id 1 score-id wstoa-id))))
                 (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
             )
             (print (format "<(TS02-C3.AQP-FVT|CC_Collect)> => \"{}\""

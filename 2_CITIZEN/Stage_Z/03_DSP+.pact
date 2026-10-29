@@ -486,7 +486,7 @@
                 (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (ref-ATS:module{AutostakeV4} ATS)
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
                 ;;
                 (ouro:string (ref-DALOS::UR_OuroborosID))
                 (auryn:string (ref-DALOS::UR_AurynID))

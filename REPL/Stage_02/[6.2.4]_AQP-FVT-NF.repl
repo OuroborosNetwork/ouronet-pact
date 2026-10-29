@@ -314,7 +314,7 @@
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
         (ref-VCT:module{AcquisitionVacateV4} AQP-VCT)
         (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
         (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))

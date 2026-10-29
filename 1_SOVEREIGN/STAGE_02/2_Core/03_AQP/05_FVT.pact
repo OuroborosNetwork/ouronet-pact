@@ -2,7 +2,7 @@
 ;; latch -- UR_FVT|StreamEligible, UEV_DriftLockedScoreEntity, UEV_StreamEligibleMemberOk,
 ;; CC_LatchStreamEligible, URCi_LatchStreamEligible. CC_InjectStream now refuses on an un-latched
 ;; FVT. PRIOR: bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface AcquisitionFarmsVaultsTreasuriesV4
+(interface AcquisitionFarmsVaultsTreasuriesV5
     @doc "Interface for the AQP reward-distribution layer (Farms/Vaults/Treasuries). \
         \ Declares readers for FVT config, member score-entity links, RPS (reward-per-share) \
         \ global/member/user/stream accumulators, and per-user presence/weight state; UC_ \
@@ -77,6 +77,17 @@
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
     ;; [XE]
+    ;;REWARD EVICTION, 2026-10-29. The FVT owner runs a collect FOR a beneficiary who is not
+    ;;signing, so these two exist instead of CC_Collect -- which enforces the claimant's own
+    ;;ownership and therefore cannot serve. They call the SAME XI_CollectDrip / XI_CollectPay the
+    ;;collect path calls, which is what makes the two paths identical by construction rather than
+    ;;by test. TWO entrypoints, not one, because the claimable ENFORCE sits between them and an
+    ;;XE_ may not enforce: AQP-EVCT drips, checks, then pays.
+    (defun XE_EvictDrip:string
+        (evictor:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string))
+    (defun XE_EvictPay:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string evictor:string beneficiary:string fvt-id:string score-entity-type:integer
+         score-entity-id:string reward-dptf-id:string))
     (defun XE_SweepBegin:string (anchor-id:string))
     (defun XE_SweepEnd:string (anchor-id:string))
     (defun XE_SetFvtVacateFrozen:string (fvt-id:string frozen:bool))
@@ -209,7 +220,7 @@
     (defun URC_StakeScoreDeltaSum:decimal (pool-id:string))
     (defun URC_StreamStatus:object (fvt-id:string dptf-id:string))
     (defun URC_UserTier1AvailableRewards:decimal (user-id:string fvt-id:string score-entity-id:string dptf-id:string deb-user:decimal))
-    (defun URCi_CollectFull:decimal (patron:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string))
+    (defun URCi_CollectFull:decimal (patron:string collector:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string))
     (defun URH_FvtEnabledScoreEntityIdsForFvt:[string] (fvt-id:string))
     (defun URH_FvtPresentUsers:[string] (fvt-id:string))
     (defun URH_FvtStalePresentUsers:[string] (fvt-id:string))
@@ -305,7 +316,7 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements AcquisitionFarmsVaultsTreasuriesV4)
+    (implements AcquisitionFarmsVaultsTreasuriesV5)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -4374,6 +4385,82 @@
             )
         )
     )
+    (defcap FVT|XE>EVICT-REWARD
+        (evictor:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
+        @doc "Reward EVICTION of one (beneficiary x score-entity x reward-lane) leg, authorised by the \
+            \ FVT OWNER rather than by the beneficiary. \
+            \ \
+            \ THE CONTRAST WITH FVT|C>COLLECT IS THE POINT. That capability validates the CONTEXT and \
+            \ proves NO account, because CC_Collect proves the CLAIMANT separately -- only the claimant \
+            \ may trigger its own claim. Eviction inverts the actor: the owner acts FOR a beneficiary \
+            \ who is not present to sign, so the authority moved to the owner konto and the beneficiary \
+            \ is an EXECUTEE -- acted upon, needing no signature. That is why it is safe for no \
+            \ ownership check to run on it. \
+            \ \
+            \ AUTHORISATION BEFORE VALIDATION (owner ruling 2026-09-14). A business rule placed first \
+            \ shadows the gate behind it, and a red-team test then proves nothing -- delete the gate and \
+            \ the test still passes. So the owner is proven before UEV_CollectContext runs. \
+            \ \
+            \ Composes the SAME two policies as FVT|C>COLLECT: P|SECURE-CALLER for the RPS phases and \
+            \ P|FVT|REMOTE-GOV for the AQP|SC_NAME custody legs the payout moves through."
+        @event
+        (UEV_ExecutorIzFvtOwner evictor fvt-id)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-RPS:module{AcquisitionRewardPerShareV5} RPS)
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership (ref-RPS::UR_FVT|OwnerKonto fvt-id))
+        )
+        (UEV_CollectContext evictor fvt-id score-entity-type score-entity-id reward-dptf-id)
+        (compose-capability (P|SECURE-CALLER))
+        (compose-capability (P|FVT|REMOTE-GOV))
+    )
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          FVT|XE>EVICT-REWARD
+    (defun XE_EvictDrip:string
+        (evictor:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
+        @doc "Forward (AQP-EVCT): PHASE 0 of an eviction leg -- the same XI_CollectDrip a self-collect \
+            \ runs. Separate from XE_EvictPay because the caller must check the claimable BETWEEN them: \
+            \ a streamed lane reads zero before the drip, and an XE_ may not enforce."
+        (P|UEV_IMC)
+        (with-capability (FVT|XE>EVICT-REWARD evictor fvt-id score-entity-type score-entity-id reward-dptf-id)
+            (XI_CollectDrip fvt-id score-entity-type score-entity-id reward-dptf-id)
+        )
+    )
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          FVT|XE>EVICT-REWARD
+    (defun XE_EvictPay:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string evictor:string beneficiary:string fvt-id:string score-entity-type:integer
+         score-entity-id:string reward-dptf-id:string)
+        @doc "Forward (AQP-EVCT): PHASES 1-6 of an eviction leg plus the billing leg -- XI_CollectPay \
+            \ verbatim, so the beneficiary receives exactly what a self-collect would pay them. \
+            \ \
+            \ AND IT ZEROES THE FORCED-FIX COUNT. Owner ruling, 2026-10-29: an evicted user never pays \
+            \ the inject-forced-fix penalty, because with an automaton evicting daily they might never \
+            \ self-collect -- the count would grow unpayable and a deterrent would become a trap. The \
+            \ zeroing is HERE rather than in the caller so it cannot be forgotten: no eviction path \
+            \ pays without clearing it. The penalty still bites the user who is unstaled by an inject \
+            \ and then collects for themselves, which is the behaviour the charge exists for. \
+            \ \
+            \ AFTER the payment, mirroring where PHASE 7 sits in CC_Collect."
+        (P|UEV_IMC)
+        (with-capability (FVT|XE>EVICT-REWARD evictor fvt-id score-entity-type score-entity-id reward-dptf-id)
+            (let
+                (
+                    (ref-RPS:module{AcquisitionRewardPerShareV5} RPS)
+                    ;;
+                    (oc:object{IgnisCollectorV4.OutputCumulator}
+                        (XI_CollectPay patron beneficiary
+                            (URC_CollectPoolId score-entity-type score-entity-id)
+                            fvt-id score-entity-type score-entity-id reward-dptf-id)
+                    )
+                )
+                (ref-RPS::XE_WU_FvtForcedFixCount|Zero fvt-id reward-dptf-id beneficiary)
+                oc
+            )
+        )
+    )
     ;;Protection: Class 2 — SECURE
     (defun XI_CollectForcedFixPenalty:object{IgnisCollectorV4.OutputCumulator}
         (patron:string collector:string fvt-id:string reward-dptf-id:string)
@@ -4960,9 +5047,9 @@
         @doc "Facade: delegates to the RPS reward engine (post-#75 split)."
         (RPS.URC_UserTier1AvailableRewards user-id fvt-id score-entity-id dptf-id deb-user)
     )
-    (defun URCi_CollectFull:decimal (patron:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
+    (defun URCi_CollectFull:decimal (patron:string collector:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
         @doc "Facade: delegates to the RPS reward engine (post-#75 split)."
-        (AQP-RPSC.URCi_CollectFull patron fvt-id score-entity-type score-entity-id reward-dptf-id)
+        (AQP-RPSC.URCi_CollectFull patron collector fvt-id score-entity-type score-entity-id reward-dptf-id)
     )
     (defun URH_FVT|ActiveSweepCoversPool:bool (pool-id:string)
         @doc "HEAVY. True when some ANCHOR sweep is still open over a boost class whose scores \

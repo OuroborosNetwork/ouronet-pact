@@ -205,7 +205,7 @@
         (auryn-id:string "AURYN-98c486052a51")
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
         (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
         (sub-bunnies:string (ref-U|DALOS::UDC_Makeid "SubsidiaryBunnies"))

@@ -34,14 +34,14 @@ scope; quoting one with the other's label is the mistake to avoid.
 find 1_SOVEREIGN 2_CITIZEN -name "*.pact" | wc -l                            # 107
 
 # lines
-find 1_SOVEREIGN 2_CITIZEN -name "*.pact" -exec cat {} + | wc -l             # 131,358
+find 1_SOVEREIGN 2_CITIZEN -name "*.pact" -exec cat {} + | wc -l             # 131,447
 
 # definitions, by kind
 for k in defun defcap defschema deftable defpact; do
   printf "%-10s %s\n" "$k" \
     "$(grep -rhoE "^\s*\($k " --include=*.pact 1_SOVEREIGN 2_CITIZEN | wc -l)"
 done
-# defun 9393 · defcap 1024 · defschema 207 · deftable 232 · defpact 6
+# defun 9397 · defcap 1025 · defschema 207 · deftable 232 · defpact 6
 #
 # NOTE: only `defun` here is gate-checked (_docsfigures.py's five cross-cutting figures).
 # `defcap` was carrying 1021 against a tree of 1022 when this was last measured, which is
@@ -77,7 +77,7 @@ file, one line below the rule. The lesson is not "be careful": it is that **a co
 next to a figure is not the same as a command that produced it.** Which is why the figures that
 matter are now regenerated and diffed by a tool rather than transcribed — see `../MAINTAINING.md`.
 
-**A caveat on `defun` 9,393.** Pact declares a function in the interface AND defines it in the
+**A caveat on `defun` 9,397.** Pact declares a function in the interface AND defines it in the
 implementing module, so that count includes both. It is the number of `defun` FORMS in the tree,
 which is what the command measures and what this documentation claims — not the number of
 distinct callable functions. Where the distinct figure matters, the registry's 427 client

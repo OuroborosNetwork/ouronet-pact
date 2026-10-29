@@ -2357,7 +2357,7 @@
             (
                 (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
                 (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
                 (fvt-ids:[string]
                     (distinct
                         (filter
@@ -2509,7 +2509,7 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
                 (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
                 ;;
                 (settle-bundle:object
@@ -2624,7 +2624,7 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
                 (unique-beneficiaries:[string] (UC_VacateUniqueBeneficiariesFromLegs legs))
             )
             ;; Phase A — per-leg tracker-zero (nns--/unn--) + cross-pool rollup decrement (side effects first)
@@ -2864,7 +2864,7 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
                 (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
                 ;;
                 (settle-bundle:object
@@ -3212,7 +3212,7 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
                 (L:integer (length owner-ids))
                 (unique-beneficiaries:[string] (UC_VacateUniqueBeneficiaries beneficiary-ids))
             )

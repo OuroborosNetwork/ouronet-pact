@@ -1629,10 +1629,17 @@
         )
     )
     (defun INFO_AQP-FVT|Collect:object{OuronetInfoV3.ClientInfo}
-        (patron:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
+        (patron:string collector:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
         @doc "Cost preview for AQP-FVT|CC_Collect. FULL IGNIS: reward-payout leg (plain TFT transfer, or a \
-            \ MULTIPLET_BASE triplet Coil/Curl ladder) + Phase-7 forced-fix penalty + GAS|COLLECT; STOA none. \
-            \ Reconstructed on the current claimable state (exact for un-streamed / settled lanes)."
+            \ MULTIPLET_BASE triplet ladder) + Phase-7 forced-fix penalty + GAS|COLLECT; STOA none. \
+            \ Reconstructed on the current claimable state (exact for un-streamed / settled lanes). \
+            \ \
+            \ <collector> ADDED 2026-10-29, and it is the parameter this preview was missing. Every figure \
+            \ here is a property of the account being PAID -- its claimable, its triplet lane split read \
+            \ from its own deb scores, its fee-exemption deciding the transfer class, its forced-fix count \
+            \ -- while <patron> only supplies the IGNIS discount. Quoting one account for both was correct \
+            \ for a self-collect and wrong for a sponsored one. It mirrors the execution's <executor>, \
+            \ which is what AQP-FVT|CC_Collect credits."
         (let
             (
                 (ref-RPSC:module{AcquisitionRewardCostsV1} AQP-RPSC)
@@ -1643,7 +1650,7 @@
                  "Full IGNIS shown: payout transfer/ladder + any forced-fix penalty + gas (reconstructed byte-for-byte)."
                  "Executes via TS02-C3.AQP-FVT|CC_Collect."]
                 [(format "Collected reward token {} from score-entity {}." [reward-dptf-id score-entity-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-RPSC::URCi_CollectFull patron fvt-id score-entity-type score-entity-id reward-dptf-id))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-RPSC::URCi_CollectFull patron collector fvt-id score-entity-type score-entity-id reward-dptf-id))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [])
         )

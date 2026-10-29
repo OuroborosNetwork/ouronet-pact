@@ -379,7 +379,7 @@
                     (AQP-INFO.INFO_AQP-FVT|Inject anhd "FVT-x" "OURO-x" 100.0))
                 (expect-failure "<<FVT>> FINDING: the collect preview aborts on an unknown FVT"
                     "No value found in table"
-                    (AQP-INFO.INFO_AQP-FVT|Collect anhd "FVT-x" 3 "T-x" "OURO-x"))
+                    (AQP-INFO.INFO_AQP-FVT|Collect anhd anhd "FVT-x" 3 "T-x" "OURO-x"))
                 ;;...and the four that do NOT touch the FVT row preview fine on the same
                 ;;placeholder, which is what makes the twelve above a defect and not the rule.
                 (expect "<<FVT>> unstale ignis-full is its GAS|UNSTALE deterrence PLUS components"

@@ -306,7 +306,7 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (anhd:string KST.ANHD)
     )
@@ -588,7 +588,7 @@
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
     )
     (let
@@ -774,7 +774,7 @@
 (print "--- [GT-08 - global GOV oracle switches (Talos) · 02 · let / invocation] ---")
 (let
     (
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
     )
     (ref-TS02-C3::AQP-DSA|A_SetOracleValidity KST.ANHD KST.ANHD 90000)

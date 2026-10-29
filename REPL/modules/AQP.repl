@@ -39,7 +39,7 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (patron:string KST.ANHD)
     )
@@ -71,7 +71,7 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (patron:string KST.ANHD)
     )
@@ -1929,7 +1929,7 @@
 (let*
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
         (ref-RPS:module{AcquisitionRewardPerShareV5} RPS)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (ouro:string (ref-U|DALOS::UDC_Makeid "OURO"))
@@ -3738,7 +3738,7 @@
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
         (ref-U|CT:module{OuronetConstantsV2} U|CT)
     )
     (let
@@ -4677,10 +4677,10 @@
                               (AQP-RPSC.URC_CollectForcedFixIgnis KST.ANHD KST.ANHD fvt ouro)
                               (ref-INFO::OI|UC_IfpFromOutputCumulator
                                   (AQP-RPSC.URCi_Collect fvt [fvt score ouro])) ])
-                        (AQP-RPSC.URCi_CollectFull KST.ANHD fvt 1 score ouro))
+                        (AQP-RPSC.URCi_CollectFull KST.ANHD KST.ANHD fvt 1 score ouro))
                     ;;non-vacuity: the total is not zero, so the identity is not 0 = 0 + 0 + 0
                     (expect "<<AQP-F9>> ...and the quoted total is above zero"
-                        true (> (AQP-RPSC.URCi_CollectFull KST.ANHD fvt 1 score ouro) 0.0))
+                        true (> (AQP-RPSC.URCi_CollectFull KST.ANHD KST.ANHD fvt 1 score ouro) 0.0))
                     ;;the forced-fix leg's documented zero-guard: "0 when ffc<=0". This account has no
                     ;;forced-fix count on this lane, so the penalty term is absent -- which is also
                     ;;why the identity above is dominated by the other two legs.
@@ -4692,7 +4692,7 @@
                         (+ (AQP-RPSC.URC_CollectTransferLegIgnis KST.ANHD pool fvt 1 score ouro)
                            (ref-INFO::OI|UC_IfpFromOutputCumulator
                                (AQP-RPSC.URCi_Collect fvt [fvt score ouro])))
-                        (AQP-RPSC.URCi_CollectFull KST.ANHD fvt 1 score ouro))
+                        (AQP-RPSC.URCi_CollectFull KST.ANHD KST.ANHD fvt 1 score ouro))
                     ;;and the pool the function derives is a real one, not BAR -- the derivation is
                     ;;silent on failure, so an unlinked score would price against a ghost pool
                     (expect "<<AQP-F9>> the derived pool-id is a real pool, not the BAR sentinel"

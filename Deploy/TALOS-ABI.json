@@ -10354,6 +10354,10 @@
     "type": "string"
    },
    {
+    "name": "collector",
+    "type": "string"
+   },
+   {
     "name": "fvt-id",
     "type": "string"
    },
@@ -19159,5 +19163,5 @@
   "TS02-DPAD.DEMIPAD|C_RetrieveTrueFungible": "INFO-TWO.INFO_DEMIPAD|RetrieveTrueFungible",
   "TS02-DPAD.DEMIPAD|C_Withdraw": "INFO-TWO.INFO_DEMIPAD|Withdraw"
  },
- "surfaceHash": "f0b0cf91e433c90c"
+ "surfaceHash": "e2e01061dbf38654"
 }
