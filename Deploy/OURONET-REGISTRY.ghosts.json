@@ -1,5 +1,5 @@
 {
-  "note": "GHOST VALUES -- example arguments, keyed by PARAMETER NAME then by TYPE. Merged into Deploy/OURONET-REGISTRY.json by REPL/tools/_registry.py; that file is generated and this one is not, so regenerating can never destroy these.\n\nTWO USE TAGS -- `zbom` and `tooltip` (owner ruling, 2026-09-27). A ghost value is not equally safe on every surface, and until now one value served both. `zbom` = may be PREFILLED into a ZBOM input, i.e. it can end up in a signed transaction. `tooltip` = may be RENDERED in a pre-ZBOM tooltip, where nothing is ever submitted. Both default to TRUE when absent, so every existing entry keeps its behaviour.\n\nThe case that forced it is `guard`. A guard cannot be prefilled -- nobody may hand a user a keyset to sign under -- so `zbom` is false. But a tooltip that shows the guard slot EMPTY teaches the wrong call shape, so `tooltip` is true with a `display` override rendering the Pact form the caller actually writes. That is a value which is correct to show and wrong to submit, which is precisely the distinction one tag cannot carry.\n\n`display` is an optional RENDER override for tooltips. Absent, the tooltip renders `v`. Present, it renders `display` -- used where the submittable form and the readable form differ.\n\nWHY SOME NAMES STILL HAVE NO ENTRY, and that is deliberate. A parameter with no byParam and no byType match falls through to the generic `\"example\"`, which a consumer renders as a visible placeholder. That is the CORRECT outcome for an entity that does not exist on mainnet -- zero anchors, zero scores -- and for one whose real id nobody here can cite. Fabricating a plausible-looking id would remove the only signal that the slot is unresolved, and a confident wrong id is worse than an obvious gap: it gets copied, and it makes a preview SUCCEED against the wrong entity. Entries are added only when the value can be cited.",
+  "note": "GHOST VALUES -- example arguments, keyed by PARAMETER NAME then by TYPE. Merged into Deploy/OURONET-REGISTRY.json by REPL/tools/_registry.py; that file is generated and this one is not, so regenerating can never destroy these.\n\nTWO USE TAGS -- `zbom` and `tooltip` (owner ruling, 2026-09-27). A ghost value is not equally safe on every surface, and until now one value served both. `zbom` = may be PREFILLED into a ZBOM input, i.e. it can end up in a signed transaction. `tooltip` = may be RENDERED in a pre-ZBOM tooltip, where nothing is ever submitted. Both default to TRUE when absent, so every existing entry keeps its behaviour.\n\nThe case that forced it is `guard`. A guard cannot be prefilled -- nobody may hand a user a keyset to sign under -- so `zbom` is false. But a tooltip that shows the guard slot EMPTY teaches the wrong call shape, so `tooltip` is true with a `display` override rendering the Pact form the caller actually writes. That is a value which is correct to show and wrong to submit, which is precisely the distinction one tag cannot carry.\n\n`display` is an optional RENDER override for tooltips. Absent, the tooltip renders `v`. Present, it renders `display` -- used where the submittable form and the readable form differ.\n\nWHY SOME NAMES STILL HAVE NO ENTRY, and that is deliberate. A parameter with no byParam and no byType match falls through to the generic `\"example\"`, which a consumer renders as a visible placeholder. That is the CORRECT outcome for an entity that does not exist on mainnet -- zero anchors, zero scores -- and for one whose real id nobody here can cite. Fabricating a plausible-looking id would remove the only signal that the slot is unresolved, and a confident wrong id is worse than an obvious gap: it gets copied, and it makes a preview SUCCEED against the wrong entity. Entries are added only when the value can be cited.\n\nOBJECT-TYPED ENTRIES, added 2026-10-29, and they are why seven vacate buttons and four wipe buttons had no renderable preview. A PREVIEW'S PARAMETER LIST IS NOT THE EXECUTION'S: CCp_BatchVacateTrueFungible takes three parallel arrays while its INFO_ takes one `legs:[object{VCT|VacateTfLeg}]`, so the entrypoint's own composed ghost has nothing under that name and the lookup falls through to this table. With no entry here, OuronetUI's generate-execution-specs.py filed the op in SPEC_SKIPPED -- and a button whose preview cannot render is a button wired without the evidence that it is wired correctly, which is the one thing the preview exists to supply.\n\nTHE FIELD NAMES ARE CHECKED, because nothing else here checks them. `ghost_fits` validates an object ghost only as far as `isinstance(v, dict)`, so a renamed schema field would leave a silently stale example that renders fine and then fails on chain. `_ghostshape.py --check` (fatal in the gate) compares every object-typed entry in this table against the defschema its type names, field for field and type for type.",
   "chainSourced": {
     "readAt": "2026-09-26",
     "node": "node2.stoachain.com chain 0",
@@ -441,6 +441,104 @@
         {}
       ],
       "why": "untyped list-of-object; see the note on `object`."
+    },
+    "[[string]]": {
+      "v": [
+        [
+          "example"
+        ]
+      ],
+      "why": "A list OF LISTS, for the bulk-transfer fan-out where one token's recipients are an inner list. One outer entry with one inner entry: the shape is what has to be right, not the length. It is positional against transfer-amount-array, so a preview rendered two-deep here and one-deep there would price a call the contract refuses."
+    },
+    "[[decimal]]": {
+      "v": [
+        [
+          1.0
+        ]
+      ],
+      "why": "The amount side of the same fan-out, kept in lockstep with [[string]] above at one outer entry each."
+    },
+    "[object{AcquisitionSchemasV3.VCT|VacateTfLeg}]": {
+      "v": [
+        {
+          "owner-id": "example",
+          "beneficiary-id": "example",
+          "balance": 1.0
+        }
+      ],
+      "why": "ONE vacate leg for a DPTF asset: who gets custody back, who was earning on it, how much. Fields and types are AQP's own VCT|VacateTfLeg -- `balance` is a decimal, and a bare 1 in that slot does not coerce in Pact."
+    },
+    "[object{AcquisitionSchemasV3.VCT|VacateNonceLeg}]": {
+      "v": [
+        {
+          "owner-id": "example",
+          "beneficiary-id": "example",
+          "nonces": [
+            1
+          ],
+          "amounts": [
+            1.0
+          ]
+        }
+      ],
+      "why": "The nonce-bearing counterpart, used by every ortofungible and collectable vacate preview. `nonces` and `amounts` are POSITIONAL against each other INSIDE the leg -- one entry each, because a mismatched pair is the silent failure this shape exists to make visible."
+    },
+    "[object{AcquisitionSchemasV3.VCT|VacateTfLane}]": {
+      "v": [
+        {
+          "asset-id": "AURYN-8Nh-JO8JO4F5",
+          "legs": [
+            {
+              "owner-id": "example",
+              "beneficiary-id": "example",
+              "balance": 1.0
+            }
+          ]
+        }
+      ],
+      "why": "One DPTF asset-lane of a whole-pool vacate: the asset plus its legs. This is the PHASE-1 scan's output shape, so a preview rendered from it is rendered from the same thing the execution is fed."
+    },
+    "[object{AcquisitionSchemasV3.VCT|VacateNonceLane}]": {
+      "v": [
+        {
+          "asset-id": "example",
+          "legs": [
+            {
+              "owner-id": "example",
+              "beneficiary-id": "example",
+              "nonces": [
+                1
+              ],
+              "amounts": [
+                1.0
+              ]
+            }
+          ]
+        }
+      ],
+      "why": "The nonce-bearing lane, used TWICE by the whole-pool vacate preview -- once for ortofungible satellites and once for collectables. Same schema both times, which is why one entry serves."
+    },
+    "object{DpofUdcV2.RemovableNonces}": {
+      "v": {
+        "r-nonces": [
+          1
+        ],
+        "r-amounts": [
+          1.0
+        ]
+      },
+      "why": "The ortofungible wipe's preflight bundle. SEPARATE FROM THE DPDC ONE BELOW AND NOT INTERCHANGEABLE: both schemas are named RemovableNonces, and this one's `r-amounts` is [decimal] while DPDC's is [integer]. Sharing a value between them would render a decimal into an integer slot, which Pact refuses -- the same two-schemas-one-name hazard the registry's partition note already records for URHC_WipePure."
+    },
+    "object{DpdcManagementV3.RemovableNonces}": {
+      "v": {
+        "r-nonces": [
+          1
+        ],
+        "r-amounts": [
+          1
+        ]
+      },
+      "why": "The collectable (DPSF/DPNF) wipe's preflight bundle. `r-amounts` is [integer] here, not [decimal] -- see the DPOF entry above for why these two cannot share a value."
     }
   }
 }

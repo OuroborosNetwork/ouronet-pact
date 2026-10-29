@@ -161,6 +161,47 @@ python3 REPL/tools/_livemodules.py  --probe      # refresh the deployed-source s
 python3 REPL/tools/_liveinventory.py --probe     # confirm AQP-EVCT's two tables now exist
 ```
 
+### Then AUTHOR the two partition blocks — this one is load-bearing and nothing will remind you
+
+`Deploy/OURONET-REGISTRY.authored.json` carries the hand-written answer to *"may this call be split,
+and along which parameter"*, and **absence means DO NOT SPLIT**. So until these two blocks exist, the
+one eviction entrypoint whose entire purpose is to be sliced reads as unclassified, and a correct
+consumer will refuse to cut it — forcing a whole FVT's legs into one transaction, which the node gas
+meter then refuses.
+
+**They cannot be pre-authored.** This was tried: `_registry.py --check` carries an ORPHAN check on
+that file and refuses a block whose key is not an entrypoint yet
+(`ORPHAN -- no such entrypoint`). That check is right — the lesson `_patronslots.py` paid for is that
+an authored entry outliving (or preceding) its site is an unverified claim sitting in an
+authoritative file. So the blocks live here, in prose, until the chain can confirm them.
+
+Paste into the `partition` map, keys sorted:
+
+```json
+"TS02-C3.AQP-EVCT|CCp_EvictRewards": {
+  "kind": "list",
+  "shape": "partition",
+  "axis": "beneficiaries",
+  "lockstep": ["score-entity-types", "score-entity-ids", "reward-dptf-ids"],
+  "reason": "A Hydra FED SLICE, and the one entrypoint in the eviction surface whose purpose is to be cut: the client dirty-reads AQP-EVCT::URHC_BuildEvictSlicePlan, splits its output into gas-bounded slices and submits them at once. WHY ANY SUBSET IS A VALID SLICE: a leg is one beneficiary's collect on one (score-entity, reward-lane) pair, priced and paid per leg -- URCi_EvictRewards is a plain fold of AQP-RPSC::URCi_CollectFull over the legs with no cross-leg term. Proved by execution rather than read off the source: [6.2.18]_AQP-EVICT shows an evicted leg paying exactly what a self-collect pays for the same beneficiary, to 24 decimal places. PARTIAL COMPLETION IS BENIGN HERE in a way it is not for a vacate: every leg is a payout to its own beneficiary, a refused slice leaves some stakers not yet paid, and re-reading the plan returns only what is left. FOUR PARALLEL ARRAYS, SO THE LOCKSTEP IS THE SAFETY PROPERTY: cutting one and not the others is refused by UEV_EvictSliceShape, but cutting all four at DIFFERENT offsets keeps the lengths equal while every leg names the wrong combination -- paying one staker against another's score entity and reward lane, with no error."
+},
+"TS02-C3.AQP-EVCT|AAp_EvictRewards": { ... same block, same axis, same lockstep ... }
+```
+
+Declare the admin twin **separately rather than by cross-reference** — a consumer reads one entry and
+absence means do not split, so a pointer another tool has to follow is a pointer that gets missed.
+And it is the variant the daily automaton drives.
+
+**The whole-FVT variants get NO block, and that is the answer rather than a gap.**
+`AQP-EVCT|CC_FullEvictRewards` and `|AA_FullEvictRewards` take `(patron, executor, fvt-id)` — no list
+argument exists to cut, so `kind=list` cannot apply; they scan and spend in the same transaction, so
+they are not a chain-state cursor; and they have no ordered phases, so nothing is architectural. The
+split route for a large FVT is the **sliced twin**, which is a different entrypoint rather than a
+different way of calling this one. Saying nothing is that file's own convention for exactly this.
+
+Confirm with `python3 REPL/tools/_registry.py --check` — both keys must report merged, and
+`execution` should read **16** indirect-parallel rather than 14.
+
 Then three things become possible that are blocked until the chain moves:
 
 1. **`Deploy/OURONET-REGISTRY.json`** picks up the four new entrypoints and the four new previews,

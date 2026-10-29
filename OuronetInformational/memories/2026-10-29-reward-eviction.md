@@ -122,6 +122,33 @@ quietly passes on a vanished fixture is how a test stops testing.
 upgrade mode strips `create-table`). The next feature on AQP-FVT needs the same split RPS just
 got — and the seventh-power size charge means there is no arguing with it.
 
+## The registry partition blocks cannot be pre-authored — an orphan check refuses them
+
+Worth recording because the instinct is wrong in a useful way. `CCp_EvictRewards` is a fed slice and
+`Deploy/OURONET-REGISTRY.authored.json` is where "may this be split, along which parameter" is
+written by hand — **absence means DO NOT SPLIT**. So the obvious move is to author the two blocks
+now, ahead of the deploy, and avoid shipping an entrypoint that reads as unsliceable.
+
+`_registry.py --check` refuses:
+
+```
+registry: 2 partition claim(s) do not hold
+    TS02-C3.AQP-EVCT|AAp_EvictRewards: ORPHAN -- no such entrypoint (drop the entry or fix the key)
+    TS02-C3.AQP-EVCT|CCp_EvictRewards: ORPHAN -- no such entrypoint (drop the entry or fix the key)
+```
+
+I had read the UNMERGED check (which skips keys the artefact lacks) and concluded pre-authoring was
+tolerated. It is not: there is a separate ORPHAN check, and it is right — the `_patronslots.py`
+lesson is that an authored entry which outlives, or precedes, its site is an unverified claim
+sitting in an authoritative file. **Reading one check and inferring the tool's behaviour from it is
+the error**; running the tool is what settles it.
+
+So the blocks live in `Deploy/PureV18/DEPLOY.md` as a post-send step, in full, with the reasoning —
+prose that nothing validates, which is the correct home for a claim nothing can yet verify. The
+whole-FVT variants get no block at all, and that is the answer rather than a gap: no list argument
+exists to cut, they scan and spend in one transaction so they are not a cursor, and they have no
+ordered phases so nothing is architectural.
+
 ## Open
 
 - ~~The forced-fix zeroing is unproven by execution.~~ **CLOSED** the same day — see

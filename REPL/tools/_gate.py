@@ -811,6 +811,18 @@ def main():
         if "confirmed against mainnet" in _l:
             print(f"  {_l.strip()}")
 
+    # AND THE ONE LAYER THE REGISTRY'S OWN CHECK DOES NOT VALIDATE. `ghost_fits` ends at
+    # `isinstance(v, dict)` for an `object{...}` type, so a hand-authored object ghost may carry
+    # any keys at all -- including the keys a schema had before a field was renamed. That ghost
+    # still RENDERS, so the preview looks healthy and the call fails on chain. For a mechanism
+    # whose whole claim is "a correct render proves correct wiring", a layer that can render
+    # incorrect wiring is the one thing it must not have.
+    _gs = subprocess.run([sys.executable, "tools/_ghostshape.py", "--check"],
+                         capture_output=True, text=True)
+    print((_gs.stdout + _gs.stderr).strip())
+    if _gs.returncode != 0:
+        sys.exit("GATE FAILED: an object-typed ghost value disagrees with its defschema.")
+
     # IS THE CONSUMER PACKAGE STILL CARRYING THIS REGISTRY? The @ouronet/talos-registry
     # package bundles a snapshot, so a regeneration here silently leaves consumers validating
     # against a surface that no longer exists. Non-fatal by design: the package lives in a
