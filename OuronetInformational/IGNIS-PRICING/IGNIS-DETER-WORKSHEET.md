@@ -815,8 +815,9 @@ DSA A_→C_ rename DONE (substage 4) — only 2 genuine GOV fns remain A_ in DSA
 
 | op | role | ins/wr | upd | R | S | X | components | cur GAS\| | **deter** | final | rationale |
 |----|------|--:|--:|--:|--:|--:|-------:|-----:|------:|-----:|-----------|
+| <span style="color:#8250df">CC_EvictSingleReward</span> | <span style="color:#57606a">USAGE</span> | · | · | <span style="color:#0969da">1</span> | · | <span style="color:#8b5cf6">5</span> | <span style="color:#0b7285">11</span> | · | <span style="color:#bf3989">1x</span> | <span style="color:#116329">12</span> | legit activity — pure compute, no deterrent |
 | <span style="color:#8250df">CC_FullEvictRewards</span> | <span style="color:#57606a">USAGE</span> | · | · | <span style="color:#0969da">1</span> | · | <span style="color:#8b5cf6">5</span> | <span style="color:#0b7285">11</span> | · | <span style="color:#bf3989">1x</span> | <span style="color:#116329">12</span> | legit activity — pure compute, no deterrent |
-| <span style="color:#8250df">CCp_EvictRewards</span> | <span style="color:#57606a">USAGE</span> | · | · | <span style="color:#0969da">1</span> | · | <span style="color:#8b5cf6">5</span> | <span style="color:#0b7285">11</span> | · | <span style="color:#bf3989">1x</span> | <span style="color:#116329">12</span> | legit activity — pure compute, no deterrent |
+| <span style="color:#8250df">CCp_EvictMultiRewards</span> | <span style="color:#57606a">USAGE</span> | · | · | <span style="color:#0969da">1</span> | · | <span style="color:#8b5cf6">5</span> | <span style="color:#0b7285">11</span> | · | <span style="color:#bf3989">1x</span> | <span style="color:#116329">12</span> | legit activity — pure compute, no deterrent |
 | <span style="color:#8250df">P|A_Add</span> | <span style="color:#57606a">SETUP</span> | <span style="color:#cf222e">1</span> | · | · | · | · | <span style="color:#0b7285">3</span> | · | <span style="color:#bf3989">exempt</span> | <span style="color:#116329">0</span> | IGNIS-EXEMPT — admin function (Ouronet Admin only): fully FREE (no STOA, no IGNIS) |
 | <span style="color:#8250df">P|A_AddIMP</span> | <span style="color:#57606a">SETUP</span> | <span style="color:#cf222e">1</span> | · | <span style="color:#0969da">1</span> | · | <span style="color:#8b5cf6">1</span> | <span style="color:#0b7285">6</span> | · | <span style="color:#bf3989">exempt</span> | <span style="color:#116329">0</span> | IGNIS-EXEMPT — admin function (Ouronet Admin only): fully FREE (no STOA, no IGNIS) |
 | <span style="color:#8250df">P|A_Define</span> | <span style="color:#57606a">ISSUE</span> | · | · | · | · | <span style="color:#8b5cf6">1</span> | <span style="color:#0b7285">2</span> | · | <span style="color:#bf3989">exempt</span> | <span style="color:#116329">0</span> | IGNIS-EXEMPT — admin function (Ouronet Admin only): fully FREE (no STOA, no IGNIS) |
@@ -900,7 +901,7 @@ Deter is a multiplier on IG|TX: `25x` = 25·IG|TX added on top of the compute co
 |------:|----:|---------|
 | exempt | 290 | IGNIS-exempt (ALL admin fns + account deploys + ignis machinery + DalosFuel transfer) |
 | split | 1 | son:bool split issuance (SFT/NFT) |
-| 1x | 79 | activity — no deterrent |
+| 1x | 80 | activity — no deterrent |
 | 5x | 140 | config/property change |
 | 10x | 28 | role/authority/guard setup |
 | 25x | 15 | fee/price/rate change |
@@ -916,4 +917,4 @@ Deter is a multiplier on IG|TX: `25x` = 25·IG|TX added on top of the compute co
 | 5000x | 5 | SWP pair $50 / DSA vault $50 |
 | 10000x | 1 | ShareholderCollection $100 |
 
-628 ops · 259 with deter>1 (rest default 1 or exempt). Regenerate: python3 REPL/tools/_ignis_deter_worksheet.py > OuronetInformational/IGNIS-PRICING/IGNIS-DETER-WORKSHEET.md
+629 ops · 259 with deter>1 (rest default 1 or exempt). Regenerate: python3 REPL/tools/_ignis_deter_worksheet.py > OuronetInformational/IGNIS-PRICING/IGNIS-DETER-WORKSHEET.md

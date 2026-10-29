@@ -43,10 +43,51 @@
 ;;     slice that has gone stale REFUSES rather than paying to move nothing.
 ;;
 ;; ──────────────────────────────────────────────────────────────────────────────
-;; SHAPE: a fed slice, and why the arrays are parallel rather than objects
+;; THREE SHAPES, AND WHICH ONE THE CLIENT USES — owner, 2026-10-30
 ;; ──────────────────────────────────────────────────────────────────────────────
-;; One leg is (beneficiary × score-entity × reward-lane) with `fvt-id` constant,
-;; so a slice is four parallel arrays. They are PRIMITIVE arrays deliberately: an
+;; One leg is (beneficiary × score-entity × reward-lane) with `fvt-id` constant.
+;; `URHC_BuildEvictPlans` emits exactly one object per leg, and the three
+;; entrypoints differ only in how many of those legs one transaction carries:
+;;
+;;   CC_FullEvictRewards     ALL legs, ONE transaction. Scans on chain, so it
+;;   AA_FullEvictRewards     takes no plan. THE DEFAULT THE UI TRIES FIRST —
+;;                           "if it fits it is what would be executed." Bounded
+;;                           by the node gas meter, which is why the other two
+;;                           exist.
+;;
+;;   CC_EvictSingleReward    ONE leg, ONE transaction. WHAT THE UI FALLS BACK TO
+;;   AA_EvictSingleReward    when Full does not fit, and the owner's preferred
+;;                           shape: "you can see instantly if there are 120 tx
+;;                           constructed there are 120 legs." The transaction
+;;                           count IS the leg count, no packing loop, and no
+;;                           single transaction can approach the ceiling — safe
+;;                           BY CONSTRUCTION rather than by measurement.
+;;
+;;   CCp_EvictMultiRewards   N legs per transaction, packed toward the 2,000,000
+;;   AAp_EvictMultiRewards   limit. FEWER transactions, at the cost of a
+;;                           construct-measure-resize loop. Owner: "I would keep
+;;                           that only for demonstration purposes" — reachable by
+;;                           a UI toggle, not the default.
+;;
+;; So the client's decision tree is: try Full; if the gas model refuses it, fan
+;; out Single, one per plan entry; and offer Multi behind a switch for anyone who
+;; wants the smaller transaction count.
+;;
+;; WHAT IS ORDER-DEPENDENT IN A FAN-OUT, and it is only one thing: THE DUST. The
+;; last claimant on a lane sweeps the remainder, so whichever transaction lands
+;; last on a lane receives it. The lane still ends at zero and the total is
+;; unaffected — and this IS the ruling (2026-10-29): dust to the royalty sink if
+;; the pair has one, "if not, to the last beneficiary".
+;;
+;; A REFUSED LEG IS NOT A LOST LEG either. Every entrypoint re-checks the
+;; claimable, so a leg collected between the read and the send refuses and moves
+;; nothing; a re-read returns only what is left. Firing N at once must expect
+;; some to bounce.
+;;
+;; ──────────────────────────────────────────────────────────────────────────────
+;; WHY THE MULTI SLICE IS PARALLEL ARRAYS RATHER THAN OBJECTS
+;; ──────────────────────────────────────────────────────────────────────────────
+;; A slice is four parallel arrays. They are PRIMITIVE arrays deliberately: an
 ;; `object{Schema}` argument would have to live in `AcquisitionSchemasV3`, whose
 ;; bump cascades through nine modules. Parallel arrays need no shared schema, and
 ;; the objects are built inside this module where the schema is local. It is also
@@ -61,9 +102,11 @@
 
 (interface AcquisitionRewardEvictionV1
     @doc "Reward eviction for an FVT: the owner collects on behalf of every staker with a \
-        \ positive claimable. Plan readers, the slice partitioner, cost readers and the \
-        \ owner-gated client entrypoints. Writes nothing itself — every write is a forward call \
-        \ into AQP-FVT's eviction surface, which runs the collect path's own phase functions."
+        \ positive claimable. Plan readers, the slice partitioner, cost readers and THREE \
+        \ owner-gated client entrypoints that differ only in how many legs one transaction \
+        \ carries — all legs (Full), one leg (Single), or a packed slice (Multi). Writes nothing \
+        \ itself: every write is a forward call into AQP-FVT's eviction surface, which runs the \
+        \ collect path's own phase functions."
 
     ;;{1}  CAP
     ;;{2}  FUN
@@ -76,7 +119,8 @@
     (defun URH_EvictInventory:object (fvt-id:string))
     (defun URHC_EvictLegCount:integer (fvt-id:string))
     (defun URHC_BuildEvictSlicePlan:object (fvt-id:string slice-count:integer))
-    (defun URCi_EvictRewards:decimal (patron:string fvt-id:string beneficiaries:[string] score-entity-types:[integer] score-entity-ids:[string] reward-dptf-ids:[string]))
+    (defun URCi_EvictMultiRewards:decimal (patron:string fvt-id:string beneficiaries:[string] score-entity-types:[integer] score-entity-ids:[string] reward-dptf-ids:[string]))
+    (defun URCi_EvictSingleReward:decimal (patron:string fvt-id:string beneficiary:string score-entity-type:integer score-entity-id:string reward-dptf-id:string))
     (defun URCi_FullEvictRewards:decimal (patron:string fvt-id:string))
     ;;{5.4}  Validate [UEV/CAP]
     (defun UEV_EvictSliceShape (beneficiaries:[string] score-entity-types:[integer] score-entity-ids:[string] reward-dptf-ids:[string]))
@@ -84,8 +128,10 @@
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
     ;;{5.7}  User [A/C]
-    (defun CCp_EvictRewards:object{IgnisCollectorV4.OutputCumulator}
+    (defun CCp_EvictMultiRewards:object{IgnisCollectorV4.OutputCumulator}
         (patron:string evictor:string fvt-id:string beneficiaries:[string] score-entity-types:[integer] score-entity-ids:[string] reward-dptf-ids:[string]))
+    (defun CC_EvictSingleReward:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string evictor:string fvt-id:string beneficiary:string score-entity-type:integer score-entity-id:string reward-dptf-id:string))
     (defun CC_FullEvictRewards:object{IgnisCollectorV4.OutputCumulator}
         (patron:string evictor:string fvt-id:string))
 )
@@ -277,7 +323,7 @@
         true
     )
     ;;{C3}  Ownership
-    (defcap EVCT|C>EVICT-SLICE
+    (defcap EVCT|C>EVICT-MULTI
         (evictor:string fvt-id:string beneficiaries:[string] score-entity-types:[integer]
          score-entity-id-lst:[string] reward-dptf-ids:[string])
         @doc "One eviction SLICE. Validates the slice shape and the FVT owner, then composes the \
@@ -291,6 +337,19 @@
         @event
         (CAP_EvctFvtOwner fvt-id)
         (UEV_EvictSliceShape beneficiaries score-entity-types score-entity-id-lst reward-dptf-ids)
+        (compose-capability (P|EVCT|RECIPE))
+    )
+    (defcap EVCT|C>EVICT-SINGLE (evictor:string fvt-id:string)
+        @doc "ONE LEG, ONE TRANSACTION -- the default path for an FVT too large to evict whole. \
+            \ Owner-gated identically to its siblings; no slice shape to validate, because there is \
+            \ no array to be ragged. \
+            \ \
+            \ WHY A SEPARATE CAPABILITY RATHER THAN EVICT-MULTI WITH ONE ELEMENT. The @event is the \
+            \ reason: a campaign of 120 single-leg transactions emits 120 EVICT-SINGLE events, and an \
+            \ auditor reading the chain can count legs without reconstructing array lengths out of a \
+            \ MULTI event. The owner's point about legibility holds on chain as well as in the UI."
+        @event
+        (CAP_EvctFvtOwner fvt-id)
         (compose-capability (P|EVCT|RECIPE))
     )
     (defcap EVCT|C>FULL-EVICT (evictor:string fvt-id:string)
@@ -422,7 +481,7 @@
     )
     (defun URHC_BuildEvictSlicePlan:object (fvt-id:string slice-count:integer)
         @doc "HEAVY. The inventory already PARTITIONED into <slice-count> disjoint slices, each as the \
-            \ four parallel arrays CCp_EvictRewards takes -- so a client loops rather than reshaping. \
+            \ four parallel arrays CCp_EvictMultiRewards takes -- so a client loops rather than reshaping. \
             \ Mirrors AQP-VCT::URHC_BuildVacateSlicePlan, whose UI contract is written out in \
             \ README_VACATE_UI.md. \
             \ \
@@ -460,7 +519,7 @@
             )
         )
     )
-    (defun URCi_EvictRewards:decimal
+    (defun URCi_EvictMultiRewards:decimal
         (patron:string fvt-id:string beneficiaries:[string] score-entity-types:[integer]
          score-entity-ids:[string] reward-dptf-ids:[string])
         @doc "IGNIS ifp of one eviction slice: the sum of what each leg's collect costs. \
@@ -490,14 +549,42 @@
             )
         )
     )
+    (defun URCi_EvictSingleReward:decimal
+        (patron:string fvt-id:string beneficiary:string score-entity-type:integer
+         score-entity-id:string reward-dptf-id:string)
+        @doc "IGNIS ifp of ONE eviction leg -- the whole of what a single-leg transaction costs. \
+            \ \
+            \ IT IS AQP-RPSC::URCi_CollectFull WITH THE BENEFICIARY AS COLLECTOR -- the SAME reader \
+            \ URCi_EvictMultiRewards folds over its legs, so N single-leg quotes sum to the MULTI \
+            \ quote for the same N legs. The UI's choice between the two paths is therefore not a \
+            \ choice between two numbers for one operation. \
+            \ \
+            \ NOT WRITTEN AS A DELEGATION, deliberately: having MULTI fold THIS function instead of \
+            \ calling RPSC directly would read as the tidier version and would degrade the generated \
+            \ price sheet, which walks `ref-MOD::` edges and loses a leg behind an intra-module hop. \
+            \ That is measured, not feared -- C_Coil delegating to XB_Coil took the sheet from 93 \
+            \ claimed-exact prices to 87 and was reverted for it. Duplication of ONE call, pinned by \
+            \ the equality above, is the cheaper trade. \
+            \ \
+            \ RESIDUAL, inherited and stated: exact for un-streamed or already-settled lanes, and \
+            \ able to shift a transfer tier on a lane with a live stream, because the payout is read \
+            \ pre-drip."
+        (let
+            (
+                (ref-RPSC:module{AcquisitionRewardCostsV1} AQP-RPSC)
+            )
+            (ref-RPSC::URCi_CollectFull patron beneficiary fvt-id
+                score-entity-type score-entity-id reward-dptf-id)
+        )
+    )
     (defun URCi_FullEvictRewards:decimal (patron:string fvt-id:string)
-        @doc "HEAVY. IGNIS ifp of a WHOLE-FVT eviction -- the scan, then URCi_EvictRewards over every \
+        @doc "HEAVY. IGNIS ifp of a WHOLE-FVT eviction -- the scan, then URCi_EvictMultiRewards over every \
             \ leg it finds. The figure a client shows before pressing the one-transaction variant."
         (let
             (
                 (legs:[object] (URHC_BuildEvictPlans fvt-id))
             )
-            (URCi_EvictRewards patron fvt-id
+            (URCi_EvictMultiRewards patron fvt-id
                 (map (lambda (l:object) (at "beneficiary" l)) legs)
                 (map (lambda (l:object) (at "score-entity-type" l)) legs)
                 (map (lambda (l:object) (at "score-entity-id" l)) legs)
@@ -598,7 +685,7 @@
     )
     ;;{5.7}  User [A/C]
     ;; [C]   client
-    (defun CCp_EvictRewards:object{IgnisCollectorV4.OutputCumulator}
+    (defun CCp_EvictMultiRewards:object{IgnisCollectorV4.OutputCumulator}
         (patron:string evictor:string fvt-id:string beneficiaries:[string]
          score-entity-types:[integer] score-entity-ids:[string] reward-dptf-ids:[string])
         @doc "ONE EVICTION SLICE -- a fed slice of a UI-sliced campaign. The client dirty-reads \
@@ -619,7 +706,7 @@
             \ where a silent skip is neither."
         (P|UEV_IMC)
         (with-capability
-            (EVCT|C>EVICT-SLICE evictor fvt-id beneficiaries score-entity-types score-entity-ids reward-dptf-ids)
+            (EVCT|C>EVICT-MULTI evictor fvt-id beneficiaries score-entity-types score-entity-ids reward-dptf-ids)
             (let
                 (
                     (legs:[object]
@@ -643,14 +730,67 @@
             )
         )
     )
+    (defun CC_EvictSingleReward:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string evictor:string fvt-id:string beneficiary:string
+         score-entity-type:integer score-entity-id:string reward-dptf-id:string)
+        @doc "ONE LEG, ONE TRANSACTION. The third and smallest of the three eviction shapes, and the \
+            \ one a large FVT is actually evicted with. \
+            \ \
+            \ THE UI FIRES AS MANY OF THESE AS THERE ARE LEGS, which is the whole point (owner, \
+            \ 2026-10-30): 'you can see instantly if there are 120 tx constructed there are 120 \
+            \ legs.' URHC_BuildEvictPlans returns exactly one object per leg, so the transaction \
+            \ count IS the leg count -- no packing loop, no probe-and-resize, and no arithmetic \
+            \ between what was read and what was sent. \
+            \ \
+            \ AND NO SINGLE TRANSACTION CAN APPROACH THE GAS CEILING, which is the structural \
+            \ argument for preferring it: one leg is one drip plus one pay, so the campaign is safe \
+            \ BY CONSTRUCTION rather than by measurement. The MULTI path has to be measured against \
+            \ 2,000,000 and re-measured whenever the data moves. \
+            \ \
+            \ WHAT IS ORDER-DEPENDENT, stated because the UI cannot see it from the plan: the DUST. \
+            \ The last claimant on a lane sweeps whatever remains, so whichever of the N transactions \
+            \ lands last on a given lane receives it. The total is unaffected and the lane still ends \
+            \ at zero -- and this is the owner's own ruling, 2026-10-29: dust goes to the royalty \
+            \ sink if the pair has one, 'if not, to the last beneficiary'. \
+            \ \
+            \ A REFUSED LEG IS NOT A LOST LEG. The claimable enforce below means a leg collected \
+            \ between the read and the send refuses; nothing moves, and a re-read returns only what \
+            \ is left. Firing N at once must expect some to bounce -- that is the safety property, \
+            \ not a failure of the campaign."
+        (P|UEV_IMC)
+        (with-capability (EVCT|C>EVICT-SINGLE evictor fvt-id)
+            (let
+                (
+                    ;;THE SAME PROJECTION THE MULTI PATH REFUSES ON, and it must be: a streamed lane
+                    ;;reads zero before its drip, so refusing on the pre-drip figure would reject
+                    ;;exactly the streamed evictions that are legitimate.
+                    (claimable:decimal
+                        (RPS.URC_LiveClaimable beneficiary fvt-id
+                            (AQP-FVT.URC_CollectPoolId score-entity-type score-entity-id)
+                            score-entity-type score-entity-id reward-dptf-id))
+                )
+                (enforce (> claimable 0.0)
+                    "Nothing to evict on this leg: it has already been collected, or never accrued")
+                ;;ONE LEG THROUGH THE SAME CONSUMER the other two use. XI_EvictLegs already handles
+                ;;a one-element list, and its per-leg re-read is what makes a single-leg fan-out
+                ;;correct -- every leg recomputes its payout from live state, so N transactions on
+                ;;one lane each see what the previous one left.
+                (XI_EvictLegs patron evictor fvt-id
+                    [ { "beneficiary"       : beneficiary
+                      , "score-entity-type" : score-entity-type
+                      , "score-entity-id"   : score-entity-id
+                      , "reward-dptf-id"    : reward-dptf-id } ])
+            )
+        )
+    )
     (defun CC_FullEvictRewards:object{IgnisCollectorV4.OutputCumulator}
         (patron:string evictor:string fvt-id:string)
         @doc "WHOLE-FVT eviction in ONE transaction, scanning its own legs. The convenience path for a \
-            \ small FVT; a large one must use CCp_EvictRewards, because the node gas meter is the real \
+            \ small FVT; a large one must use CCp_EvictMultiRewards, because the node gas meter is the real \
             \ ceiling and this scans before it pays. Mirrors AQP-VCT::CC_FullVacate, which stands in \
             \ the same relation to its CCp_Batch* siblings. \
             \ \
-            \ NO CLAIMABLE ENFORCE, and the asymmetry with CCp_EvictRewards is deliberate: the legs \
+            \ NO CLAIMABLE ENFORCE, and the asymmetry with CCp_EvictMultiRewards is deliberate: the legs \
             \ here come from URHC_BuildEvictPlans in the SAME transaction, which filters on a positive \
             \ claimable, so there is no window for a leg to go stale. The sliced path cannot say that \
             \ -- its arrays were read in an earlier transaction."

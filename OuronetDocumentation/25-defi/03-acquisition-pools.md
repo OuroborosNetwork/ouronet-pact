@@ -284,14 +284,49 @@ reward simply means there is nothing to collect, which is a refusal rather than 
 single-transaction variant reads its own legs in the transaction that spends them, so no such
 window exists.
 
-### Paid and gasless
+### Three shapes, and which one a client uses
 
-Reward eviction has four client entrypoints, in two pairs:
+A leg is one beneficiary's claim on one (score-entity, reward-lane) pair. The three entrypoints
+differ **only in how many legs one transaction carries** — the payout rule is identical, and a
+single leg pays exactly what a self-collect pays for it.
 
-| | one slice | whole FVT |
+| | legs per transaction | when |
 |---|---|---|
-| anyone who owns the FVT, pays IGNIS | `AQP-EVCT\|CCp_EvictRewards` | `AQP-EVCT\|CC_FullEvictRewards` |
-| Ouronet administrator, gasless | `AQP-EVCT\|AAp_EvictRewards` | `AQP-EVCT\|AA_FullEvictRewards` |
+| **Full** | all of them | tried first. The cheapest run when the distributor is small enough to fit |
+| **Single** | exactly one | the fallback, and the one a large distributor is actually evicted with |
+| **Multi** | as many as fit ~2,000,000 gas | fewer transactions, behind a toggle |
+
+**Full is the default and the gas meter decides.** It scans on chain, so it takes no plan — but
+that also means the node's limit is the only thing bounding it, which is why the other two exist.
+
+**Single is the interesting one, and the reason is legibility.** The plan reader emits exactly one
+object per leg, so the transaction count *is* the leg count: 120 transactions means 120 legs, with
+no packing loop, no probe-and-resize, and no arithmetic between what was read and what was sent.
+And because one leg is one drip plus one payment, **no transaction in the campaign can approach
+the ceiling** — the run is safe by construction rather than by measurement. Multi has to be
+measured against the limit and re-measured whenever the data moves.
+
+Each shape comes in two flavours: one the FVT owner pays IGNIS for, and one the Ouronet
+administrator runs gaslessly for the daily automaton.
+
+| | owner pays | administrator, gasless |
+|---|---|---|
+| all legs | `AQP-EVCT\|CC_FullEvictRewards` | `AQP-EVCT\|AA_FullEvictRewards` |
+| one leg | `AQP-EVCT\|CC_EvictSingleReward` | `AQP-EVCT\|AA_EvictSingleReward` |
+| a packed slice | `AQP-EVCT\|CCp_EvictMultiRewards` | `AQP-EVCT\|AAp_EvictMultiRewards` |
+
+### Two things a fan-out changes, and only two
+
+**The dust becomes order-dependent in *who*, not in *whether*.** The last claimant on a lane
+sweeps the remainder, so whichever transaction lands last on that lane receives it. The lane still
+ends on exactly zero and the total paid is unaffected — and this is the rule rather than a
+side-effect: dust goes to the royalty sink if the pair has one, and otherwise to the last
+beneficiary.
+
+**A refused leg is not a lost leg.** Every shape re-checks the claimable, so a leg collected
+between the read and the send refuses and moves nothing; a re-read returns only what is left.
+Firing a hundred transactions at once should expect a few to bounce — that is the safety property,
+not a failure of the run.
 
 The gasless pair exists because daily eviction across every administrator-owned FVT is the intended
 operating mode, and at normal rates that is a large standing IGNIS bill. The exemption is not a

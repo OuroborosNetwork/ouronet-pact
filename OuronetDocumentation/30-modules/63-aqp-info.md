@@ -34,7 +34,7 @@ A leaf read-only module deployed after everything it describes. It has no interf
 
 > **The repository differs from what is deployed.** Everything above describes the CHAIN, which is what a caller actually reaches. The difference is stated rather than resolved:
 >
-> - **functions** in the repository only: `INFO_AQP-EVCT|AdminEvictRewards`, `INFO_AQP-EVCT|AdminFullEvictRewards`, `INFO_AQP-EVCT|EvictRewards`, `INFO_AQP-EVCT|FullEvictRewards`
+> - **functions** in the repository only: `INFO_AQP-EVCT|AdminEvictMultiRewards`, `INFO_AQP-EVCT|AdminEvictSingleReward`, `INFO_AQP-EVCT|AdminFullEvictRewards`, `INFO_AQP-EVCT|EvictMultiRewards`, `INFO_AQP-EVCT|EvictSingleReward`, `INFO_AQP-EVCT|FullEvictRewards`
 
 **Capabilities** -- 2
 

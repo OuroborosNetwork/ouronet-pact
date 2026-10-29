@@ -8,7 +8,7 @@ apply to an upgrade round. This round has **no** preceding steps.
 
 ## What it is
 
-**Reward eviction**, and the two structural changes it forced. An FVT owner can now collect on
+**Reward eviction in three shapes**, and the two structural changes it forced. An FVT owner can now collect on
 behalf of every staker with a positive claimable — the owner's ask, 2026-10-29: *"Evicts the
 Rewards to their beneficiaries, effectively stripping all the reward tokens in the score
 aggregator, by sending them to their beneficiaries."*
@@ -16,18 +16,34 @@ aggregator, by sending them to their beneficiaries."*
 Two new modules: `AQP-EVCT` (reward eviction) and `AQP-RPSC` (the cost-preview surface the reward
 engine had to shed to make room). Four bumped interfaces reaching 17 modules.
 
+THE EVICTION SURFACE IS SIX ENTRYPOINTS — three shapes, each in a paid and a gasless flavour.
+They differ only in how many legs one transaction carries, and the payout rule is identical:
+
+| | legs per transaction | the client's use |
+|---|---|---|
+| `CC_/AA_FullEvictRewards` | all of them | tried first; the gas meter decides |
+| `CC_/AA_EvictSingleReward` | exactly one | the fallback, and what a large FVT is evicted with |
+| `CCp_/AAp_EvictMultiRewards` | as many as fit ~2M | fewer transactions, behind a toggle |
+
+Owner ruling, 2026-10-30. The Single shape is the interesting one: the plan reader emits one
+object per leg, so the transaction count IS the leg count — 120 transactions means 120 legs, with
+no packing loop — and because one leg is one drip plus one payment, no transaction in the campaign
+can approach the ceiling. Proved equal to the other two by execution: all three pay
+`28.800000000000000000000000` for the same leg, and the Single cost quote equals the Multi quote
+for the same one leg.
+
 ## Send these nine, in this order, and stop
 
 | # | file | deploys | new interface | exec gas (REPL) | bytes | size gas (est.) | total (est.) | of 2M |
 |---|---|---|---|---:|---:|---:|---:|---:|
-| 1 | `01_deploy.pact` | ATSU + OUROBOROS + TS01-A + TS01-C2 | `AutostakeUsageV4` | 386,723 | 298,208 | ~234,800 | **~621,500** | 31% |
-| 2 | `02_deploy.pact` | INFO-ONE | — | 442,754 | 223,357 | ~31,000 | **~473,800** | 24% |
-| 3 | `03_deploy.pact` | RPS | `AcquisitionRewardPerShareV5` | 328,763 | 302,601 | ~260,100 | **~588,800** | 29% |
-| 4 | `04_deploy.pact` | O-UI-FOURTEEN + AQP-RPSC | `AcquisitionRewardCostsV1` **(new)** | 130,214 | 77,037 | ~0 | **~130,200** | 7% |
-| 5 | `05_deploy.pact` | AQP-FVT | `AcquisitionFarmsVaultsTreasuriesV5` | 309,626 | 317,569 | ~364,600 | **~674,200** | 34% |
-| 6 | `06_deploy.pact` | AQP-VCT + MTX-AQP + AQP-DSA | — | 419,312 | 268,305 | ~112,000 | **~531,400** | 27% |
-| 7 | `07_deploy.pact` | AQP-EVCT + TS02-C3 | `AcquisitionRewardEvictionV1` **(new)** + `TalosStageTwo_ClientThreeV6` | 259,571 | 221,719 | ~29,500 | **~289,100** | 14% |
-| 8 | `08_deploy.pact` | AQP-INFO + AQP-BOOT + DSP | — | 64,205 | 291,373 | ~199,600 | **~263,800** | 13% |
+| 1 | `01_deploy.pact` | ATSU + OUROBOROS + TS01-A + TS01-C2 | `AutostakeUsageV4` | 386,723 | 298,208 | ~234,800 | **~621,500** | 31%|
+| 2 | `02_deploy.pact` | INFO-ONE | — | 442,754 | 223,357 | ~31,000 | **~473,800** | 24%|
+| 3 | `03_deploy.pact` | RPS | `AcquisitionRewardPerShareV5` | 328,763 | 302,905 | ~261,900 | **~590,700** | 30%|
+| 4 | `04_deploy.pact` | O-UI-FOURTEEN + AQP-RPSC | `AcquisitionRewardCostsV1` **(new)** | 130,214 | 77,037 | ~0 | **~130,200** | 7%|
+| 5 | `05_deploy.pact` | AQP-FVT | `AcquisitionFarmsVaultsTreasuriesV5` | 309,626 | 317,569 | ~364,600 | **~674,200** | 34%|
+| 6 | `06_deploy.pact` | AQP-VCT + MTX-AQP + AQP-DSA | — | 419,312 | 268,305 | ~112,000 | **~531,400** | 27%|
+| 7 | `07_deploy.pact` | AQP-EVCT + TS02-C3 | `AcquisitionRewardEvictionV1` **(new)** + `TalosStageTwo_ClientThreeV6` | 259,571 | 235,473 | ~44,900 | **~304,500** | 15%|
+| 8 | `08_deploy.pact` | AQP-INFO + AQP-BOOT + DSP | — | 64,205 | 294,818 | ~216,700 | **~280,900** | 14%|
 | 9 | `09_init.pact` | — two IMC registrations | — | small | 1,805 | ~0 | **small** | <1% |
 
 **Exec gas is MEASURED** in the REPL gas model by `_deploybundle.py`. **Size gas is ESTIMATED**
@@ -104,11 +120,16 @@ cd "$(git rev-parse --show-toplevel)"
 # 1 — exactly six interfaces across the round, and they are the right six
 grep -h '^(interface ' Deploy/PureV18/0*_deploy.pact | sort      # => the 6 in the table, nothing else
 
-# 2 — reward eviction reached the client surface (4 wrappers)
-grep -c 'defun AQP-EVCT|' Deploy/PureV18/07_deploy.pact          # => 8  (4 declarations + 4 bodies)
+# 2 — reward eviction reached the client surface: THREE shapes x paid/gasless = 6 wrappers
+grep -c 'defun AQP-EVCT|' Deploy/PureV18/07_deploy.pact          # => 12 (6 declarations + 6 bodies)
+
+# 2b — and all three shapes are present in the core, not just renamed
+for n in CC_EvictSingleReward CCp_EvictMultiRewards CC_FullEvictRewards; do
+  printf '%s %s\n' "$(grep -c "defun $n" Deploy/PureV18/07_deploy.pact)" "$n"   # => 2 each
+done
 
 # 3 — the gasless pair is admin-gated, not merely P|TS
-grep -c 'P|ADMINISTRATIVE-SUMMONER' Deploy/PureV18/07_deploy.pact   # => 7  (defcap + 2 uses + doc refs)
+grep -c 'P|ADMINISTRATIVE-SUMMONER' Deploy/PureV18/07_deploy.pact   # => 9  (defcap + 3 uses + doc refs)
 
 # 4 — AQP-EVCT's tables are CREATED, everything else is upgrade mode
 grep -c '^(create-table' Deploy/PureV18/07_deploy.pact           # => 2

@@ -15,7 +15,7 @@ arrange.
   interface and no module.
 - **fn / cap** — counts of `defun` and `defcap` **forms** in the module body. A function declared in
   an interface and defined in the module is counted once here (the interface half is excluded),
-  which is why these sum lower than the tree-wide 9,445 on the front page. Different question,
+  which is why these sum lower than the tree-wide 9,455 on the front page. Different question,
   different number, both stated.
 - **sch/tbl** — `defschema` and `deftable` forms in the file.
 - **`@doc`** — the module author's own first clause, truncated. It is orientation, not a
@@ -87,7 +87,7 @@ is*; that section answers *what it does and why*.
 
 ### Core — Stage 2
 
-24 file(s) · 23 module(s) · 24 interface(s) · 47,654 lines
+24 file(s) · 23 module(s) · 24 interface(s) · 47,849 lines
 
 | module | file | lines | fn | cap | sch/tbl | its own one-line `@doc` |
 |---|---|---:|---:|---:|---:|---|
@@ -113,12 +113,12 @@ is*; that section answers *what it does and why*.
 | `AQP-VCT` | `STAGE_02/2_Core/03_AQP/06_VCT.pact` | 3,631 | 142 | 15 | 0/2 | Sovereign vacate module that unwinds an AQP pool by returning every staked position to owners. |
 | `MTX-AQP` | `STAGE_02/2_Core/03_AQP/07_MTX-AQP.pact` | 596 | 16 | 9 | 0/2 | Holds all AQP multi-transaction (defpact) flows. |
 | `AQP-DSA` | `STAGE_02/2_Core/03_AQP/08_DSA.pact` | 1,092 | 61 | 16 | 0/5 | Delegated Staking Agencies — a delegation layer over AQP-FVT's two-tier farm settle. |
-| `AQP-EVCT` | `STAGE_02/2_Core/03_AQP/08b_EVCT.pact` | 664 | 24 | 7 | 0/2 | Reward eviction for an AQP FVT: the owner collects on behalf of every staker carrying a positive claimable. |
-| `AQP-INFO` | `STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact` | 2,096 | 109 | 2 | 0/0 | Read-only pre-execution cost-preview module for the AQP family. |
+| `AQP-EVCT` | `STAGE_02/2_Core/03_AQP/08b_EVCT.pact` | 804 | 26 | 8 | 0/2 | Reward eviction for an AQP FVT: the owner collects on behalf of every staker carrying a positive claimable. |
+| `AQP-INFO` | `STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact` | 2,151 | 111 | 2 | 0/0 | Read-only pre-execution cost-preview module for the AQP family. |
 
 ### Talos
 
-11 file(s) · 11 module(s) · 11 interface(s) · 14,594 lines
+11 file(s) · 11 module(s) · 11 interface(s) · 14,664 lines
 
 | module | file | lines | fn | cap | sch/tbl | its own one-line `@doc` |
 |---|---|---:|---:|---:|---:|---|
@@ -130,7 +130,7 @@ is*; that section answers *what it does and why*.
 | `TS01-C4` | `STAGE_01/3_Talos/06_TS01-C4.pact` | 574 | 25 | 5 | 0/2 | TALOS Client Module for Stage 1 — CODEX + PYTHIA (Apollo keys + Pyth ledger flush). |
 | `TS02-C1` | `STAGE_02/3_Talos/01_TS02-C1.pact` | 1,755 | 77 | 5 | 0/2 | TALOS Stage 2 Client Functiones Part 1 - SFT Functions |
 | `TS02-C2` | `STAGE_02/3_Talos/02_TS02-C2.pact` | 1,499 | 71 | 5 | 0/2 | TALOS Stage 2 Client Functiones Part 2 - NFT Functions |
-| `TS02-C3` | `STAGE_02/3_Talos/04_TS02-C3.pact` | 3,602 | 129 | 29 | 0/2 | TALOS Stage 2 Client Functiones Part 3 - Acquisition Pools Functions |
+| `TS02-C3` | `STAGE_02/3_Talos/04_TS02-C3.pact` | 3,672 | 131 | 29 | 0/2 | TALOS Stage 2 Client Functiones Part 3 - Acquisition Pools Functions |
 | `TS02-DPAD` | `STAGE_02/3_Talos/05_TS02-DPAD.pact` | 568 | 25 | 5 | 0/2 | TALOS Stage 2 Demiourgos Launchpad SOVEREIGN Functions |
 | `TS02-CPAD` | `7_Launchpad/99_TS02-CPAD.pact` | 375 | 18 | 5 | 0/2 | TALOS Stage 2 CITIZEN Launchpad User Functions (Spark/Snakes/Custodians/StoicPay/StoicIco) |
 
@@ -201,9 +201,9 @@ is*; that section answers *what it does and why*.
 | files | 109 |
 | module forms | 103 |
 | interface forms | 102 |
-| lines | 132,392 |
-| `defun` forms | 5,791 |
-| `defcap` forms | 1032 |
+| lines | 132,657 |
+| `defun` forms | 5,797 |
+| `defcap` forms | 1033 |
 | schemas / tables | 207 / 234 |
 <!-- @end:module-map -->
 
@@ -220,9 +220,9 @@ because two generated numbers disagreeing in the same folder reads as one of the
 
 | figure | front page | this page | why |
 |---|---|---|---|
-| `defun` forms | 9,445 | **5,719** | the front page counts the whole file; this page counts the module BODY only. The difference is interface declarations — the same function named in an interface and defined in the module. **CORRECTED 2026-10-09: this row quoted 5,607 and a difference of 3,344, and 9,014 − 5,607 is 3,344 only if the 5,607 is right — it was not.** 5,718 is what the generated table twenty lines above this one reports, which is the figure this row is supposed to be explaining. A hand-written row that paraphrases a generated one drifts the moment the generator moves, and the arithmetic stays internally consistent while being wrong — which is why it survived. **RE-MEASURED 2026-10-12, and the difference moved for the first time since the note above: 9,020/5,718 (3,302) → 9,322/5,718 (3,604).** The interface-membership sweep (StoicSyntax-Prefixes.md §5, owner ruling) added 302 `defun` STUBS directly to interfaces across 36 sovereign modules, each one a declaration of a function that already existed in its module body — so the front-page total rose by exactly that much while the module-BODY-only count correctly held at 5,718. This is the one case where the gap widening is expected, not drift: it is what "close the membership gap" means in this count. **RE-MEASURED AGAIN 2026-10-12, same day, different cause: 9,322/5,718 (3,604) → 9,445/5,719 (3,604).** A STOAICO production hotfix (`A_MigrateGeneralFields`, a one-off admin migration function) added exactly one `defun` to a CITIZEN module body with no interface declaration at all — citizen modules are out of scope for the membership canon (owner ruling, 2026-09-26), so this function has no interface stub to inflate the front-page count separately. Both sides move by the same 1 and the difference holds at 3,604 — the opposite shape from the sweep's own entry above, where only the front page moved. |
+| `defun` forms | 9,455 | **5,719** | the front page counts the whole file; this page counts the module BODY only. The difference is interface declarations — the same function named in an interface and defined in the module. **CORRECTED 2026-10-09: this row quoted 5,607 and a difference of 3,344, and 9,014 − 5,607 is 3,344 only if the 5,607 is right — it was not.** 5,718 is what the generated table twenty lines above this one reports, which is the figure this row is supposed to be explaining. A hand-written row that paraphrases a generated one drifts the moment the generator moves, and the arithmetic stays internally consistent while being wrong — which is why it survived. **RE-MEASURED 2026-10-12, and the difference moved for the first time since the note above: 9,020/5,718 (3,302) → 9,322/5,718 (3,604).** The interface-membership sweep (StoicSyntax-Prefixes.md §5, owner ruling) added 302 `defun` STUBS directly to interfaces across 36 sovereign modules, each one a declaration of a function that already existed in its module body — so the front-page total rose by exactly that much while the module-BODY-only count correctly held at 5,718. This is the one case where the gap widening is expected, not drift: it is what "close the membership gap" means in this count. **RE-MEASURED AGAIN 2026-10-12, same day, different cause: 9,322/5,718 (3,604) → 9,455/5,719 (3,604).** A STOAICO production hotfix (`A_MigrateGeneralFields`, a one-off admin migration function) added exactly one `defun` to a CITIZEN module body with no interface declaration at all — citizen modules are out of scope for the membership canon (owner ruling, 2026-09-26), so this function has no interface stub to inflate the front-page count separately. Both sides move by the same 1 and the difference holds at 3,604 — the opposite shape from the sweep's own entry above, where only the front page moved. |
 | `defcap` forms | 1018 | **1017** | exactly one `defcap` is declared in an *interface* rather than a module: `1_SOVEREIGN/STAGE_02/2_Core/03_AQP/01_ANK.pact`. Verified by scanning every file's pre-`(module …)` head. Unchanged by the 2026-10-12 interface-membership sweep, which added `defun` stubs only. **+1/+1 2026-10-12** from the same STOAICO hotfix above: one new module-body `defcap` (`GOV|MIGRATE-GENERAL-FIELDS`), no interface involved, so the one-interface-declared-`defcap` exception this row documents is still exactly one. |
-| lines | 132,392 | 132,392 | agree, deliberately. Both count newlines — `wc -l` semantics. A file whose last line carries no terminating newline contributes one line `wc -l` does not see, so a LOGICAL line count gives **130,042 — exactly 73 more**, and 73 is precisely the number of such files (re-measured 2026-10-12 AFTER the interface-membership sweep landed: still 73, unchanged, because the sweep inserts stubs before each bumped interface's own closing paren and none of the 36 touched files happened to be one of the 73 lacking a final newline). **CORRECTED 2026-10-09: this row had been flattened by a blanket figure replace** — all four numbers in it had become identical, leaving the sentence "128,671 against a `wc -l` of 128,671 — 57 more" and the arithmetic "128,671 − 128,671 = 73". Both are self-refuting, and they sat side by side long enough to be quoted onward. The lesson is the one the neighbouring note already drew and this row then suffered: a blanket replace across prose destroys the figures that exist to CHECK each other. Re-measured 2026-10-09: `wc -l` 125,957, files lacking a final newline 73, logical lines 128,744. **RE-MEASURED AGAIN 2026-10-12: 129,571 → 129,627, +56 lines, the STOAICO hotfix above (one new `defcap` + one new `defun`, with `@doc`, comments, and -- after a first design was found broken against the live chain and rebuilt twice over -- a longer explanatory comment than the +44 an earlier measurement this same day had caught mid-edit) landing in a single file. The 73-files-lacking-a-final-newline count is unaffected — the touched file already ends in a newline — so the +56 carries straight through to the logical count (129,644 → 129,700) unchanged otherwise.** **RE-MEASURED AGAIN 2026-10-14: 129,627 → 129,678, +51 lines — PureV11's event de-duplication in `04_TS02-C3.pact` (14 `@event` annotations REMOVED, which is −14, against a +65 of `{C3}`-banner comment and the two-line `NOT EVENTED:` clause added to each of those 14 `@doc`s). The 73-files-lacking-a-final-newline count is unaffected — TS02-C3 is itself one of the 73 and still is, the edit having preserved its ending — so the +51 carries straight through to the logical count (129,700 → 130,042).** |
+| lines | 132,657 | 132,657 | agree, deliberately. Both count newlines — `wc -l` semantics. A file whose last line carries no terminating newline contributes one line `wc -l` does not see, so a LOGICAL line count gives **130,042 — exactly 73 more**, and 73 is precisely the number of such files (re-measured 2026-10-12 AFTER the interface-membership sweep landed: still 73, unchanged, because the sweep inserts stubs before each bumped interface's own closing paren and none of the 36 touched files happened to be one of the 73 lacking a final newline). **CORRECTED 2026-10-09: this row had been flattened by a blanket figure replace** — all four numbers in it had become identical, leaving the sentence "128,671 against a `wc -l` of 128,671 — 57 more" and the arithmetic "128,671 − 128,671 = 73". Both are self-refuting, and they sat side by side long enough to be quoted onward. The lesson is the one the neighbouring note already drew and this row then suffered: a blanket replace across prose destroys the figures that exist to CHECK each other. Re-measured 2026-10-09: `wc -l` 125,957, files lacking a final newline 73, logical lines 128,744. **RE-MEASURED AGAIN 2026-10-12: 129,571 → 129,627, +56 lines, the STOAICO hotfix above (one new `defcap` + one new `defun`, with `@doc`, comments, and -- after a first design was found broken against the live chain and rebuilt twice over -- a longer explanatory comment than the +44 an earlier measurement this same day had caught mid-edit) landing in a single file. The 73-files-lacking-a-final-newline count is unaffected — the touched file already ends in a newline — so the +56 carries straight through to the logical count (129,644 → 129,700) unchanged otherwise.** **RE-MEASURED AGAIN 2026-10-14: 129,627 → 129,678, +51 lines — PureV11's event de-duplication in `04_TS02-C3.pact` (14 `@event` annotations REMOVED, which is −14, against a +65 of `{C3}`-banner comment and the two-line `NOT EVENTED:` clause added to each of those 14 `@doc`s). The 73-files-lacking-a-final-newline count is unaffected — TS02-C3 is itself one of the 73 and still is, the edit having preserved its ending — so the +51 carries straight through to the logical count (129,700 → 130,042).** |
 
 The line-count case is the instructive one. Counting a final unterminated line *as a line* is
 arguably more correct, and it was the wrong choice: it put a 73-line discrepancy between two

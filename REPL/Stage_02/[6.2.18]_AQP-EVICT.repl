@@ -221,6 +221,94 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
 ;;
+(begin-tx "TX-EVICT-01b - the SINGLE-leg path pays what the WHOLE-FVT path pays")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-EVICT-01b · 01 · env-sigs (caps) ==== ===================================================
+(print "--- [TX-EVICT-01b · 01 · env-sigs (caps)] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-EVICT-01b · 02 · one leg, one transaction ==== ==========================================
+(print "--- [TX-EVICT-01b · 02 · one leg, one transaction] ---")
+;;THE THIRD SHAPE, and the one the UI uses when a whole-FVT evict does not fit (owner, 2026-10-30):
+;;"the single leg TX chain is interesting because you can see instantly if there are 120 tx
+;;constructed there are 120 legs."
+;;
+;;SAME CONSTRUCTION AS TX-EVICT-01 AND FOR THE SAME REASON -- inject, then evict ONE leg, in the
+;;same transaction as the round that precedes it so block time cannot move between them. What is
+;;asserted is that the single-leg entrypoint pays the SAME figure the whole-FVT entrypoint paid for
+;;the same beneficiary on the same lane: three entrypoints, one payout rule.
+(let*
+    (
+        (patron:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
+        (ref-EVCT:module{AcquisitionRewardEvictionV1} AQP-EVCT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "TfStakeVault"))
+        (score-id:string (ref-U|DALOS::UDC_Makeid "TfStakeScore"))
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "TfStakePool"))
+        (ouro-id:string "OURO-98c486052a51")
+        (amt:decimal 48.0)
+        (fvt-owner:string (ref-FVT::UR_FVT|OwnerKonto fvt-id))
+    )
+    (enforce (= fvt-owner patron)
+        "TX-EVICT-01b needs the signing account to own TfStakeVault")
+    (let*
+        (
+            ;;ROUND C -- inject the SAME amount TX-EVICT-01's rounds used, then evict ONE leg.
+            (inj:string (ref-TS02-C3::AQP-FVT|CC_Inject patron patron fvt-id ouro-id amt))
+            (claim:decimal (ref-FVT::URC_LiveClaimable patron fvt-id pool-id 1 score-id ouro-id))
+            ;;THE PLAN IS THE TRANSACTION LIST. One object per leg, so a client sends one call per
+            ;;entry -- asserted here because it is the property the UI's fan-out rests on.
+            (legs:[object] (ref-EVCT::URHC_BuildEvictPlans fvt-id))
+            (leg-count:integer (ref-EVCT::URHC_EvictLegCount fvt-id))
+            (quote-one:decimal (ref-EVCT::URCi_EvictSingleReward patron fvt-id patron 1 score-id ouro-id))
+            (quote-multi:decimal
+                (ref-EVCT::URCi_EvictMultiRewards patron fvt-id [patron] [1] [score-id] [ouro-id]))
+            (pre:decimal (ref-DPTF::UR_AccountSupply ouro-id patron))
+            (run:string (ref-TS02-C3::AQP-EVCT|CC_EvictSingleReward
+                            patron patron fvt-id patron 1 score-id ouro-id))
+            (post:decimal (ref-DPTF::UR_AccountSupply ouro-id patron))
+            (payout:decimal (- post pre))
+            (lastrps:decimal (ref-FVT::UR_FVT-RU|LastRps patron fvt-id score-id ouro-id))
+            (rps:decimal (ref-FVT::UR_FVT-RG|CurrentRps fvt-id ouro-id))
+        )
+        (map print
+            [
+                (format "<(inject {})> => \"{}\"" [amt inj])
+                (format "<(plan)> {} leg object(s), URHC_EvictLegCount={}" [(length legs) leg-count])
+                (format "<(quotes)> single={} multi-of-one={}" [quote-one quote-multi])
+                (format "<(single-leg evict)> => \"{}\"" [run])
+                (format "<(payout)> claimable-before={} paid={}" [claim payout])
+                ;;THE HEADLINE: 28.8 again -- the same figure TX-EVICT-01 measured for a collect and
+                ;;for a whole-FVT evict, now for a single-leg evict. Exact, not a band.
+                (expect (format "<<TX-EVICT-01b>> the single-leg evict paid the same 28.8 the other two paths paid (={})"
+                    [payout]) 28.800000000000000000000000 payout)
+                (expect (format "<<TX-EVICT-01b>> and it matched its own live-claimable projection (claim={} paid={})"
+                    [claim payout]) claim payout)
+                ;;ONE PRICE FOR ONE OPERATION. A per-leg quote that disagreed with the MULTI quote
+                ;;for the same single leg would make the UI's choice between the two paths a choice
+                ;;between two numbers.
+                (expect (format "<<TX-EVICT-01b>> the SINGLE quote equals the MULTI quote for the same one leg ({} vs {})"
+                    [quote-one quote-multi]) quote-multi quote-one)
+                ;;THE PLAN IS THE TRANSACTION COUNT -- the owner's legibility property, asserted.
+                (expect (format "<<TX-EVICT-01b>> the leg count equals the plan length ({} vs {})"
+                    [leg-count (length legs)]) (length legs) leg-count)
+                ;;And the checkpoint lands exactly where a collect leaves it.
+                (expect (format "<<TX-EVICT-01b>> last-rps latched to the global index (last={} index={})"
+                    [lastrps rps]) rps lastrps)
+            ]
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;
 (begin-tx "TX-EVICT-02 - eviction ZEROES an outstanding forced-fix penalty")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
@@ -331,19 +419,19 @@
             ;;shortest array pays some legs and drops the rest with no error at all.
             (expect-failure
                 "<<TX-EVICT-03>> a slice with unequal parallel arrays is refused"
-                (ref-TS02-C3::AQP-EVCT|CCp_EvictRewards patron patron fvt-id
+                (ref-TS02-C3::AQP-EVCT|CCp_EvictMultiRewards patron patron fvt-id
                     [patron patron] [1] [score-id] [ouro-id]))
             ;;AN EMPTY SLICE would bill a transaction that moves nothing.
             (expect-failure
                 "<<TX-EVICT-03>> an empty slice is refused"
-                (ref-TS02-C3::AQP-EVCT|CCp_EvictRewards patron patron fvt-id [] [] [] []))
+                (ref-TS02-C3::AQP-EVCT|CCp_EvictMultiRewards patron patron fvt-id [] [] [] []))
             ;;A ZERO-CLAIMABLE LEG. Owner ruling: "0 reward simply means there is nothing to
             ;;collect" -- so the slice is refused rather than billed. TX-EVICT-01 and -02 already
             ;;drained this lane, so the leg really is at zero here, which is why this test is
             ;;placed after them rather than before.
             (expect-failure
                 "<<TX-EVICT-03>> a slice whose legs have nothing claimable is refused"
-                (ref-TS02-C3::AQP-EVCT|CCp_EvictRewards patron patron fvt-id
+                (ref-TS02-C3::AQP-EVCT|CCp_EvictMultiRewards patron patron fvt-id
                     [patron] [1] [score-id] [ouro-id]))
         ]
     )

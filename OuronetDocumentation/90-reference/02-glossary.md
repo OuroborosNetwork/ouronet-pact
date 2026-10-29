@@ -17,8 +17,8 @@ Counts are of definitions in the tree, interface declarations included.
 | `C_` | 1,390 | client entry — builds the bill; reachable only through Talos |
 | `URC_` | 801 | reads and derives; no `enforce` |
 | `UEV_` | 675 | reads and `enforce`s; failure aborts the transaction |
-| `INFO_` | 648 | operation preview returning a client-facing cost and description |
-| `URCi_` | 644 | **cost reader** — the single source both billing and the preview call |
+| `INFO_` | 650 | operation preview returning a client-facing cost and description |
+| `URCi_` | 646 | **cost reader** — the single source both billing and the preview call |
 | `A_` | 562 | admin-key mutation |
 | `UC_` | 529 | pure compute on arguments only — no table reads, no `enforce` |
 | `XI_` | 398 | internal write, this module only, under a capability |
@@ -27,7 +27,7 @@ Counts are of definitions in the tree, interface declarations included.
 | `CT_` | 281 | a constant, exposed as a function |
 | `URH_` | 169 | **scan** — walks a table. Off the execution path; cost grows with data |
 | `GOV|` | 162 | governance — keysets and protocol constants |
-| `CC_` | 126 | client entry that reaches a **scan** |
+| `CC_` | 130 | client entry that reaches a **scan** |
 | `P|` | 123 | policy — inter-module authorisation |
 | `UCk_` | 74 | **key builder** — composes a table's composite row key. Pure; returns a string, not a table |
 | `WU_` | 67 | write — update |
@@ -41,8 +41,8 @@ Counts are of definitions in the tree, interface declarations included.
 | `WW_` | 28 | write — upsert |
 | `URCx_` | 27 | `URC_` auxiliary |
 | `AU_` | 22 | admin utility |
+| `AA_` | 21 | admin mutation that reaches a **scan** |
 | `WI_` | 20 | write — insert |
-| `AA_` | 19 | admin mutation that reaches a **scan** |
 | `UCx_` | 15 | pure-compute auxiliary — a helper factored out of a `UC_` |
 | `Cp_` | 14 | client multi-transaction recipe, no scan |
 | `XBv_` | 10 | `XB_` with an intrinsic guard |

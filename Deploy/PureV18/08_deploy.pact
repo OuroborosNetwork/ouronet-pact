@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 8 of 8
 ;; This is STEP 8 of 8 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-7 must have run first, including the init steps between deploys.
-;; 3 source file(s), 64,205 gas measured in the REPL gas model, 296,906 bytes
+;; 3 source file(s), 64,205 gas measured in the REPL gas model, 300,351 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact
@@ -2022,10 +2022,10 @@
     ;;them would be wrong in the direction that matters, telling the daily automaton it cannot
     ;;afford the run it is about to make for free. The IGNIS still has a shape; it just is not
     ;;billed, which is what the FREE note in each says.
-    (defun INFO_AQP-EVCT|EvictRewards:object{OuronetInfoV3.ClientInfo}
+    (defun INFO_AQP-EVCT|EvictMultiRewards:object{OuronetInfoV3.ClientInfo}
         (patron:string fvt-id:string beneficiaries:[string]
          score-entity-types:[integer] score-entity-ids:[string] reward-dptf-ids:[string])
-        @doc "Cost preview for AQP-EVCT|CCp_EvictRewards -- one eviction slice. FULL IGNIS: the sum of \
+        @doc "Cost preview for AQP-EVCT|CCp_EvictMultiRewards -- one eviction slice. FULL IGNIS: the sum of \
             \ each leg's collect cost, read PER BENEFICIARY rather than per patron; no STOA. Fed the \
             \ same four parallel arrays the exec is fed, from the same \
             \ AQP-EVCT::URHC_BuildEvictSlicePlan dirty read. \
@@ -2041,11 +2041,66 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Evict one slice of this FVT's outstanding rewards to their beneficiaries."
                  "You are paying the IGNIS for collects the beneficiaries would otherwise pay themselves."
-                 "Executes via TS02-C3.AQP-EVCT|CCp_EvictRewards."]
+                 "Executes via TS02-C3.AQP-EVCT|CCp_EvictMultiRewards."]
                 [(format "Evicted {} reward leg(s) on FVT {}." [(length beneficiaries) fvt-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
-                    (ref-EVCT::URCi_EvictRewards patron fvt-id beneficiaries
+                    (ref-EVCT::URCi_EvictMultiRewards patron fvt-id beneficiaries
                         score-entity-types score-entity-ids reward-dptf-ids))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
+        )
+    )
+    (defun INFO_AQP-EVCT|EvictSingleReward:object{OuronetInfoV3.ClientInfo}
+        (patron:string fvt-id:string beneficiary:string score-entity-type:integer
+         score-entity-id:string reward-dptf-id:string)
+        @doc "Cost preview for AQP-EVCT|CC_EvictSingleReward — ONE leg, one transaction. FULL IGNIS \
+            \ for that leg, read per BENEFICIARY rather than per patron; no STOA. \
+            \ \
+            \ THE ONE A FAN-OUT MULTIPLIES. A client sending 120 of these shows 120 x this figure, \
+            \ and that total equals INFO_AQP-EVCT|EvictMultiRewards' quote for the same 120 legs — \
+            \ both resolve to AQP-RPSC::URCi_CollectFull per leg with no cross-leg term, so the \
+            \ choice between the two paths is not a choice between two prices. \
+            \ \
+            \ RESIDUAL inherited from the collect preview: exact for un-streamed or already-settled \
+            \ lanes, and able to shift a transfer tier on a lane with a live stream, because the \
+            \ payout is read pre-drip."
+        (let
+            (
+                (ref-EVCT:module{AcquisitionRewardEvictionV1} AQP-EVCT)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Evict ONE reward leg to its beneficiary."
+                 "One leg per transaction — the transaction count is the leg count, and no single one can exceed the gas limit."
+                 "Executes via TS02-C3.AQP-EVCT|CC_EvictSingleReward."]
+                [(format "Evicted {} on FVT {} to {}." [reward-dptf-id fvt-id beneficiary])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    (ref-EVCT::URCi_EvictSingleReward patron fvt-id beneficiary
+                        score-entity-type score-entity-id reward-dptf-id))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
+        )
+    )
+    (defun INFO_AQP-EVCT|AdminEvictSingleReward:object{OuronetInfoV3.ClientInfo}
+        (patron:string fvt-id:string beneficiary:string reward-dptf-id:string)
+        @doc "Cost preview for AQP-EVCT|AA_EvictSingleReward — the GASLESS single-leg eviction. FREE: \
+            \ the core's patron slot carries the Ouronet system account, the one account \
+            \ IGNIS::XE_CollectIgnis exempts, so no IGNIS and no STOA reach <patron>. \
+            \ \
+            \ THE AUTOMATON'S PREVIEW, and the figure it shows for a 120-leg campaign is zero rather \
+            \ than 120 x something. <patron> stays in the signature and is deliberately unused: every \
+            \ INFO_ here takes it first, and the score-entity is omitted because it cannot change a \
+            \ figure that is zero."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Evict ONE reward leg as the Ouronet administrator."
+                 "Gasless admin path — costs you nothing. Requires the admin keyset AND FVT ownership."
+                 "Executes via TS02-C3.AQP-EVCT|AA_EvictSingleReward."]
+                [(format "Evicted {} on FVT {} to {} (gasless)." [reward-dptf-id fvt-id beneficiary])]
+                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [])
         )
@@ -2075,9 +2130,9 @@
                 [])
         )
     )
-    (defun INFO_AQP-EVCT|AdminEvictRewards:object{OuronetInfoV3.ClientInfo}
+    (defun INFO_AQP-EVCT|AdminEvictMultiRewards:object{OuronetInfoV3.ClientInfo}
         (patron:string fvt-id:string beneficiaries:[string])
-        @doc "Cost preview for AQP-EVCT|AAp_EvictRewards -- the GASLESS admin eviction slice. FREE: the \
+        @doc "Cost preview for AQP-EVCT|AAp_EvictMultiRewards -- the GASLESS admin eviction slice. FREE: the \
             \ core's patron slot carries the Ouronet system account, the one account \
             \ IGNIS::XE_CollectIgnis exempts, so no IGNIS and no STOA reach <patron>. \
             \ \
@@ -2092,7 +2147,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Evict one slice of this FVT's rewards as the Ouronet administrator."
                  "Gasless admin path — costs you nothing. Requires the admin keyset AND FVT ownership."
-                 "Executes via TS02-C3.AQP-EVCT|AAp_EvictRewards."]
+                 "Executes via TS02-C3.AQP-EVCT|AAp_EvictMultiRewards."]
                 [(format "Evicted {} reward leg(s) on FVT {} (gasless)." [(length beneficiaries) fvt-id])]
                 (ref-I|OURONET::OI|UDC_NoIgnisCosts)
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
@@ -2102,7 +2157,7 @@
     (defun INFO_AQP-EVCT|AdminFullEvictRewards:object{OuronetInfoV3.ClientInfo}
         (patron:string fvt-id:string)
         @doc "Cost preview for AQP-EVCT|AA_FullEvictRewards -- the GASLESS admin whole-FVT eviction. \
-            \ FREE, for the reason INFO_AQP-EVCT|AdminEvictRewards gives."
+            \ FREE, for the reason INFO_AQP-EVCT|AdminEvictMultiRewards gives."
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)

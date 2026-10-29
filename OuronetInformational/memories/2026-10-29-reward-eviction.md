@@ -20,7 +20,7 @@ And the distinguishing property:
 |---|---|---|
 | the staleness (forced-fix) penalty | **"EvictRewards should zero it"** — a staker evicted *for* never had the chance to collect | `XE_EvictPay` → `RPS::XE_WU_FvtForcedFixCount\|Zero` |
 | freeze | **not needed** — "it is simply a collet rewards triggered by the pool owner instaed of the beneficiary" | no freeze anywhere in AQP-EVCT |
-| a zero-reward leg | **"0 reward simply means there is nothing to collect"** | the claimable enforce in `CCp_EvictRewards` |
+| a zero-reward leg | **"0 reward simply means there is nothing to collect"** | the claimable enforce in `CCp_EvictMultiRewards` |
 | scores | **"Eviction has nothing to do with score, its just sending the rewards"** — but stale scores are refreshed exactly as a collect refreshes them | `XE_EvictDrip`, which is the collect's own drip |
 | coil dust | royalty sink if the pair has one, else the last beneficiary; **"EvictRewards musnt leave any dust"** | proved: a whole-FVT eviction lands the lane on `0.000000` |
 | the ladder | **"Instead of coiling from the beneficiary, it should coil from the AQP\|SC_NAME. This way we would have a common core we could use."** | `ATSU::XB_Coil` + `URCi_CoilTo` |
@@ -124,7 +124,7 @@ got — and the seventh-power size charge means there is no arguing with it.
 
 ## The registry partition blocks cannot be pre-authored — an orphan check refuses them
 
-Worth recording because the instinct is wrong in a useful way. `CCp_EvictRewards` is a fed slice and
+Worth recording because the instinct is wrong in a useful way. `CCp_EvictMultiRewards` is a fed slice and
 `Deploy/OURONET-REGISTRY.authored.json` is where "may this be split, along which parameter" is
 written by hand — **absence means DO NOT SPLIT**. So the obvious move is to author the two blocks
 now, ahead of the deploy, and avoid shipping an entrypoint that reads as unsliceable.
@@ -133,8 +133,8 @@ now, ahead of the deploy, and avoid shipping an entrypoint that reads as unslice
 
 ```
 registry: 2 partition claim(s) do not hold
-    TS02-C3.AQP-EVCT|AAp_EvictRewards: ORPHAN -- no such entrypoint (drop the entry or fix the key)
-    TS02-C3.AQP-EVCT|CCp_EvictRewards: ORPHAN -- no such entrypoint (drop the entry or fix the key)
+    TS02-C3.AQP-EVCT|AAp_EvictMultiRewards: ORPHAN -- no such entrypoint (drop the entry or fix the key)
+    TS02-C3.AQP-EVCT|CCp_EvictMultiRewards: ORPHAN -- no such entrypoint (drop the entry or fix the key)
 ```
 
 I had read the UNMERGED check (which skips keys the artefact lacks) and concluded pre-authoring was
@@ -148,6 +148,58 @@ prose that nothing validates, which is the correct home for a claim nothing can 
 whole-FVT variants get no block at all, and that is the answer rather than a gap: no list argument
 exists to cut, they scan and spend in one transaction so they are not a cursor, and they have no
 ordered phases so nothing is architectural.
+
+## THREE SHAPES, not two — owner ruling, 2026-10-30
+
+The surface shipped as a fed slice plus a whole-FVT convenience. The owner's reading of how a
+client would actually use it changed the shape of the module:
+
+| | legs per transaction | role |
+|---|---|---|
+| `CC_/AA_FullEvictRewards` | all of them | tried FIRST — "if it fits it is what would be executed" |
+| `CC_/AA_EvictSingleReward` | exactly one | the FALLBACK, and the owner's preferred client shape |
+| `CCp_/AAp_EvictMultiRewards` | as many as fit ~2M gas | "only for demonstration purposes", behind a toggle |
+
+**The argument for Single is legibility and structural safety, and both are worth recording.**
+Verbatim: *"the single leg TX chain is interesting because you can see instantly if there are 120
+tx constructed there are 120 legs."* `URHC_BuildEvictPlans` emits one object per leg, so the
+transaction count IS the leg count — no packing loop, no probe-and-resize, no arithmetic between
+what was read and what was sent. And one leg is one drip plus one payment, so **no transaction in
+the campaign can approach the ceiling**: the run is safe by construction where Multi is safe only
+by measurement, and has to be re-measured whenever the data moves.
+
+**What I had built and called `CC_FullEvictRewards` was never the Single shape.** It is all legs in
+one transaction — the gas-risky one. The naming now says which is which: Full / Single / Multi.
+
+### What a fan-out changes, and it is exactly two things
+
+1. **The dust becomes order-dependent in *who*, not in *whether*.** The last claimant on a lane
+   sweeps the remainder, so whichever of the N transactions lands last on that lane receives it.
+   The lane still ends on exactly zero. This is the 2026-10-29 ruling rather than a side effect:
+   royalty sink if the pair has one, *"if not, to the last beneficiary"*.
+2. **A refused leg is not a lost leg.** Every shape re-checks the claimable, so a leg collected
+   between the read and the send refuses and moves nothing; a re-read returns only what is left.
+   Firing 120 at once must EXPECT a few to bounce — the safety property, not a failure.
+
+### Proved by execution, not by inspection
+
+`TX-EVICT-01b` in `[6.2.18]` runs the Single path on the same fixture the others ran on, in one
+transaction so block time cannot move:
+
+* the Single evict paid **28.800000000000000000000000** — the same exact figure the self-collect
+  and the whole-FVT evict paid for that leg. Three entrypoints, one payout rule.
+* the **Single cost quote equals the Multi quote for the same one leg** (58.0 both ways), so the
+  client's choice between the two paths is not a choice between two prices.
+* `URHC_EvictLegCount` equals the plan length — the legibility property, asserted rather than
+  asserted-to.
+
+### One thing deliberately NOT refactored
+
+`URCi_EvictMultiRewards` still folds `AQP-RPSC::URCi_CollectFull` directly rather than folding
+`URCi_EvictSingleReward`, which would read as the tidier version. The price-sheet generator walks
+`ref-MOD::` edges and loses a leg behind an intra-module hop — measured, not feared: `C_Coil`
+delegating to `XB_Coil` took the sheet from 93 claimed-exact prices to 87 and was reverted. One
+duplicated call, pinned by the quote equality above, is the cheaper trade.
 
 ## Open
 

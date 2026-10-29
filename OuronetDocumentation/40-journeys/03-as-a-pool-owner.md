@@ -126,8 +126,13 @@ than ceremonial: a whole-FVT eviction leaves **no dust** (the last leg sweeps th
 zero), and it **waives** the usual staleness penalty, on the grounds that a staker who never got
 the chance to collect should not be charged for the refresh.
 
-Size it the same way you size a vacate. The whole-FVT variant scans before it pays, so it suits a
-small distributor; a large one is sliced, and the slices are independent — fire them in parallel.
+Size it the same way you size a vacate, with one difference that makes it easier. Try the
+whole-distributor variant first: it scans before it pays, so it suits a small one. When it does
+not fit, the fallback is **one transaction per leg** — and because the plan reader emits exactly
+one entry per leg, the transaction count is the leg count. A hundred legs is a hundred
+transactions, none of which can approach the gas limit. There is also a packed variant that uses
+fewer, larger transactions; it needs measuring against the limit, which is why it sits behind a
+toggle rather than being the default.
 
 ---
 
