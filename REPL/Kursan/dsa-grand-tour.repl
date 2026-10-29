@@ -1682,7 +1682,7 @@
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
-        (ref-RPS:module{AcquisitionRewardPerShareV4} RPS)
+        (ref-RPS:module{AcquisitionRewardPerShareV5} RPS)
         (ref-SWP:module{SwapperV5} SWP)
         (ouro:string "OURO-98c486052a51")
     )

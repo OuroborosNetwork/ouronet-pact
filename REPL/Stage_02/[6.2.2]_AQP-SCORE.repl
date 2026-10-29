@@ -683,7 +683,7 @@
 ;;==== TX-SCORE-13b · 01 · non-vacuity ===========================================
 (print "--- [TX-SCORE-13b · 01 · non-vacuity] ---")
 ;;FINDING, recorded here because this is where it bites: `FVT|C>ISSUE-FVT` calls
-;;`(ref-RPS::URC_FvtExists fvt-id)` on a `module{AcquisitionRewardPerShareV4}` reference, and
+;;`(ref-RPS::URC_FvtExists fvt-id)` on a `module{AcquisitionRewardPerShareV5}` reference, and
 ;;`URC_FvtExists` is NOT among that interface's declared members (04_RPS.pact lines 1-84 declare
 ;;`URC_FvtRpsGlobalRowExists`, `URC_FvtScoreEntityLinkRowExists` and `URC_MultipletFamilyExists`, but
 ;;not this one). VERIFIED BY EXECUTION that this is not a load error: Pact 5.4 resolves a modref member
@@ -700,7 +700,7 @@
         (fvt-name:string "RtFvtOwnerProbe")
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-RPS:module{AcquisitionRewardPerShareV4} RPS)
+        (ref-RPS:module{AcquisitionRewardPerShareV5} RPS)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (split-stoa:[decimal]
             (ref-DALOS::URC_SplitSTOAPrices KST.ANHD (ref-DALOS::UR_UsagePrice "smart"))

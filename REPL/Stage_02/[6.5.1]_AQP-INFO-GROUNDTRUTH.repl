@@ -2108,7 +2108,7 @@
 ;;
 ;;WHY THIS PREVIEW QUOTES A DIFFERENTLY-NAMED COST READER, and why that is correct rather than a
 ;;copy-paste slip. `C_SetMinInjectAmount` has no price key of its own: it ends on
-;;`RPS.URCi_ToggleRewardLink`, billing through `AQP-FVT|C_ToggleRewardLink`'s `fvt-link-toggle`
+;;`RPSCC.URCi_ToggleRewardLink`, billing through `AQP-FVT|C_ToggleRewardLink`'s `fvt-link-toggle`
 ;;tier. The preview therefore quotes the SAME function the client returns — which is exactly the
 ;;AQP-INFO golden rule ("mirror the execution's cost logic byte-for-byte"), applied honestly rather
 ;;than by matching names. This block is what turns that from a claim into a measurement.
@@ -2343,7 +2343,7 @@
     (
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
-        (ref-RPS:module{AcquisitionRewardPerShareV4} RPS)
+        (ref-RPS:module{AcquisitionRewardPerShareV5} RPS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (patron:string KST.ANHD)
         (gas-id:string "GAS-98c486052a51")
@@ -3410,7 +3410,7 @@
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
-        (ref-RPS:module{AcquisitionRewardPerShareV4} RPS)
+        (ref-RPS:module{AcquisitionRewardPerShareV5} RPS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (patron:string KST.ANHD)
         (gas-id:string "GAS-98c486052a51")
@@ -4561,7 +4561,7 @@
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
-        (ref-RPS:module{AcquisitionRewardPerShareV4} RPS)
+        (ref-RPS:module{AcquisitionRewardPerShareV5} RPS)
         (patron:string KST.ANHD)
         (t0:string "GTM0-98c486052a51")
         (t1:string "GTM1-98c486052a51")

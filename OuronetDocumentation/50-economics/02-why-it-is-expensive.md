@@ -81,8 +81,8 @@ there isn't is freedom to call something not yet deployed.
 
 | | |
 |---:|---|
-| 131,006 | lines of contract |
-| 9,375 | functions |
+| 131,164 | lines of contract |
+| 9,389 | functions |
 | 988 | capabilities |
 | 99 | modules |
 | 427 | client entrypoints |

@@ -279,7 +279,7 @@
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
-        (ref-RPS:module{AcquisitionRewardPerShareV4} RPS)
+        (ref-RPS:module{AcquisitionRewardPerShareV5} RPS)
         (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
         (ouro-id:string "OURO-98c486052a51")
         (boost-score-id:string (ref-U|DALOS::UDC_Makeid "TfStakeScore"))

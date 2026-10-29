@@ -15,18 +15,18 @@ Counts are of definitions in the tree, interface declarations included.
 |---|---:|---|
 | `UR_` | 1,545 | reads one row or field by key |
 | `C_` | 1,390 | client entry — builds the bill; reachable only through Talos |
-| `URC_` | 795 | reads and derives; no `enforce` |
+| `URC_` | 800 | reads and derives; no `enforce` |
 | `UEV_` | 672 | reads and `enforce`s; failure aborts the transaction |
 | `INFO_` | 644 | operation preview returning a client-facing cost and description |
-| `URCi_` | 635 | **cost reader** — the single source both billing and the preview call |
+| `URCi_` | 640 | **cost reader** — the single source both billing and the preview call |
 | `A_` | 557 | admin-key mutation |
 | `UC_` | 524 | pure compute on arguments only — no table reads, no `enforce` |
 | `XI_` | 394 | internal write, this module only, under a capability |
 | `XE_` | 358 | entry point for other modules only |
-| `UDC_` | 347 | data construction — a named constructor for an object |
-| `CT_` | 279 | a constant, exposed as a function |
+| `UDC_` | 348 | data construction — a named constructor for an object |
+| `CT_` | 281 | a constant, exposed as a function |
 | `URH_` | 167 | **scan** — walks a table. Off the execution path; cost grows with data |
-| `GOV|` | 160 | governance — keysets and protocol constants |
+| `GOV|` | 161 | governance — keysets and protocol constants |
 | `CC_` | 122 | client entry that reaches a **scan** |
 | `P|` | 121 | policy — inter-module authorisation |
 | `UCk_` | 74 | **key builder** — composes a table's composite row key. Pure; returns a string, not a table |

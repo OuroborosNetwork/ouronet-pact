@@ -68,9 +68,33 @@ KNOWN = {
     ("04_AQP-BOOT.pact", "AQP-POOL"), ("04_AQP-BOOT.pact", "DPDC"),
     ("04_AQP-BOOT.pact", "TS02-C3"),
     ("01_DALOS.pact", "TS01-C1"),
-    ("04_RPS.pact", "AQP-ANK"), ("04_RPS.pact", "AQP-POOL"), ("04_RPS.pact", "AQP-SCORE"),
-    ("04_RPS.pact", "DPDC-T"), ("04_RPS.pact", "DPOF"), ("04_RPS.pact", "TFT"),
+    # RPS KEEPS ONLY TWO. Its other four edges (AQP-ANK, DPDC-T, DPOF, TFT) were made solely by
+    # bodies that moved to RPSCC on 2026-10-29, so they became orphans the moment the split
+    # landed -- and this tool said so, which is the whole reason it detects orphans. My first
+    # version of the note below claimed RPS "still makes them". It does not.
+    ("04_RPS.pact", "AQP-POOL"), ("04_RPS.pact", "AQP-SCORE"),
     ("05_FVT.pact", "RPS"),
+    # AQP-FVT's one-line FACADES dot-call, and this one joins them: the block around
+    # URCi_CollectFull is a run of `(RPS.URC_X ...)` delegations with no `let` to hang a modref
+    # binding on. Its SEVENTEEN other RPSCC call sites DO use modrefs -- see the note below for
+    # why that distinction is load-bearing rather than cosmetic.
+    ("05_FVT.pact", "RPSCC"),
+    # RPSCC is the cost/client surface split out of RPS on 2026-10-29. Its 25 members were RPS's
+    # own bodies, so they reach RPS's readers the same way 09_AQP-INFO does -- by dot call --
+    # rather than threading a modref through 91 inherited call sites.
+    #
+    # ITS CALLERS USE MODREFS, NOT DOT CALLS, and that is not a style preference. The first cut
+    # had AQP-FVT/AQP-DSA/AQP-INFO dot-calling RPSCC, and `_ignis_price_sheet.py` then published
+    # ELEVEN AQP-FVT entrypoints as "? -- cumulator not resolvable statically (reader lives in
+    # another module)". The walker follows `ref-MOD::`; it is blind to a dot call. CLAUDE.md says
+    # the same thing from the other direction: cross-module calls use `::`, and this registry is
+    # the ledger of exceptions. So the exception stops at RPSCC's own inherited reads.
+    ("04b_RPSCC.pact", "RPS"),
+    # INHERITED, not new. These four were 04_RPS.pact's, and the 25 bodies that moved brought
+    # their dot calls with them -- so the edges changed OWNER rather than appearing. RPS's copies
+    # are deleted above, because after the split it makes none of them.
+    ("04b_RPSCC.pact", "AQP-ANK"), ("04b_RPSCC.pact", "DPDC-T"),
+    ("04b_RPSCC.pact", "DPOF"),    ("04b_RPSCC.pact", "TFT"),
     ("06_VCT.pact", "AQP-ANK"), ("06_VCT.pact", "AQP-POOL"), ("06_VCT.pact", "DPDC-T"),
     ("06_VCT.pact", "DPOF"), ("06_VCT.pact", "RPS"), ("06_VCT.pact", "TFT"),
     ("07_MTX-AQP.pact", "RPS"), ("08_DSA.pact", "RPS"),

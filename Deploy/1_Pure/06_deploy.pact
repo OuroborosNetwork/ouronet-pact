@@ -1,8 +1,8 @@
 ;; ---------------------------------------------------------------------------
-;; OURONET DEPLOY -- file 6 of 25
-;; This is STEP 6 of 26 in the full sequence (see Deploy/MANIFEST.md).
+;; OURONET DEPLOY -- file 6 of 26
+;; This is STEP 6 of 27 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-5 must have run first, including the init steps between deploys.
-;; 3 source file(s), 244,695 gas measured in the REPL gas model, 227,464 bytes
+;; 3 source file(s), 244,782 gas measured in the REPL gas model, 227,464 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/13_OUROBOROS.pact

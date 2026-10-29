@@ -1,6 +1,6 @@
 ;; ---------------------------------------------------------------------------
-;; OURONET DEPLOY -- file 13 of 25
-;; This is STEP 13 of 26 in the full sequence (see Deploy/MANIFEST.md).
+;; OURONET DEPLOY -- file 13 of 26
+;; This is STEP 13 of 27 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-12 must have run first, including the init steps between deploys.
 ;; 5 source file(s), 323,056 gas measured in the REPL gas model, 263,624 bytes
 ;;

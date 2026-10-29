@@ -1,8 +1,8 @@
 ;; ---------------------------------------------------------------------------
-;; OURONET DEPLOY -- file 9 of 25
-;; This is STEP 9 of 26 in the full sequence (see Deploy/MANIFEST.md).
+;; OURONET DEPLOY -- file 9 of 26
+;; This is STEP 9 of 27 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-8 must have run first, including the init steps between deploys.
-;; 4 source file(s), 273,937 gas measured in the REPL gas model, 269,636 bytes
+;; 4 source file(s), 273,967 gas measured in the REPL gas model, 269,636 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/21_CODEX.pact

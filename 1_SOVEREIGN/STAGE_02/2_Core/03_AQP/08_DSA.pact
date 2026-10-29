@@ -691,30 +691,33 @@
             \ of the exec's UDC_ConcatenateOutputCumulators [gas custody]."
         (let
             (
+                (ref-RPSCC:module{AcquisitionRewardCostsV1} RPSCC)
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
             )
             (+ (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (URCi_WithdrawRoyalty patron [fvt-id]))
-               (RPS.URCi_WithdrawRoyaltyCustody fvt-id reward-dptf-id (RPS.UR_FVT|OwnerKonto fvt-id)))
+               (ref-RPSCC::URCi_WithdrawRoyaltyCustody fvt-id reward-dptf-id (RPS.UR_FVT|OwnerKonto fvt-id)))
         ))
     (defun URCi_BurnRoyaltyFull:decimal (patron:string fvt-id:string reward-dptf-id:string)
         @doc "FULL reconstructed IGNIS ifp of C_BurnRoyalty: GAS|BURN-ROYALTY gas leg + the FVT custody-burn leg \
             \ (FVT::URCi_BurnRoyaltyCustody mirroring XE_BurnRoyalty). Read-only mirror of the exec's concat."
         (let
             (
+                (ref-RPSCC:module{AcquisitionRewardCostsV1} RPSCC)
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
             )
             (+ (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (URCi_BurnRoyalty patron [fvt-id]))
-               (RPS.URCi_BurnRoyaltyCustody fvt-id reward-dptf-id))
+               (ref-RPSCC::URCi_BurnRoyaltyCustody fvt-id reward-dptf-id))
         ))
     (defun URCi_FuelRoyaltyFull:decimal (patron:string fvt-id:string reward-dptf-id:string swpair:string)
         @doc "FULL reconstructed IGNIS ifp of C_FuelRoyalty: GAS|FUEL-ROYALTY gas leg + the FVT custody-fuel leg \
             \ (FVT::URCi_FuelRoyaltyCustody mirroring XE_FuelRoyalty into <swpair>). Read-only mirror of the exec's concat."
         (let
             (
+                (ref-RPSCC:module{AcquisitionRewardCostsV1} RPSCC)
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
             )
             (+ (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (URCi_FuelRoyalty patron [fvt-id]))
-               (RPS.URCi_FuelRoyaltyCustody fvt-id reward-dptf-id swpair))
+               (ref-RPSCC::URCi_FuelRoyaltyCustody fvt-id reward-dptf-id swpair))
         ))
     (defun URCi_SetAgencyFee:object{IgnisCollectorV4.OutputCumulator} (patron:string output:[string])
         (let

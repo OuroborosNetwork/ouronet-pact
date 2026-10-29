@@ -1,8 +1,8 @@
 ;; ---------------------------------------------------------------------------
-;; OURONET DEPLOY -- file 14 of 25
-;; This is STEP 14 of 26 in the full sequence (see Deploy/MANIFEST.md).
+;; OURONET DEPLOY -- file 14 of 26
+;; This is STEP 14 of 27 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-13 must have run first, including the init steps between deploys.
-;; 3 source file(s), 272,402 gas measured in the REPL gas model, 285,786 bytes
+;; 3 source file(s), 272,450 gas measured in the REPL gas model, 285,786 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/02_DEMIPAD/00_Demipad.pact

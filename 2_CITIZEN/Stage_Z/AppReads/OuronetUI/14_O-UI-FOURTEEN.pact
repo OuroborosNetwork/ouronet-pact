@@ -137,7 +137,7 @@
             (
                 (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
                 (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
-                (ref-RPS:module{AcquisitionRewardPerShareV4} RPS)
+                (ref-RPS:module{AcquisitionRewardPerShareV5} RPS)
                 (ref-U|CT:module{OuronetConstantsV2} U|CT)
             )
             (let
