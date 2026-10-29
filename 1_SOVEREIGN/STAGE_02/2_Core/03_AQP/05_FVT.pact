@@ -4247,6 +4247,36 @@
                     (ref-RPS::XE_XI_2|SettleMemberTier2 fvt-id score-entity-type score-entity-id reward-dptf-id)
                     true
                 )
+                ;;NOTHING TO COLLECT IS A REFUSAL, NOT A NO-OP. Owner ruling, 2026-10-28, after a
+                ;;live collect of 0.000000000000 on mainnet
+                ;;(_n8jEM6Pu5lZn7kVVnaqsPieo6IJwcEakC_TF5CiiTw): it emitted FVT|C>COLLECT, emitted
+                ;;IGNIS|C>COLLECT for 57, emitted NO DPTF transfer, and reported success. The user
+                ;;paid to move nothing.
+                ;;
+                ;;It was not a bug in the arithmetic. Chain state showed the holder's <last-rps>
+                ;;exactly equal to the global <current-rps>, pending 0, no stream on the lane -- a
+                ;;correct zero. The defect is that a correct zero was ALLOWED TO BILL:
+                ;;XI_TransferRewardDptfFromVault short-circuits a non-positive payout to an empty
+                ;;cumulator, so the transaction succeeded while doing nothing.
+                ;;
+                ;;WHY HERE AND NOT IN THE DEFCAP. <UEV_CollectContext> runs before
+                ;;XE_XI_ReleaseStream, and a lane carrying a live stream has a claimable that is
+                ;;ZERO BEFORE THE DRIP and positive after it. Checking in the defcap would refuse
+                ;;exactly the streamed collects that are legitimate -- a stricter gate that is
+                ;;WRONG, which is worse than the one it replaces.
+                ;;
+                ;;WHY NOT IN THE XI_ THAT ALREADY HAS THE VALUE. It would be free there -- the
+                ;;payout is already bound -- but an <XI_> must not enforce (StoicSyntax: every
+                ;;check belongs above the write layer), and exactly ONE XI_ in the sovereign tree
+                ;;breaks that today. Nine C_/CC_ carry an <enforce>, two of them in this module.
+                ;;The cost is one extra URC read over rows this transaction has already touched.
+                (enforce
+                    (> (ref-RPS::URC_CollectClaimableRewards
+                            executor pool-id fvt-id score-entity-type score-entity-id reward-dptf-id)
+                        0.0)
+                    "Nothing to collect: no rewards have accrued on this reward token for this \
+                    \ score-entity"
+                )
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
                     [
                         ;;===>PHASE 0=== (audit LP redesign / Stage 2b) farm ghost-TVL sync REMOVED — L_i is

@@ -3739,6 +3739,16 @@
                 (reward-kind:string (UR_FVT-RG|RewardKind fvt-id reward-dptf-id))
                 (payout:decimal (URC_CollectClaimableRewards collector pool-id fvt-id score-entity-type score-entity-id reward-dptf-id))
             )
+            ;;UNREACHABLE FROM THE LIVE PATH SINCE 2026-10-28, and kept deliberately.
+            ;;<CC_Collect> -- the only caller -- now enforces a positive claimable AFTER the
+            ;;stream drip, so a non-positive payout refuses there and never arrives here. This
+            ;;branch is what ALLOWED the defect: it turned a correct zero into a SUCCESSFUL
+            ;;transaction that emitted no transfer and still billed 57 IGNIS.
+            ;;
+            ;;It stays as a floor rather than becoming an <enforce>, because an <XI_> must not
+            ;;enforce and because a future caller reaching this with a zero should still write
+            ;;nothing rather than abort a batch mid-way. If a second caller ever appears, it owns
+            ;;the same refusal its predecessor does -- that is the thing to check, not this line.
             (if (<= payout 0.0)
                 (UC_EmptyOc)
                 (if (and (= reward-kind CT_REWARD_KIND_MULTIPLET_BASE) (= score-entity-type CT_SCORE_ENTITY_TRIPLET))

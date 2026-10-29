@@ -486,23 +486,40 @@
                     (expect (format "<<TX-FVT-05>> payout <= inject got={} inject={}" [payout inject-amt]) true (<= payout inject-amt))
                 ]
             )
-            (print "--- [TX-FVT-05 · 03 · second collect idempotent] ---")
+            (print "--- [TX-FVT-05 · 03 · second collect REFUSES] ---")
+            ;;REVERSED 2026-10-28, BY OWNER RULING, AND THE OLD BEHAVIOUR WAS DELIBERATE.
+            ;;
+            ;;This block was titled "second collect idempotent" and asserted
+            ;;`second collect payout=0`. That is not an oversight someone left behind: it is a
+            ;;DESIGN CHOICE, and the choice was that collecting twice is harmless because no
+            ;;double-payment occurs. On the no-double-payment point it was right.
+            ;;
+            ;;What it missed is that the second call is not free. Mainnet transaction
+            ;;_n8jEM6Pu5lZn7kVVnaqsPieo6IJwcEakC_TF5CiiTw emitted FVT|C>COLLECT, emitted
+            ;;IGNIS|C>COLLECT for 57, emitted NO DPTF transfer, and reported success. Idempotent
+            ;;in rewards, billed in IGNIS -- the holder paid to move nothing.
+            ;;
+            ;;Owner ruling: "collection should only be possible for greater than 0 values."
+            ;;So the second collect now ABORTS, and the assertion is inverted rather than
+            ;;deleted: the scenario it set up is exactly the one that must refuse, and a test
+            ;;that merely stopped running would leave that unproven.
             (let
                 (
                     (ouro-before-2:decimal (ref-DPTF::UR_AccountSupply ouro-id patron))
                 )
-                (print (format "<(TS02-C3.AQP-FVT|CC_Collect second)> => \"{}\"" [
-                    (ref-TS02-C3::AQP-FVT|CC_Collect patron patron fvt-id 1 score-id ouro-id)
-                ]))
-                (let
-                    (
-                        (payout-2:decimal (- (ref-DPTF::UR_AccountSupply ouro-id patron) ouro-before-2))
-                    )
-                    (map print
-                        [
-                            (expect (format "<<TX-FVT-05>> second collect payout=0 got={}" [payout-2]) 0.0 payout-2)
-                        ]
-                    )
+                (map print
+                    [
+                        (expect-failure
+                            "<<TX-FVT-05>> a second collect REFUSES rather than billing for nothing"
+                            "Nothing to collect"
+                            (ref-TS02-C3::AQP-FVT|CC_Collect patron patron fvt-id 1 score-id ouro-id))
+                        ;;AND NOTHING MOVED. The refusal must leave the holder's balance exactly
+                        ;;where the first collect left it -- an abort that still debited would be
+                        ;;a worse defect than the one being fixed.
+                        (expect (format "<<TX-FVT-05>> the refused collect moved nothing got={}"
+                                    [(- (ref-DPTF::UR_AccountSupply ouro-id patron) ouro-before-2)])
+                            0.0 (- (ref-DPTF::UR_AccountSupply ouro-id patron) ouro-before-2))
+                    ]
                 )
             )
         )

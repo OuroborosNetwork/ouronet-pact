@@ -17,8 +17,8 @@ Deployed immediately after DALOS, and before everything that charges. It carries
 
 | | |
 |---|---|
-| module hash | `0XJmmbjMTPkrKRZutN-erVsLADFT_cUx8Mdirxrte7o` |
-| deployed size | 95,260 characters |
+| module hash | `pu_6XcrDg7AZ6lD7zkpSsFsFt6bJMVkhOghoYtikKcM` |
+| deployed size | 95,255 characters |
 | implements | `OuronetPolicyV2`, `IgnisCollectorV4`, `OuronetInfoV3` |
 | repository source | `1_SOVEREIGN/STAGE_01/2_Core/02_IGNIS.pact` |
 

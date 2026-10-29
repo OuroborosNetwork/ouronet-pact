@@ -24,8 +24,8 @@ A leaf module extracted from the distributor when that grew undeployable. The di
 
 | | |
 |---|---|
-| module hash | `eIa1LtrWngJDc0AydxFLmVTBrq1zLlYcLU4AKhGWdz0` |
-| deployed size | 298,402 characters |
+| module hash | `JAQ5Rcasc2qMUgLxnSGiWkL-4JZ_u7fOWs0qJafr8FM` |
+| deployed size | 313,179 characters |
 | implements | `OuronetPolicyV2`, `AcquisitionRewardPerShareV4` |
 | repository source | `1_SOVEREIGN/STAGE_02/2_Core/03_AQP/04_RPS.pact` |
 
@@ -37,15 +37,16 @@ A leaf module extracted from the distributor when that grew undeployable. The di
 
 `FVT|XE>ADMIT-DELEGATION`, `FVT|XE>DISPOSE-ROYALTY`, `FVT|XE>SWEEP-FIX`, `GOV`, `GOV|RPS_ADMIN`, `P|RPS|CALLER`, `P|RPS|REMOTE-GOV`, `P|SECURE-CALLER`, `RPS|XE>WRITE`, `SECURE`
 
-**Functions** — 347, grouped by what their prefix promises
+**Functions** — 348, grouped by what their prefix promises
 
 | family | n | the promise | names |
 |---|---:|---|---|
 | `URCi_` cost readers | 20 | returns what an operation will charge | `URCi_AddRewardLink`, `URCi_AddScoreEntity`, `URCi_BurnRoyaltyCustody`, `URCi_Collect`, `URCi_CollectFull`, `URCi_CollectableStakeFlow` …+14 |
 | `URHC_` heavy derived reads | 2 | a scan, then derivation | `URHC_BuildInjectScorePlans`, `URHC_BuildStakeSettleBundle` |
 | `URH_` heavy reads | 3 | a scan -- expensive by construction | `URH_FvtEnabledScoreEntityIdsForFvt`, `URH_FvtPresentUsers`, `URH_FvtStalePresentUsers` |
-| `URC_` derived reads | 62 | read and derive; no enforce | `URC_BookStakeUnclaimedIgnis`, `URC_BuildPreScoreNzFlags`, `URC_CheckpointStakeRpsIgnis`, `URC_CollectClaimableRewards`, `URC_CollectForcedFixIgnis`, `URC_CollectTransferLegIgnis` …+56 |
+| `URC_` derived reads | 63 | read and derive; no enforce | `URC_BookStakeUnclaimedIgnis`, `URC_BuildPreScoreNzFlags`, `URC_CheckpointStakeRpsIgnis`, `URC_CollectClaimableRewards`, `URC_CollectForcedFixIgnis`, `URC_CollectLadderPreview` …+57 |
 | `UEV_` validators | 5 | read and enforce; may abort the transaction | `UEV_AddRewardLinkContext`, `UEV_QualitySplitContext`, `UEV_TrueFungibleStakeBeneficiaryAccount`, `UEV_TrueFungibleStakeNotReserved`, `UEV_TrueFungibleStakeOwnerAccount` |
+| `UDC_` constructors | 1 | named object constructors | `UDC_LadderPreview` |
 | `UCk_` pure compute (key) | 9 | builds a composite table key | `UCk_ForcedFixCount`, `UCk_MemberUserWeight`, `UCk_MultipletFamily`, `UCk_RpsGlobal`, `UCk_RpsMember`, `UCk_RpsStream` …+3 |
 | `UC_` pure compute | 4 | arguments only -- no reads, no enforce | `UC_ComputeInjectGainedRps`, `UC_EmptyOc`, `UC_GasPrice`, `UC_PerMilleRow` |
 | `UR_` readers | 2 | table reads; no enforce, no writes | `UR_ExternalOracle`, `UR_OracleValidity` |
@@ -56,18 +57,15 @@ A leaf module extracted from the distributor when that grew undeployable. The di
 | `XE_` protected (external) | 45 | for other modules; opens with the IMC gate | `XE_AdmitDelegationMember`, `XE_BankScorePendingRewards`, `XE_BookStakeUnclaimedCounts`, `XE_BurnRoyalty`, `XE_CheckpointStakeRps`, `XE_FuelRoyalty` …+39 |
 | `AA_` admin (heavy) | 1 | admin key; reaches a scan somewhere in its tree | `AA_MigrateMinInject` |
 | `P|` policy | 9 | inter-module authorisation | `P|A_Add`, `P|A_AddIMP`, `P|A_Define`, `P|A_RemoveIMP`, `P|A_SetIMP`, `P|Info` …+3 |
-| *(unclassified)* | 139 | carries no StoicSyntax prefix | `CT_AqpScName`, `CT_Bar`, `GOV|Demiurgoi`, `UDC_FVT|MultipletFamily`, `UDC_FVT|RPS|Global`, `UDC_FVT|RPS|Member` …+133 |
+| *(unclassified)* | 138 | carries no StoicSyntax prefix | `CT_AqpScName`, `CT_Bar`, `GOV|Demiurgoi`, `UDC_FVT|MultipletFamily`, `UDC_FVT|RPS|Global`, `UDC_FVT|RPS|Member` …+132 |
 
-> **The repository differs from what is deployed.** Everything above describes the CHAIN, which is what a caller actually reaches. The difference is stated rather than resolved:
->
-> - **functions** on chain only: `XI_2|EnsureRpsUserRow`
-> - **functions** in the repository only: `UDC_LadderPreview`, `URC_CollectLadderPreview`
+> Repository and chain agree on every declared shape.
 
 **Capabilities** -- 10
 
 `FVT|XE>ADMIT-DELEGATION`, `FVT|XE>DISPOSE-ROYALTY`, `FVT|XE>SWEEP-FIX`, `GOV`, `GOV|RPS_ADMIN`, `P|RPS|CALLER`, `P|RPS|REMOTE-GOV`, `P|SECURE-CALLER`, `RPS|XE>WRITE`, `SECURE`
 
-**Functions** -- 347, grouped by what the prefix promises
+**Functions** -- 348, grouped by what the prefix promises
 
 *Cost readers* (20) — price an operation; the exec path and the preview both call these
 
@@ -81,9 +79,9 @@ A leaf module extracted from the distributor when that grew undeployable. The di
 
 `URH_FVT-RG|EnabledRewardRows`, `URH_FVT|SettleFvtRewardBundle`, `URH_FvtEnabledScoreEntityIdsForFvt`, `URH_FvtPresentUsers`, `URH_FvtStalePresentUsers`
 
-*Derived reads* (62) — read and compute; no enforce
+*Derived reads* (63) — read and compute; no enforce
 
-`URC_BookStakeUnclaimedIgnis`, `URC_BuildPreScoreNzFlags`, `URC_CheckpointStakeRpsIgnis`, `URC_CollectClaimableRewards`, `URC_CollectForcedFixIgnis`, `URC_CollectTransferLegIgnis`, `URC_CollectXferIgnis`, `URC_ComputeTripletLanes`, `URC_FarmInjectDenominatorFresh`, `URC_FvtExists`, `URC_FvtHasAnyMemberLink`, `URC_FvtHasEnabledRewardToken`, `URC_FvtHasScoreEntityLinks`, `URC_FvtMemberDebNeedsFix`, `URC_FvtResolveClass`, `URC_FvtRewardDptfIdsFromBundle`, `URC_FvtRpsGlobalRowExists`, `URC_FvtRpsMemberRowExists`, `URC_FvtRpsUserRowExists`, `URC_FvtScoreEntityLinkRowExists`, `URC_FvtSweepTotalPresent`, `URC_FvtTier1IndexRps`, `URC_FvtUserHasStaleMember`, `URC_FvtUserHasStaleMemberIn`, `URC_FvtUserStaleMemberCount`, `URC_FvtUserStaleMemberCountIn`, `URC_FvtUserStillPresent`, `URC_HeterogeneousLaneRouteIgnis`, `URC_InjectDenominator`, `URC_LiveClaimable`, `URC_MaxStreamLanes`, `URC_MemberEffectiveCapture`, `URC_MemberLevel2Weight`, `URC_MemberStakedStoaValue`, `URC_MultipletFamilyExists`, `URC_PoolEmployedScoresFvtStakeReady`, `URC_PreScoreWasNonZeroForScore`, `URC_ProjectedIndexAdvance`, `URC_ReleasableToNow`, `URC_ResolveEmployedScoreEntity`, `URC_ResolveScoreEntityGhostWeight`, `URC_ScoreEntityMemberDebWeight`, `URC_ScoreEntityMemberTier2Divisor`, `URC_ScoreEntityMemberWeight`, `URC_ScoreEntityUserWeight`, `URC_ScoreFvtStakeReady`, `URC_SettleDistinctFvtLinks`, `URC_SettleEligibleEmployedScores`, `URC_SettlePlanEmployedScoreIds`, `URC_SettleScorePlanRows`, `URC_SettleStakePendingIgnis`, `URC_StakeAnyPendingOnFvtRewardLine`, `URC_StakeScoreDeltaSum`, `URC_StakeScoreDeltaSumForClasses`, `URC_StreamStatus`, `URC_TierBiggest`, `URC_TierFixed`, `URC_TierMedium`, `URC_TripletUserDebSum`, `URC_TripletUserLaneWeightLive`, `URC_UserScoreTripleIsNonZero`, `URC_UserTier1AvailableRewards`
+`URC_BookStakeUnclaimedIgnis`, `URC_BuildPreScoreNzFlags`, `URC_CheckpointStakeRpsIgnis`, `URC_CollectClaimableRewards`, `URC_CollectForcedFixIgnis`, `URC_CollectLadderPreview`, `URC_CollectTransferLegIgnis`, `URC_CollectXferIgnis`, `URC_ComputeTripletLanes`, `URC_FarmInjectDenominatorFresh`, `URC_FvtExists`, `URC_FvtHasAnyMemberLink`, `URC_FvtHasEnabledRewardToken`, `URC_FvtHasScoreEntityLinks`, `URC_FvtMemberDebNeedsFix`, `URC_FvtResolveClass`, `URC_FvtRewardDptfIdsFromBundle`, `URC_FvtRpsGlobalRowExists`, `URC_FvtRpsMemberRowExists`, `URC_FvtRpsUserRowExists`, `URC_FvtScoreEntityLinkRowExists`, `URC_FvtSweepTotalPresent`, `URC_FvtTier1IndexRps`, `URC_FvtUserHasStaleMember`, `URC_FvtUserHasStaleMemberIn`, `URC_FvtUserStaleMemberCount`, `URC_FvtUserStaleMemberCountIn`, `URC_FvtUserStillPresent`, `URC_HeterogeneousLaneRouteIgnis`, `URC_InjectDenominator`, `URC_LiveClaimable`, `URC_MaxStreamLanes`, `URC_MemberEffectiveCapture`, `URC_MemberLevel2Weight`, `URC_MemberStakedStoaValue`, `URC_MultipletFamilyExists`, `URC_PoolEmployedScoresFvtStakeReady`, `URC_PreScoreWasNonZeroForScore`, `URC_ProjectedIndexAdvance`, `URC_ReleasableToNow`, `URC_ResolveEmployedScoreEntity`, `URC_ResolveScoreEntityGhostWeight`, `URC_ScoreEntityMemberDebWeight`, `URC_ScoreEntityMemberTier2Divisor`, `URC_ScoreEntityMemberWeight`, `URC_ScoreEntityUserWeight`, `URC_ScoreFvtStakeReady`, `URC_SettleDistinctFvtLinks`, `URC_SettleEligibleEmployedScores`, `URC_SettlePlanEmployedScoreIds`, `URC_SettleScorePlanRows`, `URC_SettleStakePendingIgnis`, `URC_StakeAnyPendingOnFvtRewardLine`, `URC_StakeScoreDeltaSum`, `URC_StakeScoreDeltaSumForClasses`, `URC_StreamStatus`, `URC_TierBiggest`, `URC_TierFixed`, `URC_TierMedium`, `URC_TripletUserDebSum`, `URC_TripletUserLaneWeightLive`, `URC_UserScoreTripleIsNonZero`, `URC_UserTier1AvailableRewards`
 
 *Point reads* (78) — one row or field by key
 
@@ -93,9 +91,9 @@ A leaf module extracted from the distributor when that grew undeployable. The di
 
 `P|UEV_IMC`, `UEV_AddRewardLinkContext`, `UEV_QualitySplitContext`, `UEV_TrueFungibleStakeBeneficiaryAccount`, `UEV_TrueFungibleStakeNotReserved`, `UEV_TrueFungibleStakeOwnerAccount`
 
-*Constructors* (10) — build objects
+*Constructors* (11) — build objects
 
-`UDC_FVT|MultipletFamily`, `UDC_FVT|RPS|Global`, `UDC_FVT|RPS|Member`, `UDC_FVT|RPS|Stream`, `UDC_FVT|RPS|User`, `UDC_FVT|ScoreEntityLink`, `UDC_FVT|ScorePreNzFlag`, `UDC_FVT|SettleFvtRewards`, `UDC_FVT|SettleScorePlan`, `UDC_FVT|StakeSettleBundle`
+`UDC_FVT|MultipletFamily`, `UDC_FVT|RPS|Global`, `UDC_FVT|RPS|Member`, `UDC_FVT|RPS|Stream`, `UDC_FVT|RPS|User`, `UDC_FVT|ScoreEntityLink`, `UDC_FVT|ScorePreNzFlag`, `UDC_FVT|SettleFvtRewards`, `UDC_FVT|SettleScorePlan`, `UDC_FVT|StakeSettleBundle`, `UDC_LadderPreview`
 
 *Pure compute* (4) — arguments only; no reads, no enforce
 
@@ -113,9 +111,9 @@ A leaf module extracted from the distributor when that grew undeployable. The di
 
 `XE_AdmitDelegationMember`, `XE_BankScorePendingRewards`, `XE_BookStakeUnclaimedCounts`, `XE_BurnRoyalty`, `XE_CheckpointStakeRps`, `XE_FuelRoyalty`, `XE_FvtFixUserChunk`, `XE_FvtSweepRecomputeChunk`, `XE_SetAgencyFee`, `XE_SetExternalOracle`, `XE_SetMemberCapture`, `XE_SetMemberDelegation`, `XE_SetOracleValidity`, `XE_SweepSyncTripletLaneWeights`, `XE_WI_FvtRewardAggregate`, `XE_WI_QualitySplit`, `XE_WI_RpsGlobal`, `XE_WI_ScoreEntityLink`, `XE_WU_FvtForcedFixCount|Zero`, `XE_WU_MemberVault|AvailableRewards`, `XE_WU_RpsGlobal|AvailableRewards`, `XE_WU_RpsUser|LastRps`, `XE_WU_RpsUser|PendingRewards`, `XE_WithdrawRoyalty`, `XE_XI_2|SettleMemberTier2`, `XE_XI_AddRewardLink`, `XE_XI_AddScoreEntity`, `XE_XI_BookCollectUnclaimed`, `XE_XI_BookStakeUnclaimedCounts`, `XE_XI_CheckpointStakeRps`, `XE_XI_FixUserFvtDeb`, `XE_XI_FixUserFvtDebIn`, `XE_XI_FixUserFvtDebPenalizedIn`, `XE_XI_FixUserMemberDeb`, `XE_XI_FvtAddStream`, `XE_XI_FvtInjectCore`, `XE_XI_FvtSweepRecomputeChunk`, `XE_XI_FvtSweepRecomputeWindow`, `XE_XI_IssueMultipletFamily`, `XE_XI_ReleaseStream`, `XE_XI_RotateOwnership`, `XE_XI_RpsPreScore`, `XE_XI_SetMinInjectAmount`, `XE_XI_SetMosaic`, `XE_XI_SetSplitMode`, `XE_XI_SyncFvtPresence`, `XE_XI_SyncFvtTotalDebMirrors`, `XE_XI_SyncTripletLaneWeights`, `XE_XI_ToggleRewardLink`, `XE_XI_ToggleScoreEntityLink`, `XE_XI_TransferRewardDptfFromVault`
 
-*Internal writes* (46) — this module only; writes under a capability
+*Internal writes* (45) — this module only; writes under a capability
 
-`XI_1|BankScorePendingRewards`, `XI_1|BookCollectUnclaimed`, `XI_1|BookUnclaimedForFvtRewardLine`, `XI_1|EnsureScoreRewardRows`, `XI_1|FarmSplitInject`, `XI_1|HeterogeneousLaneRoute`, `XI_1|SyncFarmGhostTvlForEmployedScores`, `XI_2|BankUserTier1Pending`, `XI_2|BumpRpsGlobalUnclaimed`, `XI_2|EnsureRpsMemberRow`, `XI_2|EnsureRpsUserRow`, `XI_2|SettleMemberTier2`, `XI_AddRewardLink`, `XI_AddScoreEntity`, `XI_BookCollectUnclaimed`, `XI_BookStakeUnclaimedCounts`, `XI_CheckpointStakeRps`, `XI_DistributeInjectAmount`, `XI_FixUserFvtDeb`, `XI_FixUserFvtDebIn`, `XI_FixUserFvtDebPenalized`, `XI_FixUserFvtDebPenalizedIn`, `XI_FixUserMemberDeb`, `XI_FixUserMemberDebIn`, `XI_FvtInjectCore`, `XI_FvtSweepRecomputeChunk`, `XI_FvtSweepRecomputeWindow`, `XI_IssueMultipletFamily`, `XI_MarkFvtPresence`, `XI_NormalizeRoyalty`, `XI_RecomputeFvtPresence`, `XI_ReleaseStream`, `XI_RotateOwnership`, `XI_RpsPreScore`, `XI_SetMinInjectAmount`, `XI_SetMosaic`, `XI_SetSplitMode`, `XI_SweepRecomputeUserMember`, `XI_SweepRecomputeUserMemberIn`, `XI_SyncFarmGhostTvlForInject`, `XI_SyncFvtPresence`, `XI_SyncFvtTotalDebMirrors`, `XI_SyncTripletLaneWeights`, `XI_ToggleRewardLink`, `XI_ToggleScoreEntityLink`, `XI_TransferRewardDptfFromVault`
+`XI_1|BankScorePendingRewards`, `XI_1|BookCollectUnclaimed`, `XI_1|BookUnclaimedForFvtRewardLine`, `XI_1|EnsureScoreRewardRows`, `XI_1|FarmSplitInject`, `XI_1|HeterogeneousLaneRoute`, `XI_1|SyncFarmGhostTvlForEmployedScores`, `XI_2|BankUserTier1Pending`, `XI_2|BumpRpsGlobalUnclaimed`, `XI_2|EnsureRpsMemberRow`, `XI_2|SettleMemberTier2`, `XI_AddRewardLink`, `XI_AddScoreEntity`, `XI_BookCollectUnclaimed`, `XI_BookStakeUnclaimedCounts`, `XI_CheckpointStakeRps`, `XI_DistributeInjectAmount`, `XI_FixUserFvtDeb`, `XI_FixUserFvtDebIn`, `XI_FixUserFvtDebPenalized`, `XI_FixUserFvtDebPenalizedIn`, `XI_FixUserMemberDeb`, `XI_FixUserMemberDebIn`, `XI_FvtInjectCore`, `XI_FvtSweepRecomputeChunk`, `XI_FvtSweepRecomputeWindow`, `XI_IssueMultipletFamily`, `XI_MarkFvtPresence`, `XI_NormalizeRoyalty`, `XI_RecomputeFvtPresence`, `XI_ReleaseStream`, `XI_RotateOwnership`, `XI_RpsPreScore`, `XI_SetMinInjectAmount`, `XI_SetMosaic`, `XI_SetSplitMode`, `XI_SweepRecomputeUserMember`, `XI_SweepRecomputeUserMemberIn`, `XI_SyncFarmGhostTvlForInject`, `XI_SyncFvtPresence`, `XI_SyncFvtTotalDebMirrors`, `XI_SyncTripletLaneWeights`, `XI_ToggleRewardLink`, `XI_ToggleScoreEntityLink`, `XI_TransferRewardDptfFromVault`
 
 *Policy* (2) — inter-module authorisation
 

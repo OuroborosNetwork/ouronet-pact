@@ -484,11 +484,31 @@
                         ;;not move the counter. Before the repair each one decremented it, so an
                         ;;attacker could drive gc to 1 while honest stakers were still staked and then
                         ;;take the pool.
-                        (ref-TS02-C3::AQP-FVT|CC_Collect emma emma farm-id 3 triplet-id ouro-id)
-                        (ref-TS02-C3::AQP-FVT|CC_Collect emma emma farm-id 3 triplet-id ouro-id)
-                        (ref-TS02-C3::AQP-FVT|CC_Collect emma emma farm-id 3 triplet-id ouro-id)
+                        ;;
+                        ;;THE ATTACK NOW FAILS ONE STEP EARLIER, 2026-10-28. <CC_Collect> enforces a
+                        ;;positive claimable, and this attacker's claimable is 0.0 -- asserted three
+                        ;;lines above as "an exited account (deb=0) is offered NOTHING". So the three
+                        ;;calls ABORT instead of running to completion and being caught by the counter.
+                        ;;
+                        ;;BOTH DEFENCES ARE ASSERTED, and that is the point of the rewrite rather than
+                        ;;simply deleting the calls. The refusal is new and is now the outer gate; the
+                        ;;counter invariant is the original repair and must still hold underneath it.
+                        ;;Keeping only the refusal would let the inner defect silently regress the day
+                        ;;someone relaxes the outer one.
                         (map print
                             [
+                                (expect-failure
+                                    "<<TX-AQP-CL04>> the zero-weight attacker is REFUSED outright (attempt 1)"
+                                    "Nothing to collect"
+                                    (ref-TS02-C3::AQP-FVT|CC_Collect emma emma farm-id 3 triplet-id ouro-id))
+                                (expect-failure
+                                    "<<TX-AQP-CL04>> ...and attempt 2 cannot make progress either"
+                                    "Nothing to collect"
+                                    (ref-TS02-C3::AQP-FVT|CC_Collect emma emma farm-id 3 triplet-id ouro-id))
+                                (expect-failure
+                                    "<<TX-AQP-CL04>> ...nor attempt 3"
+                                    "Nothing to collect"
+                                    (ref-TS02-C3::AQP-FVT|CC_Collect emma emma farm-id 3 triplet-id ouro-id))
                                 (expect "<<TX-AQP-CL04>> a zero-weight account cannot walk the claimant counter"
                                     1 (ref-FVT::UR_FVT-RG|UnclaimedCount farm-id ouro-id))
                             ]

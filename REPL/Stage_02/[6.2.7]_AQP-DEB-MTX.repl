@@ -99,7 +99,24 @@
         (stored-pre:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore anhd pool-id score-id))
         (mirror-pre:decimal (ref-FVT::UR_FVT|TotalDebScore fvt-id))
         (ea-bal:decimal (ref-DPTF::UR_AccountSupply ea-id anhd))
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+        (auryn-id:string "AURYN-98c486052a51")
     )
+    ;;FUND THE LANE FIRST -- BEFORE the move below makes the score stale. Added 2026-10-28.
+    ;;
+    ;;DEB01c collects to exercise PHASE 6 (the deb refresh + mirror resync) and used to reach it
+    ;;through a collect that paid NOTHING. A collect with nothing claimable now REFUSES, so the
+    ;;lane must carry a balance.
+    ;;
+    ;;THE POSITION IS LOAD-BEARING, and two wrong ones were tried first:
+    ;;  * injecting in DEB01c -- `CC_Inject` performs a FORCED FIX of every stale present user,
+    ;;    which is exactly what DEB06/DEB07 measure. It consumed the staleness and broke four
+    ;;    assertions five hundred lines away.
+    ;;  * injecting in DEB01a -- that block is a read-only SNAPSHOT with no `env-sigs`, so the
+    ;;    inject's DPTF transfer died on a keyset failure.
+    ;;Here the signatures are already set and the score is still FRESH (DEB01a asserts it), so
+    ;;the inject funds the lane and fixes nothing.
+    (ref-TS02-C3::AQP-FVT|CC_Inject anhd anhd fvt-id auryn-id 10.0)
     ;; drop ANHD's EliteAuryn to ~1% of holdings → live deb falls a tier or more
     (ref-TS01-C1::DPTF|C_Transfer anhd anhd emma ea-id (floor (* ea-bal 0.99) 4) false)
     (let

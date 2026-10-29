@@ -19,7 +19,7 @@ Above the pools and the reward engine, coordinating both.
 
 | | |
 |---|---|
-| module hash | `jR6AK9pO2f_FyDKcsvSNUgoUYNaJCkXEeI9rY2mXBUo` |
+| module hash | `9QukjokNJwvFzypqQ7jOl8yj8Esa9ex9ZXVIrsi2fCw` |
 | deployed size | 177,794 characters |
 | implements | `OuronetPolicyV2`, `AcquisitionVacateV4` |
 | repository source | `1_SOVEREIGN/STAGE_02/2_Core/03_AQP/06_VCT.pact` |

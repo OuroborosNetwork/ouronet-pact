@@ -497,9 +497,24 @@
               (coin.TRANSFER (concat ["k:" gs-key]) "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
               (coin.TRANSFER (concat ["k:" gs-key]) "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
               (coin.TRANSFER (concat ["k:" gs-key]) "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
-    (ref-TS02-C3::AQP-FVT|CC_Collect anhd anhd fvt-id 1 score-id ouro-id)
     ;;==== baseline: collect with NO active stream (drip fast-returns) ====
+    ;;
+    ;;RESHAPED 2026-10-28. This block used to drain, then collect NOTHING, and measure that as
+    ;;the baseline. A collect with nothing claimable now REFUSES, so "collect nothing" has
+    ;;stopped being a measurable operation -- and the drain ahead of it had nothing to drain
+    ;;either, which is why it was the first line to abort.
+    ;;
+    ;;THE MEASUREMENT IS UNCHANGED IN MEANING: both sides must PAY, so that the only difference
+    ;;between them is the drip. A plain (non-streamed) inject gives the baseline something to
+    ;;collect while leaving stream-count at 0.
     (print "--- [T-STREAM-05 · baseline collect (no stream)] ---")
+    (ref-TS02-C3::AQP-FVT|CC_Inject patron patron fvt-id ouro-id 10.0)
+    ;;AND THE BASELINE'S PREMISE IS NOW CHECKED RATHER THAN ASSUMED. The old drain existed to
+    ;;guarantee stream-count = 0; asserting it is strictly better than performing an operation
+    ;;that was supposed to achieve it.
+    (map print
+        [ (expect "<<T-STREAM-05>> the baseline really has NO active stream"
+            0 (AQP-FVT.UR_FVT-RG|StreamCount fvt-id ouro-id)) ])
     (env-gas 0)
     (ref-TS02-C3::AQP-FVT|CC_Collect anhd anhd fvt-id 1 score-id ouro-id)
     (let ((g-base:integer (env-gas)))

@@ -17,7 +17,7 @@ Above the distributor, writing agency state through it.
 
 | | |
 |---|---|
-| module hash | `MAkGbpwAeX897KzerAUyl0gPce34DhabNo0gEd5a3g8` |
+| module hash | `9LOD9zf9L7qOJNqePlCVJeoLhovrbCMIdXm_ib3JfUs` |
 | deployed size | 53,651 characters |
 | implements | `OuronetPolicyV2`, `DsaV3` |
 | repository source | `1_SOVEREIGN/STAGE_02/2_Core/03_AQP/08_DSA.pact` |

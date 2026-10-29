@@ -17,7 +17,7 @@ A leaf read-only module deployed after everything it describes. It has no interf
 
 | | |
 |---|---|
-| module hash | `xgbZB_kTCHcXTTE5dvaTQL7jGxwAM8MBYQvvKF62EJE` |
+| module hash | `9t9WpuNFMJHQKik9VNK5nGlNHfDFv1fj2q8G-wyAuwg` |
 | deployed size | 114,115 characters |
 | implements | — |
 | repository source | `1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact` |

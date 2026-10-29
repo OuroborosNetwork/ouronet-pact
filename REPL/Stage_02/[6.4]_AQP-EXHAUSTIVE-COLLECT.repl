@@ -76,6 +76,81 @@
 (print "")
 (print "")
 ;;
+(begin-tx "TX-AQP-CL01Z - a SECOND collect, with nothing accrued, must REFUSE")
+(print "")
+;;====  TX-AQP-CL01Z · 01 · collecting nothing is a refusal, not a billable no-op  ==== ====
+(print "--- [TX-AQP-CL01Z · 01 · collecting nothing is a refusal, not a billable no-op] ---")
+;;
+;;REGRESSION FOR A LIVE MAINNET INCIDENT, 2026-10-28. Transaction
+;;_n8jEM6Pu5lZn7kVVnaqsPieo6IJwcEakC_TF5CiiTw collected 0.000000000000 WSTOA: it emitted
+;;FVT|C>COLLECT, emitted IGNIS|C>COLLECT for 57, emitted NO DPTF transfer at all, and
+;;reported success. The holder paid 57 IGNIS to move nothing.
+;;
+;;THE ARITHMETIC WAS NOT WRONG. Chain state showed <last-rps> exactly equal to the global
+;;<current-rps>, pending 0 and no stream on the lane -- a correct zero, produced by the
+;;holder's own earlier collect (the preceding TX-AQP-CL01 leaves precisely that state,
+;;which is why this test sits here rather than building its own fixture). The defect was
+;;that a correct zero was allowed to BILL: XI_TransferRewardDptfFromVault short-circuited a
+;;non-positive payout to an empty cumulator, so the call succeeded while doing nothing.
+;;
+;;Owner ruling: "collection should only be possible for greater than 0 values."
+(namespace "ouronet-ns")
+(let
+    (
+        (patron:string KST.ANHD)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+    )
+    (let
+    (
+        ;;THE SAME THREE IDS CL01 USES, derived the same way rather than retyped — this test
+        ;;only has a zero to assert BECAUSE CL01 ran against these, so a different fixture
+        ;;would be testing a different thing.
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "DHCodingDivision"))
+        (score-id:string (ref-U|DALOS::UDC_Makeid "TheCodingDivision"))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "CodingDivisionTreasury"))
+    )
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (let
+        (
+            (wstoa-id:string (ref-DALOS::UR_WrappedStoaID))
+            (deb-user:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore patron pool-id score-id))
+        )
+        (let
+            (
+                (claimable:decimal
+                    (ref-FVT::URC_UserTier1AvailableRewards patron fvt-id score-id wstoa-id deb-user))
+            )
+            (map print
+                [
+                    ;;NON-VACUITY FIRST. If anything accrued between the two collects this test
+                    ;;would be asserting a refusal for the WRONG REASON, and the expect-failure
+                    ;;below would still pass -- which is how a regression test quietly stops
+                    ;;testing its regression.
+                    (expect (format "<<TX-AQP-CL01Z>> nothing accrued since CL01 got={}" [claimable])
+                        0.0 claimable)
+                    (expect-failure
+                        "<<TX-AQP-CL01Z>> a collect with nothing claimable REFUSES rather than billing"
+                        "Nothing to collect"
+                        (ref-TS02-C3::AQP-FVT|CC_Collect patron patron fvt-id 1 score-id wstoa-id))
+                ]
+            )
+        )
+    )
+    )
+)
+(env-sigs [])
+(print "===^^^===")
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
+;;
 (begin-tx "TX-AQP-CL02 - Treasury (class-1) Auryn collect on SubsidiaryTreasury")
 (print "")
 (print "=== TX-AQP-CL02 — SubsidiaryTreasury: same G single-tier as vault =============")
