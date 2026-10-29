@@ -101,8 +101,12 @@ the source did not exist before 2026-10-29 — so its two policy tables must be 
 
 It was built and committed as `PureV18` on 2026-10-29 — commit messages from that day name a V18
 that no longer exists — and renumbered once the owner confirmed the earlier V17 had never been
-deployed. **The folder number is the DEPLOY sequence**, not the build order: V16 is the last round
-on chain, so the next one out is 17 whatever it was called while being assembled.
+deployed. **The folder number is the DEPLOY sequence**, not the build order, so the next round out
+is 17 whatever it was called while being assembled.
+
+(Whether the old V16 actually landed was never stated and is not determinable offline. It does not
+affect this round, which subsumes both predecessors — but see `README.md`: this card should not be
+read as asserting it.)
 
 The two folders that previously held 16 and 17 are deleted, and both are verifiably SUBSUMED by
 this round — see `README.md` for the byte-level table, including the one row that matters: the old
@@ -128,6 +132,38 @@ that registry's own rule requires — each appears in an already-deployed module
 in `Deploy/LIVE-MODULES.json`, which Pact populated from `describe-module`.
 
 Six interfaces DO ship, and they are the four bumps plus the two new ones listed in the table.
+
+## THE ONE STEP THAT HAS NOT BEEN RUN — do this first
+
+Everything below is offline. **Simulate the round against the real chain before sending it**, and
+treat that as the gate rather than as a formality:
+
+```bash
+python3 REPL/tools/_chainsim.py --round Deploy/PureV17
+```
+
+**THIS IS WHERE THIS PROJECT'S DEPLOY FAILURES HAVE ACTUALLY SURFACED, twice.** Both times the
+offline gate was green and both times the first live attempt aborted:
+
+* **PureV10** — `Interface cannot be upgraded: ouronet-ns.AgeOfZalmoxis`, found mid-deploy at
+  transaction 11.
+* **PureV15** — `Interface cannot be upgraded: ouronet-ns.AcquisitionRewardPerShareV4`, found by a
+  real `/local` simulation.
+
+The reason is structural and not fixable offline: **the gate builds a chain from scratch**, where
+declaring an interface for the first time is correct. Only a live call knows it is already there.
+This round strips five such interfaces (see below) on the strength of a `describe-module` SNAPSHOT;
+a simulation is what turns that into a measurement.
+
+Use `_chainsim.py` rather than the wallet's own Simulate button. `/local` is stateless between
+calls, so per-file simulation reports "Cannot find module" for every transaction that depends on an
+earlier one in the same round — measured on PureV10, 21 of 22 transactions "failing" while the
+round was correct. `_chainsim.py` batches them the way a real send composes.
+
+What it cannot do is compose ACROSS batches, because `/local` persists nothing. So a clean run
+proves each batch is sound against real state, not the full round end to end. For that, a REPL
+replay from a presumed-live commit is the complement — `REPL/_scratch_loadpurev3.repl` is the
+pattern.
 
 ## Verify before sending
 

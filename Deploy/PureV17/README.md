@@ -10,8 +10,17 @@ it.
 
 ## THE ONLY SENDABLE ROUND — and it is numbered 17 because 17 is next
 
-**V16 is the last round on chain. This is the next one.** Two earlier folders occupied these
-numbers during the day and are gone:
+**This is the next round to send.** What the owner confirmed on 2026-10-30 is narrower than that,
+and the difference is recorded rather than smoothed over: *"I haven't deployed v17."* Whether the
+OLD V16 went out was never stated, and nothing offline can tell — so "V16 is the last round on
+chain" is NOT established, and an earlier draft of this file asserted it anyway.
+
+It does not change the send. This round subsumes the old V16 as well as the old V17, verified
+against the emitted bytes below, so it is correct whether or not V16 landed. What it does change is
+what may be CLAIMED: run `python3 REPL/tools/_livemodules.py --probe` if the question matters for
+anything else.
+
+Two earlier folders occupied these numbers during the day and are gone:
 
 * a **V16** carrying only the un-stale `@event` work, and
 * a **V17** carrying RPS + AQP-FVT + TS02-C3 — built, never sent, and superseded within hours by
