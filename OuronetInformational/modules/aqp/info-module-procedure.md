@@ -366,3 +366,62 @@ ground-truth delta after a real `AQP-FVT|CC_Collect`.
 reported `ignis-full`/`kadena-full` provably equals the execution's exact billed cost, and whose
 `ignis-need`/`kadena-need` equal the real charge for a given account. Only then is the info module ready to
 back the UI (§ the separate AQP-UI construction doc).
+
+---
+
+## 11. A PREVIEW PARAMETER THAT A CLIENT CANNOT RENDER — the one shape to avoid
+
+Added 2026-10-29, from a defect found while wiring the vacate buttons. This section is about
+PARAMETER SHAPE, not about cost, and it is the only thing in this procedure that can make a
+correct `INFO_` unusable.
+
+**An `object` parameter whose schema has a `decimal` field cannot be rendered from a JavaScript
+client.** The reason is not Pact's and not the reader's:
+
+* `@ouronet/talos-registry` renders an argument from its DECLARED type, which it has.
+* It renders an **object's FIELDS** best-effort, because the registry carries a parameter's type
+  (`object{AcquisitionSchemasV3.VCT|VacateTfLeg}`) and **not the named schema's field types**.
+* JavaScript cannot carry the difference: `100.0 === 100`. A whole-number decimal is gone before
+  the formatter sees it.
+
+Measured, on `INFO_AQP-POOL|FullVacate`, whose legs declare `balance:decimal`:
+
+```
+[{ "asset-id": "OURO", "legs": [{ … "balance": 100 } { … "balance": 2.5 }] }]
+```
+
+The second is right; the first is an integer literal in a decimal slot and Pact's lexer refuses
+it. **So the same preview works or fails according to the pool's data** — intermittent, which is
+worse than broken, and the kind of thing a casual test passes (`1.0` in a test fixture *is* `1`).
+
+### The affected set, and what it cost
+
+Eleven entrypoints: the seven AQP vacate/drain previews (`FullVacate`, three `BatchVacate*`, three
+`BatchDrain*`) and the four DPOF/DPDC wipe previews. The vacate panel in OuronetUI ships the
+whole-pool button **with no IGNIS preview at all** rather than one that usually fails.
+
+### What to do when writing a new `INFO_`
+
+**Prefer flat parameters that mirror the execution's.** The vacate previews take `legs:[object{…}]`
+where the execution takes three parallel arrays — `owner-ids:[string]`, `beneficiary-ids:[string]`,
+`amounts:[decimal]`. Those arrays render perfectly, because each element has a declared type. The
+object was the tidier signature and it is the one that cannot be called.
+
+If an object parameter is genuinely the right shape, know the two escapes and that only one
+reaches a preview:
+
+| escape | works for | why |
+|---|---|---|
+| `(read-msg 'name)` — pass the object in the transaction `data` | **execution only** | a cost preview is issued as a bare code string against `/local`; there is no data payload |
+| `pactDecimal(v)` — the field carries its own type | execution **and** preview | `@ouronet/talos-registry` ≥ 2.11.0 |
+
+`pactDecimal` accepts the chain's own digits as a string, which is the lossless form: a Pact
+decimal carries 24 places against a JS number's ~15 significant digits.
+
+### Why the fix is not in this repo
+
+The field types ARE derivable here — `REPL/tools/_ghostshape.py` parses every `defschema` to check
+the ghost layer. They are deliberately NOT published into the registry: that artefact is a snapshot
+of the **deployed** surface, and a repo-sourced schema table inside it would be a second authority,
+authoritative-looking and unverified against the chain. So the consumer declares the type at the
+call site, which is where the knowledge of "which schema am I building" actually lives.
