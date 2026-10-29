@@ -831,6 +831,20 @@ def main():
                          capture_output=True, text=True)
     print((_ps.stdout + _ps.stderr).strip())
 
+    # AND CAN THE CONSUMER SEE EVERY JUDGEMENT THIS REPO AUTHORS? The authored partition layer is
+    # written here; consumers read it through `PartitionMeta` in @ouronet/papyrus. A key authored
+    # here and undeclared there is PUBLISHED AND INVISIBLE -- present at runtime, dropped by every
+    # destructure. `groupBy` was in that state for three entrypoints, and a client splitter
+    # written from that interface would have cut exactly where the vacate is unsound.
+    #
+    # NON-FATAL, deliberately, and for a sharper reason than _pkgsync's: resolving a mismatch
+    # needs a RELEASE of another repo's package. A gate that cannot go green without someone
+    # else's release cycle is a gate people learn to ignore. `_registry.py` already fails on an
+    # unknown authored key, which is the half this repo can fix on its own.
+    _pt = subprocess.run([sys.executable, "tools/_partitiontype.py", "--check"],
+                         capture_output=True, text=True)
+    print((_pt.stdout + _pt.stderr).strip())
+
     # AUTHORISATION SURFACE -- the only check here that speaks to authorisation directly. For every
     # C_/A_ entrypoint it records which accounts' ownership is enforced ANYWHERE in its call tree,
     # and requires that set to only ever GROW. Built 2026-09-20 ahead of the patron/executor

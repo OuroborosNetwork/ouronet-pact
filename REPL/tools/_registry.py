@@ -1343,6 +1343,16 @@ def main():
         # site is simply skipped by a scan, they were never consulted again while the tool went on
         # reporting success. An entry here with no entrypoint is a standing permission to split
         # bound to a name -- and the next function to take that name inherits it.
+        # THE CLOSED KEY SET for an authored partition block. Mirrors `PartitionMeta` in
+        # @ouronet/papyrus, which is what consumers read these through; the advisory check at the
+        # end of this function reports a key present here and missing there.
+        #
+        # `inner` is a nested { axis, lockstep, note } for an operation with two valid axes where
+        # only the outer one is declared -- see DPTF|C_MultiBulkTransfer's own reason.
+        PARTITION_KEYS = {
+            "kind", "shape", "axis", "lockstep", "groupBy", "inner", "rounds",
+            "via", "progress", "steps", "reason",
+        }
         pbad = []
         authored_part = {}
         if os.path.exists(AUTHORED):
@@ -1352,6 +1362,29 @@ def main():
                 pbad.append(f"{key}: ORPHAN -- no such entrypoint (drop the entry or fix the key)")
                 continue
             types = {p["name"]: p["type"] for p in doc["entrypoints"][key]["params"]}
+
+            # EVERY KEY MUST BE ONE THIS CHECKER KNOWS, and that is the general form of a defect
+            # found on 2026-10-29 rather than a tidiness rule.
+            #
+            # Everything below validates the VALUE of a key it expects. Nothing rejected a key it
+            # did not -- so `groupBYY: "beneficiary-ids"` would pass every assertion in this
+            # function and carry no constraint at all, and a field added here would reach the
+            # artefact with no consumer obliged to notice. Both happened in the weaker form:
+            # `groupBy` was authored, validated, published, and ABSENT from the `PartitionMeta`
+            # interface every TypeScript consumer reads it through, so a splitter written from
+            # that type would have cut exactly where the vacate is unsound.
+            #
+            # A closed key set makes adding a field a DELIBERATE two-sided act: declare it here,
+            # and the advisory cross-repo check below reports it until the consumer type declares
+            # it too.
+            unknown = sorted(set(blk) - PARTITION_KEYS)
+            if unknown:
+                pbad.append(f"{key}: unknown partition key(s) {unknown} -- a key this checker "
+                            f"does not know is validated by nothing and constrains nothing. Add "
+                            f"it to PARTITION_KEYS (and to `PartitionMeta` in @ouronet/papyrus) "
+                            f"or fix the spelling")
+                continue
+
             kind = blk.get("kind")
             if kind not in ("list", "cursor", "architectural"):
                 pbad.append(f"{key}: kind is {kind!r}, not 'list', 'cursor' or 'architectural'")
