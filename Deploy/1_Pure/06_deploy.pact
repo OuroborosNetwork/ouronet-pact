@@ -9,10 +9,9 @@
 ;;   1_SOVEREIGN/STAGE_01/2_Core/14_SWPT.pact
 ;;   1_SOVEREIGN/STAGE_01/2_Core/15_SWP.pact
 ;;
-;; TOTAL: 3 interface(s), 3 module(s), 14 table(s)
+;; TOTAL: 2 interface(s), 3 module(s), 14 table(s)
 ;; What it DEPLOYS, in load order:
 ;;   -- 1_SOVEREIGN/STAGE_01/2_Core/13_OUROBOROS.pact
-;;      interface  OuroborosV3
 ;;      module     OUROBOROS
 ;;      table      P|T
 ;;      table      P|MT
@@ -47,76 +46,8 @@
 ;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact
 ;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface OuroborosV3
-    @doc "Exposes Functions related to the OUROBOROS Module"
+;; OuroborosV3: already deployed and unchanged -- see LIVE_INTERFACES
 
-    ;;<=========================================================================>
-    ;;{1}  GOVERNANCE
-    ;;{G1}  constants
-    ;;{G2}  schemas
-    ;;{G3}  tables  ⟨cannot exist in an interface⟩
-    ;;{G4}  capabilities
-    ;;{G5}  functions
-    ;;
-    (defun GOV|ORBR|SC_STOA-NAME ())
-    (defun GOV|ORBR|GUARD ())
-
-    ;;<=========================================================================>
-    ;;{2}  POLICY
-    ;;{P1}  constants
-    ;;{P2}  schemas
-    ;;{P3}  tables  ⟨cannot exist in an interface⟩
-    ;;{P4}  capabilities
-    ;;{P5}  functions
-
-    ;;<=========================================================================>
-    ;;{3}  CST
-    ;;{3.1}  constants
-    ;;{3.2}  schemas
-    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
-
-    ;;<=========================================================================>
-    ;;{4}  CAPABILITIES
-    ;;{C1}  Trivial [bronze]
-    ;;{C2}  Simple
-    ;;{C3}  Composed
-    ;;{C4}  Ownership [gold]
-
-    ;;<=========================================================================>
-    ;;{5}  FUNCTIONS
-    ;;{5.1}  Construct [CT/UDC]
-    ;;{5.2}  Compute [UC]
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    ;;
-    ;;
-    (defun URC_ProjectedStoaLiquindex:[decimal] ())
-    (defun URCv_Compress:[decimal] (ignis-amount:decimal))
-    (defun URCv_Sublimate:decimal (ouro-amount:decimal))
-    (defun URCi_Compress:object{IgnisCollectorV4.OutputCumulator} (client:string ignis-amount:decimal))
-    (defun URCi_Fuel:object{IgnisCollectorV4.OutputCumulator} ())
-    (defun URCi_Sublimate:object{IgnisCollectorV4.OutputCumulator} (client:string target:string ouro-amount:decimal))
-    (defun URCi_SublimateV2:object{IgnisCollectorV4.OutputCumulator} (client:string target:string ouro-amount:decimal))
-    (defun URCi_WithdrawFees:object{IgnisCollectorV4.OutputCumulator} (id:string target:string))
-    ;;{5.4}  Validate [UEV/CAP]
-    ;;
-    (defun UEV_Exchange ())
-    ;;{5.5}  Write [W]
-    ;;{5.6}  Aux/X
-    (defun XB_Compress:object{IgnisCollectorV4.OutputCumulator} (patron:string client:string ignis-amount:decimal))
-    ;;{5.7}  User [A/C]
-    ;;
-    ;;
-    (defun C_Compress:object{IgnisCollectorV4.OutputCumulator} (executor:string ignis-amount:decimal))
-    (defun C_Fuel:object{IgnisCollectorV4.OutputCumulator} (patron:string ))
-    (defun C_Sublimate:object{IgnisCollectorV4.OutputCumulator} (executor:string executee:string ouro-amount:decimal))
-    ;;#23H fix: C_SublimateV2 was already live/actively-used (TS01-C2's ORBR|C_SublimateV2,
-    ;;TS01-C3's Firestarter path) but missing from its own interface. Cheaper alternative to
-    ;;C_Sublimate (freeze+C_WipeSlim+unfreeze instead of transfer+burn) - added here, no
-    ;;behavioral change, the module already implements this exact signature.
-    (defun C_SublimateV2:object{IgnisCollectorV4.OutputCumulator} (executor:string executee:string ouro-amount:decimal))
-    (defun C_WithdrawFees:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string executee:string id:string))
-
-)
 ;;
 (module OUROBOROS GOV
     @doc "OUROBOROS — the OURO token / exchange core at the top of the Stage 1 stack, \

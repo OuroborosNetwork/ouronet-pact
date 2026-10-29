@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 17 of 26
 ;; This is STEP 17 of 27 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-16 must have run first, including the init steps between deploys.
-;; 1 source file(s), 328,763 gas measured in the REPL gas model, 300,666 bytes
+;; 1 source file(s), 328,763 gas measured in the REPL gas model, 300,970 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/04_RPS.pact
@@ -3281,7 +3281,10 @@
                                             ;;beneficiary alone. ATSU::XB_Coil splits funder from recipient and the AQP
                                             ;;remote-governor guard satisfies AQP|SC_NAME, so ONE core now serves both
                                             ;;collect and evict. A second ladder would be a FOURTH copy of this
-                                            ;;arithmetic -- see URC_CollectLadderPreview on why that is the hazard.
+                                            ;;arithmetic -- see AQP-RPSC::URC_CollectLadderPreview on why that is the hazard.
+                                            ;;MODULE-QUALIFIED 2026-10-29: that reader moved out of
+                                            ;;this module in the RPSC split, so the bare name now
+                                            ;;points at nothing a reader of THIS file can find.
                                             ;;
                                             ;;AMOUNTS ARE IDENTICAL: rbt-amount is a pure function of
                                             ;;(ats, rt, amount) and XE_UpdateRUR takes no account, so nothing

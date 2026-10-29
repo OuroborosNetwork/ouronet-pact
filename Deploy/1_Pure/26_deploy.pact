@@ -7,10 +7,9 @@
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   2_CITIZEN/Stage_Z/03_DSP+.pact
 ;;
-;; TOTAL: 1 interface(s), 1 module(s), 2 table(s)
+;; TOTAL: 0 interface(s), 1 module(s), 2 table(s)
 ;; What it DEPLOYS, in load order:
 ;;   -- 2_CITIZEN/Stage_Z/03_DSP+.pact
-;;      interface  DispenserV3
 ;;      module     DSP
 ;;      table      P|T
 ;;      table      P|MT
@@ -22,76 +21,8 @@
 (namespace "ouronet-ns")
 
 ;; ===== 2_CITIZEN/Stage_Z/03_DSP+.pact ==============================
-(interface DispenserV3
+;; DispenserV3: already deployed and unchanged -- see LIVE_INTERFACES
 
-
-
-
-    ;;<=========================================================================>
-    ;;{1}  GOVERNANCE
-    ;;{G1}  constants
-    ;;{G2}  schemas
-    ;;{G3}  tables  ⟨cannot exist in an interface⟩
-    ;;{G4}  capabilities
-    ;;{G5}  functions
-
-    ;;<=========================================================================>
-    ;;{2}  POLICY
-    ;;{P1}  constants
-    ;;{P2}  schemas
-    ;;{P3}  tables  ⟨cannot exist in an interface⟩
-    ;;{P4}  capabilities
-    ;;{P5}  functions
-
-    ;;<=========================================================================>
-    ;;{3}  CST
-    ;;{3.1}  constants
-    ;;{3.2}  schemas
-    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
-
-    ;;<=========================================================================>
-    ;;{4}  CAPABILITIES
-    ;;{C1}  Trivial [bronze]
-    ;;{C2}  Simple
-    ;;{C3}  Composed
-    ;;{C4}  Ownership [gold]
-
-    ;;<=========================================================================>
-    ;;{5}  FUNCTIONS
-    ;;{5.1}  Construct [CT/UDC]
-    ;;{5.2}  Compute [UC]
-    ;;
-    ;;  [UC]
-    ;;
-    (defun UC_KosonicAutostakeSplit:[decimal] (input:decimal ip:integer))
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    ;;
-    ;;  [URC]
-    ;;
-    (defun URC_DailyOURO ())
-    (defun URHC_StageTwoPlan:object (fvt-ids:[string]))
-    (defun URC_StageTwoResidual:[decimal] ())
-    (defun URC_DailyKOSON (iz-game-live:bool))
-    ;;{5.4}  Validate [UEV/CAP]
-    ;;{5.5}  Write [W]
-    ;;{5.6}  Aux/X
-    ;;{5.7}  User [A/C]
-    ;;
-    ;;  [A]
-    ;;
-    (defun A_OuroMinterStageOne:[decimal] ())
-    (defun AA_OuroMinterStageTwo:[decimal] (fvt-ids:[string]))
-    (defun A_OuroMinterStageTwo_Flat:[decimal] ())
-    (defun AA_OuroMinterStageTwo_InjectLeg:string
-        (fvt-id:string reward-dptf-id:string amount:decimal))
-    (defun AA_OuroMinterStageTwo_InjectLegFinalize:string
-        (fvt-id:string reward-dptf-id:string amount:decimal))
-    (defun A_KosonMinterStageOne ())
-    (defun A_KosonMinterStageOne_1of3 ())
-    (defun A_KosonMinterStageOne_2of3 ())
-    (defun A_KosonMinterStageOne_3of3 ())
-
-)
 (module DSP GOV
 
 

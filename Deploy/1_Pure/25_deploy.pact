@@ -7,10 +7,9 @@
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   2_CITIZEN/5_VaultsMinter/04_AQP-BOOT.pact
 ;;
-;; TOTAL: 1 interface(s), 1 module(s), 0 table(s)
+;; TOTAL: 0 interface(s), 1 module(s), 0 table(s)
 ;; What it DEPLOYS, in load order:
 ;;   -- 2_CITIZEN/5_VaultsMinter/04_AQP-BOOT.pact
-;;      interface  AcquisitionPoolBootV2
 ;;      module     AQP-BOOT
 ;;
 ;; Paste this whole file as ONE transaction. It needs the Ouronet admin signature
@@ -51,123 +50,8 @@
 ;;   Step 0 — after sovereign AQP modules (ANK, SCR, AQP-POOL, FVT) are deployed: IMC + vault governor.
 ;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface AcquisitionPoolBootV2
+;; AcquisitionPoolBootV2: already deployed and unchanged -- see LIVE_INTERFACES
 
-
-
-
-    ;;<=========================================================================>
-    ;;{1}  GOVERNANCE
-    ;;{G1}  constants
-    ;;{G2}  schemas
-    ;;{G3}  tables  ⟨cannot exist in an interface⟩
-    ;;{G4}  capabilities
-    ;;{G5}  functions
-    (defun GOV|Demiurgoi ())
-
-    ;;<=========================================================================>
-    ;;{2}  POLICY
-    ;;{P1}  constants
-    ;;{P2}  schemas
-    ;;{P3}  tables  ⟨cannot exist in an interface⟩
-    ;;{P4}  capabilities
-    ;;{P5}  functions
-
-    ;;<=========================================================================>
-    ;;{3}  CST
-    ;;{3.1}  constants
-    ;;{3.2}  schemas
-    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
-
-    ;;<=========================================================================>
-    ;;{4}  CAPABILITIES
-    ;;{C1}  Trivial [bronze]
-    ;;{C2}  Simple
-    ;;{C3}  Composed
-    ;;{C4}  Ownership [gold]
-
-    ;;<=========================================================================>
-    ;;{5}  FUNCTIONS
-    ;;{5.1}  Construct [CT/UDC]
-    ;;{5.2}  Compute [UC]
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    ;;{5.4}  Validate [UEV/CAP]
-    ;;{5.5}  Write [W]
-    ;;{5.6}  Aux/X
-    ;;{5.7}  User [A/C]
-    ;;
-    (defun C_Step0_WireImcAndGovernor:string
-        (patron:string)
-    )
-    ;;UEV_BootStepState is deliberately NOT declared here. It is an internal guard, not public
-    ;;API, and AcquisitionPoolBootV2 is ALREADY DEPLOYED -- a deployed interface cannot be
-    ;;changed, so declaring it would force a V1->V2 bump and a cascade for a helper nobody calls
-    ;;from outside. The module carries it; the interface does not need to.
-    (defun C_Step1_CreateBunnySet:string
-        (patron:string kbn-id:string)
-    )
-    (defun C_Step2_CreateSnakePowerAnchorClasses:string
-        (patron:string kbn-id:string)
-    )
-    (defun C_Step3_CreateBoosterAnchorClasses:string
-        (patron:string kbn-id:string)
-    )
-    (defun C_Step4_CreateCoreScores:string
-        (patron:string owner-konto:string)
-    )
-    (defun C_Step5_CreateSubsidiaryScores:string
-        (patron:string owner-konto:string)
-    )
-    (defun C_Step6_CreateOuroLpTriplet:string
-        (patron:string owner-konto:string lp-denominator:string boost-class-ids:[string])
-    )
-    (defun C_Step7_CreatePoolsAndScores:string
-        (patron:string dh-asset-ids:[string] ouro-lp-asset-id:string dh-score-ids:[string] ouro-triplet-score-ids:[string])
-    )
-    (defun C_Step8_IssueFvtEntities:string
-        (patron:string owner-konto:string lp-denominator:string)
-    )
-    (defun C_Step9_AddFvtScoreEntities:string
-        (patron:string sub-treasury-id:string coding-treasury-id:string snakes-treasury-id:string shares-treasury-id:string bloodshed-treasury-id:string subsidiary-score-ids:[string] coding-score-id:string snakes-score-id:string shares-score-id:string bloodshed-score-id:string)
-    )
-    (defun C_Step10_IssueMultipletFamily:string
-        (patron:string ouro-id:string auryn-id:string elite-auryn-id:string ats-0-1-id:string ats-1-2-id:string)
-    )
-    (defun C_Step11_WireFarmTriplet:string
-        (patron:string farm-id:string bronze-score-id:string silver-score-id:string golden-score-id:string ouro-id:string multiplet-family-id:string)
-    )
-    (defun C_Step12_AddFvtRewardLinks:string
-        (patron:string sub-treasury-id:string coding-treasury-id:string snakes-treasury-id:string shares-treasury-id:string bloodshed-treasury-id:string reward-auryn-id:string reward-ouroboros-id:string reward-wstoa-id:string)
-    )
-    (defun C_Step13_CreateCustodiansVault:string
-        (patron:string owner-konto:string custodians-dpsf-id:string ouro-id:string multiplet-family-id:string)
-    )
-    (defun CC_Step14_OpenCustodiansAgency:string
-        (patron:string agency-name:string custodians-dpsf-id:string stake-nonces:[integer] fee-per-mille:integer)
-    )
-    (defun C_IssueGenericEarningVault:string
-        (patron:string owner-konto:string vault-name:string stake-dptf-id:string reward-dptf-id:string)
-    )
-    ;;THE FOUR LATE STEPS ARE DELIBERATELY NOT DECLARED HERE. Added to this interface first, on
-    ;;2026-10-08, and removed the same day once the chain was asked:
-    ;;
-    ;;    (describe-module "ouronet-ns.AcquisitionPoolBootV2")
-    ;;      hash BB3RVLU5ocTAc7PTAMZJC5lq4kUlVoGCkEm9xal1psY
-    ;;
-    ;;AcquisitionPoolBootV2 IS LIVE, and a deployed interface cannot be changed in Pact. Shipping
-    ;;it with four extra declarations would have failed the upgrade outright -- at signing time,
-    ;;on the owner's gas, with nothing before it to object.
-    ;;
-    ;;The alternatives were a V2 bump or module-only. Module-only, because NOTHING MODREFS THIS
-    ;;INTERFACE: its single use anywhere in the tree is AQP-BOOT's own `implements`, so it carries
-    ;;no coupling and a bump would buy nothing but a second live interface. The module still
-    ;;satisfies V1 -- every function V1 declares is still defined -- and a module may define more
-    ;;than its interface declares. `Deploy/PureV2/24_deploy.pact` records AQP-BOOT being upgraded
-    ;;module-only before, for this same reason.
-    ;;
-    ;;DO NOT ADD THEM BACK unless this interface is being versioned on purpose.
-
-)
 
 (module AQP-BOOT GOV
 

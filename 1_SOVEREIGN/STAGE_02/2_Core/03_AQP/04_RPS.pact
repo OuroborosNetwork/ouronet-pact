@@ -3243,7 +3243,10 @@
                                             ;;beneficiary alone. ATSU::XB_Coil splits funder from recipient and the AQP
                                             ;;remote-governor guard satisfies AQP|SC_NAME, so ONE core now serves both
                                             ;;collect and evict. A second ladder would be a FOURTH copy of this
-                                            ;;arithmetic -- see URC_CollectLadderPreview on why that is the hazard.
+                                            ;;arithmetic -- see AQP-RPSC::URC_CollectLadderPreview on why that is the hazard.
+                                            ;;MODULE-QUALIFIED 2026-10-29: that reader moved out of
+                                            ;;this module in the RPSC split, so the bare name now
+                                            ;;points at nothing a reader of THIS file can find.
                                             ;;
                                             ;;AMOUNTS ARE IDENTICAL: rbt-amount is a pure function of
                                             ;;(ats, rt, amount) and XE_UpdateRUR takes no account, so nothing

@@ -11,10 +11,9 @@
 ;;   1_SOVEREIGN/STAGE_01/3_Talos/05_TS01-P.pact
 ;;   1_SOVEREIGN/STAGE_01/Z_Reads/01_INFO-ZERO.pact
 ;;
-;; TOTAL: 4 interface(s), 5 module(s), 8 table(s)
+;; TOTAL: 3 interface(s), 5 module(s), 8 table(s)
 ;; What it DEPLOYS, in load order:
 ;;   -- 1_SOVEREIGN/STAGE_01/3_Talos/03_TS01-C2.pact
-;;      interface  TalosStageOne_ClientTwoV3
 ;;      module     TS01-C2
 ;;      table      P|T
 ;;      table      P|MT
@@ -47,152 +46,8 @@
 ;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/03_Talos.pact
 ;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface TalosStageOne_ClientTwoV3
-    @doc "Exposes Ouronet Stage One Second Batch of Client Functions \
-        \ Modules: ATS, VST, LQD and ORBR are included in the Second Batch"
+;; TalosStageOne_ClientTwoV3: already deployed and unchanged -- see LIVE_INTERFACES
 
-    ;;<=========================================================================>
-    ;;{1}  GOVERNANCE
-    ;;{G1}  constants
-    ;;{G2}  schemas
-    ;;{G3}  tables  ⟨cannot exist in an interface⟩
-    ;;{G4}  capabilities
-    ;;{G5}  functions
-
-    ;;<=========================================================================>
-    ;;{2}  POLICY
-    ;;{P1}  constants
-    ;;{P2}  schemas
-    ;;{P3}  tables  ⟨cannot exist in an interface⟩
-    ;;{P4}  capabilities
-    ;;{P5}  functions
-
-    ;;<=========================================================================>
-    ;;{3}  CST
-    ;;{3.1}  constants
-    ;;{3.2}  schemas
-    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
-
-    ;;<=========================================================================>
-    ;;{4}  CAPABILITIES
-    ;;{C1}  Trivial [bronze]
-    ;;{C2}  Simple
-    ;;{C3}  Composed
-    ;;{C4}  Ownership [gold]
-
-    ;;<=========================================================================>
-    ;;{5}  FUNCTIONS
-    ;;{5.1}  Construct [CT/UDC]
-    ;;{5.2}  Compute [UC]
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    ;;{5.4}  Validate [UEV/CAP]
-    ;;{5.5}  Write [W]
-    ;;{5.6}  Aux/X
-    ;;{5.7}  User [A/C]
-    ;;
-    (defun ATS|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV3.SocialSchema}]))
-    (defun ATS|C_UpgradeBranding (patron:string executor:string entity-id:string months:integer))
-    ;;
-    ;;Hot Rbt Management
-    (defun ATS|HOT-RBT|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV3.SocialSchema}]))
-    (defun ATS|HOT-RBT|C_UpgradeBranding (patron:string executor:string entity-id:string months:integer))
-    (defun ATS|HOT-RBT|C_Repurpose (patron:string executor:string executee:string hot-rbt:string nonce:integer))
-        ;;
-    (defun ATS|C_Issue:list (patron:string executor:string ats:[string] index-decimals:[integer] reward-token:[string] rt-nfr:[bool] reward-bearing-token:[string] rbt-nfr:[bool]))
-    (defun ATS|C_RotateOwnership (patron:string executor:string executee:string ats:string))
-    (defun ATS|C_Control (patron:string executor:string ats:string can-change-owner:bool syphoning:bool hibernate:bool))
-    (defun ATS|C_UpdateRoyalty (patron:string executor:string ats:string royalty:decimal))
-    (defun ATS|C_UpdateSyphon (patron:string executor:string ats:string syphon:decimal))
-    (defun ATS|C_SetHibernationFees (patron:string executor:string ats:string peak:decimal decay:decimal))
-        ;;
-    (defun ATS|C_ToggleParameterLock (patron:string executor:string ats:string toggle:bool))
-    (defun ATS|C_AddSecondary (patron:string executor:string ats:string reward-token:string rt-nfr:bool))
-        ;;
-    (defun ATS|C_ControlColdRecoveryFees (patron:string executor:string ats:string c-nfr:bool c-fr:bool))
-    (defun ATS|C_SetColdRecoveryFees (patron:string executor:string ats:string fee-positions:integer fee-thresholds:[decimal] fee-array:[[decimal]]))
-    (defun ATS|C_SetColdRecoveryDuration (patron:string executor:string ats:string soft-or-hard:bool base:integer growth:integer))
-    (defun ATS|C_ToggleElite (patron:string executor:string ats:string toggle:bool))
-    (defun ATS|C_ToggleUpgrade (patron:string executor:string ats:string toggle:bool))
-    (defun ATS|C_SwitchColdRecovery (patron:string executor:string ats:string toggle:bool))
-        ;;
-    (defun ATS|C_AddHotRBT (patron:string executor:string ats:string hot-rbt:string))
-    (defun ATS|C_ControlHotRecoveryFee (patron:string executor:string ats:string h-fr:bool))
-    (defun ATS|C_SetHotRecoveryFee (patron:string executor:string ats:string promile:decimal decay:integer))
-    (defun ATS|C_SwitchHotRecovery (patron:string executor:string ats:string toggle:bool))
-        ;;
-    (defun ATS|C_SetDirectRecoveryFee (patron:string executor:string ats:string promile:decimal))
-    (defun ATS|C_SwitchDirectRecovery (patron:string executor:string ats:string toggle:bool))
-        ;;
-    (defun ATS|CC_RemoveSecondary (patron:string executor:string ats:string reward-token:string))
-    (defun ATS|C_WithdrawRoyalties (patron:string executor:string executee:string ats:string))
-    (defun ATS|C_KickStart (patron:string executor:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal))
-    (defun ATS|C_Fuel (patron:string executor:string ats:string reward-token:string amount:decimal))
-    (defun ATS|C_Coil (patron:string executor:string ats:string rt:string amount:decimal))
-    (defun ATS|C_Curl (patron:string executor:string ats1:string ats2:string rt:string amount:decimal))
-    (defun ATS|C_VestedCoil (patron:string executor:string ats:string coil-token:string amount:decimal target-account:string offset:integer duration:integer milestones:integer))
-    (defun ATS|C_VestedCurl (patron:string executor:string ats1:string ats2:string curl-token:string amount:decimal target-account:string offset:integer duration:integer milestones:integer))
-    (defun ATS|C_Constrict (patron:string executor:string ats:string rt:string amount:decimal dayz:integer))
-    (defun ATS|C_Brumate (patron:string executor:string ats1:string ats2:string rt:string amount:decimal dayz:integer))
-    (defun ATS|C_Syphon (patron:string executor:string executee:string ats:string syphon-amounts:[decimal]))
-        ;;
-    (defun ATS|C_ColdRecovery (patron:string executor:string ats:string ra:decimal))
-    (defun ATS|C_Cull (patron:string executor:string ats:string))
-        ;;
-    (defun ATS|C_HotRecovery (patron:string executor:string ats:string ra:decimal))
-    (defun ATS|C_Reverse (patron:string executor:string id:string nonce:integer))
-    (defun ATS|C_Redeem (patron:string executor:string id:string nonce:integer))
-        ;;
-    (defun ATS|C_DirectRecovery (patron:string executor:string ats:string ra:decimal))
-    ;;
-    ;;
-    (defun VST|C_CreateFrozenLink:[string] (patron:string executor:string dptf:string))
-    (defun VST|C_CreateReservationLink:[string] (patron:string executor:string dptf:string))
-    (defun VST|C_CreateVestingLink:[string] (patron:string executor:string dptf:string))
-    (defun VST|C_CreateSleepingLink:[string] (patron:string executor:string dptf:string))
-    (defun VST|C_CreateHibernatingLink:[string] (patron:string executor:string dptf:string))
-        ;;Frozen
-    (defun VST|C_Freeze (patron:string executor:string freeze-output:string dptf:string amount:decimal))
-    (defun VST|C_RepurposeFrozen (patron:string executor:string executee:string dptf-to-repurpose:string repurpose-to:string))
-    (defun VST|C_ToggleTransferRoleFrozenDPTF (patron:string executor:string s-dptf:string target:string toggle:bool))
-        ;;Reservation
-    (defun VST|C_Reserve (patron:string executor:string dptf:string amount:decimal))
-    (defun VST|C_Unreserve (patron:string executor:string r-dptf:string amount:decimal))
-    (defun VST|C_RepurposeReserved (patron:string executor:string executee:string dptf-to-repurpose:string repurpose-to:string))
-    (defun VST|C_ToggleTransferRoleReservedDPTF (patron:string executor:string s-dptf:string target:string toggle:bool))
-        ;;Vesting
-    (defun VST|C_Vest (patron:string executor:string target-account:string dptf:string amount:decimal offset:integer seconds:integer milestones:integer))
-    (defun VST|C_Unvest (patron:string executor:string dpof:string nonce:integer))
-    (defun VST|C_RepurposeVested (patron:string executor:string executee:string dpof-to-repurpose:string nonce:integer repurpose-to:string))
-        ;;Sleeping
-    (defun VST|C_Sleep (patron:string executor:string target-account:string dptf:string amount:decimal seconds:integer))
-    (defun VST|C_Unsleep (patron:string executor:string dpof:string nonce:integer))
-    (defun VST|C_Merge(patron:string executor:string dpof:string nonces:[integer]))
-    (defun VST|C_RepurposeMerge (patron:string executor:string executee:string dpof-to-repurpose:string nonces:[integer] repurpose-to:string))
-    (defun VST|C_RepurposeSleeping (patron:string executor:string executee:string dpof-to-repurpose:string nonce:integer repurpose-to:string))
-    (defun VST|C_ToggleTransferRoleSleepingDPOF (patron:string executor:string s-dpof:string target:string toggle:bool))
-        ;;Hibernating
-    (defun VST|C_Hibernate (patron:string executor:string target-account:string dptf:string amount:decimal dayz:integer))
-    (defun VST|C_Awake (patron:string executor:string dpof:string nonce:integer))
-    (defun VST|C_Slumber (patron:string executor:string dpof:string nonces:[integer]))
-    (defun VST|C_RepurposeSlumber (patron:string executor:string executee:string dpof-to-repurpose:string nonces:[integer] repurpose-to:string))
-    (defun VST|C_RepurposeHibernating (patron:string executor:string executee:string dpof-to-repurpose:string nonce:integer repurpose-to:string))
-    (defun VST|C_ToggleTransferRoleHibernatingDPOF (patron:string executor:string s-dpof:string target:string toggle:bool))
-    ;;
-    ;;
-    (defun LQD|C_UnwrapStoa (patron:string executor:string amount:decimal))
-    (defun LQD|C_WrapStoa (patron:string executor:string amount:decimal))
-    ;;#13H fix: LQD|C_RegisterOuronetAccountForUrstoaHoldings removed (2026-08-27) - see
-    ;;12_LIQUID.pact's matching note; account creation is UI-constructed, not a Pact function.
-    (defun LQD|C_UnwrapUrStoa (patron:string executor:string amount:decimal))
-    (defun LQD|C_WrapUrStoa (patron:string executor:string amount:decimal))
-    ;;
-    ;;
-    (defun ORBR|C_Compress (executor:string ignis-amount:decimal))
-    (defun ORBR|C_Sublimate (executor:string executee:string ouro-amount:decimal))
-    (defun ORBR|C_SublimateV2 (executor:string executee:string ouro-amount:decimal))
-    (defun ORBR|C_WithdrawFees (patron:string executor:string executee:string id:string))
-
-)
 ;;
 (module TS01-C2 GOV
     @doc "TALOS Client Module for Stage 1, namely ATS VST LIQUID and OUROBOROS Modules"

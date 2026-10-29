@@ -1,3 +1,26 @@
+> ## SUPERSEDED by `Deploy/PureV18` — 2026-10-29
+>
+> **Do not send this round.** Every module it carries has changed since it was built: `RPS` was
+> split (six cost readers moved to the new `AQP-RPSC`), `AQP-FVT` gained the collect core and the
+> eviction surface, and `TS02-C3` gained four `AQP-EVCT|*` wrappers behind a
+> `TalosStageTwo_ClientThreeV5 -> V6` bump. Sending these three files now would ship the *old*
+> shape of all three modules against a tree that no longer matches them.
+>
+> **Whether this round was ever sent is NOT determinable from this repository, and that is worth
+> saying rather than guessing.** `Deploy/LIVE-MODULES.json` caches only each module's hash, char
+> count and member names — not its source — so a change that alters a SIGNATURE without adding or
+> removing a function (which is exactly what this round was) is invisible to `--diff`. The live
+> `RPS` is 313,179 chars, consistent with this round having landed, and consistent with other
+> things too.
+>
+> **`python3 REPL/tools/_livemodules.py --probe` settles it** and nothing offline does. It is kept
+> rather than deleted for that reason: the precedent for deleting a shipped round
+> (`fdf8595e`, PureV15) rested on positive evidence, and there is none here either way.
+>
+> If it turns out this round never shipped, its content is a strict subset of `PureV18` — the three
+> modules it carries are transactions 3, 5 and 7 there, in newer form — so sending V18 is correct
+> in both worlds.
+
 # Deploy/PureV17 — DEPLOY CARD
 
 **Everything needed to send this round is in THIS folder. It is THREE transactions, in order.**

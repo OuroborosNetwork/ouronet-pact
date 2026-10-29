@@ -1708,6 +1708,26 @@ LIVE_INTERFACES = {
     "CitizenLaunchpadTalosV1": "e4ccca0348ca6ecc3677167528ba7f12",
     "AcquisitionPoolBootV1": "84152db1d6336d1a4e05e3c7f1ce2b09",
     "DispenserV2": "07f7194b1f4d36a86d997f218fba27db",
+    # ADDED 2026-10-29 for the V18 eviction round, and the five below are the SUCCESSORS of
+    # entries already in this dict -- `AcquisitionPoolBootV1` and `DispenserV2` are two lines
+    # up. That is the tell: these names were bumped by the 2026-10-12 interface-membership
+    # cascade and SHIPPED by PureV10/V13/V14, so the tree's current names are now the live ones
+    # and a round that re-emits them aborts with `Interface cannot be upgraded`. The predecessor
+    # entries stay, because `strip_live_interfaces` matches by name and a name no longer in the
+    # tree simply never matches.
+    #
+    # CONFIRMED, not assumed, by the method this dict's own comment calls CONFIRMED: each one
+    # appears in an ALREADY-DEPLOYED module's `interfaces` list in `Deploy/LIVE-MODULES.json`,
+    # which Pact populated from `describe-module` against the chain --
+    # OuroborosV3 in OUROBOROS, TalosStageOne_ClientTwoV3 in TS01-C2, InfoOneV3 in INFO-ONE,
+    # AcquisitionPoolBootV2 in AQP-BOOT, DispenserV3 in DSP. None of the five is touched by this
+    # round; they are co-hosted in files whose MODULES have to redeploy because
+    # `AutostakeUsageV3 -> V4` reached them, which is the same shape as the 2026-10-12 bulk add.
+    "OuroborosV3": "500137b57698add66440eff63eca6271",
+    "TalosStageOne_ClientTwoV3": "1d95f52eaa98b7ed22a7c8d6e0ef829c",
+    "InfoOneV3": "1c37b8e9c5f3452cf706ebb3e9e83e0f",
+    "AcquisitionPoolBootV2": "228080b382a6b1475bcf0b1ef327d12f",
+    "DispenserV3": "748c97e552905b0d817c4d9cde1d43f2",
     # REMOVED 2026-10-12 (second pass): OuronetInfoV2, BrandingUsagePrimaryV2,
     # DemiourgosPactTrueFungibleV2, TrueFungibleTransferV2, OuroborosV2, SwapperLiquidityV2,
     # BrandingUsageSecondaryV2, SwapperLiquidityClientV2, TalosStageOne_ClientOneV2,
