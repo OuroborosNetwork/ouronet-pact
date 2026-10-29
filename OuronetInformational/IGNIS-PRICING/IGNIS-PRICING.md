@@ -290,12 +290,15 @@ STOA; the constants-only conversion (65 table reads lifted); the `define-set` / 
 
 ## What is open
 
-**450** Talos client functions carry a price; **15** carry no row, and the sheet now says which:
+**454** Talos client functions carry a price; **15** carry no row, and the sheet now says which:
 *(2026-10-25, V14 round: +2 — `AQP-SCR|C_LockScoreDrift` and `AQP-FVT|CC_LatchStreamEligible`,
 the drift-lock / stream-eligible latches.)*
+*(2026-10-29: +4 — the AQP-EVCT reward-eviction quartet. Two are floor-priced at the collect
+component they drive; the gasless `AA_`/`AAp_` twins are exempt by the `A_`-prefix rule, which is
+why the exempt count moved by two and the priced count by four.)*
 
 ```
-201 exact  ·  190 floor  ·  2 STOA-only  ·  57 exempt  ·  5 unresolved  ·  15 unpriced
+201 exact  ·  192 floor  ·  2 STOA-only  ·  59 exempt  ·  5 unresolved  ·  15 unpriced
 ```
 
 **NEW OP, 2026-10-12: `AQP-POOL|CC_ReassignTrueFungibleStakeBeneficiary`.** TF's counterpart to

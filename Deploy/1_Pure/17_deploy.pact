@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 17 of 26
 ;; This is STEP 17 of 27 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-16 must have run first, including the init steps between deploys.
-;; 1 source file(s), 327,281 gas measured in the REPL gas model, 300,666 bytes
+;; 1 source file(s), 328,763 gas measured in the REPL gas model, 300,666 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/04_RPS.pact

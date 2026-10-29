@@ -94,6 +94,7 @@
         ;;
         (ref-P|MTX-AQP:module{OuronetPolicyV2}    MTX-AQP)
         (ref-P|DSA:module{OuronetPolicyV2}        AQP-DSA)
+        (ref-P|EVCT:module{OuronetPolicyV2}       AQP-EVCT)
         ;;
 
     )
@@ -127,6 +128,11 @@
         (ref-P|MTX-AQP::P|A_Define)
         ;;DSA — registers its caller guard in AQP-FVT's IMP so CC_OpenAgency's XE_ admit/delegation calls pass P|UEV_IMC
         (ref-P|DSA::P|A_Define)
+        ;;EVCT — registers its caller guard in AQP-FVT's IMP so XE_EvictDrip / XE_EvictPay pass
+        ;;P|UEV_IMC. That is its WHOLE registration: it reads RPS through unprotected readers, never
+        ;;touches TFT/DPOF/DPDC-T, and never sends from AQP|SC_NAME -- so unlike AQP-VCT it needs no
+        ;;entry on AQP-POOL's policy table and NO governor rotation on AQP|SC_NAME.
+        (ref-P|EVCT::P|A_Define)
         ;;
         ;;Set DPDC Governor
         ;;REPL-VARIANT:

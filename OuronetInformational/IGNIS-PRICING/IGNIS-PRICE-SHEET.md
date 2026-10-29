@@ -61,6 +61,15 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_WithdrawRoyalty` | `C_WithdrawRoyalty` | USAGE | **405** | — | $4.05 | deter:royalty-dispose 400 + components:AQP-DSA|C_WithdrawRoyalty 5 |
 | `CC_OpenAgency` | `C_AdmitAgency` ×2 | ISSUE | **2011** | — | $20.11 | deter:issue-dsa-agency 2000 + components:AQP-DSA|CC_OpenAgency 11 |
 
+## AQP-EVCT
+
+| Talos function | core op | role | IGNIS | STOA | $ (ignis) | charge breakdown |
+|----------------|---------|------|------:|-----:|----------:|------------------|
+| `AA_FullEvictRewards` | `CC_FullEvictRewards` | USAGE | **0** | — | free | admin/exempt |
+| `AAp_EvictRewards` | `CCp_EvictRewards` | USAGE | **0** | — | free | admin/exempt |
+| `CC_FullEvictRewards` | `CC_FullEvictRewards` | USAGE | **≥ 57** | — | COMPLEX | heavy / parallel-slice op; legs: deter:aqp-collect 0 + components:AQP-FVT|CC_Collect 57 |
+| `CCp_EvictRewards` | `CCp_EvictRewards` | USAGE | **≥ 57** | — | COMPLEX | heavy / parallel-slice op; legs: deter:aqp-collect 0 + components:AQP-FVT|CC_Collect 57 |
+
 ## AQP-FVT
 
 | Talos function | core op | role | IGNIS | STOA | $ (ignis) | charge breakdown |
@@ -656,7 +665,7 @@ another Talos wrapper, not a core op) or admin entrypoints that are exempt by ru
 | P\|A_SetIMP | admin entrypoint -- IGNIS + STOA free by owner rule, nothing to price |
 
 ---
-201 simple (exact price) · 190 complex (floor price) · 2 STOA-only · 57 exempt · 5 unresolved · 15 unpriced · 450 Talos client functions
+201 simple (exact price) · 192 complex (floor price) · 2 STOA-only · 59 exempt · 5 unresolved · 15 unpriced · 454 Talos client functions
 
 `×N` on a core op = the wrapper drives N priced core ops in a FIXED composition (still exactly knowable).
 

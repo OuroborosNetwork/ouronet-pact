@@ -118,6 +118,17 @@ and it scales with the number of *members*, not stakers.
 beneficiaries + 4,000 × positions`, against a 2,000,000 ceiling — about 481 positions if
 concentrated, 25 if spread. Large pools drain in slices.
 
+**You can hand your stakers their rewards without them asking.** Reward *eviction* collects on
+behalf of every member with something to claim, and pays each one exactly what they would have
+received collecting for themselves — same code path, not a parallel implementation. You prove you
+own the distributor and you pay the IGNIS; they do nothing. Two things make it practical rather
+than ceremonial: a whole-FVT eviction leaves **no dust** (the last leg sweeps the remainder to
+zero), and it **waives** the usual staleness penalty, on the grounds that a staker who never got
+the chance to collect should not be charged for the refresh.
+
+Size it the same way you size a vacate. The whole-FVT variant scans before it pays, so it suits a
+small distributor; a large one is sliced, and the slices are independent — fire them in parallel.
+
 ---
 
 ## 4. Across all three

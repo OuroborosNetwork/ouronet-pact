@@ -17,6 +17,10 @@
 (load "[6.2.2]_AQP-SCORE.repl")   ;; SCR  — scores, links, weights, triplet bookkeeping
 (load "[6.2.3]_AQP-POOL.repl")    ;; POOL — pool issue, score slots, custody trackers, sync
 (load "[6.2.4]_AQP-FVT.repl")     ;; FVT  — self-loads FVT-OF/-DC/-NF (RPS inject/collect, stake flows)
+(load "[6.2.18]_AQP-EVICT.repl")  ;; EVCT - reward eviction, DIFFERENTIAL against a self-collect
+;;ORDER IS LOAD-BEARING: [6.2.18] must sit between [6.2.4] and [6.2.5]. It needs a staker with a
+;;live score in TfStakeVault, which [6.2.4] provisions and [6.2.5] drains -- an eviction of an
+;;empty FVT has no legs, and the suite's own claimable refusal would be the only thing it proved.
 (load "[6.2.5]_AQP-VCT.repl")     ;; VCT  — pool-owner vacate (Full + Legs), all asset kinds
 (load "[6.2.10]_AQP-NEGATIVES.repl") ;; NEG  - IMC boundary + owner/state negatives (Track C)
 (load "[6.2.11]_AQP-SPLIT-MODE.repl") ;; SPLIT - dual reward-split mode toggle (D1-G2, task #89)

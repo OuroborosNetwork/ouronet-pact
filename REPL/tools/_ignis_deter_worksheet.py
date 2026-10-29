@@ -150,8 +150,13 @@ def prim_costs(txt):
     x=len(re.findall(r'ref-[A-Za-z0-9|-]+::',txt)); cost+=IG_X*x
     return ins,upd,r,sc,x,cost
 
+# `Evict` added 2026-10-29. An eviction is a COLLECT triggered by the pool owner instead of the
+# beneficiary -- it bills the identical `deter:aqp-collect` leg plus the identical
+# `components:AQP-FVT|CC_Collect`. Without the word here the four AQP-EVCT entrypoints read SETUP
+# in both generated sheets while the operation they are byte-identical to reads USAGE, and that
+# role column is what the public Chapter-2 pricing documentation prints.
 ISSUE=re.compile(r'^(?:[A-Za-z0-9-]+\|)?(C{1,2}p?_|A{1,2}p?_)(Issue|Create|Deploy|Open|Define|Mint|Make|New)')
-USAGE=re.compile(r'(Stake|Unstake|Collect|Inject|Transfer|Fuel|Retrieve|Coil|Curl|Vacate|Sweep|Fix|Drain|Flush|Unstale|Bulk|Swap|Liquidity|Compress|Wrap|Deposit|Withdraw|Brumate|Constrict|Syphon|WipeSlice)')
+USAGE=re.compile(r'(Stake|Unstake|Collect|Evict|Inject|Transfer|Fuel|Retrieve|Coil|Curl|Vacate|Sweep|Fix|Drain|Flush|Unstale|Bulk|Swap|Liquidity|Compress|Wrap|Deposit|Withdraw|Brumate|Constrict|Syphon|WipeSlice)')
 def role(n): return 'ISSUE' if ISSUE.match(n) else ('USAGE' if USAGE.search(n) else 'SETUP')
 
 COLS={'op':'#8250df','role':'#57606a','ins':'#cf222e','upd':'#e36209','r':'#0969da',

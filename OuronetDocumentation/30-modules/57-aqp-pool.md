@@ -6,7 +6,7 @@ Where you actually stake. A pool accepts one asset shape from five classes, trac
 
 The separation that everything depends on: **users never stake "into the farm" — they stake into a pool**, and the distributor only accounts and pays.
 
-Part of the **acquisition-pool family** — ten modules, the largest subsystem in the system. Full treatment: `25-defi/03-acquisition-pools.md`.
+Part of the **acquisition-pool family** — twelve modules, the largest subsystem in the system. Full treatment: `25-defi/03-acquisition-pools.md`.
 
 ## Where it sits
 

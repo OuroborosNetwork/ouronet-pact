@@ -4,7 +4,7 @@
 
 Continuation forms of injection and anchor revocation, for cases too large for one transaction.
 
-Part of the **acquisition-pool family** — ten modules, the largest subsystem in the system. Full treatment: `25-defi/03-acquisition-pools.md`.
+Part of the **acquisition-pool family** — twelve modules, the largest subsystem in the system. Full treatment: `25-defi/03-acquisition-pools.md`.
 
 ## Where it sits
 

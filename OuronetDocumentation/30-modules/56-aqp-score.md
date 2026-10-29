@@ -6,7 +6,7 @@ The weighting rules. A score turns a stake into a number through three steps —
 
 The boost is **additive, not a replacement**: the base is never dropped.
 
-Part of the **acquisition-pool family** — ten modules, the largest subsystem in the system. Full treatment: `25-defi/03-acquisition-pools.md`.
+Part of the **acquisition-pool family** — twelve modules, the largest subsystem in the system. Full treatment: `25-defi/03-acquisition-pools.md`.
 
 ## Where it sits
 

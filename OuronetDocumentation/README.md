@@ -93,8 +93,8 @@ code this documents is the code that is running.
 |---|---|
 | `.pact` source files | 105 |
 | modules / interfaces declared | 99 forms (98 names) / 98 |
-| lines | 131,447 |
-| `defun` forms | 9,397 |
+| lines | 132,389 |
+| `defun` forms | 9,445 |
 | capabilities | 988 `defcap` |
 | schemas / tables | 206 / 231 |
 | the deploy round | 80 modules + 85 interfaces, 24 transactions |

@@ -6,7 +6,7 @@ Rules that convert holding **one** asset into a per-mille boost on a score for a
 
 For fungibles the boost is pro-rated rather than a threshold: hold two and a half times the anchor amount, get two and a half times the boost. For collectables it counts whole units matching a nonce, a trait or a set class.
 
-Part of the **acquisition-pool family** — ten modules, the largest subsystem in the system. Full treatment: `25-defi/03-acquisition-pools.md`.
+Part of the **acquisition-pool family** — twelve modules, the largest subsystem in the system. Full treatment: `25-defi/03-acquisition-pools.md`.
 
 ## Where it sits
 

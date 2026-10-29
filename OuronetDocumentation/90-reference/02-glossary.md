@@ -13,36 +13,36 @@ Counts are of definitions in the tree, interface declarations included.
 
 | prefix | uses | what it promises |
 |---|---:|---|
-| `UR_` | 1,545 | reads one row or field by key |
+| `UR_` | 1,546 | reads one row or field by key |
 | `C_` | 1,390 | client entry — builds the bill; reachable only through Talos |
 | `URC_` | 801 | reads and derives; no `enforce` |
-| `UEV_` | 672 | reads and `enforce`s; failure aborts the transaction |
-| `INFO_` | 644 | operation preview returning a client-facing cost and description |
-| `URCi_` | 640 | **cost reader** — the single source both billing and the preview call |
-| `A_` | 557 | admin-key mutation |
-| `UC_` | 524 | pure compute on arguments only — no table reads, no `enforce` |
-| `XI_` | 397 | internal write, this module only, under a capability |
+| `UEV_` | 675 | reads and `enforce`s; failure aborts the transaction |
+| `INFO_` | 648 | operation preview returning a client-facing cost and description |
+| `URCi_` | 644 | **cost reader** — the single source both billing and the preview call |
+| `A_` | 562 | admin-key mutation |
+| `UC_` | 529 | pure compute on arguments only — no table reads, no `enforce` |
+| `XI_` | 398 | internal write, this module only, under a capability |
 | `XE_` | 362 | entry point for other modules only |
 | `UDC_` | 348 | data construction — a named constructor for an object |
 | `CT_` | 281 | a constant, exposed as a function |
-| `URH_` | 167 | **scan** — walks a table. Off the execution path; cost grows with data |
-| `GOV|` | 161 | governance — keysets and protocol constants |
-| `CC_` | 122 | client entry that reaches a **scan** |
-| `P|` | 121 | policy — inter-module authorisation |
+| `URH_` | 169 | **scan** — walks a table. Off the execution path; cost grows with data |
+| `GOV|` | 162 | governance — keysets and protocol constants |
+| `CC_` | 126 | client entry that reaches a **scan** |
+| `P|` | 123 | policy — inter-module authorisation |
 | `UCk_` | 74 | **key builder** — composes a table's composite row key. Pure; returns a string, not a table |
 | `WU_` | 67 | write — update |
 | `XB_` | 64 | callable both internally and externally |
+| `CCp_` | 56 | client recipe that reaches a scan |
 | `SC_` | 52 | smart-contract account name — a constant, exposed as a function |
-| `CCp_` | 52 | client recipe that reaches a scan |
-| `CAP_` | 40 | account-ownership enforcement |
+| `CAP_` | 42 | account-ownership enforcement |
+| `URHC_` | 42 | scan and derive. Off the execution path |
 | `URCv_` | 37 | `URC_` with an intrinsic guard |
-| `URHC_` | 36 | scan and derive. Off the execution path |
 | `UCv_` | 34 | `UC_` whose `enforce` is intrinsic to its own computation |
 | `WW_` | 28 | write — upsert |
 | `URCx_` | 27 | `URC_` auxiliary |
 | `AU_` | 22 | admin utility |
 | `WI_` | 20 | write — insert |
-| `AA_` | 17 | admin mutation that reaches a **scan** |
+| `AA_` | 19 | admin mutation that reaches a **scan** |
 | `UCx_` | 15 | pure-compute auxiliary — a helper factored out of a `UC_` |
 | `Cp_` | 14 | client multi-transaction recipe, no scan |
 | `XBv_` | 10 | `XB_` with an intrinsic guard |
@@ -51,17 +51,10 @@ Counts are of definitions in the tree, interface declarations included.
 | `URv_` | 8 | `UR_` with an intrinsic guard |
 | `URU_` | 4 | version-upgrade read, admin only |
 | `REPL_` | 4 | **test fixture only.** Bootstrap helpers that exist for the harness. Present in the repository and, where a module has been redeployed since, absent from the chain — which is why the module pages compare the two |
+| `AAp_` | 2 | admin recipe that reaches a scan |
 | `AUx_` | 1 | admin-utility auxiliary |
 | `URCix_` | 1 | cost-reader auxiliary |
 | `Ap_` | 1 | admin multi-transaction recipe |
-
-## Defined here but unused
-
-Entries with no definition in the tree — a prefix that has been retired, or one
-documented before it existed. Either way it is stated rather than rendered as if
-live.
-
-`AAp_`
 
 ## Sentinels and conventions
 

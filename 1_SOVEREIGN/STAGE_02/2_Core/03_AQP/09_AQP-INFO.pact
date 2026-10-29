@@ -1984,6 +1984,110 @@
                 [])
         )
     )
+    ;;
+    ;;  [AQP-EVCT — Reward Eviction, 2026-10-29]
+    ;;
+    ;;FOUR WRAPPERS, FOUR PREVIEWS, and two of them quote ZERO on purpose. The gasless admin pair
+    ;;charges the patron nothing because the core's patron slot carries the Ouronet system account,
+    ;;which IGNIS::XE_CollectIgnis exempts -- so a preview that reported the C-variant's figure for
+    ;;them would be wrong in the direction that matters, telling the daily automaton it cannot
+    ;;afford the run it is about to make for free. The IGNIS still has a shape; it just is not
+    ;;billed, which is what the FREE note in each says.
+    (defun INFO_AQP-EVCT|EvictRewards:object{OuronetInfoV3.ClientInfo}
+        (patron:string fvt-id:string beneficiaries:[string]
+         score-entity-types:[integer] score-entity-ids:[string] reward-dptf-ids:[string])
+        @doc "Cost preview for AQP-EVCT|CCp_EvictRewards -- one eviction slice. FULL IGNIS: the sum of \
+            \ each leg's collect cost, read PER BENEFICIARY rather than per patron; no STOA. Fed the \
+            \ same four parallel arrays the exec is fed, from the same \
+            \ AQP-EVCT::URHC_BuildEvictSlicePlan dirty read. \
+            \ \
+            \ RESIDUAL inherited from the collect preview, stated rather than hidden: exact for \
+            \ un-streamed or already-settled lanes, and able to shift a transfer tier on a lane with a \
+            \ live stream, because the payout is read pre-drip."
+        (let
+            (
+                (ref-EVCT:module{AcquisitionRewardEvictionV1} AQP-EVCT)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Evict one slice of this FVT's outstanding rewards to their beneficiaries."
+                 "You are paying the IGNIS for collects the beneficiaries would otherwise pay themselves."
+                 "Executes via TS02-C3.AQP-EVCT|CCp_EvictRewards."]
+                [(format "Evicted {} reward leg(s) on FVT {}." [(length beneficiaries) fvt-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    (ref-EVCT::URCi_EvictRewards patron fvt-id beneficiaries
+                        score-entity-types score-entity-ids reward-dptf-ids))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
+        )
+    )
+    (defun INFO_AQP-EVCT|FullEvictRewards:object{OuronetInfoV3.ClientInfo}
+        (patron:string fvt-id:string)
+        @doc "Cost preview for AQP-EVCT|CC_FullEvictRewards -- the whole-FVT, single-transaction variant. \
+            \ HEAVY: it runs the same leg scan the exec runs, then prices every leg. `/local` only. \
+            \ \
+            \ Unlike INFO_AQP-POOL|FullVacate, which is HANDED its lane plan, this one scans. The \
+            \ asymmetry follows the cores: AQP-VCT::URCi_FullVacate takes lanes, AQP-EVCT's takes an \
+            \ fvt-id, because a vacate's lanes come from several asset classes while an eviction's legs \
+            \ come from one reader."
+        (let
+            (
+                (ref-EVCT:module{AcquisitionRewardEvictionV1} AQP-EVCT)
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Evict EVERY outstanding reward on this FVT in one transaction."
+                 "Small FVTs only — the node gas meter is the real ceiling, and this scans before it pays."
+                 "Executes via TS02-C3.AQP-EVCT|CC_FullEvictRewards."]
+                [(format "Evicted every outstanding reward leg on FVT {}." [fvt-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    (ref-EVCT::URCi_FullEvictRewards patron fvt-id))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
+        )
+    )
+    (defun INFO_AQP-EVCT|AdminEvictRewards:object{OuronetInfoV3.ClientInfo}
+        (patron:string fvt-id:string beneficiaries:[string])
+        @doc "Cost preview for AQP-EVCT|AAp_EvictRewards -- the GASLESS admin eviction slice. FREE: the \
+            \ core's patron slot carries the Ouronet system account, the one account \
+            \ IGNIS::XE_CollectIgnis exempts, so no IGNIS and no STOA reach <patron>. \
+            \ \
+            \ <patron> is still in the signature, and is deliberately unused: every INFO_ reader in \
+            \ this module takes it first, and a preview that dropped it would need its own call shape \
+            \ in every client. <beneficiaries> is taken for the result line only -- the other three \
+            \ arrays cannot change a figure that is zero."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Evict one slice of this FVT's rewards as the Ouronet administrator."
+                 "Gasless admin path — costs you nothing. Requires the admin keyset AND FVT ownership."
+                 "Executes via TS02-C3.AQP-EVCT|AAp_EvictRewards."]
+                [(format "Evicted {} reward leg(s) on FVT {} (gasless)." [(length beneficiaries) fvt-id])]
+                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
+        )
+    )
+    (defun INFO_AQP-EVCT|AdminFullEvictRewards:object{OuronetInfoV3.ClientInfo}
+        (patron:string fvt-id:string)
+        @doc "Cost preview for AQP-EVCT|AA_FullEvictRewards -- the GASLESS admin whole-FVT eviction. \
+            \ FREE, for the reason INFO_AQP-EVCT|AdminEvictRewards gives."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Evict EVERY outstanding reward on this FVT as the Ouronet administrator."
+                 "Gasless admin path — costs you nothing. Requires the admin keyset AND FVT ownership."
+                 "Executes via TS02-C3.AQP-EVCT|AA_FullEvictRewards."]
+                [(format "Evicted every outstanding reward leg on FVT {} (gasless)." [fvt-id])]
+                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
+        )
+    )
     ;;{5.4}  Validate [UEV/CAP]
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X

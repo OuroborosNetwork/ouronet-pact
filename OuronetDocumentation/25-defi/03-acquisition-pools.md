@@ -1,6 +1,6 @@
 # Acquisition pools
 
-The third family, and the largest single subsystem in Ouronet — **ten files, 27,074 lines**. It is
+The third family, and the largest single subsystem in Ouronet — **twelve files, 33,353 lines**. It is
 also the one that needs its vocabulary established before anything else makes sense.
 
 The clearest statement is in the project's own notes:
@@ -239,7 +239,100 @@ The philosophy behind that number recurs across this subsystem and is worth adop
 
 ---
 
-## 8. Limitations
+## 8. Evicting rewards
+
+Vacating returns **assets**. Evicting returns **rewards**, and the two are not variants of each
+other — an eviction does not unwind a single stake, change a single score or freeze anything. It is
+a collect, triggered by the pool owner instead of the beneficiary.
+
+The asymmetry in *who* is checked is the whole of it:
+
+| | who must prove ownership | who is paid | who pays the IGNIS |
+|---|---|---|---|
+| collect | the **beneficiary** | the beneficiary | whoever sponsors the call |
+| evict | the **FVT owner** | every listed beneficiary | the evictor |
+
+So an FVT operator can hand their stakers their rewards without those stakers doing anything, and
+pays for the privilege. That is the point: the operator wants the tokens out of the aggregator, and
+the stakers are the only legitimate destination.
+
+**It pays exactly what a self-collect would pay.** Not approximately — the eviction path calls the
+same phase functions a collect calls (the drip, the payout, the checkpoint), so there is one
+implementation and not two that have to be kept in agreement. This is asserted rather than
+asserted-to: a differential test runs three rounds inside **one transaction** on one account —
+prime, inject-and-collect, inject-and-evict — and checks exact equality of the payout, the
+reward-per-share checkpoint, the pending drain and both available-reward aggregates. One
+transaction matters, because block time does not advance inside it and a live reward stream
+therefore vests identically across the rounds; across two transactions the comparison would be
+measuring the clock.
+
+**A whole-FVT eviction leaves no dust.** It pays *every* leg, so the last claimant's dust sweep
+pays out the entire remaining balance and the lane lands on exactly zero — measured as `0.000000`,
+not as a rounding residue. A single-leg collect cannot do that and does not claim to.
+
+### Two deliberate asymmetries
+
+**The staleness penalty is waived.** A staker whose scores have gone stale normally pays a small
+IGNIS penalty when they collect, because somebody had to refresh them. Eviction **zeroes** that
+counter instead of charging it, and the reasoning is the owner's: a staker whose rewards are
+evicted *for* them never had the chance to collect them, so charging them for the refresh would be
+billing them for not acting.
+
+**The slice path refuses a zero leg; the whole-FVT path does not need to.** A sliced eviction is
+fed arrays a client read in an *earlier* transaction, so a leg can go stale in between — and a zero
+reward simply means there is nothing to collect, which is a refusal rather than a billed no-op. The
+single-transaction variant reads its own legs in the transaction that spends them, so no such
+window exists.
+
+### Paid and gasless
+
+Reward eviction has four client entrypoints, in two pairs:
+
+| | one slice | whole FVT |
+|---|---|---|
+| anyone who owns the FVT, pays IGNIS | `AQP-EVCT\|CCp_EvictRewards` | `AQP-EVCT\|CC_FullEvictRewards` |
+| Ouronet administrator, gasless | `AQP-EVCT\|AAp_EvictRewards` | `AQP-EVCT\|AA_FullEvictRewards` |
+
+The gasless pair exists because daily eviction across every administrator-owned FVT is the intended
+operating mode, and at normal rates that is a large standing IGNIS bill. The exemption is not a
+flag on the operation — it is a property of **one account**, the Ouronet system account, which the
+collector recognises and does not charge. The collection path still runs and the operation is still
+priced; it simply is not billed.
+
+Two consequences worth being explicit about, because each is a door that could have been left open:
+
+- **The gasless pair is admin-gated as well as owner-gated.** Eviction itself only checks FVT
+  ownership, so a gasless wrapper carrying no admin check would have handed every FVT owner in the
+  system an unmetered path to the gas station. The admin keyset says the call may happen; the owner
+  konto says whose rewards may move. Both are required, and the *ownership* half is the one the
+  tests isolate — signed with an admin key that does not own the FVT, the gasless call is refused.
+- **Gasless means no IGNIS, not no gas.** The Chainweb gas is still paid, by the Ouronet gas
+  station, because this is a Talos path like any other.
+
+### Where it sits, and what it cost to build
+
+Eviction is its own module. It owns no table, holds no custody and performs no write of its
+own — every write is a forward call into the distributor's eviction surface. That is why it needs
+no entry in the pool policy table and no governor rotation, and it is the reason the module is
+small (about 36 KB) next to the subsystem it extends.
+
+Building it forced two changes elsewhere, both visible to a reader of the code:
+
+- **The triplet reward ladder now coils from the pool account, not from the beneficiary.** A
+  multiplet reward pays through up to three tokens, and the coiling step used to send *from* the
+  account being paid — which works for a self-collect and is meaningless when somebody else
+  triggers it. Autostake usage grew a coil whose funder and recipient are separate accounts, and
+  the collect ladder was rewritten to use it. Measured: **+9.5% gas on the ladder, with the payout
+  amounts identical to 24 decimal places** — the price of having one implementation instead of two.
+- **The reward engine was split.** It had reached 336 KB of source against a transaction size
+  charge that grows as the **seventh power** of size, so there was no version of this work in which
+  it also absorbed the eviction readers. Six cost-preview readers moved to a sibling module. The
+  engine keeps its name and its tables, because a deployed Pact module cannot be renamed and its
+  tables are bound to its identity.
+
+---
+
+## 9. Limitations
 
 **Things that cannot be changed after the fact.** A score cannot be deleted. Boost links are
 one-time and never cleared. A score belongs to one pool and one distributor. Adding a second LP to
@@ -272,8 +365,9 @@ code, not from those notes**, and a reader who finds them should know which is a
 
 ## Sources
 
-- `1_SOVEREIGN/STAGE_02/2_Core/03_AQP/` — ten files: schemas, anchors, scores, pools, the reward
-  engine, the distributor, vacating, multi-step operations, delegation, and previews
+- `1_SOVEREIGN/STAGE_02/2_Core/03_AQP/` — twelve files: schemas, anchors, scores, pools, the reward
+  engine, its cost-preview sibling, the distributor, vacating, multi-step operations, delegation,
+  reward eviction, and previews
 - The subsystem's own `README_*.md` files — used for vocabulary, **not** for figures
 - `REPL/Kursan/AQP-scale-sweep.repl`, `AQP-scale-inject.repl` — the gas measurements
 

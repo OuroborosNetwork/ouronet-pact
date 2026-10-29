@@ -11,7 +11,7 @@ on claim:   owed   = pending + weight × (index − your_last_index)
 
 Injecting touches one row, claiming touches two, and **neither depends on the number of stakers or injections**. The index carries 48 decimal places because it is a running division.
 
-Part of the **acquisition-pool family** — ten modules, the largest subsystem in the system. Full treatment: `25-defi/03-acquisition-pools.md`.
+Part of the **acquisition-pool family** — twelve modules, the largest subsystem in the system. Full treatment: `25-defi/03-acquisition-pools.md`.
 
 ## Where it sits
 

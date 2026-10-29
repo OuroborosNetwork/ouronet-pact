@@ -1,6 +1,6 @@
 # Tables, per module
 
-**Mode: `upgrade`.** 225 tables are defined across the modules in this plan.
+**Mode: `upgrade`.** 227 tables are defined across the modules in this plan.
 
 `(create-table X)` **fails if X already exists**, and which tables exist is a property of the chain that this repository cannot determine (see the note at the top of `REPL/tools/_deploybundle.py`). So ask the chain.
 
@@ -254,6 +254,9 @@ It returns a row per table that exists and errors on the first that does not, so
 (try "MISSING DSA|T|Template" (let ((x (describe-table DSA|T|Template))) "DSA|T|Template"))
 (try "MISSING DSA|T|Agency" (let ((x (describe-table DSA|T|Agency))) "DSA|T|Agency"))
 (try "MISSING DSA|T|OracleAuth" (let ((x (describe-table DSA|T|OracleAuth))) "DSA|T|OracleAuth"))
+;; 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/08b_EVCT.pact
+(try "MISSING P|T" (let ((x (describe-table P|T))) "P|T"))
+(try "MISSING P|MT" (let ((x (describe-table P|MT))) "P|MT"))
 ;; 1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact
 (try "MISSING P|T" (let ((x (describe-table P|T))) "P|T"))
 (try "MISSING P|MT" (let ((x (describe-table P|MT))) "P|MT"))
@@ -364,6 +367,7 @@ It returns a row per table that exists and errors on the first that does not, so
 | `06_VCT.pact` | `P|T`, `P|MT` |
 | `07_MTX-AQP.pact` | `P|T`, `P|MT` |
 | `08_DSA.pact` | `P|T`, `P|MT`, `DSA|T|Template`, `DSA|T|Agency`, `DSA|T|OracleAuth` |
+| `08b_EVCT.pact` | `P|T`, `P|MT` |
 | `01_TS02-C1.pact` | `P|T`, `P|MT` |
 | `02_TS02-C2.pact` | `P|T`, `P|MT` |
 | `04_TS02-C3.pact` | `P|T`, `P|MT` |

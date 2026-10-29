@@ -576,7 +576,7 @@
 (let
     (
         (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
     )
     (let*
@@ -651,7 +651,7 @@
 (let
     (
         (ref-SWP:module{SwapperV5} SWP)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
     )
     (let*
@@ -722,7 +722,7 @@
 (let
     (
         (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
     )
     (let*
@@ -763,7 +763,7 @@
 (let
     (
         (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
     )
     (let*
@@ -839,7 +839,7 @@
 (let
     (
         (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
     )
@@ -924,7 +924,7 @@
     (
         (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
         (ref-SWP:module{SwapperV5} SWP)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
     )
     (let*
@@ -1004,7 +1004,7 @@
 (let
     (
         (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
     )
     (let*
@@ -1100,7 +1100,7 @@
 (let
     (
         (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
     )
     (let*
@@ -1128,7 +1128,7 @@
 (let
     (
         (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
     )
     (let*
@@ -1177,7 +1177,7 @@
 (let
     (
         (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
     )
     (let*
@@ -1282,7 +1282,7 @@
         (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
         (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
         (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         ;;
@@ -1438,7 +1438,7 @@
         (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
         (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
         (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         ;;

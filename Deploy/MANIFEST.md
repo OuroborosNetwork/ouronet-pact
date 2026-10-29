@@ -4,8 +4,8 @@
 
 - per-transaction gas budget: **1,700,000** (StoaChain block limit 2,000,000)
 - module-deploy transactions: **26**
-- modules deployed: **80**
-- measured module gas: **6,678,685**
+- modules deployed: **81**
+- measured module gas: **6,741,618**
 
 ## Read this before deploying
 
@@ -128,14 +128,14 @@ Read top to bottom. **`step`** is the position in the full sequence; **`file`** 
 | 14 | **14** | DEPLOY 3 modules: 00_Demipad, 00_AQP-SCHEMAS, 01_ANK | 272,450 | `Deploy/1_Pure/14_deploy.pact` |
 | 15 | **15** | DEPLOY 1 modules: 02_SCORE | 269,902 | `Deploy/1_Pure/15_deploy.pact` |
 | 16 | **16** | DEPLOY 1 modules: 03_AQP | 242,927 | `Deploy/1_Pure/16_deploy.pact` |
-| 17 | **17** | DEPLOY 1 modules: 04_RPS | 327,281 | `Deploy/1_Pure/17_deploy.pact` |
-| 18 | **18** | DEPLOY 1 modules: 04b_RPSC | 129,099 | `Deploy/1_Pure/18_deploy.pact` |
-| 19 | **19** | DEPLOY 1 modules: 05_FVT | 302,583 | `Deploy/1_Pure/19_deploy.pact` |
-| 20 | **20** | DEPLOY 3 modules: 06_VCT, 07_MTX-AQP, 08_DSA | 418,953 | `Deploy/1_Pure/20_deploy.pact` |
-| 21 | **21** | DEPLOY 2 modules: 01_TS02-C1, 02_TS02-C2 | 235,433 | `Deploy/1_Pure/21_deploy.pact` |
-| 22 | **22** | DEPLOY 2 modules: 04_TS02-C3, 09_AQP-INFO | 206,806 | `Deploy/1_Pure/22_deploy.pact` |
+| 17 | **17** | DEPLOY 1 modules: 04_RPS | 328,763 | `Deploy/1_Pure/17_deploy.pact` |
+| 18 | **18** | DEPLOY 1 modules: 04b_RPSC | 130,214 | `Deploy/1_Pure/18_deploy.pact` |
+| 19 | **19** | DEPLOY 1 modules: 05_FVT | 309,626 | `Deploy/1_Pure/19_deploy.pact` |
+| 20 | **20** | DEPLOY 3 modules: 06_VCT, 07_MTX-AQP, 08_DSA | 419,312 | `Deploy/1_Pure/20_deploy.pact` |
+| 21 | **21** | DEPLOY 3 modules: 08b_EVCT, 01_TS02-C1, 02_TS02-C2 | 280,088 | `Deploy/1_Pure/21_deploy.pact` |
+| 22 | **22** | DEPLOY 2 modules: 04_TS02-C3, 09_AQP-INFO | 214,916 | `Deploy/1_Pure/22_deploy.pact` |
 | 23 | **23** | DEPLOY 1 modules: 05_TS02-DPAD | 25,538 | `Deploy/1_Pure/23_deploy.pact` |
 | 24 | **24** | DEPLOY 8 modules: 01_Spark, 02_Snakes, 03_Custodians, 04_STOICPAY, 05_STOAICO, 99_TS02-CPAD, 01_INFO-TWO, 02_KBunnies | 224,486 | `Deploy/1_Pure/24_deploy.pact` |
 | 25 | **25** | DEPLOY 1 modules: 04_AQP-BOOT | 0 | `Deploy/1_Pure/25_deploy.pact` |
 | 26 | — | *init* — deploy-stage02 · AQP-BOOT Step0 WireImcAndGovernor | — | `Deploy/2_Init/` · `REPL/deploy-stage02.repl:63` |
-| 27 | **26** | DEPLOY 1 modules: 03_DSP+ | 64,036 | `Deploy/1_Pure/26_deploy.pact` |
+| 27 | **26** | DEPLOY 1 modules: 03_DSP+ | 64,205 | `Deploy/1_Pure/26_deploy.pact` |

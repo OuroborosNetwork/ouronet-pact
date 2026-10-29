@@ -175,7 +175,16 @@ ROUNDS = {
         "imp_delta": [
             ("AQP-ANK",            "TS02-C3",   "P|TALOS-SUMMONER"),
             ("AQP-DSA",            "TS02-C3",   "P|TALOS-SUMMONER"),
+            # AQP-EVCT, 2026-10-29. NEW MODULE, so BOTH halves of its pairing are missing from any
+            # chain by construction -- there is nothing to re-measure. Its client entrypoints open
+            # with P|UEV_IMC (so TS02-C3 must be registered on it), and it WRITES nothing itself:
+            # every write is a forward call into AQP-FVT's XE_EvictDrip / XE_EvictPay, which are
+            # IMC-gated too (so its own SECURE must be registered on AQP-FVT, exactly as AQP-VCT's
+            # already is live). Omitting either leaves every AQP-EVCT|* wrapper dead on
+            # "None of the guards passed" -- the same symptom the 2026-10-02 re-measurement chased.
+            ("AQP-EVCT",           "TS02-C3",   "P|TALOS-SUMMONER"),
             ("AQP-FVT",            "AQP-DSA",   "P|DSA|CALLER"),
+            ("AQP-FVT",            "AQP-EVCT",  "SECURE"),
             ("AQP-FVT",            "MTX-AQP",   "P|MTX-AQP|CALLER"),
             ("AQP-FVT",            "TS02-C3",   "P|TALOS-SUMMONER"),
             ("AQP-POOL",           "TS02-C3",   "P|TALOS-SUMMONER"),
@@ -224,7 +233,15 @@ ROUNDS = {
         # the round it was written for ships. Verify with:
         #     python3 REPL/tools/_livemodules.py --check        (cache coverage: deployed y/n)
         # and treat anything already deployed as an UPGRADE (create-table stripped), never as new.
-        "new": [],
+        # 2026-10-29: AQP-EVCT is genuinely new -- `_livemodules.py --check` reports it NEVER
+        # PROBED because the source did not exist before today, so there is no chain state to
+        # upgrade and its two policy tables must be CREATED. This is the narrow case the emptying
+        # note above does not cover: the 2026-10-24 incident was a hardcoded belief that an
+        # ALREADY-SHIPPED family was new; this is a file added in the same commit as the entry.
+        # Re-verify with `_livemodules.py --check` after the round ships and REMOVE this line --
+        # leaving it in reproduces the "table already exists" failure on the round after.
+        # (AQP-RPSC, the other new module this round, needs no entry: it declares 0 deftables.)
+        "new": ["08b_EVCT.pact"],
         # Modules the deploy REPL chain never loads but that this round must ship anyway, and the
         # module they must follow. 09_AQP-INFO is the AQP cost-preview surface: 1,405 lines, 18
         # test files reference it, it names a bumped interface, and no chain deploys it. With AQP
@@ -494,6 +511,117 @@ ROUNDS = {
                 "as DPL-UR above. Swept for tree hygiene only.",
         },
     },
+    "2026-10-v18-eviction": {
+        "why": "REWARD EVICTION + THE RPS SPLIT. Two new modules and a four-interface cascade. "
+               "AQP-EVCT lets an FVT owner collect on behalf of every staker with a positive "
+               "claimable (owner ask, 2026-10-29: 'Evicts the Rewards to their beneficiaries, "
+               "effectively stripping all the reward tokens in the score aggregator'), and "
+               "AQP-RPSC carries the cost-preview surface that had to leave RPS to make room. "
+               "\n\n"
+               "WHY RPS HAD TO BE SPLIT, since the reason is a hard limit and not taste. "
+               "04_RPS.pact was 336,132 source bytes emitting 318,758 -- inside the planner's "
+               "320,000 cap by 1,242 bytes, with the eviction work still to add. The size charge "
+               "grows as the SEVENTH power, so there is no version of this round where RPS also "
+               "absorbs the eviction readers. Six cost readers moved to AQP-RPSC "
+               "(UDC_LadderPreview, URC_CollectForcedFixIgnis, URC_CollectLadderPreview, "
+               "URC_CollectTransferLegIgnis, URC_CollectXferIgnis, "
+               "URC_HeterogeneousLaneRouteIgnis) -- `_livemodules.py --diff` lists exactly those "
+               "six as DEPLOYED-only, which is the evidence the move is what changed and not "
+               "something else. "
+               "\n\n"
+               "AND THE COLLECT LADDER CHANGED, on an explicit owner directive given before any "
+               "code was written: 'Instead of coiling from the beneficiary, it should coil from "
+               "the AQP|SC_NAME. This way we would have a common core we could use.' That is "
+               "ATSU::XB_Coil (a C_Coil with separate funder and recipient) plus its cost mirror "
+               "URCi_CoilTo, which is why AutostakeUsageV3 -> V4 drags TS01-A, TS01-C2, "
+               "INFO-ONE+ and OUROBOROS into a round that otherwise has nothing to do with "
+               "autostaking. Measured: the ladder went 190,641 -> 208,674 gas (+9.5%) with the "
+               "payout amounts identical to 24 decimal places, then 208,611 after the collect "
+               "core was extracted. "
+               "\n\n"
+               "VERIFIED BY DIFFERENTIAL, not by inspection. REPL/Stage_02/[6.2.18]_AQP-EVICT.repl "
+               "runs three rounds in ONE transaction on one account -- prime, inject+collect, "
+               "inject+evict -- and asserts EXACT equality of the payout, the last-rps "
+               "checkpoint, the pending drain and both available-reward aggregates. One "
+               "transaction is load-bearing: block time does not advance, so a live stream drips "
+               "identically between the rounds. The owner's requirement was 'byte for byte "
+               "identical to what would happen when the user makes the reward claim himself'.",
+        # SCOPED BY INTERFACE NAME, not `all_modules`. Four bumps and two brand-new interfaces.
+        # The two new ones are listed for the same reason 00_AQP-SCHEMAS had to be in the
+        # 2026-09-aqp round: a NEW interface is referenced by its consumers and matches no OLD
+        # name, so without it here `round_modules()` drops the file that DECLARES it and the
+        # round ships modules referencing a type that was never deployed.
+        "interfaces": [
+            # ATSU gained XB_Coil + URCi_CoilTo for the ladder restructure.
+            "AutostakeUsageV4",
+            # RPS lost six cost readers to AQP-RPSC and both ladder branches now coil from
+            # AQP|SC_NAME.
+            "AcquisitionRewardPerShareV5",
+            # AQP-FVT gained the collect core (URC_CollectPoolId, XI_CollectDrip, XI_CollectPay,
+            # XI_CollectForcedFixPenalty) and the eviction surface (FVT|XE>EVICT-REWARD,
+            # XE_EvictDrip, XE_EvictPay).
+            "AcquisitionFarmsVaultsTreasuriesV5",
+            # TS02-C3 gained the four AQP-EVCT wrappers and P|ADMINISTRATIVE-SUMMONER.
+            "TalosStageTwo_ClientThreeV6",
+            # NEW: the module that now owns the cost previews RPS used to carry.
+            "AcquisitionRewardCostsV1",
+            # NEW: reward eviction itself.
+            "AcquisitionRewardEvictionV1",
+        ],
+        "init": [],
+        # AQP-EVCT is the ONLY new module with tables (two policy tables); AQP-RPSC declares
+        # zero deftables, which is why it needs no entry here. `_livemodules.py --check` reports
+        # both as NEVER PROBED -- correct, the sources did not exist before 2026-10-29 -- so
+        # there is no chain state to upgrade and `create-table` must stay ACTIVE for EVCT.
+        # REMOVE THIS LINE ONCE THE ROUND HAS SHIPPED: re-running it aborts transaction 1 with
+        # "Creation of user table ouronet-ns.AQP-EVCT_P|T failed because the table already
+        # exists", which is exactly how the 2026-10-24 incident went.
+        "new": ["08b_EVCT.pact"],
+        # Both halves are missing from the chain by construction -- AQP-EVCT has never been
+        # deployed. Without them every AQP-EVCT|* wrapper dies on "None of the guards passed".
+        "imp_delta": [
+            ("AQP-EVCT",           "TS02-C3",   "P|TALOS-SUMMONER"),
+            ("AQP-FVT",            "AQP-EVCT",  "SECURE"),
+        ],
+        "extra": [
+            # SAME ORDERING HAZARD AS EVERY PRIOR AQP ROUND, and it has bitten twice: AQP-INFO
+            # calls TS02-C3.URCi_IssueGenericEarningVault as a DIRECT module reference, which
+            # resolves at DEPLOY time (unlike `ref-X::`, which resolves at runtime). Anchored
+            # after the AQP core it lands before TS02-C3 and the round dies with "Module TS02-C3
+            # has no such member". It is in no deploy chain either way.
+            ("1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact", "04_TS02-C3.pact"),
+            # O-UI-FOURTEEN type-references AcquisitionRewardPerShareV5, so it must land after
+            # RPS. Live (shipped by PureV2/19) and in no deploy chain, same as AQP-INFO.
+            ("2_CITIZEN/Stage_Z/AppReads/OuronetUI/14_O-UI-FOURTEEN.pact", "04_RPS.pact"),
+        ],
+        "excluded": {
+            # O-UI-THREE names AutostakeUsageV4 (it reads ATSU) and is HELD BACK with the rest
+            # of the AppReads folder -- owner, 2026-09-24, read-layer migration in progress
+            # page by page. Note the asymmetry with O-UI-FOURTEEN in `extra` above: FOURTEEN is
+            # live and shipped, THREE is not.
+            "2_CITIZEN/Stage_Z/AppReads/OuronetUI/03_O-UI-THREE.pact":
+                "HELD BACK (owner, 2026-09-24) -- read-layer migration in progress personally, "
+                "page by page. Not live, not in this round.",
+            # Owner-ruled exclusions that predate this round and apply unchanged -- copied
+            # rather than referenced because ROUNDS entries are read standalone by `--round`.
+            "1_SOVEREIGN/STAGE_01/2_Core/00_DPMF.pact":
+                "ARCHIVE MODE (owner, 2026-09-21) -- NOT REDEPLOYED, ever; a deployed module "
+                "cannot be removed in Pact so the live copy stays as it is.",
+            "2_CITIZEN/6_OuronetBridge/03_CADUCEUS.pact":
+                "STAGE 3, NOT STARTED (owner, 2026-09-21) -- not live, nothing to upgrade.",
+            "2_CITIZEN/2_BloodshedMinter/01_BSD-L.pact": BLOODSHED,
+            "2_CITIZEN/2_BloodshedMinter/02_BSD-E.pact": BLOODSHED,
+            "2_CITIZEN/2_BloodshedMinter/03_BSD-R.pact": BLOODSHED,
+            "2_CITIZEN/2_BloodshedMinter/04_BSD-C.pact": BLOODSHED,
+            "2_CITIZEN/2_BloodshedMinter/05_BSD-SETS.pact": BLOODSHED,
+            "2_CITIZEN/3_NosferatuMinter/01_NOSFERATU.pact":
+                "MINT-ONLY, JOB DONE (owner, 2026-09-21) -- same disposition as BLOODSHED above.",
+            "2_CITIZEN/Stage_Z/01_DPL-UR.pact":
+                "READS-ONLY deployer module. BLOCKED ON A LIVE READ (owner, 2026-09-21).",
+            "2_CITIZEN/Stage_Z/02_EXPLORER.pact":
+                "WORK IN PROGRESS, read-only (owner, 2026-09-21). BLOCKED ON A LIVE READ.",
+        },
+    },
     "2026-09-full": {
         "why": "FULL REDEPLOY. The tree has diverged from the 2026-08-30 live snapshot in 127 "
                ".pact files, and two of those changes are breaking across the whole cake: 17 "
@@ -518,7 +646,15 @@ ROUNDS = {
         # the next round died on "Creation of user table ouronet-ns.AQP-ANK_P|T failed because the
         # table already exists."  Verify with `_livesurface.py` (one `(list-modules)` call) before
         # ever putting a name back here.
-        "new": [],
+        # 2026-10-29: AQP-EVCT is genuinely new -- `_livemodules.py --check` reports it NEVER
+        # PROBED because the source did not exist before today, so there is no chain state to
+        # upgrade and its two policy tables must be CREATED. This is the narrow case the emptying
+        # note above does not cover: the 2026-10-24 incident was a hardcoded belief that an
+        # ALREADY-SHIPPED family was new; this is a file added in the same commit as the entry.
+        # Re-verify with `_livemodules.py --check` after the round ships and REMOVE this line --
+        # leaving it in reproduces the "table already exists" failure on the round after.
+        # (AQP-RPSC, the other new module this round, needs no entry: it declares 0 deftables.)
+        "new": ["08b_EVCT.pact"],
         # ANCHORED AFTER TALOS, NOT AFTER THE AQP CORE. 09_AQP-INFO calls
         # TS02-C3.URCi_IssueGenericEarningVault as a DIRECT module reference, and a direct
         # reference resolves at DEPLOY time -- unlike `ref-X::`, which resolves at runtime.
@@ -561,7 +697,16 @@ ROUNDS = {
         "imp_delta": [
             ("AQP-ANK",            "TS02-C3",   "P|TALOS-SUMMONER"),
             ("AQP-DSA",            "TS02-C3",   "P|TALOS-SUMMONER"),
+            # AQP-EVCT, 2026-10-29. NEW MODULE, so BOTH halves of its pairing are missing from any
+            # chain by construction -- there is nothing to re-measure. Its client entrypoints open
+            # with P|UEV_IMC (so TS02-C3 must be registered on it), and it WRITES nothing itself:
+            # every write is a forward call into AQP-FVT's XE_EvictDrip / XE_EvictPay, which are
+            # IMC-gated too (so its own SECURE must be registered on AQP-FVT, exactly as AQP-VCT's
+            # already is live). Omitting either leaves every AQP-EVCT|* wrapper dead on
+            # "None of the guards passed" -- the same symptom the 2026-10-02 re-measurement chased.
+            ("AQP-EVCT",           "TS02-C3",   "P|TALOS-SUMMONER"),
             ("AQP-FVT",            "AQP-DSA",   "P|DSA|CALLER"),
+            ("AQP-FVT",            "AQP-EVCT",  "SECURE"),
             ("AQP-FVT",            "MTX-AQP",   "P|MTX-AQP|CALLER"),
             ("AQP-FVT",            "TS02-C3",   "P|TALOS-SUMMONER"),
             ("AQP-POOL",           "TS02-C3",   "P|TALOS-SUMMONER"),

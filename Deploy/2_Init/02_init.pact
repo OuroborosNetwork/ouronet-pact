@@ -22,7 +22,7 @@
 ;; SIGNERS: each call needs the TARGET module's admin key --
 ;;   `P|A_AddIMP` opens with `(with-capability (GOV|<TARGET>_ADMIN) ...)`.
 ;;
-;; 35 registration(s).
+;; 37 registration(s).
 ;; ---------------------------------------------------------------------------
 
 (namespace "ouronet-ns")
@@ -31,8 +31,12 @@
 (ouronet-ns.AQP-ANK.P|A_AddIMP (create-capability-guard (ouronet-ns.TS02-C3.P|TALOS-SUMMONER)))
 ;; TS02-C3 -> AQP-DSA
 (ouronet-ns.AQP-DSA.P|A_AddIMP (create-capability-guard (ouronet-ns.TS02-C3.P|TALOS-SUMMONER)))
+;; TS02-C3 -> AQP-EVCT
+(ouronet-ns.AQP-EVCT.P|A_AddIMP (create-capability-guard (ouronet-ns.TS02-C3.P|TALOS-SUMMONER)))
 ;; AQP-DSA -> AQP-FVT
 (ouronet-ns.AQP-FVT.P|A_AddIMP (create-capability-guard (ouronet-ns.AQP-DSA.P|DSA|CALLER)))
+;; AQP-EVCT -> AQP-FVT
+(ouronet-ns.AQP-FVT.P|A_AddIMP (create-capability-guard (ouronet-ns.AQP-EVCT.SECURE)))
 ;; MTX-AQP -> AQP-FVT
 (ouronet-ns.AQP-FVT.P|A_AddIMP (create-capability-guard (ouronet-ns.MTX-AQP.P|MTX-AQP|CALLER)))
 ;; TS02-C3 -> AQP-FVT

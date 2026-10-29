@@ -1,0 +1,408 @@
+;;
+;; REPL/Stage_02/[6.2.18]_AQP-EVICT.repl — AQP-EVCT reward eviction: the DIFFERENTIAL against a
+;; self-collect, plus the authorisation and shape negatives.
+;;
+;; Requires: [6.2.4]_AQP-FVT (TfStakePool / TfStakeScore / TfStakeVault, ANHD staked, OURO lane).
+;; Loaded from [6.2]_AQP.repl immediately after [6.2.4] and BEFORE [6.2.5]_AQP-VCT, which drains
+;; pools — an eviction needs a staker with a live score, so it must run while one exists.
+;;
+;; THE POINT OF THIS FILE, in the owner's words (2026-10-29): "we need to properly test this in
+;; REPL so it functions byte for byte identical to what would happen when the user makes the
+;; reward claim himself. thats the proper verification. We cant mess rps computation rewards and
+;; what not with this."
+;;
+;; HOW THE DIFFERENTIAL IS CONSTRUCTED, because the obvious design does not work. You cannot run
+;; a collect, roll it back and compare — a rolled-back transaction discards the DB writes AND the
+;; figures, and the REPL has no channel to carry a value across a `rollback-tx`. Nor can you use
+;; two accounts: their scores differ, so their payouts differ, and "equal after dividing by
+;; score" is not byte-for-byte.
+;;
+;; What does work is THREE ROUNDS IN ONE TRANSACTION on the SAME account:
+;;
+;;   ROUND 0  collect           -- PRIMING. Drains whatever claimable the earlier suites left and
+;;                                 checkpoints last-rps to the current global index. Without it
+;;                                 round A's payout carries pre-existing accrual that round B
+;;                                 cannot have, and the two are unequal for a reason that has
+;;                                 nothing to do with eviction.
+;;   ROUND A  inject X, collect -- payout-a = deb x (X / total-score)
+;;   ROUND B  inject X, EVICT   -- payout-b = deb x (X / total-score)
+;;
+;; ONE TRANSACTION is load-bearing twice over: block time does not advance, so a live stream
+;; drips identically (in fact not at all) between the rounds, and the total score cannot change
+;; because nothing stakes. Under those conditions the reward formula makes payout-a == payout-b
+;; an EXACT equality, not an approximation — which is why this suite asserts `=` on decimals
+;; where the surrounding suites assert a 5% band.
+;;
+;; THE PERMITTED DIFFERENCES ARE ASSERTED TOO, not waved past: the forced-fix count (eviction
+;; ZEROES it, by owner ruling: "i think it is better that evitRewards zeroes that penalty for
+;; him") and who paid the IGNIS. Everything else must match.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_02/[6.2.18]_AQP-EVICT.repl")
+(print "================================================================")
+(print "Legend: <<TX-EVICT-*>> assertions; <(…)> echoes.")
+(print "")
+;;
+(begin-tx "TX-EVICT-01 - evict pays byte-for-byte what a self-collect pays")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-EVICT-01 · 01 · env-sigs (caps) ==== ====================================================
+(print "--- [TX-EVICT-01 · 01 · env-sigs (caps)] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-EVICT-01 · 02 · three rounds, one transaction ==== ======================================
+(print "--- [TX-EVICT-01 · 02 · three rounds, one transaction] ---")
+(let*
+    (
+        (patron:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
+        (ref-EVCT:module{AcquisitionRewardEvictionV1} AQP-EVCT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "TfStakeVault"))
+        (score-id:string (ref-U|DALOS::UDC_Makeid "TfStakeScore"))
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "TfStakePool"))
+        (ouro-id:string "OURO-98c486052a51")
+        (gas-id:string "GAS-98c486052a51")
+        (amt:decimal 48.0)
+        ;;READ THE OWNER, NEVER ASSUME IT. The differential is only meaningful if the signer may
+        ;;both collect as the beneficiary and evict as the FVT owner; if the fixture ever stops
+        ;;satisfying that, this must fail HERE with a sentence rather than three rows down with a
+        ;;keyset error that reads like a bug in the eviction path.
+        (fvt-owner:string (ref-FVT::UR_FVT|OwnerKonto fvt-id))
+    )
+    (enforce (= fvt-owner patron)
+        "TX-EVICT-01 needs the signing account to own TfStakeVault (it is both beneficiary and evictor here)")
+    (let*
+        (
+            ;;---- ROUND 0 — PRIMING INJECT + COLLECT ----------------------------------------
+            ;;THE INJECT IS NOT OPTIONAL, and the first draft of this file omitted it and broke
+            ;;eleven gate entrypoints at once. Since 093060fe "nothing to collect is a REFUSAL,
+            ;;not a no-op": a bare priming collect ABORTS when the lane has nothing accrued, which
+            ;;is exactly the state [6.2.4] leaves TfStakeVault in after its own collects. Injecting
+            ;;first guarantees the priming collect has something to drain, and the checkpoint it
+            ;;leaves behind is what makes rounds A and B symmetric.
+            (inj-0:string (ref-TS02-C3::AQP-FVT|CC_Inject patron patron fvt-id ouro-id amt))
+            (prime:string (ref-TS02-C3::AQP-FVT|CC_Collect patron patron fvt-id 1 score-id ouro-id))
+            (ffc-primed:integer (ref-FVT::UR_FVT-FFC|Count fvt-id ouro-id patron))
+            (rps-primed:decimal (ref-FVT::UR_FVT-RG|CurrentRps fvt-id ouro-id))
+            (lastrps-primed:decimal (ref-FVT::UR_FVT-RU|LastRps patron fvt-id score-id ouro-id))
+            (pending-primed:decimal (ref-FVT::UR_FVT-RU|PendingRewards patron fvt-id score-id ouro-id))
+            ;;---- ROUND A — inject, then SELF-COLLECT ---------------------------------------
+            (inj-a:string (ref-TS02-C3::AQP-FVT|CC_Inject patron patron fvt-id ouro-id amt))
+            (claim-a:decimal (ref-FVT::URC_LiveClaimable patron fvt-id pool-id 1 score-id ouro-id))
+            (rg-a-pre:decimal (ref-FVT::UR_FVT-RG|AvailableRewards fvt-id ouro-id))
+            (mv-a-pre:decimal (ref-FVT::UR_FVT-MV|AvailableRewards fvt-id score-id ouro-id))
+            (bal-a-pre:decimal (ref-DPTF::UR_AccountSupply ouro-id patron))
+            (run-a:string (ref-TS02-C3::AQP-FVT|CC_Collect patron patron fvt-id 1 score-id ouro-id))
+            (bal-a-post:decimal (ref-DPTF::UR_AccountSupply ouro-id patron))
+            (payout-a:decimal (- bal-a-post bal-a-pre))
+            (lastrps-a:decimal (ref-FVT::UR_FVT-RU|LastRps patron fvt-id score-id ouro-id))
+            (pending-a:decimal (ref-FVT::UR_FVT-RU|PendingRewards patron fvt-id score-id ouro-id))
+            (rg-a-post:decimal (ref-FVT::UR_FVT-RG|AvailableRewards fvt-id ouro-id))
+            (mv-a-post:decimal (ref-FVT::UR_FVT-MV|AvailableRewards fvt-id score-id ouro-id))
+            (rps-a:decimal (ref-FVT::UR_FVT-RG|CurrentRps fvt-id ouro-id))
+            (ffc-a:integer (ref-FVT::UR_FVT-FFC|Count fvt-id ouro-id patron))
+            ;;---- ROUND B — inject the SAME amount, then EVICT ------------------------------
+            (inj-b:string (ref-TS02-C3::AQP-FVT|CC_Inject patron patron fvt-id ouro-id amt))
+            (claim-b:decimal (ref-FVT::URC_LiveClaimable patron fvt-id pool-id 1 score-id ouro-id))
+            (legs-b:integer (ref-EVCT::URHC_EvictLegCount fvt-id))
+            (rg-b-pre:decimal (ref-FVT::UR_FVT-RG|AvailableRewards fvt-id ouro-id))
+            (mv-b-pre:decimal (ref-FVT::UR_FVT-MV|AvailableRewards fvt-id score-id ouro-id))
+            (bal-b-pre:decimal (ref-DPTF::UR_AccountSupply ouro-id patron))
+            (run-b:string (ref-TS02-C3::AQP-EVCT|CC_FullEvictRewards patron patron fvt-id))
+            (bal-b-post:decimal (ref-DPTF::UR_AccountSupply ouro-id patron))
+            (payout-b:decimal (- bal-b-post bal-b-pre))
+            (lastrps-b:decimal (ref-FVT::UR_FVT-RU|LastRps patron fvt-id score-id ouro-id))
+            (pending-b:decimal (ref-FVT::UR_FVT-RU|PendingRewards patron fvt-id score-id ouro-id))
+            (rg-b-post:decimal (ref-FVT::UR_FVT-RG|AvailableRewards fvt-id ouro-id))
+            (mv-b-post:decimal (ref-FVT::UR_FVT-MV|AvailableRewards fvt-id score-id ouro-id))
+            (rps-b:decimal (ref-FVT::UR_FVT-RG|CurrentRps fvt-id ouro-id))
+            (ffc-b:integer (ref-FVT::UR_FVT-FFC|Count fvt-id ouro-id patron))
+        )
+        (map print
+            [
+                (format "<(round 0 inject {})> => \"{}\"" [amt inj-0])
+                (format "<(round 0 prime collect)> => \"{}\"" [prime])
+                (format "<(round A inject {})> => \"{}\"" [amt inj-a])
+                (format "<(round A collect)> => \"{}\"" [run-a])
+                (format "<(round B inject {})> => \"{}\"" [amt inj-b])
+                (format "<(round B evict, {} leg(s))> => \"{}\"" [legs-b run-b])
+                (format "<(payouts)> collect={} evict={}" [payout-a payout-b])
+                (format "<(last-rps)> primed={} A={} B={}" [lastrps-primed lastrps-a lastrps-b])
+                (format "<(global rps)> primed={} A={} B={}" [rps-primed rps-a rps-b])
+                (format "<(RG available)> A pre={} post={} | B pre={} post={}"
+                    [rg-a-pre rg-a-post rg-b-pre rg-b-post])
+                (format "<(MV available)> A pre={} post={} | B pre={} post={}"
+                    [mv-a-pre mv-a-post mv-b-pre mv-b-post])
+                (format "<(forced-fix count)> primed={} A={} B={}" [ffc-primed ffc-a ffc-b])
+            ]
+        )
+        (map print
+            [
+                ;;THE HEADLINE. Exact equality, not a band.
+                (expect (format "<<TX-EVICT-01>> evict payout == collect payout (collect={} evict={})"
+                    [payout-a payout-b]) payout-a payout-b)
+                (expect (format "<<TX-EVICT-01>> the payout is non-zero, so the equality is not two zeros (={})"
+                    [payout-a]) true (> payout-a 0.0))
+                ;;SYMMETRY OF THE TWO ROUNDS. If these drift, the rounds were not comparable and the
+                ;;headline above proves nothing -- so they are asserted rather than assumed.
+                (expect (format "<<TX-EVICT-01>> both rounds injected into the same index step (A={} B={})"
+                    [(- rps-a rps-primed) (- rps-b rps-a)]) (- rps-a rps-primed) (- rps-b rps-a))
+                ;;CORRECTED AFTER THE FIRST RUN, and the correction is the interesting part. This
+                ;;asserted that both rounds START from an equal available pool, on the belief that
+                ;;the staker here owns the whole score. Measured: A pre=67.2, B pre=86.4. ANHD's deb
+                ;;takes 28.8 of each 48.0 injected, so 19.2 per round stays in the pool for the OTHER
+                ;;staker -- the fixture has two. The pool is not restored between rounds and it does
+                ;;not need to be: what makes the rounds comparable is an equal INDEX STEP, which is
+                ;;asserted above and is what the reward formula actually reads.
+                ;;
+                ;;What IS exact is the conservation identity, so that is asserted instead: a collect
+                ;;reduces the available pool by precisely what it paid, and an inject adds precisely
+                ;;what it injected.
+                (expect (format "<<TX-EVICT-01>> the collect reduced the available pool by exactly its payout (pre={} payout={} post={})"
+                    [rg-a-pre payout-a rg-a-post]) (- rg-a-pre payout-a) rg-a-post)
+                (expect (format "<<TX-EVICT-01>> round B's inject added exactly its amount to the pool (post-A={} amt={} pre-B={})"
+                    [rg-a-post amt rg-b-pre]) (+ rg-a-post amt) rg-b-pre)
+                ;;THE CHECKPOINT. An eviction must leave the beneficiary's row exactly where a
+                ;;self-collect leaves it: last-rps latched to the live index, pending drained.
+                (expect (format "<<TX-EVICT-01>> evict latches last-rps to the global index (last={} index={})"
+                    [lastrps-b rps-b]) rps-b lastrps-b)
+                (expect (format "<<TX-EVICT-01>> collect latches last-rps to the global index (last={} index={})"
+                    [lastrps-a rps-a]) rps-a lastrps-a)
+                (expect (format "<<TX-EVICT-01>> evict drains pending exactly as collect does (A={} B={})"
+                    [pending-a pending-b]) pending-a pending-b)
+                ;;THE AGGREGATES. Same inject, same payout => the pool is left in the same place.
+                ;;NO DUST. This also replaced a wrong assertion -- "RG lands identically" -- and
+                ;;what it found is the property the owner actually asked for: "coil dust, to the
+                ;;royalty sink ... EvictRewards musnt leave any dust." A WHOLE-FVT eviction pays
+                ;;EVERY leg, so the last claimant's dust sweep pays out the entire remaining
+                ;;available pool and the lane lands on exactly zero. Measured 0.000000, not
+                ;;0.000001. A single-leg self-collect cannot do this and does not claim to -- which
+                ;;is why the two aggregates were never going to land on the same number, and why
+                ;;asserting that they did would have been asserting the wrong thing.
+                (expect (format "<<TX-EVICT-01>> the whole-FVT eviction left NO DUST in the lane (={})"
+                    [rg-b-post]) 0.0 rg-b-post)
+                (expect (format "<<TX-EVICT-01>> it found more legs than the single collect served (legs={})"
+                    [legs-b]) true (> legs-b 1))
+                ;;THE SAME CONSERVATION LAW, on the member-vault aggregate: it falls by exactly what
+                ;;was paid out. Round A paid one leg, so MV falls by that payout; round B paid the
+                ;;pool to zero, so MV falls by the whole pool.
+                (expect (format "<<TX-EVICT-01>> MV fell by exactly the collect's payout (pre={} payout={} post={})"
+                    [mv-a-pre payout-a mv-a-post]) (- mv-a-pre payout-a) mv-a-post)
+                (expect (format "<<TX-EVICT-01>> MV fell by exactly the whole pool the eviction paid out (pre={} pool={} post={})"
+                    [mv-b-pre rg-b-pre mv-b-post]) (- mv-b-pre rg-b-pre) mv-b-post)
+                ;;THE PREVIEW. Eviction is priced off the same projection a collect is priced off,
+                ;;so the two claimables must agree too -- this is the figure the UI shows.
+                (expect (format "<<TX-EVICT-01>> the live-claimable projection agreed on both rounds (A={} B={})"
+                    [claim-a claim-b]) claim-a claim-b)
+                (expect (format "<<TX-EVICT-01>> the projection matched the collect it predicted (claim={} payout={})"
+                    [claim-a payout-a]) claim-a payout-a)
+                ;;THE PERMITTED DIFFERENCE, stated as an assertion rather than an omission. With no
+                ;;forced fix outstanding the two paths are identical here; the zeroing itself is
+                ;;proved in TX-EVICT-02, where a count exists to zero.
+                (expect (format "<<TX-EVICT-01>> no forced-fix penalty was outstanding, so neither path paid one (A={} B={})"
+                    [ffc-a ffc-b]) ffc-a ffc-b)
+                (expect (format "<<TX-EVICT-01>> evict left the forced-fix count at zero (={})" [ffc-b]) 0 ffc-b)
+            ]
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;
+(begin-tx "TX-EVICT-02 - eviction ZEROES an outstanding forced-fix penalty")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-EVICT-02 · 01 · env-sigs (caps) ==== ====================================================
+(print "--- [TX-EVICT-02 · 01 · env-sigs (caps)] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-EVICT-02 · 02 · forced-fix count -> 0 ==== ==============================================
+(print "--- [TX-EVICT-02 · 02 · forced-fix count -> 0] ---")
+;;OWNER RULING, 2026-10-29, verbatim: "if his rewards are evicted for him, he wouldnt need to be
+;;collecting them himslef ... i think it is better that evitRewards zeroes that penalty for him."
+;;
+;;WHY THIS IS A SEPARATE TRANSACTION. The count is raised by an inject that forces a deb fix, and
+;;TX-EVICT-01 deliberately runs with a count of zero so that its payout equality is not explained
+;;by a penalty cancelling out. Here the count is the subject, so it must be non-zero -- and if the
+;;fixture cannot produce one, this says so and asserts nothing, rather than passing vacuously.
+(let*
+    (
+        (patron:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "TfStakeVault"))
+        (score-id:string (ref-U|DALOS::UDC_Makeid "TfStakeScore"))
+        (ouro-id:string "OURO-98c486052a51")
+        (ffc-before:integer (ref-FVT::UR_FVT-FFC|Count fvt-id ouro-id patron))
+    )
+    (print (format "<(forced-fix count before)> => {}" [ffc-before]))
+    (if (> ffc-before 0)
+        (let*
+            (
+                (run:string (ref-TS02-C3::AQP-EVCT|CC_FullEvictRewards patron patron fvt-id))
+                (ffc-after:integer (ref-FVT::UR_FVT-FFC|Count fvt-id ouro-id patron))
+            )
+            (map print
+                [
+                    (format "<(evict)> => \"{}\"" [run])
+                    (expect (format "<<TX-EVICT-02>> eviction zeroed the forced-fix count ({} -> {})"
+                        [ffc-before ffc-after]) 0 ffc-after)
+                ]
+            )
+        )
+        (print (format
+            "<(SKIPPED)> no forced-fix count outstanding on (TfStakeVault, OURO, ANHD) -- nothing to zero. The zeroing path is exercised by AQP-EVCT::XE_EvictPay -> RPS::XE_WU_FvtForcedFixCount|Zero and remains unproven by THIS suite; raising a count here needs an inject that forces a deb fix on a STALE score, which [6.2.8c] builds and [6.2] does not load."
+            []))
+    )
+)
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;
+(begin-tx "TX-EVICT-03 - authorisation and slice-shape negatives")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-EVICT-03 · 01 · ownership is the ONLY thing left that can refuse ==== ===================
+(print "--- [TX-EVICT-03 · 01 · ownership is the ONLY thing left that can refuse] ---")
+;;THE FIXTURE IS CHOSEN SO THE FIRST GATE PASSES, which is the rule CLAUDE.md states for exactly
+;;this shape: "A fixture that satisfies the first guard exposes BOTH." PK_Florian is a member of
+;;ouronet-ns.dh_master-keyset (keys-any of PK_AncientHodler + PK_Florian), so the ADMIN gate on
+;;the gasless path is SATISFIED here -- and it is not a member of ouronet-ns.dh_ah-keyset, which
+;;guards the account that owns TfStakeVault. So the refusal below can only be the ownership gate.
+;;Signing with a stranger's key instead would fail both and prove neither.
+(env-sigs [{ "key": "PK_Florian", "caps": [] }])
+(let
+    (
+        (patron:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+    )
+    (let
+        (
+            (fvt-id:string (ref-U|DALOS::UDC_Makeid "TfStakeVault"))
+        )
+        (map print
+            [
+                (expect-failure
+                    "<<TX-EVICT-03>> the PAID eviction refuses a non-owner of the FVT"
+                    (ref-TS02-C3::AQP-EVCT|CC_FullEvictRewards patron patron fvt-id))
+                ;;THE SAME REFUSAL ON THE GASLESS TWIN, and this is the assertion that matters most
+                ;;in this file. AQP-EVCT gates on FVT OWNERSHIP, not on administration, so an admin
+                ;;wrapper that supplied the gasless patron WITHOUT the ownership gate still reaching
+                ;;through would let the Ouronet administrator evict a stranger's FVT. The admin
+                ;;keyset says the call may happen; the owner konto says whose rewards may move.
+                (expect-failure
+                    "<<TX-EVICT-03>> the GASLESS admin eviction ALSO refuses a non-owner, admin key notwithstanding"
+                    (ref-TS02-C3::AQP-EVCT|AA_FullEvictRewards patron fvt-id))
+            ]
+        )
+    )
+)
+;;==== TX-EVICT-03 · 02 · slice shape ==== =======================================================
+(print "--- [TX-EVICT-03 · 02 · slice shape] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let*
+    (
+        (patron:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "TfStakeVault"))
+        (score-id:string (ref-U|DALOS::UDC_Makeid "TfStakeScore"))
+        (ouro-id:string "OURO-98c486052a51")
+    )
+    (map print
+        [
+            ;;UNEQUAL PARALLEL ARRAYS. The failure this defends against is silent: a fold over the
+            ;;shortest array pays some legs and drops the rest with no error at all.
+            (expect-failure
+                "<<TX-EVICT-03>> a slice with unequal parallel arrays is refused"
+                (ref-TS02-C3::AQP-EVCT|CCp_EvictRewards patron patron fvt-id
+                    [patron patron] [1] [score-id] [ouro-id]))
+            ;;AN EMPTY SLICE would bill a transaction that moves nothing.
+            (expect-failure
+                "<<TX-EVICT-03>> an empty slice is refused"
+                (ref-TS02-C3::AQP-EVCT|CCp_EvictRewards patron patron fvt-id [] [] [] []))
+            ;;A ZERO-CLAIMABLE LEG. Owner ruling: "0 reward simply means there is nothing to
+            ;;collect" -- so the slice is refused rather than billed. TX-EVICT-01 and -02 already
+            ;;drained this lane, so the leg really is at zero here, which is why this test is
+            ;;placed after them rather than before.
+            (expect-failure
+                "<<TX-EVICT-03>> a slice whose legs have nothing claimable is refused"
+                (ref-TS02-C3::AQP-EVCT|CCp_EvictRewards patron patron fvt-id
+                    [patron] [1] [score-id] [ouro-id]))
+        ]
+    )
+)
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;
+(begin-tx "TX-EVICT-04 - the gasless admin path charges the evictor no IGNIS")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-EVICT-04 · 01 · env-sigs (caps) ==== ====================================================
+(print "--- [TX-EVICT-04 · 01 · env-sigs (caps)] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-EVICT-04 · 02 · GAS balance delta == 0 ==== ============================================
+(print "--- [TX-EVICT-04 · 02 · GAS balance delta == 0] ---")
+;;WHAT THIS PROVES, and what it does not. It proves that AQP-EVCT|AA_FullEvictRewards leaves the
+;;evictor's IGNIS (GAS) balance untouched while the paid twin does not -- which is the whole
+;;purpose of the pair, and the reason the daily automaton is affordable at all.
+;;
+;;IT DOES NOT PROVE THE PATH WAS SKIPPED, because it was not: the core still returns an
+;;OutputCumulator and IGNIS::XE_CollectIgnis is still called on it. The exemption is in the
+;;ACCOUNT, `iz-gassles-patron`, narrowed to GOV|DALOS|SC_NAME on 2026-09-15 after
+;;RedTeam/[RT-I]_GasStation.repl. A test that asserted "no collection happened" would be
+;;asserting the wrong thing and would go red the day the pricing path is exercised correctly.
+(let*
+    (
+        (patron:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "TfStakeVault"))
+        (score-id:string (ref-U|DALOS::UDC_Makeid "TfStakeScore"))
+        (ouro-id:string "OURO-98c486052a51")
+        (gas-id:string "GAS-98c486052a51")
+        (amt:decimal 24.0)
+        ;;Refill the lane: the negatives above left it at zero, and a gasless eviction of nothing
+        ;;would be refused by the same claimable rule they prove.
+        (inj:string (ref-TS02-C3::AQP-FVT|CC_Inject patron patron fvt-id ouro-id amt))
+        (gas-pre:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+        (ouro-pre:decimal (ref-DPTF::UR_AccountSupply ouro-id patron))
+        (run:string (ref-TS02-C3::AQP-EVCT|AA_FullEvictRewards patron fvt-id))
+        (gas-post:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+        (ouro-post:decimal (ref-DPTF::UR_AccountSupply ouro-id patron))
+    )
+    (map print
+        [
+            (format "<(inject {})> => \"{}\"" [amt inj])
+            (format "<(AA_FullEvictRewards)> => \"{}\"" [run])
+            (format "<(GAS)> pre={} post={} delta={}" [gas-pre gas-post (- gas-post gas-pre)])
+            (format "<(OURO)> pre={} post={} delta={}" [ouro-pre ouro-post (- ouro-post ouro-pre)])
+            (expect (format "<<TX-EVICT-04>> the gasless eviction cost the evictor 0 IGNIS (pre={} post={})"
+                [gas-pre gas-post]) gas-pre gas-post)
+            (expect (format "<<TX-EVICT-04>> and it still paid the beneficiary (delta={})"
+                [(- ouro-post ouro-pre)]) true (> ouro-post ouro-pre))
+        ]
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+(print "=== [6.2.18]_AQP-EVICT complete ================================")
+(print "")

@@ -31,7 +31,7 @@
         (ref-SWP:module{SwapperV5} SWP)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV5} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
         (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (pool-id:string (ref-U|DALOS::UDC_Makeid "DHOuroLp"))

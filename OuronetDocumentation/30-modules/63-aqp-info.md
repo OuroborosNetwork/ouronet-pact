@@ -4,7 +4,7 @@
 
 Operation previews for the acquisition family — what an operation will do and cost, before anything is signed.
 
-Part of the **acquisition-pool family** — ten modules, the largest subsystem in the system. Full treatment: `25-defi/03-acquisition-pools.md`.
+Part of the **acquisition-pool family** — twelve modules, the largest subsystem in the system. Full treatment: `25-defi/03-acquisition-pools.md`.
 
 ## Where it sits
 
@@ -32,7 +32,9 @@ A leaf read-only module deployed after everything it describes. It has no interf
 |---|---:|---|---|
 | *(unclassified)* | 105 | carries no StoicSyntax prefix | `CT_Bar`, `GOV|Demiurgoi`, `INFO_AQP-ANK|IssueNonFungibleAnchor`, `INFO_AQP-ANK|IssueNonFungibleSetAnchor`, `INFO_AQP-ANK|IssueSemiFungibleAnchor`, `INFO_AQP-ANK|IssueTrueFungibleAnchor` …+99 |
 
-> Repository and chain agree on every declared shape.
+> **The repository differs from what is deployed.** Everything above describes the CHAIN, which is what a caller actually reaches. The difference is stated rather than resolved:
+>
+> - **functions** in the repository only: `INFO_AQP-EVCT|AdminEvictRewards`, `INFO_AQP-EVCT|AdminFullEvictRewards`, `INFO_AQP-EVCT|EvictRewards`, `INFO_AQP-EVCT|FullEvictRewards`
 
 **Capabilities** -- 2
 

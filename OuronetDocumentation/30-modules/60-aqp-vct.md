@@ -6,7 +6,7 @@ Force-unstaking an entire pool and returning every position to its owner.
 
 It has its own module because it unwinds in a **different order** than staking: staking transfers custody first, vacating transfers it **last**, after trackers, scores and checkpoints are settled.
 
-Part of the **acquisition-pool family** — ten modules, the largest subsystem in the system. Full treatment: `25-defi/03-acquisition-pools.md`.
+Part of the **acquisition-pool family** — twelve modules, the largest subsystem in the system. Full treatment: `25-defi/03-acquisition-pools.md`.
 
 ## Where it sits
 

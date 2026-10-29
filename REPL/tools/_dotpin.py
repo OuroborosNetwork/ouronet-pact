@@ -90,6 +90,13 @@ KNOWN = {
     # the same thing from the other direction: cross-module calls use `::`, and this registry is
     # the ledger of exceptions. So the exception stops at AQP-RPSC's own inherited reads.
     ("04b_RPSC.pact", "RPS"),
+    # AQP-EVCT composes the eviction leg list out of readers that are MODULE-ONLY on their owners:
+    # RPS::URHC_BuildInjectScorePlans and RPS::URC_LiveClaimable are not on
+    # AcquisitionRewardPerShareV5, and AQP-FVT::URC_CollectPoolId is not on its interface either.
+    # URC_LiveClaimable in particular CANNOT be declared -- it is the projection reader the plan
+    # filter needs, and the collect path reaches its siblings the same way. Everything EVCT WRITES
+    # goes through declared XE_ entrypoints on a modref; only these reads are dot calls.
+    ("08b_EVCT.pact", "RPS"), ("08b_EVCT.pact", "AQP-FVT"),
     # INHERITED, not new. These four were 04_RPS.pact's, and the 25 bodies that moved brought
     # their dot calls with them -- so the edges changed OWNER rather than appearing. RPS's copies
     # are deleted above, because after the split it makes none of them.

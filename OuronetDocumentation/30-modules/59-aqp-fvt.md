@@ -6,7 +6,7 @@ The reward distributor. One field selects which of three it is, and the differen
 
 The two levels exist because a farm's members are pools of different sizes, and splitting by size first is the only way a large pool does not swallow a small one.
 
-Part of the **acquisition-pool family** — ten modules, the largest subsystem in the system. Full treatment: `25-defi/03-acquisition-pools.md`.
+Part of the **acquisition-pool family** — twelve modules, the largest subsystem in the system. Full treatment: `25-defi/03-acquisition-pools.md`.
 
 ## Where it sits
 

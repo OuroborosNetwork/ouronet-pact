@@ -4,7 +4,7 @@
 
 A delegation layer: an agency is one member of a farm, delegators stake into it, and an operator runs infrastructure for a per-mille fee bounded between **1% and 50%**.
 
-Part of the **acquisition-pool family** — ten modules, the largest subsystem in the system. Full treatment: `25-defi/03-acquisition-pools.md`.
+Part of the **acquisition-pool family** — twelve modules, the largest subsystem in the system. Full treatment: `25-defi/03-acquisition-pools.md`.
 
 ## Where it sits
 

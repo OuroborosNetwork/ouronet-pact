@@ -2,7 +2,7 @@
 ;; History/shared registry: 1_SOVEREIGN/STAGE_02/0_Interfaces/03_Talos.pact
 ;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface TalosStageTwo_ClientThreeV5
+(interface TalosStageTwo_ClientThreeV6
     @doc "Exposes Stage Two Third Batch of Client Functions: \
         \ the AcquisitionPools Client Functions"
 
@@ -333,6 +333,45 @@
     (defun AQP-FVT|CC_Collect:string
         (patron:string executor:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
     )
+    ;;
+    ;;  [AQP-EVCT]
+    ;;
+    ;;REWARD EVICTION, 2026-10-29. FOUR wrappers over TWO core functions, and the pairing is the
+    ;;shape the owner asked for: "we could create 2 variants for this AA_/AAp that uses the gasless
+    ;;patron, signaling its an Admin call, or CC_/CCp_ signaling its not an admin call for which
+    ;;ignis has to be paid, and we can use the same name in the Talos orchestrator for it."
+    ;;
+    ;;ONE CORE PER SHAPE; ONLY THE PATRON AND THE GATE DIFFER. The AA_/AAp_ pair supplies
+    ;;GOV|DALOS|SC_NAME -- the single account IGNIS::XE_CollectIgnis exempts via
+    ;;`iz-gassles-patron` -- so the collection PATH still runs and the cumulator is still
+    ;;consumed; it simply is not charged. The A-variant therefore cannot drift from the
+    ;;C-variant's pricing, because it is the same call with a different account in slot 0.
+    ;;
+    ;;THE A-VARIANTS ARE ADMIN-GATED, AND THAT IS NOT DECORATION. AQP-EVCT's own gate is FVT
+    ;;OWNERSHIP, not administration -- so a gasless wrapper carrying only P|TS would hand every
+    ;;FVT owner in the system an unmetered IGNIS path, which is precisely the door narrowed to one
+    ;;account on 2026-09-15 after RedTeam/[RT-I]_GasStation.repl. They gate on
+    ;;P|ADMINISTRATIVE-SUMMONER instead (TS01-A's pattern, added to this module for them): the
+    ;;admin keyset says the call MAY happen, <executor> says who made it happen, and AQP-EVCT still
+    ;;requires that executor to own the FVT.
+    ;;
+    ;;TWO WRAPPERS RATHER THAN ONE WITH A BOOL: IG|COMPONENTS and the price sheet are keyed by
+    ;;wrapper name, so a single entrypoint whose price is sometimes 0 and sometimes N has no honest
+    ;;row.
+    (defun AQP-EVCT|CCp_EvictRewards:string
+        (patron:string executor:string fvt-id:string beneficiaries:[string]
+         score-entity-types:[integer] score-entity-ids:[string] reward-dptf-ids:[string])
+    )
+    (defun AQP-EVCT|AAp_EvictRewards:string
+        (executor:string fvt-id:string beneficiaries:[string]
+         score-entity-types:[integer] score-entity-ids:[string] reward-dptf-ids:[string])
+    )
+    (defun AQP-EVCT|CC_FullEvictRewards:string
+        (patron:string executor:string fvt-id:string)
+    )
+    (defun AQP-EVCT|AA_FullEvictRewards:string
+        (executor:string fvt-id:string)
+    )
     (defun AQP-DSA|C_DefineDelegationVault:string
         (patron:string executor:string fvt-id:string model-id:string unit-score:integer)
     )
@@ -446,7 +485,7 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements TalosStageTwo_ClientThreeV5)
+    (implements TalosStageTwo_ClientThreeV6)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -500,6 +539,22 @@
     (defcap P|TALOS-SUMMONER ()
         @doc "Talos Summoner Capability"
         true
+    )
+    (defcap P|ADMINISTRATIVE-SUMMONER ()
+        @doc "ADMIN-GATED Talos summoner — P|TS plus this module's deploy keyset. Added 2026-10-29 for \
+            \ the gasless reward-eviction pair (AQP-EVCT|AAp_EvictRewards, AQP-EVCT|AA_FullEvictRewards), \
+            \ copying TS01-A's capability of the same name. \
+            \ \
+            \ WHY A SEPARATE GATE EXISTS AT ALL: every other admin path in Talos reaches an `A_` core \
+            \ that enforces its own GOV keyset, so P|TS is sufficient there. Reward eviction does not \
+            \ -- AQP-EVCT gates on FVT OWNERSHIP -- so without this, a wrapper that supplies the \
+            \ gasless patron would be an unmetered IGNIS path open to every FVT owner. \
+            \ \
+            \ It names no account: <executor> is the actor and AQP-EVCT still checks that it owns the \
+            \ FVT. Composition order is authorisation-then-validation by way of P|TS, which carries \
+            \ the GAP check."
+        (compose-capability (P|TS))
+        (compose-capability (GOV|TS02-C3_ADMIN))
     )
     ;;{P5}  functions
     (defun P|Info ()
@@ -622,6 +677,7 @@
                 (ref-P|ATSU:module{OuronetPolicyV2} ATSU)
                 (ref-P|MTX-AQP:module{OuronetPolicyV2} MTX-AQP)
                 (ref-P|DSA:module{OuronetPolicyV2} AQP-DSA)
+                (ref-P|EVCT:module{OuronetPolicyV2} AQP-EVCT)
                 (ref-P|IGNIS:module{OuronetPolicyV2} IGNIS)
                 (mg:guard (create-capability-guard (P|TALOS-SUMMONER)))
             )
@@ -636,6 +692,10 @@
             (ref-P|MTX-AQP::P|A_AddIMP mg)
             ;; DSA vault/agency wrappers below — register the Talos summoner as an allowed IMC caller of AQP-DSA.
             (ref-P|DSA::P|A_AddIMP mg)
+            ;; Reward-eviction wrappers below — register the Talos summoner as an allowed IMC caller
+            ;; of AQP-EVCT. Both of its client entrypoints open with P|UEV_IMC, so without this row
+            ;; every AQP-EVCT|* wrapper dies with "None of the guards passed".
+            (ref-P|EVCT::P|A_AddIMP mg)
             ;;IGNIS RESTRUCTURE 2026-09-20: the collectors became protected X_ functions
             ;;behind `P|UEV_IMC`, so every module that bills must be a registered IMP peer
             ;;of IGNIS or the fee call dies with "None of the guards passed".
@@ -3341,6 +3401,120 @@
                         [payout reward-dptf-id fvt-id score-entity-type score-entity-id]
                     )
                 )
+            )
+        )
+    )
+    ;;
+    ;;  [AQP-EVCT -- Reward Eviction]
+    ;;
+    ;;Protection: Class 3 — Custom: P|TS
+    (defun AQP-EVCT|CCp_EvictRewards:string
+        (patron:string executor:string fvt-id:string beneficiaries:[string]
+         score-entity-types:[integer] score-entity-ids:[string] reward-dptf-ids:[string])
+        @doc "ONE EVICTION SLICE: the FVT owner collects on behalf of the listed stakers, so each one \
+            \ receives exactly what a self-collect would have paid them -- AQP-FVT's eviction surface \
+            \ runs the SAME phase functions (XI_CollectDrip/XI_CollectPay) that CC_Collect runs. Owner \
+            \ enforced in EVCT|C>EVICT-SLICE; IGNIS on patron. \
+            \ \
+            \ FED SLICE, SO PARALLEL-SAFE: the client dirty-reads AQP-EVCT::URHC_BuildEvictSlicePlan, \
+            \ splits into disjoint gas-bounded slices and fires them at once. Contrast a cursor pager, \
+            \ which is strictly sequential. \
+            \ \
+            \ WHAT IT DOES NOT DO: it does not touch scores (eviction only moves reward tokens, and \
+            \ stale scores are refreshed exactly as a collect refreshes them), and it does not freeze \
+            \ the FVT -- an eviction is a collect triggered by the pool owner instead of the \
+            \ beneficiary, so there is nothing to protect from a concurrent stake."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-EVCT:module{AcquisitionRewardEvictionV1} AQP-EVCT)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-EVCT::CCp_EvictRewards patron executor fvt-id beneficiaries
+                        score-entity-types score-entity-ids reward-dptf-ids))
+                (format "Evicted {} reward leg(s) on FVT {} to their beneficiaries."
+                    [(length beneficiaries) fvt-id])
+            )
+        )
+    )
+    ;;Protection: Class 3 — Custom: P|ADMINISTRATIVE-SUMMONER
+    (defun AQP-EVCT|AAp_EvictRewards:string
+        (executor:string fvt-id:string beneficiaries:[string]
+         score-entity-types:[integer] score-entity-ids:[string] reward-dptf-ids:[string])
+        @doc "GASLESS ADMIN eviction slice -- byte-for-byte AQP-EVCT|CCp_EvictRewards with the Ouronet \
+            \ system account in the patron slot, so no IGNIS is charged for it. \
+            \ \
+            \ FOR THE DAILY AUTOMATON. Owner, 2026-10-29: daily evictions across the FVTs the Ouronet \
+            \ administrator owns would cost 'a ton of ignis', and the gasless patron is the only way \
+            \ to make them sustainable. This wrapper IS that path, which is why no secondary \
+            \ orchestration from the DSP module is needed to reach it. \
+            \ \
+            \ TWO GATES, BOTH REQUIRED: the ADMIN keyset (P|ADMINISTRATIVE-SUMMONER) says the call may \
+            \ happen at all, and AQP-EVCT still requires <executor> to own <fvt-id>. Dropping the \
+            \ first would make every FVT owner a free rider on the gas station; dropping the second \
+            \ would let the administrator evict a stranger's FVT. \
+            \ \
+            \ GASLESS MEANS NO IGNIS, NOT NO GAS -- the Chainweb gas is still paid, by the Ouronet gas \
+            \ station, because this is a Talos path."
+        (with-capability (P|ADMINISTRATIVE-SUMMONER)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DALOS-G:module{OuronetDalosV3} DALOS)
+                    (ref-EVCT:module{AcquisitionRewardEvictionV1} AQP-EVCT)
+                    ;;THE GASLESS PATRON, RESOLVED LOCALLY. `GASLESS-PATRON` is a defconst in
+                    ;;01_TS01-A, not something every Talos module has, and the bare name reads as a
+                    ;;MODULE reference to Pact. Read from the same source URC_Gassless reads: one
+                    ;;definition, no chance of the two drifting.
+                    (gasless:string (ref-DALOS-G::GOV|DALOS|SC_NAME))
+                )
+                (ref-IGNIS::XE_CollectIgnis gasless
+                    (ref-EVCT::CCp_EvictRewards gasless executor fvt-id beneficiaries
+                        score-entity-types score-entity-ids reward-dptf-ids))
+                (format "Evicted {} reward leg(s) on FVT {} to their beneficiaries. [gasless admin]"
+                    [(length beneficiaries) fvt-id])
+            )
+        )
+    )
+    ;;Protection: Class 3 — Custom: P|TS
+    (defun AQP-EVCT|CC_FullEvictRewards:string (patron:string executor:string fvt-id:string)
+        @doc "WHOLE-FVT eviction in ONE transaction -- the convenience path for a small FVT, which scans \
+            \ its own legs instead of being handed a slice. A large FVT must use \
+            \ AQP-EVCT|CCp_EvictRewards: the node gas meter is the real ceiling and this scans before \
+            \ it pays. Owner enforced in EVCT|C>FULL-EVICT; IGNIS on patron. \
+            \ \
+            \ Stands to AQP-EVCT|CCp_EvictRewards exactly as AQP-POOL|CC_FullVacate stands to the \
+            \ AQP-POOL|CCp_Batch* family."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-EVCT:module{AcquisitionRewardEvictionV1} AQP-EVCT)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-EVCT::CC_FullEvictRewards patron executor fvt-id))
+                (format "Evicted every outstanding reward leg on FVT {} to its beneficiaries." [fvt-id])
+            )
+        )
+    )
+    ;;Protection: Class 3 — Custom: P|ADMINISTRATIVE-SUMMONER
+    (defun AQP-EVCT|AA_FullEvictRewards:string (executor:string fvt-id:string)
+        @doc "GASLESS ADMIN whole-FVT eviction. See AQP-EVCT|AAp_EvictRewards for why the patron slot \
+            \ carries the Ouronet system account, and why the executor is STILL owner-gated on top of \
+            \ the admin keyset."
+        (with-capability (P|ADMINISTRATIVE-SUMMONER)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DALOS-G:module{OuronetDalosV3} DALOS)
+                    (ref-EVCT:module{AcquisitionRewardEvictionV1} AQP-EVCT)
+                    (gasless:string (ref-DALOS-G::GOV|DALOS|SC_NAME))
+                )
+                (ref-IGNIS::XE_CollectIgnis gasless
+                    (ref-EVCT::CC_FullEvictRewards gasless executor fvt-id))
+                (format "Evicted every outstanding reward leg on FVT {} to its beneficiaries. [gasless admin]"
+                    [fvt-id])
             )
         )
     )

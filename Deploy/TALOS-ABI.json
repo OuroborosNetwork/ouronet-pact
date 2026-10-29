@@ -7748,6 +7748,50 @@
     "type": "string"
    }
   ],
+  "TS02-C3.AQP-EVCT|CC_FullEvictRewards": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "executor",
+    "type": "string"
+   },
+   {
+    "name": "fvt-id",
+    "type": "string"
+   }
+  ],
+  "TS02-C3.AQP-EVCT|CCp_EvictRewards": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "executor",
+    "type": "string"
+   },
+   {
+    "name": "fvt-id",
+    "type": "string"
+   },
+   {
+    "name": "beneficiaries",
+    "type": "[string]"
+   },
+   {
+    "name": "score-entity-types",
+    "type": "[integer]"
+   },
+   {
+    "name": "score-entity-ids",
+    "type": "[string]"
+   },
+   {
+    "name": "reward-dptf-ids",
+    "type": "[string]"
+   }
+  ],
   "TS02-C3.AQP-FVT|CC_ClearPoolSweep": [
    {
     "name": "patron",
@@ -10295,6 +10339,66 @@
    },
    {
     "name": "reward-dptf-id",
+    "type": "string"
+   }
+  ],
+  "AQP-INFO.INFO_AQP-EVCT|AdminEvictRewards": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "fvt-id",
+    "type": "string"
+   },
+   {
+    "name": "beneficiaries",
+    "type": "[string]"
+   }
+  ],
+  "AQP-INFO.INFO_AQP-EVCT|AdminFullEvictRewards": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "fvt-id",
+    "type": "string"
+   }
+  ],
+  "AQP-INFO.INFO_AQP-EVCT|EvictRewards": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "fvt-id",
+    "type": "string"
+   },
+   {
+    "name": "beneficiaries",
+    "type": "[string]"
+   },
+   {
+    "name": "score-entity-types",
+    "type": "[integer]"
+   },
+   {
+    "name": "score-entity-ids",
+    "type": "[string]"
+   },
+   {
+    "name": "reward-dptf-ids",
+    "type": "[string]"
+   }
+  ],
+  "AQP-INFO.INFO_AQP-EVCT|FullEvictRewards": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "fvt-id",
     "type": "string"
    }
   ],
@@ -19068,6 +19172,8 @@
   "TS02-C3.AQP-DSA|C_SetAgencyFee": "AQP-INFO.INFO_AQP-DSA|SetAgencyFee",
   "TS02-C3.AQP-DSA|C_SetOracleAuth": "AQP-INFO.INFO_AQP-DSA|SetOracleAuth",
   "TS02-C3.AQP-DSA|C_WithdrawRoyalty": "AQP-INFO.INFO_AQP-DSA|WithdrawRoyalty",
+  "TS02-C3.AQP-EVCT|CC_FullEvictRewards": "AQP-INFO.INFO_AQP-EVCT|FullEvictRewards",
+  "TS02-C3.AQP-EVCT|CCp_EvictRewards": "AQP-INFO.INFO_AQP-EVCT|EvictRewards",
   "TS02-C3.AQP-FVT|CC_ClearPoolSweep": "AQP-INFO.INFO_AQP-FVT|ClearPoolSweep",
   "TS02-C3.AQP-FVT|CC_Collect": "AQP-INFO.INFO_AQP-FVT|Collect",
   "TS02-C3.AQP-FVT|CC_Inject": "AQP-INFO.INFO_AQP-FVT|Inject",
@@ -19163,5 +19269,5 @@
   "TS02-DPAD.DEMIPAD|C_RetrieveTrueFungible": "INFO-TWO.INFO_DEMIPAD|RetrieveTrueFungible",
   "TS02-DPAD.DEMIPAD|C_Withdraw": "INFO-TWO.INFO_DEMIPAD|Withdraw"
  },
- "surfaceHash": "e2e01061dbf38654"
+ "surfaceHash": "5c4bd14bc25c0e9b"
 }
