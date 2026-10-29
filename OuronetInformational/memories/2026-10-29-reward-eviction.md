@@ -208,8 +208,12 @@ duplicated call, pinned by the quote equality above, is the cheaper trade.
 - **`IG|COMPONENTS["AQP-FVT|CC_Collect"] = 57`** has not been recalibrated against the new 208,611
   measurement. The price sheet did not move because the component is a declared constant, not a
   derived leg sum — so this is a pricing decision, not a drift.
-- **`Deploy/PureV17` is superseded**; the round that carries this work is
-  `2026-10-v18-eviction` in `_deploybundle.py` — 17 modules, 8 transactions.
+- ~~`Deploy/PureV17` is superseded~~ **RESOLVED 2026-10-30, by the owner: V17 WAS NEVER SENT.**
+  That settles the question the V17 banner said nothing offline could. `PureV16` and `PureV17` are
+  deleted; `PureV18` is the only sendable round and subsumes both, verified against the emitted
+  bytes. **The zero-collect defect is therefore still LIVE on mainnet** — transaction
+  `_n8jEM6Pu5lZn7kVVnaqsPieo6IJwcEakC_TF5CiiTw` collected `0.000000000000` WSTOA and was billed
+  for it — and V18 is what carries the refusal.
 - **Cross-repo**: `INFO_AQP-FVT|Collect` gained a sixth parameter (`collector`), so
   `OURONET-REGISTRY.json` → `@ouronet/talos-registry` → OuronetUI's collect preview spec all need
   it. The registry is chain-derived, so this unblocks only after the deploy.
