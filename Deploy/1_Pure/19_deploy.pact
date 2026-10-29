@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 19 of 26
 ;; This is STEP 19 of 27 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-18 must have run first, including the init steps between deploys.
-;; 1 source file(s), 302,583 gas measured in the REPL gas model, 309,577 bytes
+;; 1 source file(s), 302,583 gas measured in the REPL gas model, 315,164 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/05_FVT.pact
@@ -3953,12 +3953,211 @@
         )
     )
     )
+    ;; ═══════════════════════════════════════════════════════════════════════════
+    ;; THE COLLECT CORE, EXTRACTED 2026-10-29 -- so EVICTION runs the same code
+    ;; ═══════════════════════════════════════════════════════════════════════════
+    ;; <CC_Collect> was the only way to run a collect, and it opens with
+    ;; <CAP_EnforceAccountOwnership executor> -- the claimant signing for its own
+    ;; claim. Reward EVICTION is the same operation triggered by the FVT OWNER for
+    ;; somebody else, so it cannot pass that check and cannot reuse the function.
+    ;;
+    ;; Rather than write the phases a second time, they are split into three pieces
+    ;; both paths share. BYTE-FOR-BYTE IDENTITY BECOMES STRUCTURAL: evict and
+    ;; self-collect do not merely agree, they execute the same function.
+    ;;
+    ;; THE SPLIT POINT IS THE ENFORCE, and it is forced rather than chosen. The
+    ;; claimable check must run AFTER the drip (a streamed lane reads zero before it)
+    ;; and an <XI_> must not enforce -- so the drip and the payment cannot be one
+    ;; function. Each caller drips, enforces, then pays, which is the order
+    ;; <CC_Collect> already had.
+    ;;
+    ;; PHASE 7 IS A THIRD PIECE because only self-collect charges it. Owner ruling,
+    ;; 2026-10-29: eviction ZEROES the accumulated forced-fix penalty instead of
+    ;; billing it -- with an automaton evicting daily a user might never self-collect,
+    ;; so the count would grow unpayable and the deterrent would become a trap.
+    ;; Keeping it out of <XI_CollectPay> is what makes that a structural property of
+    ;; the eviction path rather than a flag someone can get wrong.
+    (defun URC_CollectPoolId:string (score-entity-type:integer score-entity-id:string)
+        @doc "The pool a score-entity's rewards are measured at. A TRIPLET resolves through its \
+            \ SILVER leg -- the three legs each own a pool, and silver is the one the collect path has \
+            \ always used. Lifted out of <CC_Collect>'s let so the evict path derives it identically."
+        (let
+            (
+                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+            )
+            (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET)
+                (ref-SCR::UR_SCR|ScoreAqpoolLink (ref-SCR::UR_SCR|TripletSilverScoreId score-entity-id))
+                (ref-SCR::UR_SCR|ScoreAqpoolLink score-entity-id)
+            )
+        )
+    )
+    ;;Protection: Class 2 — SECURE
+    (defun XI_CollectDrip:string
+        (fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
+        @doc "PHASE 0 of a collect or an eviction: drip the lane, then pre-settle a farm member. \
+            \ Runs FIRST so the payout, the farm pre-settle and the PHASE-4 last-rps advance all see \
+            \ rewards vested up to `now`. No-op when the lane carries no live stream. \
+            \ \
+            \ SEPARATE FROM <XI_CollectPay> because the claimable ENFORCE sits between them: a streamed \
+            \ lane reads zero before this runs, so checking earlier would refuse exactly the streamed \
+            \ collects that are legitimate -- and an <XI_> must not enforce, so the check cannot live \
+            \ in here either. The caller drips, enforces, then pays."
+        (require-capability (SECURE))
+        (let
+            (
+                (ref-RPS:module{AcquisitionRewardPerShareV5} RPS)
+            )
+            (ref-RPS::XE_XI_ReleaseStream fvt-id reward-dptf-id)
+            (if (= (ref-RPS::UR_FVT|FvtClass fvt-id) 0)
+                (ref-RPS::XE_XI_2|SettleMemberTier2 fvt-id score-entity-type score-entity-id reward-dptf-id)
+                true
+            )
+            ""
+        )
+    )
+    ;;Protection: Class 2 — SECURE
+    (defun XI_CollectPay:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string collector:string pool-id:string fvt-id:string score-entity-type:integer
+         score-entity-id:string reward-dptf-id:string)
+        @doc "PHASES 1-6 of a collect, plus the <URCi_Collect> billing leg -- the whole payment, \
+            \ shared verbatim by <CC_Collect> and by the eviction path. <collector> is the REWARD \
+            \ SUBJECT: its claimable is computed, its lanes are read, and every payout leg credits it. \
+            \ <patron> only pays IGNIS. \
+            \ \
+            \ PHASE 7 IS NOT HERE. Only a self-collect charges the inject-forced-fix penalty; eviction \
+            \ zeroes it. Leaving it outside makes that a property of which function the caller calls, \
+            \ not of a boolean it passes."
+        (require-capability (SECURE))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-RPS:module{AcquisitionRewardPerShareV5} RPS)
+                (ref-RPSC:module{AcquisitionRewardCostsV1} AQP-RPSC)
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                [
+                        ;;===>PHASE 0=== (audit LP redesign / Stage 2b) farm ghost-TVL sync REMOVED — L_i is
+                        ;; advanced at inject (split-at-inject); the pre-settle above still flushes parked pending.
+                        ;;
+                        ;;===>PHASE 1=== coin step 1 · C_Transmit URV|KONTO→account
+                        ;; PRE payout via URC_CollectClaimableRewards inside XI (post phase 0, pre reset)
+                        (ref-RPS::XE_XI_TransferRewardDptfFromVault patron collector pool-id fvt-id score-entity-type score-entity-id reward-dptf-id)
+                        ;;
+                        ;;===>PHASE 5=== coin step 5 · XI_URV|UpdateVaultSupply false
+                        ;; ICO slot before phase 2 so URC reads same pre-reset state as UrStoa available-rewards let
+                        (let
+                            (
+                                (payout:decimal
+                                    (ref-RPS::URC_CollectClaimableRewards collector pool-id fvt-id score-entity-type score-entity-id reward-dptf-id)
+                                )
+                                (ar:decimal (ref-RPS::UR_FVT-RG|AvailableRewards fvt-id reward-dptf-id))
+                                (new-ar:decimal (- ar payout))
+                                ;; #10 Tier-1: decrement the member mini-vault too. Clamp at 0 for the global-sweep
+                                ;; case (payout = global available ≥ member available), which zeroes the member vault.
+                                (ma:decimal (ref-RPS::UR_FVT-MV|AvailableRewards fvt-id score-entity-id reward-dptf-id))
+                                (new-ma:decimal
+                                    (let
+                                        (
+                                            (m:decimal (- ma payout))
+                                        )
+                                        (if (< m 0.0) 0.0 m)
+                                    )
+                                )
+                            )
+                            ;; SECURE: granted by WU_RpsGlobal|AvailableRewards / WU_MemberVault|AvailableRewards (underlying W_).
+                            (ref-RPS::XE_WU_RpsGlobal|AvailableRewards fvt-id reward-dptf-id new-ar)
+                            (ref-RPS::XE_WU_MemberVault|AvailableRewards fvt-id score-entity-id reward-dptf-id new-ma)
+                            (UC_EmptyOc)
+                        )
+                        ;;
+                        ;;===>PHASE 3=== coin step 3 · XI_URV|UpdateUnclaimedCount false
+                        ;;SEQUENCED BEFORE PHASE 2 ON 2026-09-14, and the order is load-bearing.
+                        ;;XI_1|BookCollectUnclaimed now retires a caller from the claimant set only
+                        ;;when it is unstaked AND still holds unsettled pending -- which is the rule
+                        ;;the stake path uses to keep such a user counted in the first place. Read
+                        ;;after PHASE 2, `pending` is 0 for everyone and that test cannot
+                        ;;distinguish "retiring now" from "retired long ago", which is how an
+                        ;;already-exited account could decrement the counter a second time.
+                        ;;The two phases touch disjoint state -- counters here, pending-rewards
+                        ;;there -- so the swap changes nothing else.
+                        (ref-RPS::XE_XI_BookCollectUnclaimed collector pool-id fvt-id score-entity-type score-entity-id reward-dptf-id)
+                        ;;
+                        ;;===>PHASE 2=== coin step 2 · XI_URV|ResetPendingRewards
+                        (do
+                            ;; SECURE: granted by WU_RpsUser|PendingRewards (underlying W_).
+                            (ref-RPS::XE_WU_RpsUser|PendingRewards collector fvt-id score-entity-id reward-dptf-id 0.0)
+                            (UC_EmptyOc)
+                        )
+                        ;;
+                        ;;===>PHASE 4=== coin step 4 · XI_URV|UpdateUserRPS (farm: L_i; vault/treasury: G)
+                        (do
+                            ;; SECURE: granted by WU_RpsUser|LastRps (underlying W_).
+                            (ref-RPS::XE_WU_RpsUser|LastRps collector fvt-id score-entity-id reward-dptf-id
+                                (ref-RPS::URC_FvtTier1IndexRps fvt-id score-entity-id reward-dptf-id)
+                            )
+                            (UC_EmptyOc)
+                        )
+                        ;;
+                        ;;===>PHASE 6=== (M3 #12 deb-staleness collect-backstop) delegate to the SHARED fix
+                        ;; XI_FixUserMemberDeb: iff deb-based & stale, settle the patron's pending at OLD deb across
+                        ;; ALL reward streams (the just-collected stream re-settles to 0 — its last-rps is already G;
+                        ;; the OTHER streams get settled here, closing the multi-reward-dptf edge), refresh the SCORE
+                        ;; deb-score(s) to live (each triplet leg at its OWN pool), and resync the FVT total-deb mirror
+                        ;; by the member delta. Runs AFTER phases 1-4 so settle-before-weight-change holds. No-op only
+                        ;; when fresh — since 2026-10-08 true triplets are deb-based and DO get fixed here.
+                        (ref-RPS::XE_XI_FixUserMemberDeb collector fvt-id score-entity-type score-entity-id)
+                    (ref-RPSC::URCi_Collect fvt-id [fvt-id score-entity-id reward-dptf-id])
+                ]
+                []
+            )
+        )
+    )
+    ;;Protection: Class 2 — SECURE
+    (defun XI_CollectForcedFixPenalty:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string collector:string fvt-id:string reward-dptf-id:string)
+        @doc "PHASE 7 of a SELF-collect only: the inject-forced-fix penalty, then the count is \
+            \ zeroed. SEPARATE from <XI_CollectPay> because the EVICTION path does not charge it. \
+            \ \
+            \ Owner ruling, 2026-10-29: eviction zeroes the count without billing it. With an automaton \
+            \ evicting daily a user might never self-collect, so an accumulating penalty would grow \
+            \ unpayable and the deterrent would become a trap. It still bites the user who IS unstaled \
+            \ by an inject and then collects for themselves."
+        (require-capability (SECURE))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-RPS:module{AcquisitionRewardPerShareV5} RPS)
+                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+            )
+            ;;===>PHASE 7=== (M3 #12 2e) inject-forced-fix penalty: `count × RATE` NON-discountable IGNIS,
+            ;; then zero the count. Non-discount via gross-up (price = count×RATE / patron-discount → after
+            ;; the uniform prime-time discount it lands at exactly count×RATE). The reward paid is untouched;
+            ;; self-fixing (PHASE 6) is never penalized, so it stays the cheaper path. No-op when count = 0.
+            (let
+                (
+                    (ffc:integer (ref-RPS::UR_FVT-FFC|Count fvt-id reward-dptf-id collector))
+                )
+                (if (<= ffc 0)
+                    (UC_EmptyOc)
+                    (let
+                        (
+                            (ref-DALOS:module{OuronetDalosV3} DALOS)
+                            (penalty:decimal (* (dec ffc) CT_FORCED_FIX_RATE))
+                        )
+                        (ref-RPS::XE_WU_FvtForcedFixCount|Zero fvt-id reward-dptf-id collector)
+                        (ref-IGNIS::UDC_ConstructOutputCumulator
+                            (/ penalty (ref-DALOS::URC_IgnisGasDiscount patron)) patron trigger []
+                        )
+                    )
+                )
+            )
+        )
+    )
     (defun CC_Collect:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
         @doc "Collect reward DPTF — phases 0 → 5 — see canonical collect map above. UrStoa ≡ C_URV|Collect."
         (let
             (
-                (ref-RPSC:module{AcquisitionRewardCostsV1} AQP-RPSC)
                 (ref-RPS:module{AcquisitionRewardPerShareV5} RPS)
             )
             (P|UEV_IMC)
@@ -3979,24 +4178,12 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
-                    ;;
-                    (pool-id:string
-                        (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET)
-                        (ref-SCR::UR_SCR|ScoreAqpoolLink (ref-SCR::UR_SCR|TripletSilverScoreId score-entity-id))
-                        (ref-SCR::UR_SCR|ScoreAqpoolLink score-entity-id)
-                    ))
-                    (owner-konto:string (ref-RPS::UR_FVT|OwnerKonto fvt-id))
-                    (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                    (pool-id:string (URC_CollectPoolId score-entity-type score-entity-id))
                 )
                 ;; DRIP the collected lane FIRST (checkpoint) so the farm pre-settle, the payout
                 ;; (ref-RPS::URC_CollectClaimableRewards) and the PHASE-4 last-rps advance all reflect streamed rewards
                 ;; vested up to `now`. No-op when the lane carries no live stream.
-                (ref-RPS::XE_XI_ReleaseStream fvt-id reward-dptf-id)
-                (if (= (ref-RPS::UR_FVT|FvtClass fvt-id) 0)
-                    (ref-RPS::XE_XI_2|SettleMemberTier2 fvt-id score-entity-type score-entity-id reward-dptf-id)
-                    true
-                )
+                (XI_CollectDrip fvt-id score-entity-type score-entity-id reward-dptf-id)
                 ;;NOTHING TO COLLECT IS A REFUSAL, NOT A NO-OP. Owner ruling, 2026-10-28, after a
                 ;;live collect of 0.000000000000 on mainnet
                 ;;(_n8jEM6Pu5lZn7kVVnaqsPieo6IJwcEakC_TF5CiiTw): it emitted FVT|C>COLLECT, emitted
@@ -4029,99 +4216,8 @@
                 )
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
                     [
-                        ;;===>PHASE 0=== (audit LP redesign / Stage 2b) farm ghost-TVL sync REMOVED — L_i is
-                        ;; advanced at inject (split-at-inject); the pre-settle above still flushes parked pending.
-                        ;;
-                        ;;===>PHASE 1=== coin step 1 · C_Transmit URV|KONTO→account
-                        ;; PRE payout via URC_CollectClaimableRewards inside XI (post phase 0, pre reset)
-                        (ref-RPS::XE_XI_TransferRewardDptfFromVault patron executor pool-id fvt-id score-entity-type score-entity-id reward-dptf-id)
-                        ;;
-                        ;;===>PHASE 5=== coin step 5 · XI_URV|UpdateVaultSupply false
-                        ;; ICO slot before phase 2 so URC reads same pre-reset state as UrStoa available-rewards let
-                        (let
-                            (
-                                (payout:decimal
-                                    (ref-RPS::URC_CollectClaimableRewards executor pool-id fvt-id score-entity-type score-entity-id reward-dptf-id)
-                                )
-                                (ar:decimal (ref-RPS::UR_FVT-RG|AvailableRewards fvt-id reward-dptf-id))
-                                (new-ar:decimal (- ar payout))
-                                ;; #10 Tier-1: decrement the member mini-vault too. Clamp at 0 for the global-sweep
-                                ;; case (payout = global available ≥ member available), which zeroes the member vault.
-                                (ma:decimal (ref-RPS::UR_FVT-MV|AvailableRewards fvt-id score-entity-id reward-dptf-id))
-                                (new-ma:decimal
-                                    (let
-                                        (
-                                            (m:decimal (- ma payout))
-                                        )
-                                        (if (< m 0.0) 0.0 m)
-                                    )
-                                )
-                            )
-                            ;; SECURE: granted by WU_RpsGlobal|AvailableRewards / WU_MemberVault|AvailableRewards (underlying W_).
-                            (ref-RPS::XE_WU_RpsGlobal|AvailableRewards fvt-id reward-dptf-id new-ar)
-                            (ref-RPS::XE_WU_MemberVault|AvailableRewards fvt-id score-entity-id reward-dptf-id new-ma)
-                            (UC_EmptyOc)
-                        )
-                        ;;
-                        ;;===>PHASE 3=== coin step 3 · XI_URV|UpdateUnclaimedCount false
-                        ;;SEQUENCED BEFORE PHASE 2 ON 2026-09-14, and the order is load-bearing.
-                        ;;XI_1|BookCollectUnclaimed now retires a caller from the claimant set only
-                        ;;when it is unstaked AND still holds unsettled pending -- which is the rule
-                        ;;the stake path uses to keep such a user counted in the first place. Read
-                        ;;after PHASE 2, `pending` is 0 for everyone and that test cannot
-                        ;;distinguish "retiring now" from "retired long ago", which is how an
-                        ;;already-exited account could decrement the counter a second time.
-                        ;;The two phases touch disjoint state -- counters here, pending-rewards
-                        ;;there -- so the swap changes nothing else.
-                        (ref-RPS::XE_XI_BookCollectUnclaimed executor pool-id fvt-id score-entity-type score-entity-id reward-dptf-id)
-                        ;;
-                        ;;===>PHASE 2=== coin step 2 · XI_URV|ResetPendingRewards
-                        (do
-                            ;; SECURE: granted by WU_RpsUser|PendingRewards (underlying W_).
-                            (ref-RPS::XE_WU_RpsUser|PendingRewards executor fvt-id score-entity-id reward-dptf-id 0.0)
-                            (UC_EmptyOc)
-                        )
-                        ;;
-                        ;;===>PHASE 4=== coin step 4 · XI_URV|UpdateUserRPS (farm: L_i; vault/treasury: G)
-                        (do
-                            ;; SECURE: granted by WU_RpsUser|LastRps (underlying W_).
-                            (ref-RPS::XE_WU_RpsUser|LastRps executor fvt-id score-entity-id reward-dptf-id
-                                (ref-RPS::URC_FvtTier1IndexRps fvt-id score-entity-id reward-dptf-id)
-                            )
-                            (UC_EmptyOc)
-                        )
-                        ;;
-                        ;;===>PHASE 6=== (M3 #12 deb-staleness collect-backstop) delegate to the SHARED fix
-                        ;; XI_FixUserMemberDeb: iff deb-based & stale, settle the patron's pending at OLD deb across
-                        ;; ALL reward streams (the just-collected stream re-settles to 0 — its last-rps is already G;
-                        ;; the OTHER streams get settled here, closing the multi-reward-dptf edge), refresh the SCORE
-                        ;; deb-score(s) to live (each triplet leg at its OWN pool), and resync the FVT total-deb mirror
-                        ;; by the member delta. Runs AFTER phases 1-4 so settle-before-weight-change holds. No-op only
-                        ;; when fresh — since 2026-10-08 true triplets are deb-based and DO get fixed here.
-                        (ref-RPS::XE_XI_FixUserMemberDeb executor fvt-id score-entity-type score-entity-id)
-                        ;;===>PHASE 7=== (M3 #12 2e) inject-forced-fix penalty: `count × RATE` NON-discountable IGNIS,
-                        ;; then zero the count. Non-discount via gross-up (price = count×RATE / patron-discount → after
-                        ;; the uniform prime-time discount it lands at exactly count×RATE). The reward paid is untouched;
-                        ;; self-fixing (PHASE 6) is never penalized, so it stays the cheaper path. No-op when count = 0.
-                        (let
-                            (
-                                (ffc:integer (ref-RPS::UR_FVT-FFC|Count fvt-id reward-dptf-id executor))
-                            )
-                            (if (<= ffc 0)
-                                (UC_EmptyOc)
-                                (let
-                                    (
-                                        (ref-DALOS:module{OuronetDalosV3} DALOS)
-                                        (penalty:decimal (* (dec ffc) CT_FORCED_FIX_RATE))
-                                    )
-                                    (ref-RPS::XE_WU_FvtForcedFixCount|Zero fvt-id reward-dptf-id executor)
-                                    (ref-IGNIS::UDC_ConstructOutputCumulator
-                                        (/ penalty (ref-DALOS::URC_IgnisGasDiscount patron)) patron trigger []
-                                    )
-                                )
-                            )
-                        )
-                        (ref-RPSC::URCi_Collect fvt-id [fvt-id score-entity-id reward-dptf-id])
+                        (XI_CollectPay patron executor pool-id fvt-id score-entity-type score-entity-id reward-dptf-id)
+                        (XI_CollectForcedFixPenalty patron executor fvt-id reward-dptf-id)
                     ]
                     []
                 )

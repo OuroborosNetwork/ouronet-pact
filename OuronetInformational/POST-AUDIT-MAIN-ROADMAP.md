@@ -221,7 +221,7 @@ execution cost and INFO preview move together, module by module in deploy order.
 - [x] ✅ **DPTF (05) — DONE (2026-08-30). Full cost surface on URCi (23 in-module readers).** In-module URCi
       (DPTF is above IGNIS). **Group A+B (19, `e4c1433`):** 17 single-tier (Small/Medium/Big/Biggest/Branding)
       + 2 construct-pure (Burn/Mint), each `C_`/`XE_` rewired to return its `URCi`, interface-declared,
-      **proven == prior inline cumulator**. **Group C (4, `9,38985b`):** the write-coupled trio single-sourced —
+      **proven == prior inline cumulator**. **Group C (4, `9,39385b`):** the write-coupled trio single-sourced —
       `URCi_IssueGas`/`URCi_IssueKda` (`:decimal`, XB_IssueFree/C_Issue bill via them, cumulator output=created
       IDs stays in the write); `URCi_ToggleFeeLock` (`:OutputCumulator`, re-derived from fee-unlocks, computed
       PRE-increment in `C_`); `URCi_UpgradeBranding` (`:decimal` = months×"blue"). All proven, `Z.repl` green.

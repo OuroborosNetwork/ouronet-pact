@@ -57,7 +57,7 @@ Above the reward engine, which it drives through external entry points.
 
 > **The repository differs from what is deployed.** Everything above describes the CHAIN, which is what a caller actually reaches. The difference is stated rather than resolved:
 >
-> - **functions** in the repository only: `REPL_BootstrapTreasury`, `REPL_BootstrapVault`
+> - **functions** in the repository only: `REPL_BootstrapTreasury`, `REPL_BootstrapVault`, `URC_CollectPoolId`, `XI_CollectDrip`, `XI_CollectForcedFixPenalty`, `XI_CollectPay`
 
 **Capabilities** -- 38
 
