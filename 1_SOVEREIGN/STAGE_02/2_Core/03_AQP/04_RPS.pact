@@ -3235,15 +3235,43 @@
                                         (
                                             (rbt1-id:string (at "rbt-id" h-all))
                                             (rbt1-ladder:decimal (- (at "rbt-amount" h-all) rbt1-keep))
+                                            ;;THE LADDER COILS AS AQP|SC_NAME, 2026-10-29. It coiled as <collector>,
+                                            ;;which worked only because a self-collect is signed BY the collector: a
+                                            ;;coil's first leg transfers OUT of the coiler, so C_Transfer enforces its
+                                            ;;ownership. Reward EVICTION has no such signature -- the FVT owner
+                                            ;;triggers it for somebody else -- so this ladder was reachable by the
+                                            ;;beneficiary alone. ATSU::XB_Coil splits funder from recipient and the AQP
+                                            ;;remote-governor guard satisfies AQP|SC_NAME, so ONE core now serves both
+                                            ;;collect and evict. A second ladder would be a FOURTH copy of this
+                                            ;;arithmetic -- see URC_CollectLadderPreview on why that is the hazard.
+                                            ;;
+                                            ;;AMOUNTS ARE IDENTICAL: rbt-amount is a pure function of
+                                            ;;(ats, rt, amount) and XE_UpdateRUR takes no account, so nothing
+                                            ;;per-account depends on who coiled. Only the endpoints move, at a cost of
+                                            ;;ONE extra transfer leg -- hop 1 must land at AQP|SC_NAME because its
+                                            ;;output is SPLIT (keep-share to the collector, ladder-share coiled on),
+                                            ;;and the keep-share then needs its own transfer.
+                                            ;;
+                                            ;;THE SKIP BRANCHES CARRY THE WHOLE PAYOUT. The pre-fund used to send
+                                            ;;<payout> unconditionally, so a precision-skipped hop silently left the
+                                            ;;collector holding that portion as token-0. Sending only <amt-b> breaks
+                                            ;;that, so each skip is now explicit: no hop 1 => the collector takes the
+                                            ;;whole payout as token-0; no hop 2 => ALL of rbt1, not the keep-share.
+                                            ;;Getting this wrong short-pays a beneficiary by exactly the amount a
+                                            ;;rounding skip was meant to preserve.
+                                            (hop1:bool (> (at "rbt-amount" h-all) 0.0))
+                                            (hop2:bool
+                                                (and (> rbt1-ladder 0.0)
+                                                     (> (at "rbt-amount" (ref-ATS::URC_RewardBearingTokenAmounts ats-12 rbt1-id rbt1-ladder)) 0.0)))
                                         )
                                         (ref-IGNIS::UDC_ConcatenateOutputCumulators
                                             [
-                                                (if (> payout 0.0) (ref-TFT::C_Transfer patron AQP|SC_NAME collector token-0 payout true) (UC_EmptyOc))
-                                                (if (> (at "rbt-amount" h-all) 0.0) (ref-ATSU::C_Coil patron collector ats-01 token-0 fund-sg) (UC_EmptyOc))
-                                                (if (and (> rbt1-ladder 0.0)
-                                                         (> (at "rbt-amount" (ref-ATS::URC_RewardBearingTokenAmounts ats-12 rbt1-id rbt1-ladder)) 0.0))
-                                                    (ref-ATSU::C_Coil patron collector ats-12 rbt1-id rbt1-ladder)
-                                                    (UC_EmptyOc))
+                                                (let ((t0:decimal (if hop1 amt-b payout)))
+                                                    (if (> t0 0.0) (ref-TFT::C_Transfer patron AQP|SC_NAME collector token-0 t0 true) (UC_EmptyOc)))
+                                                (if hop1 (ref-ATSU::XB_Coil patron AQP|SC_NAME AQP|SC_NAME ats-01 token-0 fund-sg) (UC_EmptyOc))
+                                                (let ((r1:decimal (if hop2 rbt1-keep (at "rbt-amount" h-all))))
+                                                    (if (and hop1 (> r1 0.0)) (ref-TFT::C_Transfer patron AQP|SC_NAME collector rbt1-id r1 true) (UC_EmptyOc)))
+                                                (if hop2 (ref-ATSU::XB_Coil patron AQP|SC_NAME collector ats-12 rbt1-id rbt1-ladder) (UC_EmptyOc))
                                             ]
                                             []
                                         )
@@ -4676,15 +4704,25 @@
                         (
                             (rbt1-id:string (at "rbt-id" h-all))
                             (rbt1-ladder:decimal (- (at "rbt-amount" h-all) rbt1-keep))
+                            ;;COILS AS AQP|SC_NAME -- the same change as the homogeneous branch, for the
+                            ;;same reason, and it has to be the SAME change: these two are one ladder
+                            ;;expressed twice, and a fix applied to one of them is a divergence.
+                            ;;<total-t0> is this branch's kept token-0 share, where the homogeneous
+                            ;;branch calls it <amt-b>. The skip branches carry the whole payout for the
+                            ;;reason stated there.
+                            (hop1:bool (> (at "rbt-amount" h-all) 0.0))
+                            (hop2:bool
+                                (and (> rbt1-ladder 0.0)
+                                     (> (at "rbt-amount" (ref-ATS::URC_RewardBearingTokenAmounts ats-12 rbt1-id rbt1-ladder)) 0.0)))
                         )
                         (ref-IGNIS::UDC_ConcatenateOutputCumulators
                             [
-                                (if (> payout-all 0.0) (ref-TFT::C_Transfer patron AQP|SC_NAME collector token-0 payout-all true) (UC_EmptyOc))
-                                (if (> (at "rbt-amount" h-all) 0.0) (ref-ATSU::C_Coil patron collector ats-01 token-0 fund-12) (UC_EmptyOc))
-                                (if (and (> rbt1-ladder 0.0)
-                                         (> (at "rbt-amount" (ref-ATS::URC_RewardBearingTokenAmounts ats-12 rbt1-id rbt1-ladder)) 0.0))
-                                    (ref-ATSU::C_Coil patron collector ats-12 rbt1-id rbt1-ladder)
-                                    (UC_EmptyOc))
+                                (let ((t0:decimal (if hop1 total-t0 payout-all)))
+                                    (if (> t0 0.0) (ref-TFT::C_Transfer patron AQP|SC_NAME collector token-0 t0 true) (UC_EmptyOc)))
+                                (if hop1 (ref-ATSU::XB_Coil patron AQP|SC_NAME AQP|SC_NAME ats-01 token-0 fund-12) (UC_EmptyOc))
+                                (let ((r1:decimal (if hop2 rbt1-keep (at "rbt-amount" h-all))))
+                                    (if (and hop1 (> r1 0.0)) (ref-TFT::C_Transfer patron AQP|SC_NAME collector rbt1-id r1 true) (UC_EmptyOc)))
+                                (if hop2 (ref-ATSU::XB_Coil patron AQP|SC_NAME collector ats-12 rbt1-id rbt1-ladder) (UC_EmptyOc))
                             ]
                             []
                         )

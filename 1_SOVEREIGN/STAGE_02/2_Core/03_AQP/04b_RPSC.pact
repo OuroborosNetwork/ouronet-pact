@@ -418,15 +418,28 @@
                         (
                             (rbt1-id:string (at "rbt-id" h-all))
                             (rbt1-ladder:decimal (- (at "rbt-amount" h-all) rbt1-keep))
+                            ;;MIRRORS THE AQP|SC_NAME LADDER, leg for leg, and the leg list here and
+                            ;;the one in RPS::XI_1|HeterogeneousLaneRoute are the same four branches.
+                            ;;<URCi_CoilTo>, not <URCi_Coil>: a transfer's IGNIS class is chosen by
+                            ;;URC_TransferClasses -> URC_IzSimpleTransfer -> UR_AccountRoleFeeExemption
+                            ;;on the RECEIVER, so a coil funded by AQP|SC_NAME and credited to a
+                            ;;beneficiary must price BOTH endpoints. Naming one account twice is the
+                            ;;five-site defect this family already paid for on 2026-10-29.
+                            (hop1:bool (> (at "rbt-amount" h-all) 0.0))
+                            (hop2:bool
+                                (and (> rbt1-ladder 0.0)
+                                     (> (at "rbt-amount" (ref-ATS::URC_RewardBearingTokenAmounts ats-12 rbt1-id rbt1-ladder)) 0.0)))
                         )
                         (fold (+) 0.0
-                            [ (URC_CollectXferIgnis token-0 collector payout-all)
-                              (if (> (at "rbt-amount" h-all) 0.0)
-                                  (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_Coil collector ats-01 token-0 fund-12))
+                            [ (URC_CollectXferIgnis token-0 collector (if hop1 total-t0 payout-all))
+                              (if hop1
+                                  (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_CoilTo AQP|SC_NAME AQP|SC_NAME ats-01 token-0 fund-12))
                                   0.0)
-                              (if (and (> rbt1-ladder 0.0)
-                                       (> (at "rbt-amount" (ref-ATS::URC_RewardBearingTokenAmounts ats-12 rbt1-id rbt1-ladder)) 0.0))
-                                  (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_Coil collector ats-12 rbt1-id rbt1-ladder))
+                              (if hop1
+                                  (URC_CollectXferIgnis rbt1-id collector (if hop2 rbt1-keep (at "rbt-amount" h-all)))
+                                  0.0)
+                              (if hop2
+                                  (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_CoilTo AQP|SC_NAME collector ats-12 rbt1-id rbt1-ladder))
                                   0.0)
                             ])
                     )
@@ -589,16 +602,27 @@
                                         (rbt1-id:string (at "rbt-id" h-all))
                                         (rbt1-ladder:decimal (- (at "rbt-amount" h-all) rbt1-keep))
                                     )
-                                    (fold (+) 0.0
-                                        [ (URC_CollectXferIgnis token-0 collector payout)
-                                          (if (> (at "rbt-amount" h-all) 0.0)
-                                              (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_Coil collector ats-01 token-0 fund-sg))
-                                              0.0)
-                                          (if (and (> rbt1-ladder 0.0)
-                                                   (> (at "rbt-amount" (ref-ATS::URC_RewardBearingTokenAmounts ats-12 rbt1-id rbt1-ladder)) 0.0))
-                                              (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_Coil collector ats-12 rbt1-id rbt1-ladder))
-                                              0.0)
-                                        ])
+                                    ;;SAME FOUR LEGS as RPS's homogeneous branch -- see the note in the
+                                    ;;heterogeneous mirror above for why this takes URCi_CoilTo.
+                                    (let
+                                        (
+                                            (hop1:bool (> (at "rbt-amount" h-all) 0.0))
+                                            (hop2:bool
+                                                (and (> rbt1-ladder 0.0)
+                                                     (> (at "rbt-amount" (ref-ATS::URC_RewardBearingTokenAmounts ats-12 rbt1-id rbt1-ladder)) 0.0)))
+                                        )
+                                        (fold (+) 0.0
+                                            [ (URC_CollectXferIgnis token-0 collector (if hop1 amt-b payout))
+                                              (if hop1
+                                                  (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_CoilTo AQP|SC_NAME AQP|SC_NAME ats-01 token-0 fund-sg))
+                                                  0.0)
+                                              (if hop1
+                                                  (URC_CollectXferIgnis rbt1-id collector (if hop2 rbt1-keep (at "rbt-amount" h-all)))
+                                                  0.0)
+                                              (if hop2
+                                                  (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_CoilTo AQP|SC_NAME collector ats-12 rbt1-id rbt1-ladder))
+                                                  0.0)
+                                            ]))
                                 )))
                     )
                     (URC_CollectXferIgnis reward-dptf-id collector payout)))
