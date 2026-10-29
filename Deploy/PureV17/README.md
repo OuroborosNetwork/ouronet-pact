@@ -1,4 +1,7 @@
-# Deploy/PureV17 — collecting nothing is a refusal, not a billable no-op
+# Deploy/PureV17 — collecting nothing is a refusal, and the cost mirrors now price the right account
+
+**THREE transactions.** Two independent fixes, both in the AQP collect path, which is why they
+ship together: `RPS` (01), `AQP-FVT` (02), `TS02-C3` (03). The deploy card is `DEPLOY.md`.
 
 **1 transaction. One `enforce` added to `CC_Collect`. No interface change, no cascade, no backfill.**
 
@@ -100,21 +103,76 @@ because otherwise an `expect-failure` could pass for the wrong reason.
 
 **Gate green: 29,220 assertions.**
 
+## The second fix — the cost mirrors priced the PATRON, the exec pays the COLLECTOR
+
+Found while designing `EvictRewards`, which is the first operation where the two accounts are
+**never** the same: patron is the FVT owner, collector is the staker. In a self-collect they are
+one account, so all five sites were latent and every live figure was right.
+
+| site | what it did |
+|---|---|
+| `URC_CollectTransferLegIgnis` | its `patron` fed `URC_ComputeTripletLanes`, whose parameter is `user-id`. A sponsored collect computed the **triplet lane split** — and so the whole per-token breakdown — from the SPONSOR's deb scores. An AMOUNT error, not a price error. |
+| `URC_CollectXferIgnis` | priced `AQP\|SC_NAME → patron` while the exec credits the collector. Price-affecting: `URC_TransferClasses → URC_IzSimpleTransfer → (UR_AccountRoleFeeExemption id receiver)` selects class 1/2/5/6. |
+| `URC_HeterogeneousLaneRouteIgnis` | passed `patron` into `ATSU::URCi_Coil`, whose parameter is `coiler`; the exec passes `collector`. |
+| `URC_CollectForcedFixIgnis` | read `UR_FVT-FFC\|Count` for `patron`; the exec reads it for `executor`. |
+| `AQP-FVT\|CC_Collect` (TS02-C3) | `bal-before`/`bal-after` on `patron` across a transfer crediting `executor` — a sponsored collect reported `0.0` for a payout that happened. Its `@doc` said "for patron" and the code believed the doc. |
+
+Four were a **rename**: `patron` was used only in positions meaning the collector, so the
+parameter was simply misnamed. `URC_CollectForcedFixIgnis` needed a second parameter, because the
+COUNT is the collector's while the DISCOUNT dividing it is the patron's.
+
+**No price moved** — `_pricesync.py --check` reports both artefacts `ok`. Expected: the class only
+differs when fee-exemption differs between the two accounts, and in a self-collect there is one
+account. The gate stayed at **29,220 assertions**, the same count as before, which is the evidence
+the rename changed no behaviour.
+
+**One conflation remains, deliberately, and now in one place.** `URCi_CollectFull` is declared on
+`AcquisitionFarmsVaultsTreasuriesV4`, and V4 **is live** — confirmed with `_livemodules.py --diff`
+against the chain, not from the cached snapshot. Adding a parameter means V5, cascading to the six
+files that name it plus `INFO_AQP-FVT|Collect`'s arity, which moves the registry and every client
+built from it. So it passes `patron` for both roles, annotated: a sponsored collect quotes the
+sponsor's figures. Nothing sponsors a collect in the UI today. It is one token at the next FVT
+bump, which the EVCT round forces anyway.
+
+## RPS has run out of deploy headroom
+
+Worth recording, because the next person to edit it will hit this. The first version of the
+comment above pushed `17_deploy.pact` to **320,214 bytes — 214 OVER** `_deploybundle.py`'s cap,
+and the tool's own suggestion (raise `HEADER_RESERVE` so the planner splits one more transaction)
+**cannot help**: a single module cannot be split across two transactions. The comments were
+trimmed instead of raising a gate-enforced safety cap unilaterally. The emitted file is now
+**318,758 bytes, leaving 1,242**.
+
+`04_RPS.pact` is at the ceiling. The next addition to it must be paid for by removing something,
+and `EVCT` must not grow it.
+
 ## Scope derivation
 
 Per `HOW-DEPLOY-ROUNDS-WORK.md`, not from `git diff`:
 
-1. **Shape diff** — `_livemodules.py --diff` shows neither `AQP-FVT` nor `RPS` differing, because
-   the change adds no function, capability or constant. It is a BODY edit, which `--diff`
-   structurally cannot see. *(The cache was 2 days stale and 7 modules had moved on chain; it was
-   refreshed with `--probe` before this was read.)*
-2. **Cascade** — **none.** No interface touched, confirmed over `0_Interfaces/`.
-3. **Batch** — `Deploy/1_Pure/18_deploy.pact` carries `05_FVT.pact` alone.
-4. **Generator gaps** — none. The two backfills MANIFEST ties to these modules
-   (`min-inject-amount`, `stream-eligible`) are for schema fields **already live on chain**; this
-   change adds no schema field.
+1. **Shape diff** — `_livemodules.py --diff` shows `AQP-FVT` and `TS02-C3` differing only by
+   `REPL_BootstrapTreasury` / `REPL_BootstrapVault`, and `RPS` not differing at all. All three
+   edits are BODY edits, which `--diff` structurally cannot see. **The shape diff UNDERSTATES
+   this round and that is expected, not a reason to drop a module.**
+2. **Cascade** — **none.** No interface touched. `URC_CollectForcedFixIgnis` gained a parameter
+   but is module-local to `04_RPS.pact`; every one of its callers is in that same file, plus two
+   REPL sites that `_callarity.py` caught.
+3. **Batches** — `17` (RPS), `18` (AQP-FVT), and `TS02-C3` sliced out of `21`. See `DEPLOY.md`
+   for why 21 is sliced rather than copied.
+4. **Generator gaps** — none. No schema field added, so no backfill.
 
-**RPS is NOT in this round.** Its only edit is the comment on the unreachable branch; compared
-module-to-module against live source its remaining difference is `create-table` forms, which an
-upgrade deploy strips anyway. No behaviour change, so it does not belong. *The modification
-dictates the round.*
+**CORRECTED 2026-10-29.** This section previously read *"RPS is NOT in this round… its only edit
+is the comment on the unreachable branch."* That was true when the round carried only the
+`CC_Collect` refusal. The cost-mirror fix gave RPS a real behaviour change, so it ships — and it
+is now transaction **01**, the largest in the round. *The modification dictates the round.*
+
+## The one decision still open
+
+`02_deploy.pact` carries `REPL_BootstrapVault` and `REPL_BootstrapTreasury`, and `03_deploy.pact`
+carries their two `AQP-FVT|REPL_*` Talos wrappers — 73 pre-existing lines, not added by either
+fix. **No deployed module currently carries `REPL_` helpers**, and 14 REPL suites use these two.
+Whether they ship to mainnet is a call about surface, not about either defect.
+
+To exclude them, remove the functions from `05_FVT.pact` and the wrappers from `04_TS02-C3.pact`,
+re-run `_deploybundle.py --write`, and re-copy/re-slice. The 14 suites that use them will then
+fail, which is the cost of excluding them.
