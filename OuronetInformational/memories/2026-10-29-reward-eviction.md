@@ -90,14 +90,21 @@ Measured: **28.800000000000000000000000 both ways.**
 A wrong assertion that passes is worse than no assertion, and two of these three would have passed
 had the fixture been one staker instead of two.
 
-### What the suite does NOT prove
+### What [6.2.18] cannot prove, and where it is proved instead
 
 `TX-EVICT-02` **skips** when no forced-fix count is outstanding, and says so in its output rather
-than passing vacuously. Raising a count needs an inject that forces a deb fix on a *stale* score,
-and the only mechanism for that in the tree moves ANHD's EliteAuryn balance — a global side effect
+than passing vacuously. Raising a count needs an inject that fixes a *stale* score, and the only
+mechanism for that in the tree moves ANHD's EliteAuryn balance down a tier — a global side effect
 that would poison every later suite in `[6.2]_AQP.repl`. That is exactly why `[6.2.8c]` lives in
-the destructive tail. **The right home for the zeroing proof is `deb-staleness-inject-cc.repl`**,
-which is a gate entrypoint and already builds the staleness; it is not there yet.
+the destructive tail and runs in its own pact process.
+
+So the proof lives in the chain that already pays for the fixture:
+**`REPL/Stage_02/[6.2.18b]_AQP-EVICT-PENALTY.repl`**, loaded from the tail of
+`deb-staleness-inject-cc.repl` (a gate entrypoint). Measured: a real forced-fix count of **3 → 0**,
+with **14.270825504728847105736745 AURYN** paid to the beneficiary in the same call and all 4
+claimable legs consumed, so a re-read finds none. It `enforce`s its preconditions rather than
+skipping them — a zero count there means `[6.2.8c]`'s fix path stopped raising one, and a suite that
+quietly passes on a vanished fixture is how a test stops testing.
 
 ## Measurements
 
@@ -117,7 +124,8 @@ got — and the seventh-power size charge means there is no arguing with it.
 
 ## Open
 
-- **The forced-fix zeroing is unproven by execution.** See above.
+- ~~The forced-fix zeroing is unproven by execution.~~ **CLOSED** the same day — see
+  `[6.2.18b]_AQP-EVICT-PENALTY` above.
 - **`IG|COMPONENTS["AQP-FVT|CC_Collect"] = 57`** has not been recalibrated against the new 208,611
   measurement. The price sheet did not move because the component is a declared constant, not a
   derived leg sum — so this is a pricing decision, not a drift.

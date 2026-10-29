@@ -37,6 +37,11 @@
 ;; ZEROES it, by owner ruling: "i think it is better that evitRewards zeroes that penalty for
 ;; him") and who paid the IGNIS. Everything else must match.
 ;;
+;; The ZEROING ITSELF is proved by [6.2.18b]_AQP-EVICT-PENALTY, not here -- see TX-EVICT-02's
+;; output for why this chain cannot create a forced-fix count without breaking the suites after
+;; it. Here the count is deliberately zero on BOTH rounds, so the payout equality above cannot be
+;; explained by a penalty cancelling out.
+;;
 (print "")
 (print "================================================================")
 (print "FILE  REPL/Stage_02/[6.2.18]_AQP-EVICT.repl")
@@ -258,7 +263,7 @@
             )
         )
         (print (format
-            "<(SKIPPED)> no forced-fix count outstanding on (TfStakeVault, OURO, ANHD) -- nothing to zero. The zeroing path is exercised by AQP-EVCT::XE_EvictPay -> RPS::XE_WU_FvtForcedFixCount|Zero and remains unproven by THIS suite; raising a count here needs an inject that forces a deb fix on a STALE score, which [6.2.8c] builds and [6.2] does not load."
+            "<(SKIPPED)> no forced-fix count outstanding on (TfStakeVault, OURO, ANHD) -- nothing to zero HERE. Raising one needs an inject that fixes a STALE score, and the only mechanism in the tree moves ANHD's Elite-DEB down a tier, which would poison every suite loaded after this one in [6.2]_AQP.repl. The ruling IS proved by execution, in the one chain that already pays for that fixture: [6.2.18b]_AQP-EVICT-PENALTY, loaded from deb-staleness-inject-cc.repl, takes a real count of 3 to 0."
             []))
     )
 )

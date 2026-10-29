@@ -1,0 +1,105 @@
+;;
+;; REPL/Stage_02/[6.2.18b]_AQP-EVICT-PENALTY.repl — eviction ZEROES the staleness penalty.
+;;
+;; Requires: a NON-ZERO forced-fix count on (SubsidiaryTreasury, AURYN, ANHD), which only
+;; [6.2.8c]_AQP-INJECT-CC produces. ONE LOADER: REPL/deb-staleness-inject-cc.repl, at its tail.
+;;
+;; WHY IT LIVES HERE AND NOT IN [6.2.18]. The owner's ruling is explicit —
+;;
+;;     "if his rewards are evicted for him, he wouldnt need to be collecting them himslef ...
+;;      i think it is better that evitRewards zeroes that penalty for him"
+;;
+;; — and [6.2.18]_AQP-EVICT cannot prove it. Raising a forced-fix count needs an inject that fixes
+;; a STALE score, and the only mechanism in the tree moves ANHD's EliteAuryn balance down a tier: a
+;; global side effect that would poison every suite loaded after it in [6.2]_AQP.repl. That is
+;; precisely why [6.2.8c] sits in the destructive tail and runs in its own pact process. So
+;; [6.2.18] states the gap in its own output and this file closes it, in the one chain that already
+;; pays the cost of creating the staleness.
+;;
+;; THE ASYMMETRY BEING PROVED. A self-collect CHARGES the penalty — somebody had to refresh the
+;; stale scores and the claimant is who pays. An eviction ZEROES it, because the beneficiary never
+;; chose to collect and charging them would be billing them for not acting. Both halves of that
+;; sentence are code: AQP-FVT::XI_CollectForcedFixPenalty on the collect path,
+;; AQP-EVCT::XE_EvictPay -> RPS::XE_WU_FvtForcedFixCount|Zero on the eviction path.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_02/[6.2.18b]_AQP-EVICT-PENALTY.repl")
+(print "================================================================")
+(print "Legend: <<TX-EVICT-PEN-*>> assertions; <(…)> echoes.")
+(print "")
+;;
+(begin-tx "TX-EVICT-PEN-01 - eviction zeroes an outstanding forced-fix penalty")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-EVICT-PEN-01 · 01 · env-sigs (caps) ==== ================================================
+(print "--- [TX-EVICT-PEN-01 · 01 · env-sigs (caps)] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-EVICT-PEN-01 · 02 · count > 0, evict, count == 0 ==== ===================================
+(print "--- [TX-EVICT-PEN-01 · 02 · count > 0, evict, count == 0] ---")
+(let*
+    (
+        (anhd:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
+        (ref-EVCT:module{AcquisitionRewardEvictionV1} AQP-EVCT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
+        (auryn-id:string "AURYN-98c486052a51")
+        (fvt-owner:string (ref-FVT::UR_FVT|OwnerKonto fvt-id))
+        (ffc-before:integer (ref-FVT::UR_FVT-FFC|Count fvt-id auryn-id anhd))
+        (legs:integer (ref-EVCT::URHC_EvictLegCount fvt-id))
+        (auryn-pre:decimal (ref-DPTF::UR_AccountSupply auryn-id anhd))
+    )
+    (map print
+        [
+            (format "<(forced-fix count before)> => {} on ({} / {} / ANHD)" [ffc-before fvt-id auryn-id])
+            (format "<(fvt owner / evict legs)> => {} / {}" [fvt-owner legs])
+        ]
+    )
+    ;;FAIL LOUDLY RATHER THAN SKIP. [6.2.18] skips when there is no count, because in that chain
+    ;;there legitimately is none. HERE a zero count means [6.2.8c]'s fix path stopped raising one,
+    ;;or stopped running at all -- and a suite that quietly passes on a vanished fixture is how a
+    ;;test stops testing. Same for the owner: the differential only means anything if the signer
+    ;;may both own the FVT and be the beneficiary.
+    (enforce (> ffc-before 0)
+        "TX-EVICT-PEN-01 needs a NON-ZERO forced-fix count on (SubsidiaryTreasury, AURYN, ANHD) -- \
+        \ [6.2.8c]'s CCp_InjectFixChunk is what raises one; if it is 0 the fixture has moved")
+    (enforce (= fvt-owner anhd)
+        "TX-EVICT-PEN-01 needs the signing account to own SubsidiaryTreasury (it is both evictor and beneficiary here)")
+    (enforce (> legs 0)
+        "TX-EVICT-PEN-01 needs at least one claimable eviction leg on SubsidiaryTreasury")
+    (let*
+        (
+            (run:string (ref-TS02-C3::AQP-EVCT|CC_FullEvictRewards anhd anhd fvt-id))
+            (ffc-after:integer (ref-FVT::UR_FVT-FFC|Count fvt-id auryn-id anhd))
+            (auryn-post:decimal (ref-DPTF::UR_AccountSupply auryn-id anhd))
+            (legs-after:integer (ref-EVCT::URHC_EvictLegCount fvt-id))
+        )
+        (map print
+            [
+                (format "<(AQP-EVCT|CC_FullEvictRewards)> => \"{}\"" [run])
+                (format "<(forced-fix count)> {} -> {}" [ffc-before ffc-after])
+                (format "<(AURYN)> pre={} post={} delta={}" [auryn-pre auryn-post (- auryn-post auryn-pre)])
+                (format "<(evict legs)> {} -> {}" [legs legs-after])
+                ;;THE RULING, as an assertion.
+                (expect (format "<<TX-EVICT-PEN-01>> eviction ZEROED the forced-fix penalty ({} -> {})"
+                    [ffc-before ffc-after]) 0 ffc-after)
+                ;;...and it was not zeroed by doing nothing: the beneficiary was actually paid.
+                (expect (format "<<TX-EVICT-PEN-01>> and it paid the beneficiary while doing so (delta={})"
+                    [(- auryn-post auryn-pre)]) true (> auryn-post auryn-pre))
+                ;;A whole-FVT eviction consumes every claimable leg, so a re-read finds none. This is
+                ;;the same live-reader property AQP-VCT's inventory readers rely on, and it is what
+                ;;makes a partially-run slice campaign safe to resume from a fresh read.
+                (expect (format "<<TX-EVICT-PEN-01>> a re-read finds no leg left to evict (was {})" [legs])
+                    0 legs-after)
+            ]
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+(print "=== [6.2.18b]_AQP-EVICT-PENALTY complete =======================")
+(print "")

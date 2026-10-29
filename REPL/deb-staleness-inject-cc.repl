@@ -50,3 +50,10 @@
 (load "../1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact")
 (commit-tx)
 (load "Stage_02/[6.2.8c]_AQP-INJECT-CC.repl")
+
+;;THE EVICTION PENALTY PROOF, appended 2026-10-29. [6.2.8c] above is the only thing in the
+;;tree that raises a forced-fix count, and the owner ruled that eviction ZEROES that penalty
+;;rather than charging it. [6.2.18]_AQP-EVICT cannot prove it -- creating the staleness moves
+;;ANHD's Elite-DEB, which would poison every suite after it in [6.2]_AQP.repl -- so the proof
+;;lives here, in the one chain that already pays for the fixture.
+(load "Stage_02/[6.2.18b]_AQP-EVICT-PENALTY.repl")
