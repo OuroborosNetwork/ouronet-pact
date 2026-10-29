@@ -4668,8 +4668,13 @@
                     ;;THE IDENTITY: the quoted total is exactly its three named legs, summed.
                     (expect "<<AQP-F9>> URCi_CollectFull equals payout-leg + forced-fix + the collect leg"
                         (fold (+) 0.0
+                            ;;KST.ANHD TWICE, and not a typo: since 2026-10-29 the forced-fix mirror
+                            ;;takes (patron collector ...) because the COUNT is the collector's while
+                            ;;the DISCOUNT dividing it is the patron's. This is a SELF-collect fixture,
+                            ;;so the two roles are one account -- which is also what keeps the identity
+                            ;;below true, since URCi_CollectFull passes <patron> for both.
                             [ (ref-RPS::URC_CollectTransferLegIgnis KST.ANHD pool fvt 1 score ouro)
-                              (ref-RPS::URC_CollectForcedFixIgnis KST.ANHD fvt ouro)
+                              (ref-RPS::URC_CollectForcedFixIgnis KST.ANHD KST.ANHD fvt ouro)
                               (ref-INFO::OI|UC_IfpFromOutputCumulator
                                   (ref-RPS::URCi_Collect fvt [fvt score ouro])) ])
                         (ref-RPS::URCi_CollectFull KST.ANHD fvt 1 score ouro))
@@ -4680,7 +4685,7 @@
                     ;;forced-fix count on this lane, so the penalty term is absent -- which is also
                     ;;why the identity above is dominated by the other two legs.
                     (expect "<<AQP-F9>> the forced-fix penalty is 0 for an account with no stale-fix count"
-                        0.0 (ref-RPS::URC_CollectForcedFixIgnis KST.ANHD fvt ouro))
+                        0.0 (ref-RPS::URC_CollectForcedFixIgnis KST.ANHD KST.ANHD fvt ouro))
                     ;;...so the remaining two legs alone must already account for the whole total.
                     ;;This is what stops the identity passing on a function that silently ignores a leg.
                     (expect "<<AQP-F9>> ...so payout-leg + collect-leg alone reproduce the total"

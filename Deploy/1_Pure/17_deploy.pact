@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 17 of 25
 ;; This is STEP 17 of 26 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-16 must have run first, including the init steps between deploys.
-;; 1 source file(s), 372,386 gas measured in the REPL gas model, 332,374 bytes
+;; 1 source file(s), 372,386 gas measured in the REPL gas model, 333,876 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/04_RPS.pact
@@ -2491,9 +2491,9 @@
                (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPLC::URCi_Fuel AQP|SC_NAME swpair input-amounts true)))
         ))
 
-    (defun URC_CollectXferIgnis:decimal (id:string patron:string amount:decimal)
-        @doc "IGNIS ifp of one reward custody transfer AQP|SC_NAME -> patron of <amount> <id> (0 when amount<=0); \
-            \ mirrors (if (> amt 0.0) (C_Transfer id AQP|SC_NAME patron amt true) (UC_EmptyOc))."
+    (defun URC_CollectXferIgnis:decimal (id:string collector:string amount:decimal)
+        @doc "IGNIS ifp of one reward custody transfer AQP|SC_NAME -> collector of <amount> <id> (0 when amount<=0); \
+            \ mirrors (if (> amt 0.0) (C_Transfer id AQP|SC_NAME collector amt true) (UC_EmptyOc))."
         (if (<= amount 0.0)
             0.0
             (let
@@ -2503,12 +2503,12 @@
                 )
                 (ref-I|OURONET::OI|UC_IfpFromOutputCumulator
                     (ref-TFT::URCi_TransferCumulator
-                        (at "type" (ref-TFT::URC_TransferClasses id AQP|SC_NAME patron amount))
-                        id AQP|SC_NAME patron))
+                        (at "type" (ref-TFT::URC_TransferClasses id AQP|SC_NAME collector amount))
+                        id AQP|SC_NAME collector))
             )))
 
     (defun URC_HeterogeneousLaneRouteIgnis:decimal
-        (patron:string fvt-id:string reward-dptf-id:string mf-id:string amt-b:decimal amt-s:decimal amt-g:decimal prec:integer)
+        (collector:string fvt-id:string reward-dptf-id:string mf-id:string amt-b:decimal amt-s:decimal amt-g:decimal prec:integer)
         @doc "IGNIS ifp mirror of XI_1|HeterogeneousLaneRoute: ONE token-0 pre-fund of the whole payout + \
             \ Coil(total-t1+total-t2) on ats-01 + Coil(remainder) on ats-12. Mirrors the exec leg for leg; \
             \ the leg list here and the leg list there are the same three branches."
@@ -2536,7 +2536,7 @@
                 (payout-all:decimal (+ total-t0 fund-12))
             )
             (if (<= fund-12 0.0)
-                (URC_CollectXferIgnis token-0 patron payout-all)
+                (URC_CollectXferIgnis token-0 collector payout-all)
                 (let
                     (
                         (h-all:object{AutostakeV4.CoilData}
@@ -2552,13 +2552,13 @@
                             (rbt1-ladder:decimal (- (at "rbt-amount" h-all) rbt1-keep))
                         )
                         (fold (+) 0.0
-                            [ (URC_CollectXferIgnis token-0 patron payout-all)
+                            [ (URC_CollectXferIgnis token-0 collector payout-all)
                               (if (> (at "rbt-amount" h-all) 0.0)
-                                  (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_Coil patron ats-01 token-0 fund-12))
+                                  (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_Coil collector ats-01 token-0 fund-12))
                                   0.0)
                               (if (and (> rbt1-ladder 0.0)
                                        (> (at "rbt-amount" (ref-ATS::URC_RewardBearingTokenAmounts ats-12 rbt1-id rbt1-ladder)) 0.0))
-                                  (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_Coil patron ats-12 rbt1-id rbt1-ladder))
+                                  (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_Coil collector ats-12 rbt1-id rbt1-ladder))
                                   0.0)
                             ])
                     )
@@ -2676,7 +2676,7 @@
     )
 
     (defun URC_CollectTransferLegIgnis:decimal
-        (patron:string pool-id:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
+        (collector:string pool-id:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
         @doc "IGNIS ifp mirror of XI_TransferRewardDptfFromVault (PHASE 1.1 collect payout leg)."
         (let
             (
@@ -2685,7 +2685,7 @@
                 (ref-ATS:module{AutostakeV4} ATS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (reward-kind:string (UR_FVT-RG|RewardKind fvt-id reward-dptf-id))
-                (payout:decimal (URC_CollectClaimableRewards patron pool-id fvt-id score-entity-type score-entity-id reward-dptf-id))
+                (payout:decimal (URC_CollectClaimableRewards collector pool-id fvt-id score-entity-type score-entity-id reward-dptf-id))
             )
             (if (<= payout 0.0)
                 0.0
@@ -2693,7 +2693,7 @@
                     (let*
                         (
                             (mf-id:string (UR_FVT-RG|MultipletFamilyId fvt-id reward-dptf-id))
-                            (lanes:object (URC_ComputeTripletLanes patron pool-id score-entity-id))
+                            (lanes:object (URC_ComputeTripletLanes collector pool-id score-entity-id))
                             (lane-b:decimal (at "lane-b" lanes))
                             (lane-s:decimal (at "lane-s" lanes))
                             (lane-g:decimal (at "lane-g" lanes))
@@ -2709,9 +2709,9 @@
                             (fund-sg:decimal (+ amt-s amt-g))
                         )
                         (if (= mode CT_REWARD_MODE_HETEROGENEOUS)
-                            (URC_HeterogeneousLaneRouteIgnis patron fvt-id reward-dptf-id mf-id amt-b amt-s amt-g prec)
+                            (URC_HeterogeneousLaneRouteIgnis collector fvt-id reward-dptf-id mf-id amt-b amt-s amt-g prec)
                             (if (<= fund-sg 0.0)
-                                (URC_CollectXferIgnis token-0 patron payout)
+                                (URC_CollectXferIgnis token-0 collector payout)
                                 (let*
                                     (
                                         (h-all:object{AutostakeV4.CoilData}
@@ -2724,28 +2724,31 @@
                                         (rbt1-ladder:decimal (- (at "rbt-amount" h-all) rbt1-keep))
                                     )
                                     (fold (+) 0.0
-                                        [ (URC_CollectXferIgnis token-0 patron payout)
+                                        [ (URC_CollectXferIgnis token-0 collector payout)
                                           (if (> (at "rbt-amount" h-all) 0.0)
-                                              (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_Coil patron ats-01 token-0 fund-sg))
+                                              (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_Coil collector ats-01 token-0 fund-sg))
                                               0.0)
                                           (if (and (> rbt1-ladder 0.0)
                                                    (> (at "rbt-amount" (ref-ATS::URC_RewardBearingTokenAmounts ats-12 rbt1-id rbt1-ladder)) 0.0))
-                                              (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_Coil patron ats-12 rbt1-id rbt1-ladder))
+                                              (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_Coil collector ats-12 rbt1-id rbt1-ladder))
                                               0.0)
                                         ])
                                 )))
                     )
-                    (URC_CollectXferIgnis reward-dptf-id patron payout)))
+                    (URC_CollectXferIgnis reward-dptf-id collector payout)))
         ))
 
-    (defun URC_CollectForcedFixIgnis:decimal (patron:string fvt-id:string reward-dptf-id:string)
+    (defun URC_CollectForcedFixIgnis:decimal
+        (patron:string collector:string fvt-id:string reward-dptf-id:string)
         @doc "IGNIS ifp mirror of CC_Collect PHASE 7 forced-fix penalty: (ffc x CT_FORCED_FIX_RATE / patron-discount) \
-            \ gated by the virtual-gas toggle; 0 when ffc<=0."
+            \ gated by the virtual-gas toggle; 0 when ffc<=0. \
+            \ TOOK A SECOND PARAMETER rather than a rename: the COUNT is the collector's (the exec reads \
+            \ it for <executor>) while the DISCOUNT dividing it is the patron's, who actually pays."
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 (ref-DALOS:module{OuronetDalosV3} DALOS)
-                (ffc:integer (UR_FVT-FFC|Count fvt-id reward-dptf-id patron))
+                (ffc:integer (UR_FVT-FFC|Count fvt-id reward-dptf-id collector))
             )
             (if (<= ffc 0)
                 0.0
@@ -2769,9 +2772,24 @@
                         (ref-SCR::UR_SCR|ScoreAqpoolLink (ref-SCR::UR_SCR|TripletSilverScoreId score-entity-id))
                         (ref-SCR::UR_SCR|ScoreAqpoolLink score-entity-id)))
             )
+            ;;THE ONE REMAINING PATRON/COLLECTOR CONFLATION, AND IT IS DELIBERATE. The four
+            ;;mirrors below now take a COLLECTOR -- payout, lane split, transfer class and
+            ;;forced-fix count are all properties of the account being PAID, not of the one
+            ;;paying. Renamed 2026-10-29; no value changes for a self-collect.
+            ;;
+            ;;This entry point cannot take one yet: it is declared on
+            ;;AcquisitionFarmsVaultsTreasuriesV4 (05_FVT.pact:212) and V4 IS LIVE -- confirmed by
+            ;;`_livemodules.py --diff` against the chain, not from a cached snapshot. A parameter
+            ;;means V5, cascading to the six files that name it plus INFO_AQP-FVT|Collect's arity,
+            ;;which moves the registry and every client built from it.
+            ;;
+            ;;So <patron> is passed for BOTH roles here, in one place: a SPONSORED collect quotes
+            ;;the sponsor's claimable, lane split and forced-fix count. Nothing sponsors a collect
+            ;;in the UI today, so every live call is correct. One token at the next FVT bump.
+            ;;EVCT's previews do not inherit this -- new functions on a new V1 interface.
             (fold (+) 0.0
                 [ (URC_CollectTransferLegIgnis patron pool-id fvt-id score-entity-type score-entity-id reward-dptf-id)
-                  (URC_CollectForcedFixIgnis patron fvt-id reward-dptf-id)
+                  (URC_CollectForcedFixIgnis patron patron fvt-id reward-dptf-id)
                   (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (URCi_Collect fvt-id [fvt-id score-entity-id reward-dptf-id]))
                 ])
         ))

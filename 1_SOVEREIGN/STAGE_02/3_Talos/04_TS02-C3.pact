@@ -3305,7 +3305,20 @@
     )
     (defun AQP-FVT|CC_Collect:string
         (patron:string executor:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
-        @doc "Collects pending reward DPTF for patron on one score-entity from fvt-id; collects IGNIS on patron."
+        @doc "Collects pending reward DPTF for the EXECUTOR on one score-entity from fvt-id; collects IGNIS on \
+            \ patron. \
+            \ \
+            \ THE @doc SAID \"for patron\" UNTIL 2026-10-29 AND THE BALANCE DIFF BELOW BELIEVED IT. \
+            \ <FVT::CC_Collect> credits the EXECUTOR -- `XI_TransferRewardDptfFromVault`'s own doc calls it \
+            \ the REWARD SUBJECT and says `patron` \"only pays IGNIS and is deliberately unused here\". So a \
+            \ sponsored collect measured the SPONSOR's balance across a transfer that moved nothing of theirs \
+            \ and reported `0.0` for a collect that really paid out. Reading the executor is the fix; the \
+            \ figure is unchanged for a self-collect, where the two accounts are the same. \
+            \ \
+            \ IT STILL UNDERSTATES A TRIPLET LANE, and that is pre-existing rather than introduced here: a \
+            \ MULTIPLET_BASE triplet pays in up to THREE tokens and this reads only <reward-dptf-id>, so the \
+            \ coiled and double-coiled shares are invisible to it. <RPS::URC_CollectLadderPreview> is the \
+            \ reader that answers per-token and exists for exactly that reason."
         (with-capability (P|TS)
             (let
                 (
@@ -3313,7 +3326,7 @@
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                     (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV4} AQP-FVT)
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
-                    (bal-before:decimal (ref-DPTF::UR_AccountSupply reward-dptf-id patron))
+                    (bal-before:decimal (ref-DPTF::UR_AccountSupply reward-dptf-id executor))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-FVT::CC_Collect patron executor fvt-id score-entity-type score-entity-id reward-dptf-id)
@@ -3321,7 +3334,7 @@
                 (ref-TS01-A::XB_DynamicFuelSTOA)
                 (let
                     (
-                        (bal-after:decimal (ref-DPTF::UR_AccountSupply reward-dptf-id patron))
+                        (bal-after:decimal (ref-DPTF::UR_AccountSupply reward-dptf-id executor))
                         (payout:decimal (- bal-after bal-before))
                     )
                     (format "Successfully collected {} {} rewards from FVT {} for score-entity type {} id {}."
