@@ -320,6 +320,37 @@ ROUNDS = {
         # 08_DSA.pact, the last AQP core module here and its immediate predecessor in load order.
         "extra": [("1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact", "08_DSA.pact")],
     },
+    "2026-10-v18-vacate-lock": {
+        "why": "A VACATED POOL STAYS SHUT, and the deferred-score drain moves to the admin band. "
+               "Owner ruling 2026-10-30: 'The pool owner has to manually re allow stacking after a "
+               "vacate event', and the v2 variant -- which moves assets while DEFERRING the score "
+               "-- is kept for observational comparison but gated so clients can only reach the "
+               "atomically correct v1. "
+               "\n\n"
+               "THE MODULE WAS DISAGREEING WITH ITSELF, which is why this is a correction and not "
+               "a new rule. XI_ClearVacateInProgress -- the ABORT exit -- has always ended 'Stake "
+               "stays disabled (ops re-enable via C_EnablePoolStake)'. The SUCCESS exits "
+               "re-enabled it automatically, so a vacate that FAILED stayed locked while one that "
+               "SUCCEEDED sprang open: the opposite ordering of caution. "
+               "\n\n"
+               "FOUR MODULES, ONE BUMP. TalosStageTwo_ClientThree V6 -> V7 renames the three drain "
+               "wrappers to AAp_ and C_FinalizeVacate to A_FinalizeVacate, all on "
+               "P|ADMINISTRATIVE-SUMMONER with the gasless patron -- the EVCT pattern, so the "
+               "CORES keep their names and AcquisitionVacateV4 does NOT bump. The two citizens "
+               "ride the cascade for their modrefs only; neither calls a renamed member. "
+               "\n\n"
+               "AQP-VCT IS IN `also`, NOT IN THE CASCADE. Its body changed and its signatures did "
+               "not, so nothing an interface grep can see would have carried it -- and a round "
+               "that shipped the new Talos against the old VCT would have deployed wrappers whose "
+               "pool still re-opens itself.",
+        "interfaces": ["TalosStageTwo_ClientThreeV7"],
+        # The behaviour change itself: internal to AQP-VCT, invisible to the cascade. See `also`.
+        "also": ["1_SOVEREIGN/STAGE_02/2_Core/03_AQP/06_VCT.pact"],
+        # NO INIT. No new module, no new table, no new IMP registration -- the round rewrites three
+        # function bodies and renames four Talos wrappers. An init transaction here would have
+        # nothing to do, and a step that does nothing is a step someone later trusts.
+        "init": [],
+    },
     "2026-10-v16-unstale-events": {
         "why": "OBSERVABILITY, ONE MODULE. Every un-staling path already fired an @event; each one "
                "announced the REQUEST and not the RESULT. FVT|C>INJECT-FIX, FVT|C>UNSTALE-ALL and "
@@ -1344,6 +1375,23 @@ def main():
         RND = rnd
         NEW_KEYS.extend(rnd.get("new", []))
         keep = (chain_pacts() if rnd.get("all_modules") else round_modules(rnd))
+        # `also` -- MODULES THAT CHANGED WITHOUT AN INTERFACE BUMP. Added 2026-10-30 for V18.
+        #
+        # `round_modules` selects by interface cascade, which is the right default and is blind to
+        # a module whose BODY changed while its signature did not. AQP-VCT is exactly that this
+        # round: the vacate stake-lock ruling rewrote three functions and bumped nothing, so the
+        # cascade cannot see it and the round would have shipped a Talos that calls the OLD
+        # behaviour.
+        #
+        # NOT `extra`, which exists for modules in NO deploy chain and labels them so -- AQP-VCT is
+        # in one (batch 20) and would be mislabelled. NOT a fake entry in `interfaces` either: that
+        # key asserts a BUMP, and listing an unbumped interface there would make the round metadata
+        # state something untrue about the chain. This is a third thing and says so.
+        for rel in rnd.get("also", []):
+            ap = os.path.normpath(os.path.join(ROOT, rel))
+            if not os.path.exists(ap):
+                sys.exit(f"round {rname}: `also` module missing from the tree: {rel}")
+            keep.add(ap)
         # `excluded` must REMOVE, not merely annotate. The first cut of this only fed the coverage
         # report, so DPMF was documented as excluded and shipped anyway -- a comment that
         # contradicts the artefact beside it is worse than no comment.
