@@ -1262,6 +1262,67 @@ def build(probe):
     return doc
 
 
+def _norm_type(t):
+    """Collapse the shapes the registry and the sources spell differently."""
+    t = t.strip()
+    if t.startswith("object"):
+        return "object"
+    if t.startswith("[object"):
+        return "[object]"
+    if t.startswith("module"):
+        return "module"
+    return t
+
+
+def _balanced_end(s, i):
+    """End of the form at `i`, skipping strings and `;` comments -- an `@doc` routinely
+    carries unbalanced parens and a naive counter closes the module on the first one."""
+    depth, j, n = 0, i, len(s)
+    while j < n:
+        c = s[j]
+        if c == '"':
+            j += 1
+            while j < n and s[j] != '"':
+                j += 2 if s[j] == "\\" else 1
+        elif c == ";":
+            while j < n and s[j] != "\n":
+                j += 1
+        elif c == "(":
+            depth += 1
+        elif c == ")":
+            depth -= 1
+            if depth == 0:
+                return j + 1
+        j += 1
+    return n
+
+
+def _source_signatures():
+    """(module, function) -> [(param, type)], from the module BODIES in this repository.
+
+    The BODY and not the interface declarations: those sit OUTSIDE the module form and may be
+    a version behind, which would make a stale interface look like a correct signature."""
+    import re as _re
+    out = {}
+    import pathlib as _pl
+    _root = _pl.Path(ROOT)
+    for root in (_root / "1_SOVEREIGN", _root / "2_CITIZEN"):
+        if not root.exists():
+            continue
+        for f in root.rglob("*.pact"):
+            s = f.read_text(errors="replace")
+            for m in _re.finditer(r"^[ \t]*\(module ([A-Za-z0-9_|\-\+]+) ", s, _re.M):
+                mod = m.group(1)
+                body = s[m.start():_balanced_end(s, m.start())]
+                for d in _re.finditer(
+                        r"\(defun ([A-Za-z0-9_|\-\+>]+)(?::[A-Za-z0-9_\{\}\.\[\]]+)?"
+                        r"\s*\n?\s*\(([^)]*)\)", body):
+                    params = [(pm.group(1), _norm_type(pm.group(2))) for pm in _re.finditer(
+                        r"([A-Za-z0-9_\-|]+):([A-Za-z0-9_\[\]\{\}\.]+)", d.group(2))]
+                    out.setdefault((mod, d.group(1)), params)
+    return out
+
+
 def main():
     if "--probe" in sys.argv:
         doc = build(probe=True)
@@ -1294,6 +1355,53 @@ def main():
             print(f"registry: {len(bad)} entrypoint(s) point at a preview that is not in the file")
             for k in bad[:10]:
                 print(f"    {k} -> {doc['entrypoints'][k]['preview']}")
+            return 1
+        # ──────────────────────────────────────────────────────────────────────────────────
+        # THE SIGNATURES MUST MATCH THE SOURCES. Added 2026-10-30.
+        # ──────────────────────────────────────────────────────────────────────────────────
+        # Every other check in this block compares the artefact to ITSELF. CLAUDE.md says so
+        # outright -- "both guards on it compare it to a COPY of itself, not to the chain" --
+        # and the consequence arrived in full on 2026-10-30: the V17 round gave
+        # `INFO_AQP-FVT|Collect` a `collector` parameter, the artefact was never regenerated,
+        # and OuronetUI's Master Collect rendered a FIVE-argument call to a SIX-argument
+        # reader. The chain answered
+        #
+        #     Type check failed. The argument is integer but the expected type is string
+        #
+        # because `score-entity-type` had slid one slot left into `fvt-id`. Nothing in either
+        # repository could see it: the UI builds that call FROM the registry, so the UI and
+        # the artefact agreed with each other about a surface that had moved.
+        #
+        # ASKING THE CHAIN NEEDS --probe AND A NETWORK. The SOURCES are the next best
+        # authority and are free: `1_SOVEREIGN/` is supposed to be at parity with what is
+        # running, which is this repository's founding rule. So a mismatch means either the
+        # artefact is stale (regenerate) or the sources have diverged from the chain (a
+        # deploy is owed) -- both are findings, and neither should be silent.
+        #
+        # NAMES AND TYPES, IN ORDER. A renamed parameter builds a call the chain refuses by
+        # name; a reordered one builds a call it refuses by type, which is the harder failure
+        # to read. Only functions the sources actually define are compared, so a `repo-only`
+        # or chain-only entry is skipped rather than guessed at.
+        src_sigs = _source_signatures()
+        drift = []
+        for bucket in ("entrypoints", "previews"):
+            for key, val in doc.get(bucket, {}).items():
+                if "." not in key:
+                    continue
+                mod, fn = key.split(".", 1)
+                src = src_sigs.get((mod, fn))
+                if src is None:
+                    continue
+                have = [(p["name"], _norm_type(p["type"])) for p in val["params"]]
+                if src != have:
+                    drift.append((bucket, key, src, have))
+        if drift:
+            print(f"registry: {len(drift)} signature(s) differ from the Pact sources -- the "
+                  f"artefact is stale (run --probe) or the sources are undeployed")
+            for bucket, key, src, have in drift[:10]:
+                print(f"    [{bucket}] {key}")
+                print(f"        sources : {[n for n, _ in src]}")
+                print(f"        registry: {[n for n, _ in have]}")
             return 1
         # every entry must SAY how it executes. A missing `execution` is not a neutral
         # omission: a consumer reading the registry to decide whether to run a preflight will
