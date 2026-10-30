@@ -64,7 +64,7 @@
         (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
         (ref-EVCT:module{AcquisitionRewardEvictionV1} AQP-EVCT)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "TfStakeVault"))
         (score-id:string (ref-U|DALOS::UDC_Makeid "TfStakeScore"))
         (pool-id:string (ref-U|DALOS::UDC_Makeid "TfStakePool"))
@@ -244,7 +244,7 @@
         (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
         (ref-EVCT:module{AcquisitionRewardEvictionV1} AQP-EVCT)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "TfStakeVault"))
         (score-id:string (ref-U|DALOS::UDC_Makeid "TfStakeScore"))
         (pool-id:string (ref-U|DALOS::UDC_Makeid "TfStakePool"))
@@ -329,7 +329,7 @@
         (patron:string KST.ANHD)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "TfStakeVault"))
         (score-id:string (ref-U|DALOS::UDC_Makeid "TfStakeScore"))
         (ouro-id:string "OURO-98c486052a51")
@@ -378,7 +378,7 @@
     (
         (patron:string KST.ANHD)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
     )
     (let
         (
@@ -408,7 +408,7 @@
     (
         (patron:string KST.ANHD)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "TfStakeVault"))
         (score-id:string (ref-U|DALOS::UDC_Makeid "TfStakeScore"))
         (ouro-id:string "OURO-98c486052a51")
@@ -466,7 +466,7 @@
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "TfStakeVault"))
         (score-id:string (ref-U|DALOS::UDC_Makeid "TfStakeScore"))
         (ouro-id:string "OURO-98c486052a51")

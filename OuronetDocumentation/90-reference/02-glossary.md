@@ -14,12 +14,12 @@ Counts are of definitions in the tree, interface declarations included.
 | prefix | uses | what it promises |
 |---|---:|---|
 | `UR_` | 1,546 | reads one row or field by key |
-| `C_` | 1,390 | client entry — builds the bill; reachable only through Talos |
+| `C_` | 1,388 | client entry — builds the bill; reachable only through Talos |
 | `URC_` | 801 | reads and derives; no `enforce` |
 | `UEV_` | 675 | reads and `enforce`s; failure aborts the transaction |
 | `INFO_` | 650 | operation preview returning a client-facing cost and description |
 | `URCi_` | 646 | **cost reader** — the single source both billing and the preview call |
-| `A_` | 562 | admin-key mutation |
+| `A_` | 564 | admin-key mutation |
 | `UC_` | 529 | pure compute on arguments only — no table reads, no `enforce` |
 | `XI_` | 398 | internal write, this module only, under a capability |
 | `XE_` | 362 | entry point for other modules only |
@@ -32,8 +32,8 @@ Counts are of definitions in the tree, interface declarations included.
 | `UCk_` | 74 | **key builder** — composes a table's composite row key. Pure; returns a string, not a table |
 | `WU_` | 67 | write — update |
 | `XB_` | 64 | callable both internally and externally |
-| `CCp_` | 56 | client recipe that reaches a scan |
 | `SC_` | 52 | smart-contract account name — a constant, exposed as a function |
+| `CCp_` | 50 | client recipe that reaches a scan |
 | `CAP_` | 42 | account-ownership enforcement |
 | `URHC_` | 42 | scan and derive. Off the execution path |
 | `URCv_` | 37 | `URC_` with an intrinsic guard |
@@ -49,9 +49,9 @@ Counts are of definitions in the tree, interface declarations included.
 | `UDCx_` | 9 | constructor auxiliary |
 | `XIv_` | 8 | internal write with an intrinsic guard |
 | `URv_` | 8 | `UR_` with an intrinsic guard |
+| `AAp_` | 8 | admin recipe that reaches a scan |
 | `URU_` | 4 | version-upgrade read, admin only |
 | `REPL_` | 4 | **test fixture only.** Bootstrap helpers that exist for the harness. Present in the repository and, where a module has been redeployed since, absent from the chain — which is why the module pages compare the two |
-| `AAp_` | 2 | admin recipe that reaches a scan |
 | `AUx_` | 1 | admin-utility auxiliary |
 | `URCix_` | 1 | cost-reader auxiliary |
 | `Ap_` | 1 | admin multi-transaction recipe |

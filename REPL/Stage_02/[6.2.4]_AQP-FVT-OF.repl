@@ -39,7 +39,7 @@
         (pool-name:string "OfStakePool")
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
@@ -131,7 +131,7 @@
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
         (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
@@ -226,7 +226,7 @@
         (pool-name:string "OfStakePool")
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
@@ -309,7 +309,7 @@
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
         (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
         (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
@@ -438,7 +438,7 @@
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
         (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
@@ -504,7 +504,14 @@
                     (expect (format "<<TX-FVT-07 expect>> unclaimed-count after vacate got={} expected=0" [unclaimed]) 0 unclaimed)
                     (expect (format "<<TX-FVT-07 expect>> owner supply restored got={} expected={}" [post-supply (+ pre-supply vacate-amount)]) (+ pre-supply vacate-amount) post-supply)
                     (expect (format "<<TX-FVT-07 expect>> vacate-in-progress cleared got={} expected=false" [vacate-in-progress]) false vacate-in-progress)
-                    (expect (format "<<TX-FVT-07 expect>> stake re-enabled got={} expected=true" [stake-enabled]) true stake-enabled)
+                    ;;THE CAMPAIGN FINISHED AND THE POOL IS STILL SHUT. Owner ruling 2026-10-30:
+                    ;;the two facts are separate and the flag carries only the first. Every exit
+                    ;;from a vacate now leaves stake DISABLED -- the ABORT exit always did, and the
+                    ;;SUCCESS exit used to spring the pool open, which was the module disagreeing
+                    ;;with itself. The owner reopens with C_EnablePoolStake once the score work is
+                    ;;done. This assertion previously read `expected=true` and was pinning the old
+                    ;;auto-reopen.
+                    (expect (format "<<TX-FVT-07 expect>> stake STAYS DISABLED after vacate got={} expected=false" [stake-enabled]) false stake-enabled)
                 ]
             )
         )
@@ -539,7 +546,7 @@
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
         (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
@@ -634,7 +641,7 @@
         (dpof-id:string "MVST-98c486052a51")
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (pool-id:string (ref-U|DALOS::UDC_Makeid "OfStakePool"))
         (owned:[integer] (ref-DPOF::URH_AccountNonces owner-id dpof-id))
@@ -644,6 +651,12 @@
         (let
             (
                 (nonce:integer (at 0 owned))
+                ;;REOPEN THE POOL FIRST. TX-FVT-07/08 vacated it, and since 2026-10-30 a vacate
+                ;;leaves the pool SHUT -- every exit from a campaign does, so the owner reopens
+                ;;deliberately. This step is not scaffolding for the test; it is the operator
+                ;;action the new contract requires, and a fixture that re-staked without it was
+                ;;asserting the old auto-reopen.
+                (reopen:string (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron owner-id pool-id))
                 (nns0:integer (ref-AQP::UR_AQP|PoolNns pool-id))
                 (unn0:integer (ref-AQP::UR_AQP|UserUnn pool-id beneficiary-id))
                 (x:string (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron owner-id beneficiary-id pool-id dpof-id [nonce]))
@@ -703,7 +716,7 @@
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
         (ref-VCT:module{AcquisitionVacateV4} AQP-VCT)
@@ -757,7 +770,7 @@
                     (base-pre:decimal (ref-SCR::UR_U-SCR|UserScoreBaseScore beneficiary-id pool-id score-id))
                     (nns1:integer (ref-AQP::UR_AQP|PoolNns pool-id))
                     (unn1:integer (ref-AQP::UR_AQP|UserUnn pool-id beneficiary-id))
-                    (y:string (ref-TS02-C3::AQP-POOL|CCp_BatchDrainOrtoFungible patron pool-id dpof-id [owner-id] [beneficiary-id] [[nonce]]))
+                    (y:string (ref-TS02-C3::AQP-POOL|AAp_BatchDrainOrtoFungible pool-id dpof-id [owner-id] [beneficiary-id] [[nonce]]))
                 )
                 (let
                     (

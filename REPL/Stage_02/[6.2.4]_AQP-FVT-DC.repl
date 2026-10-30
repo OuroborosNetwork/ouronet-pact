@@ -38,7 +38,7 @@
         (pool-name:string "SfStakePool")
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
@@ -138,7 +138,7 @@
         (pool-name:string "SfStakePool")
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-DPDC:module{DpdcV3} DPDC)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
@@ -228,7 +228,7 @@
         (boost-class-name:string "SfStakeBoost")
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
         (anchor-id:string (ref-U|DALOS::UDC_Makeid "SfStakeAnchor"))
@@ -342,7 +342,7 @@
         (pool-name:string "SfStakePool")
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-DPDC:module{DpdcV3} DPDC)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
@@ -427,7 +427,7 @@
         (pool-name:string "SfStakePool")
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-DPDC:module{DpdcV3} DPDC)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
         (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
@@ -525,7 +525,7 @@
         (pool-name:string "SfStakePool")
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-DPDC:module{DpdcV3} DPDC)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
@@ -615,7 +615,7 @@
         (ref-DPDC:module{DpdcV3} DPDC)
         (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
         (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
@@ -715,7 +715,14 @@
                     (expect (format "<<TX-FVT-DC-05 expect>> owner-a supply restored got={} expected={}" [post-supply-a (+ pre-supply-a vacate-a)]) (+ pre-supply-a vacate-a) post-supply-a)
                     (expect (format "<<TX-FVT-DC-05 expect>> owner-b supply restored got={} expected={}" [post-supply-b (+ pre-supply-b vacate-b)]) (+ pre-supply-b vacate-b) post-supply-b)
                     (expect (format "<<TX-FVT-DC-05 expect>> vacate-in-progress cleared got={} expected=false" [vacate-in-progress]) false vacate-in-progress)
-                    (expect (format "<<TX-FVT-DC-05 expect>> stake re-enabled got={} expected=true" [stake-enabled]) true stake-enabled)
+                    ;;THE CAMPAIGN FINISHED AND THE POOL IS STILL SHUT. Owner ruling 2026-10-30:
+                    ;;the two facts are separate and the flag carries only the first. Every exit
+                    ;;from a vacate now leaves stake DISABLED -- the ABORT exit always did, and the
+                    ;;SUCCESS exit used to spring the pool open, which was the module disagreeing
+                    ;;with itself. The owner reopens with C_EnablePoolStake once the score work is
+                    ;;done. This assertion previously read `expected=true` and was pinning the old
+                    ;;auto-reopen.
+                    (expect (format "<<TX-FVT-DC-05 expect>> stake STAYS DISABLED after vacate got={} expected=false" [stake-enabled]) false stake-enabled)
                 ]
             )
         )
@@ -751,7 +758,7 @@
         (dpsf-owner:string (AQP-ANK.URC_AnchorableAssetOwner dpsf-id [false true]))
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-DPDC:module{DpdcV3} DPDC)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (pool-id:string (ref-U|DALOS::UDC_Makeid "SfStakePool"))
         (owned:[integer] (ref-DPDC::URH_AccountNonces owner-id dpsf-id true))
@@ -762,6 +769,10 @@
             (
                 (nonce:integer (at 0 owned))
                 (supply:integer (ref-DPDC::UR_AccountNonceSupply owner-id dpsf-id true (at 0 owned)))
+                ;;REOPEN THE POOL. A vacate above left it SHUT -- since 2026-10-30 every exit from a
+                ;;vacate campaign does, and the owner reopens deliberately. Not scaffolding: this is
+                ;;the operator action the contract now requires before anyone can stake again.
+                (reopen:string (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron owner-id pool-id))
                 (nns0:integer (ref-AQP::UR_AQP|PoolNns pool-id))
             )
             (if (< supply 2)

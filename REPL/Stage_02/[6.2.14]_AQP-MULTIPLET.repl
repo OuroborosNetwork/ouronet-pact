@@ -39,7 +39,7 @@
         (patron:string KST.ANHD)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-ATS:module{AutostakeV4} ATS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (ouro-id:string "OURO-98c486052a51")
         (auryn-id:string (ref-DALOS::UR_AurynID))
         (elite-auryn-id:string (ref-DALOS::UR_EliteAurynID))
@@ -99,7 +99,7 @@
     (
         (patron:string KST.ANHD)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (ouro-id:string "OURO-98c486052a51")
         (auryn-id:string (ref-DALOS::UR_AurynID))
         (elite-auryn-id:string (ref-DALOS::UR_EliteAurynID))

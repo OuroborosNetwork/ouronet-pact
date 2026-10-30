@@ -108,12 +108,15 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 
 | Talos function | core op | role | IGNIS | STOA | $ (ignis) | charge breakdown |
 |----------------|---------|------|------:|-----:|----------:|------------------|
+| `A_FinalizeVacate` | `C_FinalizeVacate` | USAGE | **0** | — | free | admin/exempt |
+| `AAp_BatchDrainCollectable` | `CCp_BatchDrainCollectable` | USAGE | **0** | — | free | admin/exempt |
+| `AAp_BatchDrainOrtoFungible` | `CCp_BatchDrainOrtoFungible` | USAGE | **0** | — | free | admin/exempt |
+| `AAp_BatchDrainTrueFungible` | `CCp_BatchDrainTrueFungible` | USAGE | **0** | — | free | admin/exempt |
 | `C_AbortVacate` | `C_AbortVacate` | USAGE | **0** | — | free | core op returns an empty cumulator — charges nothing |
 | `C_AddScore` | `C_AddScore` | SETUP | **≥ 243** | — | COMPLEX | charge multiplies by an item count; legs: deter:add-score 200 + components:AQP-POOL|C_AddScore 43 |
 | `C_BeginScoreRevoke` | `C_BeginScoreRevoke` | SETUP | **18** | — | $0.18 | deter:setup 5 + components:AQP-POOL|C_BeginScoreRevoke 13 |
 | `C_DisablePoolStake` | `C_DisablePoolStake` | USAGE | **56** | — | $0.56 | deter:pool-stake-toggle 50 + components:AQP-POOL|C_EnablePoolStake 6 |
 | `C_EnablePoolStake` | `C_EnablePoolStake` | USAGE | **56** | — | $0.56 | deter:pool-stake-toggle 50 + components:AQP-POOL|C_EnablePoolStake 6 |
-| `C_FinalizeVacate` | `C_FinalizeVacate` | USAGE | **≥ 18** | — | COMPLEX | per-nonce / per-item work; legs: deter:usage 1 + components:AQP-POOL|C_FinalizeVacate 17 |
 | `C_Issue` | `C_Issue` | ISSUE | **1020** | 100 | $10.20 | deter:issue-pool 1000 + components:AQP-POOL|C_Issue 20 | STOA: stoa:issue-pool 100 |
 | `C_RevokeScore` | `C_RevokeScore` | SETUP | **298** | — | $2.98 | deter:revoke-score 250 + components:AQP-POOL|C_RevokeScore 48 |
 | `C_SyncNonFungibleAnchors` | `C_SyncCollectableAnchors` | USAGE | **≥ 88** | — | COMPLEX | charge multiplies by an item count; legs: deter:sync-anchors 50 + components:AQP-POOL|C_SyncSemiFungibleAnchors 36 + small 2 |
@@ -134,9 +137,6 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `CC_UnstakeTrueFungible` | `CC_TrueFungibleStakeFlow` | USAGE | **≥ 21** | — | COMPLEX | heavy / parallel-slice op; legs: biggestx2 10 + small 2 + biggest 5 + medium 3 + smallest 1 |
 | `CC_UpdateScoreMultipliers` | `CC_UpdateScoreMultipliers` | SETUP | **≥ 18** | — | COMPLEX | heavy / parallel-slice op; legs: deter:setup 5 + components:AQP-POOL|CC_UpdateScoreMultipliers 13 |
 | `CCp_BackfillScoreSlice` | `CCp_BackfillScoreSlice` | SETUP | **≥ 59** | — | COMPLEX | heavy / parallel-slice op; legs: deter:backfill 50 + components:AQP-POOL|CCp_BackfillScoreSlice 9 |
-| `CCp_BatchDrainCollectable` | `CCp_BatchDrainCollectable` | USAGE | **≥ 6** | — | COMPLEX | heavy / parallel-slice op; legs: smallest 1 + small 2 + medium 3 |
-| `CCp_BatchDrainOrtoFungible` | `CCp_BatchDrainOrtoFungible` | USAGE | **≥ 3** | — | COMPLEX | heavy / parallel-slice op; legs: small 2 + smallest 1 |
-| `CCp_BatchDrainTrueFungible` | `CCp_BatchDrainTrueFungible` | USAGE | **≥ 6** | — | COMPLEX | heavy / parallel-slice op; legs: small 2 + smallest 1 + medium 3 |
 | `CCp_BatchVacateCollectables` | `CCp_BatchVacateCollectables` | USAGE | **≥ 6** | — | COMPLEX | heavy / parallel-slice op; legs: smallest 1 + small 2 + medium 3 |
 | `CCp_BatchVacateOrtoFungible` | `CCp_BatchVacateOrtoFungible` | USAGE | **≥ 3** | — | COMPLEX | heavy / parallel-slice op; legs: small 2 + smallest 1 |
 | `CCp_BatchVacateTrueFungible` | `CCp_BatchVacateTrueFungible` | USAGE | **≥ 6** | — | COMPLEX | heavy / parallel-slice op; legs: small 2 + smallest 1 + medium 3 |
@@ -667,7 +667,7 @@ another Talos wrapper, not a core op) or admin entrypoints that are exempt by ru
 | P\|A_SetIMP | admin entrypoint -- IGNIS + STOA free by owner rule, nothing to price |
 
 ---
-201 simple (exact price) · 193 complex (floor price) · 2 STOA-only · 60 exempt · 5 unresolved · 15 unpriced · 456 Talos client functions
+201 simple (exact price) · 189 complex (floor price) · 2 STOA-only · 64 exempt · 5 unresolved · 15 unpriced · 456 Talos client functions
 
 `×N` on a core op = the wrapper drives N priced core ops in a FIXED composition (still exactly knowable).
 

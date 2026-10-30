@@ -562,7 +562,7 @@ ROUNDS = {
             # XE_EvictDrip, XE_EvictPay).
             "AcquisitionFarmsVaultsTreasuriesV5",
             # TS02-C3 gained the four AQP-EVCT wrappers and P|ADMINISTRATIVE-SUMMONER.
-            "TalosStageTwo_ClientThreeV6",
+            "TalosStageTwo_ClientThreeV7",
             # NEW: the module that now owns the cost previews RPS used to carry.
             "AcquisitionRewardCostsV1",
             # NEW: reward eviction itself.

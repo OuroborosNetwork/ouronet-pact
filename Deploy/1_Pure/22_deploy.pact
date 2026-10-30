@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 22 of 26
 ;; This is STEP 22 of 27 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-21 must have run first, including the init steps between deploys.
-;; 1 source file(s), 214,916 gas measured in the REPL gas model, 189,477 bytes
+;; 1 source file(s), 214,916 gas measured in the REPL gas model, 195,305 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact
@@ -10,7 +10,7 @@
 ;; TOTAL: 1 interface(s), 1 module(s), 2 table(s)
 ;; What it DEPLOYS, in load order:
 ;;   -- 1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact
-;;      interface  TalosStageTwo_ClientThreeV6
+;;      interface  TalosStageTwo_ClientThreeV7
 ;;      module     TS02-C3
 ;;      table      P|T
 ;;      table      P|MT
@@ -26,7 +26,7 @@
 ;; History/shared registry: 1_SOVEREIGN/STAGE_02/0_Interfaces/03_Talos.pact
 ;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface TalosStageTwo_ClientThreeV6
+(interface TalosStageTwo_ClientThreeV7
     @doc "Exposes Stage Two Third Batch of Client Functions: \
         \ the AcquisitionPools Client Functions"
 
@@ -254,7 +254,7 @@
     (defun AQP-POOL|C_AbortVacate:string
         (patron:string executor:string pool-id:string)
     )
-    (defun AQP-POOL|C_FinalizeVacate:string (patron:string executor:string pool-id:string))
+    (defun AQP-POOL|A_FinalizeVacate:string (pool-id:string))
     (defun AQP-POOL|CC_FullVacate:string (patron:string executor:string pool-id:string))
     (defun AQP-POOL|CCp_BatchVacateTrueFungible:string
         (patron:string pool-id:string dptf-id:string owner-ids:[string] beneficiary-ids:[string] amounts:[decimal]))
@@ -262,12 +262,12 @@
         (patron:string pool-id:string dpof-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]]))
     (defun AQP-POOL|CCp_BatchVacateCollectables:string
         (patron:string pool-id:string collectable-id:string son:bool owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]]))
-    (defun AQP-POOL|CCp_BatchDrainTrueFungible:string
-        (patron:string pool-id:string dptf-id:string owner-ids:[string] beneficiary-ids:[string] amounts:[decimal]))
-    (defun AQP-POOL|CCp_BatchDrainOrtoFungible:string
-        (patron:string pool-id:string dpof-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]]))
-    (defun AQP-POOL|CCp_BatchDrainCollectable:string
-        (patron:string pool-id:string collectable-id:string son:bool owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]]))
+    (defun AQP-POOL|AAp_BatchDrainTrueFungible:string
+        (pool-id:string dptf-id:string owner-ids:[string] beneficiary-ids:[string] amounts:[decimal]))
+    (defun AQP-POOL|AAp_BatchDrainOrtoFungible:string
+        (pool-id:string dpof-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]]))
+    (defun AQP-POOL|AAp_BatchDrainCollectable:string
+        (pool-id:string collectable-id:string son:bool owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]]))
     ;;
     ;;  [AQP-FVT]
     ;;
@@ -517,7 +517,7 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements TalosStageTwo_ClientThreeV6)
+    (implements TalosStageTwo_ClientThreeV7)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -2455,20 +2455,35 @@
             )
         )
     )
-    (defun AQP-POOL|C_FinalizeVacate:string
-        (patron:string executor:string pool-id:string)
-        @doc "Vacate-v2 FINALIZE (nuke) — after a pool has been fully drained via AQP-POOL|Cp_BatchDrain*, this \
-            \ bulk-zeroes every employed score + bumps their vacate-generation (lazily invalidating all per-user \
-            \ rows), then clears vacate-in-progress, re-enables stake, and unfreezes the pool's FVTs. Pool-owner + \
-            \ nns==0 gated in VCT; IGNIS on patron. The commit-forward terminal step of a v2 drain campaign."
-        (with-capability (P|TS)
+    (defun AQP-POOL|A_FinalizeVacate:string
+        (pool-id:string)
+        @doc "Vacate-v2 FINALIZE (nuke) — after a pool has been fully drained via AQP-POOL|AAp_BatchDrain*, \
+            \ this bulk-zeroes every employed score + bumps their vacate-generation (lazily invalidating all \
+            \ per-user rows), then clears vacate-in-progress and unfreezes the pool's FVTs. \
+            \ \
+            \ IT DOES NOT RE-ENABLE STAKE. Owner ruling, 2026-10-30: the pool owner reopens deliberately with \
+            \ AQP-POOL|C_EnablePoolStake once the score work is done. Every exit from a vacate campaign now \
+            \ leaves the pool shut — the module used to disagree with itself, since the ABORT exit already \
+            \ said 'stake stays disabled' while the SUCCESS exit sprang the pool open. \
+            \ \
+            \ ADMIN-ONLY, BECAUSE IT IS THE DRAIN'S TERMINAL STEP AND ONLY ADMINS DRAIN. v1 \
+            \ CCp_BatchVacate* auto-finalizes, so a client-callable finaliser would be a door with no room \
+            \ behind it. Same two gates as the drain batches: P|ADMINISTRATIVE-SUMMONER to be allowed at all, \
+            \ and AQP-VCT's nns==0 + pool-owner-by-SIGNER check inside the cap. \
+            \ \
+            \ GASLESS MEANS NO IGNIS, NOT NO GAS — the Chainweb gas is still paid by the Ouronet gas station."
+        (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DALOS-G:module{OuronetDalosV3} DALOS)
                     (ref-VCT:module{AcquisitionVacateV4} AQP-VCT)
+                    (gasless:string (ref-DALOS-G::GOV|DALOS|SC_NAME))
                 )
-                (ref-IGNIS::XE_CollectIgnis patron (ref-VCT::C_FinalizeVacate patron executor pool-id))
-                (format "Successfully finalized vacate on Pool {} — scores nuked, stake re-enabled." [pool-id])
+                (ref-IGNIS::XE_CollectIgnis gasless
+                    (ref-VCT::C_FinalizeVacate gasless gasless pool-id))
+                (format "Successfully finalized vacate on Pool {} — scores nuked. Stake stays DISABLED until the owner re-enables it. [gasless admin]"
+                    [pool-id])
             )
         )
     )
@@ -2504,61 +2519,122 @@
             )
         )
     )
-    (defun AQP-POOL|CCp_BatchDrainTrueFungible:string
-        (patron:string pool-id:string dptf-id:string owner-ids:[string] beneficiary-ids:[string] amounts:[decimal])
-        @doc "Vacate-v2 FAST-DRAIN — one TF batch that returns assets + preserves rewards WITHOUT touching scores \
-            \ and WITHOUT finalizing (cheaper than CCp_BatchVacateTrueFungible for large pools). First batch freezes \
-            \ the pool + its FVTs; the pool stays frozen until AQP-POOL|C_FinalizeVacate nukes the scores once \
-            \ empty. Owner enforced in VCT; IGNIS on patron. Commit-forward — CCp_BatchVacateTrueFungible is the \
-            \ abortable path."
-        (with-capability (P|TS)
+    (defun AQP-POOL|AAp_BatchDrainTrueFungible:string
+        (pool-id:string dptf-id:string owner-ids:[string] beneficiary-ids:[string] amounts:[decimal])
+        @doc "Vacate-v2 FAST-DRAIN — one TF batch that returns assets + preserves rewards WITHOUT touching \
+            \ scores and WITHOUT finalizing (cheaper than CCp_BatchVacateTrueFungible for large pools). First \
+            \ batch freezes the pool + its FVTs; the pool stays frozen until AQP-POOL|A_FinalizeVacate nukes \
+            \ the scores once empty. \
+            \ \
+            \ ADMIN-ONLY SINCE 2026-10-30, and the client wrapper is GONE rather than demoted. Owner ruling: \
+            \ the v1 CCp_BatchVacate* path updates the score in the SAME transaction that moves the assets, so \
+            \ every leg is a complete event — 'user sees he got his assets and that the score properly \
+            \ updated'. v2 moves the assets and DEFERS the score, which leaves the chain stating two things \
+            \ that cannot both be true — trackers empty, holders still weighted — and it is commit-forward, so \
+            \ there is no Abort to back out of that state. v2 is kept for observational comparison against v1, \
+            \ not for clients. \
+            \ \
+            \ TWO GATES, BOTH REQUIRED. P|ADMINISTRATIVE-SUMMONER says the call may happen at all, and \
+            \ AQP-VCT's CAP_VctVacatePoolOwner still requires the TX SENDER to own the pool — this family \
+            \ authorises by SIGNER, not by an <executor> argument, which is why none is taken. The admin can \
+            \ therefore drain only pools the administrator owns, exactly as the gasless eviction pair evicts \
+            \ only FVTs it owns. \
+            \ \
+            \ GASLESS MEANS NO IGNIS, NOT NO GAS — the Chainweb gas is still paid by the Ouronet gas station, \
+            \ because this is a Talos path."
+        (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DALOS-G:module{OuronetDalosV3} DALOS)
                     (ref-VCT:module{AcquisitionVacateV4} AQP-VCT)
+                    ;;THE GASLESS PATRON, RESOLVED LOCALLY -- the same source URC_Gassless reads, so the two
+                    ;;cannot drift. `GASLESS-PATRON` is a defconst in 01_TS01-A, not in this module.
+                    (gasless:string (ref-DALOS-G::GOV|DALOS|SC_NAME))
                 )
-                (ref-IGNIS::XE_CollectIgnis patron
+                (ref-IGNIS::XE_CollectIgnis gasless
                     (ref-VCT::CCp_BatchDrainTrueFungible pool-id dptf-id owner-ids beneficiary-ids amounts))
-                (format "Fast-drained {} TF leg(s) on Pool {} (asset {}) — scores untouched, awaiting finalize."
+                (format "Fast-drained {} TF leg(s) on Pool {} (asset {}) — scores untouched, awaiting finalize. [gasless admin]"
                     [(length owner-ids) pool-id dptf-id])
             )
         )
     )
-    (defun AQP-POOL|CCp_BatchDrainOrtoFungible:string
-        (patron:string pool-id:string dpof-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]])
-        @doc "Vacate-v2 FAST-DRAIN — one OF batch that returns nonces + preserves rewards WITHOUT touching scores \
-            \ and WITHOUT finalizing. Amounts resolved on-chain from the tracker. First batch freezes the pool + \
-            \ its FVTs; it stays frozen until AQP-POOL|C_FinalizeVacate nukes the scores once empty. Owner enforced \
-            \ in VCT; IGNIS on patron. Commit-forward — CCp_BatchVacateOrtoFungible is the abortable path."
-        (with-capability (P|TS)
+    (defun AQP-POOL|AAp_BatchDrainOrtoFungible:string
+        (pool-id:string dpof-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]])
+        @doc "Vacate-v2 FAST-DRAIN — one OF batch that returns nonces + preserves rewards WITHOUT touching \
+            \ scores and WITHOUT finalizing. First batch freezes the pool + its FVTs; it stays frozen until \
+            \ AQP-POOL|A_FinalizeVacate nukes the scores once empty. \
+            \ \
+            \ ADMIN-ONLY SINCE 2026-10-30, and the client wrapper is GONE rather than demoted. Owner ruling: \
+            \ the v1 CCp_BatchVacate* path updates the score in the SAME transaction that moves the assets, so \
+            \ every leg is a complete event — 'user sees he got his assets and that the score properly \
+            \ updated'. v2 moves the assets and DEFERS the score, which leaves the chain stating two things \
+            \ that cannot both be true — trackers empty, holders still weighted — and it is commit-forward, so \
+            \ there is no Abort to back out of that state. v2 is kept for observational comparison against v1, \
+            \ not for clients. \
+            \ \
+            \ TWO GATES, BOTH REQUIRED. P|ADMINISTRATIVE-SUMMONER says the call may happen at all, and \
+            \ AQP-VCT's CAP_VctVacatePoolOwner still requires the TX SENDER to own the pool — this family \
+            \ authorises by SIGNER, not by an <executor> argument, which is why none is taken. The admin can \
+            \ therefore drain only pools the administrator owns, exactly as the gasless eviction pair evicts \
+            \ only FVTs it owns. \
+            \ \
+            \ GASLESS MEANS NO IGNIS, NOT NO GAS — the Chainweb gas is still paid by the Ouronet gas station, \
+            \ because this is a Talos path."
+        (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DALOS-G:module{OuronetDalosV3} DALOS)
                     (ref-VCT:module{AcquisitionVacateV4} AQP-VCT)
+                    ;;THE GASLESS PATRON, RESOLVED LOCALLY -- the same source URC_Gassless reads, so the two
+                    ;;cannot drift. `GASLESS-PATRON` is a defconst in 01_TS01-A, not in this module.
+                    (gasless:string (ref-DALOS-G::GOV|DALOS|SC_NAME))
                 )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VCT::CCp_BatchDrainOrtoFungible patron pool-id dpof-id owner-ids beneficiary-ids nonces-array))
-                (format "Fast-drained {} OF leg(s) on Pool {} (asset {}) — scores untouched, awaiting finalize."
+                (ref-IGNIS::XE_CollectIgnis gasless
+                    (ref-VCT::CCp_BatchDrainOrtoFungible gasless pool-id dpof-id owner-ids beneficiary-ids nonces-array))
+                (format "Fast-drained {} OF leg(s) on Pool {} (asset {}) — scores untouched, awaiting finalize. [gasless admin]"
                     [(length owner-ids) pool-id dpof-id])
             )
         )
     )
-    (defun AQP-POOL|CCp_BatchDrainCollectable:string
-        (patron:string pool-id:string collectable-id:string son:bool owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]])
-        @doc "Vacate-v2 FAST-DRAIN — one DPSF (son=true) / DPNF (son=false) batch that returns nonces + preserves \
-            \ rewards WITHOUT touching scores and WITHOUT finalizing. First batch freezes the pool + its FVTs; it \
-            \ stays frozen until AQP-POOL|C_FinalizeVacate nukes the scores once empty. Owner enforced in VCT; \
-            \ IGNIS on patron. Commit-forward — CCp_BatchVacateCollectables is the abortable path."
-        (with-capability (P|TS)
+    (defun AQP-POOL|AAp_BatchDrainCollectable:string
+        (pool-id:string collectable-id:string son:bool owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]])
+        @doc "Vacate-v2 FAST-DRAIN — one collectable batch (DPSF son=true / DPNF son=false) that returns \
+            \ nonces + preserves rewards WITHOUT touching scores and WITHOUT finalizing. First batch freezes \
+            \ the pool + its FVTs; it stays frozen until AQP-POOL|A_FinalizeVacate nukes the scores once \
+            \ empty. \
+            \ \
+            \ ADMIN-ONLY SINCE 2026-10-30, and the client wrapper is GONE rather than demoted. Owner ruling: \
+            \ the v1 CCp_BatchVacate* path updates the score in the SAME transaction that moves the assets, so \
+            \ every leg is a complete event — 'user sees he got his assets and that the score properly \
+            \ updated'. v2 moves the assets and DEFERS the score, which leaves the chain stating two things \
+            \ that cannot both be true — trackers empty, holders still weighted — and it is commit-forward, so \
+            \ there is no Abort to back out of that state. v2 is kept for observational comparison against v1, \
+            \ not for clients. \
+            \ \
+            \ TWO GATES, BOTH REQUIRED. P|ADMINISTRATIVE-SUMMONER says the call may happen at all, and \
+            \ AQP-VCT's CAP_VctVacatePoolOwner still requires the TX SENDER to own the pool — this family \
+            \ authorises by SIGNER, not by an <executor> argument, which is why none is taken. The admin can \
+            \ therefore drain only pools the administrator owns, exactly as the gasless eviction pair evicts \
+            \ only FVTs it owns. \
+            \ \
+            \ GASLESS MEANS NO IGNIS, NOT NO GAS — the Chainweb gas is still paid by the Ouronet gas station, \
+            \ because this is a Talos path."
+        (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DALOS-G:module{OuronetDalosV3} DALOS)
                     (ref-VCT:module{AcquisitionVacateV4} AQP-VCT)
+                    ;;THE GASLESS PATRON, RESOLVED LOCALLY -- the same source URC_Gassless reads, so the two
+                    ;;cannot drift. `GASLESS-PATRON` is a defconst in 01_TS01-A, not in this module.
+                    (gasless:string (ref-DALOS-G::GOV|DALOS|SC_NAME))
                 )
-                (ref-IGNIS::XE_CollectIgnis patron
+                (ref-IGNIS::XE_CollectIgnis gasless
                     (ref-VCT::CCp_BatchDrainCollectable pool-id collectable-id son owner-ids beneficiary-ids nonces-array amounts-array))
-                (format "Fast-drained {} collectable leg(s) on Pool {} (asset {}, son {}) — scores untouched, awaiting finalize."
-                    [(length owner-ids) pool-id collectable-id son])
+                (format "Fast-drained {} collectable leg(s) on Pool {} (asset {}) — scores untouched, awaiting finalize. [gasless admin]"
+                    [(length owner-ids) pool-id collectable-id])
             )
         )
     )

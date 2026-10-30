@@ -44,7 +44,7 @@
         (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
         (ref-EVCT:module{AcquisitionRewardEvictionV1} AQP-EVCT)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
         (auryn-id:string "AURYN-98c486052a51")
         (fvt-owner:string (ref-FVT::UR_FVT|OwnerKonto fvt-id))

@@ -306,7 +306,7 @@
     (
         (bad:string "NOSUCHANK-98c486052a51")
         (other:string "ALSONOSUCHANK-98c486052a51")
-        (r:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (r:module{TalosStageTwo_ClientThreeV7} TS02-C3)
     )
     (map print
         [
@@ -438,7 +438,7 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
     )
     (map print
         [
@@ -521,7 +521,7 @@
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-VCT:module{AcquisitionVacateV4} AQP-VCT)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (pool-id:string (ref-U|DALOS::UDC_Makeid "TfStakePool"))
         (ouro-id:string "OURO-98c486052a51")
         (attacker:string KST.EMMA)
@@ -578,7 +578,7 @@
             (expect-failure
                 "<<RT-D-005d>> ...and the fast-drain twin, which acquires the same cap, refuses identically"
                 (format "Smart DALOS Account {} Ownership could not be verified!" [owner-konto])
-                (ref-TS02-C3::AQP-POOL|CCp_BatchDrainTrueFungible
+                (ref-TS02-C3::AQP-POOL|AAp_BatchDrainTrueFungible
                     attacker pool-id ouro-id [attacker] [attacker] [40.0]))
             ;;ATTRIBUTION, in isolation. The gate is a bare `defun`, so it can be called on its own:
             ;;the same sentence from `CAP_VctVacatePoolOwner` alone is what makes the two refusals
@@ -599,7 +599,7 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
     )
     (let
         (
@@ -661,7 +661,7 @@
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (ref-VCT:module{AcquisitionVacateV4} AQP-VCT)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (pool-id:string (ref-U|DALOS::UDC_Makeid "OfStakePool"))
         (mvst-id:string "MVST-98c486052a51")
         (attacker:string KST.EMMA)
@@ -701,7 +701,7 @@
             (expect-failure
                 "<<RT-D-006d>> ...and the fast-drain twin, which acquires the same cap, refuses identically"
                 "Keyset failure (keys-all): [PK_Ancie...]"
-                (ref-TS02-C3::AQP-POOL|CCp_BatchDrainOrtoFungible
+                (ref-TS02-C3::AQP-POOL|AAp_BatchDrainOrtoFungible
                     attacker pool-id mvst-id [attacker] [attacker] nonces))
             (expect-failure
                 "<<RT-D-006e>> ...and the gate ALONE produces that exact refusal, so the refusal is its"
@@ -716,7 +716,7 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
     )
     (let
         (
@@ -779,7 +779,7 @@
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (ref-VCT:module{AcquisitionVacateV4} AQP-VCT)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (pool-id:string (ref-U|DALOS::UDC_Makeid "NfSyncPool"))
         (dhb-id:string "DHB-98c486052a51")
         (attacker:string KST.ANHD)
@@ -816,7 +816,7 @@
             (expect-failure
                 "<<RT-D-007d>> ...and the fast-drain twin, which acquires the same cap, refuses identically"
                 "Keyset failure (keys-all): [PK_Lumy...]"
-                (ref-TS02-C3::AQP-POOL|CCp_BatchDrainCollectable
+                (ref-TS02-C3::AQP-POOL|AAp_BatchDrainCollectable
                     attacker pool-id dhb-id false [attacker] [attacker] nonces amounts))
             (expect-failure
                 "<<RT-D-007e>> ...and the gate ALONE produces that exact refusal, so the refusal is its"
@@ -833,7 +833,7 @@
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (ref-VCT:module{AcquisitionVacateV4} AQP-VCT)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (pool-id:string (ref-U|DALOS::UDC_Makeid "SfStakePool"))
         (dhcd-id:string "DHCD-98c486052a51")
         (attacker:string KST.EMMA)
@@ -873,7 +873,7 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
     )
     (let
         (

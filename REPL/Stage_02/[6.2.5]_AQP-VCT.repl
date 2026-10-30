@@ -72,7 +72,7 @@
         (pool-name:string "TfStakePool")
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
         (ref-VCT:module{AcquisitionVacateV4} AQP-VCT)
@@ -138,7 +138,7 @@
         (ouro-id:string "OURO-98c486052a51")
         (pool-name:string "TfStakePool")
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (ref-VCT:module{AcquisitionVacateV4} AQP-VCT)
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
@@ -196,7 +196,7 @@
         (patron:string KST.ANHD)
         (pool-name:string "TfStakePool")
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
     )
@@ -248,7 +248,7 @@
         (stake-amount:decimal 50.0)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
         (ref-VCT:module{AcquisitionVacateV4} AQP-VCT)
@@ -290,7 +290,12 @@
                     (expect (format "<<TX-VCT-TF02 expect>> deb-score cleared got={} expected=0" [deb-user]) 0.0 deb-user)
                     (expect (format "<<TX-VCT-TF02 expect>> supply restored got={} expected={}" [post-supply (+ pre-supply stake-amount)]) (+ pre-supply stake-amount) post-supply)
                     (expect (format "<<TX-VCT-TF02 expect>> vacate-in-progress cleared got={} expected=false" [vacate-in-progress]) false vacate-in-progress)
-                    (expect (format "<<TX-VCT-TF02 expect>> stake re-enabled got={} expected=true" [stake-enabled]) true stake-enabled)
+                    ;;THE POOL STAYS SHUT. Owner ruling 2026-10-30: every exit from a vacate campaign
+                    ;;leaves stake DISABLED and the owner reopens deliberately with C_EnablePoolStake.
+                    ;;The ABORT exit always behaved this way; the SUCCESS exit used to spring the pool
+                    ;;open, which was the module disagreeing with itself. This line read `expected=true`
+                    ;;and was pinning that auto-reopen.
+                    (expect (format "<<TX-VCT-TF02 expect>> stake STAYS DISABLED after vacate got={} expected=false" [stake-enabled]) false stake-enabled)
                 ]
             )
         )
@@ -326,7 +331,7 @@
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
         (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
     )
@@ -399,7 +404,7 @@
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-DPDC:module{DpdcV3} DPDC)
         (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (ref-VCT:module{AcquisitionVacateV4} AQP-VCT)
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
@@ -480,7 +485,12 @@
                     [
                         (expect (format "<<TX-VCT-L02 expect>> owner-b tracker cleared got={} expected=0" [tracker-b-post]) 0.0 tracker-b-post)
                         (expect (format "<<TX-VCT-L02 expect>> vacate-in-progress cleared got={} expected=false" [vacate-in-progress]) false vacate-in-progress)
-                        (expect (format "<<TX-VCT-L02 expect>> stake re-enabled got={} expected=true" [stake-enabled]) true stake-enabled)
+                        ;;THE POOL STAYS SHUT. Owner ruling 2026-10-30: every exit from a vacate campaign
+                        ;;leaves stake DISABLED and the owner reopens deliberately with C_EnablePoolStake.
+                        ;;The ABORT exit always behaved this way; the SUCCESS exit used to spring the pool
+                        ;;open, which was the module disagreeing with itself. This line read `expected=true`
+                        ;;and was pinning that auto-reopen.
+                        (expect (format "<<TX-VCT-L02 expect>> stake STAYS DISABLED after vacate got={} expected=false" [stake-enabled]) false stake-enabled)
                     ]
                 )
             )
@@ -515,7 +525,7 @@
         (nonce-a:integer 1)
         (nonce-b:integer 2)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (ref-VCT:module{AcquisitionVacateV4} AQP-VCT)
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
@@ -583,7 +593,7 @@
         (nonce-a:integer 1)
         (nonce-b:integer 2)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (ref-VCT:module{AcquisitionVacateV4} AQP-VCT)
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
@@ -710,7 +720,7 @@
         (patron:string KST.ANHD)
         (pool-name:string "SfStakePool")
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
     )
@@ -724,6 +734,10 @@
         )
         (map print
             [
+                ;;THIS ONE ASSERTS `true` ON PURPOSE, and is the only one that may. TX-VCT-L04 IS
+                ;;the reopen: it calls C_EnablePoolStake and checks it took. Since 2026-10-30 that
+                ;;call is the ONLY way a vacated pool opens again, so this assertion went from
+                ;;incidental to being the point of the test.
                 (expect (format "<<TX-VCT-L04 expect>> stake re-enabled got={} expected=true" [stake-enabled]) true stake-enabled)
             ]
         )
@@ -756,7 +770,7 @@
         (foreign:string KST.EMMA)
         (pool-name:string "SfStakePool")
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
     )
     (map print
@@ -807,7 +821,7 @@
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-DPDC:module{DpdcV3} DPDC)
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
         (ref-VCT:module{AcquisitionVacateV4} AQP-VCT)
@@ -933,7 +947,7 @@
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-DPDC:module{DpdcV3} DPDC)
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (ref-VCT:module{AcquisitionVacateV4} AQP-VCT)
         (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
@@ -1019,7 +1033,12 @@
                         (expect (format "<<TX-VCT-DPNF02 expect>> tracker cleared got={} expected=0" [tracker-post]) 0.0 tracker-post)
                         (expect (format "<<TX-VCT-DPNF02 expect>> supply restored got={} expected={}" [post-supply pre-supply]) pre-supply post-supply)
                         (expect (format "<<TX-VCT-DPNF02 expect>> vacate-in-progress cleared got={} expected=false" [vacate-in-progress]) false vacate-in-progress)
-                        (expect (format "<<TX-VCT-DPNF02 expect>> stake re-enabled got={} expected=true" [stake-enabled]) true stake-enabled)
+                        ;;THE POOL STAYS SHUT. Owner ruling 2026-10-30: every exit from a vacate campaign
+                        ;;leaves stake DISABLED and the owner reopens deliberately with C_EnablePoolStake.
+                        ;;The ABORT exit always behaved this way; the SUCCESS exit used to spring the pool
+                        ;;open, which was the module disagreeing with itself. This line read `expected=true`
+                        ;;and was pinning that auto-reopen.
+                        (expect (format "<<TX-VCT-DPNF02 expect>> stake STAYS DISABLED after vacate got={} expected=false" [stake-enabled]) false stake-enabled)
                     ]
                 )
             )
@@ -1051,7 +1070,7 @@
         (pool-name:string "DhnVacatePool")
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-DPDC:module{DpdcV3} DPDC)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (ref-VCT:module{AcquisitionVacateV4} AQP-VCT)
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
@@ -1065,7 +1084,12 @@
             { "key": "PK_Lumy", "caps": [] }
         ]
     )
-    ;; stake already enabled after DPNF02's finalize — just re-stake the DHN nonce (owned by ANHD)
+    ;; REOPEN FIRST. This comment used to read "stake already enabled after DPNF02's finalize" —
+    ;; the old contract, in prose. Since 2026-10-30 no exit from a vacate re-enables stake; the
+    ;; POOL OWNER does, deliberately. DhnVacatePool is Lumy-owned, so Lumy reopens it, which is
+    ;; also why PK_Lumy is already in the signer set above.
+    (print (format "<(reopen DhnVacatePool)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)]))
     (print (format "<(restake DHN nonce {})> => \"{}\"" [stake-nonce
         (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron owner-id beneficiary-id pool-id dpnf-id [stake-nonce])]))
     (let ((legs-pre:integer (at "leg-count" (ref-VCT::URH_VacateCollectableInventory pool-id dpnf-id false))))
@@ -1122,7 +1146,7 @@
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-DPDC:module{DpdcV3} DPDC)
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (ref-VCT:module{AcquisitionVacateV4} AQP-VCT)
         (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
@@ -1208,7 +1232,12 @@
                         (expect (format "<<TX-VCT-DPNF03 expect>> tracker cleared got={} expected=0" [tracker-post]) 0.0 tracker-post)
                         (expect (format "<<TX-VCT-DPNF03 expect>> supply restored got={} expected={}" [post-supply pre-supply]) pre-supply post-supply)
                         (expect (format "<<TX-VCT-DPNF03 expect>> vacate-in-progress cleared got={} expected=false" [vacate-in-progress]) false vacate-in-progress)
-                        (expect (format "<<TX-VCT-DPNF03 expect>> stake re-enabled got={} expected=true" [stake-enabled]) true stake-enabled)
+                        ;;THE POOL STAYS SHUT. Owner ruling 2026-10-30: every exit from a vacate campaign
+                        ;;leaves stake DISABLED and the owner reopens deliberately with C_EnablePoolStake.
+                        ;;The ABORT exit always behaved this way; the SUCCESS exit used to spring the pool
+                        ;;open, which was the module disagreeing with itself. This line read `expected=true`
+                        ;;and was pinning that auto-reopen.
+                        (expect (format "<<TX-VCT-DPNF03 expect>> stake STAYS DISABLED after vacate got={} expected=false" [stake-enabled]) false stake-enabled)
                     ]
                 )
             )
@@ -1241,7 +1270,7 @@
         (vacate-kind-tf:integer 1)
         (stake-amount:decimal 25.0)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (ref-VCT:module{AcquisitionVacateV4} AQP-VCT)
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
     )
@@ -1307,7 +1336,7 @@
         (vacate-kind-tf:integer 1)
         (stake-amount:decimal 10.0)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (ref-VCT:module{AcquisitionVacateV4} AQP-VCT)
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
@@ -1373,7 +1402,7 @@
         (vacate-kind-tf:integer 1)
         (stake-amount:decimal 12.0)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (ref-VCT:module{AcquisitionVacateV4} AQP-VCT)
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
     )
@@ -1434,7 +1463,7 @@
         (vacate-kind-tf:integer 1)
         (stake-amount:decimal 8.0)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (ref-VCT:module{AcquisitionVacateV4} AQP-VCT)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
@@ -1514,7 +1543,11 @@
                 [
                     (expect (format "<<TX-VCT-L05 expect>> inventory empty got={}" [inv-post]) 0 inv-post)
                     (expect (format "<<TX-VCT-L05 expect>> vacate cleared got={}" [vacate-in-progress]) false vacate-in-progress)
-                    (expect (format "<<TX-VCT-L05 expect>> stake re-enabled got={}" [stake-enabled]) true stake-enabled)
+                    ;;THE POOL STAYS SHUT. Owner ruling 2026-10-30: no exit from a vacate campaign re-enables
+                    ;;stake -- the owner reopens deliberately with C_EnablePoolStake. The ABORT exit always
+                    ;;behaved this way; the SUCCESS exits used to spring the pool open, which was the module
+                    ;;disagreeing with itself. This line pinned that auto-reopen.
+                    (expect (format "<<TX-VCT-L05 expect>> stake STAYS DISABLED got={}" [stake-enabled]) false stake-enabled)
                 ]
             )
         )
@@ -1548,7 +1581,7 @@
         (vacate-kind-tf:integer 1)
         (stake-amount:decimal 7.0)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (ref-VCT:module{AcquisitionVacateV4} AQP-VCT)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
@@ -1646,7 +1679,7 @@
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
         (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (ref-VCT:module{AcquisitionVacateV4} AQP-VCT)
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
@@ -1742,7 +1775,11 @@
                     [
                         (expect (format "<<TX-VCT-L06 expect>> inventory empty got={}" [inv-post]) 0 inv-post)
                         (expect (format "<<TX-VCT-L06 expect>> vacate cleared got={}" [vacate-in-progress]) false vacate-in-progress)
-                        (expect (format "<<TX-VCT-L06 expect>> stake re-enabled got={}" [stake-enabled]) true stake-enabled)
+                        ;;THE POOL STAYS SHUT. Owner ruling 2026-10-30: no exit from a vacate campaign re-enables
+                        ;;stake -- the owner reopens deliberately with C_EnablePoolStake. The ABORT exit always
+                        ;;behaved this way; the SUCCESS exits used to spring the pool open, which was the module
+                        ;;disagreeing with itself. This line pinned that auto-reopen.
+                        (expect (format "<<TX-VCT-L06 expect>> stake STAYS DISABLED got={}" [stake-enabled]) false stake-enabled)
                     ]
                 )
             )
@@ -1790,7 +1827,7 @@
         (amt:decimal 20.0)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (ref-VCT:module{AcquisitionVacateV4} AQP-VCT)
         (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
@@ -1886,7 +1923,7 @@
         (pool-name:string "ResumeVacPool")
         (amt:decimal 20.0)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (ref-VCT:module{AcquisitionVacateV4} AQP-VCT)
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
@@ -1945,7 +1982,7 @@
         (pool-name:string "ResumeVacPool")
         (amt:decimal 20.0)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (ref-VCT:module{AcquisitionVacateV4} AQP-VCT)
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
@@ -1967,7 +2004,11 @@
                 (expect (format "<<TX-VCT-RESUME-C>> LUMY (last) leg drained got={}" [bal-c]) 0.0 bal-c)
                 (expect (format "<<TX-VCT-RESUME-C>> pool fully vacated — 0 legs got={}" [remaining]) 0 remaining)
                 (expect (format "<<TX-VCT-RESUME-C>> campaign AUTO-FINALIZED (vacate-in-progress cleared) got={}" [vip]) false vip)
-                (expect (format "<<TX-VCT-RESUME-C>> stake RE-ENABLED on finalize got={}" [stake-enabled]) true stake-enabled)
+                ;;THE POOL STAYS SHUT. Owner ruling 2026-10-30: no exit from a vacate campaign re-enables
+                ;;stake -- the owner reopens deliberately with C_EnablePoolStake. The ABORT exit always
+                ;;behaved this way; the SUCCESS exits used to spring the pool open, which was the module
+                ;;disagreeing with itself. This line pinned that auto-reopen.
+                (expect (format "<<TX-VCT-RESUME-C>> stake STAYS DISABLED on finalize got={}" [stake-enabled]) false stake-enabled)
                 (expect (format "<<TX-VCT-RESUME-C #FP1>> TF nns = 0 (occupancy empty → finalize gate) got={}" [pool-nns]) 0 pool-nns)
             ]
         )
@@ -2005,7 +2046,7 @@
         (amt:decimal 20.0)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
         (ref-VCT:module{AcquisitionVacateV4} AQP-VCT)
@@ -2050,7 +2091,7 @@
         ;; must not carry two same-owner legs (inherited v1 constraint — the UI slices by unique owner). We drain
         ;; one leg per batch, which ALSO proves settle-per-beneficiary + drain-never-finalizes.
         (print "--- [TX-VCT-DRAIN · 02 · BATCH 1: fast-drain ANHD's leg only] ---")
-        (ref-TS02-C3::AQP-POOL|CCp_BatchDrainTrueFungible patron pool-id ouro-id [owner-id] [ben-a] [amt])
+        (ref-TS02-C3::AQP-POOL|AAp_BatchDrainTrueFungible pool-id ouro-id [owner-id] [ben-a] [amt])
         (let
             (
                 (bal-a1:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id ben-a))
@@ -2076,7 +2117,7 @@
             )
         )
         (print "--- [TX-VCT-DRAIN · 03 · BATCH 2: fast-drain EMMA's leg -> pool empty] ---")
-        (ref-TS02-C3::AQP-POOL|CCp_BatchDrainTrueFungible patron pool-id ouro-id [owner-id] [ben-b] [amt])
+        (ref-TS02-C3::AQP-POOL|AAp_BatchDrainTrueFungible pool-id ouro-id [owner-id] [ben-b] [amt])
         (let
             (
                 (bal-b2:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id ben-b))
@@ -2136,7 +2177,7 @@
         (ouro-id:string "OURO-98c486052a51")
         (amt:decimal 20.0)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
         (ref-VCT:module{AcquisitionVacateV4} AQP-VCT)
@@ -2153,7 +2194,7 @@
             (nns-pre:integer (ref-AQP::UR_AQP|PoolNns pool-id))
         )
         (print "--- [TX-VCT-FINALIZE · 02 · C_FinalizeVacate (the nuke)] ---")
-        (ref-TS02-C3::AQP-POOL|C_FinalizeVacate patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)
+        (ref-TS02-C3::AQP-POOL|A_FinalizeVacate pool-id)
         (let
             (
                 ;; per-user rows are now STALE (row-gen < score-gen) -> read as 0 lazily, WITHOUT any per-user write
@@ -2175,12 +2216,21 @@
                     (expect (format "<<TX-VCT-FINALIZE §5>> aggregate total-base bulk-zeroed got={}" [agg-post]) 0.0 agg-post)
                     (expect (format "<<TX-VCT-FINALIZE §5>> score vacate-generation bumped +1 got={}" [gen-post]) (+ gen-pre 1) gen-post)
                     (expect (format "<<TX-VCT-FINALIZE §8>> vacate-in-progress CLEARED got={}" [vip]) false vip)
-                    (expect (format "<<TX-VCT-FINALIZE §8>> stake RE-ENABLED got={}" [stake-enabled]) true stake-enabled)
+                    ;;THE POOL STAYS SHUT. Owner ruling 2026-10-30: no exit from a vacate campaign re-enables
+                    ;;stake -- the owner reopens deliberately with C_EnablePoolStake. The ABORT exit always
+                    ;;behaved this way; the SUCCESS exits used to spring the pool open, which was the module
+                    ;;disagreeing with itself. This line pinned that auto-reopen.
+                    (expect (format "<<TX-VCT-FINALIZE §8>> stake STAYS DISABLED got={}" [stake-enabled]) false stake-enabled)
                     (expect (format "<<TX-VCT-FINALIZE>> pool nns still 0 (empty) got={}" [nns-pre]) 0 nns-pre)
                 ]
             )
         )
         (print "--- [TX-VCT-FINALIZE · 03 · re-stake proves the pool is reusable + generation reset] ---")
+        ;;AND THAT REUSE NOW STARTS WITH THE OWNER REOPENING. Finalize nukes the scores and clears
+        ;;the flag but leaves stake DISABLED, so "the pool is reusable" is a two-step claim: the
+        ;;owner opens it, and then a stake lands. Proving the second without the first would be
+        ;;proving the old contract.
+        (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)
         (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron owner-id ben-a pool-id ouro-id amt)
         (let
             (

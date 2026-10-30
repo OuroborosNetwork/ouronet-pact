@@ -408,7 +408,7 @@
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
                     ;;
                     (bronze-boost-class-id:string (ref-U|DALOS::UDC_Makeid "BronzeSnakePower"))
                     (silver-boost-class-id:string (ref-U|DALOS::UDC_Makeid "SilverSnakePower"))
@@ -473,7 +473,7 @@
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
                     ;;
                     (unity-boost-class-id:string (ref-U|DALOS::UDC_Makeid "UnityBooster"))
                     (stoa-boost-class-id:string (ref-U|DALOS::UDC_Makeid "StoaBooster"))
@@ -532,7 +532,7 @@
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
                     (score-coding:string (ref-U|DALOS::UDC_Makeid "TheCodingDivision"))
                     (score-bloodshed:string (ref-U|DALOS::UDC_Makeid "Bloodshed"))
                     (score-company-share:string (ref-U|DALOS::UDC_Makeid "DemiourgosShareholder"))
@@ -564,7 +564,7 @@
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
                     (score-sub-coding:string (ref-U|DALOS::UDC_Makeid "SubsidiaryCodingDivision"))
                     (score-sub-wondercoach:string (ref-U|DALOS::UDC_Makeid "SubsidiaryWonderCoach"))
                     (score-sub-bloodshed:string (ref-U|DALOS::UDC_Makeid "SubsidiaryBloodshed"))
@@ -667,7 +667,7 @@
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
                     ;;
                     (silver-id:string (ref-U|DALOS::UDC_Makeid BOOT|SCORE_SILVER))
                     (bronze-id:string (ref-U|DALOS::UDC_Makeid BOOT|SCORE_BRONZE))
@@ -793,7 +793,7 @@
                 (enforce (= (length ouro-triplet-score-ids) 3) "Step 7 expects ouro-triplet-score-ids=[silver bronze golden].")
             (let
                 (
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
                     ;;
                     (asset-coding:string (at 0 dh-asset-ids))
@@ -950,7 +950,7 @@
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
                     (farm-id:string (ref-U|DALOS::UDC_Makeid BOOT|FVT_OURO_LP_FARM))
                     (sub-treasury-id:string (ref-U|DALOS::UDC_Makeid BOOT|FVT_SUBSIDIARY_TREASURY))
                     (coding-treasury-id:string (ref-U|DALOS::UDC_Makeid BOOT|FVT_CODING_TREASURY))
@@ -991,7 +991,7 @@
         (with-capability (GOV|AQP_BOOT_ADMIN)
             (let
                 (
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
                 )
                 (enforce (= (length subsidiary-score-ids) 5) "Step 9 expects subsidiary-score-ids×5.")
                 (map
@@ -1022,7 +1022,7 @@
         (with-capability (GOV|AQP_BOOT_ADMIN)
             (let
                 (
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
                     (family-id:string (concat ["F" "|" ouro-id "|" auryn-id "|" elite-auryn-id]))
                 )
                 (ref-TS02-C3::AQP-FVT|C_IssueMultipletFamily
@@ -1044,7 +1044,7 @@
         (with-capability (GOV|AQP_BOOT_ADMIN)
             (let
                 (
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
                     (wire-farm:bool
                         (and
                             (!= farm-id "")
@@ -1084,7 +1084,7 @@
         (with-capability (GOV|AQP_BOOT_ADMIN)
             (let
                 (
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
                     (ref-U|CT:module{OuronetConstantsV2} U|CT)
                     (bar:string (ref-U|CT::CT_BAR))
                 )
@@ -1147,7 +1147,7 @@
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
                     (fvt-id:string (ref-U|DALOS::UDC_Makeid BOOT|FVT_CUSTODIANS_VAULT))
                     (pool-id:string (ref-U|DALOS::UDC_Makeid BOOT|POOL_CUSTODIANS))
                     (bronze-model-id:string (ref-U|DALOS::UDC_Makeid BOOT|MODEL_CUSTODIANS_BRONZE))
@@ -1242,7 +1242,7 @@
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
                     (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
                     (fvt-id:string (ref-U|DALOS::UDC_Makeid BOOT|FVT_CUSTODIANS_VAULT))
                     (pool-id:string (ref-U|DALOS::UDC_Makeid BOOT|POOL_CUSTODIANS))
@@ -1324,7 +1324,7 @@
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
                     (pool-id:string (ref-U|DALOS::UDC_Makeid BOOT|POOL_STOICISM))
                     ;;THE STAKED ASSET'S OWNER, DERIVED -- not read from the pool row, which this
                     ;;transaction has not created yet. Step 7 aborted for exactly that reason on
@@ -1365,7 +1365,7 @@
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
                     (nosferatu-treasury-id:string
                         (ref-U|DALOS::UDC_Makeid BOOT|FVT_NOSFERATU_TREASURY))
                     (wondercoach-treasury-id:string
@@ -1414,7 +1414,7 @@
         (with-capability (GOV|AQP_BOOT_ADMIN)
             (let
                 (
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
                 )
                 (ref-TS02-C3::AQP-FVT|C_AddScoreEntity patron
                     (AQP-FVT.UR_FVT|OwnerKonto nosferatu-treasury-id)
@@ -1452,7 +1452,7 @@
         (with-capability (GOV|AQP_BOOT_ADMIN)
             (let
                 (
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV6} TS02-C3)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
                     (ref-U|CT:module{OuronetConstantsV2} U|CT)
                     (bar:string (ref-U|CT::CT_BAR))
                 )

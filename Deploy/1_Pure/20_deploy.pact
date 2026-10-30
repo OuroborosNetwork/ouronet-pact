@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 20 of 26
 ;; This is STEP 20 of 27 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-19 must have run first, including the init steps between deploys.
-;; 3 source file(s), 419,312 gas measured in the REPL gas model, 279,694 bytes
+;; 3 source file(s), 419,312 gas measured in the REPL gas model, 282,570 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/06_VCT.pact
@@ -2348,10 +2348,22 @@
             finalize:bool
         )
         @doc "If finalize=true AND the pool is verified empty (URC_PoolFullyVacated — every employed score \
-            \ nzs=0, so both LP streams are empty): clear vacate-in-progress and re-enable stake. If finalize \
-            \ is requested but inventory remains, stake stays DISABLED and the session continues (finalize is \
-            \ honoured only when truly empty — audit H3 / fix #6). Write path; the emptiness check is a bounded \
-            \ ≤7 point-read URC (no scan, no enforce). asset-id/vacate-kind kept for call-site stability."
+            \ nzs=0, so both LP streams are empty): clear vacate-in-progress and unfreeze the pool's FVTs. \
+            \ STAKE IS NOT RE-ENABLED — see below. If finalize is requested but inventory remains, the session \
+            \ continues (finalize is honoured only when truly empty — audit H3 / fix #6). Write path; the \
+            \ emptiness check is a bounded ≤7 point-read URC (no scan, no enforce). asset-id/vacate-kind kept \
+            \ for call-site stability. \
+            \ \
+            \ A SUCCESSFUL VACATE LEAVES THE POOL SHUT, AND THE MODULE USED TO DISAGREE WITH ITSELF ABOUT \
+            \ THIS. XI_ClearVacateInProgress — the ABORT exit — has always ended 'Stake stays disabled (ops \
+            \ re-enable via C_EnablePoolStake)'. This exit re-enabled it automatically, so a vacate that \
+            \ FAILED stayed locked while one that SUCCEEDED sprang open: the opposite ordering of caution. \
+            \ \
+            \ Owner ruling, 2026-10-30: 'The pool owner has to manually re allow stacking after a vacate \
+            \ event.' The point of vacating is to reach an empty, quiet pool and then do score work without \
+            \ anyone staking into it mid-way; an automatic reopen is a race against the operator's own next \
+            \ step. Clearing the flag still reports the campaign finished — observers see vacate-in-flight, \
+            \ then vacate-done-awaiting-reopen — which is the whole reason the flag is worth its writes."
         ;; SECURE: granted by master vacate caps.
         (if (and finalize (URC_PoolFullyVacated pool-id))
             (let
@@ -2359,7 +2371,6 @@
                     (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
                 )
                 (ref-AQP::XE_SetVacateJobState pool-id false)
-                (ref-AQP::XB_SetPoolStakeEnabled pool-id true)
                 (XI_SetPoolFvtsVacateFrozen pool-id false)
                 "finalized"
             )
@@ -3291,7 +3302,19 @@
             \ CONSUMEs them. TF-FAMILY (class 0 LP farm / class 1 DPTF family) is MULTI-LANE — up to native TF + F| \
             \ frozen TF + Z|/H| DPOF satellites (class 0 stakes a Z| sleeping-LP DPOF too, NOT TF-only) — so it runs \
             \ BOTH the TF pair AND the OF pair. class 2 → OF; class 3 → DPSF; class 4 → DPNF. Empty lanes no-op. \
-            \ Owner-gated (VCT|C>VACATE)."
+            \ Owner-gated (VCT|C>VACATE). \
+            \ \
+            \ ENDS WITH STAKE DISABLED, AND SETS NO VACATE FLAG. Added 2026-10-30; it previously did neither, \
+            \ so the one path that empties a pool outright was also the only one that left it OPEN. Owner: \
+            \ 'you vacate, pool end up empty and blocked from stacking'. \
+            \ \
+            \ NO FLAG, DELIBERATELY. The multi-tx campaign sets vacate-in-progress so an observer between \
+            \ batches can see work in flight; here there is no between. Setting and clearing it inside one \
+            \ transaction is invisible to every observer and costs two writes, so this states the fact that \
+            \ IS observable — the pool is empty and shut — and nothing else. \
+            \ \
+            \ NOR DOES IT FREEZE THE FVTs, for the same reason: the campaign freezes collect+inject because a \
+            \ drain spanning blocks would race them, and a single transaction cannot be raced."
         (P|UEV_IMC)
         (let
             (
@@ -3302,6 +3325,15 @@
             )
             ;; aqp-class validity is enforced inside VCT|C>VACATE (all validation lives in the cap).
             (with-capability (VCT|C>VACATE executor pool-id)
+                ;;SHUT THE POOL FIRST, not last. The legs below settle rewards and refresh anchors for every
+                ;;beneficiary, and those read pool state; closing the door before any of it runs means the
+                ;;post-condition does not depend on which branch the class takes. Guarded, because
+                ;;XB_SetPoolStakeEnabled on an already-disabled pool is a wasted write on the common case of
+                ;;vacating a pool that was stopped first.
+                (if (ref-AQP::UR_AQP|PoolStakeEnabled pool-id)
+                    (ref-AQP::XB_SetPoolStakeEnabled pool-id false)
+                    true
+                )
                 (if (or (= c 0) (= c 1))
                     ;; TF-family: scan+consume the DPTF lanes AND the DPOF satellite lanes
                     (ref-IGNIS::UDC_ConcatenateOutputCumulators
@@ -3525,8 +3557,11 @@
         @doc "Vacate-v2 FINALIZE (the nuke) — commit-forward terminal step of a v2 campaign. After the pool has \
             \ been fully drained (nns==0) via Cp_BatchDrain*, bulk-zero every employed score's aggregates + bump \
             \ their vacate-generation (lazily invalidating all per-user rows — the drained beneficiaries were \
-            \ already settled during the drain), then clear vacate-in-progress, RE-ENABLE stake, and unfreeze the \
-            \ pool's FVTs. Pool-owner + nns==0 gated (in the cap). v1 Cp_BatchVacate* auto-finalizes instead."
+            \ already settled during the drain), then clear vacate-in-progress and unfreeze the pool's FVTs. \
+            \ Pool-owner + nns==0 gated (in the cap). v1 Cp_BatchVacate* auto-finalizes instead. \
+            \ \
+            \ STAKE IS NOT RE-ENABLED — see XI_MaybeFinalizeVacate for the ruling. Every exit from a vacate \
+            \ campaign now leaves the pool shut and the owner reopens it deliberately with C_EnablePoolStake."
         (P|UEV_IMC)
         (with-capability (VCT|C>FINALIZE-VACATE executor pool-id)
             (let
@@ -3539,9 +3574,9 @@
                     (lambda (score-id:string) (ref-SCR::XE_NukeScoreForVacate score-id))
                     (ref-AQP::URC_PoolActiveScoreIds pool-id)
                 )
-                ;; 2] finalize the pool: clear vacate-in-progress, re-enable stake, unfreeze the pool's FVTs
+                ;; 2] finalize the pool: clear vacate-in-progress and unfreeze the pool's FVTs. STAKE STAYS
+                ;;    DISABLED — the owner reopens with C_EnablePoolStake once the score work is done.
                 (ref-AQP::XE_SetVacateJobState pool-id false)
-                (ref-AQP::XB_SetPoolStakeEnabled pool-id true)
                 (XI_SetPoolFvtsVacateFrozen pool-id false)
                 (URCi_FinalizeVacate)
             )

@@ -301,7 +301,7 @@ component they drive; the gasless `AA_`/`AAp_` twins are exempt by the `A_`-pref
 why the exempt count moved by two and the priced count by four.)*
 
 ```
-201 exact  ·  193 floor  ·  2 STOA-only  ·  60 exempt  ·  5 unresolved  ·  15 unpriced
+201 exact  ·  189 floor  ·  2 STOA-only  ·  64 exempt  ·  5 unresolved  ·  15 unpriced
 ```
 
 **NEW OP, 2026-10-12: `AQP-POOL|CC_ReassignTrueFungibleStakeBeneficiary`.** TF's counterpart to
