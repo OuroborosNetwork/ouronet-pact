@@ -531,7 +531,8 @@
 ;;on. Nothing new had to be built; the fixture was already the right shape:
 ;;
 ;;   TfStakePool   TF-class OK,  stake admission FALSE
-;;   OfStakePool   TF-class NO,  stake admission true   (ortofungible pool)
+;;   OfStakePool   TF-class NO,  stake admission true   (ortofungible pool; REOPENED by this
+;;                 block -- the prelude's vacate leaves it shut since 2026-10-30, see below)
 ;;   SfStakePool   TF-class NO,  stake admission true   (collectable pool)
 ;;
 ;;So the class guard is driven with an ORTO pool offered to the TF flow, and the admission guard
@@ -544,10 +545,27 @@
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (tf:string (ref-U|DALOS::UDC_Makeid "TfStakePool"))
         (of:string (ref-U|DALOS::UDC_Makeid "OfStakePool"))
         (sf:string (ref-U|DALOS::UDC_Makeid "SfStakePool"))
     )
+    ;;REOPEN OfStakePool FIRST, AND THE REASON IS THE WHOLE POINT OF THIS BLOCK.
+    ;;
+    ;;The two arity assertions below are attributable to ARITY only if their pools clear
+    ;;admission, which the comment further down says outright. `[6.2.4]_AQP-FVT-OF.repl` vacates
+    ;;OfStakePool in the prelude, and before the 2026-10-30 ruling a successful vacate RE-OPENED
+    ;;the pool, so admission was true as a side effect nobody had to ask for. V18 made every
+    ;;vacate exit leave the pool SHUT -- so `UR_AQP|PoolStakeEnabled of` became false, the
+    ;;admission conjunct fired first, and `<<AQP-G9>>`'s orto arity assertion started receiving
+    ;;'pool stake disabled or has no employed scores' where it expected the nonce/amount
+    ;;sentence. Measured, not guessed: of the four conjuncts only `PoolStakeEnabled` was false.
+    ;;
+    ;;THE FIX IS A FIXTURE, NOT A REORDER, per CLAUDE.md's 2026-09-17 position: a fixture that
+    ;;satisfies the FIRST guard exposes BOTH, where reordering merely hides the other one. It is
+    ;;also the operator action the contract now requires, so the test performs it rather than
+    ;;inheriting it -- which is why this went unnoticed in the first place.
+    (ref-TS02-C3::AQP-POOL|C_EnablePoolStake KST.ANHD (AQP-POOL.URC_AqpOwnerKonto of) of)
     (map print
         [
             ;;preconditions: the three pools really do differ the way the tests assume
@@ -3235,9 +3253,22 @@
 ;;WHY ResumeVacPool AND NOT TfStakePool. TfStakePool is left stake-DISABLED by the suite, which
 ;;makes `stake-admission-ok` the conjunct that fails — the same message, the wrong reason, and the
 ;;assertion would have been green while proving nothing about the tracker rule. ResumeVacPool ends
-;;[6.2.5] fully vacated and auto-finalised, so it passes admission in BOTH directions; the four
-;;preconditions are asserted below rather than assumed, precisely because the message cannot tell
-;;the five conjuncts apart.
+;;[6.2.5] fully vacated and auto-finalised; the four preconditions are asserted below rather than
+;;assumed, precisely because the message cannot tell the five conjuncts apart.
+;;
+;;CORRECTED 2026-10-31: this used to continue "...so it passes admission in BOTH directions", and
+;;that stopped being true on 2026-10-30. The ruling "the pool owner has to manually re allow
+;;stacking after a vacate event" means a fully vacated, auto-finalised pool ends SHUT, so the
+;;STAKE direction no longer clears admission — and the stake direction is exactly what the
+;;positive control below drives. The reopen is now performed here instead of inherited from a
+;;vacate's side effect; note that this test's own reasoning predicted the failure, since it
+;;rejected TfStakePool for being stake-disabled and then relied on a pool that had quietly
+;;become the same thing.
+;;
+;;UNSTAKE IS UNAFFECTED and that asymmetry is deliberate in the contract:
+;;`URC_PoolUnstakeAdmissionOk` requires neither stake-enabled nor employed scores, because
+;;"exiting a disabled/empty pool stays allowed". So the refusal assertion needed nothing; only
+;;the control did.
 ;;==== AQP-G41 — the TF pool-custody composite, driven on its tracker-balance conjunct · 01 · env-sigs (caps) ==== 
 (print "--- [AQP-G41 — the TF pool-custody composite, driven on its tracker-balance conjunct · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
@@ -3245,11 +3276,19 @@
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (pool:string (ref-U|DALOS::UDC_Makeid "ResumeVacPool"))
         (ouro:string "OURO-98c486052a51")
     )
+    ;;THE OPERATOR ACTION THE CONTRACT REQUIRES, performed rather than inherited — see the note
+    ;;above. Without it the STAKE-direction control below is refused on `stake-admission-ok`, and
+    ;;a refusal is not what that assertion is for: it is the positive half that fixes the earlier
+    ;;refusal onto the tracker conjunct.
+    (ref-TS02-C3::AQP-POOL|C_EnablePoolStake KST.ANHD (AQP-POOL.URC_AqpOwnerKonto pool) pool)
     (map print
         [
+            (expect "<<AQP-G41>> stake admission holds too, which the vacate no longer grants"
+                true (ref-AQP::URC_PoolStakeAdmissionOk pool))
             (expect "<<AQP-G41>> the four conjuncts that are NOT under test all hold on this pool"
                 [true true true]
                 [(ref-AQP::URC_StakeTrueFungiblePoolClassOk pool)

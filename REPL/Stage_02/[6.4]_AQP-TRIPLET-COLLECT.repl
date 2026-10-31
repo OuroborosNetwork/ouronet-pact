@@ -816,6 +816,19 @@
                     (lp-pre:decimal (DPTF.UR_AccountSupply lp-id owner))
                     (z-pre:integer (ref-DPOF::UR_NoncesUsed z-lp-id))
                 )
+                ;;REOPEN THE POOL FIRST. TX-AQP-CL05 immediately above ends on
+                ;;`AQP-POOL|CC_FullVacate`, and since the 2026-10-30 ruling every vacate exit
+                ;;leaves the pool SHUT -- including the full vacate, which previously touched
+                ;;staking not at all and so was the one path that emptied a pool and left it
+                ;;open. So the `CC_StakeOrtoFungible` below was refused on
+                ;;`stake-admission-ok` and the whole file stopped loading, which is why this
+                ;;reads as BROKEN rather than as a failed assertion.
+                ;;
+                ;;The V18 fixture migration reopened four such sites; this is a fifth it missed,
+                ;;and the reason it was missed is worth noting: the gate halted on the stale V17
+                ;;registry long before it reached any REPL, so a BROKEN suite and a clean run
+                ;;were indistinguishable from the gate's output at the time.
+                (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron (ref-AQP::URC_AqpOwnerKonto pool-id) pool-id)
                 ;;a FULL-TERM lock, so the multiplier is at its mx-ceiling and the decay gap is at
                 ;;its widest -- the hardest case for exact reversal
                 (ref-TS01-C2::VST|C_Sleep patron owner owner lp-id 5.0 788400000)

@@ -2416,8 +2416,7 @@
             (XI_SetPoolFvtsVacateFrozen pool-id false)
         )
     )
-    ;;Protection: Class 1 — Innate protection offered by XE_SetVacateJobState,
-    ;;Protection:          XB_SetPoolStakeEnabled
+    ;;Protection: Class 1 — Innate protection offered by XE_SetVacateJobState
     (defun XI_MaybeFinalizeVacate:string
         (
             pool-id:string

@@ -572,14 +572,33 @@
                 (format "Smart DALOS Account {} Ownership could not be verified!" [owner-konto])
                 (ref-TS02-C3::AQP-POOL|CCp_BatchVacateTrueFungible
                     attacker pool-id ouro-id [attacker] [attacker] [40.0]))
-            ;;THE TWIN ENTRY on the same defcap. A separate `defun` is a separate door, and an
-            ;;adjacent green assertion is the most convincing way for one to stay dark
-            ;;(DEFECT-LEDGER 7.2h, the sibling-gate trap).
+            ;;THE TWIN NO LONGER WITNESSES THE OWNER GATE, AND SAYING SO IS THE POINT.
+            ;;
+            ;;V18 moved the fast-drain trio from `CCp_BatchDrain*` to `AQP-POOL|AAp_BatchDrain*`
+            ;;-- the admin band -- so `P|ADMINISTRATIVE-SUMMONER` composes `GOV|TS02-C3_ADMIN`
+            ;;(`ouronet-ns.dh_master-keyset`, keys-any of PK_AncientHodler + PK_Florian) AHEAD of
+            ;;everything. EMMA holds neither, so she is turned away by the keyset and never
+            ;;reaches `CAP_VctVacatePoolOwner` at all. Asserting the owner sentence here would be
+            ;;asserting something that cannot happen -- and before the arity was corrected it was
+            ;;worse than that: the call passed SIX arguments to a five-parameter defun, so the
+            ;;refusal under test was an argument-count error wearing a red-team label.
+            ;;
+            ;;THE OWNER GATE ON THIS FAMILY IS STILL WITNESSED, by <<RT-D-007d>>, and it is the
+            ;;one fixture in this file that can: ANHD signs there, which SATISFIES the admin
+            ;;keyset, and NfSyncPool is LUMY's -- so the admin gate passes and the ownership gate
+            ;;is the only thing left that can refuse. That is CLAUDE.md's own remedy for two
+            ;;state-dependent guards in sequence ("a fixture that satisfies the first guard
+            ;;exposes BOTH"), arrived at here by accident of who owns which pool rather than by
+            ;;design.
+            ;;
+            ;;WHAT THIS LINE STILL PROVES, which is not nothing: the fast-drain door is shut to a
+            ;;non-admin OUTRIGHT, not merely to a non-owner. A staker cannot reach the deferred
+            ;;score path at all.
             (expect-failure
-                "<<RT-D-005d>> ...and the fast-drain twin, which acquires the same cap, refuses identically"
-                (format "Smart DALOS Account {} Ownership could not be verified!" [owner-konto])
+                "<<RT-D-005d>> ...and the fast-drain twin is ADMIN-ONLY since V18: she never reaches the owner gate"
+                "Keyset failure (keys-any): [PK_Ancie..., PK_Flore...]"
                 (ref-TS02-C3::AQP-POOL|AAp_BatchDrainTrueFungible
-                    attacker pool-id ouro-id [attacker] [attacker] [40.0]))
+                    pool-id ouro-id [attacker] [attacker] [40.0]))
             ;;ATTRIBUTION, in isolation. The gate is a bare `defun`, so it can be called on its own:
             ;;the same sentence from `CAP_VctVacatePoolOwner` alone is what makes the two refusals
             ;;above ATTRIBUTABLE rather than merely COINCIDENT with it.
@@ -698,11 +717,15 @@
                 "Keyset failure (keys-all): [PK_Ancie...]"
                 (ref-TS02-C3::AQP-POOL|CCp_BatchVacateOrtoFungible
                     attacker pool-id mvst-id [attacker] [attacker] nonces))
+            ;;ADMIN-ONLY SINCE V18 -- see the long note at <<RT-D-005d>>. The refusal names the
+            ;;MASTER keyset (keys-any, two keys), not the pool owner's single key, and that is
+            ;;exactly how the two refusals are told apart: `[PK_Ancie...]` alone is the owner
+            ;;gate, `[PK_Ancie..., PK_Flore...]` is the admin gate in front of it.
             (expect-failure
-                "<<RT-D-006d>> ...and the fast-drain twin, which acquires the same cap, refuses identically"
-                "Keyset failure (keys-all): [PK_Ancie...]"
+                "<<RT-D-006d>> ...and the fast-drain twin is ADMIN-ONLY since V18: she never reaches the owner gate"
+                "Keyset failure (keys-any): [PK_Ancie..., PK_Flore...]"
                 (ref-TS02-C3::AQP-POOL|AAp_BatchDrainOrtoFungible
-                    attacker pool-id mvst-id [attacker] [attacker] nonces))
+                    pool-id mvst-id [attacker] [attacker] nonces))
             (expect-failure
                 "<<RT-D-006e>> ...and the gate ALONE produces that exact refusal, so the refusal is its"
                 "Keyset failure (keys-all): [PK_Ancie...]"
@@ -813,11 +836,16 @@
                 "Keyset failure (keys-all): [PK_Lumy...]"
                 (ref-TS02-C3::AQP-POOL|CCp_BatchVacateCollectables
                     attacker pool-id dhb-id false [attacker] [attacker] nonces amounts))
+            ;;THE ONE DRAIN FIXTURE THAT STILL REACHES THE OWNER GATE. ANHD signs, which satisfies
+            ;;the V18 admin keyset (`dh_master-keyset`, keys-any), so `P|ADMINISTRATIVE-SUMMONER`
+            ;;passes and `CAP_VctVacatePoolOwner` is the only thing left that can refuse -- and it
+            ;;names LUMY, a key the signer does not hold. Contrast <<RT-D-005d>>/<<RT-D-006d>>,
+            ;;where EMMA is stopped by the keyset and the owner gate is never consulted.
             (expect-failure
-                "<<RT-D-007d>> ...and the fast-drain twin, which acquires the same cap, refuses identically"
+                "<<RT-D-007d>> ...and the fast-drain twin, admin gate satisfied, refuses on ownership alone"
                 "Keyset failure (keys-all): [PK_Lumy...]"
                 (ref-TS02-C3::AQP-POOL|AAp_BatchDrainCollectable
-                    attacker pool-id dhb-id false [attacker] [attacker] nonces amounts))
+                    pool-id dhb-id false [attacker] [attacker] nonces amounts))
             (expect-failure
                 "<<RT-D-007e>> ...and the gate ALONE produces that exact refusal, so the refusal is its"
                 "Keyset failure (keys-all): [PK_Lumy...]"

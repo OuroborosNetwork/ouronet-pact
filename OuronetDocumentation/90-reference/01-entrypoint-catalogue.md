@@ -3,17 +3,17 @@
 > **This page is GENERATED.** Edit `REPL/tools/_docsref.py`, never this file — the
 > gate regenerates it and diffs the result. It carries no prose for that reason.
 
-Every client entrypoint Ouronet exposes — **442** of them — with the preview
+Every client entrypoint Ouronet exposes — **441** of them — with the preview
 that prices it and whether the gas station pays for it.
 
 **Bind preview arguments by NAME, never by position.** A preview's parameter list
-differs from its entrypoint's in **426**
+differs from its entrypoint's in **425**
 cases. Positional binding does not fail — the values are mostly strings, so a wrong
 mapping type-checks and returns a confident price for a different question.
 
 | sponsorship | entrypoints |
 |---|---:|
-| fully sponsored | 424 |
+| fully sponsored | 423 |
 | step-0-only | 10 |
 | not sponsored | 8 |
 
@@ -405,6 +405,9 @@ mapping type-checks and returns a confident price for a different question.
 | `AQP-DSA|C_SetAgencyFee` | `AQP-INFO.INFO_AQP-DSA|SetAgencyFee` | yes |
 | `AQP-DSA|C_SetOracleAuth` | `AQP-INFO.INFO_AQP-DSA|SetOracleAuth` | yes |
 | `AQP-DSA|C_WithdrawRoyalty` | `AQP-INFO.INFO_AQP-DSA|WithdrawRoyalty` | yes |
+| `AQP-EVCT|CC_EvictSingleReward` | `AQP-INFO.INFO_AQP-EVCT|EvictSingleReward` | yes |
+| `AQP-EVCT|CC_FullEvictRewards` | `AQP-INFO.INFO_AQP-EVCT|FullEvictRewards` | yes |
+| `AQP-EVCT|CCp_EvictMultiRewards` | `AQP-INFO.INFO_AQP-EVCT|EvictMultiRewards` | yes |
 | `AQP-FVT|CC_ClearPoolSweep` | `AQP-INFO.INFO_AQP-FVT|ClearPoolSweep` | yes |
 | `AQP-FVT|CC_Collect` | `AQP-INFO.INFO_AQP-FVT|Collect` | yes |
 | `AQP-FVT|CC_Inject` | `AQP-INFO.INFO_AQP-FVT|Inject` | yes |
@@ -451,9 +454,6 @@ mapping type-checks and returns a confident price for a different question.
 | `AQP-POOL|CC_VacateSemiFungible` | `AQP-INFO.INFO_AQP-POOL|VacateSemiFungible` | yes |
 | `AQP-POOL|CC_VacateTrueFungible` | `AQP-INFO.INFO_AQP-POOL|VacateTrueFungible` | yes |
 | `AQP-POOL|CCp_BackfillScoreSlice` | `AQP-INFO.INFO_AQP-POOL|BackfillScoreSlice` | yes |
-| `AQP-POOL|CCp_BatchDrainCollectable` | `AQP-INFO.INFO_AQP-POOL|BatchDrainCollectable` | yes |
-| `AQP-POOL|CCp_BatchDrainOrtoFungible` | `AQP-INFO.INFO_AQP-POOL|BatchDrainOrtoFungible` | yes |
-| `AQP-POOL|CCp_BatchDrainTrueFungible` | `AQP-INFO.INFO_AQP-POOL|BatchDrainTrueFungible` | yes |
 | `AQP-POOL|CCp_BatchVacateCollectables` | `AQP-INFO.INFO_AQP-POOL|BatchVacateCollectables` | yes |
 | `AQP-POOL|CCp_BatchVacateOrtoFungible` | `AQP-INFO.INFO_AQP-POOL|BatchVacateOrtoFungible` | yes |
 | `AQP-POOL|CCp_BatchVacateTrueFungible` | `AQP-INFO.INFO_AQP-POOL|BatchVacateTrueFungible` | yes |
@@ -464,7 +464,6 @@ mapping type-checks and returns a confident price for a different question.
 | `AQP-POOL|C_BeginScoreRevoke` | `AQP-INFO.INFO_AQP-POOL|BeginScoreRevoke` | yes |
 | `AQP-POOL|C_DisablePoolStake` | `AQP-INFO.INFO_AQP-POOL|DisablePoolStake` | yes |
 | `AQP-POOL|C_EnablePoolStake` | `AQP-INFO.INFO_AQP-POOL|EnablePoolStake` | yes |
-| `AQP-POOL|C_FinalizeVacate` | `AQP-INFO.INFO_AQP-POOL|FinalizeVacate` | yes |
 | `AQP-POOL|C_Issue` | `AQP-INFO.INFO_AQP-POOL|Issue` | yes |
 | `AQP-POOL|C_RevokeScore` | `AQP-INFO.INFO_AQP-POOL|RevokeScore` | yes |
 | `AQP-POOL|C_SyncNonFungibleAnchors` | `AQP-INFO.INFO_AQP-POOL|SyncNonFungibleAnchors` | yes |

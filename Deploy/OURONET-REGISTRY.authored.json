@@ -323,48 +323,6 @@
    ],
    "reason": "The work is LIST-SHAPED but the list is not in the signature -- this entrypoint takes no list at all, and the set it traverses lives in chain state. So a client has nothing to cut, and `kind: list` would invite it to slice an argument that does not exist.\n\nA DEFPACT IS THE WRONG TOOL HERE, which is the distinction the taxonomy was missing (owner, 2026-10-27): a defpact's step count is FIXED by its definition while this workload has no fixed length, so a 2-step twin caps it at two steps forever. The scalable expression is the pager below -- unbounded in calls, each advancing stored progress, and STRICTLY SEQUENTIAL because two of them race the cursor. Repeat until the progress read says done."
   },
-  "TS02-C3.AQP-POOL|CCp_BatchDrainTrueFungible": {
-   "kind": "list",
-   "shape": "partition",
-   "axis": "owner-ids",
-   "lockstep": [
-    "beneficiary-ids",
-    "amounts"
-   ],
-   "reason": "A Hydra fed slice: the canon has the UI run a URH_ preflight and partition its output into capacity-bounded slices, so cutting this list client-side IS the intended use. `execution.mode` already says the slices are order-independent; it does not say which parameter is the slice, which is what this block adds. A per-leg fan-out, and SAFE TO CUT ANYWHERE -- established by reading the exec rather than from the INFO_ text, which misleads. That text says settle fires \"only for beneficiaries fully drained THIS ROUND\", which reads as a per-CALL condition. The implementation is not:\n\n    (if (= (ref-AQP::UR_AQP|UserUnn pool-id beneficiary-id) 0) ...settle... (UC_EmptyOc))\n\nIt tests the RESULTING STATE after this call's legs have decremented `unn`, not whether this call happened to carry all of them. So a beneficiary with 10 legs cut 5/5 takes `unn` 10->5 (no settle) then 5->0 (settle) -- fired EXACTLY ONCE and ORDER-INDEPENDENT, whichever batch lands last for them. Cutting mid-beneficiary is therefore fine."
-  },
-  "TS02-C3.AQP-POOL|CCp_BatchDrainOrtoFungible": {
-   "kind": "list",
-   "shape": "partition",
-   "axis": "owner-ids",
-   "lockstep": [
-    "beneficiary-ids",
-    "nonces-array"
-   ],
-   "inner": {
-    "axis": "nonces-array",
-    "note": "One owner-leg's nonce list is cut as well; each nonce is an independent position."
-   },
-   "reason": "A Hydra fed slice: the canon has the UI run a URH_ preflight and partition its output into capacity-bounded slices, so cutting this list client-side IS the intended use. `execution.mode` already says the slices are order-independent; it does not say which parameter is the slice, which is what this block adds. A per-leg fan-out, and SAFE TO CUT ANYWHERE -- established by reading the exec rather than from the INFO_ text, which misleads. That text says settle fires \"only for beneficiaries fully drained THIS ROUND\", which reads as a per-CALL condition. The implementation is not:\n\n    (if (= (ref-AQP::UR_AQP|UserUnn pool-id beneficiary-id) 0) ...settle... (UC_EmptyOc))\n\nIt tests the RESULTING STATE after this call's legs have decremented `unn`, not whether this call happened to carry all of them. So a beneficiary with 10 legs cut 5/5 takes `unn` 10->5 (no settle) then 5->0 (settle) -- fired EXACTLY ONCE and ORDER-INDEPENDENT, whichever batch lands last for them. Cutting mid-beneficiary is therefore fine."
-  },
-  "TS02-C3.AQP-POOL|CCp_BatchDrainCollectable": {
-   "kind": "list",
-   "shape": "partition",
-   "axis": "owner-ids",
-   "lockstep": [
-    "beneficiary-ids",
-    "nonces-array",
-    "amounts-array"
-   ],
-   "inner": {
-    "axis": "nonces-array",
-    "lockstep": [
-     "amounts-array"
-    ],
-    "note": "One owner-leg carrying hundreds of nonces is still too large for a transaction, so that leg's own nonce list is cut too, in step with its amounts. Each nonce is an independent position."
-   },
-   "reason": "A Hydra fed slice: the canon has the UI run a URH_ preflight and partition its output into capacity-bounded slices, so cutting this list client-side IS the intended use. `execution.mode` already says the slices are order-independent; it does not say which parameter is the slice, which is what this block adds. A per-leg fan-out, and SAFE TO CUT ANYWHERE -- established by reading the exec rather than from the INFO_ text, which misleads. That text says settle fires \"only for beneficiaries fully drained THIS ROUND\", which reads as a per-CALL condition. The implementation is not:\n\n    (if (= (ref-AQP::UR_AQP|UserUnn pool-id beneficiary-id) 0) ...settle... (UC_EmptyOc))\n\nIt tests the RESULTING STATE after this call's legs have decremented `unn`, not whether this call happened to carry all of them. So a beneficiary with 10 legs cut 5/5 takes `unn` 10->5 (no settle) then 5->0 (settle) -- fired EXACTLY ONCE and ORDER-INDEPENDENT, whichever batch lands last for them. Cutting mid-beneficiary is therefore fine."
-  },
   "TS02-C3.AQP-POOL|CCp_BatchVacateTrueFungible": {
    "kind": "list",
    "shape": "partition",
@@ -409,6 +367,62 @@
     "note": "One owner-leg carrying hundreds of nonces is still too large for a transaction, so that leg's own nonce list is cut too, in step with its amounts. Each nonce is an independent position."
    },
    "reason": "A Hydra fed slice: the canon has the UI run a URH_ preflight and partition its output into capacity-bounded slices, so cutting this list client-side IS the intended use. `execution.mode` already says the slices are order-independent; it does not say which parameter is the slice, which is what this block adds. A per-leg fan-out, but CUTTABLE ONLY ON A BENEFICIARY BOUNDARY -- see `groupBy`.\n\n`XI_1|Vacate*UnwindFromLegs` calls `XI_2|Vacate*BeneficiaryUnwind` once per unique beneficiary IN THAT SLICE, UNGATED, fed `UC_VacateSumAmountForBeneficiaryFromLegs` -- that slice's partial sum. Two of the unwind's six legs are genuinely delta-based (`XE_*BeneficiaryRollup ... amount false`, `XE_Apply*StakeDelta ... amount false`) so partial sums add up correctly. The other four are the settle triple -- `XI_3|RpsVacatePreZero`, `XE_RefreshStakeAnchors`, `XE_BookStakeUnclaimedCounts`, `XE_CheckpointStakeRps` -- and they would run once per SLICE instead of once per BENEFICIARY.\n\nTHE SIBLING DRAIN PATH GATES THAT SAME TRIPLE behind `UR_AQP|UserUnn == 0` precisely so it fires once. Vacate does not gate it. That asymmetry is the evidence: the vacate design assumes a beneficiary never spans two slices, and the preflight partitions by beneficiary accordingly. So the split is sound at beneficiary granularity and unsound below it, which is a constraint on WHERE the cut may fall rather than on whether it may happen."
+  },
+  "TS02-C3.AQP-EVCT|CCp_EvictMultiRewards": {
+   "kind": "list",
+   "shape": "partition",
+   "axis": "beneficiaries",
+   "lockstep": [
+    "score-entity-types",
+    "score-entity-ids",
+    "reward-dptf-ids"
+   ],
+   "reason": "A Hydra FED SLICE, and the entrypoint says so itself: \"the client dirty-reads URHC_BuildEvictSlicePlan, splits into disjoint gas-bounded slices and fires them at once. Contrast a cursor pager, which is strictly sequential.\" `execution.mode` already carries indirect-parallel; it does not say WHICH parameter is the slice, which is what this block adds -- four parallel arrays, one leg per position, and a leg is (beneficiary x score entity x reward lane).\n\nNO GROUP BOUNDARY, and that is the one judgement worth stating, because the sibling vacate trio HAS one on `beneficiary-ids`. There it is needed: a vacate settles per beneficiary on the RESULTING `UR_AQP|UserUnn`, so a beneficiary's legs split across transactions settles early. Eviction has no such coupling -- `CCp_EvictMultiRewards` touches no scores, freezes nothing, and each leg runs the same XI_CollectDrip/XI_CollectPay phases a self-collect runs against its own lane. One beneficiary's legs may therefore land in different transactions.\n\nSAFE TO CUT ANYWHERE, NOT SAFE TO CUT STALE. The claimable refusal lives in the CC_ and is a fold over the whole slice against `RPS.URC_LiveClaimable`, so if ONE leg was collected between the read and the send the ENTIRE slice aborts -- deliberately: \"a stale slice refuses rather than skips\". Smaller slices therefore lose less to a race, and a caller that cannot tolerate that should drive `CC_EvictSingleReward` one leg at a time instead, where a bounce costs exactly one transaction."
+  }
+ },
+ "partitionRetired": {
+  "note": "RETIRED PARTITION ANALYSES -- kept for the reasoning, NOT consulted by any tool.\n\nWHY THIS SECTION EXISTS. A `partition` block is PERMISSION TO CUT A CALL INTO PIECES, bound to an entrypoint name. When V18 moved the drain trio from `AQP-POOL|CCp_BatchDrain*` to `AQP-POOL|AAp_BatchDrain*` -- the admin band, which this registry does not index (measured: 387 `C_`, 39 `CC_`, 11 `CCp_`, 4 `Cp_`, zero `A`) -- those three blocks stopped describing anything callable. They were not deleted and nothing noticed, because the orphan check in `_registry.py` skipped any authored key absent from the entrypoints, which is exactly the key an orphan has. `--check` went on reporting that every partition claim held.\n\nThe analyses themselves are still TRUE of the admin wrappers -- the Talos doc calls `AAp_BatchDrain*` byte-for-byte its `CCp_` predecessor with the gasless patron in slot 0 -- so deleting them would throw away a reading of the exec that took real work (in particular the finding that the INFO_ text's \"fully drained THIS ROUND\" wording is misleading and the settle condition is on RESULTING STATE, which is what makes these cuttable anywhere). They are moved rather than kept so the orphan check added 2026-10-31 can be fatal.\n\nIF A CLIENT-BAND DRAIN EVER RETURNS, move the block back under `partition` and rename the key. Do not read anything here as a live judgement: no tool validates these against today's sources, so they may have rotted.",
+  "TS02-C3.AQP-POOL|CCp_BatchDrainTrueFungible": {
+   "kind": "list",
+   "shape": "partition",
+   "axis": "owner-ids",
+   "lockstep": [
+    "beneficiary-ids",
+    "amounts"
+   ],
+   "reason": "A Hydra fed slice: the canon has the UI run a URH_ preflight and partition its output into capacity-bounded slices, so cutting this list client-side IS the intended use. `execution.mode` already says the slices are order-independent; it does not say which parameter is the slice, which is what this block adds. A per-leg fan-out, and SAFE TO CUT ANYWHERE -- established by reading the exec rather than from the INFO_ text, which misleads. That text says settle fires \"only for beneficiaries fully drained THIS ROUND\", which reads as a per-CALL condition. The implementation is not:\n\n    (if (= (ref-AQP::UR_AQP|UserUnn pool-id beneficiary-id) 0) ...settle... (UC_EmptyOc))\n\nIt tests the RESULTING STATE after this call's legs have decremented `unn`, not whether this call happened to carry all of them. So a beneficiary with 10 legs cut 5/5 takes `unn` 10->5 (no settle) then 5->0 (settle) -- fired EXACTLY ONCE and ORDER-INDEPENDENT, whichever batch lands last for them. Cutting mid-beneficiary is therefore fine."
+  },
+  "TS02-C3.AQP-POOL|CCp_BatchDrainOrtoFungible": {
+   "kind": "list",
+   "shape": "partition",
+   "axis": "owner-ids",
+   "lockstep": [
+    "beneficiary-ids",
+    "nonces-array"
+   ],
+   "inner": {
+    "axis": "nonces-array",
+    "note": "One owner-leg's nonce list is cut as well; each nonce is an independent position."
+   },
+   "reason": "A Hydra fed slice: the canon has the UI run a URH_ preflight and partition its output into capacity-bounded slices, so cutting this list client-side IS the intended use. `execution.mode` already says the slices are order-independent; it does not say which parameter is the slice, which is what this block adds. A per-leg fan-out, and SAFE TO CUT ANYWHERE -- established by reading the exec rather than from the INFO_ text, which misleads. That text says settle fires \"only for beneficiaries fully drained THIS ROUND\", which reads as a per-CALL condition. The implementation is not:\n\n    (if (= (ref-AQP::UR_AQP|UserUnn pool-id beneficiary-id) 0) ...settle... (UC_EmptyOc))\n\nIt tests the RESULTING STATE after this call's legs have decremented `unn`, not whether this call happened to carry all of them. So a beneficiary with 10 legs cut 5/5 takes `unn` 10->5 (no settle) then 5->0 (settle) -- fired EXACTLY ONCE and ORDER-INDEPENDENT, whichever batch lands last for them. Cutting mid-beneficiary is therefore fine."
+  },
+  "TS02-C3.AQP-POOL|CCp_BatchDrainCollectable": {
+   "kind": "list",
+   "shape": "partition",
+   "axis": "owner-ids",
+   "lockstep": [
+    "beneficiary-ids",
+    "nonces-array",
+    "amounts-array"
+   ],
+   "inner": {
+    "axis": "nonces-array",
+    "lockstep": [
+     "amounts-array"
+    ],
+    "note": "One owner-leg carrying hundreds of nonces is still too large for a transaction, so that leg's own nonce list is cut too, in step with its amounts. Each nonce is an independent position."
+   },
+   "reason": "A Hydra fed slice: the canon has the UI run a URH_ preflight and partition its output into capacity-bounded slices, so cutting this list client-side IS the intended use. `execution.mode` already says the slices are order-independent; it does not say which parameter is the slice, which is what this block adds. A per-leg fan-out, and SAFE TO CUT ANYWHERE -- established by reading the exec rather than from the INFO_ text, which misleads. That text says settle fires \"only for beneficiaries fully drained THIS ROUND\", which reads as a per-CALL condition. The implementation is not:\n\n    (if (= (ref-AQP::UR_AQP|UserUnn pool-id beneficiary-id) 0) ...settle... (UC_EmptyOc))\n\nIt tests the RESULTING STATE after this call's legs have decremented `unn`, not whether this call happened to carry all of them. So a beneficiary with 10 legs cut 5/5 takes `unn` 10->5 (no settle) then 5->0 (settle) -- fired EXACTLY ONCE and ORDER-INDEPENDENT, whichever batch lands last for them. Cutting mid-beneficiary is therefore fine."
   }
  },
  "architecturalSuperseded": {

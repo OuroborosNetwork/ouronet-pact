@@ -225,9 +225,24 @@ LEG_PREFLIGHT = {
     "AQP-POOL|CCp_BatchVacateTrueFungible":  ["AQP-VCT.URH_VacateTrueFungiblePoolLegs", "AQP-VCT.URHC_BuildVacateSlicePlan"],
     "AQP-POOL|CCp_BatchVacateOrtoFungible":  ["AQP-VCT.URH_VacateOrtoFungiblePoolLegs", "AQP-VCT.URHC_BuildVacateSlicePlan"],
     "AQP-POOL|CCp_BatchVacateCollectables":  ["AQP-VCT.URH_VacateCollectablesPoolLegs", "AQP-VCT.URHC_BuildVacateSlicePlan"],
-    "AQP-POOL|CCp_BatchDrainTrueFungible":   ["AQP-VCT.URH_VacateTrueFungiblePoolLegs"],
-    "AQP-POOL|CCp_BatchDrainOrtoFungible":   ["AQP-VCT.URH_VacateOrtoFungiblePoolLegs"],
-    "AQP-POOL|CCp_BatchDrainCollectable":    ["AQP-VCT.URH_VacateCollectablesPoolLegs"],
+    # THE DRAIN TRIO IS GONE FROM THIS TABLE, and the three rows that named it were ORPHANS.
+    # V18 moved them from `CCp_BatchDrain*` to `AQP-POOL|AAp_BatchDrain*` -- the admin band --
+    # and this registry indexes the CLIENT bands only (measured: 387 `C_`, 39 `CC_`, 11 `CCp_`,
+    # 4 `Cp_`, and not one `A`). So the rows stopped describing anything the moment the rename
+    # landed. The matching authored-partition blocks are now under `partitionRetired`; nothing
+    # checked rows in THIS table, which `--check` now does.
+    #
+    # WORTH RECORDING HOW LONG IT WAS INVISIBLE, because the honest answer is ONE DAY and the
+    # first draft of this comment claimed otherwise. The authored blocks were already covered
+    # by the ORPHAN branch at the top of the partition loop -- they only became orphans when the
+    # artefact was regenerated on 2026-10-30, and on that same run an earlier check
+    # (`CCp_EvictMultiRewards` shipping an unresolved preflight) returned first and masked them.
+    # The check was right; the ordering hid it. Only this table had no check at all.
+    #
+    # ADDED 2026-10-31 for the three V18 reward-eviction recipes. `CCp_EvictMultiRewards` was
+    # shipping `preflightUnresolved`, which --check refuses by design: a parallel recipe whose
+    # slices a caller cannot build is an entrypoint nobody can act on.
+    "AQP-EVCT|CCp_EvictMultiRewards":        ["AQP-EVCT.URHC_BuildEvictPlans", "AQP-EVCT.URHC_BuildEvictSlicePlan"],
     # ADDED 2026-10-10 for the six recipes PureV6 shipped. Without a row here each emitted
     # `preflightUnresolved`, which the gate refuses -- correctly: a parallel recipe a caller
     # cannot slice is an entrypoint nobody can act on, and "we forgot" looks identical to
@@ -1647,6 +1662,32 @@ def main():
         if unmerged:
             pbad.append(f"{len(unmerged)} authored partition block(s) did not merge into the "
                         f"artefact -- regenerate with --probe: {', '.join(unmerged[:4])}")
+        # THE PREFLIGHT TABLES GET THE SAME ORPHAN QUESTION, which the loop above asks of the
+        # authored blocks (line ~1480) but nothing asked of these -- they live in THIS file
+        # rather than in the authored JSON, so no check reached them.
+        #
+        # ADDED 2026-10-31, after three `LEG_PREFLIGHT` rows were found naming
+        # `AQP-POOL|CCp_BatchDrain*`. V18 moved that trio to `AQP-POOL|AAp_BatchDrain*` -- the
+        # admin band, which this registry does not index (measured: 387 `C_`, 39 `CC_`, 11
+        # `CCp_`, 4 `Cp_`, zero `A`) -- so the rows stopped describing anything the moment the
+        # rename landed and went on sitting here looking authoritative.
+        #
+        # WHAT THE PROBE'S OWN "preflight: clean" LINE DOES NOT COVER, and the distinction is
+        # the whole point: it verifies every reader a row CITES exists in deployed code. These
+        # rows cited `AQP-VCT.URH_Vacate*PoolLegs`, which all still exist -- so the probe
+        # reported clean while the rows themselves pointed at nothing. Checking the value and
+        # never the key is how an orphan survives a green run.
+        #
+        # A dead row is not merely clutter. The next function to take that name inherits a
+        # preflight written for different semantics, and an entrypoint told to read the wrong
+        # preflight is one a client slices wrongly -- `_patronslots.py`'s lesson, where five
+        # registered excuses outlived their sites.
+        ep_fns = {k.split(".", 1)[1] for k in doc["entrypoints"] if "." in k}
+        t_orphans = sorted({k for t in (LEG_PREFLIGHT, PAGER_PREFLIGHT) for k in t}
+                           - ep_fns)
+        if t_orphans:
+            pbad.append(f"{len(t_orphans)} preflight table row(s) name a function no entrypoint "
+                        f"carries (ORPHAN): {', '.join(t_orphans[:4])}")
 
         # AND EVERY DERIVED ROUTE MUST STILL BE DERIVABLE. A defpact that loses its
         # `preferInstead`, or gains a `architecturalSuperseded` entry, must not leave a stale
