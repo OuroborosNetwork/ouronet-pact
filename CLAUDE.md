@@ -115,6 +115,25 @@ revived tool "just to prove it loads" fired five of them and silently deleted 11
 from `05_FVT.pact`. They now refuse unless `--apply` is passed. **Never run a tool to find out what
 it does** — read its docstring, or check the table in `REPL/TOOLS.md`.
 
+**Two publications are cut from this repo, and ONE COMMAND rebuilds both.**
+
+```bash
+python3 REPL/tools/_publishprep.py --check   # is anything stale?  (offline)
+python3 REPL/tools/_publishprep.py --write   # rebuild the Audit Book AND the documentation
+```
+
+It runs `REPL/tools/_auditall.py` (4 generators → `Audit/`) then `REPL/tools/_docsall.py`
+(5 generators → `OuronetDocumentation/`), in that order because the docs cite the audit's
+figures and never the reverse. Staleness was ALREADY gate-fatal on every one of those nine
+artefacts; what did not exist was a way to fix it without remembering nine scripts at the
+moment you want to publish — which is when a remembered sequence is most likely to be got
+wrong and least likely to be checked.
+
+**It blocks on something no generator can produce.** `_auditdelta.py` reports changed
+modules with no JUDGEMENT block in `Audit/AUDIT-V2-DELTA.md` — which assertions a re-audit
+must re-run, which findings are invalidated. Facts are generated; judgement is written. A
+missing block fails the build on purpose.
+
 **Generated artefacts are gate-enforced.** `OuronetInformational/IGNIS-PRICING/IGNIS-PRICE-SHEET.md`
 and `IGNIS-DETER-WORKSHEET.md` are regenerated and diffed by `REPL/tools/_pricesync.py --check`,
 fatal inside `_gate.py`. Edit the **generator**, never the artefact; `--write` to refresh both.
