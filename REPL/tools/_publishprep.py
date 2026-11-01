@@ -24,12 +24,22 @@ the audit's figures, never the other way round. Rebuilding docs against a stale 
 propagate the stale number into the second publication and make both agree -- which is the
 exact failure mode the Audit Book's own third rule is written about.
 
-THE NETWORK IS NOT TOUCHED. Both orchestrators build from the tree and from the committed
-`Deploy/OURONET-REGISTRY.json`. Whether that SNAPSHOT matches the chain is a different
-question with its own tool: run `python3 REPL/tools/_registrylive.py --record` after a
-deploy, and `_registry.py --check` will tell you when it was last confirmed. A publication
-built from an unconfirmed snapshot is accurate about the repository and silent about the
-chain, and it should say which -- not guess.
+`--write` ASKS THE CHAIN; `--check` NEVER DOES.
+
+This file first claimed "the network is not touched" and treated that as a virtue. It was
+the bug. `_docsall` regenerates each module page's DEPLOYED hash and size from
+`_livemodules`'s cache -- which only `--probe` refreshes, and which the registry steps do
+not touch. Without it the rebuild is faithful to a stale input and reports clean; measured
+2026-11-01, that cache had NEVER SEEN two live modules (AQP-EVCT, AQP-RPSC).
+
+`_docsall`'s own docstring says it plainly: "AFTER A DEPLOY the honest sequence is
+`--write --probe` ... anything else documents the previous surface."
+
+So `--write` passes `--probe`. `--check` does not, and must not: the gate runs offline, and
+a validator that reaches the network turns a failed build into a network diagnosis.
+
+The audit side needs no probe -- it builds from the tree and from the committed registry,
+whose freshness is `_registry.py --check`'s question and is reported in the release note.
 
 WHAT IT CANNOT DO, and this is deliberate. `_auditdelta.py` reports which changed modules
 have no JUDGEMENT block in `Audit/AUDIT-V2-DELTA.md` -- which assertions a re-audit must
@@ -61,7 +71,10 @@ def main() -> int:
     failed: list[str] = []
     for script, what in STEPS:
         print(f"\n{'=' * 78}\n== {script} {mode} -- {what}\n{'=' * 78}", flush=True)
-        args = [mode, *extra] if script == "_auditall.py" else [mode]
+        args = ([mode, *extra] if script == "_auditall.py"
+                # SEE ABOVE: the documentation's chain figures are only as fresh as the
+                # last probe, and nothing else in this chain refreshes them.
+                else [mode, *(["--probe"] if write else [])])
         if subprocess.run([sys.executable, str(TOOLS / script), *args],
                           cwd=ROOT / "REPL").returncode != 0:
             failed.append(script)
