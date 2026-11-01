@@ -44,14 +44,29 @@ ROOT = Path(__file__).resolve().parents[2]
 TOOLS = ROOT / "REPL" / "tools"
 
 #: (script, args-for-check, args-for-write, what it is)
+#:
+#: `args-for-write` is a LIST OF INVOCATIONS, not one, because for `_auditdelta` writing and
+#: enforcing are different runs — see the note on STEP 4 below.
 STEPS = [
-    ("_booktables.py",     ["--check"], ["--check"],
+    ("_booktables.py",     [["--check"]], [["--check"]],
      "the book's headline tables add up"),
-    ("_chapterfigures.py", ["--check"], ["--check"],
+    ("_chapterfigures.py", [["--check"]], [["--check"]],
      "the Integration chapter's registry figures"),
-    ("_auditbook.py",      ["--check"], [],
+    ("_auditbook.py",      [["--check"]], [[]],
      "assemble the 28 chapters into the versioned book"),
-    ("_auditdelta.py",     ["--check"], ["--write"],
+    # ─────────────────────────────────────────────────────────────────────────────────────
+    # STEP 4 RUNS TWICE UNDER --write, AND THE SECOND RUN IS THE POINT.
+    #
+    # `_auditdelta --write` regenerates the FACTS (every entrypoint whose signature differs
+    # from the pre-sweep baseline) and exits 0 whether or not the judgement blocks exist.
+    # Only `--check` enforces them. The first version of this file ran `--write` alone and
+    # its own docstring claimed "a missing block fails the build on purpose" — which was
+    # true of `--check`, the mode nobody presses, and false of `--write`, the mode the admin
+    # button runs. Measured 2026-11-01: `--write` exit 0, `--check` exit 1, same tree.
+    #
+    # A GUARD THAT ONLY RUNS IN THE MODE NOBODY USES IS NOT A GUARD. Write, then check.
+    # ─────────────────────────────────────────────────────────────────────────────────────
+    ("_auditdelta.py",     [["--check"]], [["--write"], ["--check"]],
      "the signature delta a re-audit must re-verify"),
 ]
 
@@ -77,20 +92,23 @@ def main() -> int:
     # an audit artefact must not have happen to it. Under `--write` they still run, still as
     # checks, so the rebuild stops rather than assembling a book around a figure known wrong.
     failed: list[str] = []
-    for script, check_args, write_args, what in STEPS:
-        args = (write_args if write else check_args)
-        if write and docx and script == "_auditbook.py":
-            args = [*args, "--docx"]
-        # FLUSHED. Python buffers its own stdout while a subprocess writes straight to the
-        # terminal, so without this every header appeared AFTER the output it introduces —
-        # which makes a four-step build unreadable at exactly the moment one step fails.
-        print(f"\n=== {script} {' '.join(args)} -- {what}", flush=True)
-        if run(script, args) != 0:
-            failed.append(script)
-            # STOP AT THE FIRST FAILURE under --write. Step 3 assembles what steps 1 and 2
-            # have just validated; assembling around a known-stale figure publishes it.
-            if write:
+    for script, check_runs, write_runs, what in STEPS:
+        stop = False
+        for args in (write_runs if write else check_runs):
+            if write and docx and script == "_auditbook.py":
+                args = [*args, "--docx"]
+            # FLUSHED. Python buffers its own stdout while a subprocess writes straight to
+            # the terminal, so without this every header appeared AFTER the output it
+            # introduces — which makes a four-step build unreadable at the moment one fails.
+            print(f"\n=== {script} {' '.join(args) or '(build)'} -- {what}", flush=True)
+            if run(script, args) != 0:
+                failed.append(f"{script} {' '.join(args)}".strip())
+                stop = True
                 break
+        # STOP AT THE FIRST FAILURE under --write. Step 3 assembles what steps 1 and 2 have
+        # just validated; assembling around a known-stale figure publishes it.
+        if stop and write:
+            break
 
     if failed:
         print(f"\nFAILED: {', '.join(failed)}")
