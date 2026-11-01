@@ -1,6 +1,6 @@
 # The modules
 
-One page per deployed module — **98 of them** — in **deploy order**, which
+One page per deployed module — **100 of them** — in **deploy order**, which
 is also dependency order: a module may only call what is already deployed, so reading
 downward is reading foundations first.
 
@@ -91,58 +91,60 @@ is not touched by that.
 | 56 | [`AQP-SCORE`](56-aqp-score.md) | scoring |
 | 57 | [`AQP-POOL`](57-aqp-pool.md) | the pools |
 | 58 | [`RPS`](58-rps.md) | the reward engine |
-| 59 | [`AQP-FVT`](59-aqp-fvt.md) | farms, vaults and treasuries |
-| 60 | [`AQP-VCT`](60-aqp-vct.md) | vacating |
-| 61 | [`MTX-AQP`](61-mtx-aqp.md) | multi-step acquisition operations |
-| 62 | [`AQP-DSA`](62-aqp-dsa.md) | delegated staking agencies |
-| 63 | [`AQP-INFO`](63-aqp-info.md) | acquisition previews |
+| 59 | [`AQP-RPSC`](59-aqp-rpsc.md) |  |
+| 60 | [`AQP-FVT`](60-aqp-fvt.md) |  |
+| 61 | [`AQP-VCT`](61-aqp-vct.md) |  |
+| 62 | [`MTX-AQP`](62-mtx-aqp.md) |  |
+| 63 | [`AQP-DSA`](63-aqp-dsa.md) |  |
+| 64 | [`AQP-EVCT`](64-aqp-evct.md) |  |
+| 65 | [`AQP-INFO`](65-aqp-info.md) |  |
 
 ## Talos — Stage 2
 
 | | module | role |
 |---:|---|---|
-| 64 | [`TS02-C1`](64-ts02-c1.md) | Stage-2 client orchestration — semi-fungibles |
-| 65 | [`TS02-C2`](65-ts02-c2.md) | Stage-2 client orchestration — non-fungibles |
-| 66 | [`TS02-C3`](66-ts02-c3.md) | Stage-2 client orchestration — acquisition pools |
-| 67 | [`TS02-DPAD`](67-ts02-dpad.md) | the sovereign launchpad orchestration |
+| 66 | [`TS02-C1`](66-ts02-c1.md) |  |
+| 67 | [`TS02-C2`](67-ts02-c2.md) |  |
+| 68 | [`TS02-C3`](68-ts02-c3.md) |  |
+| 69 | [`TS02-DPAD`](69-ts02-dpad.md) |  |
 
 ## Reads — Stage 2
 
 | | module | role |
 |---:|---|---|
-| 68 | [`INFO-TWO`](68-info-two.md) | Stage-2 previews |
+| 70 | [`INFO-TWO`](70-info-two.md) |  |
 
 ## Citizen
 
 | | module | role |
 |---:|---|---|
-| 69 | [`AOZ`](69-aoz.md) | the primal-asset registrar |
-| 70 | [`BLOODSHED-L`](70-bloodshed-l.md) | Bloodshed — ledger |
-| 71 | [`BLOODSHED-E`](71-bloodshed-e.md) | Bloodshed — elements |
-| 72 | [`BLOODSHED-R`](72-bloodshed-r.md) | Bloodshed — roles |
-| 73 | [`BLOODSHED-C`](73-bloodshed-c.md) | Bloodshed — composition |
-| 74 | [`BLOODSHED-SETS`](74-bloodshed-sets.md) | Bloodshed — sets |
-| 75 | [`NOSFERATU`](75-nosferatu.md) | a citizen minter |
-| 76 | [`KBN`](76-kbn.md) | a citizen minter |
-| 77 | [`AQP-BOOT`](77-aqp-boot.md) | acquisition bootstrap |
-| 78 | [`DEMIPAD-SPARK`](78-demipad-spark.md) | the Spark sale |
-| 79 | [`DEMIPAD-SNAKES`](79-demipad-snakes.md) | the Snakes sale |
-| 80 | [`DEMIPAD-CUSTODIANS`](80-demipad-custodians.md) | the Custodians sale |
-| 81 | [`DEMIPAD-STOICPAY`](81-demipad-stoicpay.md) | the StoicPay sale |
-| 82 | [`STOAICO`](82-stoaico.md) | the distribution vault |
-| 83 | [`TS02-CPAD`](83-ts02-cpad.md) | the citizen launchpad orchestration |
-| 84 | [`DPL-UR`](84-dpl-ur.md) | an emptied read module |
-| 85 | [`EXPLORER`](85-explorer.md) | block-explorer reads |
-| 86 | [`DSP`](86-dsp.md) | the dispenser automaton |
-| 87 | [`O-UI-ONE`](87-o-ui-one.md) | the dashboard header |
-| 88 | [`O-UI-TWO`](88-o-ui-two.md) | dashboard reads |
-| 89 | [`O-UI-THREE`](89-o-ui-three.md) | account standing and recovery |
-| 90 | [`O-UI-FOUR`](90-o-ui-four.md) | distribution-vault reads |
-| 91 | [`O-UI-SEVEN`](91-o-ui-seven.md) | account reads |
-| 92 | [`O-UI-EIGHT`](92-o-ui-eight.md) | true-fungible reads |
-| 93 | [`O-UI-NINE`](93-o-ui-nine.md) | orto-fungible reads |
-| 94 | [`O-UI-TEN`](94-o-ui-ten.md) | collectable reads |
-| 95 | [`O-UI-TWELVE`](95-o-ui-twelve.md) | pool reads |
-| 96 | [`O-UI-THIRTEEN`](96-o-ui-thirteen.md) |  |
-| 97 | [`O-UI-FOURTEEN`](97-o-ui-fourteen.md) |  |
-| 98 | [`P-UI-ONE`](98-p-ui-one.md) |  |
+| 71 | [`AOZ`](71-aoz.md) |  |
+| 72 | [`BLOODSHED-L`](72-bloodshed-l.md) |  |
+| 73 | [`BLOODSHED-E`](73-bloodshed-e.md) |  |
+| 74 | [`BLOODSHED-R`](74-bloodshed-r.md) |  |
+| 75 | [`BLOODSHED-C`](75-bloodshed-c.md) |  |
+| 76 | [`BLOODSHED-SETS`](76-bloodshed-sets.md) |  |
+| 77 | [`NOSFERATU`](77-nosferatu.md) |  |
+| 78 | [`KBN`](78-kbn.md) |  |
+| 79 | [`AQP-BOOT`](79-aqp-boot.md) |  |
+| 80 | [`DEMIPAD-SPARK`](80-demipad-spark.md) |  |
+| 81 | [`DEMIPAD-SNAKES`](81-demipad-snakes.md) |  |
+| 82 | [`DEMIPAD-CUSTODIANS`](82-demipad-custodians.md) |  |
+| 83 | [`DEMIPAD-STOICPAY`](83-demipad-stoicpay.md) |  |
+| 84 | [`STOAICO`](84-stoaico.md) |  |
+| 85 | [`TS02-CPAD`](85-ts02-cpad.md) |  |
+| 86 | [`DPL-UR`](86-dpl-ur.md) |  |
+| 87 | [`EXPLORER`](87-explorer.md) |  |
+| 88 | [`DSP`](88-dsp.md) |  |
+| 89 | [`O-UI-ONE`](89-o-ui-one.md) |  |
+| 90 | [`O-UI-TWO`](90-o-ui-two.md) |  |
+| 91 | [`O-UI-THREE`](91-o-ui-three.md) |  |
+| 92 | [`O-UI-FOUR`](92-o-ui-four.md) |  |
+| 93 | [`O-UI-SEVEN`](93-o-ui-seven.md) |  |
+| 94 | [`O-UI-EIGHT`](94-o-ui-eight.md) |  |
+| 95 | [`O-UI-NINE`](95-o-ui-nine.md) |  |
+| 96 | [`O-UI-TEN`](96-o-ui-ten.md) |  |
+| 97 | [`O-UI-TWELVE`](97-o-ui-twelve.md) |  |
+| 98 | [`O-UI-THIRTEEN`](98-o-ui-thirteen.md) |  |
+| 99 | [`O-UI-FOURTEEN`](99-o-ui-fourteen.md) |  |
+| 100 | [`P-UI-ONE`](100-p-ui-one.md) |  |

@@ -27,7 +27,7 @@ by anything that prices an operation, because IGNIS is the unit those prices are
 
 | | |
 |---|---|
-| module hash | `AqKat7EIflxDVqmAm3QIWeRPG7sBplAMAPv7D9F8ehg` |
+| module hash | `qS3EF35nGyuNmb4NTHpnBi_CiBkZ6TTYDkYSWtTgf7A` |
 | deployed size | 40,196 characters |
 | implements | `OuronetPolicyV2`, `OuroborosV3` |
 | repository source | `1_SOVEREIGN/STAGE_01/2_Core/13_OUROBOROS.pact` |

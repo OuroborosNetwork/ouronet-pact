@@ -281,7 +281,7 @@
   },
   "AQP-BOOT": {
    "deployed": true,
-   "hash": "Rjsr0zQWkVaqo3Et1rtMqIhAjkt-jyJdFTH49_LGWgg",
+   "hash": "BzRlDnxJXU_BHppNxgtJTG33B-Qw-xjQ20IeqJ0WblM",
    "repoPath": "2_CITIZEN/5_VaultsMinter/04_AQP-BOOT.pact",
    "interfaces": [
     "ouronet-ns.AcquisitionPoolBootV2"
@@ -371,13 +371,13 @@
   },
   "AQP-DSA": {
    "deployed": true,
-   "hash": "9LOD9zf9L7qOJNqePlCVJeoLhovrbCMIdXm_ib3JfUs",
+   "hash": "f4lzzz3lITkCngmdcfb5_1RHYQTA9QqZsXaQd0TLce4",
    "repoPath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/08_DSA.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
     "ouronet-ns.DsaV3"
    ],
-   "chars": 53651,
+   "chars": 53876,
    "shapes": {
     "schemas": [],
     "tables": [
@@ -492,13 +492,13 @@
   },
   "AQP-FVT": {
    "deployed": true,
-   "hash": "9bXcsrB8q_P4-zlwE1vqIJN9MAkkDM9FWK5ox96mdHU",
+   "hash": "MnKmzLilkk4DBYIzQOfxxZuvkKtqGQizRCy5kfah1BI",
    "repoPath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/05_FVT.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.AcquisitionFarmsVaultsTreasuriesV4"
+    "ouronet-ns.AcquisitionFarmsVaultsTreasuriesV5"
    ],
-   "chars": 282414,
+   "chars": 295540,
    "shapes": {
     "schemas": [],
     "tables": [
@@ -540,6 +540,7 @@
      "FVT|C>UNSTALE-ALL",
      "FVT|C>UNSTALE-MY-SCORES",
      "FVT|C>UNSTALED",
+     "FVT|XE>EVICT-REWARD",
      "FVT|XE>SWEEP-BRACKET",
      "GOV",
      "GOV|FVT_ADMIN",
@@ -617,6 +618,7 @@
      "UEV_StreamEligibleMemberOk",
      "UEV_StreamParams",
      "URC_CollectClaimableRewards",
+     "URC_CollectPoolId",
      "URC_FvtUserStillPresent",
      "URC_InjectDenominator",
      "URC_LiveClaimable",
@@ -703,12 +705,17 @@
      "WU_Fvt|OracleOn",
      "WU_Fvt|StreamEligible",
      "XB_FvtInject",
+     "XE_EvictDrip",
+     "XE_EvictPay",
      "XE_RefreshCollectableStakeAnchors",
      "XE_RefreshTrueFungibleStakeAnchors",
      "XE_SetFvtOracleOn",
      "XE_SetFvtVacateFrozen",
      "XE_SweepBegin",
      "XE_SweepEnd",
+     "XI_CollectDrip",
+     "XI_CollectForcedFixPenalty",
+     "XI_CollectPay",
      "XI_CollectableStakePhases",
      "XI_Control",
      "XI_IssueFvt",
@@ -771,10 +778,10 @@
   },
   "AQP-INFO": {
    "deployed": true,
-   "hash": "9t9WpuNFMJHQKik9VNK5nGlNHfDFv1fj2q8G-wyAuwg",
+   "hash": "luq9ofjbxr57tQp-Z9InjZrDJcvOWgTs_eeOhQwSRAQ",
    "repoPath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
    "interfaces": [],
-   "chars": 114115,
+   "chars": 126318,
    "shapes": {
     "schemas": [],
     "tables": [],
@@ -802,6 +809,12 @@
      "INFO_AQP-DSA|SetOracleValidity",
      "INFO_AQP-DSA|ToggleExternalOracle",
      "INFO_AQP-DSA|WithdrawRoyalty",
+     "INFO_AQP-EVCT|AdminEvictMultiRewards",
+     "INFO_AQP-EVCT|AdminEvictSingleReward",
+     "INFO_AQP-EVCT|AdminFullEvictRewards",
+     "INFO_AQP-EVCT|EvictMultiRewards",
+     "INFO_AQP-EVCT|EvictSingleReward",
+     "INFO_AQP-EVCT|FullEvictRewards",
      "INFO_AQP-FVT|AddRewardLink",
      "INFO_AQP-FVT|AddScoreEntity",
      "INFO_AQP-FVT|ClearPoolSweep",
@@ -1560,13 +1573,13 @@
   },
   "AQP-VCT": {
    "deployed": true,
-   "hash": "9QukjokNJwvFzypqQ7jOl8yj8Esa9ex9ZXVIrsi2fCw",
+   "hash": "iSA7x7dYOR8_ZW4RK7JpP6q11YMxVemszOx-Jctmgm4",
    "repoPath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/06_VCT.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
     "ouronet-ns.AcquisitionVacateV4"
    ],
-   "chars": 177794,
+   "chars": 180652,
    "shapes": {
     "schemas": [],
     "tables": [
@@ -2040,13 +2053,13 @@
   },
   "ATSU": {
    "deployed": true,
-   "hash": "zj_WLbRBjm5-Hs2rVpO6xebqU-qhy1lez3_aLi-K-XM",
+   "hash": "VmQ6eIopQhybzyl_KJR2tMrVMO0OLzFWEdHaxQk694U",
    "repoPath": "1_SOVEREIGN/STAGE_01/2_Core/10_ATSU.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.AutostakeUsageV3"
+    "ouronet-ns.AutostakeUsageV4"
    ],
-   "chars": 115343,
+   "chars": 123079,
    "shapes": {
     "schemas": [],
     "tables": [
@@ -2115,6 +2128,7 @@
      "URC_MultiCull",
      "URC_SingleCull",
      "URCi_Coil",
+     "URCi_CoilTo",
      "URCi_ColdRecovery",
      "URCi_Cull",
      "URCi_Curl",
@@ -2128,6 +2142,7 @@
      "URCi_Syphon",
      "URCi_UnlimitedUncoilCumulator",
      "URCi_WithdrawRoyalties",
+     "XB_Coil",
      "XI_DeployAccount",
      "XI_KickStart",
      "XI_MultiCull",
@@ -5026,7 +5041,7 @@
   },
   "DSP": {
    "deployed": true,
-   "hash": "kHyLxxtskv9C2EqFKl0uLIGQYmNkPhqLbFsOjv0j_dI",
+   "hash": "K6oNMHvaCUe0vT98N8VqAn4AqE2eOoKLVwVqK25VG5c",
    "repoPath": "2_CITIZEN/Stage_Z/03_DSP+.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
@@ -5397,7 +5412,7 @@
   },
   "INFO-ONE": {
    "deployed": true,
-   "hash": "yTt058C7SSF2Gy3rIgUd-IbJVZWoeyAaqo5imJdQJDA",
+   "hash": "y8Q2uk388iLIKuTO5YNAdULrJXYmYyJjNqT_mzcfhjo",
    "repoPath": "1_SOVEREIGN/STAGE_01/Z_Reads/02_INFO-ONE+.pact",
    "interfaces": [
     "ouronet-ns.InfoOneV3"
@@ -5943,7 +5958,7 @@
   },
   "MTX-AQP": {
    "deployed": true,
-   "hash": "P8o1hKLu3aIVtUhwYYchUj3VDyX_e_GSLF_hpOy0V_Q",
+   "hash": "MCqrImh8JViLo4a59oH6xnRIA5VbmD62oU4D9u07rXk",
    "repoPath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/07_MTX-AQP.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
@@ -6479,7 +6494,7 @@
   },
   "OUROBOROS": {
    "deployed": true,
-   "hash": "AqKat7EIflxDVqmAm3QIWeRPG7sBplAMAPv7D9F8ehg",
+   "hash": "qS3EF35nGyuNmb4NTHpnBi_CiBkZ6TTYDkYSWtTgf7A",
    "repoPath": "1_SOVEREIGN/STAGE_01/2_Core/13_OUROBOROS.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
@@ -6765,13 +6780,13 @@
   },
   "RPS": {
    "deployed": true,
-   "hash": "JAQ5Rcasc2qMUgLxnSGiWkL-4JZ_u7fOWs0qJafr8FM",
+   "hash": "wkYaP0RQnyMMFXe-ldOMfxfQ16Tk60ffiyiKruXQ40A",
    "repoPath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/04_RPS.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.AcquisitionRewardPerShareV4"
+    "ouronet-ns.AcquisitionRewardPerShareV5"
    ],
-   "chars": 313179,
+   "chars": 281579,
    "shapes": {
     "schemas": [],
     "tables": [
@@ -6841,7 +6856,6 @@
      "UDC_FVT|SettleFvtRewards",
      "UDC_FVT|SettleScorePlan",
      "UDC_FVT|StakeSettleBundle",
-     "UDC_LadderPreview",
      "UEV_AddRewardLinkContext",
      "UEV_QualitySplitContext",
      "UEV_TrueFungibleStakeBeneficiaryAccount",
@@ -6851,10 +6865,6 @@
      "URC_BuildPreScoreNzFlags",
      "URC_CheckpointStakeRpsIgnis",
      "URC_CollectClaimableRewards",
-     "URC_CollectForcedFixIgnis",
-     "URC_CollectLadderPreview",
-     "URC_CollectTransferLegIgnis",
-     "URC_CollectXferIgnis",
      "URC_ComputeTripletLanes",
      "URC_FarmInjectDenominatorFresh",
      "URC_FvtExists",
@@ -6875,7 +6885,6 @@
      "URC_FvtUserStaleMemberCount",
      "URC_FvtUserStaleMemberCountIn",
      "URC_FvtUserStillPresent",
-     "URC_HeterogeneousLaneRouteIgnis",
      "URC_InjectDenominator",
      "URC_LiveClaimable",
      "URC_MaxStreamLanes",
@@ -6910,26 +6919,7 @@
      "URC_TripletUserLaneWeightLive",
      "URC_UserScoreTripleIsNonZero",
      "URC_UserTier1AvailableRewards",
-     "URCi_AddRewardLink",
-     "URCi_AddScoreEntity",
-     "URCi_BurnRoyaltyCustody",
-     "URCi_Collect",
-     "URCi_CollectFull",
-     "URCi_CollectableStakeFlow",
-     "URCi_Control",
-     "URCi_FuelRoyaltyCustody",
      "URCi_Inject",
-     "URCi_InjectFull",
-     "URCi_OrtoFungibleStakeFlow",
-     "URCi_RotateOwnership",
-     "URCi_SetCommonDenominator",
-     "URCi_SetMosaic",
-     "URCi_SetQualitySplit",
-     "URCi_SetSplitMode",
-     "URCi_ToggleRewardLink",
-     "URCi_ToggleScoreEntityLink",
-     "URCi_TrueFungibleStakeFlow",
-     "URCi_WithdrawRoyaltyCustody",
      "URHC_BuildInjectScorePlans",
      "URHC_BuildStakeSettleBundle",
      "URH_FVT-RG|EnabledRewardRows",
@@ -8147,7 +8137,7 @@
   },
   "TS01-A": {
    "deployed": true,
-   "hash": "dPT65yDncig6ddYBImu4BG6EvPXbewSnzkdFAPNJXb8",
+   "hash": "vZOMbtEuDqn9N5AN1-tIPLPs-K0UqSsrpCBixDbn-ow",
    "repoPath": "1_SOVEREIGN/STAGE_01/3_Talos/01_TS01-A.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
@@ -8328,7 +8318,7 @@
   },
   "TS01-C2": {
    "deployed": true,
-   "hash": "nOrRNfHlUMewRC-axcJIj9d9DridimoFY7KiBchSIpc",
+   "hash": "AqynMdrbc7vW21pbNK-b-ceP15wq-aomicIh1lx4ZNc",
    "repoPath": "1_SOVEREIGN/STAGE_01/3_Talos/03_TS01-C2.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
@@ -8841,13 +8831,13 @@
   },
   "TS02-C3": {
    "deployed": true,
-   "hash": "yEm3erU_vgdSZ48L8_9qmuIVRQ_NfSxP4zkrtQLZDX8",
+   "hash": "D1Ufcyd0fZuKFdH-QrB1RdKljdf7j0pfaGV7YRUkMng",
    "repoPath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.TalosStageTwo_ClientThreeV5"
+    "ouronet-ns.TalosStageTwo_ClientThreeV7"
    ],
-   "chars": 151481,
+   "chars": 170380,
    "shapes": {
     "schemas": [],
     "tables": [
@@ -8880,6 +8870,7 @@
      "FVT|C>CLEAR-POOL-SWEEP",
      "GOV",
      "GOV|TS02-C3_ADMIN",
+     "P|ADMINISTRATIVE-SUMMONER",
      "P|TALOS-SUMMONER",
      "P|TS",
      "SECURE"
@@ -8902,6 +8893,12 @@
      "AQP-DSA|C_SetAgencyFee",
      "AQP-DSA|C_SetOracleAuth",
      "AQP-DSA|C_WithdrawRoyalty",
+     "AQP-EVCT|AA_EvictSingleReward",
+     "AQP-EVCT|AA_FullEvictRewards",
+     "AQP-EVCT|AAp_EvictMultiRewards",
+     "AQP-EVCT|CC_EvictSingleReward",
+     "AQP-EVCT|CC_FullEvictRewards",
+     "AQP-EVCT|CCp_EvictMultiRewards",
      "AQP-FVT|CC_ClearPoolSweep",
      "AQP-FVT|CC_Collect",
      "AQP-FVT|CC_Inject",
@@ -8929,6 +8926,10 @@
      "AQP-FVT|C_SetSplitMode",
      "AQP-FVT|C_ToggleRewardLink",
      "AQP-FVT|C_ToggleScoreEntityLink",
+     "AQP-POOL|AAp_BatchDrainCollectable",
+     "AQP-POOL|AAp_BatchDrainOrtoFungible",
+     "AQP-POOL|AAp_BatchDrainTrueFungible",
+     "AQP-POOL|A_FinalizeVacate",
      "AQP-POOL|CC_FinalizeScoreRevoke",
      "AQP-POOL|CC_FullVacate",
      "AQP-POOL|CC_ReassignCollectableStakeBeneficiary",
@@ -8948,9 +8949,6 @@
      "AQP-POOL|CC_VacateSemiFungible",
      "AQP-POOL|CC_VacateTrueFungible",
      "AQP-POOL|CCp_BackfillScoreSlice",
-     "AQP-POOL|CCp_BatchDrainCollectable",
-     "AQP-POOL|CCp_BatchDrainOrtoFungible",
-     "AQP-POOL|CCp_BatchDrainTrueFungible",
      "AQP-POOL|CCp_BatchVacateCollectables",
      "AQP-POOL|CCp_BatchVacateOrtoFungible",
      "AQP-POOL|CCp_BatchVacateTrueFungible",
@@ -8961,7 +8959,6 @@
      "AQP-POOL|C_BeginScoreRevoke",
      "AQP-POOL|C_DisablePoolStake",
      "AQP-POOL|C_EnablePoolStake",
-     "AQP-POOL|C_FinalizeVacate",
      "AQP-POOL|C_Issue",
      "AQP-POOL|C_RevokeScore",
      "AQP-POOL|C_SyncNonFungibleAnchors",
@@ -9841,7 +9838,7 @@
   },
   "O-UI-FOURTEEN": {
    "deployed": true,
-   "hash": "Rn6InI2qEYgZH5wDCBrQDEbiUkTkXDsLDvlz2kAlx-8",
+   "hash": "-U7obmAJSOpYZa-tEKnKK5h1C3x1fSl0DFyLfk5uaLw",
    "repoPath": "2_CITIZEN/Stage_Z/AppReads/OuronetUI/14_O-UI-FOURTEEN.pact",
    "interfaces": [
     "ouronet-ns.OUiFourteenV1"
@@ -9909,6 +9906,123 @@
     "constants": [
      "CT_13_SPECIAL_PREFIXES",
      "GOV|MD_O-UI-THIRTEEN"
+    ]
+   }
+  },
+  "AQP-EVCT": {
+   "deployed": true,
+   "hash": "hfj0kPp3nbESLFKBJRRpxFheInBRcdM6SeyLGD_VqpU",
+   "repoPath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/08b_EVCT.pact",
+   "interfaces": [
+    "ouronet-ns.OuronetPolicyV2",
+    "ouronet-ns.AcquisitionRewardEvictionV1"
+   ],
+   "chars": 35430,
+   "shapes": {
+    "schemas": [],
+    "tables": [
+     "P|MT",
+     "P|T"
+    ],
+    "capabilities": [
+     "EVCT|C>EVICT-MULTI",
+     "EVCT|C>EVICT-SINGLE",
+     "EVCT|C>FULL-EVICT",
+     "GOV",
+     "GOV|EVCT_ADMIN",
+     "P|EVCT|CALLER",
+     "P|EVCT|RECIPE",
+     "SECURE"
+    ],
+    "functions": [
+     "CAP_EvctFvtOwner",
+     "CC_EvictSingleReward",
+     "CC_FullEvictRewards",
+     "CCp_EvictMultiRewards",
+     "GOV|Demiurgoi",
+     "P|A_Add",
+     "P|A_AddIMP",
+     "P|A_Define",
+     "P|A_RemoveIMP",
+     "P|A_SetIMP",
+     "P|Info",
+     "P|UEV_IMC",
+     "P|UR",
+     "P|UR_IMP",
+     "UC_CeilDiv",
+     "UC_EmptyOc",
+     "UC_EvictLegsFromParallelArrays",
+     "UEV_EvictSliceShape",
+     "URCi_EvictMultiRewards",
+     "URCi_EvictSingleReward",
+     "URCi_FullEvictRewards",
+     "URHC_BuildEvictPlans",
+     "URHC_BuildEvictSlicePlan",
+     "URHC_EvictLegCount",
+     "URH_EvictInventory",
+     "XI_EvictLegs"
+    ],
+    "pacts": [],
+    "constants": [
+     "GOV|MD_EVCT",
+     "P|I"
+    ]
+   }
+  },
+  "AQP-RPSC": {
+   "deployed": true,
+   "hash": "meIcpLzGn0VRD9KY7erIeC-IL3_u8RMHuy3Yqam5wjY",
+   "repoPath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/04b_RPSC.pact",
+   "interfaces": [
+    "ouronet-ns.AcquisitionRewardCostsV1"
+   ],
+   "chars": 43004,
+   "shapes": {
+    "schemas": [],
+    "tables": [],
+    "capabilities": [
+     "GOV",
+     "GOV|RPSC_ADMIN"
+    ],
+    "functions": [
+     "CT_AqpScName",
+     "CT_Bar",
+     "GOV|Demiurgoi",
+     "UDC_LadderPreview",
+     "URC_CollectForcedFixIgnis",
+     "URC_CollectLadderPreview",
+     "URC_CollectTransferLegIgnis",
+     "URC_CollectXferIgnis",
+     "URC_HeterogeneousLaneRouteIgnis",
+     "URCi_AddRewardLink",
+     "URCi_AddScoreEntity",
+     "URCi_BurnRoyaltyCustody",
+     "URCi_Collect",
+     "URCi_CollectFull",
+     "URCi_CollectableStakeFlow",
+     "URCi_Control",
+     "URCi_FuelRoyaltyCustody",
+     "URCi_InjectFull",
+     "URCi_OrtoFungibleStakeFlow",
+     "URCi_RotateOwnership",
+     "URCi_SetCommonDenominator",
+     "URCi_SetMosaic",
+     "URCi_SetQualitySplit",
+     "URCi_SetSplitMode",
+     "URCi_ToggleRewardLink",
+     "URCi_ToggleScoreEntityLink",
+     "URCi_TrueFungibleStakeFlow",
+     "URCi_WithdrawRoyaltyCustody"
+    ],
+    "pacts": [],
+    "constants": [
+     "AQP|SC_NAME",
+     "BAR",
+     "CT_FORCED_FIX_RATE",
+     "CT_REWARD_KIND_MULTIPLET_BASE",
+     "CT_REWARD_MODE_HETEROGENEOUS",
+     "CT_SCORE_ENTITY_TRIPLET",
+     "GOV|MD_RPSC"
     ]
    }
   }

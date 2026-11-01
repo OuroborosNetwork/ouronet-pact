@@ -19,9 +19,9 @@ A Stage-1 core above the pool state module. Its two hibernating siblings — con
 
 | | |
 |---|---|
-| module hash | `zj_WLbRBjm5-Hs2rVpO6xebqU-qhy1lez3_aLi-K-XM` |
-| deployed size | 115,343 characters |
-| implements | `OuronetPolicyV2`, `AutostakeUsageV3` |
+| module hash | `VmQ6eIopQhybzyl_KJR2tMrVMO0OLzFWEdHaxQk694U` |
+| deployed size | 123,079 characters |
+| implements | `OuronetPolicyV2`, `AutostakeUsageV4` |
 | repository source | `1_SOVEREIGN/STAGE_01/2_Core/10_ATSU.pact` |
 
 **Tables it owns** — 2
@@ -32,14 +32,15 @@ A Stage-1 core above the pool state module. Its two hibernating siblings — con
 
 `ATSU|C>ADMINISTRATIVE-KICKSTART`, `ATSU|C>ADMINISTRATIVE-REMOVE-SECONDARY`, `ATSU|C>COIL`, `ATSU|C>COLD_RECOVERY`, `ATSU|C>CULL`, `ATSU|C>CURL`, `ATSU|C>DEPLOY`, `ATSU|C>FUEL`, `ATSU|C>KICKSTART`, `ATSU|C>NORMALIZE_LEDGER`, `ATSU|C>REDEEM`, `ATSU|C>REMOVE-SECONDARY`, `ATSU|C>SYPHON`, `ATSU|C>WITHDRAW-ROYALTIES`, `ATSU|C>X_KICKSTART`, `ATSU|C>X_REMOVE-SECONDARY`, `ATS|C>DIRECT_RECOVERY`, `ATS|C>HOT_RECOVERY`, `ATS|C>RECOVER`, `GOV`, `GOV|ATSU_ADMIN`, `P|ATSU|CALLER`, `P|ATSU|REMOTE-GOV`, `P|DT1`, `P|DT2`, `P|TT`, `SECURE`
 
-**Functions** — 53, grouped by what their prefix promises
+**Functions** — 55, grouped by what their prefix promises
 
 | family | n | the promise | names |
 |---|---:|---|---|
-| `URCi_` cost readers | 14 | returns what an operation will charge | `URCi_Coil`, `URCi_ColdRecovery`, `URCi_Cull`, `URCi_Curl`, `URCi_DirectRecovery`, `URCi_Fuel` …+8 |
+| `URCi_` cost readers | 15 | returns what an operation will charge | `URCi_Coil`, `URCi_CoilTo`, `URCi_ColdRecovery`, `URCi_Cull`, `URCi_Curl`, `URCi_DirectRecovery` …+9 |
 | `URC_` derived reads | 2 | read and derive; no enforce | `URC_MultiCull`, `URC_SingleCull` |
 | `UEV_` validators | 1 | read and enforce; may abort the transaction | `UEV_FuelableIndex` |
 | `XI_` protected (internal) | 7 | this module only | `XI_DeployAccount`, `XI_KickStart`, `XI_MultiCull`, `XI_Normalize`, `XI_RemoveSecondary`, `XI_SingleCull` …+1 |
+| `XB_` protected (both) | 1 | internal and external | `XB_Coil` |
 | `AA_` admin (heavy) | 1 | admin key; reaches a scan somewhere in its tree | `AA_RemoveSecondary` |
 | `A_` admin | 1 | admin-key mutations | `A_KickStart` |
 | `CC_` client (heavy) | 1 | client entrypoint; reaches a scan | `CC_RemoveSecondary` |
@@ -47,19 +48,17 @@ A Stage-1 core above the pool state module. Its two hibernating siblings — con
 | `P|` policy | 9 | inter-module authorisation | `P|A_Add`, `P|A_AddIMP`, `P|A_Define`, `P|A_RemoveIMP`, `P|A_SetIMP`, `P|Info` …+3 |
 | *(unclassified)* | 5 | carries no StoicSyntax prefix | `CT_Bar`, `CT_EmptyCumulator`, `GOV|AutostakeKey`, `GOV|Demiurgoi`, `XIv_StoreUnstakeObject` |
 
-> **The repository differs from what is deployed.** Everything above describes the CHAIN, which is what a caller actually reaches. The difference is stated rather than resolved:
->
-> - **functions** in the repository only: `URCi_CoilTo`, `XB_Coil`
+> Repository and chain agree on every declared shape.
 
 **Capabilities** -- 27
 
 `ATSU|C>ADMINISTRATIVE-KICKSTART`, `ATSU|C>ADMINISTRATIVE-REMOVE-SECONDARY`, `ATSU|C>COIL`, `ATSU|C>COLD_RECOVERY`, `ATSU|C>CULL`, `ATSU|C>CURL`, `ATSU|C>DEPLOY`, `ATSU|C>FUEL`, `ATSU|C>KICKSTART`, `ATSU|C>NORMALIZE_LEDGER`, `ATSU|C>REDEEM`, `ATSU|C>REMOVE-SECONDARY`, `ATSU|C>SYPHON`, `ATSU|C>WITHDRAW-ROYALTIES`, `ATSU|C>X_KICKSTART`, `ATSU|C>X_REMOVE-SECONDARY`, `ATS|C>DIRECT_RECOVERY`, `ATS|C>HOT_RECOVERY`, `ATS|C>RECOVER`, `GOV`, `GOV|ATSU_ADMIN`, `P|ATSU|CALLER`, `P|ATSU|REMOTE-GOV`, `P|DT1`, `P|DT2`, `P|TT`, `SECURE`
 
-**Functions** -- 53, grouped by what the prefix promises
+**Functions** -- 55, grouped by what the prefix promises
 
-*Cost readers* (14) — price an operation; the exec path and the preview both call these
+*Cost readers* (15) — price an operation; the exec path and the preview both call these
 
-`URCi_Coil`, `URCi_ColdRecovery`, `URCi_Cull`, `URCi_Curl`, `URCi_DirectRecovery`, `URCi_Fuel`, `URCi_HotRecovery`, `URCi_KickStart`, `URCi_Recover`, `URCi_Redeem`, `URCi_RemoveSecondary`, `URCi_Syphon`, `URCi_UnlimitedUncoilCumulator`, `URCi_WithdrawRoyalties`
+`URCi_Coil`, `URCi_CoilTo`, `URCi_ColdRecovery`, `URCi_Cull`, `URCi_Curl`, `URCi_DirectRecovery`, `URCi_Fuel`, `URCi_HotRecovery`, `URCi_KickStart`, `URCi_Recover`, `URCi_Redeem`, `URCi_RemoveSecondary`, `URCi_Syphon`, `URCi_UnlimitedUncoilCumulator`, `URCi_WithdrawRoyalties`
 
 *Derived reads* (2) — read and compute; no enforce
 
@@ -88,6 +87,10 @@ A Stage-1 core above the pool state module. Its two hibernating siblings — con
 *Admin* (6) — admin-key mutations
 
 `A_KickStart`, `P|A_Add`, `P|A_AddIMP`, `P|A_Define`, `P|A_RemoveIMP`, `P|A_SetIMP`
+
+*Internal + external* (1) — callable both ways
+
+`XB_Coil`
 
 *Internal writes* (7) — this module only; writes under a capability
 

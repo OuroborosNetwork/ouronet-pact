@@ -91,6 +91,18 @@ def main() -> int:
     # a `--write` would mean a script editing an auditor's sentences, which is the one thing
     # an audit artefact must not have happen to it. Under `--write` they still run, still as
     # checks, so the rebuild stops rather than assembling a book around a figure known wrong.
+    # EXIT 2 MEANS "BUILT, AWAITING A HUMAN", AND IT IS NOT A FAILURE.
+    #
+    # Owner, 2026-11-01: *"is it okay that step 8 failed? isnt this a bug? it should
+    # complete correctly with green or at least orange, with a proper response, not fail
+    # outright."* Right. Everything this orchestrator builds DID build: the book assembles,
+    # the tables sum, the chapter figures check out. The one outstanding item is prose a
+    # person has to write.
+    #
+    # Reporting that as exit 1 says "the build broke", which is false and teaches whoever
+    # sees it to distrust the red. Exit 1 stays for a generator that actually failed; this
+    # state gets its own code, and the admin pane renders it amber rather than red.
+    awaiting = False
     failed: list[str] = []
     for script, check_runs, write_runs, what in STEPS:
         stop = False
@@ -102,7 +114,13 @@ def main() -> int:
             # introduces — which makes a four-step build unreadable at the moment one fails.
             print(f"\n=== {script} {' '.join(args) or '(build)'} -- {what}", flush=True)
             if run(script, args) != 0:
-                failed.append(f"{script} {' '.join(args)}".strip())
+                # `_auditdelta --check` is the judgement gate: everything built, and a
+                # changed module has no judgement block yet. Any OTHER non-zero here is a
+                # generator that genuinely failed.
+                if script == "_auditdelta.py" and args == ["--check"]:
+                    awaiting = True
+                else:
+                    failed.append(f"{script} {' '.join(args)}".strip())
                 stop = True
                 break
         # STOP AT THE FIRST FAILURE under --write. Step 3 assembles what steps 1 and 2 have
@@ -115,6 +133,19 @@ def main() -> int:
         if not write:
             print("run: python3 REPL/tools/_auditall.py --write")
         return 1
+    if awaiting:
+        print("\nAUDIT BUILT -- AWAITING JUDGEMENT.")
+        print("Every generator succeeded: the book assembles, its tables sum, its chapter")
+        print("figures check out. What is missing is prose, not an artefact.")
+        print("")
+        print("Each module listed above changed SIGNATURE. The delta tool derives WHAT")
+        print("changed from git; it cannot derive what a re-audit must RE-VERIFY. Write a")
+        print("block for each under its heading in Audit/AUDIT-V2-DELTA.md:")
+        print("  - which existing assertions must be re-run")
+        print("  - which prior findings are invalidated, narrowed, or unaffected")
+        print("  - which new gates need an adversarial test")
+        print("Then run this again. Exit 2 = your turn, not a broken build.")
+        return 2
     print("\nAudit artefacts " + ("rebuilt" if write else "in sync") + ".")
     return 0
 
