@@ -162,6 +162,13 @@ ROUTES = [
      "collection, a cumulator leg - or when a price-sweep assertion fails. Pricing changes must be "
      "verified with the full gate, not Z.repl.",
      ["IGNIS-PRICING/IGNIS-PRICING.md"]),
+    ("audit-publishing",
+     "Use when told to process new audit data, re-issue the audit, or when '_auditdelta.py --check' "
+     "or '_publishprep.py' is red / the delta is red - i.e. an entrypoint signature changed and the "
+     "Audit Book or OuronetDocumentation need regenerating. Covers the one rebuild command, why it "
+     "blocks on a missing judgement block in AUDIT-V2-DELTA.md, and how to write one that is not "
+     "filler.",
+     ["HOW-AUDIT-PUBLISHING-WORKS.md"]),
 ]
 
 

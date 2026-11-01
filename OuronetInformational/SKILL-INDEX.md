@@ -13,7 +13,7 @@
 > Dated captures (`memories/`, `HANDOFFS/`, `kursan/`, `agents/`) are **records, not rules**,
 > and are excluded by directory. Generated artefacts are excluded so nobody edits them.
 
-**75 guidance documents.** Read [`SKILL.md`](SKILL.md) first — it gives the ORDER.
+**76 guidance documents.** Read [`SKILL.md`](SKILL.md) first — it gives the ORDER.
 This page gives the COVERAGE.
 
 ## Start here
@@ -27,6 +27,7 @@ This page gives the COVERAGE.
 | [`CONTEXT.md`](CONTEXT.md) | Consolidated project facts, vocabulary and stage definitions — read early for shared language. |
 | [`DEPLOY-READY-GATE.md`](DEPLOY-READY-GATE.md) ⛔ **superseded** | Historical roadmap-1.7 deploy-readiness proof; its source-line gas cliff figure is superseded. |
 | [`DOCUMENTATION-PLAN.md`](DOCUMENTATION-PLAN.md) ⛔ **superseded** | Superseded plan for the OuronetDocumentation book; its BUILD-PLAN.md is now authoritative. |
+| [`HOW-AUDIT-PUBLISHING-WORKS.md`](HOW-AUDIT-PUBLISHING-WORKS.md) | MANDATORY before regenerating the Audit Book or OuronetDocumentation, or whenever new audit data must be processed: the one command, why it blocks, and how to write the judgement block that unblocks it. |
 | [`HOW-DEPLOY-ROUNDS-WORK.md`](HOW-DEPLOY-ROUNDS-WORK.md) | MANDATORY before building a Deploy/PureVn round: parity model, transitive cascade, backfills, post-deploy sequence. |
 | [`INDEX.md`](INDEX.md) | Directory map of the organized guidance tree — which folder answers which kind of question. |
 | [`LIVE-INTERFACE-VERSIONS.md`](LIVE-INTERFACE-VERSIONS.md) ⛔ **superseded** | SUPERSEDED historical snapshot of live interface versions — do NOT use to pick a version; poll the chain. |

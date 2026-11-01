@@ -26,12 +26,40 @@ OUT_MD = os.path.join(ROOT, "Audit", "OURONET-AUDIT-BOOK.md")
 OUT_DOCX = os.path.join(ROOT, "Audit", "OURONET-AUDIT-BOOK.docx")
 OUT_PDF = os.path.join(ROOT, "Audit", "OURONET-AUDIT-BOOK.pdf")
 
-VERSION = "3.0"
+VERSION = "3.1"
 
 # CHANGELOG. One entry per published version, newest first. A version bump without a line here is
 # a bump nobody can interpret: the book's premise is "here is what was verified", so a reader has
 # to be able to tell what that statement covered when they read it.
 CHANGELOG = [
+    ("3.1", "2026-11-01", [
+        "NEW MODULE AUDITED: AQP-EVCT -- reward eviction, 08b_EVCT.pact, written 2026-10-29. Lets"
+        " an FVT owner collect a reward ON BEHALF OF a beneficiary who has not signed, running the"
+        " SAME XI_CollectDrip/XI_CollectPay phase functions a self-collect runs rather than a copy,"
+        " so the beneficiary receives exactly what they would have collected themselves. Already"
+        " wired into TS02-C3 Talos (gasless admin twins included) and Deploy/PureV18.",
+        "FINDING, not fixed: AQP-EVCT's own three capability bodies (EVCT|C>EVICT-MULTI/-SINGLE/"
+        "-FULL-EVICT) prove the TX-SIGNER owns the FVT, but do not themselves bind the `evictor`"
+        " parameter to that owner -- read in isolation that looks like a decorative executor. The"
+        " binding exists one hop downstream, inside 05_FVT.pact's FVT|XE>EVICT-REWARD capability"
+        " (UEV_ExecutorIzFvtOwner), reached because every custody-moving leg forwards through it"
+        " and a Pact transaction is atomic -- so it is functionally safe. But no @doc in AQP-EVCT"
+        " names that route, and no red-team case signs as the real owner while naming a DIFFERENT,"
+        " wrong-but-owned account as `evictor` to prove the binding actually refuses. Recorded as"
+        " the adversarial test still to write.",
+        "CITIZEN BOOTSTRAP EXTENDED: AQP-BOOT (2_CITIZEN/5_VaultsMinter) gained four late one-shot"
+        " steps (7b/8b/9b/12b, dated 2026-10-08) finishing three entities -- NosferatuDracula,"
+        " WonderCoach, StoicPower -- the original Step 7/8/9/12 ladder never reached, so their"
+        " pools stayed employed but unstakeable. Citizen modules sit outside the patron/executor"
+        " canon by owner ruling (2026-09-26); the four new steps take a single `patron`, matching"
+        " all fourteen existing siblings in the file.",
+        "SCOPE: a discovered, UNAUDITED drift in 04_TS02-C3.pact -- its sweep-completion heading"
+        " from 2026-09-22 satisfies the audit-delta guard's filename match while covering none of"
+        " the 40 signature changes and 21 new entrypoints added to that file since (an AQP-POOL"
+        " vacate-finalization family, stake-beneficiary reassignment, score revocation, among"
+        " others). Recorded here rather than left for the guard's leniency to hide silently; not"
+        " yet audited, queued as the next pass.",
+    ]),
     ("3.0", "2026-09-22", [
         "THE v2 AUDIT RE-ISSUE. This edition is the audit re-verified after the patron/executor/"
         "executee canon sweep re-signed the client surface of every sovereign module. 694"

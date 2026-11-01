@@ -79,6 +79,18 @@ Its companion is [`SPEC-round-simulator.md`](SPEC-round-simulator.md) — what
 `_livesandbox.py --round` does and, more importantly, **what it does not show**: it is a
 composition proof, not an authorisation one.
 
+## Publishing the Audit Book and docs — read this before regenerating
+
+**[`HOW-AUDIT-PUBLISHING-WORKS.md`](HOW-AUDIT-PUBLISHING-WORKS.md)** is the procedure for
+`python3 REPL/tools/_publishprep.py --write --docx` — the one command that rebuilds both the
+Audit Book and `OuronetDocumentation/`. Read it whenever new audit data needs processing, a
+signature-changing sweep needs re-issuing, or `_auditdelta.py --check` is red: it derives the
+*facts* of what changed from git, but the *judgement* — which assertions must re-run, which
+findings are invalidated — is written by hand in `Audit/AUDIT-V2-DELTA.md`, and the build fails
+on purpose until every changed module has a block. The guard is a lenient substring match by
+design; the procedure, not the tool, is what makes a passing check mean the judgement was
+actually done.
+
 It carries: how to derive the round, the **transitive** interface cascade and its fixpoint test, how
 to poll the chain for interface target versions, the 10-item pre-flight checklist, what the generator
 cannot emit (**schema backfills** and AppReads modules), and the four-artefact post-deploy sequence

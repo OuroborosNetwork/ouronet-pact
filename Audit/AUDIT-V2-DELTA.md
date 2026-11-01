@@ -2128,6 +2128,84 @@ only a reader of the capability would find it.
 
 ---
 
+### 08b_EVCT.pact — NEW MODULE (2026-10-29), never in the sweep's worklist
+
+**Not a signature change — a whole new client surface.** `AQP-EVCT` did not exist at the
+v1/v2 baseline (`21fa54f`) or at the sweep's close (2026-09-22); it was written 2026-10-29,
+after both. All 8 of its entrypoints are therefore `NEW`, not `~`: the three user-facing
+recipes (`CC_FullEvictRewards`, `CC_EvictSingleReward`, `CCp_EvictMultiRewards`) and the five
+standard `P|A_Add`/`P|A_AddIMP`/`P|A_RemoveIMP`/`P|A_SetIMP`/`P|A_Define` policy functions every
+AQP module carries. It is already wired into `04_TS02-C3.pact`'s Talos (`AA_FullEvictRewards`,
+`AA_EvictSingleReward` — the gasless admin twins — plus `CC_*` forwards), already carries
+`AQP-INFO.INFO_AQP-EVCT|*` cost previews, and is already present in `Deploy/PureV18/02_deploy.pact`
+and `Deploy/OURONET-REGISTRY.json`'s execution/preview catalogue — this is a shipping surface,
+not a draft.
+
+**Nothing is invalidated, because nothing existed to invalidate.** v1 predates this module by a
+full edition and the v2 sweep closed five weeks before it was written, so there is no prior
+finding to narrow or supersede. The module is new audit territory outright.
+
+**What an eviction is.** The FVT owner collects a reward *for* a beneficiary who has not signed
+— the inverse of `CC_Collect`, where only the claimant may trigger their own claim. The owner
+pays the IGNIS; the beneficiary receives exactly what a self-collect would have paid them,
+because every leg runs through `AQP-FVT`'s own `XI_CollectDrip`/`XI_CollectPay` phase functions
+rather than a copy.
+
+**Assertions that must re-run / already exist and were checked:**
+- `REPL/Stage_02/[6.2.18]_AQP-EVICT.repl` (501 lines) and `[6.2.18b]_AQP-EVICT-PENALTY.repl`
+  (105 lines) — both exist, both exercise all three recipes, their gasless admin twins, slice-shape
+  refusal (unequal arrays, empty slice, zero-claimable leg) and the forced-fix-zeroing rule.
+- `python3 REPL/tools/_executorenforced.py` — whole tree 785 proven, 0 UNPROVEN as of this
+  check, so this module's executor requirement is mechanically proven already.
+- `python3 REPL/tools/_registry.py --check` — `ghosts 2263/2263 (complete)`, confirming every
+  parameter slot this module adds to the registry (including its three previews) has a worked
+  example, not a placeholder.
+
+**A gate exists, worded differently from the canon, and the test for it is incomplete.**
+`EVCT|C>EVICT-MULTI` / `EVCT|C>EVICT-SINGLE` / `EVCT|C>FULL-EVICT` take an `evictor` parameter in
+the executor slot, but their own capability bodies call only `CAP_EvctFvtOwner(fvt-id)` —
+which proves the **tx-signer** owns the FVT's owner konto, and does **not** compare `evictor`
+to that konto. Read in isolation, that looks like the "decorative executor" shape the
+cross-cutting section calls a finding, not a style issue.
+
+It is not decorative — the binding exists, but one hop downstream. `XI_EvictLegs` (same module)
+forwards every leg into `AQP-FVT::XE_EvictDrip` / `XE_EvictPay`, and those are gated by
+`FVT|XE>EVICT-REWARD` (`05_FVT.pact:4388`), whose **first** statement is
+`(UEV_ExecutorIzFvtOwner evictor fvt-id)` — `(enforce (= executor (UR_FVT|OwnerKonto fvt-id)) …)`,
+the exact binding shape `06_VCT.pact`'s block above calls "the new guard class." Because every
+custody-moving path is forced through that forward, and a Pact transaction is atomic, a caller
+who signs as the real owner but names a different `evictor` string cannot succeed partially: the
+enforce aborts the whole transaction before any transfer or event persists. **Functionally safe.**
+
+**Two things the audit should still flag, because safety and documentation diverged here:**
+1. None of EVCT's own three capability `@doc`s, nor the three entrypoint `@doc`s, **name** the
+   downstream route that actually proves `evictor`. `08_DSA.pact`'s block above states the rule
+   this violates: *"the canon requires the route to be written where the executor is declared —
+   not one level up where only a reader of the capability would find it."* Here it is not one
+   level up, it is one level *down*, through a same-module `XI_` hop into a cross-module forward
+   — a fourth shape beside the three the registry already distinguishes (in-place, same-module
+   `XI_`, defpact step, intra-Talos sibling). Recommend adding the route to `CAP_EvctFvtOwner`'s
+   `@doc` and to the three entrypoints', mirroring how `C_AdmitAgency`'s `@doc` already states its
+   own forward in `08_DSA.pact`.
+2. **No red-team case exercises the binding itself.** `[6.2.18]_AQP-EVICT.repl` lines 376–399
+   prove the *ownership* gate refuses a non-owner signer (paid and gasless paths both) — but
+   every fixture in the file signs as the real owner AND passes that same account as `evictor`
+   (line 81: "it is both beneficiary and evictor here"). There is no case that signs as the real
+   owner and names a **different, wrong-but-owned** account as `evictor` to prove
+   `UEV_ExecutorIzFvtOwner` actually refuses. That is exactly the cross-cutting rule's adversarial
+   case ("ownership passes, the binding must refuse") and it is untested for this module. **New
+   test to add**, in the family of `[6.2.18]`: owner signs, `evictor` named as some other owned
+   account → `expect-failure` on `UEV_ExecutorIzFvtOwner`'s message.
+
+**Unresolved.** Whether `_executorenforced.py`'s tree-wide `0 UNPROVEN` traces this specific
+two-hop shape (same-module `XI_` hop into a cross-module forward) on its own merits, or accepts
+it through a generic cross-module `FORWARDED` branch that does not require the `@doc` route the
+canon asks for elsewhere. I did not read the checker's source closely enough to be certain which,
+and the two have different implications for whether finding (1) above is cosmetic or something
+the gate should also have caught. Flagging as a follow-up rather than asserting either way.
+
+---
+
 ### 01_TS02-C1 · 02_TS02-C2 · 04_TS02-C3 · 05_TS02-DPAD — COMPLETE, and with them the sweep
 
 The four Stage-2 Talos modules, 180 entrypoints between them. **176 of the 180 were already DONE
@@ -2244,3 +2322,89 @@ with one deliberate exception kept visible beside it: the price *classifier* sti
 purpose, because `per-nonce` in a doc string is evidence about the **shape** of a price rather than
 a **leg** of it. That exception is itself the fix for an earlier defect in the same generator, so
 the two live one comment apart and neither can be removed by someone tidying up.
+
+---
+
+### 04_AQP-BOOT.pact (`2_CITIZEN/5_VaultsMinter/`) — first CITIZEN module to need a block here
+
+**Out of the canon's reach, and that is the finding.** Owner ruling, 2026-09-26 (quoted in
+`CLAUDE.md`): *"citizen modules are free to construct functions as they please"* — the
+patron/executor/executee position canon does not apply here. `_auditdelta.py` still flags this
+file because its signature regex matches any `C_`/`A_`-prefixed `defun`, canon-scoped or not; the
+four new entrypoints —`C_Step7b_CreateStoicismPool`, `C_Step8b_IssueLateFvtEntities`,
+`C_Step9b_AddLateFvtScoreEntities`, `C_Step12b_AddLateFvtRewardLinks` — take a single `patron`
+and nothing else, exactly like every one of their 14 non-`b` siblings in this file (`C_Step0`
+through `C_Step13`). **That is conformant, not a gap**: there is no canon for this file to be
+behind on.
+
+**What changed and its scale.** Four ADDITIVE bootstrap steps, dated 2026-10-08 in the module's
+own header, all admin-gated behind the single `GOV|AQP_BOOT_ADMIN` keyset like every other step
+in the file. Each is a NEW entrypoint — none replaces or renames an existing one — created to
+finish three entities the original Step 7/8/9/12 ladder never reached: `NosferatuDracula` and
+`WonderCoach` (scores that existed but had no FVT, so their pools were employed but unstakeable)
+and `StoicPower` (a true-fungible score with no pool at all). The module's own comment block at
+line 1380 states why they are separate functions rather than edits to 7/8/9/12: **Steps 7 and 8
+have already run on mainnet**, and `C_Issue`/pool creation abort on a duplicate name, so widening
+them would make them permanently unrunnable rather than usefully extended — an edited step "could
+only run on a chain that no longer exists."
+
+**Nothing is invalidated.** This file carries no prior v1 or v2 finding — the 2026-09-26 ruling
+excluded the whole citizen tree from the sweep's worklist, so there is nothing here for the new
+steps to narrow or supersede. This is the first audit pass this file has had.
+
+**Assertions that exist and were checked:**
+- `REPL/Stage_02/[6.2.9]_AQP-BOOT-FULL.repl` already calls all four new steps (`TX-BOOT-15`,
+  `TX-BOOT-16`) in their documented order — 7b before 9b (StoicPower needs a pool before it can
+  be admitted; see the module's own `HARD PRECONDITION` note at line 1493, which records that
+  skipping 7b aborts at `05_FVT.pact:1334` with a `No value found in table … AQP|T|Pool` error,
+  not a silent under-earn), then 8b, then 9b, then 12b, and the suite's own naming (`TX-BOOT-16 ·
+  04 · … and the gate`) indicates it also exercises the "stake aborts with no reward link"
+  precondition Step 12b's `@doc` claims.
+- None of the four appear in `Deploy/OURONET-REGISTRY.json` — correct per `CLAUDE.md`'s own
+  statement of scope: the registry indexes the **client-facing** entrypoint surface, and these
+  are one-shot admin bootstrap transactions, the same class as `C_Step0`–`C_Step13`, none of
+  which are registered either.
+
+**One inherited gap, not a new one.** `UEV_BootStepState` — the chain-state guard written
+2026-10-02 specifically because a re-run of an early step silently mints a **complete duplicate**
+set of entities in a later block with no error anywhere — is called by `C_Step1`/`2`/`3` only.
+Steps 4 through 13, and now 7b/8b/9b/12b, carry no such guard, even though the same risk
+(`UDC_Makeid` reseeds per-block, so a same-block rerun collides and fails loudly but a
+later-block rerun succeeds and duplicates silently) applies to every step that mints a fresh
+`UDC_Makeid`-derived entity, not only the first three. The four new steps do not introduce this
+gap; they inherit the pattern every step since `C_Step4` already has. Flagging because the audit
+should state the exposure as it actually is (the whole back half of the file, not "the four new
+steps"), not because today's four steps regressed anything.
+
+**Unresolved.** Whether the back-half gap above is accepted risk (admin-only, keyset-gated,
+run once by a trusted operator following the module's own NEXT-step instructions) or worth
+closing — that is an operational-discipline question for the owner, not something this pass can
+settle by reading the code.
+
+---
+
+### A DISCOVERED GAP, OUT OF TODAY'S SCOPE — `04_TS02-C3.pact`'s heading is stale under its own name
+
+Not part of today's two modules, and not fixed here — recorded because the guard's leniency
+(named above: "a module counts as covered if the ledger names it anywhere") let it through
+silently, and the whole point of this file is to not let that happen unnoticed.
+
+`1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact` passes `_auditdelta.py --check` today only because
+its filename substring ("04_TS02-C3") appears in the `### 01_TS02-C1 · 02_TS02-C2 · 04_TS02-C3 ·
+05_TS02-DPAD — COMPLETE, and with them the sweep` heading above, written 2026-09-22. Measured
+today (`_auditdelta.py`'s own count for this file): **40 signature changes, 21 new entrypoints, 1
+removed** — 62 lines of diff the 2026-09-22 prose never saw. This pass's
+`AQP-EVCT|AA_EvictSingleReward`/`AA_FullEvictRewards`/`CC_*` forwards are 4 of the 21 new ones, but
+the bulk is unrelated: an `AQP-POOL` vacate-finalization family
+(`A_FinalizeVacate`, `CC_FinalizeScoreRevoke`, `C_BeginScoreRevoke`, four `CC_Vacate*` entrypoints,
+four `CC_Reassign*StakeBeneficiary` entrypoints, `CC_UpdateScoreMultipliers`), an `AQP-FVT`
+addition (`CC_ClearPoolSweep`, `CC_LatchStreamEligible`, `C_SetMinInjectAmount`), an `AQP-SCR`
+addition (`C_LockScoreDrift`), plus a `C_FinalizeVacate` rename/removal. None of this is discussed
+anywhere in this ledger. This is exactly the "filename sitting in a comment" trap this file's own
+header warns against, and it was not manufactured for this note — it was found by it.
+
+**Not resolved here, deliberately.** Writing real judgement for ~30 entrypoints I have not read
+— several naming operations (beneficiary reassignment, score revocation) whose business rules I
+would otherwise be guessing at — is a separate pass, likely the next one the "process new audit
+data" sentence should trigger. Recorded so the next session does not discover it from scratch, and
+so this edition's exit-0 is not mistaken for "the whole tree is current."
