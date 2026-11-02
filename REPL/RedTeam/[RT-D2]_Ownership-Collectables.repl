@@ -689,11 +689,10 @@
     (map print
         [
             (expect
-                "<<RT-D-006a>> all four checks that run BEFORE the owner gate are satisfied by this batch"
-                [true true true true]
+                "<<RT-D-006a>> all three checks that run BEFORE the owner gate are satisfied by this batch"
+                [true true true]
                 [ (ref-AQP::URC_StakeOrtoFungibleDpofMatchesPool pool-id mvst-id)
                   (ref-VCT::URC_BatchOwnerArraysGasOk [attacker] [attacker] nonces 33)
-                  (ref-VCT::URC_VacateBatchNonceTotalOk nonces)
                   (ref-VCT::URC_VacateOrtoLegsOk pool-id mvst-id [attacker] [attacker] nonces
                       (ref-VCT::URC_ResolveOfDecimalAmountsFromTracker
                           pool-id mvst-id [attacker] [attacker] nonces)) ])
@@ -812,12 +811,11 @@
     (map print
         [
             (expect
-                "<<RT-D-007a>> all five checks that run BEFORE the owner gate are satisfied by this batch"
-                [true true true true true]
+                "<<RT-D-007a>> all four checks that run BEFORE the owner gate are satisfied by this batch"
+                [true true true true]
                 [ (ref-AQP::URC_StakeCollectablePoolClassOk pool-id false)
                   (ref-AQP::URC_StakeCollectableMatchesPool pool-id dhb-id)
                   (ref-VCT::URC_BatchOwnerArraysGasOk [attacker] [attacker] nonces 30)
-                  (ref-VCT::URC_VacateBatchNonceTotalOk nonces)
                   (ref-VCT::URC_VacateCollectableLegsOk pool-id dhb-id false
                       [attacker] [attacker] nonces amounts) ])
             (expect
@@ -874,12 +872,11 @@
             ;;takes the other side of the `if`. The five conjuncts are re-asserted because they are
             ;;computed from DIFFERENT readers on this branch.
             (expect
-                "<<RT-D-007f>> the DPSF branch's five earlier checks are satisfied too"
-                [true true true true true]
+                "<<RT-D-007f>> the DPSF branch's four earlier checks are satisfied too"
+                [true true true true]
                 [ (ref-AQP::URC_StakeCollectablePoolClassOk pool-id true)
                   (ref-AQP::URC_StakeCollectableMatchesPool pool-id dhcd-id)
                   (ref-VCT::URC_BatchOwnerArraysGasOk [KST.ANHD] [KST.ANHD] nonces 29)
-                  (ref-VCT::URC_VacateBatchNonceTotalOk nonces)
                   (ref-VCT::URC_VacateCollectableLegsOk pool-id dhcd-id true
                       [KST.ANHD] [KST.ANHD] nonces amounts) ])
             ;;THE DIFFERENTIAL. Same capability, same line of code, a pool with a different owner --

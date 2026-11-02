@@ -320,6 +320,39 @@ ROUNDS = {
         # 08_DSA.pact, the last AQP core module here and its immediate predecessor in load order.
         "extra": [("1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact", "08_DSA.pact")],
     },
+    "2026-11-v19-vacate-nonce-cap": {
+        "why": "THE FLAT NONCE CEILING COMES OFF THE VACATE BATCH. Owner, 2026-11-02: 'there "
+               "should be no limit on nonce cap, we use whatever fits. This is decided by the UI "
+               "constructor when it creates the transaction that fits, and mustn't be hindered by "
+               "the pact code.' "
+               "\n\n"
+               "WHAT WAS WRONG. `VACATE-MAX-NONCES` capped a batch at 64 total nonces, and sat "
+               "beside a beneficiary-aware gas model -- `bens * VACATE-GAS-PER-BEN + nonces * "
+               "VACATE-GAS-PER-POS <= VACATE-GAS-BUDGET` -- that admits 481 nonces for a single "
+               "beneficiary. The flat 64 therefore bound FIRST, every time, and made the gas model "
+               "it was paired with unreachable: `URC_BatchOwnerArraysGasOk`'s own @doc already "
+               "said 'concentrated batches fit ~159 nonces vs the old flat ~30', a capacity no "
+               "caller could ever use. A pool of ~1,138 staked nonces needed 18 transactions where "
+               "gas alone allows ~5. "
+               "\n\n"
+               "ONE MODULE, NO CASCADE, AND THAT IS CHECKED RATHER THAN ASSUMED. "
+               "`URC_VacateBatchNonceTotalOk` was never declared in `AcquisitionVacateV4` -- the "
+               "interface occupies lines 2-157 of the file and every edit in this round lands at "
+               "line 358 or later, inside the module. So no interface bumps, no consumer rebinds, "
+               "and `_livemodules.py --diff` reports exactly one divergent pair: AQP-VCT's "
+               "functions and constants. "
+               "\n\n"
+               "AQP-VCT IS IN `also` FOR THE SAME REASON IT WAS IN V18 -- its body changed and its "
+               "signatures did not, so an interface grep cannot see it. The key exists because "
+               "this is the second round to need it.",
+        # NO INTERFACE BUMP. The removed reader and constant were module-private.
+        "interfaces": [],
+        "also": ["1_SOVEREIGN/STAGE_02/2_Core/03_AQP/06_VCT.pact"],
+        # NO INIT. Nothing is created: a defconst and a reader are DELETED and two capability
+        # `let` bindings drop a conjunct. There is no table, no registration, and no function to
+        # call afterwards -- an init step here would have nothing to do.
+        "init": [],
+    },
     "2026-10-v18-vacate-lock": {
         "why": "A VACATED POOL STAYS SHUT, and the deferred-score drain moves to the admin band. "
                "Owner ruling 2026-10-30: 'The pool owner has to manually re allow stacking after a "
@@ -987,6 +1020,17 @@ def report_coverage(rnd, planned):
 
 def round_modules(rnd):
     """Modules that must redeploy this round: those naming any bumped interface."""
+    # AN EMPTY CASCADE MEANS NOTHING, NOT EVERYTHING. `"|".join([])` is `""`, and `re.compile("")`
+    # matches every file — so a round that bumps NO interface silently selected the entire tree.
+    # Measured 2026-11-02 on V19, whose only change is a module body: it emitted 25 transactions,
+    # the whole from-scratch pipeline, instead of the one its `also` names. The failure is quiet
+    # and in the dangerous direction — a round that ships more than it meant to looks like a
+    # thorough round.
+    #
+    # A round with no bumped interface is legitimate (V19 is one) and must lean entirely on
+    # `also`, which is applied by the caller.
+    if not rnd["interfaces"]:
+        return set()
     pat = re.compile("|".join(re.escape(i) for i in rnd["interfaces"]))
     hit = set()
     for top in ("1_SOVEREIGN", "2_CITIZEN"):

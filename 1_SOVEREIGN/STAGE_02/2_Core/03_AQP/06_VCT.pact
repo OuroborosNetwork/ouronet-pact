@@ -355,8 +355,12 @@
     (defconst VACATE-KIND-DPSF 3)
     (defconst VACATE-KIND-DPNF 4)
     ;; REPL gas sweep (REPL/VCT-gas-sweep.repl) tunes these; keep above probe ladder max during profiling.
-    ;; OF/DPSF/DPNF: max total nonces summed across all owner rows per chunk tx (not owner count).
-    (defconst VACATE-MAX-NONCES 64)
+    ;; VACATE-MAX-NONCES IS GONE, 2026-11-02. It capped a batch at 64 total nonces, which bound
+    ;; FAR BEFORE the beneficiary-aware gas model it sat beside: that model admits ~159 nonces in a
+    ;; concentrated batch (see URC_BatchOwnerArraysGasOk's own @doc), so the flat 64 silently made
+    ;; the upgrade unreachable and forced ~3x the transactions a pool actually needs.
+    ;; The batch size is the CALLER's to choose now, bounded by the one thing that is really
+    ;; scarce -- gas -- which URC_BatchOwnerArraysGasOk already enforces per batch.
     (defconst VACATE-FULL-MAX-LEGS 128)
     (defconst VACATE-FULL-MAX-NONCES 512)
     (defconst VACATE-GAS-MAX-TF 24)                     ;; legacy flat caps — superseded by the beneficiary-aware model below,
@@ -425,20 +429,21 @@
             nonce-amounts-array:[[decimal]]
         )
         @doc "Authorizes an orto-fungible vacate batch on <pool-id>/<dpof-id>: validates asset match, the per-tx \
-            \ gas bound on the owner/beneficiary/nonce arrays, the total nonce count, and that every per-owner \
-            \ nonce row is actually staked for the given amounts. Enforces pool-owner ownership and composes \
-            \ the P|VCT|RECIPE recipe capability for the XB write."
+            \ gas bound on the owner/beneficiary/nonce arrays, and that every per-owner nonce row is actually \
+            \ staked for the given amounts. Enforces pool-owner ownership and composes the P|VCT|RECIPE recipe \
+            \ capability for the XB write. \
+            \ NO FLAT NONCE CEILING -- the batch is as large as the gas bound admits, which is the only thing \
+            \ actually scarce; the former 64-nonce cap bound before that bound did and is gone (2026-11-02)."
         (let
             (
                 (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
                 ;;
                 (asset-ok:bool (ref-AQP::URC_StakeOrtoFungibleDpofMatchesPool pool-id dpof-id))
                 (gas-ok:bool (URC_BatchOwnerArraysGasOk owner-ids beneficiary-ids nonces-array VACATE-GAS-MAX-OF))
-                (nonce-ok:bool (URC_VacateBatchNonceTotalOk nonces-array))
                 (legs-ok:bool
                     (URC_VacateOrtoLegsOk pool-id dpof-id owner-ids beneficiary-ids nonces-array nonce-amounts-array))
             )
-            (enforce (fold (and) true [asset-ok gas-ok nonce-ok legs-ok]) "Invalid OF vacate batch")
+            (enforce (fold (and) true [asset-ok gas-ok legs-ok]) "Invalid OF vacate batch")
             (CAP_VctVacatePoolOwner pool-id)
             (compose-capability (P|VCT|RECIPE))
         )
@@ -454,9 +459,12 @@
             amounts-array:[[integer]]
         )
         @doc "Authorizes a collectable (SF/NF) vacate batch on <pool-id>/<collectable-id> (<son> = set vs \
-            \ non-set): validates pool class, asset match, the per-tx gas bound (DPSF vs DPNF max), the total \
-            \ nonce count, and that every per-owner nonce row is actually staked for the given amounts. Enforces \
-            \ pool-owner ownership and composes the P|VCT|RECIPE recipe capability for the XB write."
+            \ non-set): validates pool class, asset match, the per-tx gas bound, and that every per-owner nonce \
+            \ row is actually staked for the given amounts. Enforces pool-owner ownership and composes the \
+            \ P|VCT|RECIPE recipe capability for the XB write. \
+            \ THE `gas-max` ARGUMENT IS VESTIGIAL -- URC_BatchOwnerArraysGasOk ignores it and applies the \
+            \ beneficiary-aware model instead; it is still passed only to keep that signature stable. And there \
+            \ is no flat nonce ceiling: the 64-nonce cap that bound before the gas bound did is gone (2026-11-02)."
         (let
             (
                 (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
@@ -467,11 +475,10 @@
                     (if son VACATE-GAS-MAX-DPSF VACATE-GAS-MAX-DPNF)
                 )
                 (gas-ok:bool (URC_BatchOwnerArraysGasOk owner-ids beneficiary-ids nonces-array gas-max))
-                (nonce-ok:bool (URC_VacateBatchNonceTotalOk nonces-array))
                 (legs-ok:bool
                     (URC_VacateCollectableLegsOk pool-id collectable-id son owner-ids beneficiary-ids nonces-array amounts-array))
             )
-            (enforce (fold (and) true [class-ok asset-ok gas-ok nonce-ok legs-ok]) "Invalid collectable vacate batch")
+            (enforce (fold (and) true [class-ok asset-ok gas-ok legs-ok]) "Invalid collectable vacate batch")
             (CAP_VctVacatePoolOwner pool-id)
             (compose-capability (P|VCT|RECIPE))
         )
@@ -1809,24 +1816,6 @@
                 (rollup-bal:decimal (ref-AQP::UR_AQP|BenDptfTotalBalance beneficiary-id dptf-id))
             )
             (fold (and) true [(> amount 0.0) (= amount staked-bal) (>= rollup-bal amount)])
-        )
-    )
-    (defun URC_VacateBatchNonceTotalOk:bool (nonces-array:[[integer]])
-        @doc "Vacate batch: total nonce count across legs is positive and ≤ VACATE-MAX-NONCES."
-        (let
-            (
-                (tot:integer
-                    (fold
-                        (+)
-                        0
-                        (map
-                            (lambda (ns:[integer]) (length ns))
-                            nonces-array
-                        )
-                    )
-                )
-            )
-            (fold (and) true [(> tot 0) (<= tot VACATE-MAX-NONCES)])
         )
     )
     (defun URC_VacateCollectableLegBeneficiaryOk:bool

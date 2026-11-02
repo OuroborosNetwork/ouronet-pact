@@ -5335,9 +5335,16 @@
     ""
 )
 (print "--- [AQP-F14 · 02 · the batch-size bounds, at the boundary] ---")
-;;`URC_VacateBatchNonceTotalOk` -- "total nonce count across legs is positive and <= VACATE-MAX-NONCES"
-;;(64). `URC_VacateTfLegsOk` -- "positive leg count <= VACATE-FULL-MAX-LEGS" (128). Both are tested AT
-;;the boundary and one past it, because an off-by-one in a `<=`/`<` is invisible anywhere else.
+;;THE FLAT NONCE CEILING IS GONE (2026-11-02). `URC_VacateBatchNonceTotalOk` capped a batch at 64
+;;total nonces and was DELETED: it bound far before the beneficiary-aware gas model beside it, which
+;;admits ~481 nonces for a single beneficiary, so the flat cap silently forced several times the
+;;transactions a pool needs. Owner: *"there should be no limit on nonce cap, we use whatever fits."*
+;;
+;;What replaces it here is the bound that is actually scarce -- `URC_BatchOwnerArraysGasOk`'s
+;;`bens x VACATE-GAS-PER-BEN + nonces x VACATE-GAS-PER-POS <= VACATE-GAS-BUDGET`. Tested AT the
+;;boundary and one past it, for the same reason the old one was: an off-by-one in a `<=` is
+;;invisible anywhere else. `URC_VacateTfLegsOk` -- "positive leg count <= VACATE-FULL-MAX-LEGS"
+;;(128) -- is unchanged and still tested at ITS boundary below.
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -5350,19 +5357,32 @@
         )
         (map print
             [
-                ;;the nonce-total bound: 64 is IN, 65 is OUT, and the count is a SUM across rows --
-                ;;so the boundary is exercised as two rows that add to the limit, not one row of 64.
-                (expect "<<AQP-F14>> a nonce total of exactly 64 across two rows is admitted"
-                    true (ref-VCT::URC_VacateBatchNonceTotalOk
-                             [(enumerate 1 32) (enumerate 33 64)]))
-                (expect "<<AQP-F14>> ...and 65 is refused"
-                    false (ref-VCT::URC_VacateBatchNonceTotalOk
-                             [(enumerate 1 32) (enumerate 33 65)]))
+                ;;THE GAS BOUND IS NOW THE ONLY CEILING on a batch's size, and it is beneficiary-aware:
+                ;;(VACATE-GAS-BUDGET - bens*VACATE-GAS-PER-BEN) / VACATE-GAS-PER-POS. For ONE
+                ;;beneficiary that is (2,000,000 - 75,000) / 4,000 = 481 nonces, so 481 is IN and 482
+                ;;is OUT. Both rows name the SAME beneficiary -- bens is a DISTINCT count, and a
+                ;;second beneficiary would move the boundary by a whole 75,000, which is the point.
+                ;;481 also demonstrates the removal: it is more than SEVEN TIMES the old flat 64.
+                (expect "<<AQP-F14>> 481 nonces for one beneficiary is admitted -- far past the old flat 64"
+                    true (ref-VCT::URC_BatchOwnerArraysGasOk
+                             [KST.ANHD KST.EMMA] [KST.ANHD KST.ANHD]
+                             [(enumerate 1 240) (enumerate 241 481)] 0))
+                (expect "<<AQP-F14>> ...and 482 is refused, one past the gas boundary"
+                    false (ref-VCT::URC_BatchOwnerArraysGasOk
+                             [KST.ANHD KST.EMMA] [KST.ANHD KST.ANHD]
+                             [(enumerate 1 240) (enumerate 241 482)] 0))
+                ;;A SECOND BENEFICIARY COSTS 75,000, so the same 481 nonces no longer fit. This is what
+                ;;makes the model beneficiary-AWARE rather than a nonce count with extra steps.
+                (expect "<<AQP-F14>> ...and 481 across TWO beneficiaries no longer fits"
+                    false (ref-VCT::URC_BatchOwnerArraysGasOk
+                             [KST.ANHD KST.EMMA] [KST.ANHD KST.EMMA]
+                             [(enumerate 1 240) (enumerate 241 481)] 0))
                 ;;...and the positive half: an empty batch, and a batch of empty rows, both refused
                 (expect "<<AQP-F14>> ...as is an empty batch, and a batch of empty rows"
                     [false false]
-                    [(ref-VCT::URC_VacateBatchNonceTotalOk [])
-                     (ref-VCT::URC_VacateBatchNonceTotalOk [[] []])])
+                    [(ref-VCT::URC_BatchOwnerArraysGasOk [] [] [] 0)
+                     (ref-VCT::URC_BatchOwnerArraysGasOk
+                         [KST.ANHD KST.EMMA] [KST.ANHD KST.ANHD] [[] []] 0)])
                 ;;the leg-count bound, using legs built by the module's own constructor. 128 legs is
                 ;;admitted on COUNT (each leg then fails its balance check, which is a different
                 ;;conjunct); 129 is refused on count alone.

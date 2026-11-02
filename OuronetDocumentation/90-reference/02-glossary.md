@@ -15,7 +15,7 @@ Counts are of definitions in the tree, interface declarations included.
 |---|---:|---|
 | `UR_` | 1,546 | reads one row or field by key |
 | `C_` | 1,388 | client entry — builds the bill; reachable only through Talos |
-| `URC_` | 801 | reads and derives; no `enforce` |
+| `URC_` | 800 | reads and derives; no `enforce` |
 | `UEV_` | 675 | reads and `enforce`s; failure aborts the transaction |
 | `INFO_` | 650 | operation preview returning a client-facing cost and description |
 | `URCi_` | 646 | **cost reader** — the single source both billing and the preview call |

@@ -53,7 +53,9 @@ _To be written._
 | `P|` policy | 9 | inter-module authorisation | `P|A_Add`, `P|A_AddIMP`, `P|A_Define`, `P|A_RemoveIMP`, `P|A_SetIMP`, `P|Info` …+3 |
 | *(unclassified)* | 14 | carries no StoicSyntax prefix | `CT_AqpScName`, `CT_Bar`, `GOV|Demiurgoi`, `XI_1|DrainCollectableUnwindBatch`, `XI_1|DrainOrtoFungibleUnwindBatch`, `XI_1|DrainTrueFungibleFromLegs` …+8 |
 
-> Repository and chain agree on every declared shape.
+> **The repository differs from what is deployed.** Everything above describes the CHAIN, which is what a caller actually reaches. The difference is stated rather than resolved:
+>
+> - **functions** on chain only: `URC_VacateBatchNonceTotalOk`
 
 **Capabilities** -- 15
 
