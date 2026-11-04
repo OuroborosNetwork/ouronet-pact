@@ -347,12 +347,13 @@
         (with-capability (P|TS)
             (let
                 (
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (ref-DALOS:module{OuronetDalosV3} DALOS)
                 )
                 (ref-DALOS::C_ControlSmartAccount patron executor payable-as-smart-contract payable-by-smart-contract payable-by-method)
                 (ref-IGNIS::XE_CollectIgnis patron (ref-IGNIS::DALOS|URCi_ControlSmartAccount executor))
-                (format "Smart Ouronet Account {} controlled succesfully" [executor])
+                (format "Smart Ouronet Account {} controlled succesfully" [(ref-I|OURONET::OI|UC_ShortAccount executor)])
             )
         )
     )
@@ -379,6 +380,7 @@
         (with-capability (P|TS)
             (let
                 (
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                     (ref-DALOS:module{OuronetDalosV3} DALOS)
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
@@ -390,7 +392,7 @@
                     true
                 )
                 (ref-TS01-A::XB_DynamicFuelSTOA)
-                (format "Smart Ouronet Account {} deployed succesfully" [executor])
+                (format "Smart Ouronet Account {} deployed succesfully" [(ref-I|OURONET::OI|UC_ShortAccount executor)])
             )
         )
     )
@@ -417,6 +419,7 @@
         (with-capability (P|TS)
             (let
                 (
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                     (ref-DALOS:module{OuronetDalosV3} DALOS)
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
@@ -428,7 +431,7 @@
                     true
                 )
                 (ref-TS01-A::XB_DynamicFuelSTOA)
-                (format "Standard Ouronet Account {} deployed succesfully" [executor])
+                (format "Standard Ouronet Account {} deployed succesfully" [(ref-I|OURONET::OI|UC_ShortAccount executor)])
             )
         )
     )
@@ -438,12 +441,13 @@
         (with-capability (P|TS)
             (let
                 (
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (ref-DALOS:module{OuronetDalosV3} DALOS)
                 )
                 (ref-DALOS::C_RotateGovernor patron executor governor)
                 (ref-IGNIS::XE_CollectIgnis patron (ref-IGNIS::DALOS|URCi_RotateGovernor executor))
-                (format "Ouronet Account {} Governor-Guard rotated succesfully!" [executor])
+                (format "Ouronet Account {} Governor-Guard rotated succesfully!" [(ref-I|OURONET::OI|UC_ShortAccount executor)])
             )
         )
     )
@@ -452,12 +456,13 @@
         (with-capability (P|TS)
             (let
                 (
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (ref-DALOS:module{OuronetDalosV3} DALOS)
                 )
                 (ref-DALOS::C_RotateGuard patron executor new-guard safe)
                 (ref-IGNIS::XE_CollectIgnis patron (ref-IGNIS::DALOS|URCi_RotateGuard executor))
-                (format "Ouronet Account {} Primary-Guard rotated succesfully!" [executor])
+                (format "Ouronet Account {} Primary-Guard rotated succesfully!" [(ref-I|OURONET::OI|UC_ShortAccount executor)])
             )
         )
     )
@@ -467,12 +472,13 @@
         (with-capability (P|TS)
             (let
                 (
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (ref-DALOS:module{OuronetDalosV3} DALOS)
                 )
                 (ref-DALOS::C_RotateStoa patron executor stoa)
                 (ref-IGNIS::XE_CollectIgnis patron (ref-IGNIS::DALOS|URCi_RotateStoa executor))
-                (format "Ouronet Account {} Attached Stoa-Address rotated succesfully!" [executor])
+                (format "Ouronet Account {} Attached Stoa-Address rotated succesfully!" [(ref-I|OURONET::OI|UC_ShortAccount executor)])
             )
         )
     )
@@ -482,12 +488,13 @@
         (with-capability (P|TS)
             (let
                 (
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (ref-DALOS:module{OuronetDalosV3} DALOS)
                 )
                 (ref-DALOS::C_RotateSovereign patron executor new-sovereign)
                 (ref-IGNIS::XE_CollectIgnis patron (ref-IGNIS::DALOS|URCi_RotateSovereign executor))
-                (format "Smart Ouronet Account {} Sovereign rotated succesfully!" [executor])
+                (format "Smart Ouronet Account {} Sovereign rotated succesfully!" [(ref-I|OURONET::OI|UC_ShortAccount executor)])
             )
         )
     )
@@ -510,6 +517,7 @@
         (with-capability (P|TS)
             (let
                 (
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (ref-DALOS:module{OuronetDalosV3} DALOS)
                     (ref-ELITE:module{EliteV2} ELITE)
@@ -519,7 +527,7 @@
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-IGNIS::DALOS|URCi_UpdateEliteAccount patron)
                 )
-                (format "Elite Account Data for {} updated succesfully!" [account])
+                (format "Elite Account Data for {} updated succesfully!" [(ref-I|OURONET::OI|UC_ShortAccount account)])
             )
         )
     )
@@ -542,6 +550,7 @@
         (with-capability (P|TS)
             (let
                 (
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (ref-DALOS:module{OuronetDalosV3} DALOS)
                     (ref-ELITE:module{EliteV2} ELITE)
@@ -551,7 +560,7 @@
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-IGNIS::DALOS|URCi_UpdateEliteAccountSquared patron)
                 )
-                (format "Elite Account Data for {} and {} updated succesfully!" [sender receiver])
+                (format "Elite Account Data for {} and {} updated succesfully!" [(ref-I|OURONET::OI|UC_ShortAccount sender) (ref-I|OURONET::OI|UC_ShortAccount receiver)])
             )
         )
     )

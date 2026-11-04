@@ -104,7 +104,7 @@
                     (let
                         (
                             (ref-coin:module{stoa-ns.fungible-v1} coin)
-                            (ref-CODEX:module{CodexV3} CODEX)
+                            (ref-CODEX:module{CodexV4} CODEX)
                             ;;
                             (payment-key:string
                                 (if iz-activated (ref-DALOS::UR_AccountStoa account) bar))
@@ -195,7 +195,7 @@
         (let
             (
                 (ref-U|CT:module{OuronetConstantsV2} U|CT)
-                (ref-CODEX:module{CodexV3} CODEX)
+                (ref-CODEX:module{CodexV4} CODEX)
                 ;;
                 (row-exists:bool (!= (try false (ref-CODEX::UR_STG|Data tag-name)) false))
             )

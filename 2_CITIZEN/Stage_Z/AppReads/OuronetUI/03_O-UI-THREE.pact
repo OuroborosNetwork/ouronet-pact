@@ -365,7 +365,7 @@
             ( (ref-DALOS:module{OuronetDalosV3} DALOS)
               (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
               (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
-              (ref-CODEX:module{CodexV3} CODEX)
+              (ref-CODEX:module{CodexV4} CODEX)
               (ouro:string (ref-DALOS::UR_OuroborosID))
               (ea:string (ref-DALOS::UR_EliteAurynID))
               (fea:string (if (!= ea BAR) (ref-DPTF::UR_Frozen ea) BAR))

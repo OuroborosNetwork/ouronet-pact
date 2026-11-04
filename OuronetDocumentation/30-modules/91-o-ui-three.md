@@ -19,8 +19,8 @@ _To be written._
 
 | | |
 |---|---|
-| module hash | `Ynxy2t2NLw-Ay188xHOaiNrq5JD0VBoH61kxQtBJU5w` |
-| deployed size | 29,942 characters |
+| module hash | `fwh6AB56A3hN76CnSHY8C4zKNb3t7m7-jcpbENGMJ-M` |
+| deployed size | 30,431 characters |
 | implements | `OUiThreeV2` |
 | repository source | `2_CITIZEN/Stage_Z/AppReads/OuronetUI/03_O-UI-THREE.pact` |
 

@@ -19,7 +19,7 @@ _To be written._
 
 | | |
 |---|---|
-| module hash | `MCqrImh8JViLo4a59oH6xnRIA5VbmD62oU4D9u07rXk` |
+| module hash | `zAMqF8hif8cS1FAy_8pkJ-zTlxpFhkiJqGCTmGVanec` |
 | deployed size | 27,939 characters |
 | implements | `OuronetPolicyV2`, `AqpMtxV2` |
 | repository source | `1_SOVEREIGN/STAGE_02/2_Core/03_AQP/07_MTX-AQP.pact` |

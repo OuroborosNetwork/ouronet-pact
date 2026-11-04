@@ -19,8 +19,8 @@ _To be written._
 
 | | |
 |---|---|
-| module hash | `rVKjURldVF5tGuZhJF3zhyUJlbSeg-YQkts4E0tTT8E` |
-| deployed size | 22,210 characters |
+| module hash | `ntOP318GcIvs72BxlhJ6XjmMbhnvXdMVRJBu_M-3lh0` |
+| deployed size | 23,258 characters |
 | implements | `OuronetPolicyV2`, `TalosStageTwo_DemiPadV4` |
 | repository source | `1_SOVEREIGN/STAGE_02/3_Talos/05_TS02-DPAD.pact` |
 

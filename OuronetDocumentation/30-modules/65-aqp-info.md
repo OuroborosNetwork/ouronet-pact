@@ -19,8 +19,8 @@ _To be written._
 
 | | |
 |---|---|
-| module hash | `luq9ofjbxr57tQp-Z9InjZrDJcvOWgTs_eeOhQwSRAQ` |
-| deployed size | 126,318 characters |
+| module hash | `GKPJi2LlS5XtmPt4oz6iSfru1rlalooqIjUwHkg_6Tk` |
+| deployed size | 127,002 characters |
 | implements | — |
 | repository source | `1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact` |
 

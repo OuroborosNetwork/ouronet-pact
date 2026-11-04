@@ -19,8 +19,8 @@ _To be written._
 
 | | |
 |---|---|
-| module hash | `iSA7x7dYOR8_ZW4RK7JpP6q11YMxVemszOx-Jctmgm4` |
-| deployed size | 180,652 characters |
+| module hash | `v-PzvoVx9edaYokmafdR2ejeaIwicQQJHbQOYFY4G1c` |
+| deployed size | 180,751 characters |
 | implements | `OuronetPolicyV2`, `AcquisitionVacateV4` |
 | repository source | `1_SOVEREIGN/STAGE_02/2_Core/03_AQP/06_VCT.pact` |
 
@@ -32,14 +32,14 @@ _To be written._
 
 `GOV`, `GOV|VCT_ADMIN`, `P|VCT|CALLER`, `P|VCT|RECIPE`, `P|VCT|REMOTE-GOV`, `SECURE`, `VCT|C>ABORT-VACATE-POOL`, `VCT|C>COLLECTABLE-VACATE-BATCH`, `VCT|C>FINALIZE-VACATE`, `VCT|C>LEGS-COLLECTABLE-VACATE`, `VCT|C>LEGS-ORTO-FUNGIBLE-VACATE`, `VCT|C>LEGS-TRUE-FUNGIBLE-VACATE`, `VCT|C>ORTO-FUNGIBLE-VACATE-BATCH`, `VCT|C>TRUE-FUNGIBLE-VACATE`, `VCT|C>VACATE`
 
-**Functions** — 142, grouped by what their prefix promises
+**Functions** — 141, grouped by what their prefix promises
 
 | family | n | the promise | names |
 |---|---:|---|---|
 | `URCi_` cost readers | 12 | returns what an operation will charge | `URCi_BatchDrainCollectable`, `URCi_BatchDrainOrtoFungible`, `URCi_BatchDrainTrueFungible`, `URCi_BatchVacateCollectables`, `URCi_BatchVacateOrtoFungible`, `URCi_BatchVacateTrueFungible` …+6 |
 | `URHC_` heavy derived reads | 7 | a scan, then derivation | `URHC_BuildVacateSlicePlan`, `URHC_VacateNonceOwnerRows`, `URHC_VacateNonceOwnerRowsRaw`, `URHC_VacateNonceTotalForKind`, `URHC_VacateOwnerCountForKind`, `URHC_VacateTfOwnerRows` …+1 |
 | `URH_` heavy reads | 8 | a scan -- expensive by construction | `URH_VacateCollectableInventory`, `URH_VacateCollectableNonceRows`, `URH_VacateCollectablesPoolLegs`, `URH_VacateOfInventory`, `URH_VacateOfNonceRows`, `URH_VacateOrtoFungiblePoolLegs` …+2 |
-| `URC_` derived reads | 19 | read and derive; no enforce | `URC_BatchOwnerArraysGasOk`, `URC_NonceAmountsAreZeroSentinel`, `URC_PoolFullyVacated`, `URC_ResolveOfDecimalAmountsFromTracker`, `URC_TfOwnerArraysGasOk`, `URC_VacateBatchNonceTotalOk` …+13 |
+| `URC_` derived reads | 18 | read and derive; no enforce | `URC_BatchOwnerArraysGasOk`, `URC_NonceAmountsAreZeroSentinel`, `URC_PoolFullyVacated`, `URC_ResolveOfDecimalAmountsFromTracker`, `URC_TfOwnerArraysGasOk`, `URC_VacateCollectableLegBeneficiaryOk` …+12 |
 | `UEV_` validators | 2 | read and enforce; may abort the transaction | `UEV_ExecutorIzVacatePoolOwner`, `UEV_TrueFungibleStakeNotReserved` |
 | `UDC_` constructors | 10 | named object constructors | `UDC_NonceSlicePayload`, `UDC_TfSlicePayload`, `UDC_VacateNonceLane`, `UDC_VacateNonceLeg`, `UDC_VacateNonceLegInventory`, `UDC_VacateNonceRow` …+4 |
 | `UC_` pure compute | 30 | arguments only -- no reads, no enforce | `UC_BatchNonceTotal`, `UC_BuildNonceVacateSlicePlanFromOwnerRows`, `UC_BuildTfVacateSlicePlanFromOwnerRows`, `UC_CeilDiv`, `UC_ComputeMinSliceCount`, `UC_DecimalAmountsMatrixToInt` …+24 |
@@ -53,15 +53,13 @@ _To be written._
 | `P|` policy | 9 | inter-module authorisation | `P|A_Add`, `P|A_AddIMP`, `P|A_Define`, `P|A_RemoveIMP`, `P|A_SetIMP`, `P|Info` …+3 |
 | *(unclassified)* | 14 | carries no StoicSyntax prefix | `CT_AqpScName`, `CT_Bar`, `GOV|Demiurgoi`, `XI_1|DrainCollectableUnwindBatch`, `XI_1|DrainOrtoFungibleUnwindBatch`, `XI_1|DrainTrueFungibleFromLegs` …+8 |
 
-> **The repository differs from what is deployed.** Everything above describes the CHAIN, which is what a caller actually reaches. The difference is stated rather than resolved:
->
-> - **functions** on chain only: `URC_VacateBatchNonceTotalOk`
+> Repository and chain agree on every declared shape.
 
 **Capabilities** -- 15
 
 `GOV`, `GOV|VCT_ADMIN`, `P|VCT|CALLER`, `P|VCT|RECIPE`, `P|VCT|REMOTE-GOV`, `SECURE`, `VCT|C>ABORT-VACATE-POOL`, `VCT|C>COLLECTABLE-VACATE-BATCH`, `VCT|C>FINALIZE-VACATE`, `VCT|C>LEGS-COLLECTABLE-VACATE`, `VCT|C>LEGS-ORTO-FUNGIBLE-VACATE`, `VCT|C>LEGS-TRUE-FUNGIBLE-VACATE`, `VCT|C>ORTO-FUNGIBLE-VACATE-BATCH`, `VCT|C>TRUE-FUNGIBLE-VACATE`, `VCT|C>VACATE`
 
-**Functions** -- 142, grouped by what the prefix promises
+**Functions** -- 141, grouped by what the prefix promises
 
 *Cost readers* (12) — price an operation; the exec path and the preview both call these
 
@@ -75,9 +73,9 @@ _To be written._
 
 `URH_VacateCollectableInventory`, `URH_VacateCollectableNonceRows`, `URH_VacateCollectablesPoolLegs`, `URH_VacateOfInventory`, `URH_VacateOfNonceRows`, `URH_VacateOrtoFungiblePoolLegs`, `URH_VacateTfInventory`, `URH_VacateTrueFungiblePoolLegs`
 
-*Derived reads* (19) — read and compute; no enforce
+*Derived reads* (18) — read and compute; no enforce
 
-`URC_BatchOwnerArraysGasOk`, `URC_NonceAmountsAreZeroSentinel`, `URC_PoolFullyVacated`, `URC_ResolveOfDecimalAmountsFromTracker`, `URC_TfOwnerArraysGasOk`, `URC_VacateBatchNonceTotalOk`, `URC_VacateCollectableLegBeneficiaryOk`, `URC_VacateCollectableLegsOk`, `URC_VacateCollectableNoncesSufficient`, `URC_VacateCollectableRollupSufficient`, `URC_VacateKindAssetOk`, `URC_VacateOrtoLegBeneficiaryOk`, `URC_VacateOrtoLegsOk`, `URC_VacateOrtoNoncesSufficient`, `URC_VacatePoolCollectableIds`, `URC_VacatePoolOfIds`, `URC_VacatePoolTfIds`, `URC_VacateTfLegBalancesOk`, `URC_VacateTfLegsOk`
+`URC_BatchOwnerArraysGasOk`, `URC_NonceAmountsAreZeroSentinel`, `URC_PoolFullyVacated`, `URC_ResolveOfDecimalAmountsFromTracker`, `URC_TfOwnerArraysGasOk`, `URC_VacateCollectableLegBeneficiaryOk`, `URC_VacateCollectableLegsOk`, `URC_VacateCollectableNoncesSufficient`, `URC_VacateCollectableRollupSufficient`, `URC_VacateKindAssetOk`, `URC_VacateOrtoLegBeneficiaryOk`, `URC_VacateOrtoLegsOk`, `URC_VacateOrtoNoncesSufficient`, `URC_VacatePoolCollectableIds`, `URC_VacatePoolOfIds`, `URC_VacatePoolTfIds`, `URC_VacateTfLegBalancesOk`, `URC_VacateTfLegsOk`
 
 *Point reads* (3) — one row or field by key
 

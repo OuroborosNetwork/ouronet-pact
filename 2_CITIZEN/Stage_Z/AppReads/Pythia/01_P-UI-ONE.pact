@@ -80,7 +80,7 @@
             \ Replaces DPL-UR::URC_0031."
         (let
             (
-                (ref-PYTHIA:module{PythiaV6} PYTHIA)
+                (ref-PYTHIA:module{PythiaV7} PYTHIA)
             )
             (map
                 (lambda (apollo-account:string)
@@ -96,7 +96,7 @@
             \ Replaces DPL-UR::URC_0033_DualApiKeyMapper."
         (let
             (
-                (ref-PYTHIA:module{PythiaV6} PYTHIA)
+                (ref-PYTHIA:module{PythiaV7} PYTHIA)
             )
             (map
                 (lambda (dual-api-key:string)
@@ -114,7 +114,7 @@
             \ Replaces DPL-UR::URC_0034_PythiaPrices, key-for-key."
         (let
             (
-                (ref-PYTHIA:module{PythiaV6} PYTHIA)
+                (ref-PYTHIA:module{PythiaV7} PYTHIA)
                 ;;
                 (deploy-price:decimal (ref-PYTHIA::UR_DeployPrice))
                 (rename-price:decimal (ref-PYTHIA::UR_RenamePrice))

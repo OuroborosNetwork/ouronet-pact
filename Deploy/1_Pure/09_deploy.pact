@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 9 of 26
 ;; This is STEP 9 of 27 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-8 must have run first, including the init steps between deploys.
-;; 4 source file(s), 273,967 gas measured in the REPL gas model, 269,636 bytes
+;; 4 source file(s), 273,967 gas measured in the REPL gas model, 269,901 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/21_CODEX.pact
@@ -10,10 +10,10 @@
 ;;   1_SOVEREIGN/STAGE_01/3_Talos/01_TS01-A.pact
 ;;   1_SOVEREIGN/STAGE_01/3_Talos/02_TS01-C1.pact
 ;;
-;; TOTAL: 4 interface(s), 4 module(s), 18 table(s)
+;; TOTAL: 2 interface(s), 4 module(s), 18 table(s)
 ;; What it DEPLOYS, in load order:
 ;;   -- 1_SOVEREIGN/STAGE_01/2_Core/21_CODEX.pact
-;;      interface  CodexV3
+;;      interface  CodexV4
 ;;      module     CODEX
 ;;      table      P|T
 ;;      table      P|MT
@@ -22,8 +22,7 @@
 ;;      table      CODEX|T|StoicTags
 ;;      table      CODEX|T|StoicTagsByAccount
 ;;   -- 1_SOVEREIGN/STAGE_01/2_Core/22_PYTHIA.pact
-;;      interface  PythiaV6
-;;      interface  PythiaLedgerV4
+;;      interface  PythiaV7
 ;;      module     PYTHIA
 ;;      table      P|T
 ;;      table      P|MT
@@ -38,7 +37,6 @@
 ;;      table      P|T
 ;;      table      P|MT
 ;;   -- 1_SOVEREIGN/STAGE_01/3_Talos/02_TS01-C1.pact
-;;      interface  TalosStageOne_ClientOneV3
 ;;      module     TS01-C1
 ;;      table      P|T
 ;;      table      P|MT
@@ -57,7 +55,7 @@
 ;; Mnemosyne operator: ouronet-ns.codex-keyset (define before A_RegisterCodexIdentity).
 ;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface CodexV3
+(interface CodexV4
     @doc "CodexV2 is the interface for the CODEX module — the on-chain Codex Identity \
         \ registry, Arweave upload audit log, and StoicTag name registry. It declares UC \
         \ validators (Apollo composite id, Arweave tx-id, StoicTag name/fee), UR field \
@@ -168,14 +166,14 @@
           codex-guard:guard
           registered-by:string ))
     ;;
-    ;;#24H fix: these four were already live/actively-called via TS01-C4's module{CodexV3}-typed
+    ;;#24H fix: these four were already live/actively-called via TS01-C4's module{CodexV4}-typed
     ;;ref, but missing from the interface itself. Added here, purely additive - the module already
     ;;implements all four with matching signatures.
     ;; [C]
-    (defun C_RotateCodexGuard:string (patron:string executor:string codex-id:string new-codex-guard:guard))
-    (defun C_RecordArweaveUpload:string (patron:string executor:string codex-id:string arweave-tx-id:string uploaded-bytes:integer))
-    (defun C_RegisterStoicTag:string (patron:string executor:string tag-name:string))
-    (defun C_ReleaseStoicTag:string (patron:string executor:string tag-name:string))
+    (defun C_RotateCodexGuard (patron:string executor:string codex-id:string new-codex-guard:guard))
+    (defun C_RecordArweaveUpload (patron:string executor:string codex-id:string arweave-tx-id:string uploaded-bytes:integer))
+    (defun C_RegisterStoicTag (patron:string executor:string tag-name:string))
+    (defun C_ReleaseStoicTag (patron:string executor:string tag-name:string))
 
 
     ;;<=========================================================================>
@@ -200,7 +198,7 @@
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
-    (implements CodexV3)
+    (implements CodexV4)
     (implements OuronetPolicyV2)
 
     ;;<=========================================================================>
@@ -966,7 +964,7 @@
                     (format "Operation: Register StoicTag §{} to Ouronet account {}." [tag-name sa])
                     (format "Native STOA fee: {} (1 per glyph, {} glyphs; Elite discount on tagged account)." [stoa-fee glyph-count])
                 ]
-                [(format "StoicTag §{} registered to account {}." [tag-name account-address])]
+                [(format "StoicTag §{} registered to account {}." [tag-name (ref-I|OURONET::OI|UC_ShortAccount account-address)])]
                 (ref-I|OURONET::OI|UDC_NoIgnisCosts)
                 (ref-I|OURONET::OI|UDC_StoaCosts account-address stoa-fee)
                 []
@@ -1162,7 +1160,7 @@
         )
         (format "Codex Identity {} registered" [codex-id])
     )
-    (defun C_RotateCodexGuard:string (patron:string executor:string codex-id:string new-codex-guard:guard)
+    (defun C_RotateCodexGuard (patron:string executor:string codex-id:string new-codex-guard:guard)
         @doc "Rotate codex-guard; validation in CODEX|C>ROTATE-GUARD; XI writes only. \
             \ \
             \ ATTRIBUTION (patron/executor canon 2.2, 2026-09-22). The AUTHORITY here is a raw \
@@ -1182,10 +1180,9 @@
         (with-capability (CODEX|C>ROTATE-GUARD codex-id new-codex-guard)
             (XI_UpdateCodexGuard codex-id new-codex-guard)
         )
-        (format "Codex {} guard rotated" [codex-id])
     )
     ;;
-    (defun C_RecordArweaveUpload:string (patron:string executor:string codex-id:string arweave-tx-id:string uploaded-bytes:integer)
+    (defun C_RecordArweaveUpload (patron:string executor:string codex-id:string arweave-tx-id:string uploaded-bytes:integer)
         @doc "Append one row to CODEX|T|ArweaveTracker; validation in CODEX|C>RECORD-ARWEAVE. \
             \ \
             \ ATTRIBUTION: as C_RotateCodexGuard -- the authority is the codex GUARD, which names \
@@ -1201,10 +1198,9 @@
         (with-capability (CODEX|C>RECORD-ARWEAVE codex-id arweave-tx-id uploaded-bytes)
             (XI_InsertArweaveTracker codex-id arweave-tx-id uploaded-bytes)
         )
-        (format "Upload recorded: {} -> {}" [codex-id arweave-tx-id])
     )
     ;;
-    (defun C_RegisterStoicTag:string (patron:string executor:string tag-name:string)
+    (defun C_RegisterStoicTag (patron:string executor:string tag-name:string)
         @doc "Register StoicTag; validation in CODEX|C>REGISTER-STOICTAG; XI writes only (1 STOA/glyph fee in TS01-C4). \
             \ \
             \ A RENAME, not an addition (patron/executor canon 2.2, 2026-09-22): the old \
@@ -1219,10 +1215,9 @@
         (with-capability (CODEX|C>REGISTER-STOICTAG tag-name executor)
             (XI_UpsertStoicTag tag-name executor)
         )
-        (format "StoicTag §{} registered to account {}" [tag-name executor])
     )
     ;;
-    (defun C_ReleaseStoicTag:string (patron:string executor:string tag-name:string)
+    (defun C_ReleaseStoicTag (patron:string executor:string tag-name:string)
         @doc "Release StoicTag (iz-active false); validation in CODEX|C>RELEASE-STOICTAG; XI updates only. \
             \ \
             \ HANDOFF 4g, and the contrast with its own sibling is the clearest illustration of \
@@ -1239,7 +1234,6 @@
         (with-capability (CODEX|C>RELEASE-STOICTAG executor tag-name)
             (XI_DeactivateStoicTag tag-name)
         )
-        (format "StoicTag §{} released" [tag-name])
     )
 
 )
@@ -1280,7 +1274,7 @@
 ;; If PYTHIA were already on-chain at V3, only PythDaily + PythTotal are additive create-tables.
 ;;
 ;; net: v4   ·   dev: v5   ;; bumped by the StoicSyntax refactor — deploy v5 then set net: v5
-(interface PythiaV6
+(interface PythiaV7
     @doc "PYTHIA V4 — V3 dual-Apollo + Config UR prices; select-based inventory is URH_."
 
     ;;<=========================================================================>
@@ -1377,22 +1371,22 @@
     (defun A_UpdateDeployPrice:string (patron:string executor:string new-price:decimal))
     (defun A_UpdateRenamePrice:string (patron:string executor:string new-price:decimal))
     ;;
-    (defun C_DeployApolloPythiaApiKey:string
+    (defun C_DeployApolloPythiaApiKey
         (
             patron:string
             executor:string
             apollo-account:string
             public:string
         ))
-    (defun C_LinkDualApiKey:string
+    (defun C_LinkDualApiKey
         (
             executor:string
             standard-apollo:string
             smart-apollo:string
             consumer-lane:string
         ))
-    (defun C_RevokeDualLink:string (patron:string executor:string dual-link-key:string))
-    (defun C_UpdateDualConsumerLane:string
+    (defun C_RevokeDualLink (patron:string executor:string dual-link-key:string))
+    (defun C_UpdateDualConsumerLane
         (
             patron:string
             executor:string
@@ -1430,108 +1424,8 @@
     (defun UEV_ValidateCompositeDualLinkKey:bool (dual-link-key:string))
 )
 ;; net: v2   ·   dev: v3   ;; bumped by the StoicSyntax refactor — deploy v3 then set net: v3
-(interface PythiaLedgerV4
-    @doc "Pyth ledger V2 — batch flush entries (explicit day, iz-complete); order-independent txs."
+;; PythiaLedgerV4: already deployed and unchanged -- see LIVE_INTERFACES
 
-    ;;<=========================================================================>
-    ;;{1}  GOVERNANCE
-    ;;{G1}  constants
-    ;;{G2}  schemas
-    ;;{G3}  tables  ⟨cannot exist in an interface⟩
-    ;;{G4}  capabilities
-    ;;{G5}  functions
-
-    ;;<=========================================================================>
-    ;;{2}  POLICY
-    ;;{P1}  constants
-    ;;{P2}  schemas
-    ;;{P3}  tables  ⟨cannot exist in an interface⟩
-    ;;{P4}  capabilities
-    ;;{P5}  functions
-
-    ;;<=========================================================================>
-    ;;{3}  CST
-    ;;{3.1}  constants
-    ;;{3.2}  schemas
-    ;;
-    (defschema PYTHIA|S|PythMetrics
-        @doc "Six Pyth work counters — nested on daily and total rows."
-        petitions:integer
-        pondus:decimal
-        transactions:integer
-        gas-reserved:integer
-        failed-transactions:integer
-        wasted-gas-reserved:integer
-    )
-    (defschema PYTHIA|S|PythFlushAcc
-        @doc "Internal fold state for batch XI_FlushPythLedger."
-        total-metrics:object{PYTHIA|S|PythMetrics}
-        last-day:integer
-    )
-    (defschema PYTHIA|S|PythFlushEntry
-        @doc "One calendar day in a batch A_Flush (metrics cumulative for that UTC day)."
-        day:integer
-        iz-complete:bool
-        petitions:integer
-        pondus:decimal
-        transactions:integer
-        gas-reserved:integer
-        failed-transactions:integer
-        wasted-gas-reserved:integer
-    )
-    (defschema PYTHIA|S|PythDaily
-        @doc "One calendar-day snapshot. Table key = day ordinal string."
-        day:integer
-        flushed-at:time
-        iz-sealed:bool
-        metrics:object{PYTHIA|S|PythMetrics}
-    )
-    (defschema PYTHIA|S|PythTotal
-        @doc "Running totals. Key = stoachain. last-day = highest day ordinal written."
-        total-metrics:object{PYTHIA|S|PythMetrics}
-        last-day:integer
-    )
-    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
-
-    ;;<=========================================================================>
-    ;;{4}  CAPABILITIES
-    ;;{C1}  Trivial [bronze]
-    ;;{C2}  Simple
-    ;;{C3}  Composed
-    ;;{C4}  Ownership [gold]
-
-    ;;<=========================================================================>
-    ;;{5}  FUNCTIONS
-    ;;{5.1}  Construct [CT/UDC]
-    ;;{5.2}  Compute [UC]
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    (defun UR_PythMaxFlushBatch:integer ())
-    (defun UR_PythLedgerEpochStart:time ())
-    (defun UR_PythCurrentDay:integer ())
-    (defun UR_PythTotal:object{PYTHIA|S|PythTotal} ())
-    (defun UR_PythTotal|TotalMetrics:object{PYTHIA|S|PythMetrics} ())
-    (defun UR_PythTotal|LastDay:integer ())
-    (defun UR_PythDay:object{PYTHIA|S|PythDaily} (day:integer))
-    (defun URH_ListPythDaily:[object{PYTHIA|S|PythDaily}] (from:integer to:integer))
-    ;;{5.4}  Validate [UEV/CAP]
-    ;;{5.5}  Write [W]
-    ;;{5.6}  Aux/X
-    ;;{5.7}  User [A/C]
-    ;;
-    (defun A_Flush:string (patron:string executor:string entries:[object{PYTHIA|S|PythFlushEntry}]))
-
-
-    ;;<=========================================================================>
-    ;; ADDED 2026-10-12 -- interface-membership sweep (StoicSyntax-Prefixes.md Sec5,
-    ;; owner ruling). Every one of these was already live in the module body; this
-    ;; closes the gap between what the module DOES and what its interface SAYS it does.
-    ;;<=========================================================================>
-    (defun UC_MaxDay:integer (a:integer b:integer))
-    (defun UC_PythDayOrdinal:integer (stamp:time))
-    (defun UCk_PythDaily:string (day:integer))
-    (defun UEV_FlushEntries:bool (entries:[object{PYTHIA|S|PythFlushEntry}]))
-    (defun UR_PythDailyExists:bool (day:integer))
-)
 ;;
 (module PYTHIA GOV
     @doc "Dual-Apollo Pythia registry + on-chain Pyth work ledger (daily flush / running total)."
@@ -1539,7 +1433,7 @@
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
-    (implements PythiaV6)
+    (implements PythiaV7)
     (implements PythiaLedgerV4)
     (implements OuronetPolicyV2)
 
@@ -3156,7 +3050,7 @@
         (format "Pythia ledger flushed {} day entries" [(length entries)])
     )
     ;;
-    (defun C_DeployApolloPythiaApiKey:string
+    (defun C_DeployApolloPythiaApiKey
         (
             patron:string
             executor:string
@@ -3187,10 +3081,9 @@
                     (UDC_AKY|ApiKey public BAR executor apollo-account)
                 )
             )
-            (format "Pythia {} Apollo half {} registered (unlinked)" [kind apollo-account])
         )
     )
-    (defun C_LinkDualApiKey:string
+    (defun C_LinkDualApiKey
         (
             executor:string
             standard-apollo:string
@@ -3223,10 +3116,9 @@
                     )
                 )
             )
-            (format "Pythia dual link {} created for lane {} (inactive)" [dlk consumer-lane])
         )
     )
-    (defun C_RevokeDualLink:string (patron:string executor:string dual-link-key:string)
+    (defun C_RevokeDualLink (patron:string executor:string dual-link-key:string)
         @doc "Both half-owners revoke active dual link. Fee in TS01-C4 (IGNIS). \
             \ \
             \ HANDOFF 4g, in its two-signature form. The capability composes PYTHIA|OWNER TWICE, on \
@@ -3240,9 +3132,8 @@
             (WU_DualLink|IzActive dual-link-key false)
             (XI_RecordRevocationAtHeight)
         )
-        (format "Pythia dual link {} revoked by owner" [dual-link-key])
     )
-    (defun C_UpdateDualConsumerLane:string
+    (defun C_UpdateDualConsumerLane
         (
             patron:string
             executor:string
@@ -3261,7 +3152,6 @@
         (with-capability (PYTHIA|C>UPDATE-DUAL-LANE executor dual-link-key new-name)
             (WU_DualLink|ConsumerLane dual-link-key new-name)
         )
-        (format "Pythia dual link {} lane renamed to {}" [dual-link-key new-name])
     )
 
 )
@@ -4157,129 +4047,8 @@
 ;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/03_Talos.pact
 ;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface TalosStageOne_ClientOneV3
-    @doc "Exposes Ouronets Stage One First Batch of Client Functions \
-        \ Modules: DALOS, DPTF and DPOF are included in the First Batch"
+;; TalosStageOne_ClientOneV3: already deployed and unchanged -- see LIVE_INTERFACES
 
-    ;;<=========================================================================>
-    ;;{1}  GOVERNANCE
-    ;;{G1}  constants
-    ;;{G2}  schemas
-    ;;{G3}  tables  ⟨cannot exist in an interface⟩
-    ;;{G4}  capabilities
-    ;;{G5}  functions
-
-    ;;<=========================================================================>
-    ;;{2}  POLICY
-    ;;{P1}  constants
-    ;;{P2}  schemas
-    ;;{P3}  tables  ⟨cannot exist in an interface⟩
-    ;;{P4}  capabilities
-    ;;{P5}  functions
-
-    ;;<=========================================================================>
-    ;;{3}  CST
-    ;;{3.1}  constants
-    ;;{3.2}  schemas
-    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
-
-    ;;<=========================================================================>
-    ;;{4}  CAPABILITIES
-    ;;{C1}  Trivial [bronze]
-    ;;{C2}  Simple
-    ;;{C3}  Composed
-    ;;{C4}  Ownership [gold]
-
-    ;;<=========================================================================>
-    ;;{5}  FUNCTIONS
-    ;;{5.1}  Construct [CT/UDC]
-    ;;{5.2}  Compute [UC]
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    ;;{5.4}  Validate [UEV/CAP]
-    ;;{5.5}  Write [W]
-    ;;{5.6}  Aux/X
-    ;;{5.7}  User [A/C]
-    ;;
-    (defun DALOS|C_ControlSmartAccount (patron:string executor:string payable-as-smart-contract:bool payable-by-smart-contract:bool payable-by-method:bool))
-    (defun DALOS|C_DeploySmartAccount (executor:string guard:guard stoa:string sovereign:string public:string))
-    (defun DALOS|C_DeployStandardAccount (executor:string guard:guard stoa:string public:string))
-    (defun DALOS|C_RotateGovernor (patron:string executor:string governor:guard))
-    (defun DALOS|C_RotateGuard (patron:string executor:string new-guard:guard safe:bool))
-    (defun DALOS|C_RotateStoa (patron:string executor:string stoa:string))
-    (defun DALOS|C_RotateSovereign (patron:string executor:string new-sovereign:string))
-    (defun DALOS|C_UpdateEliteAccount (patron:string account:string))
-    (defun DALOS|C_UpdateEliteAccountSquared (patron:string sender:string receiver:string))
-    ;;
-    ;;
-    (defun DPTF|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV3.SocialSchema}]))
-    (defun DPTF|C_UpgradeBranding (patron:string executor:string entity-id:string months:integer))
-    ;;
-    (defun DPTF|C_Issue:list (patron:string executor:string name:[string] ticker:[string] decimals:[integer] can-change-owner:[bool] can-upgrade:[bool] can-add-special-role:[bool] can-freeze:[bool] can-wipe:[bool] can-pause:[bool]))
-    (defun DPTF|C_RotateOwnership (patron:string executor:string executee:string id:string))
-    (defun DPTF|C_Control (patron:string executor:string id:string cu:bool cco:bool casr:bool cf:bool cw:bool cp:bool))
-    (defun DPTF|C_TogglePause (patron:string executor:string id:string toggle:bool))
-    (defun DPTF|C_ToggleReservation (patron:string executor:string id:string toggle:bool))
-        ;;
-    (defun DPTF|C_ToggleFee (patron:string executor:string id:string toggle:bool))
-    (defun DPTF|C_SetMinMove (patron:string executor:string id:string min-move-value:decimal))
-    (defun DPTF|C_SetFee (patron:string executor:string id:string fee:decimal))
-    (defun DPTF|C_SetFeeTarget (patron:string executor:string id:string target:string))
-    (defun DPTF|C_DonateFees (patron:string executor:string id:string))
-    (defun DPTF|C_ResetFeeTarget (patron:string executor:string id:string))
-    (defun DPTF|C_ToggleFeeLock (patron:string executor:string id:string toggle:bool))
-        ;;
-    (defun DPTF|C_DeployAccount (patron:string executor:string id:string))
-    (defun DPTF|C_ToggleFreezeAccount (patron:string executor:string executee:string id:string toggle:bool))
-    (defun DPTF|C_ToggleBurnRole (patron:string executor:string executee:string id:string toggle:bool))
-    (defun DPTF|C_ToggleMintRole (patron:string executor:string executee:string id:string toggle:bool))
-    (defun DPTF|C_ToggleFeeExemptionRole (patron:string executor:string executee:string id:string toggle:bool))
-    (defun DPTF|C_ToggleTransferRole (patron:string executor:string executee:string id:string toggle:bool))
-        ;;
-    (defun DPTF|C_ClearDispo (patron:string executor:string))
-    (defun DPTF|C_ClearDispoForeign (patron:string executor:string executee:string))
-    (defun DPTF|C_Burn (patron:string executor:string id:string amount:decimal))
-    (defun DPTF|C_Mint (patron:string executor:string id:string amount:decimal origin:bool))
-    (defun DPTF|C_WipeSlim (patron:string executor:string executee:string id:string amtbw:decimal))
-    (defun DPTF|C_Wipe (patron:string executor:string executee:string id:string))
-        ;;
-    (defun DPTF|C_Transmute (patron:string executor:string id:string transmute-amount:decimal))
-    (defun DPTF|C_Transfer (patron:string executor:string executee:string id:string transfer-amount:decimal method:bool))
-    (defun DPTF|C_MultiTransfer (patron:string executor:string executee:string id-lst:[string] transfer-amount-lst:[decimal] method:bool))
-    (defun DPTF|C_BulkTransfer (patron:string executor:string executee-lst:[string] id:string transfer-amount-lst:[decimal]))
-    (defun DPTF|C_MultiBulkTransfer (patron:string executor:string executee-array:[[string]] id-lst:[string] transfer-amount-array:[[decimal]]))
-    ;;
-    ;;
-    (defun DPOF|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV3.SocialSchema}]))
-    (defun DPOF|C_UpgradeBranding (patron:string executor:string entity-id:string months:integer))
-    ;;
-    (defun DPOF|C_Issue:list (patron:string executor:string name:[string] ticker:[string] decimals:[integer] can-upgrade:[bool] can-change-owner:[bool] can-add-special-role:[bool] can-transfer-oft-create-role:[bool] can-freeze:[bool] can-wipe:[bool] can-pause:[bool]))
-    (defun DPOF|C_RotateOwnership (patron:string executor:string executee:string id:string))
-    (defun DPOF|C_Control (patron:string executor:string id:string cu:bool cco:bool casr:bool ctocr:bool cf:bool cw:bool cp:bool sg:bool))
-    (defun DPOF|C_TogglePause (patron:string executor:string id:string toggle:bool))
-        ;;
-    (defun DPOF|C_DeployAccount (patron:string executor:string id:string))
-    (defun DPOF|C_ToggleFreezeAccount (patron:string executor:string executee:string id:string toggle:bool))
-    (defun DPOF|C_ToggleAddQuantityRole (patron:string executor:string executee:string id:string toggle:bool))
-    (defun DPOF|C_ToggleBurnRole (patron:string executor:string executee:string id:string toggle:bool))
-    (defun DPOF|C_MoveCreateRole (patron:string executor:string executee:string id:string))
-    (defun DPOF|C_ToggleTransferRole (patron:string executor:string executee:string id:string toggle:bool))
-        ;;
-    (defun DPOF|C_AddQuantity (patron:string executor:string id:string nonce:integer amount:decimal))
-    (defun DPOF|C_Burn (patron:string executor:string id:string nonce:integer amount:decimal))
-    (defun DPOF|C_Mint (patron:string executor:string id:string amount:decimal meta-data-chain:[object]))
-    (defun DPOF|C_WipeSlim (patron:string executor:string executee:string id:string nonce:integer amount:decimal))
-    (defun DPOF|CC_WipeHeavy (patron:string executor:string executee:string id:string))
-    (defun DPOF|C_WipePure (patron:string executor:string executee:string id:string removable-nonces-obj:object{DpofUdcV2.RemovableNonces}))
-    (defun DPOF|C_WipeClean (patron:string executor:string executee:string id:string nonces:[integer]))
-    (defun DPOF|Cp_WipeSlice (patron:string id:string account:string removable-nonces-obj:object{DpofUdcV2.RemovableNonces}))
-        ;;
-    (defun DPOF|C_Transmit (patron:string executor:string executee:string id:string nonces:[integer] amounts:[decimal] method:bool))
-    (defun DPOF|C_Transfer (patron:string executor:string executee:string id:string nonces:[integer] method:bool))    
-    (defun DPOF|C_BulkTransfer
-        (patron:string executor:string executee-lst:[string] id:string nonces-array:[[integer]] method:bool)
-    )
-
-)
 ;;
 (module TS01-C1 GOV
     @doc "TALOS Stage 1 Client Functiones Part 1"
@@ -4502,12 +4271,13 @@
         (with-capability (P|TS)
             (let
                 (
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (ref-DALOS:module{OuronetDalosV3} DALOS)
                 )
                 (ref-DALOS::C_ControlSmartAccount patron executor payable-as-smart-contract payable-by-smart-contract payable-by-method)
                 (ref-IGNIS::XE_CollectIgnis patron (ref-IGNIS::DALOS|URCi_ControlSmartAccount executor))
-                (format "Smart Ouronet Account {} controlled succesfully" [executor])
+                (format "Smart Ouronet Account {} controlled succesfully" [(ref-I|OURONET::OI|UC_ShortAccount executor)])
             )
         )
     )
@@ -4534,6 +4304,7 @@
         (with-capability (P|TS)
             (let
                 (
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                     (ref-DALOS:module{OuronetDalosV3} DALOS)
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
@@ -4545,7 +4316,7 @@
                     true
                 )
                 (ref-TS01-A::XB_DynamicFuelSTOA)
-                (format "Smart Ouronet Account {} deployed succesfully" [executor])
+                (format "Smart Ouronet Account {} deployed succesfully" [(ref-I|OURONET::OI|UC_ShortAccount executor)])
             )
         )
     )
@@ -4572,6 +4343,7 @@
         (with-capability (P|TS)
             (let
                 (
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                     (ref-DALOS:module{OuronetDalosV3} DALOS)
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
@@ -4583,7 +4355,7 @@
                     true
                 )
                 (ref-TS01-A::XB_DynamicFuelSTOA)
-                (format "Standard Ouronet Account {} deployed succesfully" [executor])
+                (format "Standard Ouronet Account {} deployed succesfully" [(ref-I|OURONET::OI|UC_ShortAccount executor)])
             )
         )
     )
@@ -4593,12 +4365,13 @@
         (with-capability (P|TS)
             (let
                 (
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (ref-DALOS:module{OuronetDalosV3} DALOS)
                 )
                 (ref-DALOS::C_RotateGovernor patron executor governor)
                 (ref-IGNIS::XE_CollectIgnis patron (ref-IGNIS::DALOS|URCi_RotateGovernor executor))
-                (format "Ouronet Account {} Governor-Guard rotated succesfully!" [executor])
+                (format "Ouronet Account {} Governor-Guard rotated succesfully!" [(ref-I|OURONET::OI|UC_ShortAccount executor)])
             )
         )
     )
@@ -4607,12 +4380,13 @@
         (with-capability (P|TS)
             (let
                 (
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (ref-DALOS:module{OuronetDalosV3} DALOS)
                 )
                 (ref-DALOS::C_RotateGuard patron executor new-guard safe)
                 (ref-IGNIS::XE_CollectIgnis patron (ref-IGNIS::DALOS|URCi_RotateGuard executor))
-                (format "Ouronet Account {} Primary-Guard rotated succesfully!" [executor])
+                (format "Ouronet Account {} Primary-Guard rotated succesfully!" [(ref-I|OURONET::OI|UC_ShortAccount executor)])
             )
         )
     )
@@ -4622,12 +4396,13 @@
         (with-capability (P|TS)
             (let
                 (
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (ref-DALOS:module{OuronetDalosV3} DALOS)
                 )
                 (ref-DALOS::C_RotateStoa patron executor stoa)
                 (ref-IGNIS::XE_CollectIgnis patron (ref-IGNIS::DALOS|URCi_RotateStoa executor))
-                (format "Ouronet Account {} Attached Stoa-Address rotated succesfully!" [executor])
+                (format "Ouronet Account {} Attached Stoa-Address rotated succesfully!" [(ref-I|OURONET::OI|UC_ShortAccount executor)])
             )
         )
     )
@@ -4637,12 +4412,13 @@
         (with-capability (P|TS)
             (let
                 (
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (ref-DALOS:module{OuronetDalosV3} DALOS)
                 )
                 (ref-DALOS::C_RotateSovereign patron executor new-sovereign)
                 (ref-IGNIS::XE_CollectIgnis patron (ref-IGNIS::DALOS|URCi_RotateSovereign executor))
-                (format "Smart Ouronet Account {} Sovereign rotated succesfully!" [executor])
+                (format "Smart Ouronet Account {} Sovereign rotated succesfully!" [(ref-I|OURONET::OI|UC_ShortAccount executor)])
             )
         )
     )
@@ -4665,6 +4441,7 @@
         (with-capability (P|TS)
             (let
                 (
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (ref-DALOS:module{OuronetDalosV3} DALOS)
                     (ref-ELITE:module{EliteV2} ELITE)
@@ -4674,7 +4451,7 @@
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-IGNIS::DALOS|URCi_UpdateEliteAccount patron)
                 )
-                (format "Elite Account Data for {} updated succesfully!" [account])
+                (format "Elite Account Data for {} updated succesfully!" [(ref-I|OURONET::OI|UC_ShortAccount account)])
             )
         )
     )
@@ -4697,6 +4474,7 @@
         (with-capability (P|TS)
             (let
                 (
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (ref-DALOS:module{OuronetDalosV3} DALOS)
                     (ref-ELITE:module{EliteV2} ELITE)
@@ -4706,7 +4484,7 @@
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-IGNIS::DALOS|URCi_UpdateEliteAccountSquared patron)
                 )
-                (format "Elite Account Data for {} and {} updated succesfully!" [sender receiver])
+                (format "Elite Account Data for {} and {} updated succesfully!" [(ref-I|OURONET::OI|UC_ShortAccount sender) (ref-I|OURONET::OI|UC_ShortAccount receiver)])
             )
         )
     )

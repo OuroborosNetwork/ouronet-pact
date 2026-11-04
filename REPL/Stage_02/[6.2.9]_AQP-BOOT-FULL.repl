@@ -589,7 +589,7 @@
     (
         (patron:string KST.ANHD)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV6} AQP-FVT)
         (farm-id:string
             (let ((fid:string (ref-U|DALOS::UDC_Makeid "OuroLpFarm")))
                 (if (try false (= (ref-FVT::UR_FVT|FvtClass fid) 0)) fid "skipped")
@@ -1285,7 +1285,7 @@
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
         (ref-ATS:module{AutostakeV4} ATS)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV6} AQP-FVT)
         ;;
         (ouro:string        (ref-DALOS::UR_OuroborosID))
         (auryn:string       (ref-DALOS::UR_AurynID))
@@ -1417,7 +1417,7 @@
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
         (ref-ATS:module{AutostakeV4} ATS)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV6} AQP-FVT)
         ;;
         (ouro:string        (ref-DALOS::UR_OuroborosID))
         (auryn:string       (ref-DALOS::UR_AurynID))
@@ -1534,7 +1534,7 @@
     (
         (patron:string KST.ANHD)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV6} AQP-FVT)
         (ref-SWP:module{SwapperV5} SWP)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (farm-id:string (ref-U|DALOS::UDC_Makeid "OuroLpFarm"))

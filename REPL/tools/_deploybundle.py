@@ -320,6 +320,92 @@ ROUNDS = {
         # 08_DSA.pact, the last AQP core module here and its immediate predecessor in load order.
         "extra": [("1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact", "08_DSA.pact")],
     },
+    "2026-11-v20-short-accounts": {
+        "why": "TWO CANONS, ONE ROUND -- StoicSyntax-Prefixes.md 7.22 and 7.23, both from owner "
+               "rulings on 2026-11-04, and the second is why the first could not be finished in "
+               "the core alone. "
+               "\n\n"
+               "7.22 -- NO CLIENT-FACING STRING CARRIES A FULL OURONET ACCOUNT. An account is ~60 "
+               "characters; it runs off the edge of every panel that renders it, and the failure "
+               "mode is not an error but an unreadable string. `IGNIS::OI|UC_ShortAccount` has "
+               "existed as long as the trees have and eighteen files used it; 59 sites across 11 "
+               "did not. "
+               "\n\n"
+               "7.23 -- A CORE `C_` DOES NOT COMPOSE THE RESULT STRING; TALOS DOES. Owner: 'the "
+               "core functions just supply the execution. Historically the talos module supplied "
+               "the end result string.' The precedent was already live in "
+               "`DALOS::C_ControlSmartAccount` + `TS01-C1`, and 598 of 622 sovereign core "
+               "entrypoints already followed it. Twelve did not, and the proof that this matters "
+               "is 7.22 itself: the account sweep had to edit CODEX -- a CORE module -- because "
+               "the sentence a user reads for a StoicTag registration was built there and the "
+               "Talos passed it through verbatim. "
+               "\n\n"
+               "THREE INTERFACES BUMP, AND THAT IS MOST OF THIS ROUND. A return type is part of "
+               "a signature, so dropping `:string` from ten core entrypoints forced "
+               "CodexV3->V4, PythiaV6->V7 and AcquisitionFarmsVaultsTreasuriesV5->V6, rebound "
+               "across 236 occurrences in 46 files. EIGHT of the twenty modules below contain no "
+               "edit of their own -- MTX-AQP, DSA, EVCT, DSP+ and the three AppReads ride the "
+               "cascade purely because a modref naming V5 cannot bind to a module implementing "
+               "V6. That is the trap `HOW-DEPLOY-ROUNDS-WORK.md` names, and the reason every "
+               "file is listed by hand below: `_livemodules.py --diff` compares SHAPES and most "
+               "of these changed only a version string. "
+               "\n\n"
+               "IT ALSO CARRIES V19, WHICH NEVER SHIPPED. `--diff` on 2026-11-04 still reported "
+               "AQP-VCT's `VACATE-MAX-NONCES` as DEPLOYED-only, so the vacate nonce-cap removal "
+               "was still on the repo side; sending this round without 06_VCT.pact would strand "
+               "it behind a newer one. `Deploy/PureV19/` stays as the record of a round prepared "
+               "and superseded before it went out. "
+               "\n\n"
+               "VERIFIED: gate green at 29,536 assertions (23,917 positive, 5,619 negative), "
+               "identical to the pre-change baseline, zero failures and zero broken suites.",
+        # NO INTERFACE PATTERN. The bumps are already applied in the sources, so an interface
+        # grep would match the NEW names everywhere and scope nothing. The list is explicit.
+        "interfaces": [],
+        "also": [
+            # -- 7.22, the account-shortening sweep ------------------------------------------
+            "1_SOVEREIGN/STAGE_01/Z_Reads/02_INFO-ONE+.pact",
+            "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
+            "2_CITIZEN/7_Launchpad/5_StoicIco/05_STOAICO.pact",
+            # -- 7.23, the core/Talos split (cores) ------------------------------------------
+            "1_SOVEREIGN/STAGE_01/2_Core/21_CODEX.pact",
+            "1_SOVEREIGN/STAGE_01/2_Core/22_PYTHIA.pact",
+            "1_SOVEREIGN/STAGE_02/2_Core/02_DEMIPAD/00_Demipad.pact",
+            "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/05_FVT.pact",
+            # -- 7.23, the Talos wrappers that now narrate -----------------------------------
+            "1_SOVEREIGN/STAGE_01/3_Talos/02_TS01-C1.pact",
+            "1_SOVEREIGN/STAGE_01/3_Talos/06_TS01-C4.pact",
+            "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
+            "1_SOVEREIGN/STAGE_02/3_Talos/05_TS02-DPAD.pact",
+            # -- the interface cascade: no edit of their own, rebound modrefs only -----------
+            "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/07_MTX-AQP.pact",
+            "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/08_DSA.pact",
+            "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/08b_EVCT.pact",
+            "2_CITIZEN/Stage_Z/03_DSP+.pact",
+            # -- V19's undeployed vacate nonce-cap removal, plus its own cascade -------------
+            "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/06_VCT.pact",
+            # -- in NO deploy chain; placed by `extra` below ---------------------------------
+            "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
+            "2_CITIZEN/Stage_Z/AppReads/OuronetUI/03_O-UI-THREE.pact",
+            "2_CITIZEN/Stage_Z/AppReads/OuronetUI/07_O-UI-SEVEN.pact",
+            "2_CITIZEN/Stage_Z/AppReads/Pythia/01_P-UI-ONE.pact",
+        ],
+        # FOUR MODULES ARE IN NO DEPLOY CHAIN, so `also` marks them as needing redeploy and then
+        # nothing emits them. The generator refuses to drop them silently -- "N module(s) MUST
+        # redeploy this round but are in NO deploy chain" -- which is the only reason the
+        # previous cut of this round was not shipped without `09_AQP-INFO.pact`, the file
+        # carrying 16 of the 59 account sites.
+        #
+        # AppReads load from `modules/APPREADS-OuronetUI.repl`, so no generated batch carries
+        # them; each is anchored after the module whose bumped interface it binds.
+        "extra": [
+            ("1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact", "04_TS02-C3.pact"),
+            ("2_CITIZEN/Stage_Z/AppReads/OuronetUI/03_O-UI-THREE.pact", "06_TS01-C4.pact"),
+            ("2_CITIZEN/Stage_Z/AppReads/OuronetUI/07_O-UI-SEVEN.pact", "06_TS01-C4.pact"),
+            ("2_CITIZEN/Stage_Z/AppReads/Pythia/01_P-UI-ONE.pact", "06_TS01-C4.pact"),
+        ],
+        # NO INIT. Nothing is created: no table, no registration, no function to call after.
+        "init": [],
+    },
     "2026-11-v19-vacate-nonce-cap": {
         "why": "THE FLAT NONCE CEILING COMES OFF THE VACATE BATCH. Owner, 2026-11-02: 'there "
                "should be no limit on nonce cap, we use whatever fits. This is decided by the UI "
@@ -1731,6 +1817,32 @@ DEPLOYABLE_RE = re.compile(r'^\((interface|module)\s+([A-Za-z0-9|_\-\.]+)', re.M
 # correct answer, and it is not "skip it".
 LIVE_INTERFACES = {
     "AgeOfZalmoxis": "a7345a4600ed8d83367a54714bab362d",   # unchanged since 21fa54f
+
+    # BULK ADD 2026-11-04, for the 7.22 + 7.23 round (PureV20). Same shape as the PureV10 add
+    # above and found the same way -- a live sequential simulation, not this repo's gate. The
+    # gate builds a chain FROM SCRATCH, where declaring any of these for the first time is fine;
+    # only a replay against live state can see "this is already there". The round stopped at
+    # transaction 01 on `PythiaLedgerV4`.
+    #
+    # WHY SO MANY AT ONCE: 7.23 bumped three interfaces (CodexV3->V4, PythiaV6->V7,
+    # AcquisitionFarmsVaultsTreasuriesV5->V6), and a bump drags the whole FILE into the round --
+    # including every unrelated interface that happens to be co-hosted in it, plus the files of
+    # eight cascade-only modules that changed nothing but a modref. Nine already-live interfaces
+    # came along for the ride.
+    #
+    # EVERY ONE WAS CONFIRMED AGAINST THE CHAIN, not against the repo and not against git:
+    # `(at "code" (describe-module "ouronet-ns.<name>"))` for each, compared whitespace-
+    # normalised to the block in the tree. All nine matched exactly, which is the only thing
+    # that makes a skip safe -- see the fatal path in `strip_live_interfaces`.
+    "PythiaLedgerV4":              "b6fdf14ee1a830c3038e4e863c004799",
+    "TalosStageOne_ClientOneV3":   "2af24c22b97880a279653c3284f4759a",
+    "TalosStageOne_ClientFourV9":  "b92f76bedd0a320b2ed327afe55f585e",
+    "DemiourgosLaunchpadV3":       "b06f0d80a4f2186cde9a8047bed4a7f2",
+    "AcquisitionRewardEvictionV1": "39c4e092c557454d60b6618e0cc4c802",
+    "TalosStageTwo_ClientThreeV7": "64ee31658d2ed73e92ca7114f7663cae",
+    "TalosStageTwo_DemiPadV4":     "fd97ce9e8d5fc57d0e5e090d9aca0021",
+    "InfoTwoV3":                   "fff307a398a819eb635103b86a6ed1e0",
+    "OUiThreeV2":                  "f8595634fbb34a3950f6f0e3c5c5b587",
 
     # BULK ADD 2026-10-12, found by the interface-membership sweep's PureV10 round the hard way
     # -- a real wallet simulation against mainnet, not this repo's own gate (which builds a

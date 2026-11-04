@@ -2,17 +2,16 @@
 ;; OURONET DEPLOY -- file 14 of 26
 ;; This is STEP 14 of 27 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-13 must have run first, including the init steps between deploys.
-;; 3 source file(s), 272,450 gas measured in the REPL gas model, 285,786 bytes
+;; 3 source file(s), 272,450 gas measured in the REPL gas model, 284,889 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/02_DEMIPAD/00_Demipad.pact
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/00_AQP-SCHEMAS.pact
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/01_ANK.pact
 ;;
-;; TOTAL: 3 interface(s), 2 module(s), 12 table(s)
+;; TOTAL: 2 interface(s), 2 module(s), 12 table(s)
 ;; What it DEPLOYS, in load order:
 ;;   -- 1_SOVEREIGN/STAGE_02/2_Core/02_DEMIPAD/00_Demipad.pact
-;;      interface  DemiourgosLaunchpadV3
 ;;      module     DEMIPAD
 ;;      table      P|T
 ;;      table      P|MT
@@ -40,218 +39,8 @@
 
 ;; ===== 1_SOVEREIGN/STAGE_02/2_Core/02_DEMIPAD/00_Demipad.pact ======
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface DemiourgosLaunchpadV3
-    @doc "Sovereign interface defining the API for the DemiPad launchpad, a permissioned \
-        \ venue where Demiourgos.Holdings sells assets (true/orto/semi/non-fungibles) for \
-        \ WSTOA, SSTOA or OURO while retaining a decreasing royalty fee. It declares schemas \
-        \ for Costs, launchpad Properties, per-asset Holdings, Prices and RoyaltyInterval, \
-        \ plus constructors, compute helpers (royalty intervals, deposit royalty, \
-        \ environment split), and readers for launchpad and asset state. It also exposes \
-        \ acquire/price computation, IGNIS cost-preview deposit/transmit functions, \
-        \ fungibility validators, owner capabilities, admin operations (register asset, \
-        \ toggle sale/retrieval, define price), and client deposit/withdraw/transmit \
-        \ entrypoints."
+;; DemiourgosLaunchpadV3: already deployed and unchanged -- see LIVE_INTERFACES
 
-    ;;<=========================================================================>
-    ;;{1}  GOVERNANCE
-    ;;{G1}  constants
-    ;;{G2}  schemas
-    ;;{G3}  tables  ⟨cannot exist in an interface⟩
-    ;;{G4}  capabilities
-    ;;{G5}  functions
-    ;;
-    (defun GOV|DEMIPAD|SC_NAME ())
-
-    ;;<=========================================================================>
-    ;;{2}  POLICY
-    ;;{P1}  constants
-    ;;{P2}  schemas
-    ;;{P3}  tables  ⟨cannot exist in an interface⟩
-    ;;{P4}  capabilities
-    ;;{P5}  functions
-
-    ;;<=========================================================================>
-    ;;{3}  CST
-    ;;{3.1}  constants
-    ;;{3.2}  schemas
-    ;;
-    ;;  [Schemas]
-    ;;
-    (defschema Costs
-        pid:decimal
-        wstoa:decimal
-    )
-    ;;
-    (defschema DEMIPAD|Properties
-        direct-injection:bool
-        resident-wstoa:decimal
-        resident-sstoa:decimal
-        resident-ouro:decimal
-    )
-    (defschema DEMIPAD|Holdings
-        total-dollarz-raised:decimal
-        total-wstoa-raised:decimal
-        total-sstoa-raised:decimal
-        total-ouro-raised:decimal
-        funds-wstoa:decimal
-        funds-sstoa:decimal
-        funds-ouro:decimal
-        ;;
-        iz-sstoa:bool
-        iz-ouro:bool
-        ;;
-        fungibility:[bool]
-        open-for-business:bool
-        price:object
-        retrieval:bool
-    )
-    (defschema DEMIPAD|Prices
-        receiver-one:string
-        receiver-two:string
-        receiver-three:string
-        receiver-four:string
-        amount-one:decimal
-        amount-two:decimal
-        amount-three:decimal
-        amount-four:decimal
-        enviroment-amount:decimal
-        coding-amount:decimal
-        remainder-amount:decimal
-    )
-    (defschema RoyaltyInterval
-        "Schema for fee intervals"
-        start:decimal
-        end:decimal
-        fee-promille:decimal
-    )
-    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
-
-    ;;<=========================================================================>
-    ;;{4}  CAPABILITIES
-    ;;{C1}  Trivial [bronze]
-    ;;{C2}  Simple
-    ;;{C3}  Composed
-    ;;{C4}  Ownership [gold]
-
-    ;;<=========================================================================>
-    ;;{5}  FUNCTIONS
-    ;;{5.1}  Construct [CT/UDC]
-    ;;
-    ;;  [UDC]
-    ;;
-    (defun UDC_Costs:object{Costs} (a:decimal b:decimal))
-    (defun UDC_DEMIPAD|Holdings:object{DEMIPAD|Holdings}
-        (
-            a:decimal b:decimal c:decimal d:decimal
-            e:decimal f:decimal g:decimal
-            h:bool i:bool
-            j:[bool] k:bool l:object m:bool
-        )
-    )
-    (defun UDC_LaunchpadPrices:object{DEMIPAD|Prices}
-        (
-            a:string b:string c:string d:string
-            e:decimal f:decimal g:decimal h:decimal
-            j:decimal k:decimal l:decimal
-        )
-    )
-    ;;{5.2}  Compute [UC]
-    ;;
-    ;;
-    (defun UC_Type:string (asset-id:string fungibility:[bool]))
-    (defun UC_GenerateRoyaltyIntervals:[object{RoyaltyInterval}] ())
-    (defun UCv_ComputeDepositRoyalty:decimal (current-balance:decimal deposit-amount:decimal))
-    (defun UC_LaunchpadEnviromentSplit:[decimal] (amount-in-stoa:decimal))
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    ;;
-    ;;  [UR]
-    ;;
-    (defun UR_LaunchpadState:object{DEMIPAD|Properties} ())
-    (defun UR_DirectInjection:bool ())
-    (defun UR_WSTOA:decimal ())
-    (defun UR_SSTOA:decimal ())
-    (defun UR_OURO:decimal ())
-        ;;
-    (defun UR_AssetState:object{DEMIPAD|Holdings} (asset-id:string))
-    (defun UR_TotalDollarzRaised:decimal (asset-id:string))
-    (defun UR_TotalWSTOARaised:decimal (asset-id:string))
-    (defun UR_TotalSSTOARaised:decimal (asset-id:string))
-    (defun UR_TotalOURORaised:decimal (asset-id:string))
-    (defun UR_WSTOA|Funds:decimal (asset-id:string))
-    (defun UR_SSTOA|Funds:decimal (asset-id:string))
-    (defun UR_OURO|Funds:decimal (asset-id:string))
-        ;;
-    (defun UR_IzSSTOA:bool (asset-id:string))
-    (defun UR_IzOURO:bool (asset-id:string))
-    (defun UR_Fungibility:[bool] (asset-id:string))
-    (defun UR_OpenForBusiness:bool (asset-id:string))
-    (defun UR_Price:object (asset-id:string))
-    (defun UR_Retrieval:bool (asset-id:string))
-    (defun UR_CheckRegistration:bool (asset-id:string))
-    ;;
-    ;;  [URC]
-    ;;
-    (defun URC_Prices:object{DEMIPAD|Prices} (asset-id:string amount-in-dollars:decimal type:integer))
-    (defun URC_Acquire:[string] (buyer:string asset-id:string buy-amount-in-dollarz:decimal type:integer slippage:decimal))
-    (defun URCi_Deposit:object{IgnisCollectorV4.OutputCumulator}
-        (donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool)
-    )
-    (defun URCi_TransmitSemiFungibles:object{IgnisCollectorV4.OutputCumulator}
-        (client:string asset-id:string nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
-    )
-    (defun URCi_TransmitNonFungibles:object{IgnisCollectorV4.OutputCumulator}
-        (client:string asset-id:string nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
-    )
-    ;;{5.4}  Validate [UEV/CAP]
-    (defun CAP_Acquire (buyer:string asset-id:string buy-amount-in-dollarz:decimal type:integer))
-    ;;
-    ;;  [UEV]
-    ;;
-    (defun UEV_AssetFungibility (asset-id:string fungibility-to-check:[bool]))
-    (defun UEV_Fungibility (fungibility:[bool]))
-    ;;
-    ;;  [CAP]
-    ;;
-    (defun CAP_Owner (asset-id:string))
-    ;;{5.5}  Write [W]
-    ;;{5.6}  Aux/X
-    ;;{5.7}  User [A/C]
-    ;;
-    ;;  [A]
-    ;;
-    (defun A_RegisterAssetToLaunchpad (patron:string executor:string asset-id:string fungibility:[bool]))
-    (defun A_ToggleOpenForBusiness (patron:string executor:string asset-id:string toggle:bool))
-    (defun A_DefinePrice (patron:string executor:string asset-id:string price:object))
-    (defun A_ToggleRetrieval (patron:string executor:string asset-id:string toggle:bool))
-    ;;
-    ;;  [C]
-    ;;
-    (defun C_Deposit:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string executor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool max-cost:decimal)
-    )
-    (defun C_Withdraw (patron:string executor:string asset-id:string type:integer destination:string)
-    )
-    ;;
-    (defun C_TransmitTrueFungible (patron:string executor:string asset-id:string amount:decimal fuel-or-retrieve:bool))
-    (defun C_TransmitOrtoFungible (patron:string executor:string asset-id:string nonces:[integer] fuel-or-retrieve:bool))
-    (defun C_TransmitSemiFungibles:object{IgnisCollectorV4.OutputCumulator} 
-        (patron:string executor:string asset-id:string nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
-    )
-    (defun C_TransmitNonFungibles:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string executor:string asset-id:string nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
-    )
-
-
-    ;;<=========================================================================>
-    ;; ADDED 2026-10-12 -- interface-membership sweep (StoicSyntax-Prefixes.md Sec5,
-    ;; owner ruling). Every one of these was already live in the module body; this
-    ;; closes the gap between what the module DOES and what its interface SAYS it does.
-    ;;<=========================================================================>
-    (defun UC_SlippageFactor:decimal (slippage:decimal))
-    (defun UEV_DepositDollarAmount (amount-in-dollars:decimal))
-    (defun UEV_DirectInjection (direct-injection:bool))
-    (defun UEV_SlippageCost (amount-in-dollars:decimal max-cost:decimal))
-)
 (module DEMIPAD GOV
     @doc "Demiourgos Launchpad, is a permissioned Launchpad operated by Demiourgos.Holdings  \
         \ allowing the Company to sell Assets (DPTFs, DPMFs, DPSFs and DPNFs) \
@@ -1510,10 +1299,8 @@
         (require-capability (SECURE))
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 (ref-DPDC-T:module{DpdcTransferV3} DPDC-T)
                 (lpad:string DEMIPAD|SC_NAME)
-                (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount executor))
             )
             ;;#7M: open the capability matching the collectable KIND (son true = Semi-Fungible [false true],
             ;;     false = Non-Fungible [false false]). Previously both branches hardcoded the SEMI cap, so a
@@ -1793,19 +1580,15 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
                 (lpad:string DEMIPAD|SC_NAME)
-                (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount executor))
             )
             (if fuel-or-retrieve
                 (with-capability (DEMIPAD|C>FUEL-TRUE-FUNGIBLE asset-id)
                     (ref-TS01-C1::DPTF|C_Transfer patron executor lpad asset-id amount true)
-                    (format "Succesfuly fueled {} {} to Demiourgos Launchpad from Account {}" [amount asset-id sa-s])
                 )
                 (with-capability (DEMIPAD|C>RETRIEVE-TRUE-FUNGIBLE asset-id)
                     (ref-TS01-C1::DPTF|C_Transfer patron lpad executor asset-id amount true)
-                    (format "Succesfuly retrieved {} {} from Demiourgos Launchpad to Account {}" [amount asset-id sa-s])
                 )
             )
         )
@@ -1823,19 +1606,15 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
                 (lpad:string DEMIPAD|SC_NAME)
-                (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount executor))
             )
             (if fuel-or-retrieve
                 (with-capability (DEMIPAD|C>FUEL-ORTO-FUNGIBLE asset-id)
                     (ref-TS01-C1::DPOF|C_Transfer patron executor lpad asset-id nonces true)
-                    (format "Succesfuly fueled {} Nonces {} to Demiourgos Launchpad from Account {}" [asset-id nonces sa-s])
                 )
                 (with-capability (DEMIPAD|C>RETRIEVE-ORTO-FUNGIBLE asset-id)
                     (ref-TS01-C1::DPOF|C_Transfer patron lpad executor asset-id nonces true)
-                    (format "Succesfuly retrieved {} Nonces {} from Demiourgos Launchpad to Account {}" [asset-id nonces sa-s])
                 )
             )
         )

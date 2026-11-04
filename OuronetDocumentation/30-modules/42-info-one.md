@@ -25,8 +25,8 @@ before you send it.
 
 | | |
 |---|---|
-| module hash | `y8Q2uk388iLIKuTO5YNAdULrJXYmYyJjNqT_mzcfhjo` |
-| deployed size | 222,145 characters |
+| module hash | `xKiO-RN1AhAAmO8_XmaHWup4JV_BfYCPns-rbuHU3N8` |
+| deployed size | 222,649 characters |
 | implements | `InfoOneV3` |
 | repository source | `1_SOVEREIGN/STAGE_01/Z_Reads/02_INFO-ONE+.pact` |
 

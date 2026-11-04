@@ -39,7 +39,7 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV6} AQP-FVT)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (patron:string KST.ANHD)
     )
@@ -71,7 +71,7 @@
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV6} AQP-FVT)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (patron:string KST.ANHD)
     )
@@ -1947,7 +1947,7 @@
 (let*
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV6} AQP-FVT)
         (ref-RPS:module{AcquisitionRewardPerShareV5} RPS)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (ouro:string (ref-U|DALOS::UDC_Makeid "OURO"))
@@ -3777,7 +3777,7 @@
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV6} AQP-FVT)
         (ref-U|CT:module{OuronetConstantsV2} U|CT)
     )
     (let

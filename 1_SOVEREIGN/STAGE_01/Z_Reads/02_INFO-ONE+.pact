@@ -1927,8 +1927,8 @@
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_RepurposeTrueFungible dptf-to-repurpose repurpose-from repurpose-to)))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
-                [(format "Operation: Repurposes Frozen {} from {} to {}" [dptf-to-repurpose repurpose-from repurpose-to])]
-                [(format "Frozen {} repurposed from {} to {} succesfully" [dptf-to-repurpose repurpose-from repurpose-to])]
+                [(format "Operation: Repurposes Frozen {} from {} to {}" [dptf-to-repurpose repurpose-from (ref-I|OURONET::OI|UC_ShortAccount repurpose-to)])]
+                [(format "Frozen {} repurposed from {} to {} succesfully" [dptf-to-repurpose repurpose-from (ref-I|OURONET::OI|UC_ShortAccount repurpose-to)])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
@@ -1995,8 +1995,8 @@
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_RepurposeTrueFungible dptf-to-repurpose repurpose-from repurpose-to)))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
-                [(format "Operation: Repurposes Reserved {} from {} to {}" [dptf-to-repurpose repurpose-from repurpose-to])]
-                [(format "Reserved {} repurposed from {} to {} succesfully" [dptf-to-repurpose repurpose-from repurpose-to])]
+                [(format "Operation: Repurposes Reserved {} from {} to {}" [dptf-to-repurpose repurpose-from (ref-I|OURONET::OI|UC_ShortAccount repurpose-to)])]
+                [(format "Reserved {} repurposed from {} to {} succesfully" [dptf-to-repurpose repurpose-from (ref-I|OURONET::OI|UC_ShortAccount repurpose-to)])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
@@ -2062,8 +2062,8 @@
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_RepurposeOrtoFungible dpof-to-repurpose nonce repurpose-from repurpose-to)))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
-                [(format "Operation: Repurposes Vested {} Nonce {} from {} to {}" [dpof-to-repurpose nonce repurpose-from repurpose-to])]
-                [(format "Vested {} Nonce {} repurposed from {} to {} succesfully" [dpof-to-repurpose nonce repurpose-from repurpose-to])]
+                [(format "Operation: Repurposes Vested {} Nonce {} from {} to {}" [dpof-to-repurpose nonce repurpose-from (ref-I|OURONET::OI|UC_ShortAccount repurpose-to)])]
+                [(format "Vested {} Nonce {} repurposed from {} to {} succesfully" [dpof-to-repurpose nonce repurpose-from (ref-I|OURONET::OI|UC_ShortAccount repurpose-to)])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
@@ -2129,8 +2129,8 @@
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_MergeNonces dpof-to-repurpose repurpose-to nonces 2)))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
-                [(format "Operation: Repurposes-merges Sleeping {} Nonces {} from {} to {}" [dpof-to-repurpose nonces repurpose-from repurpose-to])]
-                [(format "Sleeping {} Nonces {} repurpose-merged from {} to {} succesfully" [dpof-to-repurpose nonces repurpose-from repurpose-to])]
+                [(format "Operation: Repurposes-merges Sleeping {} Nonces {} from {} to {}" [dpof-to-repurpose nonces repurpose-from (ref-I|OURONET::OI|UC_ShortAccount repurpose-to)])]
+                [(format "Sleeping {} Nonces {} repurpose-merged from {} to {} succesfully" [dpof-to-repurpose nonces repurpose-from (ref-I|OURONET::OI|UC_ShortAccount repurpose-to)])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
@@ -2145,8 +2145,8 @@
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_RepurposeOrtoFungible dpof-to-repurpose nonce repurpose-from repurpose-to)))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
-                [(format "Operation: Repurposes Sleeping {} Nonce {} from {} to {}" [dpof-to-repurpose nonce repurpose-from repurpose-to])]
-                [(format "Sleeping {} Nonce {} repurposed from {} to {} succesfully" [dpof-to-repurpose nonce repurpose-from repurpose-to])]
+                [(format "Operation: Repurposes Sleeping {} Nonce {} from {} to {}" [dpof-to-repurpose nonce repurpose-from (ref-I|OURONET::OI|UC_ShortAccount repurpose-to)])]
+                [(format "Sleeping {} Nonce {} repurposed from {} to {} succesfully" [dpof-to-repurpose nonce repurpose-from (ref-I|OURONET::OI|UC_ShortAccount repurpose-to)])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
@@ -2179,8 +2179,8 @@
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_MergeNonces dpof-to-repurpose repurpose-to nonces 3)))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
-                [(format "Operation: Repurposes-slumbers Hibernating {} Nonces {} from {} to {}" [dpof-to-repurpose nonces repurpose-from repurpose-to])]
-                [(format "Hibernating {} Nonces {} repurpose-slumbered from {} to {} succesfully" [dpof-to-repurpose nonces repurpose-from repurpose-to])]
+                [(format "Operation: Repurposes-slumbers Hibernating {} Nonces {} from {} to {}" [dpof-to-repurpose nonces repurpose-from (ref-I|OURONET::OI|UC_ShortAccount repurpose-to)])]
+                [(format "Hibernating {} Nonces {} repurpose-slumbered from {} to {} succesfully" [dpof-to-repurpose nonces repurpose-from (ref-I|OURONET::OI|UC_ShortAccount repurpose-to)])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
@@ -2195,8 +2195,8 @@
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_RepurposeOrtoFungible dpof-to-repurpose nonce repurpose-from repurpose-to)))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
-                [(format "Operation: Repurposes Hibernating {} Nonce {} from {} to {}" [dpof-to-repurpose nonce repurpose-from repurpose-to])]
-                [(format "Hibernating {} Nonce {} repurposed from {} to {} succesfully" [dpof-to-repurpose nonce repurpose-from repurpose-to])]
+                [(format "Operation: Repurposes Hibernating {} Nonce {} from {} to {}" [dpof-to-repurpose nonce repurpose-from (ref-I|OURONET::OI|UC_ShortAccount repurpose-to)])]
+                [(format "Hibernating {} Nonce {} repurposed from {} to {} succesfully" [dpof-to-repurpose nonce repurpose-from (ref-I|OURONET::OI|UC_ShortAccount repurpose-to)])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []

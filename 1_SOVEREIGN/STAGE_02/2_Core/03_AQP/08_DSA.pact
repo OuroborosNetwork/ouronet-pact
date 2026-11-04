@@ -832,7 +832,7 @@
         (with-capability (DSA|C>SET-ORACLE-AUTH patron executor fvt-id)
             (let
                 (
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV6} AQP-FVT)
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )

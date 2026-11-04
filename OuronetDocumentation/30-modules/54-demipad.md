@@ -19,8 +19,8 @@ A Stage-2 core. Five citizen sales compose it; none can reach inside it.
 
 | | |
 |---|---|
-| module hash | `4p2dEKWQf3dbHYK4obWtS3dL04AOv9YULXFLuJfWUIw` |
-| deployed size | 80,440 characters |
+| module hash | `dPGHcgg7oqt5wRZp3p16PhiCN1ZwVrUSncsQNHsC5fY` |
+| deployed size | 79,543 characters |
 | implements | `OuronetPolicyV2`, `DemiourgosLaunchpadV3` |
 | repository source | `1_SOVEREIGN/STAGE_02/2_Core/02_DEMIPAD/00_Demipad.pact` |
 

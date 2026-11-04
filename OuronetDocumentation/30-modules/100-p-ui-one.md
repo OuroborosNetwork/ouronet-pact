@@ -19,7 +19,7 @@ _To be written._
 
 | | |
 |---|---|
-| module hash | `W-vfCUWpUCFDmxziY4Csi1DXEhn0u_IvOw-CMavRijA` |
+| module hash | `Z8sRTA24lmnoqcH2yhkny0c-hxMmvbl2eKnlkuLJZTU` |
 | deployed size | 3,121 characters |
 | implements | `PUiOneV1` |
 | repository source | `2_CITIZEN/Stage_Z/AppReads/Pythia/01_P-UI-ONE.pact` |

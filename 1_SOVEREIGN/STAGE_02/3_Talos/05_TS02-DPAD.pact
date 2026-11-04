@@ -461,8 +461,11 @@
             (let
                 (
                     (ref-DEMIPAD:module{DemiourgosLaunchpadV3} DEMIPAD)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-DEMIPAD::C_TransmitTrueFungible patron executor asset-id amount true)
+                (format "Succesfuly fueled {} {} to Demiourgos Launchpad from Account {}" [amount asset-id sa-s])
             )
         )
     )
@@ -471,8 +474,11 @@
             (let
                 (
                     (ref-DEMIPAD:module{DemiourgosLaunchpadV3} DEMIPAD)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-DEMIPAD::C_TransmitOrtoFungible patron executor asset-id nonces true)
+                (format "Succesfuly fueled {} Nonces {} to Demiourgos Launchpad from Account {}" [asset-id nonces sa-s])
             )
         )
     )
@@ -514,8 +520,11 @@
             (let
                 (
                     (ref-DEMIPAD:module{DemiourgosLaunchpadV3} DEMIPAD)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-DEMIPAD::C_TransmitTrueFungible patron executor asset-id amount false)
+                (format "Succesfuly retrieved {} {} from Demiourgos Launchpad to Account {}" [amount asset-id sa-s])
             )
         )
     )
@@ -524,8 +533,11 @@
             (let
                 (
                     (ref-DEMIPAD:module{DemiourgosLaunchpadV3} DEMIPAD)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                    (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-DEMIPAD::C_TransmitOrtoFungible patron executor asset-id nonces false)
+                (format "Succesfuly retrieved {} Nonces {} from Demiourgos Launchpad to Account {}" [asset-id nonces sa-s])
             )
         )
     )

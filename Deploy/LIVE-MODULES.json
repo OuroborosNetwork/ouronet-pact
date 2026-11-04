@@ -371,7 +371,7 @@
   },
   "AQP-DSA": {
    "deployed": true,
-   "hash": "f4lzzz3lITkCngmdcfb5_1RHYQTA9QqZsXaQd0TLce4",
+   "hash": "cGIyFvoEAtta2RhEfSTEEBeQBfXVe_se0TbPjdS_Imk",
    "repoPath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/08_DSA.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
@@ -492,13 +492,13 @@
   },
   "AQP-FVT": {
    "deployed": true,
-   "hash": "MnKmzLilkk4DBYIzQOfxxZuvkKtqGQizRCy5kfah1BI",
+   "hash": "xBCNcNc3qpOhv1M3qPHYlLNWGVCtPyK5GcxFHvKcIM8",
    "repoPath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/05_FVT.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.AcquisitionFarmsVaultsTreasuriesV5"
+    "ouronet-ns.AcquisitionFarmsVaultsTreasuriesV6"
    ],
-   "chars": 295540,
+   "chars": 295551,
    "shapes": {
     "schemas": [],
     "tables": [
@@ -778,10 +778,10 @@
   },
   "AQP-INFO": {
    "deployed": true,
-   "hash": "luq9ofjbxr57tQp-Z9InjZrDJcvOWgTs_eeOhQwSRAQ",
+   "hash": "GKPJi2LlS5XtmPt4oz6iSfru1rlalooqIjUwHkg_6Tk",
    "repoPath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
    "interfaces": [],
-   "chars": 126318,
+   "chars": 127002,
    "shapes": {
     "schemas": [],
     "tables": [],
@@ -1573,13 +1573,13 @@
   },
   "AQP-VCT": {
    "deployed": true,
-   "hash": "iSA7x7dYOR8_ZW4RK7JpP6q11YMxVemszOx-Jctmgm4",
+   "hash": "v-PzvoVx9edaYokmafdR2ejeaIwicQQJHbQOYFY4G1c",
    "repoPath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/06_VCT.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
     "ouronet-ns.AcquisitionVacateV4"
    ],
-   "chars": 180652,
+   "chars": 180751,
    "shapes": {
     "schemas": [],
     "tables": [
@@ -1673,7 +1673,6 @@
      "URC_PoolFullyVacated",
      "URC_ResolveOfDecimalAmountsFromTracker",
      "URC_TfOwnerArraysGasOk",
-     "URC_VacateBatchNonceTotalOk",
      "URC_VacateCollectableLegBeneficiaryOk",
      "URC_VacateCollectableLegsOk",
      "URC_VacateCollectableNoncesSufficient",
@@ -1765,8 +1764,7 @@
      "VACATE-KIND-DPNF",
      "VACATE-KIND-DPSF",
      "VACATE-KIND-OF",
-     "VACATE-KIND-TF",
-     "VACATE-MAX-NONCES"
+     "VACATE-KIND-TF"
     ]
    }
   },
@@ -2694,13 +2692,13 @@
   },
   "CODEX": {
    "deployed": true,
-   "hash": "5d_8vAslezaPrY5OipSztCkUt_yhBjOJMdZvYpuRSwA",
+   "hash": "___Rk6k-2dOouWAjCqNPEs-GalvY4jsY8bqTNdQik80",
    "repoPath": "1_SOVEREIGN/STAGE_01/2_Core/21_CODEX.pact",
    "interfaces": [
-    "ouronet-ns.CodexV3",
+    "ouronet-ns.CodexV4",
     "ouronet-ns.OuronetPolicyV2"
    ],
-   "chars": 47794,
+   "chars": 47550,
    "shapes": {
     "schemas": [
      "CODEX|S|ArweaveTracker",
@@ -3059,13 +3057,13 @@
   },
   "DEMIPAD": {
    "deployed": true,
-   "hash": "4p2dEKWQf3dbHYK4obWtS3dL04AOv9YULXFLuJfWUIw",
+   "hash": "dPGHcgg7oqt5wRZp3p16PhiCN1ZwVrUSncsQNHsC5fY",
    "repoPath": "1_SOVEREIGN/STAGE_02/2_Core/02_DEMIPAD/00_Demipad.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
     "ouronet-ns.DemiourgosLaunchpadV3"
    ],
-   "chars": 80440,
+   "chars": 79543,
    "shapes": {
     "schemas": [],
     "tables": [
@@ -5041,7 +5039,7 @@
   },
   "DSP": {
    "deployed": true,
-   "hash": "K6oNMHvaCUe0vT98N8VqAn4AqE2eOoKLVwVqK25VG5c",
+   "hash": "90WdpH3ByuV5n1CDGD76z4XY79Gh4LFwzpHYlxS5QXQ",
    "repoPath": "2_CITIZEN/Stage_Z/03_DSP+.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
@@ -5412,12 +5410,12 @@
   },
   "INFO-ONE": {
    "deployed": true,
-   "hash": "y8Q2uk388iLIKuTO5YNAdULrJXYmYyJjNqT_mzcfhjo",
+   "hash": "xKiO-RN1AhAAmO8_XmaHWup4JV_BfYCPns-rbuHU3N8",
    "repoPath": "1_SOVEREIGN/STAGE_01/Z_Reads/02_INFO-ONE+.pact",
    "interfaces": [
     "ouronet-ns.InfoOneV3"
    ],
-   "chars": 222145,
+   "chars": 222649,
    "shapes": {
     "schemas": [
      "HibernatedNoncesView"
@@ -5629,10 +5627,10 @@
   },
   "INFO-TWO": {
    "deployed": true,
-   "hash": "mAD0_Y1lNxBBOJNzgAjDFsWUS-2tAjCC7PXYNdNh5a8",
+   "hash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA",
    "repoPath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
    "interfaces": [],
-   "chars": 73464,
+   "chars": 73980,
    "shapes": {
     "schemas": [],
     "tables": [],
@@ -5958,7 +5956,7 @@
   },
   "MTX-AQP": {
    "deployed": true,
-   "hash": "MCqrImh8JViLo4a59oH6xnRIA5VbmD62oU4D9u07rXk",
+   "hash": "zAMqF8hif8cS1FAy_8pkJ-zTlxpFhkiJqGCTmGVanec",
    "repoPath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/07_MTX-AQP.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
@@ -6302,7 +6300,7 @@
   },
   "O-UI-SEVEN": {
    "deployed": true,
-   "hash": "FTCq4Dx6tfEbGQ3oGtP9GmDrAa8GqxfFZXQKK72-Diw",
+   "hash": "scaQ2S7eg3xyOT8roSCceDVOJA8su_9QG2T3XxeeZrQ",
    "repoPath": "2_CITIZEN/Stage_Z/AppReads/OuronetUI/07_O-UI-SEVEN.pact",
    "interfaces": [
     "ouronet-ns.OUiSevenV1"
@@ -6368,12 +6366,12 @@
   },
   "O-UI-THREE": {
    "deployed": true,
-   "hash": "Ynxy2t2NLw-Ay188xHOaiNrq5JD0VBoH61kxQtBJU5w",
+   "hash": "fwh6AB56A3hN76CnSHY8C4zKNb3t7m7-jcpbENGMJ-M",
    "repoPath": "2_CITIZEN/Stage_Z/AppReads/OuronetUI/03_O-UI-THREE.pact",
    "interfaces": [
     "ouronet-ns.OUiThreeV2"
    ],
-   "chars": 29942,
+   "chars": 30431,
    "shapes": {
     "schemas": [],
     "tables": [],
@@ -6571,7 +6569,7 @@
   },
   "P-UI-ONE": {
    "deployed": true,
-   "hash": "W-vfCUWpUCFDmxziY4Csi1DXEhn0u_IvOw-CMavRijA",
+   "hash": "Z8sRTA24lmnoqcH2yhkny0c-hxMmvbl2eKnlkuLJZTU",
    "repoPath": "2_CITIZEN/Stage_Z/AppReads/Pythia/01_P-UI-ONE.pact",
    "interfaces": [
     "ouronet-ns.PUiOneV1"
@@ -6598,14 +6596,14 @@
   },
   "PYTHIA": {
    "deployed": true,
-   "hash": "g-JkSLqwUMhh7vVwN5LXk61NWq1uD91-nHg5zrXXNEo",
+   "hash": "V4BkscIo_PeZUFJNypqpIMWR6KLxSU91U7u5q5HP8GU",
    "repoPath": "1_SOVEREIGN/STAGE_01/2_Core/22_PYTHIA.pact",
    "interfaces": [
-    "ouronet-ns.PythiaV6",
+    "ouronet-ns.PythiaV7",
     "ouronet-ns.PythiaLedgerV4",
     "ouronet-ns.OuronetPolicyV2"
    ],
-   "chars": 75563,
+   "chars": 75194,
    "shapes": {
     "schemas": [
      "PYTHIA|S|ApiKey",
@@ -7186,12 +7184,12 @@
   },
   "STOAICO": {
    "deployed": true,
-   "hash": "LZAEoYS_jv-A8SWs55JZLFjvbpfcH75EBEYK4nafSuU",
+   "hash": "8B_4Vp57wJI-PG0-cpJ4M2gRpBWHSIuYHl3s7PEP6lE",
    "repoPath": "2_CITIZEN/7_Launchpad/5_StoicIco/05_STOAICO.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2"
    ],
-   "chars": 55655,
+   "chars": 55755,
    "shapes": {
     "schemas": [
      "GeneralContributionSchema",
@@ -8214,13 +8212,13 @@
   },
   "TS01-C1": {
    "deployed": true,
-   "hash": "JhIkrK4xMNO9RPRHwv0u5qOCO59aoKvUpsfI8KGI_yA",
+   "hash": "h1tPDJgplsUYgNFIfJc9TH4C2xUKGLiR4XuBJWjO9Xo",
    "repoPath": "1_SOVEREIGN/STAGE_01/3_Talos/02_TS01-C1.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
     "ouronet-ns.TalosStageOne_ClientOneV3"
    ],
-   "chars": 73201,
+   "chars": 74137,
    "shapes": {
     "schemas": [],
     "tables": [
@@ -8515,13 +8513,13 @@
   },
   "TS01-C4": {
    "deployed": true,
-   "hash": "XnyJhJ0-uGtDvc9-eruTPI_IIxkpRQjA3JcJBkL2UxE",
+   "hash": "QKd0Sc5-sZ6aMes9LmL_P4NGbhC3Qsz8RuBKoEDWWEE",
    "repoPath": "1_SOVEREIGN/STAGE_01/3_Talos/06_TS01-C4.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
     "ouronet-ns.TalosStageOne_ClientFourV9"
    ],
-   "chars": 18324,
+   "chars": 18712,
    "shapes": {
     "schemas": [],
     "tables": [
@@ -8831,13 +8829,13 @@
   },
   "TS02-C3": {
    "deployed": true,
-   "hash": "D1Ufcyd0fZuKFdH-QrB1RdKljdf7j0pfaGV7YRUkMng",
+   "hash": "sMKqr_tIA1-GMyY3Ndf0vPULffjLSMs26udGhO-ibz8",
    "repoPath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
     "ouronet-ns.TalosStageTwo_ClientThreeV7"
    ],
-   "chars": 170380,
+   "chars": 172777,
    "shapes": {
     "schemas": [],
     "tables": [
@@ -9071,13 +9069,13 @@
   },
   "TS02-DPAD": {
    "deployed": true,
-   "hash": "rVKjURldVF5tGuZhJF3zhyUJlbSeg-YQkts4E0tTT8E",
+   "hash": "ntOP318GcIvs72BxlhJ6XjmMbhnvXdMVRJBu_M-3lh0",
    "repoPath": "1_SOVEREIGN/STAGE_02/3_Talos/05_TS02-DPAD.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
     "ouronet-ns.TalosStageTwo_DemiPadV4"
    ],
-   "chars": 22210,
+   "chars": 23258,
    "shapes": {
     "schemas": [],
     "tables": [
@@ -9911,7 +9909,7 @@
   },
   "AQP-EVCT": {
    "deployed": true,
-   "hash": "hfj0kPp3nbESLFKBJRRpxFheInBRcdM6SeyLGD_VqpU",
+   "hash": "7qQQy669gTyImeU3Ic5IB7i-gnN7eCkSDMVl_Vibrbw",
    "repoPath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/08b_EVCT.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",

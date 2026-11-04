@@ -9,10 +9,9 @@
 ;;   1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact
 ;;   1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact
 ;;
-;; TOTAL: 3 interface(s), 3 module(s), 6 table(s)
+;; TOTAL: 2 interface(s), 3 module(s), 6 table(s)
 ;; What it DEPLOYS, in load order:
 ;;   -- 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/08b_EVCT.pact
-;;      interface  AcquisitionRewardEvictionV1
 ;;      module     AQP-EVCT
 ;;      table      P|T
 ;;      table      P|MT
@@ -136,41 +135,8 @@
 ;; partial run returns only what is left.
 ;; ==============================================================================
 
-(interface AcquisitionRewardEvictionV1
-    @doc "Reward eviction for an FVT: the owner collects on behalf of every staker with a \
-        \ positive claimable. Plan readers, the slice partitioner, cost readers and THREE \
-        \ owner-gated client entrypoints that differ only in how many legs one transaction \
-        \ carries — all legs (Full), one leg (Single), or a packed slice (Multi). Writes nothing \
-        \ itself: every write is a forward call into AQP-FVT's eviction surface, which runs the \
-        \ collect path's own phase functions."
+;; AcquisitionRewardEvictionV1: already deployed and unchanged -- see LIVE_INTERFACES
 
-    ;;{1}  CAP
-    ;;{2}  FUN
-    ;;{5.1}  Compute [UC/UCv]
-    (defun UC_EvictLegsFromParallelArrays:[object] (beneficiaries:[string] score-entity-types:[integer] score-entity-ids:[string] reward-dptf-ids:[string]))
-    (defun UC_CeilDiv:integer (numerator:integer denominator:integer))
-    ;;{5.2}  Read [UR]
-    ;;{5.3}  Read-Compute [URC/URCv]
-    (defun URHC_BuildEvictPlans:[object] (fvt-id:string))
-    (defun URH_EvictInventory:object (fvt-id:string))
-    (defun URHC_EvictLegCount:integer (fvt-id:string))
-    (defun URHC_BuildEvictSlicePlan:object (fvt-id:string slice-count:integer))
-    (defun URCi_EvictMultiRewards:decimal (patron:string fvt-id:string beneficiaries:[string] score-entity-types:[integer] score-entity-ids:[string] reward-dptf-ids:[string]))
-    (defun URCi_EvictSingleReward:decimal (patron:string fvt-id:string beneficiary:string score-entity-type:integer score-entity-id:string reward-dptf-id:string))
-    (defun URCi_FullEvictRewards:decimal (patron:string fvt-id:string))
-    ;;{5.4}  Validate [UEV/CAP]
-    (defun UEV_EvictSliceShape (beneficiaries:[string] score-entity-types:[integer] score-entity-ids:[string] reward-dptf-ids:[string]))
-    (defun CAP_EvctFvtOwner (fvt-id:string))
-    ;;{5.5}  Write [W]
-    ;;{5.6}  Aux/X
-    ;;{5.7}  User [A/C]
-    (defun CCp_EvictMultiRewards:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string evictor:string fvt-id:string beneficiaries:[string] score-entity-types:[integer] score-entity-ids:[string] reward-dptf-ids:[string]))
-    (defun CC_EvictSingleReward:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string evictor:string fvt-id:string beneficiary:string score-entity-type:integer score-entity-id:string reward-dptf-id:string))
-    (defun CC_FullEvictRewards:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string evictor:string fvt-id:string))
-)
 
 (module AQP-EVCT GOV
     @doc "Reward eviction for an AQP FVT: the owner collects on behalf of every staker carrying a \
@@ -687,7 +653,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV6} AQP-FVT)
                 )
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
                     (map

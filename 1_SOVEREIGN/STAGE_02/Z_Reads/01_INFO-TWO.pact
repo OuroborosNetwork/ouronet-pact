@@ -633,41 +633,46 @@
     (defun INFO_DPNF|TransferNonce:object{OuronetInfoV3.ClientInfo} (patron:string id:string sender:string receiver:string nonce:integer amount:integer method:bool)
         (let
             (
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 (t:module{DpdcTransferV3} DPDC-T)
             )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Transfers {} of NFT {} Nonce {} to {}" [amount id nonce receiver]) (format "Transferred {} of NFT {} Nonce {}" [amount id nonce]) (t::URCi_MultiTransferCumulator [id] [false] sender receiver [[nonce]] [[amount]]))
+            (INFO_DPDC-MNG|Simple patron (format "Operation: Transfers {} of NFT {} Nonce {} to {}" [amount id nonce (ref-I|OURONET::OI|UC_ShortAccount receiver)]) (format "Transferred {} of NFT {} Nonce {}" [amount id nonce]) (t::URCi_MultiTransferCumulator [id] [false] sender receiver [[nonce]] [[amount]]))
         )
     )
     (defun INFO_DPSF|TransferNonce:object{OuronetInfoV3.ClientInfo} (patron:string id:string sender:string receiver:string nonce:integer amount:integer method:bool)
         (let
             (
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 (t:module{DpdcTransferV3} DPDC-T)
             )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Transfers {} of SFT {} Nonce {} to {}" [amount id nonce receiver]) (format "Transferred {} of SFT {} Nonce {}" [amount id nonce]) (t::URCi_MultiTransferCumulator [id] [true] sender receiver [[nonce]] [[amount]]))
+            (INFO_DPDC-MNG|Simple patron (format "Operation: Transfers {} of SFT {} Nonce {} to {}" [amount id nonce (ref-I|OURONET::OI|UC_ShortAccount receiver)]) (format "Transferred {} of SFT {} Nonce {}" [amount id nonce]) (t::URCi_MultiTransferCumulator [id] [true] sender receiver [[nonce]] [[amount]]))
         )
     )
     (defun INFO_DPNF|TransferNonces:object{OuronetInfoV3.ClientInfo} (patron:string id:string sender:string receiver:string nonces:[integer] amounts:[integer] method:bool)
         (let
             (
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 (t:module{DpdcTransferV3} DPDC-T)
             )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Transfers {} Nonces of NFT {} to {}" [(length nonces) id receiver]) (format "Transferred {} Nonces of NFT {}" [(length nonces) id]) (t::URCi_MultiTransferCumulator [id] [false] sender receiver [nonces] [amounts]))
+            (INFO_DPDC-MNG|Simple patron (format "Operation: Transfers {} Nonces of NFT {} to {}" [(length nonces) id (ref-I|OURONET::OI|UC_ShortAccount receiver)]) (format "Transferred {} Nonces of NFT {}" [(length nonces) id]) (t::URCi_MultiTransferCumulator [id] [false] sender receiver [nonces] [amounts]))
         )
     )
     (defun INFO_DPSF|TransferNonces:object{OuronetInfoV3.ClientInfo} (patron:string id:string sender:string receiver:string nonces:[integer] amounts:[integer] method:bool)
         (let
             (
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 (t:module{DpdcTransferV3} DPDC-T)
             )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Transfers {} Nonces of SFT {} to {}" [(length nonces) id receiver]) (format "Transferred {} Nonces of SFT {}" [(length nonces) id]) (t::URCi_MultiTransferCumulator [id] [true] sender receiver [nonces] [amounts]))
+            (INFO_DPDC-MNG|Simple patron (format "Operation: Transfers {} Nonces of SFT {} to {}" [(length nonces) id (ref-I|OURONET::OI|UC_ShortAccount receiver)]) (format "Transferred {} Nonces of SFT {}" [(length nonces) id]) (t::URCi_MultiTransferCumulator [id] [true] sender receiver [nonces] [amounts]))
         )
     )
     (defun INFO_DPDC|MultiTransfer:object{OuronetInfoV3.ClientInfo} (patron:string ids:[string] sons:[bool] sender:string receiver:string nonces-array:[[integer]] amounts-array:[[integer]] method:bool)
         (let
             (
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 (t:module{DpdcTransferV3} DPDC-T)
             )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Multi-transfers {} Collectable(s) to {}" [(length ids) receiver]) (format "Multi-transferred {} Collectable(s) to {}" [(length ids) receiver]) (t::URCi_MultiTransferCumulator ids sons sender receiver nonces-array amounts-array))
+            (INFO_DPDC-MNG|Simple patron (format "Operation: Multi-transfers {} Collectable(s) to {}" [(length ids) (ref-I|OURONET::OI|UC_ShortAccount receiver)]) (format "Multi-transferred {} Collectable(s) to {}" [(length ids) (ref-I|OURONET::OI|UC_ShortAccount receiver)]) (t::URCi_MultiTransferCumulator ids sons sender receiver nonces-array amounts-array))
         )
     )
     (defun INFO_DPDC|BulkTransfer:object{OuronetInfoV3.ClientInfo} (patron:string id:string son:bool nonces-array:[[integer]] amounts-array:[[integer]] sender:string receiver-lst:[string] method:bool)

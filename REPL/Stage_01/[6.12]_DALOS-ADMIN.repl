@@ -233,7 +233,8 @@
                 (map print
                     [
                         (expect "<<TX-DA-003>> C_RotateStoa names the account in its result"
-                            (format "Ouronet Account {} Attached Stoa-Address rotated succesfully!" [emma]) msg)
+                            (format "Ouronet Account {} Attached Stoa-Address rotated succesfully!"
+                                [(ouronet-ns.IGNIS.OI|UC_ShortAccount emma)]) msg)
                         (expect "<<TX-DA-003>> the attached STOA address actually changed"
                             new-stoa (ref-DALOS::UR_AccountStoa emma))
                         (expect "<<TX-DA-003>> ...and it is not the old one"
@@ -329,7 +330,8 @@
                 (map print
                     [
                         (expect "<<TX-DA-003>> C_RotateGuard names the account in its result"
-                            (format "Ouronet Account {} Primary-Guard rotated succesfully!" [emma]) msg)
+                            (format "Ouronet Account {} Primary-Guard rotated succesfully!"
+                                [(ouronet-ns.IGNIS.OI|UC_ShortAccount emma)]) msg)
                         (expect "<<TX-DA-003>> the primary guard is now the one supplied"
                             new-guard (ref-DALOS::UR_AccountGuard emma))
                         (expect "<<TX-DA-003>> INVARIANT: charged == URCi quote x the patron's ignis discount"
@@ -513,7 +515,8 @@
         [
             ;;POSITIVE: a capability guard is a legal governor, and the Talos path performs it.
             (expect "<<TX-DA-004>> a capability-guard governor is accepted on the Talos path"
-                (format "Ouronet Account {} Governor-Guard rotated succesfully!" [KC.BJ])
+                (format "Ouronet Account {} Governor-Guard rotated succesfully!"
+                    [(ouronet-ns.IGNIS.OI|UC_ShortAccount KC.BJ)])
                 (ref-TS01-C1::DALOS|C_RotateGovernor patron KC.BJ cap-gov))
             (expect "<<TX-DA-004>> ...and the governor really is the capability guard supplied"
                 cap-gov (ref-DALOS::UR_AccountGovernor KC.BJ))

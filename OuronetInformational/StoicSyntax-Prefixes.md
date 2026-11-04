@@ -1689,3 +1689,193 @@ mainnet, where an earlier version may have created those tables and filled them.
 written to be correct either way: if the rows are there they stay readable; if not, nothing is
 lost. Settle the question with `REPL/tools/_liveinventory.py --probe`, not by reading the source.
 
+
+### 7.22 No client-facing string carries a full Ouronet account — amendment 2026-11-04
+
+**Owner ruling.** Looking at an unstake result that ran off the edge of the Papyrus panel:
+
+> *"You know how talos modules, all the time drop an output string describing the state of end
+> result of the trasnction. Sometimes that end result string carries the whole string of an
+> ouroent account which is the case here. However, we should set up a rule, and never use the
+> full Ouronet Account string in such end result strings the talos modules outputs. We have a
+> way to print instead a shortened versioned of it."*
+
+The way already exists. `IGNIS::OI|UC_ShortAccount` — declared in `OuronetInfoV3`, defined at
+`02_IGNIS.pact` — is `(take 5 account) + "..." + (take -3 account)`:
+
+```pact
+(let
+    (
+        (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+        (sb:string (ref-I|OURONET::OI|UC_ShortAccount beneficiary-id))
+    )
+    (format "Unstaked {} DPNF nonces of {} from pool {} for {}."
+            [(length nonces) collectable-id pool-id sb])
+)
+```
+
+An Ouronet account is ~60 characters. Eighteen files already shorten; the rest render a string
+no panel can show, and the reader cannot tell a truncation by CSS from a truncation by the
+chain.
+
+**SCOPE — RESULT STRINGS, NOT DIAGNOSTICS.** The rule covers what a *user* reads: `UDC_ClientInfo`
+result lines, Talos `C_`/`A_` return strings, `INFO_` previews. It deliberately does **not** cover
+`format` inside `enforce` / `enforce-one`. A refusal message is read by whoever is debugging it,
+and the full account is the one thing identifying *which* account was refused — shortening there
+removes the information the message exists to carry. Generalising the ruling past what it said
+would cost more than it buys.
+
+**ENFORCED, NOT REMEMBERED.** `REPL/tools/_shortaccount.py` reports every client-output `format`
+passing a bare account identifier. Its vocabulary is **derived from the tree**, not declared: any
+identifier the sources themselves ever pass to `UC_ShortAccount` is, by that code's own
+testimony, an account — 42 names today, and the set extends itself as the sweep lands. A
+hand-kept list would start drifting the day it was written, which is the failure mode CLAUDE.md
+names for exactly this shape of rule. A small `SEED` covers the bootstrap hole derivation cannot
+reach: a parameter that is an account and has never been shortened *anywhere* does not appear in
+its own evidence.
+
+**STATUS, 2026-11-04 — DONE, AND WIRED INTO THE GATE.** The census was 59 sites across 11 files;
+all of them are swept and `_shortaccount.py` is fatal in `_gate.py`. 58 identifiers were rewritten
+by script — 22 of them needing a `module{OuronetInfoV3}` modref added to the enclosing `let`,
+which is sound because IGNIS implements that interface alongside `IgnisCollectorV4`
+(`02_IGNIS.pact:250-252`) — and the last two, in `21_CODEX.pact` and `01_ANK.pact`, by hand,
+because they had no `let` to bind into and introducing one is a structural change.
+
+**THREE NUMBERS WERE WRONG BEFORE THE RIGHT ONE, AND EACH WAS CAUGHT BY A CHECK RATHER THAN BY
+READING.** First 98: a flat scan of a `format`'s argument vector finds the identifier inside
+`[(ref::OI|UC_ShortAccount executor)]`, so the checker flagged **39 sites that were already
+correct** — including the exact shape this rule prescribes. The census looked plausible; the
+tool's own negative test, asserting that a shortened site comes back clean, is what failed.
+
+Then 64: `a`, harvested from a lambda binder in `12_O-UI-TWELVE.pact`, had entered the derived
+vocabulary and would have flagged every `format` passing a variable called `a`.
+
+Then 59 — of which **three were `UC_IdAccount` / `UC_AtspairAccount`**, `(format "{}{}{}" [id BAR
+account])`, building composite TABLE KEYS. Shortening an account inside a key derivation silently
+changes every key the system computes. **The rule as first written demanded that edit**, and
+nothing but reading the call sites would have stopped it. Hence the no-letter exemption: a
+message has words, a key builder is placeholders and a separator.
+
+**VERIFIED — 29,536 assertions (23,917 positive, 5,619 negative), identical to the baseline on
+the untouched tree, zero failures, 560.6s.** That is the gate, not the fast path.
+
+**IT TOOK SEVEN GATE RUNS, AND THE FIRST SIX ARE THE LESSON.** A "verified" claim written into
+this section earlier said *"29,536 green before and after"* when only the BEFORE had run: the
+gate checks generated artefacts before it reaches a single REPL, it failed on one, and the run
+was reported green from a `tail` whose exit code was its own and not the gate's. Three separate
+results in this work were misread the same way, off a `tail` or an `echo`. Exit codes now go to
+their own file.
+
+Five artefacts cascaded off a 34-line Pact change, each discovered only when the previous one was
+fixed: the pricing worksheet (`Ap_FlushUncollectedSlice` gaining a modref, `5 | 56` -> `6 | 58` —
+proven to be this sweep's doing by stashing the change and re-checking, and IGNIS-EXEMPT so no
+price moved), the Audit Book twice, the contract-line figure quoted in documentation PROSE
+(132,756 -> 132,790, carried by `fixfigs.py`, which exists because a blanket replace once
+corrupted a line-number list), and the documentation's module map.
+
+None was a defect in the sweep; all five are this repository's cascade guards working exactly as
+designed. The waste was in meeting them serially. **The gate invokes 42 checks before the first
+REPL and the list is readable out of `_gate.py`** — running all 42 first is the one step that
+would have replaced six runs with one, and it is what finally did.
+
+**FOUR REPL ASSERTIONS HAD TO MOVE WITH THE SWEEP, AND AN ESTIMATE SAID ONE.** The estimate came
+from grepping for `Unstaked|Staked|Transferred|Collected|Rotated`; the strings say *"rotated
+succesfully"*, lower case, with the typo. Matching the COMPLETE format literal instead of a
+fragment gives an exact answer — 3 literals, 4 sites — and found the one in
+`modules/CONFORMANCE.repl`, which `Z.repl` does not run at all. Each now calls
+`OI|UC_ShortAccount` inside the expectation rather than hardcoding a shortened literal, so they
+cannot drift if the shortening format changes.
+
+**THE RULE FOLLOWS THE STRING, NOT THE MODULE — and one core module was swept that should not
+have been.** The owner read the deploy round and asked why `CODEX` was in a round he expected to
+be Talos-only. `CODEX` is justified: `TS01-C4::CODEX|C_RegisterStoicTag` binds the core's result
+and returns it verbatim, so the string a user reads is built in the core and there is nothing in
+the Talos to shorten. The `INFO_` readers are justified for the same reason — they produce the
+Zone 0 lines the Papyrus renders.
+
+`AQP-ANK` was not. `XE_RecomputeUserBoostAggregates` is an inter-module `XE_` whose return value
+`RPS.pact:3999` DISCARDS, so the sweep shortened a string that reaches nobody — and put a whole
+module, and a whole deploy transaction, into a live-chain round for it. Reverted. The checker now
+exempts protected `XI_`/`XE_`/`XB_` functions, which is what §7.22's own scope sentence
+("what a *user* reads") always said and the first implementation did not enforce. The round went
+from 9 modules in 6 transactions to 8 in 5.
+
+**THE SWEEP DOES NOT REACH THE CHAIN UNTIL IT IS DEPLOYED.** `1_SOVEREIGN/` is at parity with
+StoaChain by convention, and these are seven modules' worth of divergence awaiting a round.
+
+### 7.23 A core `C_` does not compose the result string — Talos does — amendment 2026-11-04
+
+**Owner ruling.** On reading a deploy round and finding a core module in it:
+
+> *"C_ function in core modules must [not] output the end string, thats Talos module job. the core
+> functions just supply the execution. Historically the talos module supplied the end result
+> string."*
+
+**THE PRECEDENT IS ALREADY LIVE AND IS THE SPECIFICATION.** `DALOS::C_ControlSmartAccount` is
+declared in `OuronetDalosV3` with **no return type at all**:
+
+```pact
+(defun C_ControlSmartAccount
+    (patron:string executor:string payable-as-smart-contract:bool
+     payable-by-smart-contract:bool payable-by-method:bool)
+)
+```
+
+and `TS01-C1::DALOS|C_ControlSmartAccount` calls it as a STATEMENT, bills, and composes the
+sentence itself as its own last form:
+
+```pact
+(ref-DALOS::C_ControlSmartAccount patron executor …)
+(ref-IGNIS::XE_CollectIgnis patron (ref-IGNIS::DALOS|URCi_ControlSmartAccount executor))
+(format "Smart Ouronet Account {} controlled succesfully"
+        [(ref-I|OURONET::OI|UC_ShortAccount executor)])
+```
+
+**THE TREE ALREADY AGREES, OVERWHELMINGLY.** Sovereign core `C_`/`CC_` return types, counted:
+
+| count | return |
+|---|---|
+| **529** | `object{IgnisCollectorV4.OutputCumulator}` |
+| **69** | none — the shape above |
+| **20** | `:string` |
+| 4 | other (`list`, royalty objects) |
+
+So 598 of 622 already follow the canon. The `:string` twenty are the deviation, and **ten of them
+compose a user-facing sentence as their return value**: `CODEX` ×4 (`C_RegisterStoicTag`,
+`C_ReleaseStoicTag`, `C_RotateCodexGuard`, `C_RecordArweaveUpload`), `PYTHIA` ×4
+(`C_DeployApolloPythiaApiKey`, `C_LinkDualApiKey`, `C_RevokeDualLink`,
+`C_UpdateDualConsumerLane`), `FVT` ×2 (`CC_SweepBegin`, `CC_SweepRevokeAnchor`). The other ten
+are the same names' interface declarations.
+
+**WHY IT IS A RULE AND NOT A PREFERENCE.** A layer that both executes and narrates has two
+audiences and serves the second badly. §7.22 is the proof: the sweep that shortened accounts in
+client strings had to reach into `CODEX` — a CORE module — because the sentence a user reads for
+a StoicTag registration is built there and `TS01-C4` passes it through verbatim. There was
+nothing in the Talos to fix. One module ended up in a live-chain deploy round because a rule
+about presentation had to be applied in a layer that should not have been presenting.
+
+**THE SHAPE, EXACTLY:**
+
+* the core `C_` loses its **SENTENCE**, not its ability to return. It may still hand back
+  FACTS — that is what the 529 `OutputCumulator` returns are — and where the sentence needs a
+  value only the execution can know, returning that value is the CORRECT shape rather than a
+  concession. `FVT::CC_SweepBegin` is the case that settled it: its message reports how many
+  holders were frozen, a number that exists only because the sweep ran. The alternatives were
+  to have Talos repeat three chain reads the core had just performed, or to delete the number
+  from the message. Both are worse than returning the integer.
+
+  An earlier draft of this clause read *"its body ends on the work"*, which forbids that, and
+  was an over-tightening of the ruling. The ruling is about the END STRING: a core that returns
+  `:string` and composes a sentence is the violation; a core that returns an integer, an id or
+  a cumulator is doing its job.
+
+  So the `:string` return goes — in the **interface declaration and the implementation both** —
+  and the body ends either on the work (the `with-capability` block, the `XI_` write) or on the
+  fact the caller needs;
+  `XI_` write), with no trailing message and no trailing `true`;
+* the Talos wrapper calls it as a **statement**, bills, and composes the sentence as its own last
+  form, shortening any account per §7.22;
+* the interface **bumps** — a return type is part of the signature, so every consumer cascades.
+  That cost is the reason this is done once, deliberately, as its own round.
+
+**ENFORCED:** `REPL/tools/_coremessage.py`, fatal in `_gate.py`.

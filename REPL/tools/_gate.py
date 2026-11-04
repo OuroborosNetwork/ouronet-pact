@@ -906,6 +906,24 @@ def main():
         print(_ps.stdout + _ps.stderr)
         sys.exit("GATE FAILED: an unexplained patron slot -- see _patronslots.py.")
 
+    # NO CLIENT-FACING STRING CARRIES A FULL OURONET ACCOUNT -- StoicSyntax-Prefixes.md §7.22,
+    # owner ruling 2026-11-04. An account is ~60 characters and runs off the edge of every panel
+    # that renders it, and the failure mode is not an error: the string is simply unreadable, so
+    # it is only ever caught by a human squinting at a modal. `OI|UC_ShortAccount` has existed
+    # for as long as the trees have, and nothing checked that anyone used it.
+    #
+    # The vocabulary is DERIVED from the sources rather than listed -- any identifier the tree
+    # itself passes to the shortener is an account by that code's own testimony -- so the check
+    # extends itself as new account parameters appear. `enforce` messages are exempt (there the
+    # full account is the point) and so are `format`s with no letter in them, which are
+    # `UC_IdAccount`-style composite KEY builders where shortening would corrupt the key.
+    _sa = subprocess.run([sys.executable, "tools/_shortaccount.py"],
+                         capture_output=True, text=True)
+    if _sa.returncode != 0:
+        print(_sa.stdout + _sa.stderr)
+        sys.exit("GATE FAILED: a client-facing string carries a full Ouronet account "
+                 "-- see StoicSyntax-Prefixes.md §7.22.")
+
     # HARDCODED ENTITY IDS -- fatal only on UNREGISTERED. An id's suffix is the block hash of
     # the transaction that minted it, so a literal is correct for exactly one issuance. Worse,
     # it makes its own function UNTESTABLE: a mainnet id does not exist in the fixture, so the

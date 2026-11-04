@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 19 of 26
 ;; This is STEP 19 of 27 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-18 must have run first, including the init steps between deploys.
-;; 1 source file(s), 309,626 gas measured in the REPL gas model, 320,863 bytes
+;; 1 source file(s), 309,626 gas measured in the REPL gas model, 320,866 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/05_FVT.pact
@@ -10,7 +10,7 @@
 ;; TOTAL: 1 interface(s), 1 module(s), 5 table(s)
 ;; What it DEPLOYS, in load order:
 ;;   -- 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/05_FVT.pact
-;;      interface  AcquisitionFarmsVaultsTreasuriesV5
+;;      interface  AcquisitionFarmsVaultsTreasuriesV6
 ;;      module     AQP-FVT
 ;;      table      P|T
 ;;      table      P|MT
@@ -29,7 +29,7 @@
 ;; latch -- UR_FVT|StreamEligible, UEV_DriftLockedScoreEntity, UEV_StreamEligibleMemberOk,
 ;; CC_LatchStreamEligible, URCi_LatchStreamEligible. CC_InjectStream now refuses on an un-latched
 ;; FVT. PRIOR: bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface AcquisitionFarmsVaultsTreasuriesV5
+(interface AcquisitionFarmsVaultsTreasuriesV6
     @doc "Interface for the AQP reward-distribution layer (Farms/Vaults/Treasuries). \
         \ Declares readers for FVT config, member score-entity links, RPS (reward-per-share) \
         \ global/member/user/stream accumulators, and per-user presence/weight state; UC_ \
@@ -225,8 +225,8 @@
     (defun CCp_UnstaleAll:string
         (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
     )
-    (defun CC_SweepRevokeAnchor:string (patron:string executor:string anchor-id:string))
-    (defun CC_SweepBegin:string (patron:string executor:string anchor-id:string))
+    (defun CC_SweepRevokeAnchor (patron:string executor:string anchor-id:string))
+    (defun CC_SweepBegin:integer (patron:string executor:string anchor-id:string))
     (defun CCp_SweepRecomputeChunk:string (patron:string anchor-id:string chunk:integer))
     (defun CC_UnstaleMyScores:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string fvt-ids:[string]))
     (defun CC_Collect:object{IgnisCollectorV4.OutputCumulator}
@@ -343,7 +343,7 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements AcquisitionFarmsVaultsTreasuriesV5)
+    (implements AcquisitionFarmsVaultsTreasuriesV6)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -3615,7 +3615,7 @@
         )
     )
     )
-    (defun CC_SweepRevokeAnchor:string
+    (defun CC_SweepRevokeAnchor
         (patron:string executor:string anchor-id:string)
         @doc "HEAVY (R3 CC_) single-tx RE-SCORE SWEEP that RETIRES an EMPLOYED anchor (H4 half-2). Freezes the \
             \ affected pools, removes the anchor globally (swept-revoke — skips the #9 score-link lock), recomputes \
@@ -3667,12 +3667,11 @@
                 ;;XE_XI_FvtSweepRecomputeWindow returns `n`. Read this event as "the sweep ran across
                 ;;N employing scores"; read the chunked one for per-holder counts.
                 (emit-event (FVT|C>UNSTALED "CC_SweepRevokeAnchor" anchor-id boost-class-id (length score-ids) false))
-                (format "Sweep-retired anchor {} (BoostClass {}): recomputed holders across {} employing score(s)." [anchor-id boost-class-id (length score-ids)])
             )
         )
     )
     )
-    (defun CC_SweepBegin:string
+    (defun CC_SweepBegin:integer
         (patron:string executor:string anchor-id:string)
         @doc "OPEN a paginated defun+gate re-score sweep — the scalable twin of CC_SweepRevokeAnchor (single-tx) \
             \ and MTX|2|C_SweepRevokeAnchor (fixed 2-step defpact). Mirrors steps 1-2 of the single-tx: FREEZE every \
@@ -3710,7 +3709,11 @@
                             (total:integer (ref-RPS::URC_FvtSweepTotalPresent score-ids))
                         )
                         (WU_FvtSweepProgress anchor-id total 0 true)
-                        (format "Sweep begun for anchor {} (BoostClass {}): swept-revoked; {} holder(s) to recompute across {} score(s) — page via CCp_SweepRecomputeChunk." [anchor-id boost-class-id total (length score-ids)])
+                        ;; THE FACT, NOT THE SENTENCE -- StoicSyntax-Prefixes.md 7.23. The frozen
+                        ;; set size exists only because this ran, and `URC_FvtSweepTotalPresent`
+                        ;; is a scan over every linked score. Handing the integer back is what
+                        ;; lets the Talos narrate without paying for that scan twice.
+                        total
                     )
                 )
             )

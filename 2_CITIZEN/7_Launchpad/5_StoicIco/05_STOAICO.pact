@@ -1151,13 +1151,14 @@
         (with-capability (STOAICO|FLUSH)
             (let
                 (
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                     (cur-round:integer (UR_Global11))
                 )
                 (map
                     (lambda (account:string)
                         (if (< (UR_User5 account) cur-round)
                             (XI_CollectFor patron account)
-                            (format "Account {} already collected — skipped" [account])
+                            (format "Account {} already collected — skipped" [(ref-I|OURONET::OI|UC_ShortAccount account)])
                         )
                     )
                     accounts

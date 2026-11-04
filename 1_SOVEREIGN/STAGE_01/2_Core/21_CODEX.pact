@@ -5,7 +5,7 @@
 ;; Mnemosyne operator: ouronet-ns.codex-keyset (define before A_RegisterCodexIdentity).
 ;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface CodexV3
+(interface CodexV4
     @doc "CodexV2 is the interface for the CODEX module — the on-chain Codex Identity \
         \ registry, Arweave upload audit log, and StoicTag name registry. It declares UC \
         \ validators (Apollo composite id, Arweave tx-id, StoicTag name/fee), UR field \
@@ -116,14 +116,14 @@
           codex-guard:guard
           registered-by:string ))
     ;;
-    ;;#24H fix: these four were already live/actively-called via TS01-C4's module{CodexV3}-typed
+    ;;#24H fix: these four were already live/actively-called via TS01-C4's module{CodexV4}-typed
     ;;ref, but missing from the interface itself. Added here, purely additive - the module already
     ;;implements all four with matching signatures.
     ;; [C]
-    (defun C_RotateCodexGuard:string (patron:string executor:string codex-id:string new-codex-guard:guard))
-    (defun C_RecordArweaveUpload:string (patron:string executor:string codex-id:string arweave-tx-id:string uploaded-bytes:integer))
-    (defun C_RegisterStoicTag:string (patron:string executor:string tag-name:string))
-    (defun C_ReleaseStoicTag:string (patron:string executor:string tag-name:string))
+    (defun C_RotateCodexGuard (patron:string executor:string codex-id:string new-codex-guard:guard))
+    (defun C_RecordArweaveUpload (patron:string executor:string codex-id:string arweave-tx-id:string uploaded-bytes:integer))
+    (defun C_RegisterStoicTag (patron:string executor:string tag-name:string))
+    (defun C_ReleaseStoicTag (patron:string executor:string tag-name:string))
 
 
     ;;<=========================================================================>
@@ -148,7 +148,7 @@
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
-    (implements CodexV3)
+    (implements CodexV4)
     (implements OuronetPolicyV2)
 
     ;;<=========================================================================>
@@ -914,7 +914,7 @@
                     (format "Operation: Register StoicTag §{} to Ouronet account {}." [tag-name sa])
                     (format "Native STOA fee: {} (1 per glyph, {} glyphs; Elite discount on tagged account)." [stoa-fee glyph-count])
                 ]
-                [(format "StoicTag §{} registered to account {}." [tag-name account-address])]
+                [(format "StoicTag §{} registered to account {}." [tag-name (ref-I|OURONET::OI|UC_ShortAccount account-address)])]
                 (ref-I|OURONET::OI|UDC_NoIgnisCosts)
                 (ref-I|OURONET::OI|UDC_StoaCosts account-address stoa-fee)
                 []
@@ -1110,7 +1110,7 @@
         )
         (format "Codex Identity {} registered" [codex-id])
     )
-    (defun C_RotateCodexGuard:string (patron:string executor:string codex-id:string new-codex-guard:guard)
+    (defun C_RotateCodexGuard (patron:string executor:string codex-id:string new-codex-guard:guard)
         @doc "Rotate codex-guard; validation in CODEX|C>ROTATE-GUARD; XI writes only. \
             \ \
             \ ATTRIBUTION (patron/executor canon 2.2, 2026-09-22). The AUTHORITY here is a raw \
@@ -1130,10 +1130,9 @@
         (with-capability (CODEX|C>ROTATE-GUARD codex-id new-codex-guard)
             (XI_UpdateCodexGuard codex-id new-codex-guard)
         )
-        (format "Codex {} guard rotated" [codex-id])
     )
     ;;
-    (defun C_RecordArweaveUpload:string (patron:string executor:string codex-id:string arweave-tx-id:string uploaded-bytes:integer)
+    (defun C_RecordArweaveUpload (patron:string executor:string codex-id:string arweave-tx-id:string uploaded-bytes:integer)
         @doc "Append one row to CODEX|T|ArweaveTracker; validation in CODEX|C>RECORD-ARWEAVE. \
             \ \
             \ ATTRIBUTION: as C_RotateCodexGuard -- the authority is the codex GUARD, which names \
@@ -1149,10 +1148,9 @@
         (with-capability (CODEX|C>RECORD-ARWEAVE codex-id arweave-tx-id uploaded-bytes)
             (XI_InsertArweaveTracker codex-id arweave-tx-id uploaded-bytes)
         )
-        (format "Upload recorded: {} -> {}" [codex-id arweave-tx-id])
     )
     ;;
-    (defun C_RegisterStoicTag:string (patron:string executor:string tag-name:string)
+    (defun C_RegisterStoicTag (patron:string executor:string tag-name:string)
         @doc "Register StoicTag; validation in CODEX|C>REGISTER-STOICTAG; XI writes only (1 STOA/glyph fee in TS01-C4). \
             \ \
             \ A RENAME, not an addition (patron/executor canon 2.2, 2026-09-22): the old \
@@ -1167,10 +1165,9 @@
         (with-capability (CODEX|C>REGISTER-STOICTAG tag-name executor)
             (XI_UpsertStoicTag tag-name executor)
         )
-        (format "StoicTag §{} registered to account {}" [tag-name executor])
     )
     ;;
-    (defun C_ReleaseStoicTag:string (patron:string executor:string tag-name:string)
+    (defun C_ReleaseStoicTag (patron:string executor:string tag-name:string)
         @doc "Release StoicTag (iz-active false); validation in CODEX|C>RELEASE-STOICTAG; XI updates only. \
             \ \
             \ HANDOFF 4g, and the contrast with its own sibling is the clearest illustration of \
@@ -1187,7 +1184,6 @@
         (with-capability (CODEX|C>RELEASE-STOICTAG executor tag-name)
             (XI_DeactivateStoicTag tag-name)
         )
-        (format "StoicTag §{} released" [tag-name])
     )
 
 )

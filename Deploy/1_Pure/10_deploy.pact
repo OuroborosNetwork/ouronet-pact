@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 10 of 26
 ;; This is STEP 10 of 27 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-9 must have run first, including the init steps between deploys.
-;; 5 source file(s), 245,069 gas measured in the REPL gas model, 204,926 bytes
+;; 5 source file(s), 245,069 gas measured in the REPL gas model, 205,316 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/3_Talos/03_TS01-C2.pact
@@ -11,7 +11,7 @@
 ;;   1_SOVEREIGN/STAGE_01/3_Talos/05_TS01-P.pact
 ;;   1_SOVEREIGN/STAGE_01/Z_Reads/01_INFO-ZERO.pact
 ;;
-;; TOTAL: 3 interface(s), 5 module(s), 8 table(s)
+;; TOTAL: 2 interface(s), 5 module(s), 8 table(s)
 ;; What it DEPLOYS, in load order:
 ;;   -- 1_SOVEREIGN/STAGE_01/3_Talos/03_TS01-C2.pact
 ;;      module     TS01-C2
@@ -23,7 +23,6 @@
 ;;      table      P|T
 ;;      table      P|MT
 ;;   -- 1_SOVEREIGN/STAGE_01/3_Talos/06_TS01-C4.pact
-;;      interface  TalosStageOne_ClientFourV9
 ;;      module     TS01-C4
 ;;      table      P|T
 ;;      table      P|MT
@@ -3191,100 +3190,8 @@
 ;; REPL: REPL/Stage_01/[6.10]_PYTHIA.repl
 ;;
 ;; net: v7   ·   dev: v8   ;; bumped by the StoicSyntax refactor — deploy v8 then set net: v8
-(interface TalosStageOne_ClientFourV9
-    @doc "Talos Stage One Client Four V7 — patronless Cronoton A_RevokeLink (no IGNIS); C_RevokeLink still 1 IGNIS."
+;; TalosStageOne_ClientFourV9: already deployed and unchanged -- see LIVE_INTERFACES
 
-    ;;<=========================================================================>
-    ;;{1}  GOVERNANCE
-    ;;{G1}  constants
-    ;;{G2}  schemas
-    ;;{G3}  tables  ⟨cannot exist in an interface⟩
-    ;;{G4}  capabilities
-    ;;{G5}  functions
-
-    ;;<=========================================================================>
-    ;;{2}  POLICY
-    ;;{P1}  constants
-    ;;{P2}  schemas
-    ;;{P3}  tables  ⟨cannot exist in an interface⟩
-    ;;{P4}  capabilities
-    ;;{P5}  functions
-
-    ;;<=========================================================================>
-    ;;{3}  CST
-    ;;{3.1}  constants
-    ;;{3.2}  schemas
-    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
-
-    ;;<=========================================================================>
-    ;;{4}  CAPABILITIES
-    ;;{C1}  Trivial [bronze]
-    ;;{C2}  Simple
-    ;;{C3}  Composed
-    ;;{C4}  Ownership [gold]
-
-    ;;<=========================================================================>
-    ;;{5}  FUNCTIONS
-    ;;{5.1}  Construct [CT/UDC]
-    ;;{5.2}  Compute [UC]
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    ;;{5.4}  Validate [UEV/CAP]
-    ;;{5.5}  Write [W]
-    ;;{5.6}  Aux/X
-    ;;{5.7}  User [A/C]
-    ;;
-    (defun CODEX|A_RegisterCodexIdentity:string
-        (
-            executor:string
-            codex-id:string
-            public-standard:string
-            public-smart:string
-            codex-guard:guard
-            registered-by:string
-        ))
-    (defun CODEX|C_RotateCodexGuard:string (patron:string executor:string codex-id:string new-codex-guard:guard))
-    (defun CODEX|C_RecordArweaveUpload:string (patron:string executor:string codex-id:string arweave-tx-id:string uploaded-bytes:integer))
-    (defun CODEX|C_RegisterStoicTag:string (patron:string executor:string tag-name:string))
-    (defun CODEX|C_ReleaseStoicTag:string (patron:string executor:string tag-name:string))
-    ;;
-    (defun PYTHIA|C_DeployApiKey:string
-        (
-            patron:string
-            executor:string
-            apollo-account:string
-            public:string
-        ))
-    (defun PYTHIA|C_UpdateDualConsumerLane:string
-        (
-            patron:string
-            executor:string
-            dual-link-key:string
-            new-name:string
-        ))
-    (defun PYTHIA|C_Link:string
-        (
-            executor:string
-            standard-apollo:string
-            smart-apollo:string
-            consumer-lane:string
-        ))
-    (defun PYTHIA|A_Link:string (executor:string standard-apollo:string smart-apollo:string))
-    (defun PYTHIA|C_RevokeLink:string
-        (
-            patron:string
-            executor:string
-            dual-link-key:string
-        ))
-    (defun PYTHIA|A_RevokeLink:string (executor:string dual-link-key:string))
-    (defun PYTHIA|A_Flush:string
-        (executor:string entries:[object{PythiaLedgerV4.PYTHIA|S|PythFlushEntry}]))
-    ;;#17H fix: PYTHIA|A_UpdateDeployPrice/A_UpdateRenamePrice were never wired into any Talos
-    ;;module - the core PYTHIA functions (GOV|PYTHIA_ADMIN-gated) existed but had no reachable
-    ;;client path, permanently frozen at their hardcoded defaults for anyone, even the admin.
-    (defun PYTHIA|A_UpdateDeployPrice:string (executor:string new-price:decimal))
-    (defun PYTHIA|A_UpdateRenamePrice:string (executor:string new-price:decimal))
-
-)
 ;;
 (module TS01-C4 GOV
     @doc "TALOS Client Module for Stage 1 — CODEX + PYTHIA (Apollo keys + Pyth ledger flush)."
@@ -3515,7 +3422,7 @@
         (with-capability (P|TS)
             (let 
                 (
-                    (ref-CODEX:module{CodexV3} CODEX)
+                    (ref-CODEX:module{CodexV4} CODEX)
                     (ref-DALOS:module{OuronetDalosV3} DALOS)
                 )
                 ;;THE GASLESS PATRON, RESOLVED LOCALLY. `GASLESS-PATRON` is a defconst in
@@ -3536,7 +3443,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-PYTHIA:module{PythiaV6} PYTHIA)
+                    (ref-PYTHIA:module{PythiaV7} PYTHIA)
                     (ref-DALOS:module{OuronetDalosV3} DALOS)
                 )
                 (ref-PYTHIA::A_LinkDualApiKey (ref-DALOS::GOV|DALOS|SC_NAME) executor standard-apollo smart-apollo)
@@ -3548,7 +3455,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-PYTHIA:module{PythiaV6} PYTHIA)
+                    (ref-PYTHIA:module{PythiaV7} PYTHIA)
                     (ref-DALOS:module{OuronetDalosV3} DALOS)
                 )
                 (ref-PYTHIA::A_RevokeDualLink (ref-DALOS::GOV|DALOS|SC_NAME) executor dual-link-key)
@@ -3573,7 +3480,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-PYTHIA:module{PythiaV6} PYTHIA)
+                    (ref-PYTHIA:module{PythiaV7} PYTHIA)
                     (ref-DALOS:module{OuronetDalosV3} DALOS)
                 )
                 (ref-PYTHIA::A_UpdateDeployPrice (ref-DALOS::GOV|DALOS|SC_NAME) executor new-price)
@@ -3585,7 +3492,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-PYTHIA:module{PythiaV6} PYTHIA)
+                    (ref-PYTHIA:module{PythiaV7} PYTHIA)
                     (ref-DALOS:module{OuronetDalosV3} DALOS)
                 )
                 (ref-PYTHIA::A_UpdateRenamePrice (ref-DALOS::GOV|DALOS|SC_NAME) executor new-price)
@@ -3597,13 +3504,12 @@
         (with-capability (P|TS)
             (let 
                 (
-                    (ref-CODEX:module{CodexV3} CODEX)
+                    (ref-CODEX:module{CodexV4} CODEX)
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 )
-                (let ((msg:string (ref-CODEX::C_RotateCodexGuard patron executor codex-id new-codex-guard)))
-                    (ref-IGNIS::XE_CollectIgnis patron (ref-CODEX::URCi_RotateCodexGuard patron))
-                    msg
-                )
+                (ref-CODEX::C_RotateCodexGuard patron executor codex-id new-codex-guard)
+                (ref-IGNIS::XE_CollectIgnis patron (ref-CODEX::URCi_RotateCodexGuard patron))
+                (format "Codex {} guard rotated" [codex-id])
             )
         )
     )
@@ -3612,13 +3518,12 @@
         (with-capability (P|TS)
             (let 
                 (
-                    (ref-CODEX:module{CodexV3} CODEX)
+                    (ref-CODEX:module{CodexV4} CODEX)
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 )
-                (let ((msg:string (ref-CODEX::C_RecordArweaveUpload patron executor codex-id arweave-tx-id uploaded-bytes)))
-                    (ref-IGNIS::XE_CollectIgnis patron (ref-CODEX::URCi_RecordArweaveUpload patron))
-                    msg
-                )
+                (ref-CODEX::C_RecordArweaveUpload patron executor codex-id arweave-tx-id uploaded-bytes)
+                (ref-IGNIS::XE_CollectIgnis patron (ref-CODEX::URCi_RecordArweaveUpload patron))
+                (format "Upload recorded: {} -> {}" [codex-id arweave-tx-id])
             )
         )
     )
@@ -3627,15 +3532,15 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-CODEX:module{CodexV3} CODEX)
+                    (ref-CODEX:module{CodexV4} CODEX)
                     (ref-IGNIS|V2:module{IgnisCollectorV4} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                     (stoa-fee:decimal (ref-CODEX::URCi_RegisterStoicTag tag-name))
-                    (msg:string
-                        (ref-CODEX::C_RegisterStoicTag patron executor tag-name)
-                    )
                 )
+                (ref-CODEX::C_RegisterStoicTag patron executor tag-name)
                 (ref-IGNIS|V2::XB_CollectStoaDiscountedFrom patron executor stoa-fee false)
-                msg
+                (format "StoicTag §{} registered to account {}"
+                    [tag-name (ref-I|OURONET::OI|UC_ShortAccount executor)])
             )
         )
     )
@@ -3644,11 +3549,11 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-CODEX:module{CodexV3} CODEX)
+                    (ref-CODEX:module{CodexV4} CODEX)
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (tag-fee:decimal (ref-CODEX::URCi_ReleaseStoicTag tag-name))
-                    (msg:string (ref-CODEX::C_ReleaseStoicTag patron executor tag-name))
                 )
+                (ref-CODEX::C_ReleaseStoicTag patron executor tag-name)
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-IGNIS::UDC_ConstructOutputCumulator
                         tag-fee
@@ -3657,7 +3562,7 @@
                         []
                     )
                 )
-                msg
+                (format "StoicTag §{} released" [tag-name])
             )
         )
     )
@@ -3670,18 +3575,16 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-PYTHIA:module{PythiaV6} PYTHIA)
+                    (ref-PYTHIA:module{PythiaV7} PYTHIA)
                     (ref-IGNIS|V2:module{IgnisCollectorV4} IGNIS)
                     (deploy-fee:decimal (ref-PYTHIA::URCi_DeployApiKey))
                     (fee-anchor:string (ref-PYTHIA::UC_FeeDiscountAnchor))
-                    (msg:string
-                        (ref-PYTHIA::C_DeployApolloPythiaApiKey
-                            patron executor apollo-account public
-                        )
-                    )
+                    (kind:string
+                        (if (ref-PYTHIA::UC_IsStandardApollo apollo-account) "Standard" "Smart"))
                 )
+                (ref-PYTHIA::C_DeployApolloPythiaApiKey patron executor apollo-account public)
                 (ref-IGNIS|V2::XB_CollectStoaFull patron deploy-fee false)   ;;PYTHIA fees are NON-discountable (spec)
-                msg
+                (format "Pythia {} Apollo half {} registered (unlinked)" [kind apollo-account])
             )
         )
     )
@@ -3694,18 +3597,14 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-PYTHIA:module{PythiaV6} PYTHIA)
+                    (ref-PYTHIA:module{PythiaV7} PYTHIA)
                     (ref-IGNIS|V2:module{IgnisCollectorV4} IGNIS)
                     (rename-fee:decimal (ref-PYTHIA::URCi_UpdateDualConsumerLane))
                     (fee-anchor:string (ref-PYTHIA::UC_FeeDiscountAnchor))
-                    (msg:string
-                        (ref-PYTHIA::C_UpdateDualConsumerLane
-                            patron executor dual-link-key new-name
-                        )
-                    )
                 )
+                (ref-PYTHIA::C_UpdateDualConsumerLane patron executor dual-link-key new-name)
                 (ref-IGNIS|V2::XB_CollectStoaFull patron rename-fee false)   ;;PYTHIA fees are NON-discountable (spec)
-                msg
+                (format "Pythia dual link {} lane renamed to {}" [dual-link-key new-name])
             )
         )
     )
@@ -3718,9 +3617,11 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-PYTHIA:module{PythiaV6} PYTHIA)
+                    (ref-PYTHIA:module{PythiaV7} PYTHIA)
+                    (dlk:string (ref-PYTHIA::UC_DualLinkKey standard-apollo smart-apollo))
                 )
                 (ref-PYTHIA::C_LinkDualApiKey executor standard-apollo smart-apollo consumer-lane)
+                (format "Pythia dual link {} created for lane {} (inactive)" [dlk consumer-lane])
             )
         )
     )
@@ -3732,13 +3633,11 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-PYTHIA:module{PythiaV6} PYTHIA)
+                    (ref-PYTHIA:module{PythiaV7} PYTHIA)
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (revoke-fee:decimal (ref-PYTHIA::URCi_RevokeLink))
-                    (msg:string
-                        (ref-PYTHIA::C_RevokeDualLink patron executor dual-link-key)
-                    )
                 )
+                (ref-PYTHIA::C_RevokeDualLink patron executor dual-link-key)
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-IGNIS::UDC_ConstructOutputCumulator
                         revoke-fee
@@ -3747,7 +3646,7 @@
                         []
                     )
                 )
-                msg
+                (format "Pythia dual link {} revoked by owner" [dual-link-key])
             )
         )
     )

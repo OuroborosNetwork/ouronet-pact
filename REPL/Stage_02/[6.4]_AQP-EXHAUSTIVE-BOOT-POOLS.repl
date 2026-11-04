@@ -128,7 +128,7 @@
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV6} AQP-FVT)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (pool-id:string (ref-U|DALOS::UDC_Makeid "DHOuroLp"))
         (bunnies-pool:string (ref-U|DALOS::UDC_Makeid "DHBunnies"))

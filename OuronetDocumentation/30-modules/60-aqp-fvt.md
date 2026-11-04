@@ -19,9 +19,9 @@ _To be written._
 
 | | |
 |---|---|
-| module hash | `MnKmzLilkk4DBYIzQOfxxZuvkKtqGQizRCy5kfah1BI` |
-| deployed size | 295,540 characters |
-| implements | `OuronetPolicyV2`, `AcquisitionFarmsVaultsTreasuriesV5` |
+| module hash | `xBCNcNc3qpOhv1M3qPHYlLNWGVCtPyK5GcxFHvKcIM8` |
+| deployed size | 295,551 characters |
+| implements | `OuronetPolicyV2`, `AcquisitionFarmsVaultsTreasuriesV6` |
 | repository source | `1_SOVEREIGN/STAGE_02/2_Core/03_AQP/05_FVT.pact` |
 
 **Tables it owns** — 5

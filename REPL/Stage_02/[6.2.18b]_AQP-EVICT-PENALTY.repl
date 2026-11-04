@@ -42,7 +42,7 @@
         (anhd:string KST.ANHD)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV6} AQP-FVT)
         (ref-EVCT:module{AcquisitionRewardEvictionV1} AQP-EVCT)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))

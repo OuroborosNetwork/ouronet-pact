@@ -136,7 +136,8 @@
                 ;;   through Talos, succeeds -- and is BILLED, which is the entire reason the Talos
                 ;;   layer exists and exactly what the old unbilled path bypassed.
                 (expect "<<CONF-01>> ...while the same rotation THROUGH TALOS succeeds"
-                    (format "Ouronet Account {} Attached Stoa-Address rotated succesfully!" [patron])
+                    (format "Ouronet Account {} Attached Stoa-Address rotated succesfully!"
+                        [(ouronet-ns.IGNIS.OI|UC_ShortAccount patron)])
                     (ref-TS01-C1::DALOS|C_RotateStoa patron patron new-stoa))
                 (expect "<<CONF-01>> ...and it really rotated"
                     new-stoa (ref-DALOS::UR_AccountStoa patron))

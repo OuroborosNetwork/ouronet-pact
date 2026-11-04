@@ -442,7 +442,7 @@
         (step
             (let
                 (
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV6} AQP-FVT)
                 )
                 (require-capability (MTX-AQP|C>INJECT patron fvt-id reward-dptf-id amount))
               (let
@@ -496,7 +496,7 @@
                         (let
                             (
                                 (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
-                                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
+                                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV6} AQP-FVT)
                                 (stale:[string] (RPS.URH_FvtStalePresentUsers fvt-id))
                                 ;; Same owner/non-owner split as step 0 — see its note. A defpact
                                 ;; that penalized only on its SECOND step would be the same
@@ -532,7 +532,7 @@
             (let
                 (
                     (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV6} AQP-FVT)
                 )
                 (require-capability (MTX-AQP|C>SWEEP-REVOKE patron executor anchor-id))
                 (let
@@ -578,7 +578,7 @@
                     (with-capability (MTX-AQP|C>SWEEP-REVOKE patron executor anchor-id)
                         (let
                             (
-                                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
+                                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV6} AQP-FVT)
                                 (total:integer (URC_SweepTotalPresent score-ids))
                             )
                             (let

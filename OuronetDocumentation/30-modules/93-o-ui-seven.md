@@ -19,7 +19,7 @@ _To be written._
 
 | | |
 |---|---|
-| module hash | `FTCq4Dx6tfEbGQ3oGtP9GmDrAa8GqxfFZXQKK72-Diw` |
+| module hash | `scaQ2S7eg3xyOT8roSCceDVOJA8su_9QG2T3XxeeZrQ` |
 | deployed size | 11,728 characters |
 | implements | `OUiSevenV1` |
 | repository source | `2_CITIZEN/Stage_Z/AppReads/OuronetUI/07_O-UI-SEVEN.pact` |

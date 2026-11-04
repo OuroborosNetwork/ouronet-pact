@@ -19,8 +19,8 @@ _To be written._
 
 | | |
 |---|---|
-| module hash | `mAD0_Y1lNxBBOJNzgAjDFsWUS-2tAjCC7PXYNdNh5a8` |
-| deployed size | 73,464 characters |
+| module hash | `rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA` |
+| deployed size | 73,980 characters |
 | implements | — |
 | repository source | `1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact` |
 

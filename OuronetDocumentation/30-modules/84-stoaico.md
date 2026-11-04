@@ -19,8 +19,8 @@ _To be written._
 
 | | |
 |---|---|
-| module hash | `LZAEoYS_jv-A8SWs55JZLFjvbpfcH75EBEYK4nafSuU` |
-| deployed size | 55,655 characters |
+| module hash | `8B_4Vp57wJI-PG0-cpJ4M2gRpBWHSIuYHl3s7PEP6lE` |
+| deployed size | 55,755 characters |
 | implements | `OuronetPolicyV2` |
 | repository source | `2_CITIZEN/7_Launchpad/5_StoicIco/05_STOAICO.pact` |
 

@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 24 of 26
 ;; This is STEP 24 of 27 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-23 must have run first, including the init steps between deploys.
-;; 8 source file(s), 224,486 gas measured in the REPL gas model, 276,150 bytes
+;; 8 source file(s), 224,486 gas measured in the REPL gas model, 276,766 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   2_CITIZEN/7_Launchpad/1_Spark/01_Spark.pact
@@ -14,7 +14,7 @@
 ;;   1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact
 ;;   2_CITIZEN/4_BunniesMinter/02_KBunnies.pact
 ;;
-;; TOTAL: 5 interface(s), 8 module(s), 18 table(s)
+;; TOTAL: 4 interface(s), 8 module(s), 18 table(s)
 ;; What it DEPLOYS, in load order:
 ;;   -- 2_CITIZEN/7_Launchpad/1_Spark/01_Spark.pact
 ;;      interface  SparksV3
@@ -51,7 +51,6 @@
 ;;      table      P|T
 ;;      table      P|MT
 ;;   -- 1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact
-;;      interface  InfoTwoV3
 ;;      module     INFO-TWO
 ;;   -- 2_CITIZEN/4_BunniesMinter/02_KBunnies.pact
 ;;      module     KBN
@@ -3815,13 +3814,14 @@
         (with-capability (STOAICO|FLUSH)
             (let
                 (
+                    (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                     (cur-round:integer (UR_Global11))
                 )
                 (map
                     (lambda (account:string)
                         (if (< (UR_User5 account) cur-round)
                             (XI_CollectFor patron account)
-                            (format "Account {} already collected — skipped" [account])
+                            (format "Account {} already collected — skipped" [(ref-I|OURONET::OI|UC_ShortAccount account)])
                         )
                     )
                     accounts
@@ -4198,67 +4198,8 @@
 
 ;; ===== 1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact ===============
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface InfoTwoV3
-    @doc "Exposes the Stage-2 INFO (ClientInfo preview) surface — DPDC collectables, \
-        \ DEMIPAD launchpad, EQUITY, AQP. Each function wraps a core URCi cost reader."
+;; InfoTwoV3: already deployed and unchanged -- see LIVE_INTERFACES
 
-    ;;<=========================================================================>
-    ;;{1}  GOVERNANCE
-    ;;{G1}  constants
-    ;;{G2}  schemas
-    ;;{G3}  tables  ⟨cannot exist in an interface⟩
-    ;;{G4}  capabilities
-    ;;{G5}  functions
-
-    ;;<=========================================================================>
-    ;;{2}  POLICY
-    ;;{P1}  constants
-    ;;{P2}  schemas
-    ;;{P3}  tables  ⟨cannot exist in an interface⟩
-    ;;{P4}  capabilities
-    ;;{P5}  functions
-
-    ;;<=========================================================================>
-    ;;{3}  CST
-    ;;{3.1}  constants
-    ;;{3.2}  schemas
-    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
-
-    ;;<=========================================================================>
-    ;;{4}  CAPABILITIES
-    ;;{C1}  Trivial [bronze]
-    ;;{C2}  Simple
-    ;;{C3}  Composed
-    ;;{C4}  Ownership [gold]
-
-    ;;<=========================================================================>
-    ;;{5}  FUNCTIONS
-    ;;{5.1}  Construct [CT/UDC]
-    ;;{5.2}  Compute [UC]
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    ;;  [DPDC collectables]
-    (defun INFO_DPSF|Make:object{OuronetInfoV3.ClientInfo} (patron:string account:string id:string nonces:[integer] set-class:integer how-many-sets:integer))
-    (defun INFO_DPNF|Make:object{OuronetInfoV3.ClientInfo} (patron:string account:string id:string nonces:[integer] set-class:integer))
-    ;;  [DEMIPAD] — sovereign launchpad
-    (defun INFO_DEMIPAD|Deposit:object{OuronetInfoV3.ClientInfo} (patron:string donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool max-cost:decimal))
-    (defun INFO_DEMIPAD|Withdraw:object{OuronetInfoV3.ClientInfo} (patron:string asset-id:string type:integer destination:string))
-    (defun INFO_DEMIPAD|FuelTrueFungible:object{OuronetInfoV3.ClientInfo} (patron:string client:string asset-id:string amount:decimal))
-    (defun INFO_DEMIPAD|RetrieveTrueFungible:object{OuronetInfoV3.ClientInfo} (patron:string client:string asset-id:string amount:decimal))
-    (defun INFO_DEMIPAD|FuelOrtoFungible:object{OuronetInfoV3.ClientInfo} (patron:string client:string asset-id:string nonces:[integer]))
-    (defun INFO_DEMIPAD|RetrieveOrtoFungible:object{OuronetInfoV3.ClientInfo} (patron:string client:string asset-id:string nonces:[integer]))
-    (defun INFO_DEMIPAD|FuelSemiFungible:object{OuronetInfoV3.ClientInfo} (patron:string client:string asset-id:string nonces:[integer] amounts:[integer]))
-    (defun INFO_DEMIPAD|RetrieveSemiFungible:object{OuronetInfoV3.ClientInfo} (patron:string client:string asset-id:string nonces:[integer] amounts:[integer]))
-    (defun INFO_DEMIPAD|FuelNonFungible:object{OuronetInfoV3.ClientInfo} (patron:string client:string asset-id:string nonces:[integer] amounts:[integer]))
-    (defun INFO_DEMIPAD|RetrieveNonFungible:object{OuronetInfoV3.ClientInfo} (patron:string client:string asset-id:string nonces:[integer] amounts:[integer]))
-    ;;  [EQUITY]
-    (defun INFO_EQUITY|IssueCompany:object{OuronetInfoV3.ClientInfo} (patron:string creator-account:string collection-name:string))
-    (defun INFO_EQUITY|MorphEquity:object{OuronetInfoV3.ClientInfo} (patron:string account:string id:string input-nonce:integer input-amount:integer output-nonce:integer))
-    ;;{5.4}  Validate [UEV/CAP]
-    ;;{5.5}  Write [W]
-    ;;{5.6}  Aux/X
-    ;;{5.7}  User [A/C]
-
-)
 ;;INFO_LIQUID|UnwrapStoa
 ;;INFO_LIQUID|WrapStoa
 ;;INFO_LIQUID|UnwrapUrStoa
@@ -4832,41 +4773,46 @@
     (defun INFO_DPNF|TransferNonce:object{OuronetInfoV3.ClientInfo} (patron:string id:string sender:string receiver:string nonce:integer amount:integer method:bool)
         (let
             (
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 (t:module{DpdcTransferV3} DPDC-T)
             )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Transfers {} of NFT {} Nonce {} to {}" [amount id nonce receiver]) (format "Transferred {} of NFT {} Nonce {}" [amount id nonce]) (t::URCi_MultiTransferCumulator [id] [false] sender receiver [[nonce]] [[amount]]))
+            (INFO_DPDC-MNG|Simple patron (format "Operation: Transfers {} of NFT {} Nonce {} to {}" [amount id nonce (ref-I|OURONET::OI|UC_ShortAccount receiver)]) (format "Transferred {} of NFT {} Nonce {}" [amount id nonce]) (t::URCi_MultiTransferCumulator [id] [false] sender receiver [[nonce]] [[amount]]))
         )
     )
     (defun INFO_DPSF|TransferNonce:object{OuronetInfoV3.ClientInfo} (patron:string id:string sender:string receiver:string nonce:integer amount:integer method:bool)
         (let
             (
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 (t:module{DpdcTransferV3} DPDC-T)
             )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Transfers {} of SFT {} Nonce {} to {}" [amount id nonce receiver]) (format "Transferred {} of SFT {} Nonce {}" [amount id nonce]) (t::URCi_MultiTransferCumulator [id] [true] sender receiver [[nonce]] [[amount]]))
+            (INFO_DPDC-MNG|Simple patron (format "Operation: Transfers {} of SFT {} Nonce {} to {}" [amount id nonce (ref-I|OURONET::OI|UC_ShortAccount receiver)]) (format "Transferred {} of SFT {} Nonce {}" [amount id nonce]) (t::URCi_MultiTransferCumulator [id] [true] sender receiver [[nonce]] [[amount]]))
         )
     )
     (defun INFO_DPNF|TransferNonces:object{OuronetInfoV3.ClientInfo} (patron:string id:string sender:string receiver:string nonces:[integer] amounts:[integer] method:bool)
         (let
             (
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 (t:module{DpdcTransferV3} DPDC-T)
             )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Transfers {} Nonces of NFT {} to {}" [(length nonces) id receiver]) (format "Transferred {} Nonces of NFT {}" [(length nonces) id]) (t::URCi_MultiTransferCumulator [id] [false] sender receiver [nonces] [amounts]))
+            (INFO_DPDC-MNG|Simple patron (format "Operation: Transfers {} Nonces of NFT {} to {}" [(length nonces) id (ref-I|OURONET::OI|UC_ShortAccount receiver)]) (format "Transferred {} Nonces of NFT {}" [(length nonces) id]) (t::URCi_MultiTransferCumulator [id] [false] sender receiver [nonces] [amounts]))
         )
     )
     (defun INFO_DPSF|TransferNonces:object{OuronetInfoV3.ClientInfo} (patron:string id:string sender:string receiver:string nonces:[integer] amounts:[integer] method:bool)
         (let
             (
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 (t:module{DpdcTransferV3} DPDC-T)
             )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Transfers {} Nonces of SFT {} to {}" [(length nonces) id receiver]) (format "Transferred {} Nonces of SFT {}" [(length nonces) id]) (t::URCi_MultiTransferCumulator [id] [true] sender receiver [nonces] [amounts]))
+            (INFO_DPDC-MNG|Simple patron (format "Operation: Transfers {} Nonces of SFT {} to {}" [(length nonces) id (ref-I|OURONET::OI|UC_ShortAccount receiver)]) (format "Transferred {} Nonces of SFT {}" [(length nonces) id]) (t::URCi_MultiTransferCumulator [id] [true] sender receiver [nonces] [amounts]))
         )
     )
     (defun INFO_DPDC|MultiTransfer:object{OuronetInfoV3.ClientInfo} (patron:string ids:[string] sons:[bool] sender:string receiver:string nonces-array:[[integer]] amounts-array:[[integer]] method:bool)
         (let
             (
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 (t:module{DpdcTransferV3} DPDC-T)
             )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Multi-transfers {} Collectable(s) to {}" [(length ids) receiver]) (format "Multi-transferred {} Collectable(s) to {}" [(length ids) receiver]) (t::URCi_MultiTransferCumulator ids sons sender receiver nonces-array amounts-array))
+            (INFO_DPDC-MNG|Simple patron (format "Operation: Multi-transfers {} Collectable(s) to {}" [(length ids) (ref-I|OURONET::OI|UC_ShortAccount receiver)]) (format "Multi-transferred {} Collectable(s) to {}" [(length ids) (ref-I|OURONET::OI|UC_ShortAccount receiver)]) (t::URCi_MultiTransferCumulator ids sons sender receiver nonces-array amounts-array))
         )
     )
     (defun INFO_DPDC|BulkTransfer:object{OuronetInfoV3.ClientInfo} (patron:string id:string son:bool nonces-array:[[integer]] amounts-array:[[integer]] sender:string receiver-lst:[string] method:bool)

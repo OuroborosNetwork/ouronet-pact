@@ -1469,10 +1469,8 @@
         (require-capability (SECURE))
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 (ref-DPDC-T:module{DpdcTransferV3} DPDC-T)
                 (lpad:string DEMIPAD|SC_NAME)
-                (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount executor))
             )
             ;;#7M: open the capability matching the collectable KIND (son true = Semi-Fungible [false true],
             ;;     false = Non-Fungible [false false]). Previously both branches hardcoded the SEMI cap, so a
@@ -1752,19 +1750,15 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
                 (lpad:string DEMIPAD|SC_NAME)
-                (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount executor))
             )
             (if fuel-or-retrieve
                 (with-capability (DEMIPAD|C>FUEL-TRUE-FUNGIBLE asset-id)
                     (ref-TS01-C1::DPTF|C_Transfer patron executor lpad asset-id amount true)
-                    (format "Succesfuly fueled {} {} to Demiourgos Launchpad from Account {}" [amount asset-id sa-s])
                 )
                 (with-capability (DEMIPAD|C>RETRIEVE-TRUE-FUNGIBLE asset-id)
                     (ref-TS01-C1::DPTF|C_Transfer patron lpad executor asset-id amount true)
-                    (format "Succesfuly retrieved {} {} from Demiourgos Launchpad to Account {}" [amount asset-id sa-s])
                 )
             )
         )
@@ -1782,19 +1776,15 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
                 (lpad:string DEMIPAD|SC_NAME)
-                (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount executor))
             )
             (if fuel-or-retrieve
                 (with-capability (DEMIPAD|C>FUEL-ORTO-FUNGIBLE asset-id)
                     (ref-TS01-C1::DPOF|C_Transfer patron executor lpad asset-id nonces true)
-                    (format "Succesfuly fueled {} Nonces {} to Demiourgos Launchpad from Account {}" [asset-id nonces sa-s])
                 )
                 (with-capability (DEMIPAD|C>RETRIEVE-ORTO-FUNGIBLE asset-id)
                     (ref-TS01-C1::DPOF|C_Transfer patron lpad executor asset-id nonces true)
-                    (format "Succesfuly retrieved {} Nonces {} from Demiourgos Launchpad to Account {}" [asset-id nonces sa-s])
                 )
             )
         )

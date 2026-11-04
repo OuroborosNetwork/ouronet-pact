@@ -21,7 +21,7 @@
 ;; If PYTHIA were already on-chain at V3, only PythDaily + PythTotal are additive create-tables.
 ;;
 ;; net: v4   ·   dev: v5   ;; bumped by the StoicSyntax refactor — deploy v5 then set net: v5
-(interface PythiaV6
+(interface PythiaV7
     @doc "PYTHIA V4 — V3 dual-Apollo + Config UR prices; select-based inventory is URH_."
 
     ;;<=========================================================================>
@@ -118,22 +118,22 @@
     (defun A_UpdateDeployPrice:string (patron:string executor:string new-price:decimal))
     (defun A_UpdateRenamePrice:string (patron:string executor:string new-price:decimal))
     ;;
-    (defun C_DeployApolloPythiaApiKey:string
+    (defun C_DeployApolloPythiaApiKey
         (
             patron:string
             executor:string
             apollo-account:string
             public:string
         ))
-    (defun C_LinkDualApiKey:string
+    (defun C_LinkDualApiKey
         (
             executor:string
             standard-apollo:string
             smart-apollo:string
             consumer-lane:string
         ))
-    (defun C_RevokeDualLink:string (patron:string executor:string dual-link-key:string))
-    (defun C_UpdateDualConsumerLane:string
+    (defun C_RevokeDualLink (patron:string executor:string dual-link-key:string))
+    (defun C_UpdateDualConsumerLane
         (
             patron:string
             executor:string
@@ -280,7 +280,7 @@
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
-    (implements PythiaV6)
+    (implements PythiaV7)
     (implements PythiaLedgerV4)
     (implements OuronetPolicyV2)
 
@@ -1897,7 +1897,7 @@
         (format "Pythia ledger flushed {} day entries" [(length entries)])
     )
     ;;
-    (defun C_DeployApolloPythiaApiKey:string
+    (defun C_DeployApolloPythiaApiKey
         (
             patron:string
             executor:string
@@ -1928,10 +1928,9 @@
                     (UDC_AKY|ApiKey public BAR executor apollo-account)
                 )
             )
-            (format "Pythia {} Apollo half {} registered (unlinked)" [kind apollo-account])
         )
     )
-    (defun C_LinkDualApiKey:string
+    (defun C_LinkDualApiKey
         (
             executor:string
             standard-apollo:string
@@ -1964,10 +1963,9 @@
                     )
                 )
             )
-            (format "Pythia dual link {} created for lane {} (inactive)" [dlk consumer-lane])
         )
     )
-    (defun C_RevokeDualLink:string (patron:string executor:string dual-link-key:string)
+    (defun C_RevokeDualLink (patron:string executor:string dual-link-key:string)
         @doc "Both half-owners revoke active dual link. Fee in TS01-C4 (IGNIS). \
             \ \
             \ HANDOFF 4g, in its two-signature form. The capability composes PYTHIA|OWNER TWICE, on \
@@ -1981,9 +1979,8 @@
             (WU_DualLink|IzActive dual-link-key false)
             (XI_RecordRevocationAtHeight)
         )
-        (format "Pythia dual link {} revoked by owner" [dual-link-key])
     )
-    (defun C_UpdateDualConsumerLane:string
+    (defun C_UpdateDualConsumerLane
         (
             patron:string
             executor:string
@@ -2002,7 +1999,6 @@
         (with-capability (PYTHIA|C>UPDATE-DUAL-LANE executor dual-link-key new-name)
             (WU_DualLink|ConsumerLane dual-link-key new-name)
         )
-        (format "Pythia dual link {} lane renamed to {}" [dual-link-key new-name])
     )
 
 )

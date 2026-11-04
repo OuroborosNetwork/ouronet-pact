@@ -90,7 +90,7 @@
         (registered-by:string (read-string "CODEX|REGISTERED-BY"))
         (codex-guard:guard (read-keyset "KEY_CODEX_GUARD"))
         (ref-TS01-C4:module{TalosStageOne_ClientFourV9} TS01-C4)
-        (ref-CODEX:module{CodexV3} CODEX)
+        (ref-CODEX:module{CodexV4} CODEX)
         (reg-msg:string
             (ref-TS01-C4::CODEX|A_RegisterCodexIdentity
                 KST.ANHD
@@ -161,7 +161,7 @@
         (composite-id:string (read-string "CODEX|COMPOSITE-ID"))
         (new-codex-guard:guard (read-keyset "KEY_CODEX_GUARD_NEW"))
         (ref-TS01-C4:module{TalosStageOne_ClientFourV9} TS01-C4)
-        (ref-CODEX:module{CodexV3} CODEX)
+        (ref-CODEX:module{CodexV4} CODEX)
         ;;FUNCTION COVERAGE (G6) — `INFO_CODEX|RotateCodexGuard`, per the owner's spec: an INFO_ must
         ;;report the same cost the op actually charges. Template: `modules/ATS.repl <<ATS-I1>>`.
         ;;These bindings rely on `let` being EAGER and ORDERED: the quote and the pre-op balance are
@@ -231,7 +231,7 @@
         (arweave-tx-id:string (read-string "CODEX|ARWEAVE-TX-ID"))
         (uploaded-bytes:integer 1024)
         (ref-TS01-C4:module{TalosStageOne_ClientFourV9} TS01-C4)
-        (ref-CODEX:module{CodexV3} CODEX)
+        (ref-CODEX:module{CodexV4} CODEX)
         (arw-msg:string
             (ref-TS01-C4::CODEX|C_RecordArweaveUpload KST.ANHD KST.ANHD composite-id arweave-tx-id uploaded-bytes)
         )
@@ -308,7 +308,7 @@
         )
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-TS01-C4:module{TalosStageOne_ClientFourV9} TS01-C4)
-        (ref-CODEX:module{CodexV3} CODEX)
+        (ref-CODEX:module{CodexV4} CODEX)
         (stoa-fee:decimal (ref-CODEX::UC_StoicTagStoaFee tag-name))
         (patron-stoa:string (ref-DALOS::UR_AccountStoa patron))
         (demiurgoi:[string] (ref-DALOS::UR_DemiurgoiID))
@@ -438,7 +438,7 @@
             )
         )
         (ref-TS01-C4:module{TalosStageOne_ClientFourV9} TS01-C4)
-        (ref-CODEX:module{CodexV3} CODEX)
+        (ref-CODEX:module{CodexV4} CODEX)
         (tag-fee:decimal (ref-CODEX::UC_StoicTagStoaFee tag-name))
         ;;FUNCTION COVERAGE (G6) — `INFO_CODEX|ReleaseStoicTag`, per the owner's spec. Template:
         ;;`modules/ATS.repl <<ATS-I1>>`. This completes CODEX: rotate-guard (IGNIS) at <<TX002-INFO>>,
@@ -531,7 +531,7 @@
         )
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-TS01-C4:module{TalosStageOne_ClientFourV9} TS01-C4)
-        (ref-CODEX:module{CodexV3} CODEX)
+        (ref-CODEX:module{CodexV4} CODEX)
         (stoa-fee:decimal (ref-CODEX::UC_StoicTagStoaFee tag-name))
         (patron-stoa:string (ref-DALOS::UR_AccountStoa patron))
         (demiurgoi:[string] (ref-DALOS::UR_DemiurgoiID))

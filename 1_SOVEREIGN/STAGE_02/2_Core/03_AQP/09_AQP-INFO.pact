@@ -562,7 +562,7 @@
                 ["Operation: Repair a beneficiary's True-Fungible anchor slots after a stake."
                  "Full IGNIS shown: gas + per-anchor repair + sync-count stamp (reconstructed byte-for-byte)."
                  "Executes via TS02-C3.AQP-POOL|C_SyncTrueFungibleAnchors."]
-                [(format "TF anchors synced for {} on DPTF {}." [beneficiary-id dptf-id])]
+                [(format "TF anchors synced for {} on DPTF {}." [(ref-I|OURONET::OI|UC_ShortAccount beneficiary-id) dptf-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (AQP-POOL.URCi_SyncTrueFungibleAnchorsFull beneficiary-id dptf-id))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [])
@@ -580,7 +580,7 @@
                 ["Operation: Repair a beneficiary's Semi-Fungible anchor slots after a stake."
                  "Full IGNIS shown: gas + per-anchor repair + sync-count stamp (reconstructed byte-for-byte)."
                  "Executes via TS02-C3.AQP-POOL|C_SyncSemiFungibleAnchors."]
-                [(format "SF anchors synced for {} on DPSF {}." [beneficiary-id dpsf-id])]
+                [(format "SF anchors synced for {} on DPSF {}." [(ref-I|OURONET::OI|UC_ShortAccount beneficiary-id) dpsf-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (AQP-POOL.URCi_SyncCollectableAnchorsFull beneficiary-id dpsf-id))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [])
@@ -598,7 +598,7 @@
                 ["Operation: Repair a beneficiary's Non-Fungible anchor slots after a stake."
                  "Full IGNIS shown: gas + per-anchor repair + sync-count stamp (reconstructed byte-for-byte)."
                  "Executes via TS02-C3.AQP-POOL|C_SyncNonFungibleAnchors."]
-                [(format "NF anchors synced for {} on DPNF {}." [beneficiary-id dpnf-id])]
+                [(format "NF anchors synced for {} on DPNF {}." [(ref-I|OURONET::OI|UC_ShortAccount beneficiary-id) dpnf-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (AQP-POOL.URCi_SyncCollectableAnchorsFull beneficiary-id dpnf-id))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [])
@@ -617,7 +617,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Stake a True-Fungible amount into the pool for a beneficiary."
                  "Executes via TS02-C3.AQP-POOL|CC_StakeTrueFungible."]
-                [(format "Staked {} of {} into pool {} for {}." [amount dptf-id pool-id beneficiary-id])]
+                [(format "Staked {} of {} into pool {} for {}." [amount dptf-id pool-id (ref-I|OURONET::OI|UC_ShortAccount beneficiary-id)])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
                     (ref-RPSC::URCi_TrueFungibleStakeFlow pool-id owner-id beneficiary-id dptf-id amount true))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
@@ -636,7 +636,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Unstake a True-Fungible amount from the pool."
                  "Executes via TS02-C3.AQP-POOL|CC_UnstakeTrueFungible."]
-                [(format "Unstaked {} of {} from pool {} for {}." [amount dptf-id pool-id beneficiary-id])]
+                [(format "Unstaked {} of {} from pool {} for {}." [amount dptf-id pool-id (ref-I|OURONET::OI|UC_ShortAccount beneficiary-id)])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
                     (ref-RPSC::URCi_TrueFungibleStakeFlow pool-id owner-id beneficiary-id dptf-id amount false))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
@@ -655,7 +655,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Stake whole Orto-Fungible nonces into the pool for a beneficiary."
                  "Executes via TS02-C3.AQP-POOL|CC_StakeOrtoFungible."]
-                [(format "Staked {} nonces of {} into pool {} for {}." [(length nonces) dpof-id pool-id beneficiary-id])]
+                [(format "Staked {} nonces of {} into pool {} for {}." [(length nonces) dpof-id pool-id (ref-I|OURONET::OI|UC_ShortAccount beneficiary-id)])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
                     (ref-RPSC::URCi_OrtoFungibleStakeFlow pool-id owner-id beneficiary-id dpof-id nonces true))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
@@ -673,7 +673,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Unstake whole Orto-Fungible nonces from the pool."
                  "Executes via TS02-C3.AQP-POOL|CC_UnstakeOrtoFungible."]
-                [(format "Unstaked {} nonces of {} from pool {} for {}." [(length nonces) dpof-id pool-id beneficiary-id])]
+                [(format "Unstaked {} nonces of {} from pool {} for {}." [(length nonces) dpof-id pool-id (ref-I|OURONET::OI|UC_ShortAccount beneficiary-id)])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
                     (ref-RPSC::URCi_OrtoFungibleStakeFlow pool-id owner-id beneficiary-id dpof-id nonces false))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
@@ -699,7 +699,7 @@
                  "Scores and rewards still accrue to the beneficiary; release is permissionless once matured."
                  "Executes via TS02-C3.AQP-POOL|CCp_StakeSpecialCustodial."]
                 [(format "Staked {} sleeping nonce(s) of {} into pool {} under custody for {}."
-                    [(length nonces) dpof-id pool-id beneficiary-id])]
+                    [(length nonces) dpof-id pool-id (ref-I|OURONET::OI|UC_ShortAccount beneficiary-id)])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
                     (ref-RPSC::URCi_OrtoFungibleStakeFlow pool-id owner-id beneficiary-id dpof-id nonces true))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
@@ -723,7 +723,7 @@
                 ["Operation: Release a MATURED custodial sleeping position — dissolve the batch, send the native asset to the staker."
                  "Permissionless once the lock has matured; refused before."
                  "Executes via TS02-C3.AQP-POOL|CCp_ReleaseSpecialCustodial."]
-                [(format "Released nonce {} of {} from pool {} to {}." [nonce dpof-id pool-id beneficiary-id])]
+                [(format "Released nonce {} of {} from pool {} to {}." [nonce dpof-id pool-id (ref-I|OURONET::OI|UC_ShortAccount beneficiary-id)])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
                     (AQP-FVT.URCi_ReleaseSpecialCustodial pool-id beneficiary-id dpof-id nonce))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
@@ -748,7 +748,7 @@
                 ["Operation: Redirect who earns from an already-staked sleeping position — the owner and the position are unchanged."
                  "Requires the OWNER's signature — they decide who earns, as they did at the original stake."
                  "Executes via TS02-C3.AQP-POOL|CC_ReassignOrtoStakeBeneficiary."]
-                [(format "Nonce {} of {} in pool {} now earns for {} instead of {}." [nonce dpof-id pool-id new-beneficiary current-beneficiary])]
+                [(format "Nonce {} of {} in pool {} now earns for {} instead of {}." [nonce dpof-id pool-id (ref-I|OURONET::OI|UC_ShortAccount new-beneficiary) (ref-I|OURONET::OI|UC_ShortAccount current-beneficiary)])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
                     (AQP-FVT.URCi_ReassignOrtoStakeBeneficiary pool-id owner current-beneficiary new-beneficiary dpof-id nonce))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
@@ -770,7 +770,7 @@
                 ["Operation: Redirect who earns from an already-staked NFT/SFT — the owner and the position are unchanged."
                  "Requires the OWNER's signature — they decide who earns, as they did at the original stake."
                  "Executes via TS02-C3.AQP-POOL|CC_ReassignCollectableStakeBeneficiary."]
-                [(format "Nonce {} of {} in pool {} now earns for {} instead of {}." [nonce collectable-id pool-id new-beneficiary current-beneficiary])]
+                [(format "Nonce {} of {} in pool {} now earns for {} instead of {}." [nonce collectable-id pool-id (ref-I|OURONET::OI|UC_ShortAccount new-beneficiary) (ref-I|OURONET::OI|UC_ShortAccount current-beneficiary)])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
                     (AQP-FVT.URCi_ReassignCollectableStakeBeneficiary pool-id owner current-beneficiary new-beneficiary collectable-id son nonce nonce-amount))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
@@ -795,7 +795,7 @@
                 ["Operation: Redirect who earns from an already-staked true-fungible position — the owner and the position are unchanged."
                  "Requires the OWNER's signature — they decide who earns, as they did at the original stake."
                  "Executes via TS02-C3.AQP-POOL|CC_ReassignTrueFungibleStakeBeneficiary."]
-                [(format "{} of {} in pool {} now earns for {} instead of {}." [amount dptf-id pool-id new-beneficiary current-beneficiary])]
+                [(format "{} of {} in pool {} now earns for {} instead of {}." [amount dptf-id pool-id (ref-I|OURONET::OI|UC_ShortAccount new-beneficiary) (ref-I|OURONET::OI|UC_ShortAccount current-beneficiary)])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
                     (AQP-FVT.URCi_ReassignTrueFungibleStakeBeneficiary pool-id owner current-beneficiary new-beneficiary dptf-id amount))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
@@ -814,7 +814,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Stake Semi-Fungible collectable nonces (DPSF) into the pool for a beneficiary."
                  "Executes via TS02-C3.AQP-POOL|CC_StakeSemiFungibleCollectable."]
-                [(format "Staked {} DPSF nonces of {} into pool {} for {}." [(length nonces) collectable-id pool-id beneficiary-id])]
+                [(format "Staked {} DPSF nonces of {} into pool {} for {}." [(length nonces) collectable-id pool-id (ref-I|OURONET::OI|UC_ShortAccount beneficiary-id)])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
                     (ref-RPSC::URCi_CollectableStakeFlow pool-id owner-id beneficiary-id collectable-id true nonces
                         (DPDC.UR_AccountNoncesSupplies owner-id collectable-id true nonces) true))
@@ -834,7 +834,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Unstake Semi-Fungible collectable nonces (DPSF) from the pool."
                  "Executes via TS02-C3.AQP-POOL|CC_UnstakeSemiFungibleCollectable."]
-                [(format "Unstaked {} DPSF nonces of {} from pool {} for {}." [(length nonces) collectable-id pool-id beneficiary-id])]
+                [(format "Unstaked {} DPSF nonces of {} from pool {} for {}." [(length nonces) collectable-id pool-id (ref-I|OURONET::OI|UC_ShortAccount beneficiary-id)])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
                     (ref-RPSC::URCi_CollectableStakeFlow pool-id owner-id beneficiary-id collectable-id true nonces nonce-amounts false))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
@@ -853,7 +853,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Stake Non-Fungible collectable nonces (DPNF) into the pool for a beneficiary."
                  "Executes via TS02-C3.AQP-POOL|CC_StakeNonFungibleCollectable."]
-                [(format "Staked {} DPNF nonces of {} into pool {} for {}." [(length nonces) collectable-id pool-id beneficiary-id])]
+                [(format "Staked {} DPNF nonces of {} into pool {} for {}." [(length nonces) collectable-id pool-id (ref-I|OURONET::OI|UC_ShortAccount beneficiary-id)])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
                     (ref-RPSC::URCi_CollectableStakeFlow pool-id owner-id beneficiary-id collectable-id false nonces
                         (DPDC.UR_AccountNoncesSupplies owner-id collectable-id false nonces) true))
@@ -873,7 +873,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Unstake Non-Fungible collectable nonces (DPNF) from the pool."
                  "Executes via TS02-C3.AQP-POOL|CC_UnstakeNonFungibleCollectable."]
-                [(format "Unstaked {} DPNF nonces of {} from pool {} for {}." [(length nonces) collectable-id pool-id beneficiary-id])]
+                [(format "Unstaked {} DPNF nonces of {} from pool {} for {}." [(length nonces) collectable-id pool-id (ref-I|OURONET::OI|UC_ShortAccount beneficiary-id)])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
                     (ref-RPSC::URCi_CollectableStakeFlow pool-id owner-id beneficiary-id collectable-id false nonces nonce-amounts false))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)

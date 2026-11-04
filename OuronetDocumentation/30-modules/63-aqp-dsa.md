@@ -19,7 +19,7 @@ _To be written._
 
 | | |
 |---|---|
-| module hash | `f4lzzz3lITkCngmdcfb5_1RHYQTA9QqZsXaQd0TLce4` |
+| module hash | `cGIyFvoEAtta2RhEfSTEEBeQBfXVe_se0TbPjdS_Imk` |
 | deployed size | 53,876 characters |
 | implements | `OuronetPolicyV2`, `DsaV3` |
 | repository source | `1_SOVEREIGN/STAGE_02/2_Core/03_AQP/08_DSA.pact` |

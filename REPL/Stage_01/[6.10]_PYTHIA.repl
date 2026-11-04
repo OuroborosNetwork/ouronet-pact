@@ -60,7 +60,7 @@
         (patron:string KST.ANHD)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-TS01-C4:module{TalosStageOne_ClientFourV9} TS01-C4)
-        (ref-PYTHIA:module{PythiaV6} PYTHIA)
+        (ref-PYTHIA:module{PythiaV7} PYTHIA)
         (deploy-fee:decimal (ref-PYTHIA::UC_DeployPrice))
         (patron-stoa:string (ref-DALOS::UR_AccountStoa patron))
         (demiurgoi:[string] (ref-DALOS::UR_DemiurgoiID))
@@ -151,7 +151,7 @@
         (patron:string KST.ANHD)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-TS01-C4:module{TalosStageOne_ClientFourV9} TS01-C4)
-        (ref-PYTHIA:module{PythiaV6} PYTHIA)
+        (ref-PYTHIA:module{PythiaV7} PYTHIA)
         (deploy-fee:decimal (ref-PYTHIA::UC_DeployPrice))
         (patron-stoa:string (ref-DALOS::UR_AccountStoa patron))
         (demiurgoi:[string] (ref-DALOS::UR_DemiurgoiID))
@@ -201,7 +201,7 @@
         (lane-dual:string (read-string "PYTHIA|LANE-DUAL"))
         (owner-acct:string (if (= (read-string "PYTHIA|OWNER-ACCOUNT") "") KST.ANHD (read-string "PYTHIA|OWNER-ACCOUNT")))
         (ref-TS01-C4:module{TalosStageOne_ClientFourV9} TS01-C4)
-        (ref-PYTHIA:module{PythiaV6} PYTHIA)
+        (ref-PYTHIA:module{PythiaV7} PYTHIA)
         (dlk:string (ref-PYTHIA::UC_DualLinkKey apollo-std apollo-smt))
     )
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
@@ -262,7 +262,7 @@
         (apollo-std:string (read-string "PYTHIA|APOLLO-STANDARD"))
         (apollo-smt:string (read-string "PYTHIA|APOLLO-SMART"))
         (ref-TS01-C4:module{TalosStageOne_ClientFourV9} TS01-C4)
-        (ref-PYTHIA:module{PythiaV6} PYTHIA)
+        (ref-PYTHIA:module{PythiaV7} PYTHIA)
         (dlk:string (ref-PYTHIA::UC_DualLinkKey apollo-std apollo-smt))
     )
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
@@ -315,7 +315,7 @@
         (owner-acct:string (if (= (read-string "PYTHIA|OWNER-ACCOUNT") "") KST.ANHD (read-string "PYTHIA|OWNER-ACCOUNT")))
         (patron:string KST.ANHD)
         (ref-TS01-C4:module{TalosStageOne_ClientFourV9} TS01-C4)
-        (ref-PYTHIA:module{PythiaV6} PYTHIA)
+        (ref-PYTHIA:module{PythiaV7} PYTHIA)
         (dlk:string (ref-PYTHIA::UC_DualLinkKey apollo-std apollo-smt))
         (revoke-fee:decimal (ref-PYTHIA::UC_RevokeIgnisFee))
         (height-before:integer (ref-PYTHIA::UR_RevocationAtHeight))
@@ -373,7 +373,7 @@
         (patron:string KST.ANHD)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-TS01-C4:module{TalosStageOne_ClientFourV9} TS01-C4)
-        (ref-PYTHIA:module{PythiaV6} PYTHIA)
+        (ref-PYTHIA:module{PythiaV7} PYTHIA)
         (dlk:string (ref-PYTHIA::UC_DualLinkKey apollo-std apollo-smt))
         (rename-fee:decimal (ref-PYTHIA::UC_RenamePrice))
         (patron-stoa:string (ref-DALOS::UR_AccountStoa patron))
@@ -450,7 +450,7 @@
     (
         (apollo-std:string (read-string "PYTHIA|APOLLO-STANDARD"))
         (apollo-smt:string (read-string "PYTHIA|APOLLO-SMART"))
-        (ref-PYTHIA:module{PythiaV6} PYTHIA)
+        (ref-PYTHIA:module{PythiaV7} PYTHIA)
         (dlk:string (ref-PYTHIA::UC_DualLinkKey apollo-std apollo-smt))
     )
     (map print
@@ -484,7 +484,7 @@
         (patron:string KST.ANHD)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-TS01-C4:module{TalosStageOne_ClientFourV9} TS01-C4)
-        (ref-PYTHIA:module{PythiaV6} PYTHIA)
+        (ref-PYTHIA:module{PythiaV7} PYTHIA)
         (deploy-fee:decimal (ref-PYTHIA::UC_DeployPrice))
         (patron-stoa:string (ref-DALOS::UR_AccountStoa patron))
         (demiurgoi:[string] (ref-DALOS::UR_DemiurgoiID))
@@ -535,7 +535,7 @@
         (patron:string KST.ANHD)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-TS01-C4:module{TalosStageOne_ClientFourV9} TS01-C4)
-        (ref-PYTHIA:module{PythiaV6} PYTHIA)
+        (ref-PYTHIA:module{PythiaV7} PYTHIA)
         (deploy-fee:decimal (ref-PYTHIA::UC_DeployPrice))
         (patron-stoa:string (ref-DALOS::UR_AccountStoa patron))
         (demiurgoi:[string] (ref-DALOS::UR_DemiurgoiID))
@@ -591,7 +591,7 @@
         (apollo-std:string (read-string "PYTHIA|APOLLO-STANDARD-2"))
         (apollo-smt:string (read-string "PYTHIA|APOLLO-SMART-2"))
         (ref-TS01-C4:module{TalosStageOne_ClientFourV9} TS01-C4)
-        (ref-PYTHIA:module{PythiaV6} PYTHIA)
+        (ref-PYTHIA:module{PythiaV7} PYTHIA)
         (dlk:string (ref-PYTHIA::UC_DualLinkKey apollo-std apollo-smt))
         (expected-lane:string (+ "PYTHIA-" (take 12 "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006")))
     )
@@ -643,7 +643,7 @@
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV9} TS01-C4)
-        (ref-PYTHIA:module{PythiaV6} PYTHIA)
+        (ref-PYTHIA:module{PythiaV7} PYTHIA)
         (apollo-std:string (read-string "PYTHIA|APOLLO-STANDARD-2"))
         (apollo-smt:string (read-string "PYTHIA|APOLLO-SMART-2"))
     )
@@ -726,7 +726,7 @@
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV9} TS01-C4)
-        (ref-PYTHIA:module{PythiaV6} PYTHIA)
+        (ref-PYTHIA:module{PythiaV7} PYTHIA)
     )
     (print
         (expect-failure "<<TX007d-02a>> re-revoking an already-inactive link is rejected"
@@ -742,7 +742,7 @@
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV9} TS01-C4)
-        (ref-PYTHIA:module{PythiaV6} PYTHIA)
+        (ref-PYTHIA:module{PythiaV7} PYTHIA)
     )
     ;;The message pins the keyset MEMBERS (keys-any over the two Sith Masters), which is
     ;;as specific as Pact gets -- it never names the keyset REF. Note dh_master-keyset,
@@ -774,7 +774,7 @@
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV9} TS01-C4)
-        (ref-PYTHIA:module{PythiaV6} PYTHIA)
+        (ref-PYTHIA:module{PythiaV7} PYTHIA)
     )
     (map print
         [
@@ -848,7 +848,7 @@
 (print "--- [TX007e - the dual-link validators, as mirror images · 02 · let / invocation] ---")
 (let
     (
-        (ref-PYTHIA:module{PythiaV6} PYTHIA)
+        (ref-PYTHIA:module{PythiaV7} PYTHIA)
         (apollo-std:string (read-string "PYTHIA|APOLLO-STANDARD"))
         (apollo-smt:string (read-string "PYTHIA|APOLLO-SMART"))
     )
@@ -895,7 +895,7 @@
 ;;failing for some unrelated reason.
 (let
     (
-        (ref-PYTHIA:module{PythiaV6} PYTHIA)
+        (ref-PYTHIA:module{PythiaV7} PYTHIA)
         (apollo-std:string (read-string "PYTHIA|APOLLO-STANDARD"))
         (apollo-smt:string (read-string "PYTHIA|APOLLO-SMART"))
     )
@@ -926,7 +926,7 @@
 ;;A_Link flip it back on) and still fails ForLink (its halves are not free).
 (let
     (
-        (ref-PYTHIA:module{PythiaV6} PYTHIA)
+        (ref-PYTHIA:module{PythiaV7} PYTHIA)
         (apollo-std:string (read-string "PYTHIA|APOLLO-STANDARD-2"))
         (apollo-smt:string (read-string "PYTHIA|APOLLO-SMART-2"))
     )
@@ -986,7 +986,7 @@
         (patron:string KST.ANHD)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-TS01-C4:module{TalosStageOne_ClientFourV9} TS01-C4)
-        (ref-PYTHIA:module{PythiaV6} PYTHIA)
+        (ref-PYTHIA:module{PythiaV7} PYTHIA)
         (deploy-fee:decimal (ref-PYTHIA::UC_DeployPrice))
         (patron-stoa:string (DALOS.UR_AccountStoa KST.ANHD))
         (demiurgoi:[string] (ref-DALOS::UR_DemiurgoiID))
@@ -1032,7 +1032,7 @@
 (print "--- [TX007g - the smart-half guard, and three siblings that CANNOT be reached · 02 · let / invocation] ---")
 (let
     (
-        (ref-PYTHIA:module{PythiaV6} PYTHIA)
+        (ref-PYTHIA:module{PythiaV7} PYTHIA)
         (apollo-std3:string (read-string "PYTHIA|APOLLO-STANDARD-3"))
         (apollo-smt:string (read-string "PYTHIA|APOLLO-SMART"))
     )
@@ -1086,7 +1086,7 @@
 ;;symmetric, which is what makes the mismatch unconstructible.
 (let
     (
-        (ref-PYTHIA:module{PythiaV6} PYTHIA)
+        (ref-PYTHIA:module{PythiaV7} PYTHIA)
         (apollo-std:string (read-string "PYTHIA|APOLLO-STANDARD"))
         (apollo-smt:string (read-string "PYTHIA|APOLLO-SMART"))
     )

@@ -46,7 +46,7 @@
 (print "--- [CODEX-G1 — the StoicTag registry's four uniqueness and liveness guards · 02 · let / invocation] ---")
 (let
     (
-        (ref-CODEX:module{CodexV3} CODEX)
+        (ref-CODEX:module{CodexV4} CODEX)
         (ref-TS01-C4:module{TalosStageOne_ClientFourV9} TS01-C4)
         (tag:string "codextest01")
     )
@@ -134,7 +134,7 @@
 (print "--- [CODEX-G2 — releasing a tag that is present but already released · 02 · let / invocation] ---")
 (let
     (
-        (ref-CODEX:module{CodexV3} CODEX)
+        (ref-CODEX:module{CodexV4} CODEX)
         (ref-TS01-C4:module{TalosStageOne_ClientFourV9} TS01-C4)
         (tag:string "codextest01")
     )

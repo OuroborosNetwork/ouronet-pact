@@ -19,7 +19,7 @@ _To be written._
 
 | | |
 |---|---|
-| module hash | `hfj0kPp3nbESLFKBJRRpxFheInBRcdM6SeyLGD_VqpU` |
+| module hash | `7qQQy669gTyImeU3Ic5IB7i-gnN7eCkSDMVl_Vibrbw` |
 | deployed size | 35,430 characters |
 | implements | `OuronetPolicyV2`, `AcquisitionRewardEvictionV1` |
 | repository source | `1_SOVEREIGN/STAGE_02/2_Core/03_AQP/08b_EVCT.pact` |

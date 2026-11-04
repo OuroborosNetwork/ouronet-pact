@@ -651,7 +651,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV5} AQP-FVT)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV6} AQP-FVT)
                 )
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
                     (map
