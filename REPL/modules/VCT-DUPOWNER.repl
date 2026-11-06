@@ -1,0 +1,342 @@
+;;
+;; REPL/modules/VCT-DUPOWNER.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …).
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/modules/VCT-DUPOWNER.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "")
+;; REPL/modules/VCT-DUPOWNER.repl — ONE OWNER, MANY BENEFICIARIES, all three vacate lanes.
+;; Fresh boot: Stage 00 + Stage 1 + Stage 2 deploy cores + the AQP suite umbrella.
+;; Run: cd REPL && pact modules/VCT-DUPOWNER.repl
+;;
+;; WHY THIS IS ITS OWN GATE ENTRYPOINT AND NOT A BLOCK IN [6.2.5]_AQP-VCT.repl.
+;;
+;; It was written there first, and the gate caught what that costs: TWELVE failures in
+;; modules/AQP.repl, none of them about this fix. The tests here must DRAIN pools to prove a
+;; vacate completes, and `CC_FullVacate` is pool-wide -- so it emptied the DHCD nonce-1 leg that
+;; <<AQP-F15>> asserts is staked at 500, and the abort-guard it needs in order to re-open a pool
+;; cleared the campaign <<AQP-G1>> asserts is in progress.
+;;
+;; A destructive test and a shared fixture cannot live in the same process. `modules/*.repl` is
+;; GLOBBED by _gate.py, so a file here is gated the moment it exists and runs in its own `pact`
+;; invocation against its own fresh boot -- which is the isolation this needs, bought for the
+;; price of a second deploy.
+;;
+(load "../deploy-stage00.repl")
+(load "../deploy-stage01.repl")
+(load "../deploy-stage02.repl")
+(load "../Stage_02/[6.2]_AQP.repl")
+
+;;|| NEXT >
+;;
+(begin-tx "TX-VCT-DUPOWNER - one owner, MANY beneficiaries: the receiver list must be deduped")
+(print "")
+(print "=== TX-VCT-DUPOWNER — one owner / many beneficiaries, all three lanes =============")
+;;
+;; THE FIXTURE GAP THIS CLOSES, 2026-11-06. Every vacate fixture in this suite, and the 50-leg
+;; one in Kursan/AQP-scale-vacate.repl, stakes each owner to its OWN single beneficiary -- so
+;; `owner-ids` was unique BY CONSTRUCTION and no assertion here could ever reach the shape that
+;; broke a live pool: ONE OWNER STAKING TO TWO BENEFICIARIES.
+;;
+;; A vacate leg is keyed on the PAIR (owner, beneficiary), because the unwind's score and rollup
+;; phases are per beneficiary. The bulk TRANSFER is addressed by destination account, because it
+;; is handing custody back. Two legs, one destination -- and the owner column carried that
+;; account twice, which `UEV_IzUnique` refused. The pool could not be vacated AT ALL: not by the
+;; split path, not by CC_FullVacate.
+;;
+;; All three lanes reached it by different routes, so all three are asserted here:
+;;   collectable  owner-ids              -> DPDC-T|S>BULK-TRANSFER   UEV_IzUnique
+;;   OF           UC_VacateOrtoDestinations -> DPOF|S>BULK-MOVE      UEV_IzUnique
+;;   TF           UC_VacateTfLegsToTftBulkArrays -> DPTF|C>X-BULK-TRANSFER UEV_IzUnique
+;;
+;; AND BOTH ENTRY SHAPES: the on-chain scan (CC_FullVacate / XB_Vacate*) and the UI-supplied
+;; stateless batch (CCp_BatchVacate*), because only the second one carried the owner's failure
+;; and only the first is exercised by the rest of this suite.
+;;
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-VCT-DUPOWNER · 01 · env-sigs (caps) ====
+(print "--- [TX-VCT-DUPOWNER · 01 · env-sigs (caps)] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+;;==== TX-VCT-DUPOWNER · 02 · TF lane — one owner, two beneficiaries, stateless batch ====
+(print "--- [TX-VCT-DUPOWNER · 02 · TF lane: one owner, two beneficiaries] ---")
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-id:string KST.ANHD)
+        (beneficiary-a:string KST.ANHD)
+        (beneficiary-b:string KST.EMMA)
+        (ouro-id:string "OURO-98c486052a51")
+        (pool-name:string "TfStakePool")
+        (vacate-kind-tf:integer 1)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+        (ref-VCT:module{AcquisitionVacateV4} AQP-VCT)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+    )
+    ;; CLEAR ANY CAMPAIGN LEFT OPEN BY AN EARLIER TX IN THIS SUITE. `C_EnablePoolStake` refuses
+    ;; while a vacate is in progress, and this block runs last -- so whichever test ran before it
+    ;; decides whether the pool is open. Guarded, not unconditional: aborting a pool that has no
+    ;; campaign is itself an error.
+    (if (ref-VCT::UR_VacateInProgress pool-id)
+        (ref-TS02-C3::AQP-POOL|C_AbortVacate KST.ANHD (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id) "")
+    (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)
+    ;; TWO LEGS, ONE OWNER. This is the whole fixture: the same staker, two different beneficiaries.
+    (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron owner-id beneficiary-a pool-id ouro-id 40.0)
+    (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron owner-id beneficiary-b pool-id ouro-id 60.0)
+    (let
+        (
+            (legs:[object] (at "legs" (ref-VCT::URH_VacateTfInventory pool-id ouro-id)))
+            (pre-supply:decimal (ref-DPTF::UR_AccountSupply ouro-id owner-id))
+            (bulk:object (ref-VCT::UC_VacateTfLegsToTftBulkArrays
+                             (at "legs" (ref-VCT::URH_VacateTfInventory pool-id ouro-id))))
+        )
+        (map print
+            [
+                (expect (format "<<TX-VCT-DUPOWNER TF>> two legs for one owner got={} expected=2" [(length legs)])
+                        2 (length legs))
+                ;; THE PROJECTION IS WHAT CHANGED: legs stay 2, the receiver list collapses to 1.
+                (expect (format "<<TX-VCT-DUPOWNER TF>> ...but ONE receiver got={} expected=1"
+                                [(length (at 0 (at "receiver-array" bulk)))])
+                        1 (length (at 0 (at "receiver-array" bulk))))
+                ;; SUMMED, not dropped -- a TF leg carries a scalar balance, so the merge adds.
+                (expect (format "<<TX-VCT-DUPOWNER TF>> the one receiver gets the SUM got={} expected=100.0"
+                                [(at 0 (at 0 (at "transfer-amount-array" bulk)))])
+                        100.0 (at 0 (at 0 (at "transfer-amount-array" bulk))))
+            ]
+        )
+        ;; THE STATELESS BATCH PATH — the arrays a UI sends, duplicate owner included.
+        (let ((s0:object (at 0 (at "slices" (ref-VCT::URHC_BuildVacateSlicePlan pool-id ouro-id vacate-kind-tf 1)))))
+            (print (format "<(CCp_BatchVacateTrueFungible, duplicate owner)> => \"{}\"" [
+                (ref-TS02-C3::AQP-POOL|CCp_BatchVacateTrueFungible
+                    patron pool-id ouro-id
+                    (at "owner-ids" s0) (at "beneficiary-ids" s0) (at "amounts" s0))
+            ]))
+        )
+        (let
+            (
+                (post-supply:decimal (ref-DPTF::UR_AccountSupply ouro-id owner-id))
+                (inv-post:integer (at "leg-count" (ref-VCT::URH_VacateTfInventory pool-id ouro-id)))
+            )
+            (map print
+                [
+                    (expect (format "<<TX-VCT-DUPOWNER TF>> both legs drained got={} expected=0" [inv-post]) 0 inv-post)
+                    ;; CONSERVATION. The merge must not lose a leg's balance on the way out.
+                    (expect (format "<<TX-VCT-DUPOWNER TF>> owner got the full 100.0 back got={} expected={}"
+                                    [(- post-supply pre-supply) 100.0])
+                            100.0 (- post-supply pre-supply))
+                ]
+            )
+        )
+    )
+)
+;;==== TX-VCT-DUPOWNER · 03 · OF lane — one owner, two beneficiaries ====
+(print "--- [TX-VCT-DUPOWNER · 03 · OF lane: one owner, two beneficiaries] ---")
+(let
+    (
+        (patron:string KST.EMMA)
+        ;; EMMA holds MVST nonces 2 and 3 outright at this point in the suite (probed, not assumed),
+        ;; so the dual-beneficiary owner is EMMA here and no setup transfer is needed.
+        (owner-id:string KST.EMMA)
+        (beneficiary-a:string KST.ANHD)
+        (beneficiary-b:string KST.EMMA)
+        (dpof-id:string "MVST-98c486052a51")
+        (pool-name:string "OfStakePool")
+        (vacate-kind-of:integer 2)
+        (nonce-a:integer 2)
+        (nonce-b:integer 3)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+        (ref-VCT:module{AcquisitionVacateV4} AQP-VCT)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+    )
+    ;; CLEAR ANY CAMPAIGN LEFT OPEN BY AN EARLIER TX IN THIS SUITE. `C_EnablePoolStake` refuses
+    ;; while a vacate is in progress, and this block runs last -- so whichever test ran before it
+    ;; decides whether the pool is open. Guarded, not unconditional: aborting a pool that has no
+    ;; campaign is itself an error.
+    (if (ref-VCT::UR_VacateInProgress pool-id)
+        (ref-TS02-C3::AQP-POOL|C_AbortVacate KST.ANHD (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id) "")
+    (ref-TS02-C3::AQP-POOL|C_EnablePoolStake KST.ANHD (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)
+    (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron owner-id beneficiary-a pool-id dpof-id [nonce-a])
+    (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron owner-id beneficiary-b pool-id dpof-id [nonce-b])
+    (let
+        (
+            (legs:[object] (at "legs" (ref-VCT::URH_VacateOfInventory pool-id dpof-id)))
+        )
+        (map print
+            [
+                (expect (format "<<TX-VCT-DUPOWNER OF>> two legs for one owner got={} expected=2" [(length legs)])
+                        2 (length legs))
+            ]
+        )
+        ;; UC_VacateOrtoDestinations is a per-element SUBSTITUTION, not a dedupe -- it answers where
+        ;; each row goes, and both rows answer the same account. That is the OF route into the gate.
+        (let
+            (
+                (dests:[string] (ref-VCT::UC_VacateOrtoDestinations
+                                    (map (lambda (l:object) (at "owner-id" l)) legs)
+                                    (map (lambda (l:object) (at "beneficiary-id" l)) legs)))
+            )
+            (map print
+                [
+                    (expect (format "<<TX-VCT-DUPOWNER OF>> destinations repeat got={} expected=2" [(length dests)])
+                            2 (length dests))
+                    (expect (format "<<TX-VCT-DUPOWNER OF>> ...and dedupe to ONE got={} expected=1"
+                                    [(length (ref-VCT::UC_VacateBulkDestinations dests))])
+                            1 (length (ref-VCT::UC_VacateBulkDestinations dests)))
+                ]
+            )
+        )
+        (let ((s0:object (at 0 (at "slices" (ref-VCT::URHC_BuildVacateSlicePlan pool-id dpof-id vacate-kind-of 1)))))
+            (print (format "<(CCp_BatchVacateOrtoFungible, duplicate owner)> => \"{}\"" [
+                ;; NO amounts-array ON THE OF FORM. An OF position is whole nonces, so the
+                ;; slice payload zeroes that column and the entrypoint does not take it.
+                (ref-TS02-C3::AQP-POOL|CCp_BatchVacateOrtoFungible
+                    patron pool-id dpof-id
+                    (at "owner-ids" s0) (at "beneficiary-ids" s0) (at "nonces-array" s0))
+            ]))
+        )
+        (let
+            (
+                (inv-post:integer (at "leg-count" (ref-VCT::URH_VacateOfInventory pool-id dpof-id)))
+                (holder-a:string (ref-DPOF::UR_NonceHolder dpof-id nonce-a))
+                (holder-b:string (ref-DPOF::UR_NonceHolder dpof-id nonce-b))
+            )
+            (map print
+                [
+                    (expect (format "<<TX-VCT-DUPOWNER OF>> both legs drained got={} expected=0" [inv-post]) 0 inv-post)
+                    ;; BOTH NONCES COME HOME, to the one owner, in one merged row.
+                    (expect "<<TX-VCT-DUPOWNER OF>> nonce-a returned to the owner" owner-id holder-a)
+                    (expect "<<TX-VCT-DUPOWNER OF>> nonce-b returned to the owner" owner-id holder-b)
+                ]
+            )
+        )
+    )
+)
+;;==== TX-VCT-DUPOWNER · 04 · collectable lane — the shape that failed live ====
+(print "--- [TX-VCT-DUPOWNER · 04 · collectable lane: one owner, two beneficiaries] ---")
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner:string KST.ANHD)
+        (beneficiary-a:string KST.ANHD)
+        (beneficiary-b:string KST.EMMA)
+        (dpsf-id:string "DHCD-98c486052a51")
+        (pool-name:string "SfStakePool")
+        (vacate-kind-dpsf:integer 3)
+        ;; ANHD holds DHCD nonces 3,4,5 outright at this point in the suite (probed, not assumed).
+        (nonce-a:integer 3)
+        (nonce-b:integer 4)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+        (ref-VCT:module{AcquisitionVacateV4} AQP-VCT)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+    )
+    ;; CLEAR ANY CAMPAIGN LEFT OPEN BY AN EARLIER TX IN THIS SUITE. `C_EnablePoolStake` refuses
+    ;; while a vacate is in progress, and this block runs last -- so whichever test ran before it
+    ;; decides whether the pool is open. Guarded, not unconditional: aborting a pool that has no
+    ;; campaign is itself an error.
+    (if (ref-VCT::UR_VacateInProgress pool-id)
+        (ref-TS02-C3::AQP-POOL|C_AbortVacate KST.ANHD (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id) "")
+    (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)
+    (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron owner beneficiary-a pool-id dpsf-id [nonce-a])
+    (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron owner beneficiary-b pool-id dpsf-id [nonce-b])
+    ;; THE STATELESS BATCH FIRST -- this is the exact call that failed on the owner's pool.
+    (let ((s0:object (at 0 (at "slices" (ref-VCT::URHC_BuildVacateSlicePlan pool-id dpsf-id vacate-kind-dpsf 1)))))
+        (map print
+            [
+                (expect (format "<<TX-VCT-DUPOWNER DC>> the batch repeats the owner got={} expected=2"
+                                [(length (at "owner-ids" s0))]) 2 (length (at "owner-ids" s0)))
+                (expect (format "<<TX-VCT-DUPOWNER DC>> ...and they are ONE destination got={} expected=1"
+                                [(length (ref-VCT::UC_VacateBulkDestinations (at "owner-ids" s0)))])
+                        1 (length (ref-VCT::UC_VacateBulkDestinations (at "owner-ids" s0))))
+            ]
+        )
+        (print (format "<(CCp_BatchVacateCollectables, duplicate owner)> => \"{}\"" [
+            (ref-TS02-C3::AQP-POOL|CCp_BatchVacateCollectables
+                patron pool-id dpsf-id true
+                (at "owner-ids" s0) (at "beneficiary-ids" s0)
+                (at "nonces-array" s0) (at "amounts-array" s0))
+        ]))
+    )
+    (let
+        (
+            (inv-post:integer (at "leg-count" (ref-VCT::URH_VacateCollectableInventory pool-id dpsf-id true)))
+            (back-a:integer (ref-DPDC::UR_AccountNonceSupply owner dpsf-id true nonce-a))
+            (back-b:integer (ref-DPDC::UR_AccountNonceSupply owner dpsf-id true nonce-b))
+            (vip:bool (ref-VCT::UR_VacateInProgress pool-id))
+        )
+        (map print
+            [
+                (expect (format "<<TX-VCT-DUPOWNER DC>> both legs drained got={} expected=0" [inv-post]) 0 inv-post)
+                (expect (format "<<TX-VCT-DUPOWNER DC>> nonce-a returned got={} expected=500" [back-a]) 500 back-a)
+                (expect (format "<<TX-VCT-DUPOWNER DC>> nonce-b returned got={} expected=500" [back-b]) 500 back-b)
+                (expect (format "<<TX-VCT-DUPOWNER DC>> campaign auto-finalized got={} expected=false" [vip]) false vip)
+            ]
+        )
+    )
+)
+;;==== TX-VCT-DUPOWNER · 05 · the ON-CHAIN SCAN entry shape, CC_FullVacate ====
+(print "--- [TX-VCT-DUPOWNER · 05 · CC_FullVacate over a duplicate-owner pool] ---")
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner:string KST.ANHD)
+        (beneficiary-a:string KST.ANHD)
+        (beneficiary-b:string KST.EMMA)
+        (dpsf-id:string "DHCD-98c486052a51")
+        (pool-name:string "SfStakePool")
+        (nonce-a:integer 3)
+        (nonce-b:integer 5)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+        (ref-VCT:module{AcquisitionVacateV4} AQP-VCT)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+    )
+    ;; CLEAR ANY CAMPAIGN LEFT OPEN BY AN EARLIER TX IN THIS SUITE. `C_EnablePoolStake` refuses
+    ;; while a vacate is in progress, and this block runs last -- so whichever test ran before it
+    ;; decides whether the pool is open. Guarded, not unconditional: aborting a pool that has no
+    ;; campaign is itself an error.
+    (if (ref-VCT::UR_VacateInProgress pool-id)
+        (ref-TS02-C3::AQP-POOL|C_AbortVacate KST.ANHD (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id) "")
+    (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)
+    (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron owner beneficiary-a pool-id dpsf-id [nonce-a])
+    (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron owner beneficiary-b pool-id dpsf-id [nonce-b])
+    ;; NO ARRAYS FROM ANYWHERE: the legs are scanned on chain. A pool the UI never splits still
+    ;; could not be emptied before this fix, which is why the entry shape is asserted separately.
+    (print (format "<(CC_FullVacate, duplicate owner)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|CC_FullVacate patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)
+    ]))
+    (let
+        (
+            (inv-post:integer (at "leg-count" (ref-VCT::URH_VacateCollectableInventory pool-id dpsf-id true)))
+            (back-a:integer (ref-DPDC::UR_AccountNonceSupply owner dpsf-id true nonce-a))
+            (back-b:integer (ref-DPDC::UR_AccountNonceSupply owner dpsf-id true nonce-b))
+        )
+        (map print
+            [
+                (expect (format "<<TX-VCT-DUPOWNER FULL>> one tx drains both legs got={} expected=0" [inv-post]) 0 inv-post)
+                (expect (format "<<TX-VCT-DUPOWNER FULL>> nonce-a returned got={} expected=500" [back-a]) 500 back-a)
+                (expect (format "<<TX-VCT-DUPOWNER FULL>> nonce-b returned got={} expected=500" [back-b]) 500 back-b)
+            ]
+        )
+    )
+)
+;;==== TX-VCT-DUPOWNER · 06 · env-sigs (caps) ====
+(print "--- [TX-VCT-DUPOWNER · 06 · env-sigs (caps)] ---")
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-VCT-DUPOWNER ======================================================")
+(print "")

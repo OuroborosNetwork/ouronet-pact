@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 20 of 26
 ;; This is STEP 20 of 27 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-19 must have run first, including the init steps between deploys.
-;; 3 source file(s), 419,312 gas measured in the REPL gas model, 282,667 bytes
+;; 3 source file(s), 419,312 gas measured in the REPL gas model, 292,877 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/06_VCT.pact
@@ -1019,6 +1019,112 @@
             \ `CCp_ReleaseSpecialCustodial`'s job, not this one."
         (zip (lambda (o:string b:string) (if (= o AQP|SC_NAME) b o)) owner-ids beneficiary-ids)
     )
+    ;; ─────────────────────────────────────────────────────────────────────────────────────────
+    ;; A BULK-TRANSFER RECEIVER LIST MUST BE UNIQUE, AND A VACATE LEG LIST IS NOT.
+    ;;
+    ;; Added 2026-11-06, after a live pool could not be vacated AT ALL -- not by the split path,
+    ;; not by CC_FullVacate: "Unique Items Required, duplicate list item found: <account>".
+    ;;
+    ;; THE SHAPE MISMATCH. A vacate leg is keyed on the PAIR (owner, beneficiary) -- that is what
+    ;; UC_MergeVacateCollectableRowIntoLegs builds and what the unwind needs, because the score
+    ;; and rollup phases are per beneficiary. The TRANSFER needs something else entirely: one row
+    ;; per DESTINATION ACCOUNT, because it is handing custody back. One owner who staked to two
+    ;; beneficiaries is two legs and ONE destination, so the owner column carried that account
+    ;; twice and `UEV_IzUnique` -- correctly -- refused the batch.
+    ;;
+    ;; SO THE LEGS ARE NOT CHANGED; the transfer is given the projection it actually wants. The
+    ;; unwind keeps the per-(owner,beneficiary) arrays verbatim. Nothing about the uniqueness gate
+    ;; is relaxed: it guards every token surface in the system against a double credit, and the
+    ;; duplicate was wrong HERE, at the call site, not there.
+    ;;
+    ;; WHOLE-NONCE STAKING IS WHY THE MERGE IS A PLAIN CONCATENATION. Every stake entrypoint takes
+    ;; `nonces:[integer]` with no amounts (TS02-C3 AQP-POOL|CC_Stake{SemiFungible,NonFungible}
+    ;; Collectable / CC_StakeOrtoFungible), so a nonce belongs to exactly one (owner,beneficiary)
+    ;; leg and a merged row can never repeat one. If partial-nonce staking is ever added, THIS
+    ;; COMMENT IS THE THING THAT STOPS BEING TRUE and the merge must start summing per nonce.
+    ;;
+    ;; COST, MEASURED -- NOT ESTIMATED. O(rows x destinations) string comparisons.
+    ;; `Kursan/AQP-scale-vacate.repl`, round 2, 15 TF legs: 837,374 gas before, 837,624 after.
+    ;; +250 GAS, +0.03%. That fixture is the WORST CASE and was chosen for it: 50 distinct owners,
+    ;; each its own beneficiary, so the dedupe does every comparison and merges nothing.
+    ;;
+    ;; It is quadratic, so scale it rather than trusting the headline: ~1.1 gas per comparison, so
+    ;; a 300-leg all-distinct batch pays ~100,000 gas, about 5% of the 2M ceiling. Acceptable, and
+    ;; the UI prices batches by simulating them, so its plan absorbs this without retuning.
+    ;;
+    ;; DELIBERATELY NOT OPTIMISED by assuming the rows arrive owner-adjacent. They do on the
+    ;; chain-scan path; the stateless batch path takes its arrays from the UI, which is free to
+    ;; interleave them. Correctness that depends on a caller's ordering is the same class of
+    ;; implicit assumption that produced this defect.
+    ;; ─────────────────────────────────────────────────────────────────────────────────────────
+    (defun UC_VacateBulkDestinations:[string] (destinations:[string])
+        @doc "Order-preserving distinct destination accounts -- the receiver list a bulk transfer \
+            \ will accept. Separate from UC_VacateUniqueBeneficiaries, which dedupes the UNWIND's \
+            \ target set: same operation, different column, and naming one for the other is how a \
+            \ future reader comes to believe the transfer is addressed by beneficiary."
+        (fold (lambda (acc:[string] d:string) (if (contains d acc) acc (+ acc [d]))) [] destinations)
+    )
+    (defun UC_VacateMergeIntRowsByDestination:object
+        (destinations:[string] nonces-array:[[integer]] amounts-array:[[integer]])
+        @doc "Collapse parallel per-LEG rows into parallel per-DESTINATION rows for a collectable \
+            \ bulk transfer: {destinations, nonces-array, amounts-array}, each destination once, \
+            \ carrying every nonce and amount addressed to it."
+        ;;EMPTY-INPUT GUARD. `(enumerate 0 (- (length xs) 1))` on an EMPTY list is `(enumerate 0 -1)`,
+        ;;which Pact evaluates to the DESCENDING PAIR `[0, -1]` -- not the empty list -- so the body
+        ;;would index `(at 0 [])` and die on a native "Array index out of bounds". Same guard, same
+        ;;reason, as UC_VacateMergeIntNonceRowsForBeneficiary below.
+        (if (= (length destinations) 0)
+            {"destinations": [], "nonces-array": [], "amounts-array": []}
+            (let
+                (
+                    (uniq:[string] (UC_VacateBulkDestinations destinations))
+                    (idxs:[integer] (enumerate 0 (- (length destinations) 1)))
+                )
+                {
+                    "destinations": uniq
+                   ,"nonces-array"
+                        : (map
+                            (lambda (d:string)
+                                (fold (lambda (acc:[integer] i:integer)
+                                        (if (= d (at i destinations)) (+ acc (at i nonces-array)) acc))
+                                      [] idxs))
+                            uniq)
+                   ,"amounts-array"
+                        : (map
+                            (lambda (d:string)
+                                (fold (lambda (acc:[integer] i:integer)
+                                        (if (= d (at i destinations)) (+ acc (at i amounts-array)) acc))
+                                      [] idxs))
+                            uniq)
+                }
+            )
+        )
+    )
+    (defun UC_VacateMergeNonceRowsByDestination:object
+        (destinations:[string] nonces-array:[[integer]])
+        @doc "The OF form of UC_VacateMergeIntRowsByDestination: {destinations, nonces-array}. \
+            \ DPOF::C_BulkTransfer takes no amounts column -- an OF position is whole nonces -- so \
+            \ there is nothing to merge alongside them."
+        (if (= (length destinations) 0)
+            {"destinations": [], "nonces-array": []}
+            (let
+                (
+                    (uniq:[string] (UC_VacateBulkDestinations destinations))
+                    (idxs:[integer] (enumerate 0 (- (length destinations) 1)))
+                )
+                {
+                    "destinations": uniq
+                   ,"nonces-array"
+                        : (map
+                            (lambda (d:string)
+                                (fold (lambda (acc:[integer] i:integer)
+                                        (if (= d (at i destinations)) (+ acc (at i nonces-array)) acc))
+                                      [] idxs))
+                            uniq)
+                }
+            )
+        )
+    )
     (defun UC_VacateMergeDecimalNonceRowsForBeneficiary:object
         (beneficiary-id:string beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[decimal]])
         @doc "Concatenate the nonces/amounts (decimal) of every row whose beneficiary equals <beneficiary-id> \
@@ -1121,27 +1227,45 @@
     )
     (defun UC_VacateTfLegsToTftBulkArrays:object
         (legs:[object{AcquisitionSchemasV3.VCT|VacateTfLeg}])
-        @doc "One DPTF row: parallel owner/balance inner lists for TFT::C_MultiBulkTransfer."
-        {
-            "receiver-array"
-                : [
-                    (map
-                        (lambda (leg:object{AcquisitionSchemasV3.VCT|VacateTfLeg})
-                            (at "owner-id" leg)
+        @doc "One DPTF row: parallel receiver/amount inner lists for TFT::C_MultiBulkTransfer, \
+            \ ONE ROW PER OWNER -- an owner who staked to several beneficiaries receives the SUM \
+            \ of his legs, in a single entry."
+        ;; MERGED BY OWNER SINCE 2026-11-06. This used to emit one entry per LEG, and a leg is
+        ;; keyed on (owner, beneficiary) -- so an owner with two beneficiaries appeared twice in
+        ;; `receiver-array`, which is the receiver list `DPTF|C>X-BULK-TRANSFER` runs
+        ;; `UEV_IzUnique` over. Same defect as the collectable and OF lanes, reached by a third
+        ;; route; see UC_VacateMergeIntRowsByDestination for the full account.
+        ;;
+        ;; SUMMED, NOT CONCATENATED, because a TF leg carries a scalar `balance` where a nonce leg
+        ;; carries a list. The unwind is untouched and still walks the per-leg list: it has to,
+        ;; because the score and rollup phases are per BENEFICIARY and that column does not
+        ;; survive this projection.
+        (let
+            (
+                (owners:[string]
+                    (UC_VacateBulkDestinations
+                        (map (lambda (leg:object{AcquisitionSchemasV3.VCT|VacateTfLeg}) (at "owner-id" leg)) legs)))
+            )
+            {
+                "receiver-array" : [owners]
+                ,"transfer-amount-array"
+                    : [
+                        (map
+                            (lambda (o:string)
+                                (fold (+) 0.0
+                                    (map
+                                        (lambda (leg:object{AcquisitionSchemasV3.VCT|VacateTfLeg})
+                                            (if (= o (at "owner-id" leg)) (at "balance" leg) 0.0)
+                                        )
+                                        legs
+                                    )
+                                )
+                            )
+                            owners
                         )
-                        legs
-                    )
-                ]
-            ,"transfer-amount-array"
-                : [
-                    (map
-                        (lambda (leg:object{AcquisitionSchemasV3.VCT|VacateTfLeg})
-                            (at "balance" leg)
-                        )
-                        legs
-                    )
-                ]
-        }
+                    ]
+            }
+        )
     )
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;; [URCi]   vacate / drain / full-vacate flow ifp readers — relocated from AQP-INFO (byte-identical
@@ -2976,10 +3100,15 @@
                 (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                 ;;
+                ;; SAME DEFECT, OF LANE. UC_VacateOrtoDestinations is a per-element substitution,
+                ;; not a dedupe -- it answers WHERE each row goes, and two rows can answer the
+                ;; same account. DPOF|S>BULK-MOVE enforces UEV_IzUnique on exactly that list.
+                (bulk:object (UC_VacateMergeNonceRowsByDestination
+                                 (UC_VacateOrtoDestinations owner-ids beneficiary-ids) nonces-array))
                 (bulk-oc:object{IgnisCollectorV4.OutputCumulator}
                     (ref-DPOF::C_BulkTransfer patron AQP|SC_NAME
-                        (UC_VacateOrtoDestinations owner-ids beneficiary-ids)
-                        dpof-id nonces-array true)
+                        (at "destinations" bulk)
+                        dpof-id (at "nonces-array" bulk) true)
                 )
                 (unwind-oc:object{IgnisCollectorV4.OutputCumulator}
                     (XI_1|VacateOrtoFungibleUnwindBatch
@@ -3010,9 +3139,15 @@
                 (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 (ref-DPDC-T:module{DpdcTransferV3} DPDC-T)
                 ;;
+                ;; THE TRANSFER IS ADDRESSED BY DESTINATION, THE UNWIND BY LEG. Two legs for one
+                ;; owner (he staked to two beneficiaries) are ONE receiver, and a receiver list
+                ;; with a repeat is refused by DPDC-T|S>BULK-TRANSFER's UEV_IzUnique. See
+                ;; UC_VacateMergeIntRowsByDestination for why the legs themselves stay as they are.
+                (bulk:object (UC_VacateMergeIntRowsByDestination owner-ids nonces-array amounts-array))
                 (bulk-oc:object{IgnisCollectorV4.OutputCumulator}
                     (ref-DPDC-T::C_BulkTransfer
-                        AQP|SC_NAME AQP|SC_NAME owner-ids collectable-id son nonces-array amounts-array true
+                        AQP|SC_NAME AQP|SC_NAME (at "destinations" bulk) collectable-id son
+                        (at "nonces-array" bulk) (at "amounts-array" bulk) true
                     )
                 )
                 (unwind-oc:object{IgnisCollectorV4.OutputCumulator}
@@ -3097,10 +3232,15 @@
                 (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                 ;;
+                ;; SAME DEFECT, OF LANE. UC_VacateOrtoDestinations is a per-element substitution,
+                ;; not a dedupe -- it answers WHERE each row goes, and two rows can answer the
+                ;; same account. DPOF|S>BULK-MOVE enforces UEV_IzUnique on exactly that list.
+                (bulk:object (UC_VacateMergeNonceRowsByDestination
+                                 (UC_VacateOrtoDestinations owner-ids beneficiary-ids) nonces-array))
                 (bulk-oc:object{IgnisCollectorV4.OutputCumulator}
                     (ref-DPOF::C_BulkTransfer patron AQP|SC_NAME
-                        (UC_VacateOrtoDestinations owner-ids beneficiary-ids)
-                        dpof-id nonces-array true)
+                        (at "destinations" bulk)
+                        dpof-id (at "nonces-array" bulk) true)
                 )
                 (unwind-oc:object{IgnisCollectorV4.OutputCumulator}
                     (XI_1|DrainOrtoFungibleUnwindBatch
@@ -3205,9 +3345,15 @@
                 (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 (ref-DPDC-T:module{DpdcTransferV3} DPDC-T)
                 ;;
+                ;; THE TRANSFER IS ADDRESSED BY DESTINATION, THE UNWIND BY LEG. Two legs for one
+                ;; owner (he staked to two beneficiaries) are ONE receiver, and a receiver list
+                ;; with a repeat is refused by DPDC-T|S>BULK-TRANSFER's UEV_IzUnique. See
+                ;; UC_VacateMergeIntRowsByDestination for why the legs themselves stay as they are.
+                (bulk:object (UC_VacateMergeIntRowsByDestination owner-ids nonces-array amounts-array))
                 (bulk-oc:object{IgnisCollectorV4.OutputCumulator}
                     (ref-DPDC-T::C_BulkTransfer
-                        AQP|SC_NAME AQP|SC_NAME owner-ids collectable-id son nonces-array amounts-array true
+                        AQP|SC_NAME AQP|SC_NAME (at "destinations" bulk) collectable-id son
+                        (at "nonces-array" bulk) (at "amounts-array" bulk) true
                     )
                 )
                 (unwind-oc:object{IgnisCollectorV4.OutputCumulator}

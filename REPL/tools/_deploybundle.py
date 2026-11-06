@@ -92,6 +92,60 @@ BLOODSHED = (
 )
 
 ROUNDS = {
+    "2026-11-v22-vacate-duplicate-owner": {
+        "why": "A POOL WHERE ONE OWNER STAKED TO TWO BENEFICIARIES COULD NOT BE VACATED AT ALL. "
+               "Owner, 2026-11-06, from a live DHBloodshed vacate: 'Unique Items Required, "
+               "duplicate list item found: <account>' -- and his own first reading was that the "
+               "UI split engine had broken. It had not. `CC_FullVacate`, which takes no arrays "
+               "from anywhere and scans the legs on chain, fails identically. "
+               "\n\n"
+               "THE SHAPE MISMATCH. A vacate leg is keyed on the PAIR (owner, beneficiary), "
+               "because the unwind's score and rollup phases are per beneficiary. The bulk "
+               "TRANSFER is addressed by DESTINATION ACCOUNT, because it is handing custody back. "
+               "One owner with two beneficiaries is two legs and ONE destination -- so the owner "
+               "column carried that account twice, and `UEV_IzUnique` correctly refused it. "
+               "\n\n"
+               "ALL THREE LANES, by three different routes, plus the two fast-drain mirrors: "
+               "collectable `owner-ids` -> `DPDC-T|S>BULK-TRANSFER`; OF "
+               "`UC_VacateOrtoDestinations` (a per-element SUBSTITUTION, not a dedupe) -> "
+               "`DPOF|S>BULK-MOVE`; TF `UC_VacateTfLegsToTftBulkArrays` -> "
+               "`DPTF|C>X-BULK-TRANSFER`. Each now merges by destination before the transfer and "
+               "leaves the per-leg arrays untouched for the unwind. "
+               "\n\n"
+               "THE UNIQUENESS GATE IS NOT RELAXED, and that was a deliberate choice rather than "
+               "an oversight: it guards every token surface in the system against a double "
+               "credit. The duplicate was wrong at the CALL SITE. "
+               "\n\n"
+               "WHY 29,536 GREEN ASSERTIONS SAID NOTHING ABOUT IT. Every vacate fixture in the "
+               "tree -- [6.2.5]_AQP-VCT.repl and Kursan/AQP-scale-vacate.repl's 50 legs -- stakes "
+               "each owner to its OWN single beneficiary, so `owner-ids` was unique BY "
+               "CONSTRUCTION and the shape was unreachable. Closed by the new gate entrypoint "
+               "`modules/VCT-DUPOWNER.repl` (20 assertions, all three lanes, both the on-chain-"
+               "scan and stateless-batch entry shapes). It is its own entrypoint because it must "
+               "DRAIN pools to prove a vacate completes, and as a block inside [6.2.5] it broke "
+               "twelve assertions in modules/AQP.repl that depend on those fixtures. "
+               "\n\n"
+               "ONE MODULE, NO CASCADE, CHECKED NOT ASSUMED. The three new `UC_` helpers are "
+               "module-only -- nine already are in this file, including "
+               "`UC_MergeVacateCollectableRowIntoLegs`, the function at the root of the defect. "
+               "`AcquisitionVacateV4` occupies lines 2-117 and the earliest edit lands at 1,099, "
+               "so the interface block is BYTE-IDENTICAL. `_livemodules.py --diff` reports "
+               "exactly one divergent pair for this change: AQP-VCT's functions. "
+               "\n\n"
+               "GAS, MEASURED. Kursan/AQP-scale-vacate.repl round 2, 15 TF legs: 837,374 before, "
+               "837,624 after -- +250 gas, +0.03%, on the worst case (50 distinct owners, so the "
+               "dedupe does every comparison and merges nothing).",
+        # NO INTERFACE BUMP. All three new helpers are module-private; the interface block did
+        # not change by a single byte. `AcquisitionVacateV4` is already in LIVE_INTERFACES and is
+        # stripped from the emitted source -- Pact refuses to re-deploy an interface.
+        "interfaces": [],
+        # AQP-VCT IS IN `also` FOR THE THIRD TIME, for the reason V18 and V19 record: its body
+        # changed and its signatures did not, so an interface grep cannot see it.
+        "also": ["1_SOVEREIGN/STAGE_02/2_Core/03_AQP/06_VCT.pact"],
+        # NO INIT. Three pure helpers are added and four call sites rewired. No table, no
+        # registration, nothing to call afterwards.
+        "init": [],
+    },
     "2026-11-v21-account-creation-stoa-read": {
         "why": "ONE READ, DEAD ON MAINNET SINCE GENESIS, and the 2026-10-15 fix guarded the "
                "wrong step. `DALOS::UR_AccountCreationStoa` binds a WHOLE-ROW read to "

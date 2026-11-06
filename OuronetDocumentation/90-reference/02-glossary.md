@@ -20,7 +20,7 @@ Counts are of definitions in the tree, interface declarations included.
 | `INFO_` | 650 | operation preview returning a client-facing cost and description |
 | `URCi_` | 646 | **cost reader** — the single source both billing and the preview call |
 | `A_` | 564 | admin-key mutation |
-| `UC_` | 529 | pure compute on arguments only — no table reads, no `enforce` |
+| `UC_` | 532 | pure compute on arguments only — no table reads, no `enforce` |
 | `XI_` | 398 | internal write, this module only, under a capability |
 | `XE_` | 362 | entry point for other modules only |
 | `UDC_` | 348 | data construction — a named constructor for an object |
