@@ -2,17 +2,16 @@
 ;; OURONET DEPLOY -- file 2 of 26
 ;; This is STEP 2 of 27 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-1 must have run first, including the init steps between deploys.
-;; 3 source file(s), 205,433 gas measured in the REPL gas model, 240,786 bytes
+;; 3 source file(s), 205,433 gas measured in the REPL gas model, 242,756 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/01_DALOS.pact
 ;;   1_SOVEREIGN/STAGE_01/2_Core/02_IGNIS.pact
 ;;   1_SOVEREIGN/STAGE_01/2_Core/04_BRD.pact
 ;;
-;; TOTAL: 4 interface(s), 3 module(s), 12 table(s)
+;; TOTAL: 3 interface(s), 3 module(s), 12 table(s)
 ;; What it DEPLOYS, in load order:
 ;;   -- 1_SOVEREIGN/STAGE_01/2_Core/01_DALOS.pact
-;;      interface  OuronetDalosV3
 ;;      module     DALOS
 ;;      table      P|T
 ;;      table      P|MT
@@ -49,268 +48,8 @@
 
 
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface OuronetDalosV3
-    @doc "Interface exposing the DALOS public API — the sovereign identity, account and \
-        \ ledger core. Declares the account and ledger readers, account-ownership \
-        \ enforcement, virtual-gas and action-price readers, and the governance hooks \
-        \ that other Ouronet modules reference for account authority."
+;; OuronetDalosV3: already deployed and unchanged -- see LIVE_INTERFACES
 
-    ;;<=========================================================================>
-    ;;{1}  GOVERNANCE
-    ;;{G1}  constants
-    ;;{G2}  schemas
-    ;;{G3}  tables  ⟨cannot exist in an interface⟩
-    ;;{G4}  capabilities
-    ;;{G5}  functions
-    ;;
-    ;;  [GOV]
-    ;;
-    (defun GOV|DALOS|SC_STOA-NAME ())
-    (defun GOV|DALOS|GUARD ())
-    ;;
-    (defun GOV|Demiurgoi ())
-    (defun GOV|DalosKey ())
-    (defun GOV|AutostakeKey ())
-    (defun GOV|VestingKey ())
-    (defun GOV|LiquidKey ())
-    (defun GOV|OuroborosKey ())
-    (defun GOV|SwapKey ())
-    (defun GOV|DHVKey ())
-    ;;
-    (defun GOV|DALOS|SC_NAME ())
-    (defun GOV|ATS|SC_NAME ())
-    (defun GOV|VST|SC_NAME ())
-    (defun GOV|LIQUID|SC_NAME ())
-    (defun GOV|OUROBOROS|SC_NAME ())
-    (defun GOV|SWP|SC_NAME ())
-    (defun GOV|DHV1|SC_NAME ())
-    (defun GOV|DHV2|SC_NAME ())
-    ;;
-    (defun GOV|DALOS|PBL ())
-    (defun GOV|ATS|PBL ())
-    (defun GOV|VST|PBL ())
-    (defun GOV|LIQUID|PBL ())
-    (defun GOV|OUROBOROS|PBL ())
-    (defun GOV|SWP|PBL ())
-    (defun GOV|DHV|PBL ())
-
-    ;;<=========================================================================>
-    ;;{2}  POLICY
-    ;;{P1}  constants
-    ;;{P2}  schemas
-    ;;{P3}  tables  ⟨cannot exist in an interface⟩
-    ;;{P4}  capabilities
-    ;;{P5}  functions
-
-    ;;<=========================================================================>
-    ;;{3}  CST
-    ;;{3.1}  constants
-    ;;{3.2}  schemas
-    ;;
-    ;;  SCHEMAS
-    ;;
-    (defschema DPTF|BalanceSchema
-        @doc "Schema that Stores Account Balances for DPTF Tokens (True Fungibles)\
-            \ Key for the Table is a string composed of: <DPTF id> + BAR + <account> \
-            \ This ensure a single entry per DPTF id per account. \
-            \ As an Exception OUROBOROS and IGNIS Account Data is Stored at the DALOS Account Level"
-        balance:decimal
-        frozen:bool
-        role-burn:bool
-        role-mint:bool
-        role-fee-exemption:bool
-        role-transfer:bool
-        ;;
-        ;;ForSelect, store Key Make-up
-        id:string
-        account:string
-    )
-    (defschema CanonicalStoaIds
-        @doc "#65fL Phase 8b: OURO/WSTOA/SSTOA's canonical token ids, all 3 read together \
-            \ in ONE table read (all 3 live on the same DALOS|PropertiesTable row) — \
-            \ for a caller (SWPI::URC_WorthWSTOA and its FromRaw/FromGraph siblings) that \
-            \ previously needed all 3 identities via 3 separate UR_OuroborosID/ \
-            \ UR_WrappedStoaID/UR_SilverStoaID calls, each independently re-reading the \
-            \ same row. Field names match DALOS|PropertiesSchema's own field names \
-            \ exactly, so the read is a pure passthrough — no renaming/reconstruction."
-        gas-source-id:string      ;;OUROBOROS
-        wrapped-stoa-id:string    ;;OWS - Ouronet Wrapped Stoa
-        silver-stoa-id:string     ;;OSS - Ouronet Silver (Liquid) Stoa
-    )
-    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
-
-    ;;<=========================================================================>
-    ;;{4}  CAPABILITIES
-    ;;{C1}  Trivial [bronze]
-    ;;{C2}  Simple
-    ;;{C3}  Composed
-    ;;{C4}  Ownership [gold]
-
-    ;;<=========================================================================>
-    ;;{5}  FUNCTIONS
-    ;;{5.1}  Construct [CT/UDC]
-    ;;
-    (defun CT_Info ())
-    (defun CT_VirtualGasData ())
-    ;;
-    ;;  [UDC]
-    ;;
-    (defun UDC_TrueFungibleAccount:object{DPTF|BalanceSchema}
-        (a:decimal b:bool c:bool d:bool e:bool f:bool g:string h:string)
-    )
-    (defun UDC_BlankTrueFungible:object{DPTF|BalanceSchema} (account:string))
-    ;;{5.2}  Compute [UC]
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    ;;
-    ;;
-    ;;  [UR]
-    ;;
-    ;;  [0]     DALOS|KadenaLedger:{DALOS|StoaSchema}
-    (defun UR_StoaLedger:[string] (stoa:string))
-    ;;  [1]     DALOS|PropertiesTable:{DALOS|PropertiesSchema}
-    (defun UR_GAP:bool ())
-    (defun UR_DemiurgoiID:[string] ())
-    (defun UR_UnityID:string ())
-    (defun UR_OuroborosID:string ())
-    (defun UR_OuroborosPrice:decimal ())
-    (defun UR_IgnisID:string ())
-    (defun UR_AurynID:string ())
-    (defun UR_EliteAurynID:string ())
-    (defun UR_WrappedStoaID:string ())
-    (defun UR_SilverStoaID:string ())
-    ;;#65fL Phase 8b: OURO/WSTOA/SSTOA together, one read instead of 3 — see the
-    ;;CanonicalStoaIds schema's own doc.
-    (defun UR_CanonicalStoaIds:object{CanonicalStoaIds} ())
-    (defun UR_GoldenStoaID:string ())
-    (defun UR_UrStoaID:string ())
-    (defun UR_DispoType:integer ())
-    (defun UR_DispoTDP:decimal ())
-    (defun UR_DispoTDS:decimal ())
-    (defun UR_OuroAutoPriceUpdate:bool ())
-    ;;  [2]     DALOS|GasManagementTable:{DALOS|GasManagementSchema}
-    (defun UR_Tanker:string ())
-    (defun UR_VirtualToggle:bool ())
-    (defun UR_VirtualSpent:decimal ())
-    (defun UR_NativeToggle:bool ())
-    (defun UR_AccountCreationStoa:bool ())
-    (defun UR_NativeSpent:decimal ())
-    (defun UR_AutoFuel:bool ())
-    ;; [3]      DALOS|PricesTable:{DALOS|PricesSchema}
-    (defun UR_UsagePrice:decimal (action:string))
-    ;; [4]      DALOS|AccountTable:{DALOS|AccountSchema}
-    (defun UR_AccountPublicKey:string (account:string))
-    (defun UR_AccountGuard:guard (account:string))
-    (defun UR_AccountStoa:string (account:string))
-    (defun UR_AccountSovereign:string (account:string))
-    (defun UR_AccountGovernor:guard (account:string))
-    (defun UR_AccountProperties:[bool] (account:string))
-    (defun UR_AccountType:bool (account:string))
-    (defun UR_AccountPayableAs:bool (account:string))
-    (defun UR_AccountPayableBy:bool (account:string))
-    (defun UR_AccountPayableByMethod:bool (account:string))
-    (defun UR_AccountNonce:integer (account:string))
-    (defun UR_Elite (account:string))
-    ;;  [4.1]   ELITE Info
-    (defun UR_Elite-Class (account:string))
-    (defun UR_Elite-Name (account:string))
-    (defun UR_Elite-Tier (account:string))
-    (defun UR_Elite-Tier-Major:integer (account:string))
-    (defun UR_Elite-Tier-Minor:integer (account:string))
-    (defun UR_Elite-DEB (account:string))
-    ;;  [4.2]   TrueFungible INFO
-    (defun UR_TrueFungible:object{DPTF|BalanceSchema} (account:string snake-or-gas:bool))
-    (defun UR_TF_AccountSupply:decimal (account:string snake-or-gas:bool))
-    (defun UR_TF_AccountRoleBurn:bool (account:string snake-or-gas:bool))
-    (defun UR_TF_AccountRoleMint:bool (account:string snake-or-gas:bool))
-    (defun UR_TF_AccountRoleTransfer:bool (account:string snake-or-gas:bool))
-    (defun UR_TF_AccountRoleFeeExemption:bool (account:string snake-or-gas:bool))
-    (defun UR_TF_AccountFreezeState:bool (account:string snake-or-gas:bool))
-    (defun UR_AutonomicRoles:bool (account:string))
-    ;;
-    ;;  [URC]
-    ;;
-    (defun URC_IgnisGasDiscount:decimal (account:string))
-    (defun URC_StoaGasDiscount:decimal (account:string))
-    (defun URC_GasDiscount:decimal (account:string native:bool))
-    (defun URC_SplitSTOAPrices:[decimal] (account:string stoa-price:decimal))
-    (defun URC_SplitSTOAPricesFull:[decimal] (stoa-price:decimal))
-    (defun URC_Transferability:bool (sender:string receiver:string method:bool))
-    ;;{5.4}  Validate [UEV/CAP]
-    ;;
-    ;;  [UEV]
-    ;;
-    (defun UEV_NotSmartOuronetAccount (account:string))
-    (defun UEV_StandardAccOwn (account:string))
-    (defun UEV_SmartAccOwn (account:string))
-    (defun UEV_EnforceAccountExists (dalos-account:string))
-    (defun UEV_EnforceAccountType (account:string smart:bool))
-    (defun UEV_EnforceTransferability (sender:string receiver:string method:bool))
-    (defun UEV_SenderWithReceiver (sender:string receiver:string))
-        ;;
-    (defun UEV_StoaCollectionState (state:bool))
-    (defun UEV_IgnisCollectionState (state:bool))
-    (defun UEV_IgnisCollectionRequirements ())
-        ;;
-    (defun UEV_Glyph (account:string))
-    ;;
-    ;;  [CAP]
-    ;;
-    (defun CAP_EnforceAccountOwnership (account:string))
-    ;;{5.5}  Write [W]
-    ;;{5.6}  Aux/X
-    ;;
-    ;;  [X]
-    ;;
-    (defun XB_UpdateOuroPrice (price:decimal))
-    (defun XE_UpdateTreasury (type:integer tdp:decimal tds:decimal))
-    (defun XE_IgnisIncrement (native:bool increment:decimal))
-    (defun XE_IncrementOuronetAccountNonce (account:string))
-    (defun XE_UpdateElite (account:string amount:decimal))
-    (defun XB_UpdateBalance (account:string snake-or-gas:bool new-balance:decimal))
-    (defun XE_UpdateFreeze (account:string snake-or-gas:bool new-freeze:bool))
-    (defun XE_UpdateBurnRole (account:string snake-or-gas:bool new-burn:bool))
-    (defun XE_UpdateMintRole (account:string snake-or-gas:bool new-mint:bool))
-    (defun XE_UpdateFeeExemptionRole (account:string snake-or-gas:bool new-fee-exemption:bool))
-    (defun XE_UpdateTransferRole (account:string snake-or-gas:bool new-transfer:bool))
-    ;;{5.7}  User [A/C]
-    ;;
-    ;;  [A]
-    ;;
-    (defun A_MigrateLiquidFunds:decimal (patron:string executor:string migration-target-stoa-account:string))
-    (defun A_ToggleOAPU (patron:string executor:string oapu:bool))
-    (defun A_ToggleGAP (patron:string executor:string gap:bool))
-    (defun A_DeploySmartAccount (executor:string guard:guard stoa:string sovereign:string public:string))
-    (defun A_DeployStandardAccount (executor:string guard:guard stoa:string public:string))
-    (defun A_ToggleGasCollection (patron:string executor:string native:bool toggle:bool))
-    (defun A_ToggleAccountCreationStoa (patron:string executor:string toggle:bool))
-    (defun A_SetIgnisSourcePrice (patron:string executor:string price:decimal))
-    (defun A_SetAutoFueling (patron:string executor:string toggle:bool))
-    (defun A_UpdatePublicKey (patron:string executor:string new-public:string))
-    (defun A_UpdateUsagePrice (patron:string executor:string action:string new-price:decimal))
-    ;;
-    ;;  [C]
-    ;;
-    (defun C_ControlSmartAccount
-        (patron:string executor:string payable-as-smart-contract:bool payable-by-smart-contract:bool payable-by-method:bool)
-    )
-    (defun C_DeploySmartAccount (executor:string guard:guard stoa:string sovereign:string public:string))
-    (defun C_DeployStandardAccount (executor:string guard:guard stoa:string public:string))
-    (defun C_RotateGovernor (patron:string executor:string governor:guard))
-    (defun C_RotateGuard (patron:string executor:string new-guard:guard safe:bool))
-    (defun C_RotateStoa (patron:string executor:string stoa:string))
-    (defun C_RotateSovereign (patron:string executor:string new-sovereign:string))
-
-
-    ;;<=========================================================================>
-    ;; ADDED 2026-10-12 -- interface-membership sweep (StoicSyntax-Prefixes.md Sec5,
-    ;; owner ruling). Every one of these was already live in the module body; this
-    ;; closes the gap between what the module DOES and what its interface SAYS it does.
-    ;;<=========================================================================>
-    (defun UC_GuardProtocol:string (g:guard))
-    (defun UEV_EnforceGuardProtocol (g:guard is-keyset-based:bool))
-    (defun UEV_enforce-notional-at-floor:bool ())
-    (defun URH_AccountCounter ())
-)
 ;;
 (module DALOS GOV
     @doc "DALOS — the sovereign identity, executor and ledger core of Ouronet. Owns the \
@@ -1119,11 +858,34 @@
             \ \
             \ It was also UNFIXABLE BY TRANSACTION: the only writer of the field is \
             \ XI_ToggleAccountCreationStoa, whose defcap enforces against this very read, so \
-            \ the toggle that would populate the row could not itself run."
+            \ the toggle that would populate the row could not itself run. \
+            \ \
+            \ CORRECTED AGAIN 2026-11-06, because the 2026-10-15 fix GUARDED THE WRONG STEP \
+            \ and the function stayed dead on mainnet for three weeks. `contains` protects the \
+            \ `at`; the failure is in the BINDING, which Pact type-checks before the body runs. \
+            \ A row lacking a declared field does not satisfy `object{DALOS|GasManagementSchema}`, \
+            \ so the let threw `Runtime typecheck failure, argument is object, but expected type \
+            \ object{...}` and the guard below was never reached. On chain the message prints \
+            \ WITHOUT the schema names -- `The argument is object but the expected type is \
+            \ object` -- which is why it read as nonsense rather than as a schema mismatch. \
+            \ \
+            \ MEASURED, not reasoned: the row is only constructible by upgrading a module over \
+            \ its own table, which a REPL can do. All four candidate forms, against a row \
+            \ written before the field existed: typed binding -> typecheck failure; PROJECTED \
+            \ read (`read T k [\"f\"]`) -> `Key not found in object: {}`; `with-default-read` \
+            \ -> `Key not found in object` (its default covers an absent ROW, never an absent \
+            \ FIELD -- the doc above said so and the projection was tried anyway); UNTYPED \
+            \ binding -> `false`. So the annotation is dropped, and only the annotation. \
+            \ \
+            \ WHY NOT A BACKFILL INSTEAD: the deadlock above is real and was re-verified -- \
+            \ `DALOS|C>TOGGLE-ACCOUNT-CREATION-STOA` composes GOV|DALOS_ADMIN and then enforces \
+            \ `(!= toggle (UR_AccountCreationStoa))`, so the only public path to the writer runs \
+            \ through the broken read. Fixing the read is what UNBLOCKS the toggle; a migration \
+            \ would have had to come first and could not."
         (let
             (
-                (row:object{DALOS|GasManagementSchema}
-                    (read DALOS|GasManagementTable DALOS|VGD))
+                ;;UNTYPED, DELIBERATELY. See the @doc: annotating this binding is the defect.
+                (row (read DALOS|GasManagementTable DALOS|VGD))
             )
             (if (contains "account-creation-stoa" row)
                 (at "account-creation-stoa" row)

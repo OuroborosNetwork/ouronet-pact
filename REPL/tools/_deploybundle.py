@@ -92,6 +92,52 @@ BLOODSHED = (
 )
 
 ROUNDS = {
+    "2026-11-v21-account-creation-stoa-read": {
+        "why": "ONE READ, DEAD ON MAINNET SINCE GENESIS, and the 2026-10-15 fix guarded the "
+               "wrong step. `DALOS::UR_AccountCreationStoa` binds a WHOLE-ROW read to "
+               "`object{DALOS|GasManagementSchema}`. The row it reads -- DALOS|VGD -- was written "
+               "at genesis, before `account-creation-stoa` existed, so it does not satisfy that "
+               "schema and Pact fails the BINDING before the body runs. The `contains` guard "
+               "added in October protects the `at`; it is never reached. "
+               "\n\n"
+               "REPRODUCED AGAINST MAINNET, then isolated by bisection: "
+               "`INFO_DALOS|DeployStandardAccount` -> `IGNIS::DALOS|URCi_DeployStandardAccount` "
+               "-> `DALOS::UR_AccountCreationStoa`, which fails alone. Its three siblings on the "
+               "SAME row (`UR_NativeToggle`, `UR_AutoFuel`, `UR_NativeSpent`) all answer, because "
+               "all three read a PROJECTION and never type-check the whole row. "
+               "\n\n"
+               "THE FIX IS THE ANNOTATION, AND ONLY THE ANNOTATION -- measured, not reasoned. "
+               "Such a row is constructible only by upgrading a module over its own table, which "
+               "a REPL can do. All four candidate forms against it: typed binding -> `Runtime "
+               "typecheck failure, argument is object, but expected type object{M.S}`; projected "
+               "read -> `Key not found in object: {}`; `with-default-read` -> `Key not found in "
+               "object` (its default covers an absent ROW, never an absent FIELD); UNTYPED "
+               "binding -> `false`. "
+               "\n\n"
+               "WHY A CODE FIX AND NOT A BACKFILL. The deadlock recorded in the function's own "
+               "@doc was re-verified: `DALOS|C>TOGGLE-ACCOUNT-CREATION-STOA` composes "
+               "GOV|DALOS_ADMIN and then enforces `(!= toggle (UR_AccountCreationStoa))`, so the "
+               "only public path to the writer runs through the broken read. A migration could "
+               "not have gone first. Fixing the read is what UNBLOCKS the toggle. "
+               "\n\n"
+               "WHAT IS AT STAKE BEYOND THE PREVIEW. Today only the INFO preview is dead, because "
+               "`TS01-C1` guards the cost call behind `(not URC_IsNativeGasZero)` and native STOA "
+               "collection is OFF on chain (verified: URC_IsNativeGasZero -> true). The moment it "
+               "is switched ON, account activation itself begins failing -- which the October "
+               "@doc predicted in writing and believed it had fixed.",
+        # NO BUMP. The signature is unchanged (`UR_AccountCreationStoa:bool ()`), so
+        # OuronetDalosV3 -- which is LIVE -- is neither re-sent nor superseded. A deployed
+        # interface can never be re-sent; this round ships the MODULE only.
+        "interfaces": [],
+        # THE WHOLE ROUND. A body-only change is invisible to the interface cascade, which is
+        # precisely what `also` is for -- see the V18 entry, where AQP-VCT had the same shape.
+        # `_livemodules.py --diff` cannot scope this round either: it compares module SHAPES and
+        # no function was added or removed.
+        "also": ["1_SOVEREIGN/STAGE_01/2_Core/01_DALOS.pact"],
+        # NO INIT. No new module, no new table, no new IMP registration, and -- deliberately --
+        # NO table repair: the fix removes the need for one. See `why`.
+        "init": [],
+    },
     "2026-09-aqp": {
         "why": "the 7-interface bump of 2026-09-18 (AQP family + IgnisCollector)",
         # AcquisitionSchemasV1 is NEW (2026-09-19): the 63 AQP row shapes hoisted out of the
@@ -1843,6 +1889,19 @@ LIVE_INTERFACES = {
     "TalosStageTwo_DemiPadV4":     "fd97ce9e8d5fc57d0e5e090d9aca0021",
     "InfoTwoV3":                   "fff307a398a819eb635103b86a6ed1e0",
     "OUiThreeV2":                  "f8595634fbb34a3950f6f0e3c5c5b587",
+    # ADDED 2026-11-06 for PureV21, and its absence is why that round's first generation
+    # re-sent a live interface. `OuronetDalosV3` has been on chain since the V20-era rounds --
+    # it is listed in an earlier round's `interfaces` (a BUMP record), which is a different
+    # table and does not strip anything. The round carries 01_DALOS.pact for a one-line body
+    # fix, the file declares this interface, and nothing removed it: Pact answers
+    # `Interface cannot be upgraded: ouronet-ns.OuronetDalosV3`.
+    #
+    # THE HASH IS VERIFIED AGAINST THE CHAIN, not computed and trusted. `describe-module
+    # "ouronet-ns.OuronetDalosV3"` returns 11,475 bytes; the repo block is 11,475 bytes and
+    # BYTE-IDENTICAL. That is what this entry asserts -- "already deployed and unchanged" --
+    # so pinning a hash without that comparison would ship a module against a contract the
+    # chain may not have, which is exactly what the sys.exit below exists to prevent.
+    "OuronetDalosV3":              "ec7e79b62d61888ac5642fc8d683e2bc",
 
     # BULK ADD 2026-10-12, found by the interface-membership sweep's PureV10 round the hard way
     # -- a real wallet simulation against mainnet, not this repo's own gate (which builds a

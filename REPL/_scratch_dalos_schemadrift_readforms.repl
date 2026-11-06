@@ -1,0 +1,104 @@
+;;
+;; REPL/_scratch_dalos_schemadrift_readforms.repl — PureV21, and the ONLY executable evidence
+;; for it. The gate cannot see this fix.
+;;
+;; THE DEFECT. `DALOS::UR_AccountCreationStoa` bound a WHOLE-ROW read to
+;; `object{DALOS|GasManagementSchema}`. `DALOS|VGD` was written at genesis, before the field
+;; `account-creation-stoa` existed, so the stored row does not satisfy that schema and Pact
+;; fails the BINDING before the body runs. The `contains` guard added on 2026-10-15 protects the
+;; `at`; it is never reached. Reproduced against mainnet, where the message prints WITHOUT the
+;; schema names -- "The argument is object but the expected type is object" -- which is why it
+;; read as nonsense rather than as a schema mismatch.
+;;
+;; WHY THE GATE IS BLIND TO IT. `HOW-DEPLOY-ROUNDS-WORK.md` states the reason for the sibling
+;; case: "the harness builds tables fresh from the current schema, so a row that predates a
+;; field is not constructible there." Every DALOS suite therefore writes DALOS|VGD complete, the
+;; reader answers, and the gate stayed green at 29,536 assertions across the whole correction.
+;;
+;; SO THE ROW IS BUILT THE ONLY WAY IT CAN BE: by UPGRADING a module over its own table, which
+;; is exactly how the live row came to be. That is a Pact-level fact, not a DALOS one, so this
+;; file exercises it on a two-field toy and loads no Ouronet stage at all -- it runs in under a
+;; second and depends on nothing that can drift.
+;;
+;; WHAT IT PINS: the four candidate read forms, and which of them survives. The previous
+;; correction to this same function was reasoned rather than measured and fixed the wrong step;
+;; this is what measuring it looks like.
+;;
+(env-data {"ks":{"keys":["drift"],"pred":"keys-all"}})
+(env-keys ["drift"])
+
+(begin-tx "V21 - a row written before the schema gained its second field")
+(define-keyset "ks" (read-keyset "ks"))
+(module DRIFT "ks"
+    (defschema S a:bool)
+    (deftable T:{S})
+    (defun seed () (insert T "row" {"a": true}))
+)
+(create-table T)
+(commit-tx)
+
+(begin-tx)
+(DRIFT.seed)
+(commit-tx)
+
+;;THE SCHEMA GAINS A FIELD. The module upgrades; the TABLE and its row do not.
+(begin-tx "V21 - the schema gains a field, the stored row does not")
+(module DRIFT "ks"
+    (defschema S a:bool b:bool)
+    (deftable T:{S})
+    (defun seed () (insert T "row" {"a": true}))
+    ;;[1] WHAT DALOS DID. The annotation is the defect: Pact type-checks the BINDING, so the
+    ;;    `contains` below never runs.
+    (defun r-typed:bool ()
+        (let ((row:object{S} (read T "row")))
+            (if (contains "b" row) (at "b" row) false)))
+    ;;[2] THE FIX. Identical body; the annotation is gone.
+    (defun r-untyped:bool ()
+        (let ((row (read T "row")))
+            (if (contains "b" row) (at "b" row) false)))
+    ;;[3] A PROJECTED READ -- how UR_NativeToggle / UR_AutoFuel / UR_NativeSpent read the SAME
+    ;;    row, which is why all three answer while this one did not.
+    (defun r-projected:bool () (at "b" (read T "row" ["b"])))
+    ;;[4] `with-default-read`, whose default covers an absent ROW and never an absent FIELD --
+    ;;    the claim the function's own @doc has carried since October, tried anyway, and true.
+    (defun r-wdr:bool ()
+        (with-default-read T "row" {"b": false} {"b" := v} v))
+)
+(commit-tx)
+
+(begin-tx "V21 - which read forms survive a row that predates a field")
+;;NO `(namespace "ouronet-ns")`. This file loads no Ouronet stage on purpose -- the
+;;behaviour under test is a PACT fact about schema drift, not a DALOS one, so it runs
+;;on a toy module in the root namespace and cannot be broken by anything upstream.
+(map print
+    [
+        ;;THE FIX, AND THE WHOLE POINT: a missing field reads as the documented default.
+        (expect
+            "[2] UNTYPED binding: a row lacking the field answers FALSE, which is the documented default"
+            false
+            (DRIFT.r-untyped))
+        ;;THE DEFECT. Matched on its own message: the chain prints this WITHOUT the schema
+        ;;names, and an assertion that accepted any failure would pass against a function that
+        ;;had started failing for some other reason entirely.
+        (expect-failure
+            "[1] TYPED binding: the annotation fails the typecheck before the body runs"
+            "Runtime typecheck failure, argument is object , but expected type object{DRIFT.S}"
+            (DRIFT.r-typed))
+        (expect-failure
+            "[3] PROJECTED read: the projection comes back EMPTY, so `at` has nothing to take"
+            "Key \"b\" not found in object: {}"
+            (DRIFT.r-projected))
+        (expect-failure
+            "[4] with-default-read: its default covers an absent ROW, never an absent FIELD"
+            "Key \"b\" not found in object: {\"a\": true}"
+            (DRIFT.r-wdr))
+    ]
+)
+(commit-tx)
+
+;;AND THE REAL FUNCTION, on a REPL row that DOES carry the field -- so this file also states
+;;what the gate's own suites are actually exercising, which is the un-drifted case.
+(begin-tx "V21 - the live reader, on a complete row")
+(print "DALOS::UR_AccountCreationStoa is exercised by the DALOS suites on a COMPLETE row;")
+(print "the drifted row above is the one case they cannot build. See this file's header.")
+(commit-tx)

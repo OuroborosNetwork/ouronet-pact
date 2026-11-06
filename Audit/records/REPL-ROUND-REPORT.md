@@ -56,13 +56,15 @@ explanation*, because stating precisely what an assertion proved exposed that it
 
 | | |
 |---|---:|
-| **distinct assertions written** | **6,619** |
-| **assertions executed per full gate run** | **29,531** |
-| &nbsp;&nbsp;positive (`expect`) | 23,912 |
+| **distinct assertions written** | **6,623** |
+| **assertions executed per full gate run** | **29,536** |
+| &nbsp;&nbsp;positive (`expect`) | 23,917 |
 | &nbsp;&nbsp;negative (`expect-failure`) | 5,619 |
 | gate entrypoints | **94** |
 | `.repl` files reachable from the gate | 321 |
 | orphaned asserting files (written but never run) | **0** |
+
+<sub>**+4 distinct / +5 executed on 2026-11-06 (PureV21).** `_scratch_dalos_schemadrift_readforms.repl` pins the four read forms against a row written before its schema gained a field — the case no other suite can construct, because the harness builds tables fresh from the current schema. It is the only executable evidence for that round; the gate was green at 29,536 across the whole correction without it.</sub>
 
 **Quote the table above** — the *distinct* row for "how many tests exist", the *executed* row for
 "how much ran". This sentence used to restate both figures inline, and by 2026-09-24 it read

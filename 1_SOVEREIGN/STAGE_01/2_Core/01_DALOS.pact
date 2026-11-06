@@ -1190,11 +1190,34 @@
             \ \
             \ It was also UNFIXABLE BY TRANSACTION: the only writer of the field is \
             \ XI_ToggleAccountCreationStoa, whose defcap enforces against this very read, so \
-            \ the toggle that would populate the row could not itself run."
+            \ the toggle that would populate the row could not itself run. \
+            \ \
+            \ CORRECTED AGAIN 2026-11-06, because the 2026-10-15 fix GUARDED THE WRONG STEP \
+            \ and the function stayed dead on mainnet for three weeks. `contains` protects the \
+            \ `at`; the failure is in the BINDING, which Pact type-checks before the body runs. \
+            \ A row lacking a declared field does not satisfy `object{DALOS|GasManagementSchema}`, \
+            \ so the let threw `Runtime typecheck failure, argument is object, but expected type \
+            \ object{...}` and the guard below was never reached. On chain the message prints \
+            \ WITHOUT the schema names -- `The argument is object but the expected type is \
+            \ object` -- which is why it read as nonsense rather than as a schema mismatch. \
+            \ \
+            \ MEASURED, not reasoned: the row is only constructible by upgrading a module over \
+            \ its own table, which a REPL can do. All four candidate forms, against a row \
+            \ written before the field existed: typed binding -> typecheck failure; PROJECTED \
+            \ read (`read T k [\"f\"]`) -> `Key not found in object: {}`; `with-default-read` \
+            \ -> `Key not found in object` (its default covers an absent ROW, never an absent \
+            \ FIELD -- the doc above said so and the projection was tried anyway); UNTYPED \
+            \ binding -> `false`. So the annotation is dropped, and only the annotation. \
+            \ \
+            \ WHY NOT A BACKFILL INSTEAD: the deadlock above is real and was re-verified -- \
+            \ `DALOS|C>TOGGLE-ACCOUNT-CREATION-STOA` composes GOV|DALOS_ADMIN and then enforces \
+            \ `(!= toggle (UR_AccountCreationStoa))`, so the only public path to the writer runs \
+            \ through the broken read. Fixing the read is what UNBLOCKS the toggle; a migration \
+            \ would have had to come first and could not."
         (let
             (
-                (row:object{DALOS|GasManagementSchema}
-                    (read DALOS|GasManagementTable DALOS|VGD))
+                ;;UNTYPED, DELIBERATELY. See the @doc: annotating this binding is the defect.
+                (row (read DALOS|GasManagementTable DALOS|VGD))
             )
             (if (contains "account-creation-stoa" row)
                 (at "account-creation-stoa" row)
