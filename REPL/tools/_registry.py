@@ -740,6 +740,22 @@ def build(probe):
                 elif subj and subj not in unmapped:
                     unmapped.append(subj)
             if requires:
+                # SORTED, because the artefact must not churn on a regeneration that found
+                # nothing new. `requires` is appended in the order `AUTH_STRUCT` yields its
+                # rows, and that order is not stable across runs -- measured 2026-11-06, a
+                # regeneration moved 110 of these lists with ZERO content difference, which
+                # changed `surfaceHash` (f82f7b8e -> 58492186) and therefore
+                # `executionSpecs.generated.ts` in OuronetUI and `registry.json` in
+                # @ouronet/talos-registry. A package publish would have shipped a reordering.
+                #
+                # THE ORDER CANNOT BE LOAD-BEARING, which is what makes this safe: it already
+                # varies run to run, so anything depending on it is already broken. Sorted on
+                # the canonical JSON text rather than on a chosen field, so the key needs no
+                # judgement about which part matters and cannot drift from the shape.
+                #
+                # `unmapped` one line below has been `sorted()` since it was written. Same
+                # artefact, same requirement, and this list was simply missed.
+                requires.sort(key=lambda it: json.dumps(it, sort_keys=True, ensure_ascii=False))
                 record["ownership"] = {"resolved": True, "requires": requires}
                 if unmapped:
                     record["ownership"]["unmapped"] = sorted(unmapped)

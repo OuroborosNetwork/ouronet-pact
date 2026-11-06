@@ -2826,14 +2826,14 @@
   },
   "DALOS": {
    "deployed": true,
-   "hash": "E4-z-_vNXN56Dl2APSKaC90E14FLJOlHuw4FBmroI98",
+   "hash": "-pnX5AeOe6w7S7jpN0W7Q3Mn2vZBlHzxum7hq19RLuI",
    "repoPath": "1_SOVEREIGN/STAGE_01/2_Core/01_DALOS.pact",
    "interfaces": [
     "stoa-ns.gas-payer-v1",
     "ouronet-ns.OuronetPolicyV2",
     "ouronet-ns.OuronetDalosV3"
    ],
-   "chars": 86942,
+   "chars": 88912,
    "shapes": {
     "schemas": [
      "DALOS|AccountSchemaV2",
