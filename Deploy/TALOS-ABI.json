@@ -4976,6 +4976,24 @@
     "type": "integer"
    }
   ],
+  "TS02-C1.DPSF|C_RotateCompanyCreator": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "executor",
+    "type": "string"
+   },
+   {
+    "name": "id",
+    "type": "string"
+   },
+   {
+    "name": "new-creator",
+    "type": "string"
+   }
+  ],
   "TS02-C1.DPSF|C_SetCompanyBranding": [
    {
     "name": "patron",
@@ -19342,5 +19360,5 @@
   "TS02-DPAD.DEMIPAD|C_RetrieveTrueFungible": "INFO-TWO.INFO_DEMIPAD|RetrieveTrueFungible",
   "TS02-DPAD.DEMIPAD|C_Withdraw": "INFO-TWO.INFO_DEMIPAD|Withdraw"
  },
- "surfaceHash": "2fd7c5f9dcde2589"
+ "surfaceHash": "0c110ac2cad07e8f"
 }

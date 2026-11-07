@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 4 of 4
 ;; This is STEP 4 of 4 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-3 must have run first, including the init steps between deploys.
-;; 5 source file(s), 438,382 gas measured in the REPL gas model, 290,491 bytes
+;; 5 source file(s), 438,382 gas measured in the REPL gas model, 291,300 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact
@@ -237,6 +237,7 @@
     (defun DPSF|C_PauseCompany (patron:string executor:string id:string toggle:bool))
     (defun DPSF|C_SetCompanyBranding (patron:string executor:string id:string logo:string description:string website:string social:[object{BrandingV3.SocialSchema}]))
     (defun DPSF|C_UpgradeCompanyBranding (patron:string executor:string id:string months:integer))
+    (defun DPSF|C_RotateCompanyCreator (patron:string executor:string id:string new-creator:string))
     (defun DPDC|C_BulkTransfer
         (patron:string executor:string executee-lst:[string] id:string son:bool nonces-array:[[integer]] amounts-array:[[integer]] method:bool)
     )
@@ -1817,6 +1818,20 @@
                 )
                 (ref-EQUITY::C_UpgradeCompanyBranding patron executor id months)
                 (format "Successfully extended the branding of Company {} by {} months" [id months])
+            )
+        )
+    )
+    (defun DPSF|C_RotateCompanyCreator (patron:string executor:string id:string new-creator:string)
+        @doc "Hands company <id> to <new-creator>. BOTH the outgoing creator and the incoming one \
+            \ must sign the transaction -- the handover is authorised by the first and ACCEPTED \
+            \ by the second, because `creator-account` is not consent-checked at issuance and a \
+            \ creator now actually controls something."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-EQUITY:module{EquityV5} EQUITY)
+                )
+                (ref-EQUITY::C_RotateCompanyCreator patron executor id new-creator)
             )
         )
     )

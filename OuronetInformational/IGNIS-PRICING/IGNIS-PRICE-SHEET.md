@@ -406,6 +406,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_Repurpose` | `C_RepurposeCollectable` | USAGE | **≥ 2** | — | COMPLEX | charge multiplies by an item count; legs: small 2 |
 | `C_RepurposeFragments` | `C_RepurposeCollectableFragments` | USAGE | **≥ 2** | — | COMPLEX | charge multiplies by an item count; legs: small 2 |
 | `C_RetireShares` | `C_RetireShares` | SETUP | **20** | — | $0.20 | deter:setup 5 + components:DPSF|C_Burn 15 |
+| `C_RotateCompanyCreator` | `C_RotateCompanyCreator` | SETUP | **0** | — | free | free by design — Talos wrapper collects no IGNIS and no STOA |
 | `C_SetCompanyBranding` | `C_SetCompanyBranding` | SETUP | **≥ 100** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: branding 100 |
 | `C_ToggleAddQuantityRole` | `C_ToggleAddQuantityRole` | AUTH | **23** | — | $0.23 | deter:auth 10 + components:DPSF|C_ToggleAddQuantityRole 13 |
 | `C_ToggleBurnRole` | `C_ToggleBurnRole` | AUTH | **23** | — | $0.23 | deter:auth 10 + components:DPSF|C_ToggleBurnRole 13 |
@@ -672,7 +673,7 @@ another Talos wrapper, not a core op) or admin entrypoints that are exempt by ru
 | P\|A_SetIMP | admin entrypoint -- IGNIS + STOA free by owner rule, nothing to price |
 
 ---
-203 simple (exact price) · 191 complex (floor price) · 2 STOA-only · 65 exempt · 5 unresolved · 15 unpriced · 461 Talos client functions
+203 simple (exact price) · 191 complex (floor price) · 2 STOA-only · 66 exempt · 5 unresolved · 15 unpriced · 462 Talos client functions
 
 `×N` on a core op = the wrapper drives N priced core ops in a FIXED composition (still exactly knowable).
 

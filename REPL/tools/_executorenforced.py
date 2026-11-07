@@ -170,6 +170,7 @@ INDIRECT = {
     "11_EQUITY+.pact::C_TogglePauseShares":      "CAP_EquityCreator",
     "11_EQUITY+.pact::C_SetCompanyBranding":     "CAP_EquityCreator",
     "11_EQUITY+.pact::C_UpgradeCompanyBranding": "CAP_EquityCreator",
+    "11_EQUITY+.pact::C_RotateCompanyCreator":   "CAP_EquityCreator",
     "06_DPDC-MNG.pact::C_BurnNFT": "wipe-mode FALSE",
     # 11_EQUITY+ (2026-09-22). The same INTERNAL-HOP shape as 19_SWPU's swaps: the executor is
     # handed to a SAME-MODULE XI_ helper (XI_Make/Break/ConvertPackageShares), and only that

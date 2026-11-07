@@ -11,18 +11,18 @@ from-scratch pipeline, which does not apply to an upgrade round. No preceding st
 | modules | **10** |
 | interfaces shipped | **2** — `EquityV5`, `TalosStageTwo_ClientOneV4`. Seven already-live ones are SKIPPED; see below |
 | init steps | **0** |
-| total size | **1,004,541 bytes** |
-| verified | gate green, **96 entrypoints, 30,286 assertions**; round replayed clean against real live chain content |
+| total size | **1,013,323 bytes** |
+| verified | gate green, **96 entrypoints, 30,300 assertions**; round replayed clean against real live chain content |
 | post-deploy | `python3 REPL/tools/_registrylive.py --record` |
 
 ## Send them in this order
 
 | # | bytes | carries |
 |---|---|---|
-| `01_deploy.pact` | 197,477 | `DPDC-C`, `DPDC-MNG`, **`EquityV5`**, `EQUITY` |
+| `01_deploy.pact` | 205,450 | `DPDC-C`, `DPDC-MNG`, **`EquityV5`**, `EQUITY` |
 | `02_deploy.pact` | 298,877 | `AQP-SCORE` |
 | `03_deploy.pact` | 233,989 | `AQP-POOL` |
-| `04_deploy.pact` | 274,198 | **`TalosStageTwo_ClientOneV4`**, `TS02-C1`, `TS02-C2`, `DEMIPAD-SNAKES`, `DEMIPAD-CUSTODIANS`, `INFO-TWO` |
+| `04_deploy.pact` | 275,007 | **`TalosStageTwo_ClientOneV4`**, `TS02-C1`, `TS02-C2`, `DEMIPAD-SNAKES`, `DEMIPAD-CUSTODIANS`, `INFO-TWO` |
 
 Largest is 298,877 bytes against a ~395 KiB per-transaction ceiling. The size charge grows as the
 **seventh power** of transaction size, so these must NOT be merged to reduce the count.
@@ -89,6 +89,34 @@ wipes, both forced repurposes, the six set-definition ops and fragmentation. Con
 redefining shareholders' shares is not a directorial power, and the wrapper design makes that
 structural rather than remembered.
 
+### 4 — A company can change hands
+
+`can-change-creator` has been stored on every collection since issuance and, until this round,
+**was read by nothing anywhere in the tree** — as were `can-change-owner` and
+`can-transfer-nft-create-role`, while DPTF, DPOF, ATS and SWP all consult theirs. Every equity
+collection carried `can-change-creator = true` and it meant nothing. There was no rotation
+entrypoint in the DPDC family at all, so a founder who lost their keys had no path.
+
+`EQUITY::C_RotateCompanyCreator` requires **both signatures**: the outgoing creator to authorise
+and the incoming one to accept. Acceptance is not politeness — `creator-account` is not
+consent-checked at issuance (DPDC Audit #53L), so a one-sided rotation would let anyone saddle any
+account with a company it never agreed to run. That was harmless while the creator controlled
+nothing; after part 3 it is not.
+
+**Moving `creator-konto` alone would be a half-handover.** It transfers what the creator
+*controls* — share issuance and retirement, pause, branding, the AQP pool governor. It would not
+transfer what the creator *holds*: the per-account role flags authorising nonce metadata,
+royalties and URIs. The outgoing founder would keep the power to rewrite the company's tokens
+after selling it. So both layers move — the per-account row that every role gate reads, and the
+single-holder Verum positions that `UR_Verum5/6/10` read. `role-nft-add-quantity` and
+`role-nft-burn` are deliberately **not** moved: they belong to `<dpdc>` and are the mechanism by
+which share supply has exactly two doors.
+
+**The UI side is not built yet.** Collecting two signatures into one transaction needs a wallet
+that can pass a partially-signed transaction between parties. Owner, 2026-11-07: *"we do creator
+rotation at the pact level now, we'll settle the UI problematic later."* The chain requires both;
+however the wallet learns to gather them, this does not change.
+
 ## Two interfaces bump, both first-order
 
 `EquityV4` → **`V5`** (five new client entrypoints plus the share-accounting surface) and
@@ -113,7 +141,8 @@ rather than inferred: **2 `(interface` declarations, 10 `(module`, 0 live `creat
 
 ## Test coverage, where there was none
 
-`REPL/modules/EQUITY-MANAGEMENT.repl` is new — **29 assertions**, its own gate entrypoint.
+`REPL/modules/EQUITY-MANAGEMENT.repl` is new — **43 assertions** across four blocks (share
+arithmetic, refusals, company governance, creator rotation), its own gate entrypoint.
 Before this round there was **not one assertion anywhere** exercising equity management from any
 account.
 

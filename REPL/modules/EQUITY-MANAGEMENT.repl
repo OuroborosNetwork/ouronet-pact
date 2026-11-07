@@ -328,4 +328,103 @@
 (commit-tx)
 (print "=== END EQM-3 =================================================================")
 (print "")
+
+;;|| NEXT >
+;;
+(begin-tx "EQM-4 — creator rotation: both parties sign, and every role moves")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "")
+(print "=== EQM-4 — handing the company over =========================================")
+;;==== EQM-4 · 01 · only the outgoing creator signs ====
+(print "--- [EQM-4 · 01 · only the outgoing creator signs] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (patron:string KST.ANHD)
+        (creator:string KST.ANHD)
+        (heir:string KST.EMMA)
+        (id:string "E|TSEQ-98c486052a51")
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
+    )
+    ;;ACCEPTANCE IS NOT OPTIONAL. `creator-account` is not consent-checked at issuance, so a
+    ;;one-sided rotation would let anyone saddle any account with a company. With only the
+    ;;OUTGOING creator's key present, the incoming one's ownership check must refuse.
+    (map print
+        [
+            (expect-failure "<<EQM-4>> rotation needs the INCOMING creator's signature too"
+                (ref-TS02-C1::DPSF|C_RotateCompanyCreator patron creator id heir))
+        ]
+    )
+)
+;;==== EQM-4 · 02 · both sign ====
+(print "--- [EQM-4 · 02 · both sign] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (patron:string KST.ANHD)
+        (creator:string KST.ANHD)
+        (heir:string KST.EMMA)
+        (id:string "E|TSEQ-98c486052a51")
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
+    )
+    (map print
+        [
+            ;;A COMPANY CANNOT BE HANDED TO ITSELF.
+            (expect-failure "is already the creator"
+                (ref-TS02-C1::DPSF|C_RotateCompanyCreator patron creator id creator))
+        ]
+    )
+    (print (format "<(DPSF|C_RotateCompanyCreator -> EMMA)> => \"{}\""
+        [(ref-TS02-C1::DPSF|C_RotateCompanyCreator patron creator id heir)]))
+    (map print
+        [
+            (expect "<<EQM-4>> the creator-konto moved" heir (ref-DPDC::UR_CreatorKonto id true))
+            ;;THE AUTHORITY MOVED WITH IT -- the AQP pool governor derives from the creator.
+            (expect "<<EQM-4>> ...and so did the AQP pool governor" heir
+                    (ref-AQP::URC_AqpOwnerKontoFromClassAndAsset 3 id))
+            ;;AND SO DID THE ROLES THE CREATOR HOLDS. Moving creator-konto alone would leave the
+            ;;outgoing founder able to rewrite the company's nonce metadata after selling it.
+            (expect "<<EQM-4>> r-nft-create moved (Verum 5)" heir (ref-DPDC::UR_Verum5 id true))
+            (expect "<<EQM-4>> r-nft-recreate moved (Verum 6)" heir (ref-DPDC::UR_Verum6 id true))
+            (expect "<<EQM-4>> r-set-new-uri moved (Verum 10)" heir (ref-DPDC::UR_Verum10 id true))
+            (expect "<<EQM-4>> the heir holds role-nft-update" true
+                    (ref-DPDC::UR_CA|R-Update id true heir))
+            (expect "<<EQM-4>> ...and the outgoing founder does NOT" false
+                    (ref-DPDC::UR_CA|R-Update id true creator))
+            (expect "<<EQM-4>> the heir holds role-modify-royalties" true
+                    (ref-DPDC::UR_CA|R-ModifyRoyalties id true heir))
+            (expect "<<EQM-4>> ...and the outgoing founder does NOT" false
+                    (ref-DPDC::UR_CA|R-ModifyRoyalties id true creator))
+        ]
+    )
+    ;;THE OUTGOING FOUNDER IS NOW A STRANGER TO THE COMPANY.
+    (map print
+        [
+            (expect-failure "<<EQM-4>> the old creator can no longer issue shares"
+                (ref-TS02-C1::DPSF|C_IssueShares patron creator id 1))
+            (expect-failure "<<EQM-4>> ...nor halt its shares"
+                (ref-TS02-C1::DPSF|C_PauseCompany patron creator id true))
+        ]
+    )
+    ;;AND THE NEW ONE IS NOT.
+    (print (format "<(DPSF|C_PauseCompany by the NEW creator)> => \"{}\""
+        [(ref-TS02-C1::DPSF|C_PauseCompany patron heir id true)]))
+    (map print
+        [
+            (expect (format "<<EQM-4>> the new creator can halt the company got={}"
+                            [(ref-DPDC::UR_IsPaused id true)])
+                    true (ref-DPDC::UR_IsPaused id true))
+        ]
+    )
+    (ref-TS02-C1::DPSF|C_PauseCompany patron heir id false)
+)
+;;==== EQM-4 · 03 · env-sigs (caps) ====
+(print "--- [EQM-4 · 03 · env-sigs (caps)] ---")
+(env-sigs [])
+(commit-tx)
+(print "=== END EQM-4 =================================================================")
+(print "")
 (print "=== END FILE REPL/modules/EQUITY-MANAGEMENT.repl ==============================")

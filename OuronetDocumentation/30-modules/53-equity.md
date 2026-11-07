@@ -48,8 +48,8 @@ The last module in the collectables family.
 
 > **The repository differs from what is deployed.** Everything above describes the CHAIN, which is what a caller actually reaches. The difference is stated rather than resolved:
 >
-> - **capabilities** in the repository only: `EQUITY|C>COMPANY-ACT`, `EQUITY|C>ISSUE-SHARES`, `EQUITY|C>RETIRE-SHARES`
-> - **functions** in the repository only: `CAP_EquityCreator`, `C_IssueShares`, `C_RetireShares`, `C_SetCompanyBranding`, `C_TogglePauseShares`, `C_UpgradeCompanyBranding`, `UC_ShareSplit`, `UEV_EscrowBacked`
+> - **capabilities** in the repository only: `EQUITY|C>COMPANY-ACT`, `EQUITY|C>ISSUE-SHARES`, `EQUITY|C>RETIRE-SHARES`, `EQUITY|C>ROTATE-CREATOR`
+> - **functions** in the repository only: `CAP_EquityCreator`, `C_IssueShares`, `C_RetireShares`, `C_RotateCompanyCreator`, `C_SetCompanyBranding`, `C_TogglePauseShares`, `C_UpgradeCompanyBranding`, `UC_ShareSplit`
 
 **Capabilities** -- 10
 

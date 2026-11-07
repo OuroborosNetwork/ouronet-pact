@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 13 of 26
 ;; This is STEP 13 of 27 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-12 must have run first, including the init steps between deploys.
-;; 5 source file(s), 323,056 gas measured in the REPL gas model, 286,388 bytes
+;; 5 source file(s), 323,056 gas measured in the REPL gas model, 294,361 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/07_DPDC-T.pact
@@ -4727,6 +4727,7 @@
     (defun UEV_EscrowBacked (id:string))
     (defun UEV_RetireFloor (id:string millions:integer))
     (defun UEV_RetireHolding (id:string account:string millions:integer))
+    (defun UEV_CreatorRotation (id:string old-creator:string new-creator:string))
     (defun UEV_ShareAmountsForMaking (id:string shares-amount:integer package-share-tier:integer))
     (defun UEV_EquitySemiFungibleID (id:string))
     (defun UEV_Convert (id:string input-tier:integer input-tier-amount:integer output-tier:integer))
@@ -4752,6 +4753,7 @@
     (defun C_TogglePauseShares:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string id:string toggle:bool))
     (defun C_SetCompanyBranding:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string id:string logo:string description:string website:string social:[object{BrandingV3.SocialSchema}]))
     (defun C_UpgradeCompanyBranding (patron:string executor:string id:string months:integer))
+    (defun C_RotateCompanyCreator:string (patron:string executor:string id:string new-creator:string))
 
 )
 (module EQUITY GOV
@@ -5035,6 +5037,35 @@
         ;;1]AUTHORISATION, before every validation below (owner ruling 2026-09-14).
         (CAP_EquityCreator executor id)
         (UEV_EquitySemiFungibleID id)
+        (compose-capability (P|GOV-CALLER))
+    )
+    (defcap EQUITY|C>ROTATE-CREATOR (id:string executor:string new-creator:string)
+        @doc "Authorises handing a company to a new creator. \
+            \ \
+            \ BOTH PARTIES SIGN, and that is the whole difficulty of this operation. The \
+            \ outgoing creator must authorise the handover and the INCOMING one must accept it \
+            \ -- because `creator-account` is NOT consent-checked at issuance (DPDC Audit #53L, \
+            \ 04_DPDC-I.pact:263-269), so an unchecked rotation would let anyone saddle any \
+            \ account with a company it never agreed to run. Now that the creator actually \
+            \ CONTROLS something, that stops being harmless. \
+            \ \
+            \ Two signatures in one transaction needs a client that can collect them before \
+            \ sending. Owner, 2026-11-07: *'we do creator rotation at the pact level now, we'll \
+            \ settle the UI problematic later.'* The chain requires both; however the wallet \
+            \ learns to gather them, this does not change."
+        @event
+        ;;1]AUTHORISATION, before every validation below (owner ruling 2026-09-14). The OUTGOING
+        ;;creator, bound and owned.
+        (CAP_EquityCreator executor id)
+        ;;2]...and the INCOMING creator, who must own the account being handed the company.
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership new-creator)
+        )
+        (UEV_EquitySemiFungibleID id)
+        (UEV_CreatorRotation id executor new-creator)
         (compose-capability (P|GOV-CALLER))
     )
     ;;{C4}  Ownership [gold]
@@ -5412,6 +5443,34 @@
             )
         )
     )
+    (defun UEV_CreatorRotation (id:string old-creator:string new-creator:string)
+        @doc "Guards a change of company creator. \
+            \ \
+            \ `can-change-creator` FINALLY GATES SOMETHING. It is stored at issuance and, until \
+            \ this round, was read by NOTHING anywhere in the tree -- as were `can-change-owner` \
+            \ and `can-transfer-nft-create-role`, while DPTF, DPOF, ATS and SWP all consult \
+            \ theirs. Every equity collection carried `can-change-creator = true` and it meant \
+            \ nothing. \
+            \ \
+            \ The new creator must be a STANDARD account: a smart account cannot sign, and the \
+            \ point of routing company governance to the creator is that it is the one party to \
+            \ the collection that is not a contract."
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPDC:module{DpdcV3} DPDC)
+            )
+            (enforce
+                (ref-DPDC::UR_CanChangeCreator id true)
+                (format "Company {} was issued with creator rotation disabled" [id])
+            )
+            (enforce
+                (!= old-creator new-creator)
+                (format "{} is already the creator of Company {}" [new-creator id])
+            )
+            (ref-DALOS::UEV_EnforceAccountType new-creator false)
+        )
+    )
     (defun UEV_ShareMillions (millions:integer)
         @doc "Issuance and retirement move WHOLE MILLIONS. Not a rounding convenience: \
             \ `URC_SharesPerMillion` divides the share count by SHARE_UNIT with integer \
@@ -5714,7 +5773,87 @@
             )
         )
     )
+    ;;Protection: Class 2 — SECURE
+    (defun XI_RotateCompanyCreator:string
+        (id:string old-creator:string new-creator:string)
+        @doc "Hands a company to a new creator: the authority itself, then every role that rides \
+            \ with it. \
+            \ \
+            \ MOVING `creator-konto` ALONE WOULD BE A HALF-HANDOVER. It transfers what the \
+            \ creator CONTROLS -- share issuance and retirement, pause, branding, and the AQP \
+            \ pool governor, all of which derive from `UR_CreatorKonto`. It would NOT transfer \
+            \ what the creator HOLDS: the per-account role flags authorising nonce metadata, \
+            \ royalties and URIs. The outgoing founder would keep the power to rewrite the \
+            \ company's tokens after selling it. \
+            \ \
+            \ So both layers move, and they are genuinely two: the role GATES read the \
+            \ per-account row (`UR_CA|R-*`), while `UR_Verum5/6/10` read the single-holder \
+            \ positions of the Verum chain. Updating one and not the other leaves a collection \
+            \ that disagrees with itself about who may act. \
+            \ \
+            \ `role-nft-add-quantity` and `role-nft-burn` are NOT moved -- they belong to <dpdc> \
+            \ and are the mechanism by which share supply has exactly two doors."
+        (require-capability (SECURE))
+        (let
+            (
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (props:object{DpdcUdcV2.DPDC|Properties} (ref-DPDC::UR_Properties id true))
+            )
+            ;;1]THE AUTHORITY. `+` on objects is left-biased, so this is the row with one field
+            ;;replaced -- there is no creator-konto updater in DPDC and never has been.
+            (ref-DPDC::XE_U|Specs id true (+ {"creator-konto": new-creator} props))
+            ;;2]The incoming creator needs a collection account row to carry roles on. Idempotent.
+            (ref-DPDC::XE_DeployAccountWNE new-creator id true)
+            ;;3]SINGLE-HOLDER Verum positions: create (5), recreate (6), set-new-uri (10). Setting
+            ;;the holder displaces the old one, so there is nothing to clear.
+            (map
+                (lambda (rp:integer) (ref-DPDC::XE_U|VerumRoles id true rp true new-creator))
+                [5 6 10]
+            )
+            ;;4]LIST Verum positions: exemption (2), update (7), modify-creator (8),
+            ;;modify-royalties (9). Remove the old holder, add the new.
+            (map
+                (lambda (rp:integer)
+                    (ref-DPDC::XE_U|VerumRoles id true rp false old-creator)
+                    (ref-DPDC::XE_U|VerumRoles id true rp true new-creator)
+                )
+                [2 7 8 9]
+            )
+            ;;5]THE PER-ACCOUNT ROLE ROW -- what every role gate actually reads.
+            (ref-DPDC::XE_U|Create          id true old-creator false)
+            (ref-DPDC::XE_U|Create          id true new-creator true)
+            (ref-DPDC::XE_U|Recreate        id true old-creator false)
+            (ref-DPDC::XE_U|Recreate        id true new-creator true)
+            (ref-DPDC::XE_U|Update          id true old-creator false)
+            (ref-DPDC::XE_U|Update          id true new-creator true)
+            (ref-DPDC::XE_U|ModifyCreator   id true old-creator false)
+            (ref-DPDC::XE_U|ModifyCreator   id true new-creator true)
+            (ref-DPDC::XE_U|ModifyRoyalties id true old-creator false)
+            (ref-DPDC::XE_U|ModifyRoyalties id true new-creator true)
+            (ref-DPDC::XE_U|SetNewUri       id true old-creator false)
+            (ref-DPDC::XE_U|SetNewUri       id true new-creator true)
+            (ref-DPDC::XE_U|Exemption       id true old-creator false)
+            (ref-DPDC::XE_U|Exemption       id true new-creator true)
+            (format "Company {} handed over to a new creator" [id])
+        )
+    )
     ;;{5.7}  User [A/C]
+    (defun C_RotateCompanyCreator:string
+        (patron:string executor:string id:string new-creator:string)
+        @doc "Hands company <id> from its current creator to <new-creator>. \
+            \ \
+            \ BOTH ACCOUNTS MUST SIGN -- the outgoing creator to authorise and the incoming one \
+            \ to accept. See EQUITY|C>ROTATE-CREATOR for why acceptance is not optional. \
+            \ \
+            \ Executor: ENFORCED IN PLACE by CAP_EquityCreator, which both BINDS <executor> to \
+            \ the collection's creator and proves ownership of it. (patron/executor canon 2.2.)"
+        (P|UEV_IMC)
+        (with-capability (EQUITY|C>ROTATE-CREATOR id executor new-creator)
+            (with-capability (SECURE)
+                (XI_RotateCompanyCreator id executor new-creator)
+            )
+        )
+    )
     (defun C_IssueShares:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string id:string millions:integer)
         @doc "Creates <millions> million new company shares. One of exactly TWO doors through \
