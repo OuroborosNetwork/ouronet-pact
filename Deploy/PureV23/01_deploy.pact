@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 1 of 4
 ;; This is STEP 1 of 4 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-0 must have run first, including the init steps between deploys.
-;; 3 source file(s), 199,700 gas measured in the REPL gas model, 214,379 bytes
+;; 3 source file(s), 199,700 gas measured in the REPL gas model, 217,116 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/03_DPDC-C.pact
@@ -1524,20 +1524,22 @@
             ;;package units through <dpdc>, and those operations maintain the invariant by
             ;;construction.
             ;;
-            ;;SCOPE, STATED HONESTLY. This refuses every caller except <dpdc> itself, which is
-            ;;what EQUITY acts as. It does NOT lock out the project signature that can act as
-            ;;<dpdc> directly -- closing that would mean an `XE_` behind `P|UEV_IMC` and a
-            ;;`DpdcManagementV3` bump, and that interface is NAMED INSIDE three others
-            ;;(TalosStageTwo_ClientOne/Two, InfoTwo), so the bump cascades two levels deep to
-            ;;seal a door only the protocol admin can open. The same reservation already applies
-            ;;to every other sealed equity operation.
-            (if (and (UC_IzEquityCollectionId id) (= nonce 1))
-                (enforce
-                    (= account (ref-DPDC::GOV|DPDC|SC_NAME))
-                    (format "{} is an EQUITY collection: its share count changes only through EQUITY::C_IssueShares / C_RetireShares"
-                        [id])
-                )
-                true
+            ;;UNCONDITIONAL -- NO ACCOUNT IS EXEMPT, <dpdc> INCLUDED.
+            ;;
+            ;;The first cut admitted <dpdc>, because EQUITY reached this entrypoint to do its own
+            ;;minting and burning. That left the rule true of everyone except the one signature
+            ;;that could act as <dpdc> directly, which is a strange shape for an invariant.
+            ;;
+            ;;`XI_IssueShares` / `XI_RetireShares` now perform the two underlying writes
+            ;;themselves -- `XB_CreditSFT-Nonce` / `XE_DebitSFT-Nonce` plus `XE_U|NonceSupply`,
+            ;;exactly what this module's own XI_ helpers do -- so nothing needs to come through
+            ;;here and the refusal can be total. That was worth the rewiring: it removes an
+            ;;exemption rather than documenting one, and it needs no `DpdcManagementV3` bump,
+            ;;which would have cascaded into three interfaces that name it.
+            (enforce
+                (not (and (UC_IzEquityCollectionId id) (= nonce 1)))
+                (format "{} is an EQUITY collection: its share count changes only through EQUITY::C_IssueShares / C_RetireShares"
+                    [id])
             )
             ;;Account Ownership
             (ref-DALOS::CAP_EnforceAccountOwnership account)
@@ -1565,20 +1567,22 @@
             ;;package units through <dpdc>, and those operations maintain the invariant by
             ;;construction.
             ;;
-            ;;SCOPE, STATED HONESTLY. This refuses every caller except <dpdc> itself, which is
-            ;;what EQUITY acts as. It does NOT lock out the project signature that can act as
-            ;;<dpdc> directly -- closing that would mean an `XE_` behind `P|UEV_IMC` and a
-            ;;`DpdcManagementV3` bump, and that interface is NAMED INSIDE three others
-            ;;(TalosStageTwo_ClientOne/Two, InfoTwo), so the bump cascades two levels deep to
-            ;;seal a door only the protocol admin can open. The same reservation already applies
-            ;;to every other sealed equity operation.
-            (if (and (UC_IzEquityCollectionId id) (= nonce 1))
-                (enforce
-                    (= account (ref-DPDC::GOV|DPDC|SC_NAME))
-                    (format "{} is an EQUITY collection: its share count changes only through EQUITY::C_IssueShares / C_RetireShares"
-                        [id])
-                )
-                true
+            ;;UNCONDITIONAL -- NO ACCOUNT IS EXEMPT, <dpdc> INCLUDED.
+            ;;
+            ;;The first cut admitted <dpdc>, because EQUITY reached this entrypoint to do its own
+            ;;minting and burning. That left the rule true of everyone except the one signature
+            ;;that could act as <dpdc> directly, which is a strange shape for an invariant.
+            ;;
+            ;;`XI_IssueShares` / `XI_RetireShares` now perform the two underlying writes
+            ;;themselves -- `XB_CreditSFT-Nonce` / `XE_DebitSFT-Nonce` plus `XE_U|NonceSupply`,
+            ;;exactly what this module's own XI_ helpers do -- so nothing needs to come through
+            ;;here and the refusal can be total. That was worth the rewiring: it removes an
+            ;;exemption rather than documenting one, and it needs no `DpdcManagementV3` bump,
+            ;;which would have cascaded into three interfaces that name it.
+            (enforce
+                (not (and (UC_IzEquityCollectionId id) (= nonce 1)))
+                (format "{} is an EQUITY collection: its share count changes only through EQUITY::C_IssueShares / C_RetireShares"
+                    [id])
             )
             ;;Account Ownership - via Debit Function
             ;;Correct burn role
@@ -3612,6 +3616,7 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (ref-DPDC:module{DpdcV3} DPDC)
+                    (ref-DPDC-C:module{DpdcCreateV3} DPDC-C)
                     (ref-DPDC-MNG:module{DpdcManagementV3} DPDC-MNG)
                     (ref-DPDC-T:module{DpdcTransferV3} DPDC-T)
                     (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
@@ -3620,9 +3625,28 @@
                     (to-holder:integer (at 1 split))
                     (total:integer (* millions SHARE_UNIT))
                     ;;
+                    ;;1]MINT THE WHOLE ISSUANCE ON <dpdc>, by writing the two rows directly
+                    ;;rather than through `DPDC-MNG::C_AddQuantity`.
+                    ;;
+                    ;;THIS IS WHAT MAKES THE TWO DOORS THE ONLY DOORS. The first cut called
+                    ;;`C_AddQuantity` here, which meant the guard in DPDC-MNG had to ADMIT a
+                    ;;caller acting as <dpdc> -- so the entrypoint stayed open to the project
+                    ;;signature, and "shares can only move through these two functions" was true
+                    ;;of everyone except the one account that could ignore it.
+                    ;;
+                    ;;Writing the rows here lets that guard refuse nonce 1 UNCONDITIONALLY. These
+                    ;;are the same two writes `XI_IncreaseClassZeroSemiFungible` performs, in the
+                    ;;same order, and EQUITY may call both because it holds an IMP guard on DPDC
+                    ;;and DPDC-C (see P|A_Define). The price is taken from DPDC-MNG's own reader,
+                    ;;so the IGNIS charge is identical to the path it replaces.
+                    (supply-before:integer (ref-DPDC::UR_NonceSupply id true 1))
+                    ;;UNTYPED, DELIBERATELY: these two bindings exist for their WRITE, not their value, and
+                    ;;the credit/debit helpers do not agree on a return type. Annotating them is
+                    ;;how the first cut failed -- "argument is list, but expected type string".
+                    (credited (ref-DPDC-C::XB_CreditSFT-Nonce dpdc id 1 total))
+                    (resupplied (ref-DPDC::XE_U|NonceSupply id 1 (+ total supply-before)))
                     (ico1:object{IgnisCollectorV4.OutputCumulator}
-                        ;;1]Mint the whole issuance on <dpdc>
-                        (ref-DPDC-MNG::C_AddQuantity patron dpdc id 1 total)
+                        (ref-DPDC-MNG::URCi_AddQuantity id)
                     )
                     (ico2:object{IgnisCollectorV4.OutputCumulator}
                         ;;2]Release the holder's leg; the escrow's leg stays where it was minted
@@ -3648,6 +3672,7 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (ref-DPDC:module{DpdcV3} DPDC)
+                    (ref-DPDC-C:module{DpdcCreateV3} DPDC-C)
                     (ref-DPDC-MNG:module{DpdcManagementV3} DPDC-MNG)
                     (ref-DPDC-T:module{DpdcTransferV3} DPDC-T)
                     (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
@@ -3660,9 +3685,16 @@
                         ;;1]Collect the retirer's leg into <dpdc>
                         (ref-DPDC-T::C_Transfer patron executor dpdc [id] [true] [[1]] [[from-holder]] true)
                     )
+                    ;;2]BURN BOTH LEGS, written directly for the same reason the mint is -- see
+                    ;;XI_IssueShares. Same two writes as `XI_DecreaseClassZeroSemiFungibles`,
+                    ;;`wipe-mode` FALSE because this is a burn against <dpdc>'s own balance and
+                    ;;not a confiscation.
+                    (supply-before:integer (ref-DPDC::UR_NonceSupply id true 1))
+                    ;;UNTYPED for the same reason as XI_IssueShares' pair.
+                    (debited (ref-DPDC-C::XE_DebitSFT-Nonce dpdc id 1 total false))
+                    (resupplied (ref-DPDC::XE_U|NonceSupply id 1 (- supply-before total)))
                     (ico2:object{IgnisCollectorV4.OutputCumulator}
-                        ;;2]Burn both legs in one write
-                        (ref-DPDC-MNG::C_BurnSFT patron dpdc id 1 total)
+                        (ref-DPDC-MNG::URCi_BurnSFT id)
                     )
                 )
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2] [[1][total]])

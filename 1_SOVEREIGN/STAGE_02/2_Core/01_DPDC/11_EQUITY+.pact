@@ -1071,6 +1071,7 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (ref-DPDC:module{DpdcV3} DPDC)
+                    (ref-DPDC-C:module{DpdcCreateV3} DPDC-C)
                     (ref-DPDC-MNG:module{DpdcManagementV3} DPDC-MNG)
                     (ref-DPDC-T:module{DpdcTransferV3} DPDC-T)
                     (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
@@ -1079,9 +1080,28 @@
                     (to-holder:integer (at 1 split))
                     (total:integer (* millions SHARE_UNIT))
                     ;;
+                    ;;1]MINT THE WHOLE ISSUANCE ON <dpdc>, by writing the two rows directly
+                    ;;rather than through `DPDC-MNG::C_AddQuantity`.
+                    ;;
+                    ;;THIS IS WHAT MAKES THE TWO DOORS THE ONLY DOORS. The first cut called
+                    ;;`C_AddQuantity` here, which meant the guard in DPDC-MNG had to ADMIT a
+                    ;;caller acting as <dpdc> -- so the entrypoint stayed open to the project
+                    ;;signature, and "shares can only move through these two functions" was true
+                    ;;of everyone except the one account that could ignore it.
+                    ;;
+                    ;;Writing the rows here lets that guard refuse nonce 1 UNCONDITIONALLY. These
+                    ;;are the same two writes `XI_IncreaseClassZeroSemiFungible` performs, in the
+                    ;;same order, and EQUITY may call both because it holds an IMP guard on DPDC
+                    ;;and DPDC-C (see P|A_Define). The price is taken from DPDC-MNG's own reader,
+                    ;;so the IGNIS charge is identical to the path it replaces.
+                    (supply-before:integer (ref-DPDC::UR_NonceSupply id true 1))
+                    ;;UNTYPED, DELIBERATELY: these two bindings exist for their WRITE, not their value, and
+                    ;;the credit/debit helpers do not agree on a return type. Annotating them is
+                    ;;how the first cut failed -- "argument is list, but expected type string".
+                    (credited (ref-DPDC-C::XB_CreditSFT-Nonce dpdc id 1 total))
+                    (resupplied (ref-DPDC::XE_U|NonceSupply id 1 (+ total supply-before)))
                     (ico1:object{IgnisCollectorV4.OutputCumulator}
-                        ;;1]Mint the whole issuance on <dpdc>
-                        (ref-DPDC-MNG::C_AddQuantity patron dpdc id 1 total)
+                        (ref-DPDC-MNG::URCi_AddQuantity id)
                     )
                     (ico2:object{IgnisCollectorV4.OutputCumulator}
                         ;;2]Release the holder's leg; the escrow's leg stays where it was minted
@@ -1107,6 +1127,7 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (ref-DPDC:module{DpdcV3} DPDC)
+                    (ref-DPDC-C:module{DpdcCreateV3} DPDC-C)
                     (ref-DPDC-MNG:module{DpdcManagementV3} DPDC-MNG)
                     (ref-DPDC-T:module{DpdcTransferV3} DPDC-T)
                     (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
@@ -1119,9 +1140,16 @@
                         ;;1]Collect the retirer's leg into <dpdc>
                         (ref-DPDC-T::C_Transfer patron executor dpdc [id] [true] [[1]] [[from-holder]] true)
                     )
+                    ;;2]BURN BOTH LEGS, written directly for the same reason the mint is -- see
+                    ;;XI_IssueShares. Same two writes as `XI_DecreaseClassZeroSemiFungibles`,
+                    ;;`wipe-mode` FALSE because this is a burn against <dpdc>'s own balance and
+                    ;;not a confiscation.
+                    (supply-before:integer (ref-DPDC::UR_NonceSupply id true 1))
+                    ;;UNTYPED for the same reason as XI_IssueShares' pair.
+                    (debited (ref-DPDC-C::XE_DebitSFT-Nonce dpdc id 1 total false))
+                    (resupplied (ref-DPDC::XE_U|NonceSupply id 1 (- supply-before total)))
                     (ico2:object{IgnisCollectorV4.OutputCumulator}
-                        ;;2]Burn both legs in one write
-                        (ref-DPDC-MNG::C_BurnSFT patron dpdc id 1 total)
+                        (ref-DPDC-MNG::URCi_BurnSFT id)
                     )
                 )
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2] [[1][total]])

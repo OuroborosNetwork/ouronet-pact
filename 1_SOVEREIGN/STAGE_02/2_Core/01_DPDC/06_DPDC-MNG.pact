@@ -385,20 +385,22 @@
             ;;package units through <dpdc>, and those operations maintain the invariant by
             ;;construction.
             ;;
-            ;;SCOPE, STATED HONESTLY. This refuses every caller except <dpdc> itself, which is
-            ;;what EQUITY acts as. It does NOT lock out the project signature that can act as
-            ;;<dpdc> directly -- closing that would mean an `XE_` behind `P|UEV_IMC` and a
-            ;;`DpdcManagementV3` bump, and that interface is NAMED INSIDE three others
-            ;;(TalosStageTwo_ClientOne/Two, InfoTwo), so the bump cascades two levels deep to
-            ;;seal a door only the protocol admin can open. The same reservation already applies
-            ;;to every other sealed equity operation.
-            (if (and (UC_IzEquityCollectionId id) (= nonce 1))
-                (enforce
-                    (= account (ref-DPDC::GOV|DPDC|SC_NAME))
-                    (format "{} is an EQUITY collection: its share count changes only through EQUITY::C_IssueShares / C_RetireShares"
-                        [id])
-                )
-                true
+            ;;UNCONDITIONAL -- NO ACCOUNT IS EXEMPT, <dpdc> INCLUDED.
+            ;;
+            ;;The first cut admitted <dpdc>, because EQUITY reached this entrypoint to do its own
+            ;;minting and burning. That left the rule true of everyone except the one signature
+            ;;that could act as <dpdc> directly, which is a strange shape for an invariant.
+            ;;
+            ;;`XI_IssueShares` / `XI_RetireShares` now perform the two underlying writes
+            ;;themselves -- `XB_CreditSFT-Nonce` / `XE_DebitSFT-Nonce` plus `XE_U|NonceSupply`,
+            ;;exactly what this module's own XI_ helpers do -- so nothing needs to come through
+            ;;here and the refusal can be total. That was worth the rewiring: it removes an
+            ;;exemption rather than documenting one, and it needs no `DpdcManagementV3` bump,
+            ;;which would have cascaded into three interfaces that name it.
+            (enforce
+                (not (and (UC_IzEquityCollectionId id) (= nonce 1)))
+                (format "{} is an EQUITY collection: its share count changes only through EQUITY::C_IssueShares / C_RetireShares"
+                    [id])
             )
             ;;Account Ownership
             (ref-DALOS::CAP_EnforceAccountOwnership account)
@@ -426,20 +428,22 @@
             ;;package units through <dpdc>, and those operations maintain the invariant by
             ;;construction.
             ;;
-            ;;SCOPE, STATED HONESTLY. This refuses every caller except <dpdc> itself, which is
-            ;;what EQUITY acts as. It does NOT lock out the project signature that can act as
-            ;;<dpdc> directly -- closing that would mean an `XE_` behind `P|UEV_IMC` and a
-            ;;`DpdcManagementV3` bump, and that interface is NAMED INSIDE three others
-            ;;(TalosStageTwo_ClientOne/Two, InfoTwo), so the bump cascades two levels deep to
-            ;;seal a door only the protocol admin can open. The same reservation already applies
-            ;;to every other sealed equity operation.
-            (if (and (UC_IzEquityCollectionId id) (= nonce 1))
-                (enforce
-                    (= account (ref-DPDC::GOV|DPDC|SC_NAME))
-                    (format "{} is an EQUITY collection: its share count changes only through EQUITY::C_IssueShares / C_RetireShares"
-                        [id])
-                )
-                true
+            ;;UNCONDITIONAL -- NO ACCOUNT IS EXEMPT, <dpdc> INCLUDED.
+            ;;
+            ;;The first cut admitted <dpdc>, because EQUITY reached this entrypoint to do its own
+            ;;minting and burning. That left the rule true of everyone except the one signature
+            ;;that could act as <dpdc> directly, which is a strange shape for an invariant.
+            ;;
+            ;;`XI_IssueShares` / `XI_RetireShares` now perform the two underlying writes
+            ;;themselves -- `XB_CreditSFT-Nonce` / `XE_DebitSFT-Nonce` plus `XE_U|NonceSupply`,
+            ;;exactly what this module's own XI_ helpers do -- so nothing needs to come through
+            ;;here and the refusal can be total. That was worth the rewiring: it removes an
+            ;;exemption rather than documenting one, and it needs no `DpdcManagementV3` bump,
+            ;;which would have cascaded into three interfaces that name it.
+            (enforce
+                (not (and (UC_IzEquityCollectionId id) (= nonce 1)))
+                (format "{} is an EQUITY collection: its share count changes only through EQUITY::C_IssueShares / C_RetireShares"
+                    [id])
             )
             ;;Account Ownership - via Debit Function
             ;;Correct burn role

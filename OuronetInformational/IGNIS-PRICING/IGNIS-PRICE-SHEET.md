@@ -405,7 +405,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_RenameSet` | `C_RenameSet` | SETUP | **14** | — | $0.14 | deter:setup 5 + components:DPSF|C_RenameSet 9 |
 | `C_Repurpose` | `C_RepurposeCollectable` | USAGE | **≥ 2** | — | COMPLEX | charge multiplies by an item count; legs: small 2 |
 | `C_RepurposeFragments` | `C_RepurposeCollectableFragments` | USAGE | **≥ 2** | — | COMPLEX | charge multiplies by an item count; legs: small 2 |
-| `C_RetireShares` | `C_RetireShares` | SETUP | **20** | — | $0.20 | deter:setup 5 + components:DPSF|C_Burn 15 |
+| `C_RetireShares` | `C_RetireShares` | SETUP | **33** | — | $0.33 | deter:setup 5 + components:DPSF|C_Burn 15 + components:DPSF|C_AddQuantity 13 |
 | `C_RotateCompanyCreator` | `C_RotateCompanyCreator` | SETUP | **0** | — | free | free by design — Talos wrapper collects no IGNIS and no STOA |
 | `C_SetCompanyBranding` | `C_SetCompanyBranding` | SETUP | **≥ 100** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: branding 100 |
 | `C_ToggleAddQuantityRole` | `C_ToggleAddQuantityRole` | AUTH | **23** | — | $0.23 | deter:auth 10 + components:DPSF|C_ToggleAddQuantityRole 13 |

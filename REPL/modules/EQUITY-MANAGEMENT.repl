@@ -211,9 +211,8 @@
                 (try false (!= "" (format "{}" [(ref-EQUITY::UEV_RetireHolding id creator 1)]))))
         ]
     )
-    ;;THE SHARE COUNT HAS EXACTLY TWO DOORS. Raw add/burn on nonce 1 is refused even for an
-    ;;account that holds the role, because a share movement must settle the escrow at the same
-    ;;time and these entrypoints cannot.
+    ;;THE SHARE COUNT HAS EXACTLY TWO DOORS. Raw add/burn on nonce 1 is refused because a share
+    ;;movement must settle the ESCROW at the same time, pro-rata, and these entrypoints cannot.
     (map print
         [
             (expect-failure "its share count changes only through EQUITY::C_IssueShares"
@@ -221,6 +220,31 @@
             (expect-failure "its share count changes only through EQUITY::C_IssueShares"
                 (ref-TS02-C1::DPSF|C_Burn patron creator id 1 1000))
         ]
+    )
+    ;;...AND <dpdc> ITSELF IS NOT EXEMPT, which is the half that was open in this round's first
+    ;;cut. `role-nft-add-quantity` belongs to the DPDC smart account, and `UEV_SmartAccOwn`
+    ;;accepts that account's SOVEREIGN guard -- which is the project account signing this
+    ;;transaction. So this is the real admin path, driven as the admin, and refused.
+    (let
+        (
+            (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
+        )
+        (map print
+            [
+                (expect-failure "<<EQM-2>> not even <dpdc> may mint shares outside the two doors"
+                    "changes only through EQUITY::C_IssueShares"
+                    (ref-TS02-C1::DPSF|C_AddQuantity patron dpdc id 1 1000000))
+                (expect-failure "<<EQM-2>> ...nor burn them"
+                    "changes only through EQUITY::C_IssueShares"
+                    (ref-TS02-C1::DPSF|C_Burn patron dpdc id 1 1000))
+                ;;THE TIERS ARE UNAFFECTED -- Make, Break and Convert mint and burn package units
+                ;;through <dpdc> on nonces 2-8 and must keep working. Asserted on the nonce the
+                ;;company actually has packages in, so a blanket ban would fail here.
+                (expect (format "<<EQM-2>> tier nonces still carry supply got={}"
+                                [(ref-DPDC::UR_NonceSupply id true 4)])
+                        1000 (ref-DPDC::UR_NonceSupply id true 4))
+            ]
+        )
     )
     ;;THE NONCE SET IS SEALED. Measured as reachable before this round: nonces-used 8 -> 9.
     (expect-failure "<<EQM-2>> the eight elements are sealed -- no ninth nonce"

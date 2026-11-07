@@ -11,15 +11,15 @@ from-scratch pipeline, which does not apply to an upgrade round. No preceding st
 | modules | **10** |
 | interfaces shipped | **2** — `EquityV5`, `TalosStageTwo_ClientOneV4`. Seven already-live ones are SKIPPED; see below |
 | init steps | **0** |
-| total size | **1,013,323 bytes** |
-| verified | gate green, **96 entrypoints, 30,300 assertions**; round replayed clean against real live chain content |
+| total size | **1,016,060 bytes** |
+| verified | gate green, **96 entrypoints, 30,303 assertions**; round replayed clean against real live chain content |
 | post-deploy | `python3 REPL/tools/_registrylive.py --record` |
 
 ## Send them in this order
 
 | # | bytes | carries |
 |---|---|---|
-| `01_deploy.pact` | 205,450 | `DPDC-C`, `DPDC-MNG`, **`EquityV5`**, `EQUITY` |
+| `01_deploy.pact` | 208,187 | `DPDC-C`, `DPDC-MNG`, **`EquityV5`**, `EQUITY` |
 | `02_deploy.pact` | 298,877 | `AQP-SCORE` |
 | `03_deploy.pact` | 233,989 | `AQP-POOL` |
 | `04_deploy.pact` | 275,007 | **`TalosStageTwo_ClientOneV4`**, `TS02-C1`, `TS02-C2`, `DEMIPAD-SNAKES`, `DEMIPAD-CUSTODIANS`, `INFO-TWO` |
@@ -70,9 +70,24 @@ K is the packaged **percentage** and is invariant under supply changes. `EQUITY:
 Two consequences fall out: the 50% cap becomes `K ≤ 500,000` with no reference to m, so neither
 door can breach it; and escrow is always a multiple of m, so every split is whole shares.
 
-Raw `C_AddQuantity` / `C_BurnSFT` on **nonce 1** of an `E|` id are now refused. Tiers 2–8 are
-untouched — Make, Break and Convert mint and burn package units and maintain the invariant by
-construction.
+Raw `C_AddQuantity` / `C_BurnSFT` on **nonce 1** of an `E|` id are now refused
+**unconditionally — `<dpdc>` itself included.** Tiers 2–8 are untouched: Make, Break and Convert
+mint and burn package units through `<dpdc>` and maintain the invariant by construction.
+
+That totality took a rewiring, and it is the difference between a rule and a rule with an
+asterisk. The first cut had EQUITY call `DPDC-MNG::C_AddQuantity` to do its own minting, so the
+guard had to *admit* a caller acting as `<dpdc>` — leaving the entrypoint open to the project
+signature, which can satisfy `<dpdc>`'s ownership through its sovereign guard. The two doors now
+perform the underlying writes themselves (`XB_CreditSFT-Nonce` / `XE_DebitSFT-Nonce` plus
+`XE_U|NonceSupply` — exactly what `DPDC-MNG`'s own `XI_` helpers do, and reachable because EQUITY
+holds an IMP guard on DPDC and DPDC-C), so nothing needs to come through that entrypoint and the
+refusal is total. The IGNIS price is taken from `DPDC-MNG`'s own `URCi_` readers, so the charge is
+identical to the path it replaces. **No `DpdcManagementV3` bump** — which would have cascaded into
+the three interfaces that name it.
+
+Asserted by driving the real admin path: `DPSF|C_AddQuantity` and `DPSF|C_Burn` are called **as
+`<dpdc>`**, with the project account signing, and both are refused — alongside an assertion that
+tier nonce 4 still carries its 1,000 units, so a blanket ban would fail the same test.
 
 ### 3 — Company governance reaches the creator
 
@@ -141,7 +156,7 @@ rather than inferred: **2 `(interface` declarations, 10 `(module`, 0 live `creat
 
 ## Test coverage, where there was none
 
-`REPL/modules/EQUITY-MANAGEMENT.repl` is new — **43 assertions** across four blocks (share
+`REPL/modules/EQUITY-MANAGEMENT.repl` is new — **46 assertions** across four blocks (share
 arithmetic, refusals, company governance, creator rotation), its own gate entrypoint.
 Before this round there was **not one assertion anywhere** exercising equity management from any
 account.
