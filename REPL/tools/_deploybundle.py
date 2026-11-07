@@ -92,6 +92,46 @@ BLOODSHED = (
 )
 
 ROUNDS = {
+    "2026-11-v24-equity-previews": {
+        "why": "SIX ENTRYPOINTS SHIPPED WITHOUT A PRICE. PureV23 added the Equity company "
+               "controls to Talos and left their `INFO_` cost previews for later -- which is "
+               "the one thing a client needs before it can let anyone press the button. "
+               "\n\n"
+               "An entrypoint with no preview is an operation a wallet cannot quote. That is "
+               "not a cosmetic gap: it is the exact shape of the dead INFO on Activate Standard "
+               "Account, where the UI had nothing to show and the owner could not tell a broken "
+               "op from an expensive one. BOTH the repo gate and `@ouronet/talos-registry`'s own "
+               "test enforce the pairing, and both went red the moment V23's surface was "
+               "recorded -- which is how this was found, AFTER the deploy rather than before. "
+               "The two rounds should have travelled together. "
+               "\n\n"
+               "ONE MODULE, AND NO NEW READERS IN EQUITY. The cost is composed from the sub-ops "
+               "these entrypoints already perform -- `DPDC-MNG::URCi_AddQuantity` / "
+               "`URCi_BurnSFT` / `URCi_TogglePause`, `DPDC::URCi_UpdatePendingBranding` / "
+               "`URCi_UpgradeBranding`, and `DPDC-T::URCi_MultiTransferCumulator` for the "
+               "transfer leg -- every one already published in its own interface. Adding "
+               "`URCi_` readers to EQUITY instead would have meant `EquityV5` -> `V6` and a "
+               "SECOND cascade through five modules, to restate a sum already available here. "
+               "\n\n"
+               "DRIVEN, NOT ASSUMED. All six previews were called and read before shipping: "
+               "9,018 IGNIS ($47.79) to issue 9 million shares, 1,020 ($5.40) to retire one "
+               "million, 14 (7.42c) to halt trading, 400 ($2.12) to set branding, 750 STOA "
+               "($57.37) to extend it, and free for a rotation -- which charges nothing because "
+               "it calls no billing client, and says so rather than inventing a figure. "
+               "\n\n"
+               "The retirement preview quotes the HOLDER'S LEG, not the gross amount: at a "
+               "packaged fraction K, retiring n million costs the retirer n x (1,000,000 - K) "
+               "of their own shares and the escrow the rest. A client showing the gross figure "
+               "would refuse operations the chain accepts. "
+               "\n\n"
+               "NO INTERFACE BUMP. `InfoTwoV3` declares 14 of INFO-TWO's many `INFO_` readers "
+               "and these six are not among them -- module-only, like most of the file. The "
+               "live `InfoTwoV3` is stripped from the emitted source as already-deployed.",
+        "interfaces": [],
+        "also": ["1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact"],
+        # NO INIT. Six read-only functions are added. Nothing is created or registered.
+        "init": [],
+    },
     "2026-11-v23-equity-company-governance": {
         "why": "AN EQUITY COLLECTION IS A TOKENISED COMPANY THAT ITS FOUNDER COULD NOT RUN. "
                "Owner, 2026-11-07: 'right now it must be managed through the DPDC owner, which "

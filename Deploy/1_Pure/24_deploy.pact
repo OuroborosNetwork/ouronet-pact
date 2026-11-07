@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 24 of 26
 ;; This is STEP 24 of 27 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-23 must have run first, including the init steps between deploys.
-;; 8 source file(s), 224,486 gas measured in the REPL gas model, 276,766 bytes
+;; 8 source file(s), 224,486 gas measured in the REPL gas model, 283,075 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   2_CITIZEN/7_Launchpad/1_Spark/01_Spark.pact
@@ -4968,6 +4968,101 @@
     ;;  [DPSF equity aliases] — Talos surfaces EQUITY ops under the DPSF| client namespace
     (defun INFO_DPSF|IssueCompany:object{OuronetInfoV3.ClientInfo} (patron:string creator-account:string collection-name:string collection-ticker:string royalty:decimal ignis-royalty:decimal ipfs-links:[string]) (INFO_EQUITY|IssueCompany patron creator-account collection-name))
     (defun INFO_DPSF|MorphEquity:object{OuronetInfoV3.ClientInfo} (patron:string account:string id:string input-nonce:integer input-amount:integer output-nonce:integer) (INFO_EQUITY|MorphEquity patron account id input-nonce input-amount output-nonce))
+    ;; ─── EQUITY COMPANY GOVERNANCE PREVIEWS ──────────────────────────────────────────────
+    ;; Added 2026-11-07, because PureV23 shipped six client entrypoints with no preview and
+    ;; the registry pairs every one of the other 441 with an `INFO_`. An entrypoint without a
+    ;; preview is one a client cannot PRICE before sending -- which is exactly the shape of the
+    ;; dead INFO the owner hit on Activate Standard Account.
+    ;;
+    ;; THE COST IS COMPOSED FROM THE SUB-OPS THESE ENTRYPOINTS ACTUALLY PERFORM, not from new
+    ;; readers in EQUITY. That is both cheaper and more honest: `C_IssueShares` concatenates an
+    ;; add-quantity cumulator with a transfer cumulator, so the preview sums exactly those two.
+    ;; Adding `URCi_` readers to EQUITY would have meant `EquityV5` -> `V6` and a second cascade
+    ;; through five modules to restate a sum already available here.
+    (defun INFO_EQUITY|ShareMove:object{OuronetInfoV3.ClientInfo}
+        (patron:string account:string id:string millions:integer issuing:bool)
+        @doc "Shared preview for the two share doors. <issuing> picks the direction: an issuance \
+            \ mints on <dpdc> then releases the holder's leg; a retirement collects that leg \
+            \ then burns both. Same two legs either way, so the cost is the same shape."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-MNG:module{DpdcManagementV3} DPDC-MNG)
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (ref-DPDC-T:module{DpdcTransferV3} DPDC-T)
+                (ref-EQUITY:module{EquityV5} EQUITY)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+                (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
+                ;;THE HOLDER'S LEG, which is what actually moves between accounts. Per million,
+                ;;K goes to or from the escrow and (1,000,000 - K) to or from the holder.
+                (leg:integer (at 1 (ref-EQUITY::UC_ShareSplit millions (ref-EQUITY::URC_PackageConstant id))))
+                (supply-leg:object{IgnisCollectorV4.OutputCumulator}
+                    (if issuing (ref-MNG::URCi_AddQuantity id) (ref-MNG::URCi_BurnSFT id)))
+                (move-leg:object{IgnisCollectorV4.OutputCumulator}
+                    (ref-DPDC-T::URCi_MultiTransferCumulator
+                        [id] [true] (if issuing dpdc account) (if issuing account dpdc) [[1]] [[leg]]))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(if issuing
+                    (format "Operation: Issues {} million new shares of Company {} to {}" [millions id sa])
+                    (format "Operation: Retires {} million shares of Company {}, {} of them from {}" [millions id leg sa]))]
+                [(if issuing
+                    (format "Succesfully issued {} million shares of Company {}; {} released to {}" [millions id leg sa])
+                    (format "Succesfully retired {} million shares of Company {}" [millions id]))]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    (ref-I|OURONET::OI|UC_IfpFromOutputCumulator
+                        (ref-IGNIS::UDC_ConcatenateOutputCumulators [supply-leg move-leg] [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
+    (defun INFO_DPSF|IssueShares:object{OuronetInfoV3.ClientInfo} (patron:string account:string id:string millions:integer)
+        (INFO_EQUITY|ShareMove patron account id millions true))
+    (defun INFO_DPSF|RetireShares:object{OuronetInfoV3.ClientInfo} (patron:string account:string id:string millions:integer)
+        (INFO_EQUITY|ShareMove patron account id millions false))
+    (defun INFO_DPSF|PauseCompany:object{OuronetInfoV3.ClientInfo} (patron:string account:string id:string toggle:bool)
+        (let
+            (
+                (ref-MNG:module{DpdcManagementV3} DPDC-MNG)
+            )
+            (INFO_DPDC-MNG|Simple patron
+                (if toggle
+                    (format "Operation: HALTS all movement of Company {} shares -- transfers, and with them Make, Break and Convert" [id])
+                    (format "Operation: Resumes trading in Company {} shares" [id]))
+                (if toggle
+                    (format "Company {} shares are now halted" [id])
+                    (format "Company {} shares are trading again" [id]))
+                (ref-MNG::URCi_TogglePause id true))
+        ))
+    (defun INFO_DPSF|SetCompanyBranding:object{OuronetInfoV3.ClientInfo} (patron:string account:string id:string)
+        (let
+            (
+                (d:module{DpdcV3} DPDC)
+            )
+            (INFO_DPDC-MNG|Simple patron
+                (format "Operation: Updates the public identity of Company {}" [id])
+                (format "Branding of Company {} updated" [id])
+                (d::URCi_UpdatePendingBranding id true))
+        ))
+    (defun INFO_DPSF|UpgradeCompanyBranding:object{OuronetInfoV3.ClientInfo} (patron:string account:string id:string months:integer)
+        (INFO_DPDC|UpgradeBranding patron id months true))
+    (defun INFO_DPSF|RotateCompanyCreator:object{OuronetInfoV3.ClientInfo}
+        (patron:string account:string id:string new-creator:string)
+        @doc "NO IGNIS AND NO STOA. Rotation performs writes and calls no billing client, so its \
+            \ Talos wrapper collects nothing -- the preview says so rather than inventing a \
+            \ figure. What it DOES say is the thing a client must know: the transaction needs \
+            \ BOTH signatures."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+                (so:string (ref-I|OURONET::OI|UC_ShortAccount account))
+                (sn:string (ref-I|OURONET::OI|UC_ShortAccount new-creator))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Hands Company {} from {} to {}. BOTH accounts must sign this transaction" [id so sn])]
+                [(format "Company {} handed over to {}" [id sn])]
+                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
     ;;
     ;;  [DEMIPAD] — sovereign launchpad ops (deposit + fuel/retrieve TF/OF/SF/NF + withdraw)
     (defun INFO_DEMIPAD|Deposit:object{OuronetInfoV3.ClientInfo} (patron:string donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool max-cost:decimal)

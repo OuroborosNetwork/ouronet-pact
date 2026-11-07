@@ -19,75 +19,77 @@ The last module in the collectables family.
 
 | | |
 |---|---|
-| module hash | `nSAHukohYMtKdtoov26jKeADguNhFzE7y57lVmATIiQ` |
-| deployed size | 44,196 characters |
-| implements | `OuronetPolicyV2`, `EquityV4` |
+| module hash | `wvKgZW2RIve3jonThkrgnGW985nq6xr0Yh8kNDnoVeA` |
+| deployed size | 75,096 characters |
+| implements | `OuronetPolicyV2`, `EquityV5` |
 | repository source | `1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/11_EQUITY+.pact` |
 
 **Tables it owns** — 2
 
 `P|MT`, `P|T`
 
-**Capabilities** — 10
+**Capabilities** — 14
 
-`EQUITY|C>BREAK`, `EQUITY|C>CONVERT`, `EQUITY|C>MAKE`, `GOV`, `GOV|EQUITY_ADMIN`, `P|EQUITY|CALLER`, `P|EQUITY|REMOTE-GOV`, `P|GOV-CALLER`, `P|SECURE-CALLER`, `SECURE`
+`EQUITY|C>BREAK`, `EQUITY|C>COMPANY-ACT`, `EQUITY|C>CONVERT`, `EQUITY|C>ISSUE-SHARES`, `EQUITY|C>MAKE`, `EQUITY|C>RETIRE-SHARES`, `EQUITY|C>ROTATE-CREATOR`, `GOV`, `GOV|EQUITY_ADMIN`, `P|EQUITY|CALLER`, `P|EQUITY|REMOTE-GOV`, `P|GOV-CALLER`, `P|SECURE-CALLER`, `SECURE`
 
-**Functions** — 32, grouped by what their prefix promises
+**Functions** — 53, grouped by what their prefix promises
 
 | family | n | the promise | names |
 |---|---:|---|---|
 | `URCi_` cost readers | 2 | returns what an operation will charge | `URCi_IssueShareholderCollection`, `URCi_MorphPackageShares` |
-| `URC_` derived reads | 5 | read and derive; no enforce | `URC_CombineCapacity`, `URC_IzEquitySemiFungible`, `URC_MakeSharePackage`, `URC_SharesPerMillion`, `URC_SingleSharePerMillions` |
-| `UEV_` validators | 5 | read and enforce; may abort the transaction | `UEV_Convert`, `UEV_EquitySemiFungibleID`, `UEV_Morph`, `UEV_ShareAmountsForMaking`, `UEV_SharePackageTier` |
-| `UC_` pure compute | 3 | arguments only -- no reads, no enforce | `UC_Convert`, `UC_Description`, `UC_Name` |
+| `URC_` derived reads | 9 | read and derive; no enforce | `URC_CombineCapacity`, `URC_EscrowHeld`, `URC_IzEquitySemiFungible`, `URC_MakeSharePackage`, `URC_PackageConstant`, `URC_RequiredEscrow` …+3 |
+| `UEV_` validators | 11 | read and enforce; may abort the transaction | `UEV_Convert`, `UEV_CreatorRotation`, `UEV_EquitySemiFungibleID`, `UEV_EscrowBacked`, `UEV_ExecutorIzCompanyCreator`, `UEV_Morph` …+5 |
+| `UC_` pure compute | 4 | arguments only -- no reads, no enforce | `UC_Convert`, `UC_Description`, `UC_Name`, `UC_ShareSplit` |
 | `UR_` readers | 1 | table reads; no enforce, no writes | `UR_TierSupplies` |
-| `XI_` protected (internal) | 3 | this module only | `XI_BreakPackageShares`, `XI_ConvertPackageShares`, `XI_MakePackageShares` |
-| `C_` client | 2 | reached via Talos, never called directly | `C_IssueShareholderCollection`, `C_MorphPackageShares` |
+| `CAP_` ownership gates | 1 | account-ownership enforcement | `CAP_EquityCreator` |
+| `XI_` protected (internal) | 6 | this module only | `XI_BreakPackageShares`, `XI_ConvertPackageShares`, `XI_IssueShares`, `XI_MakePackageShares`, `XI_RetireShares`, `XI_RotateCompanyCreator` |
+| `C_` client | 8 | reached via Talos, never called directly | `C_IssueShareholderCollection`, `C_IssueShares`, `C_MorphPackageShares`, `C_RetireShares`, `C_RotateCompanyCreator`, `C_SetCompanyBranding` …+2 |
 | `P|` policy | 9 | inter-module authorisation | `P|A_Add`, `P|A_AddIMP`, `P|A_Define`, `P|A_RemoveIMP`, `P|A_SetIMP`, `P|Info` …+3 |
 | *(unclassified)* | 2 | carries no StoicSyntax prefix | `CT_Bar`, `GOV|Demiurgoi` |
 
-> **The repository differs from what is deployed.** Everything above describes the CHAIN, which is what a caller actually reaches. The difference is stated rather than resolved:
->
-> - **capabilities** in the repository only: `EQUITY|C>COMPANY-ACT`, `EQUITY|C>ISSUE-SHARES`, `EQUITY|C>RETIRE-SHARES`, `EQUITY|C>ROTATE-CREATOR`
-> - **functions** in the repository only: `CAP_EquityCreator`, `C_IssueShares`, `C_RetireShares`, `C_RotateCompanyCreator`, `C_SetCompanyBranding`, `C_TogglePauseShares`, `C_UpgradeCompanyBranding`, `UC_ShareSplit`
+> Repository and chain agree on every declared shape.
 
-**Capabilities** -- 10
+**Capabilities** -- 14
 
-`EQUITY|C>BREAK`, `EQUITY|C>CONVERT`, `EQUITY|C>MAKE`, `GOV`, `GOV|EQUITY_ADMIN`, `P|EQUITY|CALLER`, `P|EQUITY|REMOTE-GOV`, `P|GOV-CALLER`, `P|SECURE-CALLER`, `SECURE`
+`EQUITY|C>BREAK`, `EQUITY|C>COMPANY-ACT`, `EQUITY|C>CONVERT`, `EQUITY|C>ISSUE-SHARES`, `EQUITY|C>MAKE`, `EQUITY|C>RETIRE-SHARES`, `EQUITY|C>ROTATE-CREATOR`, `GOV`, `GOV|EQUITY_ADMIN`, `P|EQUITY|CALLER`, `P|EQUITY|REMOTE-GOV`, `P|GOV-CALLER`, `P|SECURE-CALLER`, `SECURE`
 
-**Functions** -- 32, grouped by what the prefix promises
+**Functions** -- 53, grouped by what the prefix promises
 
 *Cost readers* (2) — price an operation; the exec path and the preview both call these
 
 `URCi_IssueShareholderCollection`, `URCi_MorphPackageShares`
 
-*Derived reads* (5) — read and compute; no enforce
+*Derived reads* (9) — read and compute; no enforce
 
-`URC_CombineCapacity`, `URC_IzEquitySemiFungible`, `URC_MakeSharePackage`, `URC_SharesPerMillion`, `URC_SingleSharePerMillions`
+`URC_CombineCapacity`, `URC_EscrowHeld`, `URC_IzEquitySemiFungible`, `URC_MakeSharePackage`, `URC_PackageConstant`, `URC_RequiredEscrow`, `URC_ShareMillions`, `URC_SharesPerMillion`, `URC_SingleSharePerMillions`
 
 *Point reads* (2) — one row or field by key
 
 `P|UR_IMP`, `UR_TierSupplies`
 
-*Validators* (6) — read and enforce; failure aborts
+*Validators* (12) — read and enforce; failure aborts
 
-`P|UEV_IMC`, `UEV_Convert`, `UEV_EquitySemiFungibleID`, `UEV_Morph`, `UEV_ShareAmountsForMaking`, `UEV_SharePackageTier`
+`P|UEV_IMC`, `UEV_Convert`, `UEV_CreatorRotation`, `UEV_EquitySemiFungibleID`, `UEV_EscrowBacked`, `UEV_ExecutorIzCompanyCreator`, `UEV_Morph`, `UEV_RetireFloor`, `UEV_RetireHolding`, `UEV_ShareAmountsForMaking`, `UEV_ShareMillions`, `UEV_SharePackageTier`
 
-*Pure compute* (3) — arguments only; no reads, no enforce
+*Pure compute* (4) — arguments only; no reads, no enforce
 
-`UC_Convert`, `UC_Description`, `UC_Name`
+`UC_Convert`, `UC_Description`, `UC_Name`, `UC_ShareSplit`
 
-*Client entry* (2) — builds the bill; reachable only through Talos
+*Ownership checks* (1) — account-ownership enforcement
 
-`C_IssueShareholderCollection`, `C_MorphPackageShares`
+`CAP_EquityCreator`
+
+*Client entry* (8) — builds the bill; reachable only through Talos
+
+`C_IssueShareholderCollection`, `C_IssueShares`, `C_MorphPackageShares`, `C_RetireShares`, `C_RotateCompanyCreator`, `C_SetCompanyBranding`, `C_TogglePauseShares`, `C_UpgradeCompanyBranding`
 
 *Admin* (5) — admin-key mutations
 
 `P|A_Add`, `P|A_AddIMP`, `P|A_Define`, `P|A_RemoveIMP`, `P|A_SetIMP`
 
-*Internal writes* (3) — this module only; writes under a capability
+*Internal writes* (6) — this module only; writes under a capability
 
-`XI_BreakPackageShares`, `XI_ConvertPackageShares`, `XI_MakePackageShares`
+`XI_BreakPackageShares`, `XI_ConvertPackageShares`, `XI_IssueShares`, `XI_MakePackageShares`, `XI_RetireShares`, `XI_RotateCompanyCreator`
 
 *Policy* (2) — inter-module authorisation
 

@@ -19,8 +19,8 @@ The family's state module for staking.
 
 | | |
 |---|---|
-| module hash | `sacGoPWz_9Pd3PYmpJUnfTIsxP83Gtq_DxaP-IFTxIs` |
-| deployed size | 229,572 characters |
+| module hash | `GH5p3K8VZop8I6Mfzlzcx1nR3FkbnE9jpqgDQbnKjjE` |
+| deployed size | 230,984 characters |
 | implements | `OuronetPolicyV2`, `AcquisitionPoolsV3` |
 | repository source | `1_SOVEREIGN/STAGE_02/2_Core/03_AQP/03_AQP.pact` |
 

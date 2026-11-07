@@ -17,7 +17,7 @@ Counts are of definitions in the tree, interface declarations included.
 | `C_` | 1,412 | client entry — builds the bill; reachable only through Talos |
 | `URC_` | 808 | reads and derives; no `enforce` |
 | `UEV_` | 687 | reads and `enforce`s; failure aborts the transaction |
-| `INFO_` | 650 | operation preview returning a client-facing cost and description |
+| `INFO_` | 657 | operation preview returning a client-facing cost and description |
 | `URCi_` | 646 | **cost reader** — the single source both billing and the preview call |
 | `A_` | 564 | admin-key mutation |
 | `UC_` | 536 | pure compute on arguments only — no table reads, no `enforce` |

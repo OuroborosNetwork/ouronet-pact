@@ -19,7 +19,7 @@ _To be written._
 
 | | |
 |---|---|
-| module hash | `rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA` |
+| module hash | `CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4` |
 | deployed size | 73,980 characters |
 | implements | — |
 | repository source | `1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact` |
@@ -34,7 +34,9 @@ _To be written._
 |---|---:|---|---|
 | *(unclassified)* | 153 | carries no StoicSyntax prefix | `CT_Bar`, `CT_EmptyCumulator`, `GOV|Demiurgoi`, `GOV|SWP|SC_NAME`, `INFO_DEMIPAD|Deposit`, `INFO_DEMIPAD|FuelNonFungible` …+147 |
 
-> Repository and chain agree on every declared shape.
+> **The repository differs from what is deployed.** Everything above describes the CHAIN, which is what a caller actually reaches. The difference is stated rather than resolved:
+>
+> - **functions** in the repository only: `INFO_DPSF|IssueShares`, `INFO_DPSF|PauseCompany`, `INFO_DPSF|RetireShares`, `INFO_DPSF|RotateCompanyCreator`, `INFO_DPSF|SetCompanyBranding`, `INFO_DPSF|UpgradeCompanyBranding`, `INFO_EQUITY|ShareMove`
 
 **Capabilities** -- 2
 

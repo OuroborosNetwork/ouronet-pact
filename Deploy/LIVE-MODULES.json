@@ -911,13 +911,13 @@
   },
   "AQP-POOL": {
    "deployed": true,
-   "hash": "sacGoPWz_9Pd3PYmpJUnfTIsxP83Gtq_DxaP-IFTxIs",
+   "hash": "GH5p3K8VZop8I6Mfzlzcx1nR3FkbnE9jpqgDQbnKjjE",
    "repoPath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/03_AQP.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
     "ouronet-ns.AcquisitionPoolsV3"
    ],
-   "chars": 229572,
+   "chars": 230984,
    "shapes": {
     "schemas": [],
     "tables": [
@@ -1224,7 +1224,7 @@
   },
   "AQP-SCORE": {
    "deployed": true,
-   "hash": "RmDjpkZMHpkHobZLZFoFhPZgGe88E-bKLQG2I95gTsk",
+   "hash": "RMgOjMECNVmHjZ16tRzKGZkvLHEgaaq4EVzn2LysnHM",
    "repoPath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/02_SCORE.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
@@ -1573,13 +1573,13 @@
   },
   "AQP-VCT": {
    "deployed": true,
-   "hash": "v-PzvoVx9edaYokmafdR2ejeaIwicQQJHbQOYFY4G1c",
+   "hash": "H51xmVWEkoRqhbmkER1YqDldSruV177-syiqR8zpEv0",
    "repoPath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/06_VCT.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
     "ouronet-ns.AcquisitionVacateV4"
    ],
-   "chars": 180751,
+   "chars": 190605,
    "shapes": {
     "schemas": [],
     "tables": [
@@ -1643,11 +1643,14 @@
      "UC_SplitNonceOwnerRowToMax",
      "UC_TfLegsFromParallelArrays",
      "UC_TfSlicePayloadFromOwnerRows",
+     "UC_VacateBulkDestinations",
      "UC_VacateCollectableLegsToVacateArrays",
      "UC_VacateDecimalAmountsToIntegers",
      "UC_VacateKindSon",
      "UC_VacateMergeDecimalNonceRowsForBeneficiary",
      "UC_VacateMergeIntNonceRowsForBeneficiary",
+     "UC_VacateMergeIntRowsByDestination",
+     "UC_VacateMergeNonceRowsByDestination",
      "UC_VacateOfLegsToVacateArrays",
      "UC_VacateOrtoDestinations",
      "UC_VacateSumAmountForBeneficiaryFromLegs",
@@ -3209,7 +3212,7 @@
   },
   "DEMIPAD-CUSTODIANS": {
    "deployed": true,
-   "hash": "aMYspM5XxMde1EiZRwTE4bkQheHd7AkIdP3L5YYKXQQ",
+   "hash": "2fwwTAQ9wylxAEayV4hW8VEn5bJm189Bw__WHevBcCY",
    "repoPath": "2_CITIZEN/7_Launchpad/3_Custodians/03_Custodians.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
@@ -3277,7 +3280,7 @@
   },
   "DEMIPAD-SNAKES": {
    "deployed": true,
-   "hash": "xQ-HwSY7faFwnYP6qOxvFjHyW51F7ZWV8xacttjFJQA",
+   "hash": "gHbhuZUMn_ls6eUgJJ_cK84GyEXrsPosSUkWMZvVhi4",
    "repoPath": "2_CITIZEN/7_Launchpad/2_Snakes/02_Snakes.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
@@ -3715,13 +3718,13 @@
   },
   "DPDC-C": {
    "deployed": true,
-   "hash": "vyf_mbw8VOBaebIRRKdowjsDimBGzuKvS22ClQMQaeA",
+   "hash": "LFq5w2NInHFaNVOU-j-hidkevAojUG1tUcaprlIwkYA",
    "repoPath": "1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/03_DPDC-C.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
     "ouronet-ns.DpdcCreateV3"
    ],
-   "chars": 57541,
+   "chars": 60632,
    "shapes": {
     "schemas": [],
     "tables": [
@@ -3780,6 +3783,7 @@
      "P|UR",
      "P|UR_IMP",
      "UC_AndTruths",
+     "UC_IzEquityCollectionId",
      "UEV_Amount",
      "UEV_ExecutorIsCreateRole",
      "UEV_FragmentCreditAmount",
@@ -3942,13 +3946,13 @@
   },
   "DPDC-MNG": {
    "deployed": true,
-   "hash": "Vbj2qMeDN88-KOc4-TszUcFAeQB4BlwuZHzZ74soyEc",
+   "hash": "CcK1hnkSEBRyJGqqkOtAeorWc9zsK_qLVDGGrTt-b4Q",
    "repoPath": "1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/06_DPDC-MNG.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
     "ouronet-ns.DpdcManagementV3"
    ],
-   "chars": 57849,
+   "chars": 62805,
    "shapes": {
     "schemas": [],
     "tables": [
@@ -4005,6 +4009,7 @@
      "UC_BuildWipeSlicePlan",
      "UC_CeilDiv",
      "UC_ComputeMinWipeSliceCount",
+     "UC_IzEquityCollectionId",
      "UCv_TakePureWipe",
      "UDC_RemovableNonces",
      "UDC_WipeSlicePlan",
@@ -5180,13 +5185,13 @@
   },
   "EQUITY": {
    "deployed": true,
-   "hash": "nSAHukohYMtKdtoov26jKeADguNhFzE7y57lVmATIiQ",
+   "hash": "wvKgZW2RIve3jonThkrgnGW985nq6xr0Yh8kNDnoVeA",
    "repoPath": "1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/11_EQUITY+.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.EquityV4"
+    "ouronet-ns.EquityV5"
    ],
-   "chars": 44196,
+   "chars": 75096,
    "shapes": {
     "schemas": [],
     "tables": [
@@ -5195,8 +5200,12 @@
     ],
     "capabilities": [
      "EQUITY|C>BREAK",
+     "EQUITY|C>COMPANY-ACT",
      "EQUITY|C>CONVERT",
+     "EQUITY|C>ISSUE-SHARES",
      "EQUITY|C>MAKE",
+     "EQUITY|C>RETIRE-SHARES",
+     "EQUITY|C>ROTATE-CREATOR",
      "GOV",
      "GOV|EQUITY_ADMIN",
      "P|EQUITY|CALLER",
@@ -5206,9 +5215,16 @@
      "SECURE"
     ],
     "functions": [
+     "CAP_EquityCreator",
      "CT_Bar",
      "C_IssueShareholderCollection",
+     "C_IssueShares",
      "C_MorphPackageShares",
+     "C_RetireShares",
+     "C_RotateCompanyCreator",
+     "C_SetCompanyBranding",
+     "C_TogglePauseShares",
+     "C_UpgradeCompanyBranding",
      "GOV|Demiurgoi",
      "P|A_Add",
      "P|A_AddIMP",
@@ -5222,14 +5238,25 @@
      "UC_Convert",
      "UC_Description",
      "UC_Name",
+     "UC_ShareSplit",
      "UEV_Convert",
+     "UEV_CreatorRotation",
      "UEV_EquitySemiFungibleID",
+     "UEV_EscrowBacked",
+     "UEV_ExecutorIzCompanyCreator",
      "UEV_Morph",
+     "UEV_RetireFloor",
+     "UEV_RetireHolding",
      "UEV_ShareAmountsForMaking",
+     "UEV_ShareMillions",
      "UEV_SharePackageTier",
      "URC_CombineCapacity",
+     "URC_EscrowHeld",
      "URC_IzEquitySemiFungible",
      "URC_MakeSharePackage",
+     "URC_PackageConstant",
+     "URC_RequiredEscrow",
+     "URC_ShareMillions",
      "URC_SharesPerMillion",
      "URC_SingleSharePerMillions",
      "URCi_IssueShareholderCollection",
@@ -5237,7 +5264,10 @@
      "UR_TierSupplies",
      "XI_BreakPackageShares",
      "XI_ConvertPackageShares",
-     "XI_MakePackageShares"
+     "XI_IssueShares",
+     "XI_MakePackageShares",
+     "XI_RetireShares",
+     "XI_RotateCompanyCreator"
     ],
     "pacts": [],
     "constants": [
@@ -5246,7 +5276,8 @@
      "P",
      "PACKAGING_CAP_DIVISOR",
      "P|I",
-     "S"
+     "S",
+     "SHARE_UNIT"
     ]
    }
   },
@@ -5627,7 +5658,7 @@
   },
   "INFO-TWO": {
    "deployed": true,
-   "hash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA",
+   "hash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4",
    "repoPath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
    "interfaces": [],
    "chars": 73980,
@@ -8619,13 +8650,13 @@
   },
   "TS02-C1": {
    "deployed": true,
-   "hash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "hash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "repoPath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.TalosStageTwo_ClientOneV3"
+    "ouronet-ns.TalosStageTwo_ClientOneV4"
    ],
-   "chars": 74272,
+   "chars": 78959,
    "shapes": {
     "schemas": [],
     "tables": [
@@ -8656,6 +8687,7 @@
      "DPSF|C_EnableSetClassFragmentation",
      "DPSF|C_Issue",
      "DPSF|C_IssueCompany",
+     "DPSF|C_IssueShares",
      "DPSF|C_Make",
      "DPSF|C_MakeFragments",
      "DPSF|C_MergeFragments",
@@ -8663,11 +8695,15 @@
      "DPSF|C_MoveCreateRole",
      "DPSF|C_MoveRecreateRole",
      "DPSF|C_MoveSetUriRole",
+     "DPSF|C_PauseCompany",
      "DPSF|C_RemoveNonceScore",
      "DPSF|C_RemoveSetNonceScore",
      "DPSF|C_RenameSet",
      "DPSF|C_Repurpose",
      "DPSF|C_RepurposeFragments",
+     "DPSF|C_RetireShares",
+     "DPSF|C_RotateCompanyCreator",
+     "DPSF|C_SetCompanyBranding",
      "DPSF|C_ToggleAddQuantityRole",
      "DPSF|C_ToggleBurnRole",
      "DPSF|C_ToggleExemptionRole",
@@ -8700,6 +8736,7 @@
      "DPSF|C_UpdateSetNonceURI",
      "DPSF|C_UpdateSetNonces",
      "DPSF|C_UpgradeBranding",
+     "DPSF|C_UpgradeCompanyBranding",
      "DPSF|C_WipeClean",
      "DPSF|C_WipeDirty",
      "DPSF|C_WipeNonce",
@@ -8727,7 +8764,7 @@
   },
   "TS02-C2": {
    "deployed": true,
-   "hash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "hash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "repoPath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",

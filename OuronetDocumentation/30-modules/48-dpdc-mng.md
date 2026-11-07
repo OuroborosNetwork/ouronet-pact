@@ -17,8 +17,8 @@ Above the state and create modules.
 
 | | |
 |---|---|
-| module hash | `Vbj2qMeDN88-KOc4-TszUcFAeQB4BlwuZHzZ74soyEc` |
-| deployed size | 57,849 characters |
+| module hash | `CcK1hnkSEBRyJGqqkOtAeorWc9zsK_qLVDGGrTt-b4Q` |
+| deployed size | 62,805 characters |
 | implements | `OuronetPolicyV2`, `DpdcManagementV3` |
 | repository source | `1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/06_DPDC-MNG.pact` |
 
@@ -30,7 +30,7 @@ Above the state and create modules.
 
 `DPDC-MNG|C>ADD-QUANTITY`, `DPDC-MNG|C>BURN-NFT`, `DPDC-MNG|C>BURN-SFT`, `DPDC-MNG|C>IZ-CLASS-ZERO`, `DPDC-MNG|C>REMOVE-CLASS-ZERO-NONCES`, `DPDC-MNG|C>RESPAWN-NFT`, `DPDC-MNG|C>WIPE-NFT`, `DPDC-MNG|C>WIPE-NFT-NONCE`, `DPDC-MNG|C>WIPE-NFT-NONCES`, `DPDC-MNG|C>WIPE-SFT`, `DPDC-MNG|C>WIPE-SFT-NONCE-PARTIALLY`, `DPDC-MNG|C>WIPE-SFT-NONCE-TOTALLY`, `DPDC-MNG|C>WIPE-SFT-NONCES`, `DPDC-MNG|S>CTRL`, `DPDC-MNG|S>TG_PAUSE`, `GOV`, `GOV|DPDC-MNG_ADMIN`, `P|DPDC-MNG|CALLER`, `P|SECURE-CALLER`, `SECURE`
 
-**Functions** — 49, grouped by what their prefix promises
+**Functions** — 50, grouped by what their prefix promises
 
 | family | n | the promise | names |
 |---|---:|---|---|
@@ -40,7 +40,7 @@ Above the state and create modules.
 | `UEV_` validators | 1 | read and enforce; may abort the transaction | `UEV_ExecutorIsCollectionOwner` |
 | `UDC_` constructors | 2 | named object constructors | `UDC_RemovableNonces`, `UDC_WipeSlicePlan` |
 | `UCv_` pure compute (validating) | 1 | compute with an intrinsic guard | `UCv_TakePureWipe` |
-| `UC_` pure compute | 3 | arguments only -- no reads, no enforce | `UC_BuildWipeSlicePlan`, `UC_CeilDiv`, `UC_ComputeMinWipeSliceCount` |
+| `UC_` pure compute | 4 | arguments only -- no reads, no enforce | `UC_BuildWipeSlicePlan`, `UC_CeilDiv`, `UC_ComputeMinWipeSliceCount`, `UC_IzEquityCollectionId` |
 | `XI_` protected (internal) | 5 | this module only | `XI_Control`, `XI_DecreaseClassZeroNonFungibles`, `XI_DecreaseClassZeroSemiFungibles`, `XI_IncreaseClassZeroSemiFungible`, `XI_TogglePause` |
 | `CC_` client (heavy) | 1 | client entrypoint; reaches a scan | `CC_WipeHeavy` |
 | `Cp_` client recipe | 1 | multi-transaction | `Cp_WipeSlice` |
@@ -51,13 +51,12 @@ Above the state and create modules.
 > **The repository differs from what is deployed.** Everything above describes the CHAIN, which is what a caller actually reaches. The difference is stated rather than resolved:
 >
 > - **schemas** in the repository only: `DPDC-MNG|WipeSlicePlan`, `RemovableNonces`
-> - **functions** in the repository only: `UC_IzEquityCollectionId`
 
 **Capabilities** -- 20
 
 `DPDC-MNG|C>ADD-QUANTITY`, `DPDC-MNG|C>BURN-NFT`, `DPDC-MNG|C>BURN-SFT`, `DPDC-MNG|C>IZ-CLASS-ZERO`, `DPDC-MNG|C>REMOVE-CLASS-ZERO-NONCES`, `DPDC-MNG|C>RESPAWN-NFT`, `DPDC-MNG|C>WIPE-NFT`, `DPDC-MNG|C>WIPE-NFT-NONCE`, `DPDC-MNG|C>WIPE-NFT-NONCES`, `DPDC-MNG|C>WIPE-SFT`, `DPDC-MNG|C>WIPE-SFT-NONCE-PARTIALLY`, `DPDC-MNG|C>WIPE-SFT-NONCE-TOTALLY`, `DPDC-MNG|C>WIPE-SFT-NONCES`, `DPDC-MNG|S>CTRL`, `DPDC-MNG|S>TG_PAUSE`, `GOV`, `GOV|DPDC-MNG_ADMIN`, `P|DPDC-MNG|CALLER`, `P|SECURE-CALLER`, `SECURE`
 
-**Functions** -- 49, grouped by what the prefix promises
+**Functions** -- 50, grouped by what the prefix promises
 
 *Cost readers* (9) — price an operation; the exec path and the preview both call these
 
@@ -87,9 +86,9 @@ Above the state and create modules.
 
 `UCv_TakePureWipe`
 
-*Pure compute* (3) — arguments only; no reads, no enforce
+*Pure compute* (4) — arguments only; no reads, no enforce
 
-`UC_BuildWipeSlicePlan`, `UC_CeilDiv`, `UC_ComputeMinWipeSliceCount`
+`UC_BuildWipeSlicePlan`, `UC_CeilDiv`, `UC_ComputeMinWipeSliceCount`, `UC_IzEquityCollectionId`
 
 *Recipes* (1) — multi-transaction, no heavy read
 

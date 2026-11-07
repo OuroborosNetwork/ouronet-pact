@@ -19,7 +19,7 @@ _To be written._
 
 | | |
 |---|---|
-| module hash | `aMYspM5XxMde1EiZRwTE4bkQheHd7AkIdP3L5YYKXQQ` |
+| module hash | `2fwwTAQ9wylxAEayV4hW8VEn5bJm189Bw__WHevBcCY` |
 | deployed size | 22,054 characters |
 | implements | `OuronetPolicyV2`, `SaleCustodiansV3` |
 | repository source | `2_CITIZEN/7_Launchpad/3_Custodians/03_Custodians.pact` |

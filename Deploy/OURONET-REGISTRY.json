@@ -18285,7 +18285,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -18437,7 +18437,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -18573,7 +18573,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -18668,7 +18668,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -18764,7 +18764,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -18869,7 +18869,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -19007,7 +19007,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -19128,7 +19128,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -19228,7 +19228,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -19386,7 +19386,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -19552,7 +19552,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -19722,7 +19722,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -19878,7 +19878,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -20023,7 +20023,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -20198,7 +20198,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -20308,7 +20308,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -20386,6 +20386,107 @@
     "warning": "ILLUSTRATIVE, NOT SUBMITTABLE. Every id was read from mainnet so the SHAPE is real, but the accounts are not yours to sign for and the amounts are placeholders."
    }
   },
+  "TS02-C1.DPSF|C_IssueShares": {
+   "params": [
+    {
+     "name": "patron",
+     "type": "string"
+    },
+    {
+     "name": "executor",
+     "type": "string"
+    },
+    {
+     "name": "id",
+     "type": "string"
+    },
+    {
+     "name": "millions",
+     "type": "integer"
+    }
+   ],
+   "returns": null,
+   "source": "deployed",
+   "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
+   "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
+   "ownership": {
+    "resolved": true,
+    "requires": [
+     {
+      "account": "owner of `id`",
+      "via": "reader",
+      "reader": "UR_CreatorKonto",
+      "subject": "id",
+      "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_CreatorKonto` with it to get the account whose key is required",
+      "when": "ALWAYS"
+     },
+     {
+      "account": "owner of `id`",
+      "via": "reader",
+      "reader": "UR_OwnerKonto",
+      "subject": "id",
+      "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
+      "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     }
+    ],
+    "unmapped": [
+     "DALOS|SC_NAME",
+     "account",
+     "receiver",
+     "sender"
+    ],
+    "unmappedNote": "enforces reached DEEPER in the tree whose subject is named for that callee's parameter rather than this entrypoint's. Mapping them back needs argument threading, which is not done -- so they are listed, not guessed."
+   },
+   "sponsorship": {
+    "sponsored": true,
+    "sponsor": "Ouronet gas station",
+    "cap": "ouronet-ns.DALOS.GAS_PAYER",
+    "capArgs": [
+     {
+      "name": "user",
+      "type": "string"
+     },
+     {
+      "name": "limit",
+      "type": "integer"
+     },
+     {
+      "name": "price",
+      "type": "decimal"
+     }
+    ],
+    "suppliedBy": "a signer on the caps key, alongside the guard public keys",
+    "conditional": "GAS_PAYER inspects `exec-code` from the message, so sponsorship depends on what the transaction actually contains"
+   },
+   "execution": {
+    "mode": "direct",
+    "note": "the provided inputs suffice; nothing is read off-chain first"
+   },
+   "previewMissing": "no INFO_ reader exists for this operation. It IS priced (see IGNIS price table) -- a consumer cannot show its cost before signing. Contract-side gap, not a pairing failure.",
+   "ghost": {
+    "args": {
+     "patron": "\u03a3.\u044a\u03a6\u011e\u03c1\u03bb\u03be\u00e4F\u03c6V\u041f\u00c9\u042b\u00cd\u042c\u00d9G\u011b\u042d\u044b\u0446\u00a5\u0104\u00efsK\u0437\u01648\u00a3\u039e\u03b4\u011a\u00e3l\u00cd\u0143\u00dd\u00fe\u00e1\u03a9\u0118\u039e\u0218\u010e\u0104\u041b\u03b4\u016f\u00d6\u00ee\u010e\u0104\u03a0\u0414\u00c8r\u042aqy\u03c2k\u047a\u03b4K\u0142\u0104\u03c1\u021b\u00d8\u00e4n\u00c0\u015ax\u0447t\u00cd\u03c2\u00c3\u03a9\u20b39\u01657\u00c7\u044f\u0160\u039b\u03b4\u00d3d\u0165\u0417\u039e\u017b\u00db\u03c0\u03a9\u2207\u0446\u0436u\u043bi\u00d8\u0142\u00db\u00e1Y\u03c0O\u043a\u00e6\u00e1Yo\u00f9\u03c7m\u0152\u0443\u015e\u00cb\u041b\u039e\u044cP\u0118\u00e1\u00db\u00ddaB\u00d1\u0411\u017e\u044f\u20b3\u021b\u03c2hr\u011a\u00eb\u20b1d\u00d1L\u00de\u041b\u03b5\u00f1e\u00ee\u00d3\u0423\u0142\u00eb\u03a6",
+     "executor": "\u03a3.\u044a\u03a6\u011e\u03c1\u03bb\u03be\u00e4F\u03c6V\u041f\u00c9\u042b\u00cd\u042c\u00d9G\u011b\u042d\u044b\u0446\u00a5\u0104\u00efsK\u0437\u01648\u00a3\u039e\u03b4\u011a\u00e3l\u00cd\u0143\u00dd\u00fe\u00e1\u03a9\u0118\u039e\u0218\u010e\u0104\u041b\u03b4\u016f\u00d6\u00ee\u010e\u0104\u03a0\u0414\u00c8r\u042aqy\u03c2k\u047a\u03b4K\u0142\u0104\u03c1\u021b\u00d8\u00e4n\u00c0\u015ax\u0447t\u00cd\u03c2\u00c3\u03a9\u20b39\u01657\u00c7\u044f\u0160\u039b\u03b4\u00d3d\u0165\u0417\u039e\u017b\u00db\u03c0\u03a9\u2207\u0446\u0436u\u043bi\u00d8\u0142\u00db\u00e1Y\u03c0O\u043a\u00e6\u00e1Yo\u00f9\u03c7m\u0152\u0443\u015e\u00cb\u041b\u039e\u044cP\u0118\u00e1\u00db\u00ddaB\u00d1\u0411\u017e\u044f\u20b3\u021b\u03c2hr\u011a\u00eb\u20b1d\u00d1L\u00de\u041b\u03b5\u00f1e\u00ee\u00d3\u0423\u0142\u00eb\u03a6",
+     "id": "OURO-8Nh-JO8JO4F5",
+     "millions": 1
+    },
+    "source": "composed from OURONET-REGISTRY.ghosts.json",
+    "notes": {
+     "patron": "pays the IGNIS. A real Demiurgoi account, read from chain",
+     "executor": "ACTS -- the account whose ownership the chain enforces. Often not the patron",
+     "id": "a token id. Which FAMILY depends on the entrypoint -- DPTF here"
+    },
+    "warning": "ILLUSTRATIVE, NOT SUBMITTABLE. Every id was read from mainnet so the SHAPE is real, but the accounts are not yours to sign for and the amounts are placeholders."
+   }
+  },
   "TS02-C1.DPSF|C_Make": {
    "params": [
     {
@@ -20417,7 +20518,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -20519,7 +20620,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -20618,7 +20719,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -20721,7 +20822,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -20822,7 +20923,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -20913,7 +21014,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -21004,7 +21105,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -21072,6 +21173,105 @@
     "warning": "ILLUSTRATIVE, NOT SUBMITTABLE. Every id was read from mainnet so the SHAPE is real, but the accounts are not yours to sign for and the amounts are placeholders."
    }
   },
+  "TS02-C1.DPSF|C_PauseCompany": {
+   "params": [
+    {
+     "name": "patron",
+     "type": "string"
+    },
+    {
+     "name": "executor",
+     "type": "string"
+    },
+    {
+     "name": "id",
+     "type": "string"
+    },
+    {
+     "name": "toggle",
+     "type": "bool"
+    }
+   ],
+   "returns": null,
+   "source": "deployed",
+   "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
+   "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
+   "ownership": {
+    "resolved": true,
+    "requires": [
+     {
+      "account": "owner of `id`",
+      "via": "reader",
+      "reader": "UR_CreatorKonto",
+      "subject": "id",
+      "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_CreatorKonto` with it to get the account whose key is required",
+      "when": "ALWAYS"
+     },
+     {
+      "account": "owner of `id`",
+      "via": "reader",
+      "reader": "UR_OwnerKonto",
+      "subject": "id",
+      "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
+      "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     }
+    ],
+    "unmapped": [
+     "DALOS|SC_NAME"
+    ],
+    "unmappedNote": "enforces reached DEEPER in the tree whose subject is named for that callee's parameter rather than this entrypoint's. Mapping them back needs argument threading, which is not done -- so they are listed, not guessed."
+   },
+   "sponsorship": {
+    "sponsored": true,
+    "sponsor": "Ouronet gas station",
+    "cap": "ouronet-ns.DALOS.GAS_PAYER",
+    "capArgs": [
+     {
+      "name": "user",
+      "type": "string"
+     },
+     {
+      "name": "limit",
+      "type": "integer"
+     },
+     {
+      "name": "price",
+      "type": "decimal"
+     }
+    ],
+    "suppliedBy": "a signer on the caps key, alongside the guard public keys",
+    "conditional": "GAS_PAYER inspects `exec-code` from the message, so sponsorship depends on what the transaction actually contains"
+   },
+   "execution": {
+    "mode": "direct",
+    "note": "the provided inputs suffice; nothing is read off-chain first"
+   },
+   "previewMissing": "no INFO_ reader exists for this operation. It IS priced (see IGNIS price table) -- a consumer cannot show its cost before signing. Contract-side gap, not a pairing failure.",
+   "ghost": {
+    "args": {
+     "patron": "\u03a3.\u044a\u03a6\u011e\u03c1\u03bb\u03be\u00e4F\u03c6V\u041f\u00c9\u042b\u00cd\u042c\u00d9G\u011b\u042d\u044b\u0446\u00a5\u0104\u00efsK\u0437\u01648\u00a3\u039e\u03b4\u011a\u00e3l\u00cd\u0143\u00dd\u00fe\u00e1\u03a9\u0118\u039e\u0218\u010e\u0104\u041b\u03b4\u016f\u00d6\u00ee\u010e\u0104\u03a0\u0414\u00c8r\u042aqy\u03c2k\u047a\u03b4K\u0142\u0104\u03c1\u021b\u00d8\u00e4n\u00c0\u015ax\u0447t\u00cd\u03c2\u00c3\u03a9\u20b39\u01657\u00c7\u044f\u0160\u039b\u03b4\u00d3d\u0165\u0417\u039e\u017b\u00db\u03c0\u03a9\u2207\u0446\u0436u\u043bi\u00d8\u0142\u00db\u00e1Y\u03c0O\u043a\u00e6\u00e1Yo\u00f9\u03c7m\u0152\u0443\u015e\u00cb\u041b\u039e\u044cP\u0118\u00e1\u00db\u00ddaB\u00d1\u0411\u017e\u044f\u20b3\u021b\u03c2hr\u011a\u00eb\u20b1d\u00d1L\u00de\u041b\u03b5\u00f1e\u00ee\u00d3\u0423\u0142\u00eb\u03a6",
+     "executor": "\u03a3.\u044a\u03a6\u011e\u03c1\u03bb\u03be\u00e4F\u03c6V\u041f\u00c9\u042b\u00cd\u042c\u00d9G\u011b\u042d\u044b\u0446\u00a5\u0104\u00efsK\u0437\u01648\u00a3\u039e\u03b4\u011a\u00e3l\u00cd\u0143\u00dd\u00fe\u00e1\u03a9\u0118\u039e\u0218\u010e\u0104\u041b\u03b4\u016f\u00d6\u00ee\u010e\u0104\u03a0\u0414\u00c8r\u042aqy\u03c2k\u047a\u03b4K\u0142\u0104\u03c1\u021b\u00d8\u00e4n\u00c0\u015ax\u0447t\u00cd\u03c2\u00c3\u03a9\u20b39\u01657\u00c7\u044f\u0160\u039b\u03b4\u00d3d\u0165\u0417\u039e\u017b\u00db\u03c0\u03a9\u2207\u0446\u0436u\u043bi\u00d8\u0142\u00db\u00e1Y\u03c0O\u043a\u00e6\u00e1Yo\u00f9\u03c7m\u0152\u0443\u015e\u00cb\u041b\u039e\u044cP\u0118\u00e1\u00db\u00ddaB\u00d1\u0411\u017e\u044f\u20b3\u021b\u03c2hr\u011a\u00eb\u20b1d\u00d1L\u00de\u041b\u03b5\u00f1e\u00ee\u00d3\u0423\u0142\u00eb\u03a6",
+     "id": "OURO-8Nh-JO8JO4F5",
+     "toggle": true
+    },
+    "source": "composed from OURONET-REGISTRY.ghosts.json",
+    "notes": {
+     "patron": "pays the IGNIS. A real Demiurgoi account, read from chain",
+     "executor": "ACTS -- the account whose ownership the chain enforces. Often not the patron",
+     "id": "a token id. Which FAMILY depends on the entrypoint -- DPTF here",
+     "toggle": "must be the INVERSE of the current on-chain value -- the chain refuses same-value writes"
+    },
+    "warning": "ILLUSTRATIVE, NOT SUBMITTABLE. Every id was read from mainnet so the SHAPE is real, but the accounts are not yours to sign for and the amounts are placeholders."
+   }
+  },
   "TS02-C1.DPSF|C_RemoveNonceScore": {
    "params": [
     {
@@ -21099,7 +21299,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -21188,7 +21388,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -21276,7 +21476,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -21380,7 +21580,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -21493,7 +21693,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -21571,6 +21771,306 @@
     "warning": "ILLUSTRATIVE, NOT SUBMITTABLE. Every id was read from mainnet so the SHAPE is real, but the accounts are not yours to sign for and the amounts are placeholders."
    }
   },
+  "TS02-C1.DPSF|C_RetireShares": {
+   "params": [
+    {
+     "name": "patron",
+     "type": "string"
+    },
+    {
+     "name": "executor",
+     "type": "string"
+    },
+    {
+     "name": "id",
+     "type": "string"
+    },
+    {
+     "name": "millions",
+     "type": "integer"
+    }
+   ],
+   "returns": null,
+   "source": "deployed",
+   "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
+   "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
+   "ownership": {
+    "resolved": true,
+    "requires": [
+     {
+      "account": "owner of `id`",
+      "via": "reader",
+      "reader": "UR_CreatorKonto",
+      "subject": "id",
+      "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_CreatorKonto` with it to get the account whose key is required",
+      "when": "ALWAYS"
+     },
+     {
+      "account": "owner of `id`",
+      "via": "reader",
+      "reader": "UR_OwnerKonto",
+      "subject": "id",
+      "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
+      "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     }
+    ],
+    "unmapped": [
+     "DALOS|SC_NAME",
+     "account",
+     "receiver",
+     "sender"
+    ],
+    "unmappedNote": "enforces reached DEEPER in the tree whose subject is named for that callee's parameter rather than this entrypoint's. Mapping them back needs argument threading, which is not done -- so they are listed, not guessed."
+   },
+   "sponsorship": {
+    "sponsored": true,
+    "sponsor": "Ouronet gas station",
+    "cap": "ouronet-ns.DALOS.GAS_PAYER",
+    "capArgs": [
+     {
+      "name": "user",
+      "type": "string"
+     },
+     {
+      "name": "limit",
+      "type": "integer"
+     },
+     {
+      "name": "price",
+      "type": "decimal"
+     }
+    ],
+    "suppliedBy": "a signer on the caps key, alongside the guard public keys",
+    "conditional": "GAS_PAYER inspects `exec-code` from the message, so sponsorship depends on what the transaction actually contains"
+   },
+   "execution": {
+    "mode": "direct",
+    "note": "the provided inputs suffice; nothing is read off-chain first"
+   },
+   "previewMissing": "no INFO_ reader exists for this operation. It IS priced (see IGNIS price table) -- a consumer cannot show its cost before signing. Contract-side gap, not a pairing failure.",
+   "ghost": {
+    "args": {
+     "patron": "\u03a3.\u044a\u03a6\u011e\u03c1\u03bb\u03be\u00e4F\u03c6V\u041f\u00c9\u042b\u00cd\u042c\u00d9G\u011b\u042d\u044b\u0446\u00a5\u0104\u00efsK\u0437\u01648\u00a3\u039e\u03b4\u011a\u00e3l\u00cd\u0143\u00dd\u00fe\u00e1\u03a9\u0118\u039e\u0218\u010e\u0104\u041b\u03b4\u016f\u00d6\u00ee\u010e\u0104\u03a0\u0414\u00c8r\u042aqy\u03c2k\u047a\u03b4K\u0142\u0104\u03c1\u021b\u00d8\u00e4n\u00c0\u015ax\u0447t\u00cd\u03c2\u00c3\u03a9\u20b39\u01657\u00c7\u044f\u0160\u039b\u03b4\u00d3d\u0165\u0417\u039e\u017b\u00db\u03c0\u03a9\u2207\u0446\u0436u\u043bi\u00d8\u0142\u00db\u00e1Y\u03c0O\u043a\u00e6\u00e1Yo\u00f9\u03c7m\u0152\u0443\u015e\u00cb\u041b\u039e\u044cP\u0118\u00e1\u00db\u00ddaB\u00d1\u0411\u017e\u044f\u20b3\u021b\u03c2hr\u011a\u00eb\u20b1d\u00d1L\u00de\u041b\u03b5\u00f1e\u00ee\u00d3\u0423\u0142\u00eb\u03a6",
+     "executor": "\u03a3.\u044a\u03a6\u011e\u03c1\u03bb\u03be\u00e4F\u03c6V\u041f\u00c9\u042b\u00cd\u042c\u00d9G\u011b\u042d\u044b\u0446\u00a5\u0104\u00efsK\u0437\u01648\u00a3\u039e\u03b4\u011a\u00e3l\u00cd\u0143\u00dd\u00fe\u00e1\u03a9\u0118\u039e\u0218\u010e\u0104\u041b\u03b4\u016f\u00d6\u00ee\u010e\u0104\u03a0\u0414\u00c8r\u042aqy\u03c2k\u047a\u03b4K\u0142\u0104\u03c1\u021b\u00d8\u00e4n\u00c0\u015ax\u0447t\u00cd\u03c2\u00c3\u03a9\u20b39\u01657\u00c7\u044f\u0160\u039b\u03b4\u00d3d\u0165\u0417\u039e\u017b\u00db\u03c0\u03a9\u2207\u0446\u0436u\u043bi\u00d8\u0142\u00db\u00e1Y\u03c0O\u043a\u00e6\u00e1Yo\u00f9\u03c7m\u0152\u0443\u015e\u00cb\u041b\u039e\u044cP\u0118\u00e1\u00db\u00ddaB\u00d1\u0411\u017e\u044f\u20b3\u021b\u03c2hr\u011a\u00eb\u20b1d\u00d1L\u00de\u041b\u03b5\u00f1e\u00ee\u00d3\u0423\u0142\u00eb\u03a6",
+     "id": "OURO-8Nh-JO8JO4F5",
+     "millions": 1
+    },
+    "source": "composed from OURONET-REGISTRY.ghosts.json",
+    "notes": {
+     "patron": "pays the IGNIS. A real Demiurgoi account, read from chain",
+     "executor": "ACTS -- the account whose ownership the chain enforces. Often not the patron",
+     "id": "a token id. Which FAMILY depends on the entrypoint -- DPTF here"
+    },
+    "warning": "ILLUSTRATIVE, NOT SUBMITTABLE. Every id was read from mainnet so the SHAPE is real, but the accounts are not yours to sign for and the amounts are placeholders."
+   }
+  },
+  "TS02-C1.DPSF|C_RotateCompanyCreator": {
+   "params": [
+    {
+     "name": "patron",
+     "type": "string"
+    },
+    {
+     "name": "executor",
+     "type": "string"
+    },
+    {
+     "name": "id",
+     "type": "string"
+    },
+    {
+     "name": "new-creator",
+     "type": "string"
+    }
+   ],
+   "returns": null,
+   "source": "deployed",
+   "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
+   "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
+   "ownership": {
+    "resolved": true,
+    "requires": [
+     {
+      "account": "new-creator",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `new-creator`",
+      "when": "ALWAYS"
+     },
+     {
+      "account": "owner of `id`",
+      "via": "reader",
+      "reader": "UR_CreatorKonto",
+      "subject": "id",
+      "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_CreatorKonto` with it to get the account whose key is required",
+      "when": "ALWAYS"
+     }
+    ]
+   },
+   "sponsorship": {
+    "sponsored": true,
+    "sponsor": "Ouronet gas station",
+    "cap": "ouronet-ns.DALOS.GAS_PAYER",
+    "capArgs": [
+     {
+      "name": "user",
+      "type": "string"
+     },
+     {
+      "name": "limit",
+      "type": "integer"
+     },
+     {
+      "name": "price",
+      "type": "decimal"
+     }
+    ],
+    "suppliedBy": "a signer on the caps key, alongside the guard public keys",
+    "conditional": "GAS_PAYER inspects `exec-code` from the message, so sponsorship depends on what the transaction actually contains"
+   },
+   "execution": {
+    "mode": "direct",
+    "note": "the provided inputs suffice; nothing is read off-chain first"
+   },
+   "previewMissing": "no INFO_ reader exists for this operation. It IS priced (see IGNIS price table) -- a consumer cannot show its cost before signing. Contract-side gap, not a pairing failure.",
+   "ghost": {
+    "args": {
+     "patron": "\u03a3.\u044a\u03a6\u011e\u03c1\u03bb\u03be\u00e4F\u03c6V\u041f\u00c9\u042b\u00cd\u042c\u00d9G\u011b\u042d\u044b\u0446\u00a5\u0104\u00efsK\u0437\u01648\u00a3\u039e\u03b4\u011a\u00e3l\u00cd\u0143\u00dd\u00fe\u00e1\u03a9\u0118\u039e\u0218\u010e\u0104\u041b\u03b4\u016f\u00d6\u00ee\u010e\u0104\u03a0\u0414\u00c8r\u042aqy\u03c2k\u047a\u03b4K\u0142\u0104\u03c1\u021b\u00d8\u00e4n\u00c0\u015ax\u0447t\u00cd\u03c2\u00c3\u03a9\u20b39\u01657\u00c7\u044f\u0160\u039b\u03b4\u00d3d\u0165\u0417\u039e\u017b\u00db\u03c0\u03a9\u2207\u0446\u0436u\u043bi\u00d8\u0142\u00db\u00e1Y\u03c0O\u043a\u00e6\u00e1Yo\u00f9\u03c7m\u0152\u0443\u015e\u00cb\u041b\u039e\u044cP\u0118\u00e1\u00db\u00ddaB\u00d1\u0411\u017e\u044f\u20b3\u021b\u03c2hr\u011a\u00eb\u20b1d\u00d1L\u00de\u041b\u03b5\u00f1e\u00ee\u00d3\u0423\u0142\u00eb\u03a6",
+     "executor": "\u03a3.\u044a\u03a6\u011e\u03c1\u03bb\u03be\u00e4F\u03c6V\u041f\u00c9\u042b\u00cd\u042c\u00d9G\u011b\u042d\u044b\u0446\u00a5\u0104\u00efsK\u0437\u01648\u00a3\u039e\u03b4\u011a\u00e3l\u00cd\u0143\u00dd\u00fe\u00e1\u03a9\u0118\u039e\u0218\u010e\u0104\u041b\u03b4\u016f\u00d6\u00ee\u010e\u0104\u03a0\u0414\u00c8r\u042aqy\u03c2k\u047a\u03b4K\u0142\u0104\u03c1\u021b\u00d8\u00e4n\u00c0\u015ax\u0447t\u00cd\u03c2\u00c3\u03a9\u20b39\u01657\u00c7\u044f\u0160\u039b\u03b4\u00d3d\u0165\u0417\u039e\u017b\u00db\u03c0\u03a9\u2207\u0446\u0436u\u043bi\u00d8\u0142\u00db\u00e1Y\u03c0O\u043a\u00e6\u00e1Yo\u00f9\u03c7m\u0152\u0443\u015e\u00cb\u041b\u039e\u044cP\u0118\u00e1\u00db\u00ddaB\u00d1\u0411\u017e\u044f\u20b3\u021b\u03c2hr\u011a\u00eb\u20b1d\u00d1L\u00de\u041b\u03b5\u00f1e\u00ee\u00d3\u0423\u0142\u00eb\u03a6",
+     "id": "OURO-8Nh-JO8JO4F5",
+     "new-creator": "example"
+    },
+    "source": "composed from OURONET-REGISTRY.ghosts.json",
+    "notes": {
+     "patron": "pays the IGNIS. A real Demiurgoi account, read from chain",
+     "executor": "ACTS -- the account whose ownership the chain enforces. Often not the patron",
+     "id": "a token id. Which FAMILY depends on the entrypoint -- DPTF here",
+     "new-creator": "fallback only -- a string parameter with no name entry above"
+    },
+    "warning": "ILLUSTRATIVE, NOT SUBMITTABLE. Every id was read from mainnet so the SHAPE is real, but the accounts are not yours to sign for and the amounts are placeholders."
+   }
+  },
+  "TS02-C1.DPSF|C_SetCompanyBranding": {
+   "params": [
+    {
+     "name": "patron",
+     "type": "string"
+    },
+    {
+     "name": "executor",
+     "type": "string"
+    },
+    {
+     "name": "id",
+     "type": "string"
+    },
+    {
+     "name": "logo",
+     "type": "string"
+    },
+    {
+     "name": "description",
+     "type": "string"
+    },
+    {
+     "name": "website",
+     "type": "string"
+    },
+    {
+     "name": "social",
+     "type": "[object{BrandingV3.SocialSchema}]"
+    }
+   ],
+   "returns": null,
+   "source": "deployed",
+   "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
+   "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
+   "ownership": {
+    "resolved": true,
+    "requires": [
+     {
+      "account": "owner of `id`",
+      "via": "reader",
+      "reader": "UR_CreatorKonto",
+      "subject": "id",
+      "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_CreatorKonto` with it to get the account whose key is required",
+      "when": "ALWAYS"
+     },
+     {
+      "account": "owner of `id`",
+      "via": "reader",
+      "reader": "UR_OwnerKonto",
+      "subject": "id",
+      "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
+      "when": "ALWAYS"
+     },
+     {
+      "account": "patron",
+      "via": "parameter",
+      "meaning": "the caller must hold the key for the account passed as `patron`",
+      "when": "CONDITIONAL",
+      "conditionalOn": "reached inside an `if`, so it binds on one path and not the other -- do not read it as an unconditional requirement"
+     }
+    ],
+    "unmapped": [
+     "DALOS|SC_NAME"
+    ],
+    "unmappedNote": "enforces reached DEEPER in the tree whose subject is named for that callee's parameter rather than this entrypoint's. Mapping them back needs argument threading, which is not done -- so they are listed, not guessed."
+   },
+   "sponsorship": {
+    "sponsored": true,
+    "sponsor": "Ouronet gas station",
+    "cap": "ouronet-ns.DALOS.GAS_PAYER",
+    "capArgs": [
+     {
+      "name": "user",
+      "type": "string"
+     },
+     {
+      "name": "limit",
+      "type": "integer"
+     },
+     {
+      "name": "price",
+      "type": "decimal"
+     }
+    ],
+    "suppliedBy": "a signer on the caps key, alongside the guard public keys",
+    "conditional": "GAS_PAYER inspects `exec-code` from the message, so sponsorship depends on what the transaction actually contains"
+   },
+   "execution": {
+    "mode": "direct",
+    "note": "the provided inputs suffice; nothing is read off-chain first"
+   },
+   "previewMissing": "no INFO_ reader exists for this operation. It IS priced (see IGNIS price table) -- a consumer cannot show its cost before signing. Contract-side gap, not a pairing failure.",
+   "ghost": {
+    "args": {
+     "patron": "\u03a3.\u044a\u03a6\u011e\u03c1\u03bb\u03be\u00e4F\u03c6V\u041f\u00c9\u042b\u00cd\u042c\u00d9G\u011b\u042d\u044b\u0446\u00a5\u0104\u00efsK\u0437\u01648\u00a3\u039e\u03b4\u011a\u00e3l\u00cd\u0143\u00dd\u00fe\u00e1\u03a9\u0118\u039e\u0218\u010e\u0104\u041b\u03b4\u016f\u00d6\u00ee\u010e\u0104\u03a0\u0414\u00c8r\u042aqy\u03c2k\u047a\u03b4K\u0142\u0104\u03c1\u021b\u00d8\u00e4n\u00c0\u015ax\u0447t\u00cd\u03c2\u00c3\u03a9\u20b39\u01657\u00c7\u044f\u0160\u039b\u03b4\u00d3d\u0165\u0417\u039e\u017b\u00db\u03c0\u03a9\u2207\u0446\u0436u\u043bi\u00d8\u0142\u00db\u00e1Y\u03c0O\u043a\u00e6\u00e1Yo\u00f9\u03c7m\u0152\u0443\u015e\u00cb\u041b\u039e\u044cP\u0118\u00e1\u00db\u00ddaB\u00d1\u0411\u017e\u044f\u20b3\u021b\u03c2hr\u011a\u00eb\u20b1d\u00d1L\u00de\u041b\u03b5\u00f1e\u00ee\u00d3\u0423\u0142\u00eb\u03a6",
+     "executor": "\u03a3.\u044a\u03a6\u011e\u03c1\u03bb\u03be\u00e4F\u03c6V\u041f\u00c9\u042b\u00cd\u042c\u00d9G\u011b\u042d\u044b\u0446\u00a5\u0104\u00efsK\u0437\u01648\u00a3\u039e\u03b4\u011a\u00e3l\u00cd\u0143\u00dd\u00fe\u00e1\u03a9\u0118\u039e\u0218\u010e\u0104\u041b\u03b4\u016f\u00d6\u00ee\u010e\u0104\u03a0\u0414\u00c8r\u042aqy\u03c2k\u047a\u03b4K\u0142\u0104\u03c1\u021b\u00d8\u00e4n\u00c0\u015ax\u0447t\u00cd\u03c2\u00c3\u03a9\u20b39\u01657\u00c7\u044f\u0160\u039b\u03b4\u00d3d\u0165\u0417\u039e\u017b\u00db\u03c0\u03a9\u2207\u0446\u0436u\u043bi\u00d8\u0142\u00db\u00e1Y\u03c0O\u043a\u00e6\u00e1Yo\u00f9\u03c7m\u0152\u0443\u015e\u00cb\u041b\u039e\u044cP\u0118\u00e1\u00db\u00ddaB\u00d1\u0411\u017e\u044f\u20b3\u021b\u03c2hr\u011a\u00eb\u20b1d\u00d1L\u00de\u041b\u03b5\u00f1e\u00ee\u00d3\u0423\u0142\u00eb\u03a6",
+     "id": "OURO-8Nh-JO8JO4F5",
+     "logo": "https://ouronet.org/logo.png",
+     "description": "Example description",
+     "website": "https://ouronet.org",
+     "social": []
+    },
+    "source": "composed from OURONET-REGISTRY.ghosts.json",
+    "notes": {
+     "patron": "pays the IGNIS. A real Demiurgoi account, read from chain",
+     "executor": "ACTS -- the account whose ownership the chain enforces. Often not the patron",
+     "id": "a token id. Which FAMILY depends on the entrypoint -- DPTF here"
+    },
+    "warning": "ILLUSTRATIVE, NOT SUBMITTABLE. Every id was read from mainnet so the SHAPE is real, but the accounts are not yours to sign for and the amounts are placeholders."
+   }
+  },
   "TS02-C1.DPSF|C_ToggleAddQuantityRole": {
    "params": [
     {
@@ -21598,7 +22098,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -21695,7 +22195,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -21792,7 +22292,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -21889,7 +22389,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -21986,7 +22486,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -22083,7 +22583,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -22176,7 +22676,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -22271,7 +22771,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -22367,7 +22867,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -22464,7 +22964,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -22569,7 +23069,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -22685,7 +23185,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -22801,7 +23301,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -22944,7 +23444,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -23038,7 +23538,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -23132,7 +23632,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -23227,7 +23727,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -23322,7 +23822,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -23416,7 +23916,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -23522,7 +24022,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -23655,7 +24155,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -23806,7 +24306,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -23899,7 +24399,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -24041,7 +24541,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -24134,7 +24634,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -24227,7 +24727,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -24321,7 +24821,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -24415,7 +24915,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -24508,7 +25008,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -24613,7 +25113,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -24745,7 +25245,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -24883,7 +25383,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": false,
     "reason": "no ownership enforce in the call tree resolves to one of this entrypoint's own parameters",
@@ -24937,6 +25437,97 @@
     "warning": "ILLUSTRATIVE, NOT SUBMITTABLE. Every id was read from mainnet so the SHAPE is real, but the accounts are not yours to sign for and the amounts are placeholders."
    }
   },
+  "TS02-C1.DPSF|C_UpgradeCompanyBranding": {
+   "params": [
+    {
+     "name": "patron",
+     "type": "string"
+    },
+    {
+     "name": "executor",
+     "type": "string"
+    },
+    {
+     "name": "id",
+     "type": "string"
+    },
+    {
+     "name": "months",
+     "type": "integer"
+    }
+   ],
+   "returns": null,
+   "source": "deployed",
+   "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
+   "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
+   "ownership": {
+    "resolved": true,
+    "requires": [
+     {
+      "account": "owner of `id`",
+      "via": "reader",
+      "reader": "UR_CreatorKonto",
+      "subject": "id",
+      "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_CreatorKonto` with it to get the account whose key is required",
+      "when": "ALWAYS"
+     },
+     {
+      "account": "owner of `id`",
+      "via": "reader",
+      "reader": "UR_OwnerKonto",
+      "subject": "id",
+      "meaning": "`id` is an ENTITY id, NOT an account. Read `UR_OwnerKonto` with it to get the account whose key is required",
+      "when": "ALWAYS"
+     }
+    ],
+    "unmapped": [
+     "entity-owner-account"
+    ],
+    "unmappedNote": "enforces reached DEEPER in the tree whose subject is named for that callee's parameter rather than this entrypoint's. Mapping them back needs argument threading, which is not done -- so they are listed, not guessed."
+   },
+   "sponsorship": {
+    "sponsored": true,
+    "sponsor": "Ouronet gas station",
+    "cap": "ouronet-ns.DALOS.GAS_PAYER",
+    "capArgs": [
+     {
+      "name": "user",
+      "type": "string"
+     },
+     {
+      "name": "limit",
+      "type": "integer"
+     },
+     {
+      "name": "price",
+      "type": "decimal"
+     }
+    ],
+    "suppliedBy": "a signer on the caps key, alongside the guard public keys",
+    "conditional": "GAS_PAYER inspects `exec-code` from the message, so sponsorship depends on what the transaction actually contains"
+   },
+   "execution": {
+    "mode": "direct",
+    "note": "the provided inputs suffice; nothing is read off-chain first"
+   },
+   "previewMissing": "no INFO_ reader exists for this operation. It IS priced (see IGNIS price table) -- a consumer cannot show its cost before signing. Contract-side gap, not a pairing failure.",
+   "ghost": {
+    "args": {
+     "patron": "\u03a3.\u044a\u03a6\u011e\u03c1\u03bb\u03be\u00e4F\u03c6V\u041f\u00c9\u042b\u00cd\u042c\u00d9G\u011b\u042d\u044b\u0446\u00a5\u0104\u00efsK\u0437\u01648\u00a3\u039e\u03b4\u011a\u00e3l\u00cd\u0143\u00dd\u00fe\u00e1\u03a9\u0118\u039e\u0218\u010e\u0104\u041b\u03b4\u016f\u00d6\u00ee\u010e\u0104\u03a0\u0414\u00c8r\u042aqy\u03c2k\u047a\u03b4K\u0142\u0104\u03c1\u021b\u00d8\u00e4n\u00c0\u015ax\u0447t\u00cd\u03c2\u00c3\u03a9\u20b39\u01657\u00c7\u044f\u0160\u039b\u03b4\u00d3d\u0165\u0417\u039e\u017b\u00db\u03c0\u03a9\u2207\u0446\u0436u\u043bi\u00d8\u0142\u00db\u00e1Y\u03c0O\u043a\u00e6\u00e1Yo\u00f9\u03c7m\u0152\u0443\u015e\u00cb\u041b\u039e\u044cP\u0118\u00e1\u00db\u00ddaB\u00d1\u0411\u017e\u044f\u20b3\u021b\u03c2hr\u011a\u00eb\u20b1d\u00d1L\u00de\u041b\u03b5\u00f1e\u00ee\u00d3\u0423\u0142\u00eb\u03a6",
+     "executor": "\u03a3.\u044a\u03a6\u011e\u03c1\u03bb\u03be\u00e4F\u03c6V\u041f\u00c9\u042b\u00cd\u042c\u00d9G\u011b\u042d\u044b\u0446\u00a5\u0104\u00efsK\u0437\u01648\u00a3\u039e\u03b4\u011a\u00e3l\u00cd\u0143\u00dd\u00fe\u00e1\u03a9\u0118\u039e\u0218\u010e\u0104\u041b\u03b4\u016f\u00d6\u00ee\u010e\u0104\u03a0\u0414\u00c8r\u042aqy\u03c2k\u047a\u03b4K\u0142\u0104\u03c1\u021b\u00d8\u00e4n\u00c0\u015ax\u0447t\u00cd\u03c2\u00c3\u03a9\u20b39\u01657\u00c7\u044f\u0160\u039b\u03b4\u00d3d\u0165\u0417\u039e\u017b\u00db\u03c0\u03a9\u2207\u0446\u0436u\u043bi\u00d8\u0142\u00db\u00e1Y\u03c0O\u043a\u00e6\u00e1Yo\u00f9\u03c7m\u0152\u0443\u015e\u00cb\u041b\u039e\u044cP\u0118\u00e1\u00db\u00ddaB\u00d1\u0411\u017e\u044f\u20b3\u021b\u03c2hr\u011a\u00eb\u20b1d\u00d1L\u00de\u041b\u03b5\u00f1e\u00ee\u00d3\u0423\u0142\u00eb\u03a6",
+     "id": "OURO-8Nh-JO8JO4F5",
+     "months": 12
+    },
+    "source": "composed from OURONET-REGISTRY.ghosts.json",
+    "notes": {
+     "patron": "pays the IGNIS. A real Demiurgoi account, read from chain",
+     "executor": "ACTS -- the account whose ownership the chain enforces. Often not the patron",
+     "id": "a token id. Which FAMILY depends on the entrypoint -- DPTF here"
+    },
+    "warning": "ILLUSTRATIVE, NOT SUBMITTABLE. Every id was read from mainnet so the SHAPE is real, but the accounts are not yours to sign for and the amounts are placeholders."
+   }
+  },
   "TS02-C1.DPSF|C_WipeClean": {
    "params": [
     {
@@ -24964,7 +25555,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -25064,7 +25655,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -25164,7 +25755,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -25266,7 +25857,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -25365,7 +25956,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -25476,7 +26067,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
+   "moduleHash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -25591,7 +26182,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -25683,7 +26274,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -25789,7 +26380,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -25923,7 +26514,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -26043,7 +26634,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -26139,7 +26730,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -26294,7 +26885,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -26460,7 +27051,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -26630,7 +27221,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -26786,7 +27377,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -26931,7 +27522,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -27106,7 +27697,7 @@
    "returns": "string",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -27209,7 +27800,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -27311,7 +27902,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -27410,7 +28001,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -27505,7 +28096,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -27596,7 +28187,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -27687,7 +28278,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -27782,7 +28373,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -27871,7 +28462,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -27959,7 +28550,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -28063,7 +28654,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -28176,7 +28767,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -28277,7 +28868,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -28373,7 +28964,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -28470,7 +29061,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -28567,7 +29158,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -28664,7 +29255,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -28761,7 +29352,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -28854,7 +29445,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -28949,7 +29540,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -29045,7 +29636,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -29142,7 +29733,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -29247,7 +29838,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -29363,7 +29954,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -29479,7 +30070,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -29622,7 +30213,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -29716,7 +30307,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -29810,7 +30401,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -29905,7 +30496,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -30000,7 +30591,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -30094,7 +30685,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -30200,7 +30791,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -30333,7 +30924,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -30484,7 +31075,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -30577,7 +31168,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -30719,7 +31310,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -30812,7 +31403,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -30905,7 +31496,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -30999,7 +31590,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -31093,7 +31684,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -31186,7 +31777,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -31291,7 +31882,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -31423,7 +32014,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -31561,7 +32152,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": false,
     "reason": "no ownership enforce in the call tree resolves to one of this entrypoint's own parameters",
@@ -31642,7 +32233,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -31742,7 +32333,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -31842,7 +32433,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -31940,7 +32531,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -32051,7 +32642,7 @@
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "returnsNote": "the defun declares no return type; the shape is not pinned by the signature",
-   "moduleHash": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+   "moduleHash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
    "ownership": {
     "resolved": true,
     "requires": [
@@ -46168,7 +46759,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "2_CITIZEN/7_Launchpad/3_Custodians/03_Custodians.pact",
-   "moduleHash": "aMYspM5XxMde1EiZRwTE4bkQheHd7AkIdP3L5YYKXQQ"
+   "moduleHash": "2fwwTAQ9wylxAEayV4hW8VEn5bJm189Bw__WHevBcCY"
   },
   "DEMIPAD-SNAKES.INFO_Acquire": {
    "params": [
@@ -46196,7 +46787,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "2_CITIZEN/7_Launchpad/2_Snakes/02_Snakes.pact",
-   "moduleHash": "xQ-HwSY7faFwnYP6qOxvFjHyW51F7ZWV8xacttjFJQA"
+   "moduleHash": "gHbhuZUMn_ls6eUgJJ_cK84GyEXrsPosSUkWMZvVhi4"
   },
   "DEMIPAD-SPARK.INFO_BuySparks": {
    "params": [
@@ -50544,7 +51135,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DEMIPAD|FuelNonFungible": {
    "params": [
@@ -50572,7 +51163,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DEMIPAD|FuelOrtoFungible": {
    "params": [
@@ -50596,7 +51187,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DEMIPAD|FuelSemiFungible": {
    "params": [
@@ -50624,7 +51215,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DEMIPAD|FuelTrueFungible": {
    "params": [
@@ -50648,7 +51239,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DEMIPAD|RetrieveNonFungible": {
    "params": [
@@ -50676,7 +51267,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DEMIPAD|RetrieveOrtoFungible": {
    "params": [
@@ -50700,7 +51291,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DEMIPAD|RetrieveSemiFungible": {
    "params": [
@@ -50728,7 +51319,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DEMIPAD|RetrieveTrueFungible": {
    "params": [
@@ -50752,7 +51343,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DEMIPAD|Withdraw": {
    "params": [
@@ -50776,7 +51367,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPDC-I|Issue": {
    "params": [
@@ -50800,7 +51391,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPDC-MNG|Simple": {
    "params": [
@@ -50824,7 +51415,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPDC-MNG|WipeFull": {
    "params": [
@@ -50848,7 +51439,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPDC-MNG|WipeMulti": {
    "params": [
@@ -50876,7 +51467,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPDC-N|Bulk": {
    "params": [
@@ -50908,7 +51499,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPDC-N|Field": {
    "params": [
@@ -50936,7 +51527,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPDC-R|Move": {
    "params": [
@@ -50968,7 +51559,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPDC-R|Toggle": {
    "params": [
@@ -51004,7 +51595,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPDC|BulkTransfer": {
    "params": [
@@ -51044,7 +51635,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPDC|MultiTransfer": {
    "params": [
@@ -51084,7 +51675,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPDC|UpgradeBranding": {
    "params": [
@@ -51108,7 +51699,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|Break": {
    "params": [
@@ -51132,7 +51723,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|BulkTransfer": {
    "params": [
@@ -51168,7 +51759,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|Burn": {
    "params": [
@@ -51192,7 +51783,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|Control": {
    "params": [
@@ -51240,7 +51831,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|Create": {
    "params": [
@@ -51260,7 +51851,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|DefineCompositeSet": {
    "params": [
@@ -51292,7 +51883,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|DefineHybridSet": {
    "params": [
@@ -51328,7 +51919,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|DefinePrimordialSet": {
    "params": [
@@ -51360,7 +51951,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|EnableNonceFragmentation": {
    "params": [
@@ -51384,7 +51975,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|EnableSetClassFragmentation": {
    "params": [
@@ -51408,7 +51999,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|Issue": {
    "params": [
@@ -51468,7 +52059,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|Make": {
    "params": [
@@ -51496,7 +52087,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|MakeFragments": {
    "params": [
@@ -51524,7 +52115,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|MergeFragments": {
    "params": [
@@ -51552,7 +52143,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|MoveCreateRole": {
    "params": [
@@ -51572,7 +52163,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|MoveRecreateRole": {
    "params": [
@@ -51592,7 +52183,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|MoveSetUriRole": {
    "params": [
@@ -51612,7 +52203,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|RemoveNonceScore": {
    "params": [
@@ -51640,7 +52231,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|RemoveSetNonceScore": {
    "params": [
@@ -51668,7 +52259,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|RenameSet": {
    "params": [
@@ -51692,7 +52283,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|Repurpose": {
    "params": [
@@ -51724,7 +52315,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|RepurposeFragments": {
    "params": [
@@ -51756,7 +52347,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|Respawn": {
    "params": [
@@ -51780,7 +52371,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|ToggleBurnRole": {
    "params": [
@@ -51804,7 +52395,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|ToggleExemptionRole": {
    "params": [
@@ -51828,7 +52419,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|ToggleFreezeAccount": {
    "params": [
@@ -51852,7 +52443,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|ToggleModifyCreatorRole": {
    "params": [
@@ -51876,7 +52467,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|ToggleModifyRoyaltiesRole": {
    "params": [
@@ -51900,7 +52491,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|TogglePause": {
    "params": [
@@ -51920,7 +52511,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|ToggleSet": {
    "params": [
@@ -51944,7 +52535,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|ToggleTransferRole": {
    "params": [
@@ -51968,7 +52559,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|ToggleUpdateRole": {
    "params": [
@@ -51992,7 +52583,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|TransferNonce": {
    "params": [
@@ -52028,7 +52619,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|TransferNonces": {
    "params": [
@@ -52064,7 +52655,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|UpdateNonce": {
    "params": [
@@ -52096,7 +52687,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|UpdateNonceDescription": {
    "params": [
@@ -52128,7 +52719,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|UpdateNonceIgnisRoyalty": {
    "params": [
@@ -52160,7 +52751,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|UpdateNonceMetaData": {
    "params": [
@@ -52192,7 +52783,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|UpdateNonceName": {
    "params": [
@@ -52224,7 +52815,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|UpdateNonceRoyalty": {
    "params": [
@@ -52256,7 +52847,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|UpdateNonceScore": {
    "params": [
@@ -52288,7 +52879,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|UpdateNonceURI": {
    "params": [
@@ -52332,7 +52923,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|UpdateNonces": {
    "params": [
@@ -52364,7 +52955,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|UpdatePendingBranding": {
    "params": [
@@ -52396,7 +52987,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|UpdateSetNonce": {
    "params": [
@@ -52428,7 +53019,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|UpdateSetNonceDescription": {
    "params": [
@@ -52460,7 +53051,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|UpdateSetNonceIgnisRoyalty": {
    "params": [
@@ -52492,7 +53083,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|UpdateSetNonceMetaData": {
    "params": [
@@ -52524,7 +53115,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|UpdateSetNonceName": {
    "params": [
@@ -52556,7 +53147,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|UpdateSetNonceRoyalty": {
    "params": [
@@ -52588,7 +53179,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|UpdateSetNonceScore": {
    "params": [
@@ -52620,7 +53211,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|UpdateSetNonceURI": {
    "params": [
@@ -52664,7 +53255,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|UpdateSetNonces": {
    "params": [
@@ -52696,7 +53287,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|UpgradeBranding": {
    "params": [
@@ -52716,7 +53307,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|WipeClean": {
    "params": [
@@ -52740,7 +53331,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|WipeDirty": {
    "params": [
@@ -52764,7 +53355,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|WipeFull": {
    "params": [
@@ -52788,7 +53379,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|WipeHeavy": {
    "params": [
@@ -52808,7 +53399,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|WipeNonce": {
    "params": [
@@ -52832,7 +53423,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|WipePure": {
    "params": [
@@ -52856,7 +53447,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPNF|WipeSlice": {
    "params": [
@@ -52880,7 +53471,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|AddQuantity": {
    "params": [
@@ -52908,7 +53499,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|Break": {
    "params": [
@@ -52936,7 +53527,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|BulkTransfer": {
    "params": [
@@ -52972,7 +53563,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|Burn": {
    "params": [
@@ -53000,7 +53591,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|Control": {
    "params": [
@@ -53048,7 +53639,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|Create": {
    "params": [
@@ -53072,7 +53663,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|DefineCompositeSet": {
    "params": [
@@ -53104,7 +53695,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|DefineHybridSet": {
    "params": [
@@ -53140,7 +53731,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|DefinePrimordialSet": {
    "params": [
@@ -53172,7 +53763,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|EnableNonceFragmentation": {
    "params": [
@@ -53196,7 +53787,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|EnableSetClassFragmentation": {
    "params": [
@@ -53220,7 +53811,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|Issue": {
    "params": [
@@ -53280,7 +53871,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|IssueCompany": {
    "params": [
@@ -53316,7 +53907,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|Make": {
    "params": [
@@ -53348,7 +53939,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|MakeFragments": {
    "params": [
@@ -53376,7 +53967,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|MergeFragments": {
    "params": [
@@ -53404,7 +53995,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|MorphEquity": {
    "params": [
@@ -53436,7 +54027,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|MoveCreateRole": {
    "params": [
@@ -53456,7 +54047,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|MoveRecreateRole": {
    "params": [
@@ -53476,7 +54067,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|MoveSetUriRole": {
    "params": [
@@ -53496,7 +54087,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|RemoveNonceScore": {
    "params": [
@@ -53524,7 +54115,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|RemoveSetNonceScore": {
    "params": [
@@ -53552,7 +54143,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|RenameSet": {
    "params": [
@@ -53576,7 +54167,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|Repurpose": {
    "params": [
@@ -53608,7 +54199,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|RepurposeFragments": {
    "params": [
@@ -53640,7 +54231,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|ToggleAddQuantityRole": {
    "params": [
@@ -53664,7 +54255,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|ToggleBurnRole": {
    "params": [
@@ -53688,7 +54279,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|ToggleExemptionRole": {
    "params": [
@@ -53712,7 +54303,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|ToggleFreezeAccount": {
    "params": [
@@ -53736,7 +54327,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|ToggleModifyCreatorRole": {
    "params": [
@@ -53760,7 +54351,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|ToggleModifyRoyaltiesRole": {
    "params": [
@@ -53784,7 +54375,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|TogglePause": {
    "params": [
@@ -53804,7 +54395,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|ToggleSet": {
    "params": [
@@ -53828,7 +54419,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|ToggleTransferRole": {
    "params": [
@@ -53852,7 +54443,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|ToggleUpdateRole": {
    "params": [
@@ -53876,7 +54467,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|TransferNonce": {
    "params": [
@@ -53912,7 +54503,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|TransferNonces": {
    "params": [
@@ -53948,7 +54539,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|UpdateNonce": {
    "params": [
@@ -53980,7 +54571,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|UpdateNonceDescription": {
    "params": [
@@ -54012,7 +54603,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|UpdateNonceIgnisRoyalty": {
    "params": [
@@ -54044,7 +54635,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|UpdateNonceMetaData": {
    "params": [
@@ -54076,7 +54667,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|UpdateNonceName": {
    "params": [
@@ -54108,7 +54699,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|UpdateNonceRoyalty": {
    "params": [
@@ -54140,7 +54731,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|UpdateNonceScore": {
    "params": [
@@ -54172,7 +54763,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|UpdateNonceURI": {
    "params": [
@@ -54216,7 +54807,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|UpdateNonces": {
    "params": [
@@ -54248,7 +54839,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|UpdatePendingBranding": {
    "params": [
@@ -54280,7 +54871,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|UpdateSetNonce": {
    "params": [
@@ -54312,7 +54903,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|UpdateSetNonceDescription": {
    "params": [
@@ -54344,7 +54935,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|UpdateSetNonceIgnisRoyalty": {
    "params": [
@@ -54376,7 +54967,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|UpdateSetNonceMetaData": {
    "params": [
@@ -54408,7 +54999,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|UpdateSetNonceName": {
    "params": [
@@ -54440,7 +55031,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|UpdateSetNonceRoyalty": {
    "params": [
@@ -54472,7 +55063,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|UpdateSetNonceScore": {
    "params": [
@@ -54504,7 +55095,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|UpdateSetNonceURI": {
    "params": [
@@ -54548,7 +55139,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|UpdateSetNonces": {
    "params": [
@@ -54580,7 +55171,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|UpgradeBranding": {
    "params": [
@@ -54600,7 +55191,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|WipeClean": {
    "params": [
@@ -54624,7 +55215,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|WipeDirty": {
    "params": [
@@ -54648,7 +55239,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|WipeFull": {
    "params": [
@@ -54672,7 +55263,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|WipeHeavy": {
    "params": [
@@ -54692,7 +55283,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|WipeNonce": {
    "params": [
@@ -54716,7 +55307,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|WipeNoncePartialy": {
    "params": [
@@ -54744,7 +55335,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|WipePure": {
    "params": [
@@ -54768,7 +55359,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_DPSF|WipeSlice": {
    "params": [
@@ -54792,7 +55383,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_EQUITY|IssueCompany": {
    "params": [
@@ -54812,7 +55403,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "INFO-TWO.INFO_EQUITY|MorphEquity": {
    "params": [
@@ -54844,7 +55435,7 @@
    "returns": "object{OuronetInfoV3.ClientInfo}",
    "source": "deployed",
    "modulePath": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-   "moduleHash": "rmbI_YA_pIpoXfcwBWgT84xmw8U9n9yoiLoghV5ThAA"
+   "moduleHash": "CnQP34cDp5Pj870NcRiCfVtMCut0Mf1KuFW7liHMYO4"
   },
   "PYTHIA.INFO_PYTHIA|DeployApiKey": {
    "params": [
@@ -54987,5 +55578,5 @@
  },
  "divergences": [],
  "notDeployed": [],
- "surfaceHash": "01e174e0c7a403e7"
+ "surfaceHash": "9bd7335ade6e10cd"
 }

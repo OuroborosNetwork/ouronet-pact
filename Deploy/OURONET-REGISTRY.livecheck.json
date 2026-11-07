@@ -7,13 +7,13 @@
   "TS01-C3": "Sss3u_Zh-s6U3aXwDEH3p253qj9PxuUoOE-95z-mz3g",
   "TS01-C4": "QKd0Sc5-sZ6aMes9LmL_P4NGbhC3Qsz8RuBKoEDWWEE",
   "TS01-CP": "_GYfTjt6x4wvwyddWf07_fZ5crTfI7mOThlF-KxuEz8",
-  "TS02-C1": "0LyZ6_7uQM2GA4TpSJ2U7ulaAfe4t8B173t07W397yg",
-  "TS02-C2": "_iU-6VEF5RU4bk5h2cZruqDBC5sGfpqpFuvFIoXs0hw",
+  "TS02-C1": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
+  "TS02-C2": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
   "TS02-C3": "sMKqr_tIA1-GMyY3Ndf0vPULffjLSMs26udGhO-ibz8",
   "TS02-CPAD": "kZJnKKMM4J3A_7ss5mCfdc6vhJJM5ihClbU3soBuSOs",
   "TS02-DPAD": "ntOP318GcIvs72BxlhJ6XjmMbhnvXdMVRJBu_M-3lh0"
  },
  "note": "WHEN the registry snapshot was last confirmed against mainnet, by REPL/tools/_registrylive.py. Written only on a clean run. The offline gate prints this date; it cannot verify it.",
- "surfaceHash": "01e174e0c7a403e7",
- "verifiedAt": "2026-11-06"
+ "surfaceHash": "9bd7335ade6e10cd",
+ "verifiedAt": "2026-11-07"
 }

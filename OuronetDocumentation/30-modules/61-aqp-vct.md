@@ -19,8 +19,8 @@ _To be written._
 
 | | |
 |---|---|
-| module hash | `v-PzvoVx9edaYokmafdR2ejeaIwicQQJHbQOYFY4G1c` |
-| deployed size | 180,751 characters |
+| module hash | `H51xmVWEkoRqhbmkER1YqDldSruV177-syiqR8zpEv0` |
+| deployed size | 190,605 characters |
 | implements | `OuronetPolicyV2`, `AcquisitionVacateV4` |
 | repository source | `1_SOVEREIGN/STAGE_02/2_Core/03_AQP/06_VCT.pact` |
 
@@ -32,7 +32,7 @@ _To be written._
 
 `GOV`, `GOV|VCT_ADMIN`, `P|VCT|CALLER`, `P|VCT|RECIPE`, `P|VCT|REMOTE-GOV`, `SECURE`, `VCT|C>ABORT-VACATE-POOL`, `VCT|C>COLLECTABLE-VACATE-BATCH`, `VCT|C>FINALIZE-VACATE`, `VCT|C>LEGS-COLLECTABLE-VACATE`, `VCT|C>LEGS-ORTO-FUNGIBLE-VACATE`, `VCT|C>LEGS-TRUE-FUNGIBLE-VACATE`, `VCT|C>ORTO-FUNGIBLE-VACATE-BATCH`, `VCT|C>TRUE-FUNGIBLE-VACATE`, `VCT|C>VACATE`
 
-**Functions** — 141, grouped by what their prefix promises
+**Functions** — 144, grouped by what their prefix promises
 
 | family | n | the promise | names |
 |---|---:|---|---|
@@ -42,7 +42,7 @@ _To be written._
 | `URC_` derived reads | 18 | read and derive; no enforce | `URC_BatchOwnerArraysGasOk`, `URC_NonceAmountsAreZeroSentinel`, `URC_PoolFullyVacated`, `URC_ResolveOfDecimalAmountsFromTracker`, `URC_TfOwnerArraysGasOk`, `URC_VacateCollectableLegBeneficiaryOk` …+12 |
 | `UEV_` validators | 2 | read and enforce; may abort the transaction | `UEV_ExecutorIzVacatePoolOwner`, `UEV_TrueFungibleStakeNotReserved` |
 | `UDC_` constructors | 10 | named object constructors | `UDC_NonceSlicePayload`, `UDC_TfSlicePayload`, `UDC_VacateNonceLane`, `UDC_VacateNonceLeg`, `UDC_VacateNonceLegInventory`, `UDC_VacateNonceRow` …+4 |
-| `UC_` pure compute | 30 | arguments only -- no reads, no enforce | `UC_BatchNonceTotal`, `UC_BuildNonceVacateSlicePlanFromOwnerRows`, `UC_BuildTfVacateSlicePlanFromOwnerRows`, `UC_CeilDiv`, `UC_ComputeMinSliceCount`, `UC_DecimalAmountsMatrixToInt` …+24 |
+| `UC_` pure compute | 33 | arguments only -- no reads, no enforce | `UC_BatchNonceTotal`, `UC_BuildNonceVacateSlicePlanFromOwnerRows`, `UC_BuildTfVacateSlicePlanFromOwnerRows`, `UC_CeilDiv`, `UC_ComputeMinSliceCount`, `UC_DecimalAmountsMatrixToInt` …+27 |
 | `UR_` readers | 2 | table reads; no enforce, no writes | `UR_VacateInProgress`, `UR_VacateSessionFields` |
 | `CAP_` ownership gates | 1 | account-ownership enforcement | `CAP_VctVacatePoolOwner` |
 | `XI_` protected (internal) | 15 | this module only | `XI_ClearVacateInProgress`, `XI_DrainCollectableBatch`, `XI_DrainOrtoFungibleBatch`, `XI_DrainTrueFungibleFromLegs`, `XI_EnsureVacateBegun`, `XI_MaybeFinalizeVacate` …+9 |
@@ -53,15 +53,13 @@ _To be written._
 | `P|` policy | 9 | inter-module authorisation | `P|A_Add`, `P|A_AddIMP`, `P|A_Define`, `P|A_RemoveIMP`, `P|A_SetIMP`, `P|Info` …+3 |
 | *(unclassified)* | 14 | carries no StoicSyntax prefix | `CT_AqpScName`, `CT_Bar`, `GOV|Demiurgoi`, `XI_1|DrainCollectableUnwindBatch`, `XI_1|DrainOrtoFungibleUnwindBatch`, `XI_1|DrainTrueFungibleFromLegs` …+8 |
 
-> **The repository differs from what is deployed.** Everything above describes the CHAIN, which is what a caller actually reaches. The difference is stated rather than resolved:
->
-> - **functions** in the repository only: `UC_VacateBulkDestinations`, `UC_VacateMergeIntRowsByDestination`, `UC_VacateMergeNonceRowsByDestination`
+> Repository and chain agree on every declared shape.
 
 **Capabilities** -- 15
 
 `GOV`, `GOV|VCT_ADMIN`, `P|VCT|CALLER`, `P|VCT|RECIPE`, `P|VCT|REMOTE-GOV`, `SECURE`, `VCT|C>ABORT-VACATE-POOL`, `VCT|C>COLLECTABLE-VACATE-BATCH`, `VCT|C>FINALIZE-VACATE`, `VCT|C>LEGS-COLLECTABLE-VACATE`, `VCT|C>LEGS-ORTO-FUNGIBLE-VACATE`, `VCT|C>LEGS-TRUE-FUNGIBLE-VACATE`, `VCT|C>ORTO-FUNGIBLE-VACATE-BATCH`, `VCT|C>TRUE-FUNGIBLE-VACATE`, `VCT|C>VACATE`
 
-**Functions** -- 141, grouped by what the prefix promises
+**Functions** -- 144, grouped by what the prefix promises
 
 *Cost readers* (12) — price an operation; the exec path and the preview both call these
 
@@ -91,9 +89,9 @@ _To be written._
 
 `UDC_NonceSlicePayload`, `UDC_TfSlicePayload`, `UDC_VacateNonceLane`, `UDC_VacateNonceLeg`, `UDC_VacateNonceLegInventory`, `UDC_VacateNonceRow`, `UDC_VacateSlicePlan`, `UDC_VacateTfInventory`, `UDC_VacateTfLane`, `UDC_VacateTfLeg`
 
-*Pure compute* (30) — arguments only; no reads, no enforce
+*Pure compute* (33) — arguments only; no reads, no enforce
 
-`UC_BatchNonceTotal`, `UC_BuildNonceVacateSlicePlanFromOwnerRows`, `UC_BuildTfVacateSlicePlanFromOwnerRows`, `UC_CeilDiv`, `UC_ComputeMinSliceCount`, `UC_DecimalAmountsMatrixToInt`, `UC_DecimalAmountsRowToInt`, `UC_EmptyOc`, `UC_ExpandNonceOwnerRowsForGasMax`, `UC_GasMaxForKind`, `UC_MergeVacateCollectableRowIntoLegs`, `UC_MergeVacateNonceRowIntoLegs`, `UC_NonceSlicePayloadFromOwnerRows`, `UC_OwnerRowNonceTotal`, `UC_SplitNonceOwnerRowToMax`, `UC_TfLegsFromParallelArrays`, `UC_TfSlicePayloadFromOwnerRows`, `UC_VacateCollectableLegsToVacateArrays`, `UC_VacateDecimalAmountsToIntegers`, `UC_VacateKindSon`, `UC_VacateMergeDecimalNonceRowsForBeneficiary`, `UC_VacateMergeIntNonceRowsForBeneficiary`, `UC_VacateOfLegsToVacateArrays`, `UC_VacateOrtoDestinations`, `UC_VacateSumAmountForBeneficiaryFromLegs`, `UC_VacateTfLegsToTftBulkArrays`, `UC_VacateUniqueBeneficiaries`, `UC_VacateUniqueBeneficiariesFromLegs`, `UC_ZeroIntAmountsMatrix`, `UC_ZeroIntAmountsRow`
+`UC_BatchNonceTotal`, `UC_BuildNonceVacateSlicePlanFromOwnerRows`, `UC_BuildTfVacateSlicePlanFromOwnerRows`, `UC_CeilDiv`, `UC_ComputeMinSliceCount`, `UC_DecimalAmountsMatrixToInt`, `UC_DecimalAmountsRowToInt`, `UC_EmptyOc`, `UC_ExpandNonceOwnerRowsForGasMax`, `UC_GasMaxForKind`, `UC_MergeVacateCollectableRowIntoLegs`, `UC_MergeVacateNonceRowIntoLegs`, `UC_NonceSlicePayloadFromOwnerRows`, `UC_OwnerRowNonceTotal`, `UC_SplitNonceOwnerRowToMax`, `UC_TfLegsFromParallelArrays`, `UC_TfSlicePayloadFromOwnerRows`, `UC_VacateBulkDestinations`, `UC_VacateCollectableLegsToVacateArrays`, `UC_VacateDecimalAmountsToIntegers`, `UC_VacateKindSon`, `UC_VacateMergeDecimalNonceRowsForBeneficiary`, `UC_VacateMergeIntNonceRowsForBeneficiary`, `UC_VacateMergeIntRowsByDestination`, `UC_VacateMergeNonceRowsByDestination`, `UC_VacateOfLegsToVacateArrays`, `UC_VacateOrtoDestinations`, `UC_VacateSumAmountForBeneficiaryFromLegs`, `UC_VacateTfLegsToTftBulkArrays`, `UC_VacateUniqueBeneficiaries`, `UC_VacateUniqueBeneficiariesFromLegs`, `UC_ZeroIntAmountsMatrix`, `UC_ZeroIntAmountsRow`
 
 *Ownership checks* (1) — account-ownership enforcement
 

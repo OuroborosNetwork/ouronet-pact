@@ -17670,6 +17670,24 @@
     "type": "[string]"
    }
   ],
+  "INFO-TWO.INFO_DPSF|IssueShares": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "account",
+    "type": "string"
+   },
+   {
+    "name": "id",
+    "type": "string"
+   },
+   {
+    "name": "millions",
+    "type": "integer"
+   }
+  ],
   "INFO-TWO.INFO_DPSF|Make": [
    {
     "name": "patron",
@@ -17808,6 +17826,24 @@
     "type": "string"
    }
   ],
+  "INFO-TWO.INFO_DPSF|PauseCompany": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "account",
+    "type": "string"
+   },
+   {
+    "name": "id",
+    "type": "string"
+   },
+   {
+    "name": "toggle",
+    "type": "bool"
+   }
+  ],
   "INFO-TWO.INFO_DPSF|RemoveNonceScore": [
    {
     "name": "patron",
@@ -17920,6 +17956,56 @@
    {
     "name": "amounts",
     "type": "[integer]"
+   }
+  ],
+  "INFO-TWO.INFO_DPSF|RetireShares": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "account",
+    "type": "string"
+   },
+   {
+    "name": "id",
+    "type": "string"
+   },
+   {
+    "name": "millions",
+    "type": "integer"
+   }
+  ],
+  "INFO-TWO.INFO_DPSF|RotateCompanyCreator": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "account",
+    "type": "string"
+   },
+   {
+    "name": "id",
+    "type": "string"
+   },
+   {
+    "name": "new-creator",
+    "type": "string"
+   }
+  ],
+  "INFO-TWO.INFO_DPSF|SetCompanyBranding": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "account",
+    "type": "string"
+   },
+   {
+    "name": "id",
+    "type": "string"
    }
   ],
   "INFO-TWO.INFO_DPSF|ToggleAddQuantityRole": [
@@ -18690,6 +18776,24 @@
     "type": "integer"
    }
   ],
+  "INFO-TWO.INFO_DPSF|UpgradeCompanyBranding": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "account",
+    "type": "string"
+   },
+   {
+    "name": "id",
+    "type": "string"
+   },
+   {
+    "name": "months",
+    "type": "integer"
+   }
+  ],
   "INFO-TWO.INFO_DPSF|WipeClean": [
    {
     "name": "patron",
@@ -18872,6 +18976,28 @@
    {
     "name": "output-nonce",
     "type": "integer"
+   }
+  ],
+  "INFO-TWO.INFO_EQUITY|ShareMove": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "account",
+    "type": "string"
+   },
+   {
+    "name": "id",
+    "type": "string"
+   },
+   {
+    "name": "millions",
+    "type": "integer"
+   },
+   {
+    "name": "issuing",
+    "type": "bool"
    }
   ],
   "PYTHIA.INFO_PYTHIA|DeployApiKey": [
@@ -19141,6 +19267,7 @@
   "TS02-C1.DPSF|C_EnableSetClassFragmentation": "INFO-TWO.INFO_DPSF|EnableSetClassFragmentation",
   "TS02-C1.DPSF|C_Issue": "INFO-TWO.INFO_DPSF|Issue",
   "TS02-C1.DPSF|C_IssueCompany": "INFO-TWO.INFO_DPSF|IssueCompany",
+  "TS02-C1.DPSF|C_IssueShares": "INFO-TWO.INFO_DPSF|IssueShares",
   "TS02-C1.DPSF|C_Make": "INFO-TWO.INFO_DPSF|Make",
   "TS02-C1.DPSF|C_MakeFragments": "INFO-TWO.INFO_DPSF|MakeFragments",
   "TS02-C1.DPSF|C_MergeFragments": "INFO-TWO.INFO_DPSF|MergeFragments",
@@ -19148,11 +19275,15 @@
   "TS02-C1.DPSF|C_MoveCreateRole": "INFO-TWO.INFO_DPSF|MoveCreateRole",
   "TS02-C1.DPSF|C_MoveRecreateRole": "INFO-TWO.INFO_DPSF|MoveRecreateRole",
   "TS02-C1.DPSF|C_MoveSetUriRole": "INFO-TWO.INFO_DPSF|MoveSetUriRole",
+  "TS02-C1.DPSF|C_PauseCompany": "INFO-TWO.INFO_DPSF|PauseCompany",
   "TS02-C1.DPSF|C_RemoveNonceScore": "INFO-TWO.INFO_DPSF|RemoveNonceScore",
   "TS02-C1.DPSF|C_RemoveSetNonceScore": "INFO-TWO.INFO_DPSF|RemoveSetNonceScore",
   "TS02-C1.DPSF|C_RenameSet": "INFO-TWO.INFO_DPSF|RenameSet",
   "TS02-C1.DPSF|C_Repurpose": "INFO-TWO.INFO_DPSF|Repurpose",
   "TS02-C1.DPSF|C_RepurposeFragments": "INFO-TWO.INFO_DPSF|RepurposeFragments",
+  "TS02-C1.DPSF|C_RetireShares": "INFO-TWO.INFO_DPSF|RetireShares",
+  "TS02-C1.DPSF|C_RotateCompanyCreator": "INFO-TWO.INFO_DPSF|RotateCompanyCreator",
+  "TS02-C1.DPSF|C_SetCompanyBranding": "INFO-TWO.INFO_DPSF|SetCompanyBranding",
   "TS02-C1.DPSF|C_ToggleAddQuantityRole": "INFO-TWO.INFO_DPSF|ToggleAddQuantityRole",
   "TS02-C1.DPSF|C_ToggleBurnRole": "INFO-TWO.INFO_DPSF|ToggleBurnRole",
   "TS02-C1.DPSF|C_ToggleExemptionRole": "INFO-TWO.INFO_DPSF|ToggleExemptionRole",
@@ -19185,6 +19316,7 @@
   "TS02-C1.DPSF|C_UpdateSetNonceURI": "INFO-TWO.INFO_DPSF|UpdateSetNonceURI",
   "TS02-C1.DPSF|C_UpdateSetNonces": "INFO-TWO.INFO_DPSF|UpdateSetNonces",
   "TS02-C1.DPSF|C_UpgradeBranding": "INFO-TWO.INFO_DPSF|UpgradeBranding",
+  "TS02-C1.DPSF|C_UpgradeCompanyBranding": "INFO-TWO.INFO_DPSF|UpgradeCompanyBranding",
   "TS02-C1.DPSF|C_WipeClean": "INFO-TWO.INFO_DPSF|WipeClean",
   "TS02-C1.DPSF|C_WipeDirty": "INFO-TWO.INFO_DPSF|WipeDirty",
   "TS02-C1.DPSF|C_WipeNonce": "INFO-TWO.INFO_DPSF|WipeNonce",
@@ -19360,5 +19492,5 @@
   "TS02-DPAD.DEMIPAD|C_RetrieveTrueFungible": "INFO-TWO.INFO_DEMIPAD|RetrieveTrueFungible",
   "TS02-DPAD.DEMIPAD|C_Withdraw": "INFO-TWO.INFO_DEMIPAD|Withdraw"
  },
- "surfaceHash": "0c110ac2cad07e8f"
+ "surfaceHash": "d6397a6ffd12f8f5"
 }

@@ -17,8 +17,8 @@ Above the state core, below everything that issues or moves a collectable.
 
 | | |
 |---|---|
-| module hash | `vyf_mbw8VOBaebIRRKdowjsDimBGzuKvS22ClQMQaeA` |
-| deployed size | 57,541 characters |
+| module hash | `LFq5w2NInHFaNVOU-j-hidkevAojUG1tUcaprlIwkYA` |
+| deployed size | 60,632 characters |
 | implements | `OuronetPolicyV2`, `DpdcCreateV3` |
 | repository source | `1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/03_DPDC-C.pact` |
 
@@ -30,13 +30,13 @@ Above the state core, below everything that issues or moves a collectable.
 
 `DPDC-C|C>MULTI-CREDIT`, `DPDC-C|C>REGISTER-MULTIPLE-NONCES`, `DPDC-C|C>REGISTER-NONCES`, `DPDC-C|C>REGISTER-SINGLE-NONCE`, `DPDC-C|C>SINGLE-CREDIT`, `DPDC-C|C>SINGLE-DEBIT`, `DPDC-C|CX>MULTI-CREDIT`, `DPDC|C>HYBRID-MULTI-CREDIT`, `DPDC|C>MULTI-DEBIT`, `DPDC|CX>MULTI-DEBIT`, `DPNF|C>CREDIT-FRAGMENT-NONCE`, `DPNF|C>CREDIT-FRAGMENT-NONCES`, `DPNF|C>CREDIT-HYBRID-NONCES`, `DPNF|C>CREDIT-NONCE`, `DPNF|C>CREDIT-NONCES`, `DPNF|C>DEBIT-FRAGMENT-NONCE`, `DPNF|C>DEBIT-FRAGMENT-NONCES`, `DPNF|C>DEBIT-HYBRID-NONCES`, `DPNF|C>DEBIT-NONCE`, `DPNF|C>DEBIT-NONCES`, `DPSF|C>CREDIT-FRAGMENT-NONCE`, `DPSF|C>CREDIT-FRAGMENT-NONCES`, `DPSF|C>CREDIT-HYBRID-NONCES`, `DPSF|C>CREDIT-NONCE`, `DPSF|C>CREDIT-NONCES`, `DPSF|C>DEBIT-FRAGMENT-NONCE`, `DPSF|C>DEBIT-FRAGMENT-NONCES`, `DPSF|C>DEBIT-HYBRID-NONCES`, `DPSF|C>DEBIT-NONCE`, `DPSF|C>DEBIT-NONCES`, `GOV`, `GOV|DPDC-C_ADMIN`, `P|DPDC-C|CALLER`, `P|SECURE-CALLER`, `SECURE`
 
-**Functions** — 57, grouped by what their prefix promises
+**Functions** — 58, grouped by what their prefix promises
 
 | family | n | the promise | names |
 |---|---:|---|---|
 | `URCi_` cost readers | 2 | returns what an operation will charge | `URCi_CreateNewNonces`, `URCi_RegisterCollectablesPrice` |
 | `UEV_` validators | 7 | read and enforce; may abort the transaction | `UEV_Amount`, `UEV_ExecutorIsCreateRole`, `UEV_FragmentCreditAmount`, `UEV_HybridNonces`, `UEV_NonceDataForCreation`, `UEV_NonceType` …+1 |
-| `UC_` pure compute | 1 | arguments only -- no reads, no enforce | `UC_AndTruths` |
+| `UC_` pure compute | 2 | arguments only -- no reads, no enforce | `UC_AndTruths`, `UC_IzEquityCollectionId` |
 | `XI_` protected (internal) | 12 | this module only | `XI_CreditCollectables`, `XI_CreditNFT`, `XI_CreditOrDebitCollectables`, `XI_CreditSFT`, `XI_DebitCollectables`, `XI_DebitNFT` …+6 |
 | `XE_` protected (external) | 16 | for other modules; opens with the IMC gate | `XE_CreditNFT-FragmentNonce`, `XE_CreditNFT-FragmentNonces`, `XE_CreditNFT-HybridNonces`, `XE_CreditSFT-FragmentNonce`, `XE_CreditSFT-FragmentNonces`, `XE_CreditSFT-HybridNonces` …+10 |
 | `XB_` protected (both) | 4 | internal and external | `XB_CreditNFT-Nonce`, `XB_CreditNFT-Nonces`, `XB_CreditSFT-Nonce`, `XB_CreditSFT-Nonces` |
@@ -44,15 +44,13 @@ Above the state core, below everything that issues or moves a collectable.
 | `P|` policy | 9 | inter-module authorisation | `P|A_Add`, `P|A_AddIMP`, `P|A_Define`, `P|A_RemoveIMP`, `P|A_SetIMP`, `P|Info` …+3 |
 | *(unclassified)* | 4 | carries no StoicSyntax prefix | `CT_Bar`, `GOV|Demiurgoi`, `XIv_CreditOrDebitDPDC`, `XIv_MappedCreditOrDebitDPDC` |
 
-> **The repository differs from what is deployed.** Everything above describes the CHAIN, which is what a caller actually reaches. The difference is stated rather than resolved:
->
-> - **functions** in the repository only: `UC_IzEquityCollectionId`
+> Repository and chain agree on every declared shape.
 
 **Capabilities** -- 35
 
 `DPDC-C|C>MULTI-CREDIT`, `DPDC-C|C>REGISTER-MULTIPLE-NONCES`, `DPDC-C|C>REGISTER-NONCES`, `DPDC-C|C>REGISTER-SINGLE-NONCE`, `DPDC-C|C>SINGLE-CREDIT`, `DPDC-C|C>SINGLE-DEBIT`, `DPDC-C|CX>MULTI-CREDIT`, `DPDC|C>HYBRID-MULTI-CREDIT`, `DPDC|C>MULTI-DEBIT`, `DPDC|CX>MULTI-DEBIT`, `DPNF|C>CREDIT-FRAGMENT-NONCE`, `DPNF|C>CREDIT-FRAGMENT-NONCES`, `DPNF|C>CREDIT-HYBRID-NONCES`, `DPNF|C>CREDIT-NONCE`, `DPNF|C>CREDIT-NONCES`, `DPNF|C>DEBIT-FRAGMENT-NONCE`, `DPNF|C>DEBIT-FRAGMENT-NONCES`, `DPNF|C>DEBIT-HYBRID-NONCES`, `DPNF|C>DEBIT-NONCE`, `DPNF|C>DEBIT-NONCES`, `DPSF|C>CREDIT-FRAGMENT-NONCE`, `DPSF|C>CREDIT-FRAGMENT-NONCES`, `DPSF|C>CREDIT-HYBRID-NONCES`, `DPSF|C>CREDIT-NONCE`, `DPSF|C>CREDIT-NONCES`, `DPSF|C>DEBIT-FRAGMENT-NONCE`, `DPSF|C>DEBIT-FRAGMENT-NONCES`, `DPSF|C>DEBIT-HYBRID-NONCES`, `DPSF|C>DEBIT-NONCE`, `DPSF|C>DEBIT-NONCES`, `GOV`, `GOV|DPDC-C_ADMIN`, `P|DPDC-C|CALLER`, `P|SECURE-CALLER`, `SECURE`
 
-**Functions** -- 57, grouped by what the prefix promises
+**Functions** -- 58, grouped by what the prefix promises
 
 *Cost readers* (2) — price an operation; the exec path and the preview both call these
 
@@ -66,9 +64,9 @@ Above the state core, below everything that issues or moves a collectable.
 
 `P|UEV_IMC`, `UEV_Amount`, `UEV_ExecutorIsCreateRole`, `UEV_FragmentCreditAmount`, `UEV_HybridNonces`, `UEV_NonceDataForCreation`, `UEV_NonceType`, `UEV_NonceTypeMapper`
 
-*Pure compute* (1) — arguments only; no reads, no enforce
+*Pure compute* (2) — arguments only; no reads, no enforce
 
-`UC_AndTruths`
+`UC_AndTruths`, `UC_IzEquityCollectionId`
 
 *Client entry* (2) — builds the bill; reachable only through Talos
 

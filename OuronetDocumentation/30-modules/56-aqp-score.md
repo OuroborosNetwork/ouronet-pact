@@ -19,7 +19,7 @@ Between the pools and the reward distributor.
 
 | | |
 |---|---|
-| module hash | `RmDjpkZMHpkHobZLZFoFhPZgGe88E-bKLQG2I95gTsk` |
+| module hash | `RMgOjMECNVmHjZ16tRzKGZkvLHEgaaq4EVzn2LysnHM` |
 | deployed size | 295,523 characters |
 | implements | `OuronetPolicyV2`, `AcquisitionScoresV5` |
 | repository source | `1_SOVEREIGN/STAGE_02/2_Core/03_AQP/02_SCORE.pact` |
