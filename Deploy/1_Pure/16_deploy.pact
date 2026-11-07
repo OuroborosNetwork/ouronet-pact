@@ -2,15 +2,14 @@
 ;; OURONET DEPLOY -- file 16 of 26
 ;; This is STEP 16 of 27 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-15 must have run first, including the init steps between deploys.
-;; 1 source file(s), 242,927 gas measured in the REPL gas model, 249,064 bytes
+;; 1 source file(s), 242,927 gas measured in the REPL gas model, 250,476 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/03_AQP.pact
 ;;
-;; TOTAL: 1 interface(s), 1 module(s), 13 table(s)
+;; TOTAL: 0 interface(s), 1 module(s), 13 table(s)
 ;; What it DEPLOYS, in load order:
 ;;   -- 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/03_AQP.pact
-;;      interface  AcquisitionPoolsV3
 ;;      module     AQP-POOL
 ;;      table      P|T
 ;;      table      P|MT
@@ -34,311 +33,8 @@
 
 ;; ===== 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/03_AQP.pact ==============
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface AcquisitionPoolsV3
-    @doc "Interface for AQP acquisition pools and staking. Declares tracker key builders and \
-        \ readers for pool config, per-(pool,asset,owner,beneficiary) stake trackers \
-        \ (DPTF/DPOF/DPSF/DPNF), and per-beneficiary rollups/anchor-sync state; URC_ \
-        \ stake/unstake admission checks; URH_ heavy stake enumerations; XE_/XB_ transfer, \
-        \ pool-tracker, rollup, vacate-state and sync building blocks; and \
-        \ C_Issue/C_AddScore/C_*PoolStake/C_Sync client entrypoints."
+;; AcquisitionPoolsV3: already deployed and unchanged -- see LIVE_INTERFACES
 
-    ;;<=========================================================================>
-    ;;{1}  GOVERNANCE
-    ;;{G1}  constants
-    ;;{G2}  schemas
-    ;;{G3}  tables  ⟨cannot exist in an interface⟩
-    ;;{G4}  capabilities
-    ;;{G5}  functions
-    (defun GOV|Demiurgoi ())
-
-    ;;<=========================================================================>
-    ;;{2}  POLICY
-    ;;{P1}  constants
-    ;;{P2}  schemas
-    ;;{P3}  tables  ⟨cannot exist in an interface⟩
-    ;;{P4}  capabilities
-    ;;{P5}  functions
-
-    ;;<=========================================================================>
-    ;;{3}  CST
-    ;;{3.1}  constants
-    ;;{3.2}  schemas
-    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
-
-    ;;<=========================================================================>
-    ;;{4}  CAPABILITIES
-    ;;{C1}  Trivial [bronze]
-    ;;{C2}  Simple
-    ;;{C3}  Composed
-    ;;{C4}  Ownership [gold]
-
-    ;;<=========================================================================>
-    ;;{5}  FUNCTIONS
-    ;;{5.1}  Construct [CT/UDC]
-    ;;{5.2}  Compute [UC]
-    ;; [UC]  compute
-    ;;
-    (defun UCk_DPTFTracker:string (pool-id:string dptf-id:string owner-id:string beneficiary-id:string))
-    (defun UCk_DPOFTracker:string (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer))
-    (defun UCk_DPSFTracker:string (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer))
-    (defun UCk_DPNFTracker:string (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer))
-    (defun UCk_BenDptfTotal:string (beneficiary-id:string dptf-id:string))
-    (defun UCk_BenDpsfNonceTotal:string (beneficiary-id:string dpsf-id:string nonce:integer))
-    (defun UCk_BenDpnfNonceTotal:string (beneficiary-id:string dpnf-id:string nonce:integer))
-    (defun UCk_BenDpsfAnkMeta:string (beneficiary-id:string dpsf-id:string))
-    (defun UCk_BenDpnfAnkMeta:string (beneficiary-id:string dpnf-id:string))
-    (defun UCk_UserOccupancy:string (pool-id:string beneficiary-id:string))
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    ;; [UR]  read
-    (defun UR_AQP|PoolAqpClass:integer (pool-id:string))
-    (defun UR_AQP|PoolAssetId:string (pool-id:string))
-    (defun UR_AQP|PoolScorePrimary:string (pool-id:string))
-    (defun UR_AQP|PoolScoreSecondary:string (pool-id:string))
-    (defun UR_AQP|PoolScoreTertiary:string (pool-id:string))
-    (defun UR_AQP|PoolScoreQuaternary:string (pool-id:string))
-    (defun UR_AQP|PoolScoreQuinary:string (pool-id:string))
-    (defun UR_AQP|PoolScoreSenary:string (pool-id:string))
-    (defun UR_AQP|PoolScoreSeptenary:string (pool-id:string))
-    (defun UR_AQP|PoolAqpId:string (pool-id:string))
-    (defun UR_AQP|PoolStakeEnabled:bool (pool-id:string))
-    (defun UR_AQP|PoolNns:integer (pool-id:string))
-    (defun UR_AQP|UserUnn:integer (pool-id:string beneficiary-id:string))
-    (defun UR_AQP|PoolSweepInProgress:bool (pool-id:string))
-    (defun UR_AQP|PoolVacateSession:object (pool-id:string))
-    ;;
-    (defun UR_AQP|DPTFTrackerBalance:decimal (pool-id:string dptf-id:string owner-id:string beneficiary-id:string))
-    (defun UR_AQP|DPTFTrackerPoolId:string (pool-id:string dptf-id:string owner-id:string beneficiary-id:string))
-    (defun UR_AQP|DPTFTrackerDptfId:string (pool-id:string dptf-id:string owner-id:string beneficiary-id:string))
-    (defun UR_AQP|DPTFTrackerOwnerId:string (pool-id:string dptf-id:string owner-id:string beneficiary-id:string))
-    (defun UR_AQP|DPTFTrackerBeneficiaryId:string (pool-id:string dptf-id:string owner-id:string beneficiary-id:string))
-    ;;
-    (defun UR_AQP|BenDptfTotalBalance:decimal (beneficiary-id:string dptf-id:string))
-    (defun UR_AQP|BenDptfLastAnkSyncCount:integer (beneficiary-id:string dptf-id:string))
-    (defun URC_BenDptfAnchorsNeedSync:bool (beneficiary-id:string dptf-id:string))
-    ;;
-    (defun UR_AQP|BenDpsfNonceAmount:integer (beneficiary-id:string dpsf-id:string nonce:integer))
-    (defun UR_AQP|BenDpsfLastAnkSyncCount:integer (beneficiary-id:string dpsf-id:string))
-    (defun UR_AQP|BenDpsfActiveNonceCount:integer (beneficiary-id:string dpsf-id:string))
-    (defun URC_BenDpsfHasStake:bool (beneficiary-id:string dpsf-id:string))
-    (defun URC_BenDpsfAnchorsNeedSync:bool (beneficiary-id:string dpsf-id:string))
-    ;;
-    (defun UR_AQP|BenDpnfNonceAmount:integer (beneficiary-id:string dpnf-id:string nonce:integer))
-    (defun UR_AQP|BenDpnfLastAnkSyncCount:integer (beneficiary-id:string dpnf-id:string))
-    (defun UR_AQP|BenDpnfActiveNonceCount:integer (beneficiary-id:string dpnf-id:string))
-    (defun URC_BenDpnfHasStake:bool (beneficiary-id:string dpnf-id:string))
-    (defun URC_BenDpnfAnchorsNeedSync:bool (beneficiary-id:string dpnf-id:string))
-    ;;
-    (defun UR_AQP|DPOFTrackerBalance:decimal (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer))
-    (defun UR_AQP|DPOFTrackerPoolId:string (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer))
-    (defun UR_AQP|DPOFTrackerDpofId:string (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer))
-    (defun UR_AQP|DPOFTrackerOwnerId:string (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer))
-    (defun UR_AQP|DPOFTrackerBeneficiaryId:string (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer))
-    (defun UR_AQP|DPOFTrackerNonce:integer (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer))
-    ;;
-    (defun UR_AQP|DPSFTrackerBalance:decimal (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer))
-    (defun UR_AQP|DPSFTrackerPoolId:string (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer))
-    (defun UR_AQP|DPSFTrackerDpsfId:string (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer))
-    (defun UR_AQP|DPSFTrackerOwnerId:string (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer))
-    (defun UR_AQP|DPSFTrackerBeneficiaryId:string (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer))
-    (defun UR_AQP|DPSFTrackerNonce:integer (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer))
-    ;;
-    (defun UR_AQP|DPNFTrackerBalance:decimal (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer))
-    (defun UR_AQP|DPNFTrackerPoolId:string (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer))
-    (defun UR_AQP|DPNFTrackerDpnfId:string (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer))
-    (defun UR_AQP|DPNFTrackerOwnerId:string (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer))
-    (defun UR_AQP|DPNFTrackerBeneficiaryId:string (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer))
-    (defun UR_AQP|DPNFTrackerNonce:integer (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer))
-    ;;  Remaining C_* here: C_VacatePool (see README_AQP.md).
-    ;;
-    (defun URC_DptfStakeIsNativeLeg:bool (dptf-id:string))
-    (defun URC_PoolActiveScoreIds:[string] (pool-id:string))
-    (defun URC_PoolHasEmployedScores:bool (pool-id:string))
-    (defun URC_PoolStakeAdmissionOk:bool (pool-id:string))
-    (defun URC_PoolUnstakeAdmissionOk:bool (pool-id:string))
-    (defun URC_StakeTrueFungiblePoolClassOk:bool (pool-id:string))
-    (defun URC_StakeTrueFungibleDptfMatchesPool:bool (pool-id:string dptf-id:string))
-    (defun URC_StakeOrtoFungiblePoolClassOk:bool (pool-id:string))
-    (defun URC_StakeOrtoFungibleDpofMatchesPool:bool (pool-id:string dpof-id:string))
-    (defun URC_OrtoUnstakeNoncesSufficient:bool
-        (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonces:[integer] nonce-amounts:[decimal])
-    )
-    (defun URC_StakeCollectablePoolClassOk:bool (pool-id:string son:bool))
-    (defun URC_StakeCollectableMatchesPool:bool (pool-id:string collectable-id:string))
-    ;; Dead-definition guard for the score-definition write path (2026-10-06). Declared here
-    ;; so Talos can call it by modref before delegating to AQP-SCORE.
-    (defun UEV_ScoreDefinitionTargetMatchesPool (score-id:string asset-id:string))
-    (defun URC_CollectableUnstakeNoncesSufficient:bool
-        (pool-id:string collectable-id:string son:bool owner-id:string beneficiary-id:string nonces:[integer] nonce-amounts:[integer])
-    )
-    ;; [URH] heavy-read
-    ;;
-    (defun URH_AQP|AllPoolIds:[string] ())
-    (defun URH_AQP|ActiveDptfTrackerRows:[object] (pool-id:string dptf-id:string))
-    (defun URH_AQP|ActiveDpofTrackerRows:[object] (pool-id:string dpof-id:string))
-    (defun URH_AQP|ActiveDpsfTrackerRows:[object] (pool-id:string dpsf-id:string))
-    (defun URH_AQP|ActiveDpnfTrackerRows:[object] (pool-id:string dpnf-id:string))
-    ;; M5 (#14) UI observability — cross-pool per-user stake legs (owner-side + beneficiary-side).
-    (defun URH_AQP|DptfStakesByOwner:[object] (owner-id:string))
-    (defun URH_AQP|DptfStakesByBeneficiary:[object] (beneficiary-id:string))
-    (defun URH_AQP|DpofStakesByOwner:[object] (owner-id:string))
-    (defun URH_AQP|DpofStakesByBeneficiary:[object] (beneficiary-id:string))
-    (defun URH_AQP|DpsfStakesByOwner:[object] (owner-id:string))
-    (defun URH_AQP|DpsfStakesByBeneficiary:[object] (beneficiary-id:string))
-    (defun URH_AQP|DpnfStakesByOwner:[object] (owner-id:string))
-    (defun URH_AQP|DpnfStakesByBeneficiary:[object] (beneficiary-id:string))
-    (defun URH_AQP|BenDpsfActiveNonceSupplies:[object] (beneficiary-id:string dpsf-id:string))
-    (defun URH_AQP|BenDpnfActiveNonceSupplies:[object] (beneficiary-id:string dpnf-id:string))
-    ;;
-    ;; [URCi]   cost readers — single source for exec billing + INFO preview (config/sync ops)
-    (defun URCi_Issue:object{IgnisCollectorV4.OutputCumulator} (output:[string]))
-    (defun URCi_IssueStoa:decimal ())
-    (defun URCi_AddScore:object{IgnisCollectorV4.OutputCumulator} (output:[string]))
-    (defun URCi_RevokeScore:object{IgnisCollectorV4.OutputCumulator} (output:[string]))
-    (defun URCi_SetPoolStake:object{IgnisCollectorV4.OutputCumulator} (output:[string]))
-    (defun URCi_SyncTrueFungibleAnchors:object{IgnisCollectorV4.OutputCumulator} (output:[string]))
-    (defun URCi_SyncCollectableAnchors:object{IgnisCollectorV4.OutputCumulator} (output:[string]))
-    ;;{5.4}  Validate [UEV/CAP]
-    ;;{5.5}  Write [W]
-    ;;{5.6}  Aux/X
-    ;; [XE]
-    ;;
-    (defun XE_ZeroDptfTrackerSlot:object{IgnisCollectorV4.OutputCumulator}
-        (pool-id:string owner-id:string beneficiary-id:string dptf-id:string)
-    )
-    (defun XE_SetVacateJobState:string
-        (pool-id:string vacate-in-progress:bool)
-    )
-    (defun XE_SetSweepInProgress:string
-        (pool-id:string flag:bool)
-    )
-    (defun XE_TrueFungibleTransfer:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
-    )
-    (defun XE_TrueFungiblePoolTracker:object{IgnisCollectorV4.OutputCumulator}
-        (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
-    )
-    (defun XE_TrueFungibleBeneficiaryRollup:object{IgnisCollectorV4.OutputCumulator}
-        (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
-    )
-    (defun XE_OrtoFungibleTransfer:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal] direction:bool)
-    )
-    (defun XE_OrtoFungiblePoolTracker:object{IgnisCollectorV4.OutputCumulator}
-        (pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal] direction:bool)
-    )
-    (defun XE_CollectableTransfer:object{IgnisCollectorV4.OutputCumulator}
-        (
-            patron:string
-            pool-id:string
-            owner-id:string
-            beneficiary-id:string
-            collectable-id:string
-            son:bool
-            nonces:[integer]
-            nonce-amounts:[integer]
-            direction:bool
-        )
-    )
-    (defun XE_CollectablePoolTracker:object{IgnisCollectorV4.OutputCumulator}
-        (
-            pool-id:string
-            owner-id:string
-            beneficiary-id:string
-            collectable-id:string
-            son:bool
-            nonces:[integer]
-            nonce-amounts:[integer]
-            direction:bool
-        )
-    )
-    (defun XE_CollectableBeneficiaryRollup:object{IgnisCollectorV4.OutputCumulator}
-        (
-            pool-id:string
-            owner-id:string
-            beneficiary-id:string
-            collectable-id:string
-            son:bool
-            nonces:[integer]
-            nonce-amounts:[integer]
-            direction:bool
-        )
-    )
-    ;; [XB]
-    (defun XB_SetPoolStakeEnabled:string (pool-id:string enabled:bool))
-    (defun XB_SetBenDptfAnkSyncCount:object{IgnisCollectorV4.OutputCumulator}
-        (beneficiary-id:string dptf-id:string)
-    )
-    (defun XB_SetBenCollectableAnkSyncCount:object{IgnisCollectorV4.OutputCumulator}
-        (beneficiary-id:string collectable-id:string son:bool)
-    )
-    ;;{5.7}  User [A/C]
-    ;; [C]   client
-    ;;
-    (defun C_Issue:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string executor:string pool-name:string asset-id:string aqp-class:integer)
-    )
-    (defun C_AddScore:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string executor:string pool-id:string score-id:string)
-    )
-    (defun C_RevokeScore:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string executor:string pool-id:string score-id:string)
-    )
-    (defun C_DisablePoolStake:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string executor:string pool-id:string)
-    )
-    (defun C_EnablePoolStake:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string executor:string pool-id:string)
-    )
-    ;;
-    (defun C_SyncTrueFungibleAnchors:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string executee:string dptf-id:string)
-    )
-    (defun C_SyncCollectableAnchors:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string executee:string collectable-id:string son:bool)
-    )
-
-
-    ;;<=========================================================================>
-    ;; ADDED 2026-10-12 -- interface-membership sweep (StoicSyntax-Prefixes.md Sec5,
-    ;; owner ruling). Every one of these was already live in the module body; this
-    ;; closes the gap between what the module DOES and what its interface SAYS it does.
-    ;;<=========================================================================>
-    (defun CC_FinalizeScoreRevoke:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string pool-id:string score-id:string))
-    (defun CC_UpdateScoreMultipliers:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string score-id:string
-         mx-frozen:decimal mx-sleeping:decimal mx-hibernated:decimal))
-    (defun CCp_BackfillScoreSlice:object{IgnisCollectorV4.OutputCumulator} (patron:string pool-id:string score-id:string beneficiaries:[string]))
-    (defun C_BeginScoreRevoke:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string pool-id:string score-id:string))
-    (defun Cp_DrainScoreSlice:object{IgnisCollectorV4.OutputCumulator} (patron:string pool-id:string score-id:string accounts:[string]))
-    (defun CAP_AqpAssetOwner (aqp-class:integer asset-id:string))
-    (defun CAP_PoolOwner (pool-id:string))
-    (defun CAP_StakeOwner (owner-id:string))
-    (defun UC_AQP|BackfillRowsForBeneficiary:[object] (beneficiary-id:string rows:[object]))
-    (defun UC_AQP|BackfillSumForBeneficiary:decimal (beneficiary-id:string rows:[object]))
-    (defun UC_AQP|BackfillUniqueBeneficiaries:[string] (rows:[object]))
-    (defun UC_PoolScoreSlotPatch:object (slot-index:integer score-id:string))
-    (defun UEV_AQP|ScoreDrainComplete (pool-id:string score-id:string))
-    (defun UEV_AQP|ScoreMxChangeSafe (score-id:string))
-    (defun UEV_AddScorePoolAndScore (pool-id:string score-id:string slot-index:integer))
-    (defun UEV_BeginScoreRevoke (pool-id:string score-id:string slot-index:integer))
-    (defun UEV_ExecutorIzAqpAssetOwner (executor:string aqp-class:integer asset-id:string))
-    (defun UEV_ExecutorIzPoolOwner (executor:string pool-id:string))
-    (defun UEV_IssuePoolClassAndAsset (aqp-class:integer asset-id:string))
-    (defun UEV_RevokeScorePoolAndScore (pool-id:string score-id:string slot-index:integer))
-    (defun UEV_StakeBeneficiaryAccount (beneficiary-id:string))
-    (defun UEV_StakeCollectableLeg (collectable-id:string son:bool))
-    (defun UEV_StakeOrtoFungibleDpofLeg (dpof-id:string))
-    (defun UEV_StakeTrueFungibleDptfLeg (dptf-id:string))
-    (defun URHC_AQP|PoolOrphanedScores:[string] (pool-id:string))
-    (defun URHC_AQP|PoolSweepClear:bool (pool-id:string))
-    (defun URHC_AQP|ScoreBackfillCandidates:[string] (pool-id:string score-id:string leg-rows:object))
-    (defun URHC_AQP|ScoreBackfillNeeded:bool (pool-id:string score-id:string))
-    (defun URHC_AQP|ScoreBackfillOutstanding:[object] (pool-id:string score-id:string))
-    (defun URHC_AQP|ScoreDrainOutstanding:[string] (pool-id:string score-id:string))
-    (defun URH_AQP|ScoreBackfillLegRows:object (pool-id:string))
-    (defun URH_AQP|ScoreTargetBaseForBeneficiary:decimal (pool-id:string score-id:string beneficiary-id:string
-         nat-rows:[object] frz-rows:[object] slp-rows:[object]))
-    (defun UR_AQP|PoolVacateInProgress:bool (pool-id:string))
-)
 (module AQP-POOL GOV
     @doc "Sovereign acquisition-pool module. Owns pool definitions (asset, aqp-class, up to \
         \ 7 employed scores, stake-enabled/vacate/sweep state, occupancy counts), \
@@ -1662,13 +1358,29 @@
     )
     ;;
     (defun URC_AqpOwnerKontoFromClassAndAsset:string (aqp-class:integer asset-id:string)
-        @doc "Resolve pool governor konto from aqp-class and canonical native asset-id (issue-time or pre-pool-row)."
+        @doc "Resolve pool governor konto from aqp-class and canonical native asset-id (issue-time or pre-pool-row). \
+            \ \
+            \ AN EQUITY COLLECTION RESOLVES TO ITS CREATOR, not its owner, and that exception is \
+            \ the whole point of this reader having a branch at all. \
+            \ \
+            \ Every other sovereign asset's owner-konto is a smart account whose key a human \
+            \ holds, so deriving the governor from the ASSET is the same thing as naming its \
+            \ controller. An `E|` collection breaks that assumption: its owner-account IS the \
+            \ DPDC smart account, deliberately, because the collection is automanaged and its \
+            \ nonce set is sealed. So the derivation named a contract, and the twelve operations \
+            \ downstream of this one line -- pool creation, add/revoke score, enable/disable \
+            \ stake, the three-phase score revoke, and the entire vacate surface -- were \
+            \ unreachable by the company that owned the shares. The pool could not even be made \
+            \ functional: C_AddScore is gated here, and C_EnablePoolStake requires a score. \
+            \ \
+            \ The creator is the only party to an equity collection that is not a contract."
         (let
             (
                 (ref-SWP:module{SwapperV5} SWP)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                 (ref-DPDC:module{DpdcV3} DPDC)
+                (ref-EQUITY:module{EquityV5} EQUITY)
             )
             (if (= aqp-class 0)
                 (ref-SWP::UR_OwnerKonto (ref-SWP::UR_GetLpSwpair asset-id))
@@ -1677,7 +1389,10 @@
                     (if (= aqp-class 2)
                         (ref-DPOF::UR_Konto asset-id)
                         (if (= aqp-class 3)
-                            (ref-DPDC::UR_OwnerKonto asset-id true)
+                            (if (ref-EQUITY::URC_IzEquitySemiFungible asset-id)
+                                (ref-DPDC::UR_CreatorKonto asset-id true)
+                                (ref-DPDC::UR_OwnerKonto asset-id true)
+                            )
                             (ref-DPDC::UR_OwnerKonto asset-id false)
                         )
                     )

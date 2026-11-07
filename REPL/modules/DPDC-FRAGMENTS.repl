@@ -52,7 +52,7 @@
         (ref-DPDC:module{DpdcV3} DPDC)
         (ref-DPDC-F:module{DpdcFragmentsV3} DPDC-F)
         (ref-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (frg:string "TFRG-98c486052a51")
     )
     (map print
@@ -154,7 +154,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (fr:string "TFRG-98c486052a51")
         (patron:string KST.ANHD)
@@ -195,7 +195,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (fr:string "TFRG-98c486052a51")
         (patron:string KST.ANHD)
@@ -241,7 +241,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (fr:string "TFRG-98c486052a51")
         (patron:string KST.ANHD)
@@ -286,7 +286,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (fr:string "TFRG-98c486052a51")
         (patron:string KST.ANHD)

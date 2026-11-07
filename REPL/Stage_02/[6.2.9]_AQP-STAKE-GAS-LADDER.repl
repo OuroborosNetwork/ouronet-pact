@@ -1262,7 +1262,7 @@
         (owner:string (AQPGAS.UC_Owner))
         (nonce:integer 1)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (pool-id:string (ref-U|DALOS::UDC_Makeid (format "GasSfPool{}sc" [n-scores])))
     )
     (env-sigs [
@@ -1346,7 +1346,7 @@
         (owner:string (AQPGAS.UC_Owner))
         (nonce:integer 1)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (pool-id:string (ref-U|DALOS::UDC_Makeid (format "GasSfPool{}sc" [n-scores])))
     )
     (env-sigs [
@@ -1430,7 +1430,7 @@
         (owner:string (AQPGAS.UC_Owner))
         (nonce:integer 1)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (pool-id:string (ref-U|DALOS::UDC_Makeid (format "GasSfPool{}sc" [n-scores])))
     )
     (env-sigs [
@@ -1514,7 +1514,7 @@
         (owner:string (AQPGAS.UC_Owner))
         (nonce:integer 1)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (pool-id:string (ref-U|DALOS::UDC_Makeid (format "GasSfPool{}sc" [n-scores])))
     )
     (env-sigs [
@@ -1598,7 +1598,7 @@
         (owner:string (AQPGAS.UC_Owner))
         (nonce:integer 1)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (pool-id:string (ref-U|DALOS::UDC_Makeid (format "GasSfPool{}sc" [n-scores])))
     )
     (env-sigs [
@@ -1682,7 +1682,7 @@
         (owner:string (AQPGAS.UC_Owner))
         (nonce:integer 1)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (pool-id:string (ref-U|DALOS::UDC_Makeid (format "GasSfPool{}sc" [n-scores])))
     )
     (env-sigs [
@@ -1766,7 +1766,7 @@
         (owner:string (AQPGAS.UC_Owner))
         (nonce:integer 1)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (pool-id:string (ref-U|DALOS::UDC_Makeid (format "GasSfPool{}sc" [n-scores])))
     )
     (env-sigs [

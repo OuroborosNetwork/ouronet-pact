@@ -2,26 +2,25 @@
 ;; OURONET DEPLOY -- file 21 of 26
 ;; This is STEP 21 of 27 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-20 must have run first, including the init steps between deploys.
-;; 3 source file(s), 280,088 gas measured in the REPL gas model, 203,683 bytes
+;; 3 source file(s), 280,088 gas measured in the REPL gas model, 208,311 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/08b_EVCT.pact
 ;;   1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact
 ;;   1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact
 ;;
-;; TOTAL: 2 interface(s), 3 module(s), 6 table(s)
+;; TOTAL: 1 interface(s), 3 module(s), 6 table(s)
 ;; What it DEPLOYS, in load order:
 ;;   -- 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/08b_EVCT.pact
 ;;      module     AQP-EVCT
 ;;      table      P|T
 ;;      table      P|MT
 ;;   -- 1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact
-;;      interface  TalosStageTwo_ClientOneV3
+;;      interface  TalosStageTwo_ClientOneV4
 ;;      module     TS02-C1
 ;;      table      P|T
 ;;      table      P|MT
 ;;   -- 1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact
-;;      interface  TalosStageTwo_ClientTwoV3
 ;;      module     TS02-C2
 ;;      table      P|T
 ;;      table      P|MT
@@ -814,7 +813,7 @@
 ;; History/shared registry: 1_SOVEREIGN/STAGE_02/0_Interfaces/03_Talos.pact
 ;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface TalosStageTwo_ClientOneV3
+(interface TalosStageTwo_ClientOneV4
     @doc "Exposes Stage Two First Batch of Client Functions: \
         \ the SemiFungible Client Functions"
 
@@ -1000,6 +999,11 @@
         )
     )
     (defun DPSF|C_MorphEquity (patron:string executor:string id:string input-nonce:integer input-amount:integer output-nonce:integer))
+    (defun DPSF|C_IssueShares (patron:string executor:string id:string millions:integer))
+    (defun DPSF|C_RetireShares (patron:string executor:string id:string millions:integer))
+    (defun DPSF|C_PauseCompany (patron:string executor:string id:string toggle:bool))
+    (defun DPSF|C_SetCompanyBranding (patron:string executor:string id:string logo:string description:string website:string social:[object{BrandingV3.SocialSchema}]))
+    (defun DPSF|C_UpgradeCompanyBranding (patron:string executor:string id:string months:integer))
     (defun DPDC|C_BulkTransfer
         (patron:string executor:string executee-lst:[string] id:string son:bool nonces-array:[[integer]] amounts-array:[[integer]] method:bool)
     )
@@ -1023,7 +1027,7 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements TalosStageTwo_ClientOneV3)
+    (implements TalosStageTwo_ClientOneV4)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -2479,7 +2483,7 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-EQUITY:module{EquityV4} EQUITY)
+                    (ref-EQUITY:module{EquityV5} EQUITY)
                     ;;
                     (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-EQUITY::C_IssueShareholderCollection 
@@ -2498,6 +2502,91 @@
             )
         )
     )
+    ;; ─── EQUITY COMPANY GOVERNANCE ───────────────────────────────────────────────────────
+    ;; Five wrappers over EQUITY's creator-gated entrypoints. They add no authorisation of
+    ;; their own -- EQUITY proves the CREATOR in each capability, then acts as the DPDC smart
+    ;; account to perform the DPDC-side write. See `EQUITY|C>COMPANY-ACT`.
+    (defun DPSF|C_IssueShares (patron:string executor:string id:string millions:integer)
+        @doc "Creates <millions> million new shares in the company <id>. The company's CREATOR \
+            \ is the only account that may call this; <millions> whole millions only."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-EQUITY:module{EquityV5} EQUITY)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-EQUITY::C_IssueShares patron executor id millions)
+                )
+                (format "Successfully issued {} million new shares for Company {}" [millions id])
+            )
+        )
+    )
+    (defun DPSF|C_RetireShares (patron:string executor:string id:string millions:integer)
+        @doc "Retires <millions> million shares of company <id> -- a permissioned burn. The \
+            \ retirer must hold the holder's leg of the amount; the escrow's leg is burned \
+            \ alongside it so every package holder's percentage is unchanged."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-EQUITY:module{EquityV5} EQUITY)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-EQUITY::C_RetireShares patron executor id millions)
+                )
+                (format "Successfully retired {} million shares of Company {}" [millions id])
+            )
+        )
+    )
+    (defun DPSF|C_PauseCompany (patron:string executor:string id:string toggle:bool)
+        @doc "Halts or resumes all movement of company <id>'s shares -- transfers, and with \
+            \ them Make, Break and Convert."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-EQUITY:module{EquityV5} EQUITY)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-EQUITY::C_TogglePauseShares patron executor id toggle)
+                )
+                (if toggle
+                    (format "Company {} shares are now HALTED" [id])
+                    (format "Company {} shares are trading again" [id])
+                )
+            )
+        )
+    )
+    (defun DPSF|C_SetCompanyBranding
+        (patron:string executor:string id:string logo:string description:string website:string
+         social:[object{BrandingV3.SocialSchema}])
+        @doc "Sets company <id>'s public identity."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-EQUITY:module{EquityV5} EQUITY)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-EQUITY::C_SetCompanyBranding patron executor id logo description website social)
+                )
+                (format "Successfully updated the branding of Company {}" [id])
+            )
+        )
+    )
+    (defun DPSF|C_UpgradeCompanyBranding (patron:string executor:string id:string months:integer)
+        @doc "Extends company <id>'s branding subscription by <months>."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-EQUITY:module{EquityV5} EQUITY)
+                )
+                (ref-EQUITY::C_UpgradeCompanyBranding patron executor id months)
+                (format "Successfully extended the branding of Company {} by {} months" [id months])
+            )
+        )
+    )
     (defun DPSF|C_MorphEquity
         (patron:string executor:string id:string input-nonce:integer input-amount:integer output-nonce:integer)
         @doc "Converts any Nonce to [1 2 3 4 5 6 7 8] to any Nonce [1 2 3 4 5 6 7 8] \
@@ -2508,7 +2597,7 @@
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                     (ref-DPDC-T:module{DpdcTransferV3} DPDC-T)
-                    (ref-EQUITY:module{EquityV4} EQUITY)
+                    (ref-EQUITY:module{EquityV5} EQUITY)
                     ;;
                     (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-EQUITY::C_MorphPackageShares
@@ -2577,190 +2666,8 @@
 ;; History/shared registry: 1_SOVEREIGN/STAGE_02/0_Interfaces/03_Talos.pact
 ;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface TalosStageTwo_ClientTwoV3
-    @doc "Exposes Stage Two Second Batch of Client Functions: \
-        \ the NonFungible Client Functions"
+;; TalosStageTwo_ClientTwoV3: already deployed and unchanged -- see LIVE_INTERFACES
 
-    ;;<=========================================================================>
-    ;;{1}  GOVERNANCE
-    ;;{G1}  constants
-    ;;{G2}  schemas
-    ;;{G3}  tables  ⟨cannot exist in an interface⟩
-    ;;{G4}  capabilities
-    ;;{G5}  functions
-
-    ;;<=========================================================================>
-    ;;{2}  POLICY
-    ;;{P1}  constants
-    ;;{P2}  schemas
-    ;;{P3}  tables  ⟨cannot exist in an interface⟩
-    ;;{P4}  capabilities
-    ;;{P5}  functions
-
-    ;;<=========================================================================>
-    ;;{3}  CST
-    ;;{3.1}  constants
-    ;;{3.2}  schemas
-    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
-
-    ;;<=========================================================================>
-    ;;{4}  CAPABILITIES
-    ;;{C1}  Trivial [bronze]
-    ;;{C2}  Simple
-    ;;{C3}  Composed
-    ;;{C4}  Ownership [gold]
-
-    ;;<=========================================================================>
-    ;;{5}  FUNCTIONS
-    ;;{5.1}  Construct [CT/UDC]
-    ;;{5.2}  Compute [UC]
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    ;;{5.4}  Validate [UEV/CAP]
-    ;;{5.5}  Write [W]
-    ;;{5.6}  Aux/X
-    ;;{5.7}  User [A/C]
-    ;;
-    ;;  [2] DPDC
-    ;;
-    (defun DPNF|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV3.SocialSchema}]))
-    (defun DPNF|C_UpgradeBranding (patron:string executor:string entity-id:string months:integer))
-    ;;
-    ;;  [3] DPDC-C
-    ;;
-    (defun DPNF|C_Create:string
-        (
-            patron:string executor:string id:string
-            input-nonce-data:[object{DpdcUdcV2.DPDC|NonceData}]
-        )
-    )
-    ;;
-    ;;  [4] DPDC-I
-    ;;
-    ;; DPNF|C_DeployAccount removed — DPDC Audit #35M: standalone deployment let any signer force any
-    ;; existing account to associate with any collection, with no ownership check. Real auto-association
-    ;; (on transfer, role-toggle, Issue, set-fragmentation) always calls DPDC::XBv_DeployAccountNFT
-    ;; directly, module-to-module, bypassing this public entrypoint entirely.
-    (defun DPNF|C_Issue:string
-        (
-            patron:string 
-            executor:string executee:string collection-name:string collection-ticker:string
-            can-upgrade:bool can-change-owner:bool can-change-creator:bool can-add-special-role:bool
-            can-transfer-nft-create-role:bool can-freeze:bool can-wipe:bool can-pause:bool
-        )
-    )
-    ;;
-    ;;  [5] DPDC-R
-    ;;
-    (defun DPNF|C_ToggleFreezeAccount (patron:string executor:string executee:string id:string toggle:bool))
-    (defun DPNF|C_ToggleExemptionRole (patron:string executor:string executee:string id:string toggle:bool))
-    (defun DPNF|C_ToggleBurnRole (patron:string executor:string executee:string id:string toggle:bool))
-    (defun DPNF|C_ToggleUpdateRole (patron:string executor:string executee:string id:string toggle:bool))
-    (defun DPNF|C_ToggleModifyCreatorRole (patron:string executor:string executee:string id:string toggle:bool))
-    (defun DPNF|C_ToggleModifyRoyaltiesRole (patron:string executor:string executee:string id:string toggle:bool))
-    (defun DPNF|C_ToggleTransferRole (patron:string executor:string executee:string id:string toggle:bool))
-    (defun DPNF|C_MoveCreateRole (patron:string executor:string executee:string id:string))
-    (defun DPNF|C_MoveRecreateRole (patron:string executor:string executee:string id:string))
-    (defun DPNF|C_MoveSetUriRole (patron:string executor:string executee:string id:string))
-    ;;
-    ;;  [6] DPDC-MNG
-    ;;
-    (defun DPNF|C_Control (patron:string executor:string id:string cu:bool cco:bool ccc:bool casr:bool ctncr:bool cf:bool cw:bool cp:bool))
-    (defun DPNF|C_TogglePause (patron:string executor:string id:string toggle:bool))
-        ;;
-    (defun DPNF|C_Respawn (patron:string executor:string id:string nonce:integer))
-    (defun DPNF|C_Burn (patron:string executor:string id:string nonce:integer))
-    (defun DPNF|C_WipeNonce (patron:string executor:string executee:string id:string nonce:integer))
-        ;;
-    (defun DPNF|CC_WipeHeavy (patron:string executor:string executee:string id:string))
-    (defun DPNF|C_WipePure (patron:string executor:string executee:string id:string removable-nonces-obj:object{DpdcManagementV3.RemovableNonces}))
-    (defun DPNF|C_WipeClean (patron:string executor:string executee:string id:string nonces:[integer]))
-    (defun DPNF|C_WipeDirty (patron:string executor:string executee:string id:string nonces:[integer]))
-    (defun DPNF|Cp_WipeSlice (patron:string account:string id:string removable-nonces-obj:object{DpdcManagementV3.RemovableNonces}))
-    ;;
-    ;;  [7] DPDC-T
-    ;;
-    (defun DPNF|C_Repurpose (patron:string executor:string executee:string id:string repurpose-to:string nonces:[integer] amounts:[integer]))
-    (defun DPNF|C_TransferNonce (patron:string executor:string executee:string id:string nonce:integer amount:integer method:bool))
-    (defun DPNF|C_TransferNonces (patron:string executor:string executee:string id:string nonces:[integer] amounts:[integer] method:bool)) 
-    ;;
-    ;;  [8] DPDC-S
-    ;;
-    (defun DPNF|C_Make (patron:string executor:string id:string nonces:[integer] set-class:integer))
-    (defun DPNF|C_Break (patron:string executor:string id:string nonce:integer))
-    (defun DPNF|C_DefinePrimordialSet
-        (
-            patron:string executor:string id:string set-name:string score-multiplier:decimal
-            set-definition:[object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition}]
-            ind:object{DpdcUdcV2.DPDC|NonceData}
-        )
-    )
-    (defun DPNF|C_DefineCompositeSet
-        (
-            patron:string executor:string id:string set-name:string score-multiplier:decimal
-            set-definition:[object{DpdcUdcV2.DPDC|AllowedClassForSetPosition}]
-            ind:object{DpdcUdcV2.DPDC|NonceData}
-        )
-    )
-    (defun DPNF|C_DefineHybridSet
-        (
-            patron:string executor:string id:string set-name:string score-multiplier:decimal
-            primordial-sd:[object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition}]
-            composite-sd:[object{DpdcUdcV2.DPDC|AllowedClassForSetPosition}]
-            ind:object{DpdcUdcV2.DPDC|NonceData}
-        )
-    )
-    (defun DPNF|C_EnableSetClassFragmentation
-        (
-            patron:string executor:string id:string set-class:integer
-            fragmentation-ind:object{DpdcUdcV2.DPDC|NonceData}
-        )
-    )
-    (defun DPNF|C_ToggleSet (patron:string executor:string id:string set-class:integer toggle:bool))
-    (defun DPNF|C_RenameSet (patron:string executor:string id:string set-class:integer new-name:string))
-    ;; DPNF|C_UpdateSetMultiplier removed — DPDC Audit #15H: score-multiplier is immutable after Define.
-    ;;
-    (defun DPNF|C_UpdateSetNonce                        (patron:string executor:string id:string set-class:integer nos:bool new-nonce-data:object{DpdcUdcV2.DPDC|NonceData}))
-    (defun DPNF|C_UpdateSetNonces                       (patron:string executor:string id:string set-classes:[integer] nos:bool new-nonces-data:[object{DpdcUdcV2.DPDC|NonceData}]))
-    (defun DPNF|C_UpdateSetNonceRoyalty                 (patron:string executor:string id:string set-class:integer nos:bool royalty-value:decimal))
-    (defun DPNF|C_UpdateSetNonceIgnisRoyalty            (patron:string executor:string id:string set-class:integer nos:bool royalty-value:decimal))
-    (defun DPNF|C_UpdateSetNonceName                    (patron:string executor:string id:string set-class:integer nos:bool name:string))
-    (defun DPNF|C_UpdateSetNonceDescription             (patron:string executor:string id:string set-class:integer nos:bool description:string))
-    (defun DPNF|C_UpdateSetNonceScore                   (patron:string executor:string id:string set-class:integer nos:bool score:decimal))
-    (defun DPNF|C_RemoveSetNonceScore                   (patron:string executor:string id:string set-class:integer nos:bool))
-    (defun DPNF|C_UpdateSetNonceMetaData                (patron:string executor:string id:string set-class:integer nos:bool meta-data:object))
-    (defun DPNF|C_UpdateSetNonceURI                     (patron:string executor:string id:string set-class:integer nos:bool ay:object{DpdcUdcV2.URI|Type} u1:object{DpdcUdcV2.URI|Data} u2:object{DpdcUdcV2.URI|Data} u3:object{DpdcUdcV2.URI|Data}))
-    ;;
-    ;;  [9] DPDC-F
-    ;;
-    (defun DPNF|C_RepurposeFragments (patron:string executor:string executee:string id:string repurpose-to:string nonces:[integer] amounts:[integer]))
-    (defun DPNF|C_MakeFragments (patron:string executor:string id:string nonce:integer amount:integer))
-    (defun DPNF|C_MergeFragments (patron:string executor:string id:string nonce:integer amount:integer))
-    (defun DPNF|C_EnableNonceFragmentation (patron:string executor:string id:string nonce:integer fragmentation-ind:object{DpdcUdcV2.DPDC|NonceData}))
-    ;;
-    ;;  [10] DPDC-N
-    ;;
-    (defun DPNF|C_UpdateNonce                           (patron:string executor:string id:string nonce:integer nos:bool new-nonce-data:object{DpdcUdcV2.DPDC|NonceData}))
-    (defun DPNF|C_UpdateNonces                          (patron:string executor:string id:string nonces:[integer] nos:bool new-nonces-data:[object{DpdcUdcV2.DPDC|NonceData}]))
-    (defun DPNF|C_UpdateNonceRoyalty                    (patron:string executor:string id:string nonce:integer nos:bool royalty-value:decimal))
-    (defun DPNF|C_UpdateNonceIgnisRoyalty               (patron:string executor:string id:string nonce:integer nos:bool royalty-value:decimal))
-    (defun DPNF|C_UpdateNonceName                       (patron:string executor:string id:string nonce:integer nos:bool name:string))
-    (defun DPNF|C_UpdateNonceDescription                (patron:string executor:string id:string nonce:integer nos:bool description:string))
-    (defun DPNF|C_UpdateNonceScore                      (patron:string executor:string id:string nonce:integer nos:bool score:decimal))
-    (defun DPNF|C_RemoveNonceScore                      (patron:string executor:string id:string nonce:integer nos:bool))
-    (defun DPNF|C_UpdateNonceMetaData                   (patron:string executor:string id:string nonce:integer nos:bool meta-data:object))
-    (defun DPNF|C_UpdateNonceURI                        (patron:string executor:string id:string nonce:integer nos:bool ay:object{DpdcUdcV2.URI|Type} u1:object{DpdcUdcV2.URI|Data} u2:object{DpdcUdcV2.URI|Data} u3:object{DpdcUdcV2.URI|Data}))
-    (defun DPNF|C_BulkTransfer
-        (patron:string executor:string executee-lst:[string] id:string nonces-array:[[integer]] amounts-array:[[integer]] method:bool)
-    )
-
-
-    ;;<=========================================================================>
-    ;; ADDED 2026-10-12 -- interface-membership sweep (StoicSyntax-Prefixes.md Sec5,
-    ;; owner ruling). Every one of these was already live in the module body; this
-    ;; closes the gap between what the module DOES and what its interface SAYS it does.
-    ;;<=========================================================================>
-    (defun UC_ShortAccount:string (account:string))
-)
 ;;
 (module TS02-C2 GOV
     @doc "TALOS Stage 2 Client Functiones Part 2 - NFT Functions"
@@ -3516,7 +3423,7 @@
         @doc "Bulk NFT transfer — son=false wrapper over TS02-C1.DPDC|C_BulkTransfer."
         (let
             (
-                (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+                (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
             )
             (ref-TS02-C1::DPDC|C_BulkTransfer patron executor executee-lst id false nonces-array amounts-array method)
         )

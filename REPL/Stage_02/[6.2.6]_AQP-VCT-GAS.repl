@@ -179,7 +179,7 @@
         )
         (let
             (
-                (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+                (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
                 (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
                 (ref-VCT:module{AcquisitionVacateV4} AQP-VCT)
                 (nonce:integer 1)
@@ -821,7 +821,7 @@
         (patron:string pool-id:string dpsf-id:string n:integer)
         (let
             (
-                (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+                (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
                 (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
                 (nonce:integer 1)
             )

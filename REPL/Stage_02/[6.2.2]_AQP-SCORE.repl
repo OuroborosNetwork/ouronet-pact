@@ -1064,8 +1064,8 @@
 (let
     (
         (ref-DPDC:module{DpdcV3} DPDC)
-        (ref-EQUITY:module{EquityV4} EQUITY)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-EQUITY:module{EquityV5} EQUITY)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (owner:string KST.ANHD)
         (links:[string] (make-list 24 "ipfs://ScoreEquityDispatchLink"))
     )

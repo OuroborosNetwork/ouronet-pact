@@ -92,6 +92,89 @@ BLOODSHED = (
 )
 
 ROUNDS = {
+    "2026-11-v23-equity-company-governance": {
+        "why": "AN EQUITY COLLECTION IS A TOKENISED COMPANY THAT ITS FOUNDER COULD NOT RUN. "
+               "Owner, 2026-11-07: 'right now it must be managed through the DPDC owner, which "
+               "lifts the management for anyone making an Equity/Company Collection, which "
+               "shouldn't happen.' "
+               "\n\n"
+               "WHY. An `E|` collection is issued with `owner-account = <dpdc>`, the DPDC smart "
+               "account -- deliberately, because the collection is automanaged. But DPDC "
+               "management and the AQP pool governor are both OWNER-derived, so they named a "
+               "contract. Measured: 27 DPDC operations and 12 AQP operations were reachable only "
+               "by the project signature. The pool could not even be made functional -- "
+               "`C_AddScore` is owner-gated and `C_EnablePoolStake` needs a score. "
+               "\n\n"
+               "WHAT SHIPS, in three parts. "
+               "\n\n"
+               "1] THE NONCE SET IS SEALED. `DPSF|C_IssueCompany`'s @doc has always claimed 'Only "
+               "8 Elements can exist in this Collection'. NOTHING ENFORCED IT: a probe drove the "
+               "real call and nonces-used went 8 -> 9, creating a tier-less unit inside a share "
+               "register, invisible to `UR_TierSupplies` and to the 50% packaging cap. "
+               "`DPDC-C|C>REGISTER-NONCES` now refuses any `E|` id whose `nonces-used` is not 0 -- "
+               "which admits the issuing transaction (EQUITY populates all eight in one call while "
+               "the count is still zero) and refuses every later one, for EVERY caller. "
+               "\n\n"
+               "2] SHARES GET TWO DOORS, AND THE ESCROW SETTLES WITH THEM. Make does not burn "
+               "shares -- it TRANSFERS them to <dpdc> and mints tier units against them -- so the "
+               "collateral invariant is `escrow = m x K`, where m is millions of shares and K is "
+               "the packaged percentage. `EQUITY::C_IssueShares` / `C_RetireShares` move whole "
+               "millions and split each one pro-rata: K to or from the escrow, (1,000,000 - K) to "
+               "or from the holder. Two consequences fall out: the 50% cap becomes `K <= 500,000` "
+               "with no reference to m, so neither door can breach it; and every package holder's "
+               "PERCENTAGE is unchanged by a share count that moves. Raw `C_AddQuantity` / "
+               "`C_BurnSFT` on nonce 1 of an `E|` id are now refused. "
+               "\n\n"
+               "3] COMPANY GOVERNANCE REACHES THE CREATOR. `URC_AqpOwnerKontoFromClassAndAsset` "
+               "returns the CREATOR for an `E|` asset, which fixes all twelve AQP operations at "
+               "one line. Pause and branding are wrapped in EQUITY, which proves the creator and "
+               "then acts as <dpdc> through `P|EQUITY|REMOTE-GOV` -- already registered as a DPDC "
+               "governor guard and never used until now. `can-pause` flips TRUE at issuance (it "
+               "was FALSE, making a trading halt impossible for everyone) and "
+               "`can-transfer-nft-create-role` flips FALSE. "
+               "\n\n"
+               "EVERYTHING NOT WRAPPED STAYS SEALED BY CONSTRUCTION -- 21 DPDC operations "
+               "including all seven wipes, both forced repurposes, the six set-definition ops and "
+               "fragmentation. Confiscating or redefining shareholders' shares is not a "
+               "directorial power, and the wrapper design makes that structural rather than "
+               "remembered. "
+               "\n\n"
+               "TWO INTERFACES BUMP: `EquityV4`->`V5` (five new client entrypoints and the "
+               "share-accounting surface) and `TalosStageTwo_ClientOneV3`->`V4` (their wrappers). "
+               "Neither is NAMED INSIDE another interface, so both cascades are FIRST-ORDER: "
+               "INFO-TWO, AQP-SCORE, AQP-POOL, SNAKES, CUSTODIANS and TS02-C2 rebind modrefs and "
+               "change nothing else. `DpdcV3` is deliberately NOT bumped -- routing the company "
+               "ops through EQUITY instead of re-gating six DPDC modules avoided rebinding "
+               "twenty-four. "
+               "\n\n"
+               "VERIFIED: gate green, 96 entrypoints, 30,286 assertions. "
+               "`modules/EQUITY-MANAGEMENT.repl` is new -- 29 assertions over the share "
+               "arithmetic, the refusals and the governance routing, where there were ZERO before "
+               "this round. It caught a real defect in this round's own first cut: a stranger "
+               "issued shares successfully, because `CAP_EquityCreator` proved ownership of the "
+               "DERIVED creator account and never bound the DECLARED executor to it.",
+        "interfaces": ["EquityV5", "TalosStageTwo_ClientOneV4"],
+        "also": [
+            # DIRECT EDITS
+            "1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/03_DPDC-C.pact",
+            "1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/06_DPDC-MNG.pact",
+            "1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/11_EQUITY+.pact",
+            "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/03_AQP.pact",
+            "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
+            # CASCADE-ONLY -- these changed nothing but a modref version, which
+            # `_livemodules.py --diff` CANNOT SEE because the shape is identical. Listed by hand
+            # for the reason HOW-DEPLOY-ROUNDS-WORK.md gives: a modref naming V4 cannot bind to a
+            # module implementing V5.
+            "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/02_SCORE.pact",
+            "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
+            "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
+            "2_CITIZEN/7_Launchpad/2_Snakes/02_Snakes.pact",
+            "2_CITIZEN/7_Launchpad/3_Custodians/03_Custodians.pact",
+        ],
+        # NO INIT. No table is created and nothing is registered: the new entrypoints are
+        # ordinary clients and the flag changes apply to collections issued AFTER this round.
+        "init": [],
+    },
     "2026-11-v22-vacate-duplicate-owner": {
         "why": "A POOL WHERE ONE OWNER STAKED TO TWO BENEFICIARIES COULD NOT BE VACATED AT ALL. "
                "Owner, 2026-11-06, from a live DHBloodshed vacate: 'Unique Items Required, "
@@ -1956,6 +2039,28 @@ LIVE_INTERFACES = {
     # so pinning a hash without that comparison would ship a module against a contract the
     # chain may not have, which is exactly what the sys.exit below exists to prevent.
     "OuronetDalosV3":              "ec7e79b62d61888ac5642fc8d683e2bc",
+    # BULK ADD 2026-11-07 for PureV23 (equity company governance). Two interfaces BUMP this
+    # round -- `EquityV4`->`V5` and `TalosStageTwo_ClientOneV3`->`V4` -- and a bump drags the
+    # whole FILE in, plus the files of every module that only rebinds a modref. Seven
+    # already-live interfaces are co-hosted in those files and would be re-declared.
+    #
+    # EVERY ONE VERIFIED AGAINST THE CHAIN, not against the repo and not against git:
+    # `(at "code" (describe-module "ouronet-ns.<name>"))` on node2, whitespace-normalised and
+    # compared to the block in the tree. All seven matched, at the byte lengths below.
+    #
+    # THE PINNED HASH IS NOT THAT COMPARISON. `strip_live_interfaces` md5s the block AS EMITTED,
+    # with its original whitespace, so these come from the tool's own `want is None` discovery
+    # pass. The first cut pinned the whitespace-NORMALISED hashes from the chain check and the
+    # tool refused them -- correctly, and that is the guard doing its job: a hash that happens to
+    # be computed differently is indistinguishable from an interface that drifted.
+    # The chain comparison is what makes the skip SAFE; the pin is what keeps it honest later.
+    "DpdcManagementV3":          "71119f27191d50188c8e04f91eaee4c2",   # 5,849 bytes
+    "AcquisitionPoolsV3":        "f5688455f6b40fe2cf4507324c489144",   # 16,761
+    "AcquisitionScoresV5":       "01dac63e03e1e053845745d6c0dcc268",   # 17,028
+    "TalosStageTwo_ClientTwoV3": "e3a8607367187e55980960032888d7bc",   # 9,966
+    "SaleSnakesV3":              "ba8a444e8d6c358e07a7e23f884f7913",   # 2,207
+    "SaleCustodiansV3":          "f8be2bf45caa1f2b44816cc301604020",   # 2,252
+    "DpdcCreateV3":              "8ad40556ba128c61823713ca67320b7f",   # 4,651
 
     # BULK ADD 2026-10-12, found by the interface-membership sweep's PureV10 round the hard way
     # -- a real wallet simulation against mainnet, not this repo's own gate (which builds a

@@ -48,7 +48,7 @@
 (let
     (
         (ref-DPDC:module{DpdcV3} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (id:string "DHOC-98c486052a51")
     )
     (print (format "LEGIT TRANSFER RESULT = {}"
@@ -72,7 +72,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (id:string "DHOC-98c486052a51")
     )
     (ref-TS02-C1::DPSF|C_TransferNonces KST.ANHD KST.ANHD KST.EMMA id [1 2] [100 -50] false)

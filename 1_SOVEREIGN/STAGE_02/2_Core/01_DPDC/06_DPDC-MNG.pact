@@ -373,6 +373,33 @@
                 )
                 "Invalid Data for Adding Quantity for an SFT Nonce"
             )
+            ;;EQUITY SHARES HAVE EXACTLY TWO DOORS, AND THIS IS NOT ONE OF THEM. 2026-11-07.
+            ;;
+            ;;Nonce 1 of an `E|` collection is the company's share count. It may only change
+            ;;through `EQUITY::C_IssueShares` and `EQUITY::C_RetireShares`, because a share
+            ;;movement is not a mint -- it has to settle the ESCROW at the same time, pro-rata,
+            ;;or the packages outlive their collateral (see EQUITY's `escrow = m x K` note).
+            ;;A raw add or burn here would move one side of that equation and not the other.
+            ;;
+            ;;NONCE 1 ONLY. Tiers 2-8 keep using this path: Make, Break and Convert mint and burn
+            ;;package units through <dpdc>, and those operations maintain the invariant by
+            ;;construction.
+            ;;
+            ;;SCOPE, STATED HONESTLY. This refuses every caller except <dpdc> itself, which is
+            ;;what EQUITY acts as. It does NOT lock out the project signature that can act as
+            ;;<dpdc> directly -- closing that would mean an `XE_` behind `P|UEV_IMC` and a
+            ;;`DpdcManagementV3` bump, and that interface is NAMED INSIDE three others
+            ;;(TalosStageTwo_ClientOne/Two, InfoTwo), so the bump cascades two levels deep to
+            ;;seal a door only the protocol admin can open. The same reservation already applies
+            ;;to every other sealed equity operation.
+            (if (and (UC_IzEquityCollectionId id) (= nonce 1))
+                (enforce
+                    (= account (ref-DPDC::GOV|DPDC|SC_NAME))
+                    (format "{} is an EQUITY collection: its share count changes only through EQUITY::C_IssueShares / C_RetireShares"
+                        [id])
+                )
+                true
+            )
             ;;Account Ownership
             (ref-DALOS::CAP_EnforceAccountOwnership account)
             ;;Correct add quantity role
@@ -386,6 +413,33 @@
         (let
             (
                 (ref-DPDC:module{DpdcV3} DPDC)
+            )
+            ;;EQUITY SHARES HAVE EXACTLY TWO DOORS, AND THIS IS NOT ONE OF THEM. 2026-11-07.
+            ;;
+            ;;Nonce 1 of an `E|` collection is the company's share count. It may only change
+            ;;through `EQUITY::C_IssueShares` and `EQUITY::C_RetireShares`, because a share
+            ;;movement is not a mint -- it has to settle the ESCROW at the same time, pro-rata,
+            ;;or the packages outlive their collateral (see EQUITY's `escrow = m x K` note).
+            ;;A raw add or burn here would move one side of that equation and not the other.
+            ;;
+            ;;NONCE 1 ONLY. Tiers 2-8 keep using this path: Make, Break and Convert mint and burn
+            ;;package units through <dpdc>, and those operations maintain the invariant by
+            ;;construction.
+            ;;
+            ;;SCOPE, STATED HONESTLY. This refuses every caller except <dpdc> itself, which is
+            ;;what EQUITY acts as. It does NOT lock out the project signature that can act as
+            ;;<dpdc> directly -- closing that would mean an `XE_` behind `P|UEV_IMC` and a
+            ;;`DpdcManagementV3` bump, and that interface is NAMED INSIDE three others
+            ;;(TalosStageTwo_ClientOne/Two, InfoTwo), so the bump cascades two levels deep to
+            ;;seal a door only the protocol admin can open. The same reservation already applies
+            ;;to every other sealed equity operation.
+            (if (and (UC_IzEquityCollectionId id) (= nonce 1))
+                (enforce
+                    (= account (ref-DPDC::GOV|DPDC|SC_NAME))
+                    (format "{} is an EQUITY collection: its share count changes only through EQUITY::C_IssueShares / C_RetireShares"
+                        [id])
+                )
+                true
             )
             ;;Account Ownership - via Debit Function
             ;;Correct burn role
@@ -601,6 +655,21 @@
             (/ numerator denominator)
             (+ 1 (/ numerator denominator))
         )
+    )
+    (defun UC_IzEquityCollectionId:bool (id:string)
+        @doc "True when <id> names an EQUITY (shareholder) collection. \
+            \ \
+            \ A FORCED SECOND HOME for the `E|` rule, the same way `DPDC-C` carries one. The \
+            \ canonical predicate is `EQUITY::URC_IzEquitySemiFungible`, but EQUITY is \
+            \ `11_EQUITY+.pact` and calls INTO this module, so it necessarily deploys after it \
+            \ and a modref back would be a cycle. Hosting it in `02_DPDC` instead means \
+            \ publishing it through `DpdcV3` -- twenty-four modules rebound for a two-token \
+            \ string compare. \
+            \ \
+            \ THE SITES, so this is findable: here, `DPDC-C::UC_IzEquityCollectionId`, EQUITY's \
+            \ own `URC_IzEquitySemiFungible` and `UEV_EquitySemiFungibleID`, DPDC-C's pricing \
+            \ branch and DPDC-T's royalty branch."
+        (= (take 2 id) "E|")
     )
     (defun UC_ComputeMinWipeSliceCount:integer (nonce-count:integer)
         @doc "Hydra wipe UI SEED: the minimum <Cp_WipeSlice> count for <nonce-count> nonces \

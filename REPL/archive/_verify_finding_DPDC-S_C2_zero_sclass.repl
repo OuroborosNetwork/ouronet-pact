@@ -37,7 +37,7 @@
 (let
     (
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (id:string "DHWC-98c486052a51")
         (ind:object{DpdcUdcV2.DPDC|NonceData}
             (ref-DPDC-UDC::UDC_NonceData

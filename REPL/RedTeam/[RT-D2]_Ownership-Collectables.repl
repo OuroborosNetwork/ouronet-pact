@@ -359,7 +359,7 @@
     (
         (ref-DPDC:module{DpdcV3} DPDC)
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (id:string "CNF-98c486052a51")
         (nonce:integer 2)
         (attacker:string KST.EMMA)

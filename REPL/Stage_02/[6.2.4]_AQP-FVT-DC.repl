@@ -614,7 +614,7 @@
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-DPDC:module{DpdcV3} DPDC)
         (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)

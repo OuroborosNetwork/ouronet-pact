@@ -111,7 +111,9 @@ NEW_TO_OLD = {
     "AcquisitionFarmsVaultsTreasuriesV3": "AcquisitionFarmsVaultsTreasuriesV2",
     "AcquisitionVacateV3": "AcquisitionVacateV2", "DsaV3": "DsaV2",
     "AcquisitionSchemasV2": "AcquisitionSchemasV1",
-    "TalosStageTwo_ClientOneV3": "TalosStageTwo_ClientOneV2",
+    # BUMPED 2026-11-07 (equity company governance added five DPSF wrappers). What is LIVE is
+    # V3, so the new name maps to it; the V3->V2 line it replaces is kept below as history.
+    "TalosStageTwo_ClientOneV4": "TalosStageTwo_ClientOneV3",
     "TalosStageTwo_ClientTwoV3": "TalosStageTwo_ClientTwoV2",
     "TalosStageTwo_ClientThreeV3": "TalosStageTwo_ClientThreeV2",
     "TalosStageTwo_DemiPadV3": "TalosStageTwo_DemiPadV2",
@@ -139,8 +141,9 @@ NEW_TO_OLD = {
     # that EquityV3 was itself a pre-existing, never-shipped bump. A direct, hash-matched
     # `describe-module` confirmed EquityV3 has been live since `Deploy/PureV4` -- so, unlike
     # every other entry above, there is no never-shipped middle version here: EquityV3 itself
-    # IS what's live, and the current tree's `EquityV4` maps straight to it.
-    "EquityV4": "EquityV3",
+    # IS what's live. BUMPED 2026-11-07 to `EquityV5` for the company-governance entrypoints,
+    # so the tree's new name maps to the live `EquityV4`.
+    "EquityV5": "EquityV4",
 }
 
 APPREADS = {

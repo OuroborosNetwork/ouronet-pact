@@ -115,7 +115,7 @@
 (let
     (
         (ref-DPDC:module{DpdcV3} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
         (nf:string "MOCKN-98c486052a51")
         (sf:string "MOCKS-98c486052a51")
@@ -163,7 +163,7 @@
 (let
     (
         (ref-DPDC:module{DpdcV3} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (sf:string "MOCKS-98c486052a51")
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
@@ -212,7 +212,7 @@
 (let
     (
         (ref-BRD:module{BrandingV3} BRD)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (nf:string "MOCKN-98c486052a51")
         (sf:string "MOCKS-98c486052a51")
@@ -258,7 +258,7 @@
     (
         (ref-DPDC:module{DpdcV3} DPDC)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (sf:string "MOCKS-98c486052a51")
         (patron:string KST.ANHD)
     )
@@ -330,7 +330,7 @@
 (let
     (
         (ref-DPDC:module{DpdcV3} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (sf:string "MOCKS-98c486052a51")
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
@@ -380,7 +380,7 @@
 (print "--- [DPDC-07b — WipeClean rejects a list containing a nonce the holder does not have · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (sf:string "MOCKS-98c486052a51")
     )
     (map print
@@ -407,7 +407,7 @@
 (let
     (
         (ref-DPDC:module{DpdcV3} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (sf:string "MOCKS-98c486052a51")
         (emma:string KST.EMMA)
     )
@@ -478,7 +478,7 @@
     (
         (ref-DPDC:module{DpdcV3} DPDC)
         (ref-DPDC-MNG:module{DpdcManagementV3} DPDC-MNG)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (sf:string "MOCKS-98c486052a51")
         (emma:string KST.EMMA)
     )
@@ -1500,7 +1500,7 @@
 (let
     (
         (ref-DPDC:module{DpdcV3} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (sf:string "MOCKS-98c486052a51")
         (nd:object{DpdcUdcV2.DPDC|NonceData} (DPDC-UDC.UDC_NonceData 0.0 0.0 "n" "d"
             (DPDC-UDC.UDC_NoMetaData)
@@ -1937,7 +1937,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-DPDC:module{DpdcV3} DPDC)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
@@ -1984,7 +1984,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-DPDC:module{DpdcV3} DPDC)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
@@ -2027,7 +2027,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-DPDC:module{DpdcV3} DPDC)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
@@ -2068,7 +2068,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-DPDC:module{DpdcV3} DPDC)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
@@ -2109,7 +2109,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-DPDC:module{DpdcV3} DPDC)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
@@ -2150,7 +2150,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-DPDC:module{DpdcV3} DPDC)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
@@ -2191,7 +2191,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-DPDC:module{DpdcV3} DPDC)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
@@ -2232,7 +2232,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-DPDC:module{DpdcV3} DPDC)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
@@ -2273,7 +2273,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-DPDC:module{DpdcV3} DPDC)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
@@ -2317,7 +2317,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-DPDC:module{DpdcV3} DPDC)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
@@ -2358,7 +2358,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-DPDC:module{DpdcV3} DPDC)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
@@ -2399,7 +2399,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-DPDC:module{DpdcV3} DPDC)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
@@ -2834,7 +2834,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (patron:string KST.ANHD)
@@ -2872,7 +2872,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (patron:string KST.ANHD)
@@ -2910,7 +2910,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (patron:string KST.ANHD)
@@ -2948,7 +2948,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (patron:string KST.ANHD)
@@ -2986,7 +2986,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (patron:string KST.ANHD)
@@ -3024,7 +3024,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (patron:string KST.ANHD)
@@ -3065,7 +3065,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (patron:string KST.ANHD)
@@ -3103,7 +3103,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
         (patron:string KST.ANHD)
@@ -3847,7 +3847,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
@@ -3895,7 +3895,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
@@ -3946,7 +3946,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
@@ -3994,7 +3994,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
@@ -4042,7 +4042,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
@@ -4090,7 +4090,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
@@ -4138,7 +4138,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
@@ -4186,7 +4186,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
@@ -4236,7 +4236,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
@@ -4284,7 +4284,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
@@ -4332,7 +4332,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
@@ -4380,7 +4380,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
@@ -4430,7 +4430,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
@@ -4482,7 +4482,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
@@ -4534,7 +4534,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
@@ -4586,7 +4586,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
@@ -4640,7 +4640,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
@@ -4696,7 +4696,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
@@ -4750,7 +4750,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
@@ -4802,7 +4802,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
@@ -4852,7 +4852,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
@@ -4900,7 +4900,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
@@ -4948,7 +4948,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
@@ -5000,7 +5000,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
@@ -5052,7 +5052,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
@@ -5104,7 +5104,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
@@ -5156,7 +5156,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
@@ -5209,7 +5209,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
@@ -5263,7 +5263,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
@@ -5337,7 +5337,7 @@
 )
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
@@ -5408,7 +5408,7 @@
 )
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
@@ -5487,7 +5487,7 @@
 (env-chain-data { "block-time": (time "2030-11-22T00:00:00Z") })
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
@@ -5560,7 +5560,7 @@
 (env-chain-data { "block-time": (time "2030-11-22T00:00:00Z") })
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (sf:string "MOCKS-98c486052a51")
@@ -5624,7 +5624,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_BJ", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-DPDC:module{DpdcV3} DPDC)
         (id:string "MOCKS-98c486052a51")
@@ -5730,7 +5730,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
@@ -5778,7 +5778,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
@@ -5833,7 +5833,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
         (ref-DPDC:module{DpdcV3} DPDC)
@@ -5897,7 +5897,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
         (ref-DPDC:module{DpdcV3} DPDC)
@@ -5948,7 +5948,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
@@ -6009,7 +6009,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-DPDC-MNG:module{DpdcManagementV3} DPDC-MNG)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (id:string "MOCKS-98c486052a51")

@@ -116,7 +116,7 @@
         (anhd:string KST.ANHD) (emma:string KST.EMMA) (lumy:string KST.LUMY)
         (dhoc:string "DHOC-98c486052a51")
         (ref-DPDC:module{DpdcV3} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
     )
     (ref-TS02-C1::DPSF|C_MakeFragments anhd anhd dhoc 2 500)
     (ref-TS02-C1::DPSF|C_TransferNonce anhd anhd emma dhoc -2 200000 false)

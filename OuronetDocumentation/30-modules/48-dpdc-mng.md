@@ -51,6 +51,7 @@ Above the state and create modules.
 > **The repository differs from what is deployed.** Everything above describes the CHAIN, which is what a caller actually reaches. The difference is stated rather than resolved:
 >
 > - **schemas** in the repository only: `DPDC-MNG|WipeSlicePlan`, `RemovableNonces`
+> - **functions** in the repository only: `UC_IzEquityCollectionId`
 
 **Capabilities** -- 20
 

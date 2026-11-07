@@ -14,7 +14,7 @@
 ;;   1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact
 ;;   2_CITIZEN/4_BunniesMinter/02_KBunnies.pact
 ;;
-;; TOTAL: 4 interface(s), 8 module(s), 18 table(s)
+;; TOTAL: 2 interface(s), 8 module(s), 18 table(s)
 ;; What it DEPLOYS, in load order:
 ;;   -- 2_CITIZEN/7_Launchpad/1_Spark/01_Spark.pact
 ;;      interface  SparksV3
@@ -23,13 +23,11 @@
 ;;      table      P|MT
 ;;      table      SPARK|T|Properties
 ;;   -- 2_CITIZEN/7_Launchpad/2_Snakes/02_Snakes.pact
-;;      interface  SaleSnakesV3
 ;;      module     DEMIPAD-SNAKES
 ;;      table      P|T
 ;;      table      P|MT
 ;;      table      SNAKES|T|Properties
 ;;   -- 2_CITIZEN/7_Launchpad/3_Custodians/03_Custodians.pact
-;;      interface  SaleCustodiansV3
 ;;      module     DEMIPAD-CUSTODIANS
 ;;      table      P|T
 ;;      table      P|MT
@@ -862,77 +860,8 @@
 
 ;; ===== 2_CITIZEN/7_Launchpad/2_Snakes/02_Snakes.pact ===============
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface SaleSnakesV3
+;; SaleSnakesV3: already deployed and unchanged -- see LIVE_INTERFACES
 
-
-
-
-    ;;<=========================================================================>
-    ;;{1}  GOVERNANCE
-    ;;{G1}  constants
-    ;;{G2}  schemas
-    ;;{G3}  tables  ⟨cannot exist in an interface⟩
-    ;;{G4}  capabilities
-    ;;{G5}  functions
-
-    ;;<=========================================================================>
-    ;;{2}  POLICY
-    ;;{P1}  constants
-    ;;{P2}  schemas
-    ;;{P3}  tables  ⟨cannot exist in an interface⟩
-    ;;{P4}  capabilities
-    ;;{P5}  functions
-
-    ;;<=========================================================================>
-    ;;{3}  CST
-    ;;{3.1}  constants
-    ;;{3.2}  schemas
-    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
-
-    ;;<=========================================================================>
-    ;;{4}  CAPABILITIES
-    ;;{C1}  Trivial [bronze]
-    ;;{C2}  Simple
-    ;;{C3}  Composed
-    ;;{C4}  Ownership [gold]
-
-    ;;<=========================================================================>
-    ;;{5}  FUNCTIONS
-    ;;{5.1}  Construct [CT/UDC]
-    ;;{5.2}  Compute [UC]
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    ;;
-    ;;  [UR]
-    ;;
-    (defun UR_AssetID ())
-    (defun UR_DollarSharePrice:decimal ())
-    (defun UR_NonceSaleAvailability:integer (nonce:integer))
-    ;;
-    ;;  [URC]
-    ;;
-    (defun URC_NonceValueInShares:integer (nonce:integer))
-    (defun URC_ShareCosts:object{DemiourgosLaunchpadV3.Costs} ())
-    (defun URC_NonceCosts:object{DemiourgosLaunchpadV3.Costs} (nonce:integer))
-    (defun URC_NonceAmountCosts:object{DemiourgosLaunchpadV3.Costs} (nonce:integer amount:integer))
-    (defun URC_Acquire:[string] (buyer:string nonce:integer amount:integer iz-native:bool slippage:decimal))
-    ;;
-    ;;  [URCi] / [INFO]  (pure-citizen cost preview: Sigma of the sovereign Talos ops' IGNIS)
-    ;;
-    (defun URCi_Acquire:decimal (buyer:string nonce:integer amount:integer iz-native:bool))
-    (defun INFO_Acquire:object{OuronetInfoV3.ClientInfo} (patron:string buyer:string nonce:integer amount:integer iz-native:bool))
-    ;;{5.4}  Validate [UEV/CAP]
-    (defun UEV_AcquisitionNonce (nonce:integer))
-    (defun CAP_Acquire (buyer:string nonce:integer amount:integer iz-native:bool))
-    ;;{5.5}  Write [W]
-    ;;{5.6}  Aux/X
-    ;;{5.7}  User [A/C]
-    ;;
-    ;;  [A+C]
-    ;;
-    (defun A_UpdateSharePrice (patron:string executor:string price:decimal))
-    (defun C_Acquire (patron:string buyer:string nonce:integer amount:integer iz-native:bool max-cost:decimal))
-
-)
 (module DEMIPAD-SNAKES GOV
     @doc "Module defining the Sale Mechanics for Demiourgos Share Holder Collection"
 
@@ -1202,7 +1131,7 @@
             1
             (let
                 (
-                    (ref-EQUITY:module{EquityV4} EQUITY)
+                    (ref-EQUITY:module{EquityV5} EQUITY)
                     (asset:string (UR_AssetID))
                     (tier:integer (- nonce 1))
                 )
@@ -1411,7 +1340,7 @@
                 (
                     (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                     (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV4} TS02-DPAD)
-                    (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+                    (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
                     ;;
                     (asset:string (UR_AssetID))
                     (costs:object{DemiourgosLaunchpadV3.Costs} (URC_NonceAmountCosts nonce amount))
@@ -1441,83 +1370,8 @@
 
 ;; ===== 2_CITIZEN/7_Launchpad/3_Custodians/03_Custodians.pact =======
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface SaleCustodiansV3
+;; SaleCustodiansV3: already deployed and unchanged -- see LIVE_INTERFACES
 
-
-
-
-    ;;<=========================================================================>
-    ;;{1}  GOVERNANCE
-    ;;{G1}  constants
-    ;;{G2}  schemas
-    ;;{G3}  tables  ⟨cannot exist in an interface⟩
-    ;;{G4}  capabilities
-    ;;{G5}  functions
-
-    ;;<=========================================================================>
-    ;;{2}  POLICY
-    ;;{P1}  constants
-    ;;{P2}  schemas
-    ;;{P3}  tables  ⟨cannot exist in an interface⟩
-    ;;{P4}  capabilities
-    ;;{P5}  functions
-
-    ;;<=========================================================================>
-    ;;{3}  CST
-    ;;{3.1}  constants
-    ;;{3.2}  schemas
-    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
-
-    ;;<=========================================================================>
-    ;;{4}  CAPABILITIES
-    ;;{C1}  Trivial [bronze]
-    ;;{C2}  Simple
-    ;;{C3}  Composed
-    ;;{C4}  Ownership [gold]
-
-    ;;<=========================================================================>
-    ;;{5}  FUNCTIONS
-    ;;{5.1}  Construct [CT/UDC]
-    ;;{5.2}  Compute [UC]
-    ;;
-    ;;  [UC]
-    ;;
-    (defun UC_NonceQuintessence:integer (nonce:integer))
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    ;;
-    ;;  [UR]
-    ;;
-    (defun UR_AssetID ())
-    (defun UR_QuitessencePrice:decimal ())
-    (defun UR_NonceSaleAvailability:integer (nonce:integer))
-    ;;
-    ;;  [URC]
-    ;;
-    (defun URC_QuintessenceCosts:object{DemiourgosLaunchpadV3.Costs} ())
-    (defun URC_NonceCosts:object{DemiourgosLaunchpadV3.Costs} (nonce:integer))
-    (defun URC_NonceAmountCosts:object{DemiourgosLaunchpadV3.Costs} (nonce:integer amount:integer))
-    (defun URC_Acquire:[string] (buyer:string nonce:integer amount:integer iz-native:bool slippage:decimal))
-    ;;
-    ;;  [URCi] / [INFO]  (pure-citizen cost preview: Sigma of the sovereign Talos ops' IGNIS)
-    ;;
-    (defun URCi_Acquire:decimal (buyer:string nonce:integer amount:integer iz-native:bool))
-    (defun INFO_Acquire:object{OuronetInfoV3.ClientInfo} (patron:string buyer:string nonce:integer amount:integer iz-native:bool))
-    ;;{5.4}  Validate [UEV/CAP]
-    (defun CAP_Acquire (buyer:string nonce:integer amount:integer iz-native:bool))
-    ;;
-    ;;  [UEV]
-    ;;
-    (defun UEV_AcquisitionNonce (nonce:integer))
-    ;;{5.5}  Write [W]
-    ;;{5.6}  Aux/X
-    ;;{5.7}  User [A/C]
-    ;;
-    ;;  [A+C]
-    ;;
-    (defun A_UpdateQuintessencePrice (patron:string executor:string price:decimal))
-    (defun C_Acquire (patron:string buyer:string nonce:integer amount:integer iz-native:bool max-cost:decimal))
-
-)
 (module DEMIPAD-CUSTODIANS GOV
     @doc "Module defining the Sale Mechanics for Ouronet Custodians Collection"
 
@@ -1995,7 +1849,7 @@
                 (
                     (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                     (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV4} TS02-DPAD)
-                    (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+                    (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
                     ;;
                     (asset:string (UR_AssetID))
                     (costs:object{DemiourgosLaunchpadV3.Costs} (URC_NonceAmountCosts nonce amount))
@@ -5285,7 +5139,7 @@
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 (ref-DPDC-I:module{DpdcIssueV3} DPDC-I)
-                (ref-EQUITY:module{EquityV4} EQUITY)
+                (ref-EQUITY:module{EquityV5} EQUITY)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount creator-account))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -5300,7 +5154,7 @@
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
-                (ref-EQUITY:module{EquityV4} EQUITY)
+                (ref-EQUITY:module{EquityV5} EQUITY)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo

@@ -339,7 +339,7 @@
             1
             (let
                 (
-                    (ref-EQUITY:module{EquityV4} EQUITY)
+                    (ref-EQUITY:module{EquityV5} EQUITY)
                     (asset:string (UR_AssetID))
                     (tier:integer (- nonce 1))
                 )
@@ -548,7 +548,7 @@
                 (
                     (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                     (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV4} TS02-DPAD)
-                    (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+                    (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
                     ;;
                     (asset:string (UR_AssetID))
                     (costs:object{DemiourgosLaunchpadV3.Costs} (URC_NonceAmountCosts nonce amount))

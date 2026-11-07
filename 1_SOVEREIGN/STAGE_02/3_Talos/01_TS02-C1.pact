@@ -2,7 +2,7 @@
 ;; History/shared registry: 1_SOVEREIGN/STAGE_02/0_Interfaces/03_Talos.pact
 ;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface TalosStageTwo_ClientOneV3
+(interface TalosStageTwo_ClientOneV4
     @doc "Exposes Stage Two First Batch of Client Functions: \
         \ the SemiFungible Client Functions"
 
@@ -188,6 +188,11 @@
         )
     )
     (defun DPSF|C_MorphEquity (patron:string executor:string id:string input-nonce:integer input-amount:integer output-nonce:integer))
+    (defun DPSF|C_IssueShares (patron:string executor:string id:string millions:integer))
+    (defun DPSF|C_RetireShares (patron:string executor:string id:string millions:integer))
+    (defun DPSF|C_PauseCompany (patron:string executor:string id:string toggle:bool))
+    (defun DPSF|C_SetCompanyBranding (patron:string executor:string id:string logo:string description:string website:string social:[object{BrandingV3.SocialSchema}]))
+    (defun DPSF|C_UpgradeCompanyBranding (patron:string executor:string id:string months:integer))
     (defun DPDC|C_BulkTransfer
         (patron:string executor:string executee-lst:[string] id:string son:bool nonces-array:[[integer]] amounts-array:[[integer]] method:bool)
     )
@@ -211,7 +216,7 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements TalosStageTwo_ClientOneV3)
+    (implements TalosStageTwo_ClientOneV4)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -1667,7 +1672,7 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-EQUITY:module{EquityV4} EQUITY)
+                    (ref-EQUITY:module{EquityV5} EQUITY)
                     ;;
                     (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-EQUITY::C_IssueShareholderCollection 
@@ -1686,6 +1691,91 @@
             )
         )
     )
+    ;; ─── EQUITY COMPANY GOVERNANCE ───────────────────────────────────────────────────────
+    ;; Five wrappers over EQUITY's creator-gated entrypoints. They add no authorisation of
+    ;; their own -- EQUITY proves the CREATOR in each capability, then acts as the DPDC smart
+    ;; account to perform the DPDC-side write. See `EQUITY|C>COMPANY-ACT`.
+    (defun DPSF|C_IssueShares (patron:string executor:string id:string millions:integer)
+        @doc "Creates <millions> million new shares in the company <id>. The company's CREATOR \
+            \ is the only account that may call this; <millions> whole millions only."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-EQUITY:module{EquityV5} EQUITY)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-EQUITY::C_IssueShares patron executor id millions)
+                )
+                (format "Successfully issued {} million new shares for Company {}" [millions id])
+            )
+        )
+    )
+    (defun DPSF|C_RetireShares (patron:string executor:string id:string millions:integer)
+        @doc "Retires <millions> million shares of company <id> -- a permissioned burn. The \
+            \ retirer must hold the holder's leg of the amount; the escrow's leg is burned \
+            \ alongside it so every package holder's percentage is unchanged."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-EQUITY:module{EquityV5} EQUITY)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-EQUITY::C_RetireShares patron executor id millions)
+                )
+                (format "Successfully retired {} million shares of Company {}" [millions id])
+            )
+        )
+    )
+    (defun DPSF|C_PauseCompany (patron:string executor:string id:string toggle:bool)
+        @doc "Halts or resumes all movement of company <id>'s shares -- transfers, and with \
+            \ them Make, Break and Convert."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-EQUITY:module{EquityV5} EQUITY)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-EQUITY::C_TogglePauseShares patron executor id toggle)
+                )
+                (if toggle
+                    (format "Company {} shares are now HALTED" [id])
+                    (format "Company {} shares are trading again" [id])
+                )
+            )
+        )
+    )
+    (defun DPSF|C_SetCompanyBranding
+        (patron:string executor:string id:string logo:string description:string website:string
+         social:[object{BrandingV3.SocialSchema}])
+        @doc "Sets company <id>'s public identity."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-EQUITY:module{EquityV5} EQUITY)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-EQUITY::C_SetCompanyBranding patron executor id logo description website social)
+                )
+                (format "Successfully updated the branding of Company {}" [id])
+            )
+        )
+    )
+    (defun DPSF|C_UpgradeCompanyBranding (patron:string executor:string id:string months:integer)
+        @doc "Extends company <id>'s branding subscription by <months>."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-EQUITY:module{EquityV5} EQUITY)
+                )
+                (ref-EQUITY::C_UpgradeCompanyBranding patron executor id months)
+                (format "Successfully extended the branding of Company {} by {} months" [id months])
+            )
+        )
+    )
     (defun DPSF|C_MorphEquity
         (patron:string executor:string id:string input-nonce:integer input-amount:integer output-nonce:integer)
         @doc "Converts any Nonce to [1 2 3 4 5 6 7 8] to any Nonce [1 2 3 4 5 6 7 8] \
@@ -1696,7 +1786,7 @@
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                     (ref-DPDC-T:module{DpdcTransferV3} DPDC-T)
-                    (ref-EQUITY:module{EquityV4} EQUITY)
+                    (ref-EQUITY:module{EquityV5} EQUITY)
                     ;;
                     (ico:object{IgnisCollectorV4.OutputCumulator}
                         (ref-EQUITY::C_MorphPackageShares

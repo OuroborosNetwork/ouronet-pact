@@ -1,6 +1,6 @@
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface EquityV4
-    @doc "EquityV4 is the interface contract for the EQUITY shareholder/equity-collection \
+(interface EquityV5
+    @doc "EquityV5 is the interface contract for the EQUITY shareholder/equity-collection \
         \ policy, declaring the signatures every implementer must provide. It specifies \
         \ compute helpers, read/cost-preview functions (tier supplies, share \
         \ package/per-million math, combine capacity, URCi_ cost readers), validators (share \
@@ -64,6 +64,12 @@
     (defun URC_SharesPerMillion:[integer] (id:string))
     (defun URC_SingleSharePerMillions:integer (id:string package-share-tier:integer))
     (defun URC_CombineCapacity:integer (id:string))
+    ;;THE BACKING INVARIANT, V5: escrow == m x K. See the module body for the full account.
+    (defun UC_ShareSplit:[integer] (millions:integer k:integer))
+    (defun URC_ShareMillions:integer (id:string))
+    (defun URC_PackageConstant:integer (id:string))
+    (defun URC_RequiredEscrow:integer (id:string))
+    (defun URC_EscrowHeld:integer (id:string))
     (defun URCi_MorphPackageShares:object{IgnisCollectorV4.OutputCumulator} (account:string id:string input-nonce:integer input-amount:integer output-nonce:integer))
     (defun URCi_IssueShareholderCollection:object{IgnisCollectorV4.OutputCumulator} ())
     ;;{5.4}  Validate [UEV/CAP]
@@ -71,6 +77,11 @@
     ;;  [UEV]
     ;;
     (defun UEV_SharePackageTier (package-share-tier:integer))
+    (defun UEV_ExecutorIzCompanyCreator (executor:string id:string))
+    (defun UEV_ShareMillions (millions:integer))
+    (defun UEV_EscrowBacked (id:string))
+    (defun UEV_RetireFloor (id:string millions:integer))
+    (defun UEV_RetireHolding (id:string account:string millions:integer))
     (defun UEV_ShareAmountsForMaking (id:string shares-amount:integer package-share-tier:integer))
     (defun UEV_EquitySemiFungibleID (id:string))
     (defun UEV_Convert (id:string input-tier:integer input-tier-amount:integer output-tier:integer))
@@ -88,10 +99,18 @@
         )
     )
     (defun C_MorphPackageShares:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string id:string input-nonce:integer input-amount:integer output-nonce:integer))
+    ;;COMPANY GOVERNANCE, added at V5 (2026-11-07). An equity collection's owner-account is the
+    ;;DPDC smart account, so every owner-gated DPDC operation names a contract rather than the
+    ;;human who founded the company. These five prove the CREATOR and then act as <dpdc>.
+    (defun C_IssueShares:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string id:string millions:integer))
+    (defun C_RetireShares:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string id:string millions:integer))
+    (defun C_TogglePauseShares:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string id:string toggle:bool))
+    (defun C_SetCompanyBranding:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string id:string logo:string description:string website:string social:[object{BrandingV3.SocialSchema}]))
+    (defun C_UpgradeCompanyBranding (patron:string executor:string id:string months:integer))
 
 )
 (module EQUITY GOV
-    @doc "EQUITY implements OuronetPolicyV2 and EquityV4 to create and manage Shareholder \
+    @doc "EQUITY implements OuronetPolicyV2 and EquityV5 to create and manage Shareholder \
         \ DPSF (SFT) collections representing company equity, where nonce 1 is the barebone \
         \ share and nonces 2-8 are packaged share tiers. Its main entrypoints are \
         \ C_IssueShareholderCollection (issues an Elite equity SFT collection via \
@@ -104,7 +123,7 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements EquityV4)
+    (implements EquityV5)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -289,6 +308,11 @@
     ;;ever be packaged into tradeable tier-units (nonces 2-8) at once; the remainder must stay as loose,
     ;;unpackaged barebone shares. See URC_CombineCapacity below, the sole consumer of this constant.
     (defconst PACKAGING_CAP_DIVISOR 2)
+    ;;ONE MILLION. The share unit: issuance and retirement move whole millions and nothing else.
+    ;;It is not a style choice -- `URC_SharesPerMillion` divides the share count by this with
+    ;;INTEGER division, so a supply that is not a whole number of millions truncates and every
+    ;;tier value collapses with it. The divisibility rule is what keeps that division exact.
+    (defconst SHARE_UNIT 1000000)
     ;;{3.2}  schemas
     ;;{3.3}  tables
 
@@ -319,7 +343,72 @@
         (UEV_Convert id input-package-share-tier input-package-share-tier-amount output-package-share-tier)
         (compose-capability (P|GOV-CALLER))
     )
+    (defcap EQUITY|C>ISSUE-SHARES (id:string executor:string millions:integer)
+        @doc "Authorises creating <millions> million new shares. \
+            \ \
+            \ THE CREATOR, NOT THE OWNER. An equity collection's owner-account is the DPDC smart \
+            \ account -- that is how the collection is automanaged and how its nonce set stays \
+            \ sealed -- so owner-gated management names an account no company director can sign \
+            \ for. The creator is the only party to the company that is not a contract."
+        @event
+        ;;1]AUTHORISATION, before every validation below (owner ruling 2026-09-14).
+        (CAP_EquityCreator executor id)
+        (UEV_EquitySemiFungibleID id)
+        (UEV_ShareMillions millions)
+        (UEV_EscrowBacked id)
+        (compose-capability (P|GOV-CALLER))
+    )
+    (defcap EQUITY|C>RETIRE-SHARES (id:string executor:string millions:integer)
+        @doc "Authorises retiring <millions> million shares -- a permissioned burn, split \
+            \ pro-rata between the retirer's own holding and the escrow."
+        @event
+        ;;1]AUTHORISATION, before every validation below (owner ruling 2026-09-14).
+        (CAP_EquityCreator executor id)
+        (UEV_EquitySemiFungibleID id)
+        (UEV_ShareMillions millions)
+        (UEV_EscrowBacked id)
+        (UEV_RetireFloor id millions)
+        (UEV_RetireHolding id executor millions)
+        (compose-capability (P|GOV-CALLER))
+    )
+    (defcap EQUITY|C>COMPANY-ACT (executor:string id:string)
+        @doc "Authorises a COMPANY-bucket act on an equity collection -- one the creator must be \
+            \ able to perform and the DPDC smart account must be the one to execute. \
+            \ \
+            \ WHY A WRAPPER AND NOT A RE-GATE. These operations are owner-gated inside DPDC, and \
+            \ for an equity collection the owner is <dpdc>. Rather than teach six DPDC modules \
+            \ about `E|` -- which would mean publishing the predicate through DpdcV3 and \
+            \ rebinding twenty-four modules -- EQUITY proves the CREATOR here and then ACTS AS \
+            \ <dpdc>, which it may do because `P|EQUITY|REMOTE-GOV` is registered as a DPDC \
+            \ governor guard (see P|A_Define). \
+            \ \
+            \ The consequence is the valuable part: every DPDC management operation NOT wrapped \
+            \ here stays sealed BY CONSTRUCTION. Wipes, forced repurposes, set definitions and \
+            \ fragmentation remain unreachable to a company director, because confiscating or \
+            \ redefining shareholders' shares is not a directorial power."
+        @event
+        ;;1]AUTHORISATION, before every validation below (owner ruling 2026-09-14).
+        (CAP_EquityCreator executor id)
+        (UEV_EquitySemiFungibleID id)
+        (compose-capability (P|GOV-CALLER))
+    )
     ;;{C4}  Ownership [gold]
+    (defun CAP_EquityCreator (executor:string id:string)
+        @doc "Proves the company's creator: BOTH that <executor> IS the creator and that the \
+            \ caller owns that account. Either half alone is a hole -- see \
+            \ UEV_ExecutorIzCompanyCreator. \
+            \ \
+            \ A defun, not a defcap, for the reason AQP-VCT's CAP_VctVacatePoolOwner records: a \
+            \ defcap bare-called does NOT run its body, which silently no-ops the gate on the \
+            \ whole surface that calls it that way."
+        (let
+            (
+                (ref-DPDC:module{DpdcV3} DPDC)
+            )
+            (UEV_ExecutorIzCompanyCreator executor id)
+            (ref-DPDC::CAP_Creator id true)
+        )
+    )
 
     ;;<=========================================================================>
     ;;{5}  FUNCTIONS
@@ -428,6 +517,68 @@
             \ total share count. See URC_SharesPerMillion."
         (at (- package-share-tier 1) (URC_SharesPerMillion id))
 
+    )
+    ;; ─────────────────────────────────────────────────────────────────────────────────────────
+    ;; THE BACKING INVARIANT:  escrow  ==  m x K
+    ;;
+    ;; Making a package does NOT burn shares -- `XI_MakePackageShares` TRANSFERS them to <dpdc>
+    ;; and mints the tier units against them. So nonce 1's total supply is the company's share
+    ;; count at all times, and <dpdc>'s nonce-1 balance is the collateral behind every
+    ;; outstanding package.
+    ;;
+    ;;   m = total shares / SHARE_UNIT          (the scale)
+    ;;   K = SUM over tiers (units x S_tier)    (the PERCENTAGE -- invariant under supply change)
+    ;;
+    ;; A tier unit is worth `m x S_tier` shares (URC_SharesPerMillion), so all outstanding
+    ;; packages redeem for `m x K`. That is exactly what <dpdc> must hold.
+    ;;
+    ;; WHY K IS THE RIGHT ABSTRACTION. It is constant under issuance and retirement, which is the
+    ;; formal content of "a package is a percentage of the company". Two consequences follow:
+    ;;
+    ;;   - the 50% packaging cap becomes `K <= SHARE_UNIT / 2`, with no reference to m at all,
+    ;;     so issuing or retiring shares can never breach it;
+    ;;   - escrow is always a multiple of m, so the pro-rata split below is always whole shares.
+    ;;     No rounding, no dust, no truncation.
+    ;;
+    ;; MAKE, BREAK AND CONVERT ALREADY MAINTAIN IT. Make moves `shares-amount` into escrow and
+    ;; raises K by `shares-amount / m`, so d(escrow) = m x dK exactly; Break is its mirror; and
+    ;; Convert leaves K alone because `UEV_Convert` enforces `mod(total-input-shares,
+    ;; output-share-value) = 0`, making the tier division exact. Issue and Retire were the only
+    ;; two operations missing -- which is why the model was incomplete rather than wrong.
+    ;; ─────────────────────────────────────────────────────────────────────────────────────────
+    (defun UC_ShareSplit:[integer] (millions:integer k:integer)
+        @doc "How <millions> million shares divide when issued or retired: [to-escrow, to-holder]. \
+            \ Per million, K goes to or from the escrow and (SHARE_UNIT - K) to or from the \
+            \ holder -- which is what keeps `escrow = m x K` true across the change. Both legs \
+            \ are whole shares because K is an integer."
+        [(* millions k) (* millions (- SHARE_UNIT k))]
+    )
+    (defun URC_ShareMillions:integer (id:string)
+        @doc "m -- the company's share count in whole millions."
+        (let
+            (
+                (ref-DPDC:module{DpdcV3} DPDC)
+            )
+            (/ (ref-DPDC::UR_NonceSupply id true 1) SHARE_UNIT)
+        )
+    )
+    (defun URC_PackageConstant:integer (id:string)
+        @doc "K -- SUM over tiers of (outstanding units x S_tier). The packaged PERCENTAGE of the \
+            \ company, in share-equivalents per million. Invariant under issuance and retirement."
+        (fold (+) 0 (zip (*) (UR_TierSupplies id) S))
+    )
+    (defun URC_RequiredEscrow:integer (id:string)
+        @doc "m x K -- what <dpdc> must hold of nonce 1 to back every outstanding package."
+        (* (URC_ShareMillions id) (URC_PackageConstant id))
+    )
+    (defun URC_EscrowHeld:integer (id:string)
+        @doc "What <dpdc> actually holds of nonce 1."
+        (let
+            (
+                (ref-DPDC:module{DpdcV3} DPDC)
+            )
+            (ref-DPDC::UR_AccountNonceSupply (ref-DPDC::GOV|DPDC|SC_NAME) id true 1)
+        )
     )
     (defun URC_IzEquitySemiFungible:bool (id:string)
         @doc "True when <id> names an EQUITY (shareholder) SFT collection. \
@@ -590,6 +741,87 @@
             (enforce 
                 (= mod-check 0) 
                 (format "{} Shares is an invalid amount for making a Tier {} Share Packge for EQUITY-SFT Collection {}" [shares-amount package-share-tier id])
+            )
+        )
+    )
+    (defun UEV_ExecutorIzCompanyCreator (executor:string id:string)
+        @doc "Binds the DECLARED executor to the collection's creator. \
+            \ \
+            \ WITHOUT THIS, `CAP_EquityCreator` PROVES A KEY AND NOT AN ACTOR. It enforces \
+            \ ownership of the DERIVED creator account and names nobody, so any caller could \
+            \ pass any <executor> and the gate would pass as long as the creator's key happened \
+            \ to be in the signing environment -- which it is, routinely, because the creator is \
+            \ usually also the patron. \
+            \ \
+            \ MEASURED, NOT REASONED: `EQUITY-MANAGEMENT.repl` <<EQM-2>> had a stranger issue \
+            \ shares successfully against the first cut of this code. The two halves are the \
+            \ patron/executor canon's point -- the account a function NAMES is the account it \
+            \ must prove."
+        (let
+            (
+                (ref-DPDC:module{DpdcV3} DPDC)
+            )
+            (enforce
+                (= executor (ref-DPDC::UR_CreatorKonto id true))
+                (format "Executor is not the Creator of Company {}" [id])
+            )
+        )
+    )
+    (defun UEV_ShareMillions (millions:integer)
+        @doc "Issuance and retirement move WHOLE MILLIONS. Not a rounding convenience: \
+            \ `URC_SharesPerMillion` divides the share count by SHARE_UNIT with integer \
+            \ division, so any other amount truncates and every tier value collapses."
+        (enforce (> millions 0) "Share millions must be a positive whole number of millions")
+    )
+    (defun UEV_EscrowBacked (id:string)
+        @doc "The backing invariant, enforced as a PRECONDITION: <dpdc>'s nonce-1 balance must \
+            \ equal m x K before shares move. \
+            \ \
+            \ Checked rather than assumed because a silent drift here is unrecoverable -- the \
+            \ packages would outlive their collateral and a Break would fail for whoever broke \
+            \ last, which is the worst possible party to discover it."
+        (let
+            (
+                (held:integer (URC_EscrowHeld id))
+                (needed:integer (URC_RequiredEscrow id))
+            )
+            (enforce
+                (= held needed)
+                (format "Equity escrow is not backed for {}: dpdc holds {} shares, outstanding packages require {}"
+                    [id held needed])
+            )
+        )
+    )
+    (defun UEV_RetireFloor (id:string millions:integer)
+        @doc "A company cannot be retired out of existence: the founding million is the floor."
+        (let
+            (
+                (m:integer (URC_ShareMillions id))
+            )
+            (enforce
+                (>= (- m millions) 1)
+                (format "Retiring {} million would leave {} million shares; {} must keep at least 1 million"
+                    [millions (- m millions) id])
+            )
+        )
+    )
+    (defun UEV_RetireHolding (id:string account:string millions:integer)
+        @doc "To retire shares you must HOLD the holder's leg of them. \
+            \ \
+            \ Not the whole amount: the escrow's leg comes out of <dpdc>, because package holders \
+            \ own a PERCENTAGE and a percentage does not change when the company shrinks. At a \
+            \ packaged fraction of 30%, retiring 1 million costs the retirer 700,000 of their own \
+            \ shares and 300,000 of the collateral."
+        (let
+            (
+                (ref-DPDC:module{DpdcV3} DPDC)
+                (needed:integer (at 1 (UC_ShareSplit millions (URC_PackageConstant id))))
+                (held:integer (ref-DPDC::UR_AccountNonceSupply account id true 1))
+            )
+            (enforce
+                (>= held needed)
+                (format "Retiring {} million requires holding {} shares; {} holds {}"
+                    [millions needed account held])
             )
         )
     )
@@ -762,7 +994,164 @@
             )
         )
     )
+    ;;Protection: Class 2 — SECURE
+    (defun XI_IssueShares:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string id:string millions:integer)
+        @doc "Creates <millions> million shares, split so the backing invariant survives. \
+            \ \
+            \ MINT ALL TO <dpdc>, THEN RELEASE THE HOLDER'S LEG. The whole amount is added on the \
+            \ DPDC account because <dpdc> is the only holder of role-nft-add-quantity on an \
+            \ equity collection; what stays behind IS the escrow's share, so the invariant is \
+            \ maintained by what is NOT transferred rather than by a second write. \
+            \ \
+            \ The holder's leg is always positive -- K <= SHARE_UNIT/2 by the packaging cap -- so \
+            \ there is no empty-transfer branch to get wrong."
+        (require-capability (SECURE))
+        (with-capability (EQUITY|C>ISSUE-SHARES id executor millions)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC:module{DpdcV3} DPDC)
+                    (ref-DPDC-MNG:module{DpdcManagementV3} DPDC-MNG)
+                    (ref-DPDC-T:module{DpdcTransferV3} DPDC-T)
+                    (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
+                    ;;
+                    (split:[integer] (UC_ShareSplit millions (URC_PackageConstant id)))
+                    (to-holder:integer (at 1 split))
+                    (total:integer (* millions SHARE_UNIT))
+                    ;;
+                    (ico1:object{IgnisCollectorV4.OutputCumulator}
+                        ;;1]Mint the whole issuance on <dpdc>
+                        (ref-DPDC-MNG::C_AddQuantity patron dpdc id 1 total)
+                    )
+                    (ico2:object{IgnisCollectorV4.OutputCumulator}
+                        ;;2]Release the holder's leg; the escrow's leg stays where it was minted
+                        (ref-DPDC-T::C_Transfer patron dpdc executor [id] [true] [[1]] [[to-holder]] true)
+                    )
+                )
+                (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2] [[1][total]])
+            )
+        )
+    )
+    ;;Protection: Class 2 — SECURE
+    (defun XI_RetireShares:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string id:string millions:integer)
+        @doc "Retires <millions> million shares -- a permissioned burn against the retirer's own \
+            \ holding plus the escrow's proportional leg. \
+            \ \
+            \ COLLECT THEN BURN ONCE. The holder's leg is moved to <dpdc> first and the whole \
+            \ amount burned there, because <dpdc> is the only holder of role-nft-burn. What \
+            \ remains on <dpdc> afterwards is exactly the new m x K."
+        (require-capability (SECURE))
+        (with-capability (EQUITY|C>RETIRE-SHARES id executor millions)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (ref-DPDC:module{DpdcV3} DPDC)
+                    (ref-DPDC-MNG:module{DpdcManagementV3} DPDC-MNG)
+                    (ref-DPDC-T:module{DpdcTransferV3} DPDC-T)
+                    (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
+                    ;;
+                    (split:[integer] (UC_ShareSplit millions (URC_PackageConstant id)))
+                    (from-holder:integer (at 1 split))
+                    (total:integer (* millions SHARE_UNIT))
+                    ;;
+                    (ico1:object{IgnisCollectorV4.OutputCumulator}
+                        ;;1]Collect the retirer's leg into <dpdc>
+                        (ref-DPDC-T::C_Transfer patron executor dpdc [id] [true] [[1]] [[from-holder]] true)
+                    )
+                    (ico2:object{IgnisCollectorV4.OutputCumulator}
+                        ;;2]Burn both legs in one write
+                        (ref-DPDC-MNG::C_BurnSFT patron dpdc id 1 total)
+                    )
+                )
+                (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2] [[1][total]])
+            )
+        )
+    )
     ;;{5.7}  User [A/C]
+    (defun C_IssueShares:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string id:string millions:integer)
+        @doc "Creates <millions> million new company shares. One of exactly TWO doors through \
+            \ which an equity collection's share count may ever change; the other is \
+            \ C_RetireShares. \
+            \ \
+            \ Executor: ENFORCED IN PLACE by CAP_EquityCreator, which both BINDS <executor> to \
+            \ the collection's creator and proves ownership of it. (patron/executor canon 2.2.)"
+        (P|UEV_IMC)
+        (with-capability (SECURE)
+            (XI_IssueShares patron executor id millions)
+        )
+    )
+    (defun C_RetireShares:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string id:string millions:integer)
+        @doc "Retires <millions> million company shares. The retirer must hold the holder's leg \
+            \ of the amount; the escrow's leg is burned from <dpdc> alongside it, so every \
+            \ package holder's PERCENTAGE is unchanged by the operation. \
+            \ \
+            \ Executor: ENFORCED IN PLACE by CAP_EquityCreator, which both BINDS <executor> to \
+            \ the collection's creator and proves ownership of it. (patron/executor canon 2.2.)"
+        (P|UEV_IMC)
+        (with-capability (SECURE)
+            (XI_RetireShares patron executor id millions)
+        )
+    )
+    (defun C_TogglePauseShares:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string id:string toggle:bool)
+        @doc "Halts or resumes all movement of a company's shares -- a trading halt. \
+            \ \
+            \ Pausing stops TRANSFERS and, with them, Make, Break and Convert: all three move \
+            \ shares or tier units through <dpdc> with DPDC-T::C_Transfer, so a halt that left \
+            \ packaging running would not be a halt. \
+            \ \
+            \ Executor: ENFORCED IN PLACE by CAP_EquityCreator, which both BINDS <executor> to \
+            \ the collection's creator and proves ownership of it. (patron/executor canon 2.2.)"
+        (P|UEV_IMC)
+        (with-capability (EQUITY|C>COMPANY-ACT executor id)
+            (let
+                (
+                    (ref-DPDC:module{DpdcV3} DPDC)
+                    (ref-DPDC-MNG:module{DpdcManagementV3} DPDC-MNG)
+                )
+                (ref-DPDC-MNG::C_TogglePause patron (ref-DPDC::GOV|DPDC|SC_NAME) id true toggle)
+            )
+        )
+    )
+    (defun C_SetCompanyBranding:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string id:string logo:string description:string website:string
+         social:[object{BrandingV3.SocialSchema}])
+        @doc "Sets the company's public identity -- logo, description, website, socials. \
+            \ \
+            \ Executor: ENFORCED IN PLACE by CAP_EquityCreator, which both BINDS <executor> to \
+            \ the collection's creator and proves ownership of it. (patron/executor canon 2.2.)"
+        (P|UEV_IMC)
+        (with-capability (EQUITY|C>COMPANY-ACT executor id)
+            (let
+                (
+                    (ref-DPDC:module{DpdcV3} DPDC)
+                )
+                (ref-DPDC::C_UpdatePendingBranding
+                    patron (ref-DPDC::GOV|DPDC|SC_NAME) id true logo description website social)
+            )
+        )
+    )
+    (defun C_UpgradeCompanyBranding
+        (patron:string executor:string id:string months:integer)
+        @doc "Extends the company's branding subscription by <months>. \
+            \ \
+            \ Executor: ENFORCED IN PLACE by CAP_EquityCreator, which both BINDS <executor> to \
+            \ the collection's creator and proves ownership of it. (patron/executor canon 2.2.)"
+        (P|UEV_IMC)
+        (with-capability (EQUITY|C>COMPANY-ACT executor id)
+            (let
+                (
+                    (ref-DPDC:module{DpdcV3} DPDC)
+                )
+                (ref-DPDC::C_UpgradeBranding
+                    patron (ref-DPDC::GOV|DPDC|SC_NAME) id true months)
+            )
+        )
+    )
     (defun C_IssueShareholderCollection:object{IgnisCollectorV4.OutputCumulator}
         (
             patron:string executor:string collection-name:string collection-ticker:string
@@ -838,10 +1227,24 @@
                 (ico:object{IgnisCollectorV4.OutputCumulator}
                     ;;1]Issue Equity SFT Collection; <dpdc> automatically gets <role-nft-add-quantity> and <role-nft-burn>
                     (ref-DPDC-I::C_IssueDigitalCollection
+                        ;;FLAGS, in signature order (04_DPDC-I.pact:448-466):
+                        ;;  can-upgrade                  FALSE -- the spec is sealed; C_Control is dead
+                        ;;  can-change-owner             FALSE -- the DPDC smart account owns it forever
+                        ;;  can-change-creator           TRUE  -- a company outlives its founder
+                        ;;  can-add-special-role         TRUE
+                        ;;  can-transfer-nft-create-role FALSE (2026-11-07) -- was TRUE. The nonce set
+                        ;;    is sealed at issuance (DPDC-C|C>REGISTER-NONCES), so a movable create
+                        ;;    role could only ever be a way to argue with that seal.
+                        ;;  can-freeze                   TRUE
+                        ;;  can-wipe                     TRUE
+                        ;;  can-pause                    TRUE  (2026-11-07) -- was FALSE, which made
+                        ;;    C_TogglePause dead for EVERYONE and a trading halt impossible. Now
+                        ;;    routed to the creator through C_TogglePauseShares.
+                        ;;  iz-special                   TRUE
                         patron dpdc executor true
                         name ticker
                         false false true true
-                        true true true false
+                        false true true true
                         true
                     )
                 )

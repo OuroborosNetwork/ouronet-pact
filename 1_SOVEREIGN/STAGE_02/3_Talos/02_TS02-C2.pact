@@ -941,7 +941,7 @@
         @doc "Bulk NFT transfer — son=false wrapper over TS02-C1.DPDC|C_BulkTransfer."
         (let
             (
-                (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+                (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
             )
             (ref-TS02-C1::DPDC|C_BulkTransfer patron executor executee-lst id false nonces-array amounts-array method)
         )

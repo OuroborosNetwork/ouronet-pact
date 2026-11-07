@@ -52,7 +52,7 @@
 )
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (owner:string KST.ANHD)
     )

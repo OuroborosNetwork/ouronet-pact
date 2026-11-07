@@ -609,7 +609,12 @@ DSA A_→C_ rename DONE (substage 4) — only 2 genuine GOV fns remain A_ in DSA
 | op | role | ins/wr | upd | R | S | X | components | cur GAS\| | **deter** | final | rationale |
 |----|------|--:|--:|--:|--:|--:|-------:|-----:|------:|-----:|-----------|
 | <span style="color:#8250df">C_IssueShareholderCollection</span> | <span style="color:#57606a">ISSUE</span> | · | · | <span style="color:#0969da">1</span> | · | <span style="color:#8b5cf6">48</span> | <span style="color:#0b7285">97</span> | · | <span style="color:#bf3989">10000x</span> | <span style="color:#116329">10097</span> | ISSUANCE GATE — shareholder collection = $100 (1 ignis = 1 cent) → 10000 ignis base + components |
+| <span style="color:#8250df">C_IssueShares</span> | <span style="color:#57606a">ISSUE</span> | · | · | <span style="color:#0969da">1</span> | · | <span style="color:#8b5cf6">7</span> | <span style="color:#0b7285">15</span> | · | <span style="color:#bf3989">50x</span> | <span style="color:#116329">65</span> | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
 | <span style="color:#8250df">C_MorphPackageShares</span> | <span style="color:#57606a">SETUP</span> | · | · | <span style="color:#0969da">1</span> | · | <span style="color:#8b5cf6">18</span> | <span style="color:#0b7285">37</span> | · | <span style="color:#bf3989">5x</span> | <span style="color:#116329">42</span> | management/config/property change — slightly expensive |
+| <span style="color:#8250df">C_RetireShares</span> | <span style="color:#57606a">SETUP</span> | · | · | <span style="color:#0969da">1</span> | · | <span style="color:#8b5cf6">7</span> | <span style="color:#0b7285">15</span> | · | <span style="color:#bf3989">5x</span> | <span style="color:#116329">20</span> | management/config/property change — slightly expensive |
+| <span style="color:#8250df">C_SetCompanyBranding</span> | <span style="color:#57606a">SETUP</span> | · | · | <span style="color:#0969da">1</span> | · | <span style="color:#8b5cf6">3</span> | <span style="color:#0b7285">7</span> | · | <span style="color:#bf3989">5x</span> | <span style="color:#116329">12</span> | management/config/property change — slightly expensive |
+| <span style="color:#8250df">C_TogglePauseShares</span> | <span style="color:#57606a">SETUP</span> | · | · | <span style="color:#0969da">1</span> | · | <span style="color:#8b5cf6">3</span> | <span style="color:#0b7285">7</span> | · | <span style="color:#bf3989">5x</span> | <span style="color:#116329">12</span> | management/config/property change — slightly expensive |
+| <span style="color:#8250df">C_UpgradeCompanyBranding</span> | <span style="color:#57606a">SETUP</span> | · | · | <span style="color:#0969da">1</span> | · | <span style="color:#8b5cf6">3</span> | <span style="color:#0b7285">7</span> | · | <span style="color:#bf3989">5x</span> | <span style="color:#116329">12</span> | management/config/property change — slightly expensive |
 | <span style="color:#8250df">P|A_Add</span> | <span style="color:#57606a">SETUP</span> | <span style="color:#cf222e">1</span> | · | · | · | · | <span style="color:#0b7285">3</span> | · | <span style="color:#bf3989">exempt</span> | <span style="color:#116329">0</span> | IGNIS-EXEMPT — admin function (Ouronet Admin only): fully FREE (no STOA, no IGNIS) |
 | <span style="color:#8250df">P|A_AddIMP</span> | <span style="color:#57606a">SETUP</span> | <span style="color:#cf222e">1</span> | · | <span style="color:#0969da">1</span> | · | <span style="color:#8b5cf6">1</span> | <span style="color:#0b7285">6</span> | · | <span style="color:#bf3989">exempt</span> | <span style="color:#116329">0</span> | IGNIS-EXEMPT — admin function (Ouronet Admin only): fully FREE (no STOA, no IGNIS) |
 | <span style="color:#8250df">P|A_Define</span> | <span style="color:#57606a">ISSUE</span> | · | · | · | · | <span style="color:#8b5cf6">5</span> | <span style="color:#0b7285">10</span> | · | <span style="color:#bf3989">exempt</span> | <span style="color:#116329">0</span> | IGNIS-EXEMPT — admin function (Ouronet Admin only): fully FREE (no STOA, no IGNIS) |
@@ -902,10 +907,10 @@ Deter is a multiplier on IG|TX: `25x` = 25·IG|TX added on top of the compute co
 | exempt | 290 | IGNIS-exempt (ALL admin fns + account deploys + ignis machinery + DalosFuel transfer) |
 | split | 1 | son:bool split issuance (SFT/NFT) |
 | 1x | 80 | activity — no deterrent |
-| 5x | 140 | config/property change |
+| 5x | 144 | config/property change |
 | 10x | 28 | role/authority/guard setup |
 | 25x | 15 | fee/price/rate change |
-| 50x | 31 | small deterrent (toggles, links, token-account deploy, legacy issuance) |
+| 50x | 32 | small deterrent (toggles, links, token-account deploy, legacy issuance) |
 | 100x | 8 | owner-priced 100x |
 | 200x | 1 | AddScore |
 | 250x | 1 | RevokeScore |
@@ -917,4 +922,4 @@ Deter is a multiplier on IG|TX: `25x` = 25·IG|TX added on top of the compute co
 | 5000x | 5 | SWP pair $50 / DSA vault $50 |
 | 10000x | 1 | ShareholderCollection $100 |
 
-629 ops · 259 with deter>1 (rest default 1 or exempt). Regenerate: python3 REPL/tools/_ignis_deter_worksheet.py > OuronetInformational/IGNIS-PRICING/IGNIS-DETER-WORKSHEET.md
+634 ops · 264 with deter>1 (rest default 1 or exempt). Regenerate: python3 REPL/tools/_ignis_deter_worksheet.py > OuronetInformational/IGNIS-PRICING/IGNIS-DETER-WORKSHEET.md

@@ -60,7 +60,7 @@
 (print "--- [FIXTURE mock-collections · 03 · issue both collections] ---")
     (let
         (
-            (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+            (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
             (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         )
         (print (ref-TS02-C2::DPNF|C_Issue patron patron patron "MockNonFungible" "MOCKN"
@@ -86,7 +86,7 @@
     (
         (patron:string KST.ANHD)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (nf-id:string "MOCKN-98c486052a51")
         (sf-id:string "MOCKS-98c486052a51")

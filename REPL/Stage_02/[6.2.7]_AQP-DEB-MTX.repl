@@ -218,7 +218,7 @@
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-DPDC:module{DpdcV3} DPDC)
         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV6} AQP-FVT)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
         (dhwc-id:string "DHWC-98c486052a51")
         (nonce:integer 2)

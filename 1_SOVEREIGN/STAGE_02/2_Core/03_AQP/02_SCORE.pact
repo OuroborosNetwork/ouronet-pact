@@ -3022,7 +3022,7 @@
             \ have other nonces and a stake path is the wrong place to discover that it does."
         (let
             (
-                (ref-EQUITY:module{EquityV4} EQUITY)
+                (ref-EQUITY:module{EquityV5} EQUITY)
                 ;;
                 (l:integer (length nonces))
             )
@@ -3072,7 +3072,7 @@
             \ All three branches are point-read/compute only — statically light (URC), no stake-path scan."
         (let
             (
-                (ref-EQUITY:module{EquityV4} EQUITY)
+                (ref-EQUITY:module{EquityV5} EQUITY)
                 ;;
                 (sft-equality:bool (UR_SCR|ScoreSftEquality score-id))
                 (raw-weight:decimal
@@ -3891,7 +3891,7 @@
             (
                 (ref-U|INT:module{OuronetIntegersV2} U|INT)
                 (ref-DPDC:module{DpdcV3} DPDC)
-                (ref-EQUITY:module{EquityV4} EQUITY)
+                (ref-EQUITY:module{EquityV5} EQUITY)
                 ;;
                 (l1:integer (length nonces))
                 (l2:integer (length nonce-score-values))

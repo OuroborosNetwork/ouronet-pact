@@ -21,7 +21,7 @@
 (let
     (
         (ref-BRD:module{BrandingV3} BRD)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (id:string "DHOC-98c486052a51")
     )
     (print (format "BEFORE pending logo = {}" [(ref-BRD::UR_Logo id true)]))

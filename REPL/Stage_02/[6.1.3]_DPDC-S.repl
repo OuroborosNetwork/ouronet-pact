@@ -76,7 +76,7 @@
     (
         (ref-DPDC:module{DpdcV3} DPDC)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (owner:string KST.ANHD)
         (type:object{DpdcUdcV2.URI|Type} (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
@@ -149,7 +149,7 @@
         (ref-DPDC:module{DpdcV3} DPDC)
         (ref-DPDC-S:module{DpdcSetsV3} DPDC-S)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
         (owner:string KST.ANHD)
         (sft-id:string "TSFS-98c486052a51")
@@ -228,7 +228,7 @@
 (let
     (
         (ref-DPDC:module{DpdcV3} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (owner:string KST.ANHD)
         (sft-id:string "TSFS-98c486052a51")
     )
@@ -261,7 +261,7 @@
 (let
     (
         (ref-DPDC:module{DpdcV3} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (owner:string KST.ANHD)
         (sft-id:string "TSFS-98c486052a51")
     )
@@ -313,7 +313,7 @@
 (let
     (
         (ref-DPDC:module{DpdcV3} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (owner:string KST.ANHD)
         (sft-id:string "TSFS-98c486052a51")
     )
@@ -344,7 +344,7 @@
 (let
     (
         (ref-DPDC:module{DpdcV3} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (owner:string KST.ANHD)
         (sft-id:string "TSFS-98c486052a51")
     )
@@ -414,7 +414,7 @@
 (let
     (
         (ref-DPDC:module{DpdcV3} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (owner:string KST.ANHD)
         (sft-id:string "TSFS-98c486052a51")
     )
@@ -450,7 +450,7 @@
 (let
     (
         (ref-DPDC:module{DpdcV3} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (owner:string KST.ANHD)
         (sft-id:string "TSFS-98c486052a51")
     )
@@ -614,7 +614,7 @@
     (
         (ref-DPDC-S:module{DpdcSetsV3} DPDC-S)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (owner:string KST.ANHD)
         (sft-id:string "TSFS-98c486052a51")
         (type:object{DpdcUdcV2.URI|Type} (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
@@ -666,7 +666,7 @@
     (
         (ref-DPDC-S:module{DpdcSetsV3} DPDC-S)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (owner:string KST.ANHD)
         (sft-id:string "TSFS-98c486052a51")
         (type:object{DpdcUdcV2.URI|Type} (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
@@ -744,7 +744,7 @@
     (
         (ref-DPDC-S:module{DpdcSetsV3} DPDC-S)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (attacker:string KST.EMMA)
         (sft-id:string "TSFS-98c486052a51")
         (sc:integer 2)
@@ -830,7 +830,7 @@
         (ref-DPDC:module{DpdcV3} DPDC)
         (ref-DPDC-F:module{DpdcFragmentsV3} DPDC-F)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (attacker:string KST.EMMA)
         (victim:string KST.ANHD)
         (sft-id:string "TSFS-98c486052a51")
@@ -913,7 +913,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-DPDC-S:module{DpdcSetsV3} DPDC-S)
         (owner:string KST.ANHD)
         (sft-id:string "TSFS-98c486052a51")
@@ -982,7 +982,7 @@
     (
         (ref-DPDC:module{DpdcV3} DPDC)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (attacker:string KST.EMMA)
         (victim:string KST.ANHD)
         (third:string KST.FLRN)
@@ -1134,7 +1134,7 @@
     (
         (ref-DPDC:module{DpdcV3} DPDC)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (attacker:string KST.EMMA)
         (victim:string KST.ANHD)
         (third:string KST.FLRN)
@@ -1292,7 +1292,7 @@
     (
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-DPDC:module{DpdcV3} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (attacker:string KST.EMMA)
         (victim:string KST.ANHD)
         (smart:string KST.TALOS)

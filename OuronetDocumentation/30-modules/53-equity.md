@@ -46,7 +46,10 @@ The last module in the collectables family.
 | `P|` policy | 9 | inter-module authorisation | `P|A_Add`, `P|A_AddIMP`, `P|A_Define`, `P|A_RemoveIMP`, `P|A_SetIMP`, `P|Info` …+3 |
 | *(unclassified)* | 2 | carries no StoicSyntax prefix | `CT_Bar`, `GOV|Demiurgoi` |
 
-> Repository and chain agree on every declared shape.
+> **The repository differs from what is deployed.** Everything above describes the CHAIN, which is what a caller actually reaches. The difference is stated rather than resolved:
+>
+> - **capabilities** in the repository only: `EQUITY|C>COMPANY-ACT`, `EQUITY|C>ISSUE-SHARES`, `EQUITY|C>RETIRE-SHARES`
+> - **functions** in the repository only: `CAP_EquityCreator`, `C_IssueShares`, `C_RetireShares`, `C_SetCompanyBranding`, `C_TogglePauseShares`, `C_UpgradeCompanyBranding`, `UC_ShareSplit`, `UEV_EscrowBacked`
 
 **Capabilities** -- 10
 

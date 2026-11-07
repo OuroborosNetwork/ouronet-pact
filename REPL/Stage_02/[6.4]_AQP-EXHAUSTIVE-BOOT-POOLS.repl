@@ -71,7 +71,7 @@
         (patron:string KST.ANHD)
         (anhd:string KST.ANHD)
         (edh-id:string "E|DH-98c486052a51")
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
         (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)

@@ -1,0 +1,51 @@
+;;
+;; REPL/_probe_equity_nonce_lock.repl — IS THE 8-NONCE INVARIANT ACTUALLY ENFORCED?
+;;
+;; `TS02-C1::DPSF|C_IssueCompany`'s @doc states: "Only 8 Elements can exist in this Collection,
+;; and no more can be added." I found no enforcement of that claim -- no `E|` check anywhere in
+;; `DPDC-C|C>REGISTER-NONCES` -- and the Verum chain gives `r-nft-create` to the CREATOR, who is
+;; the human. So a 9th nonce looks reachable.
+;;
+;; MEASURED, NOT ARGUED. A doc claim with no assertion behind it is exactly what the vacate
+;; defect turned out to be, so this runs the call rather than reasoning about it.
+;;
+(load "deploy-stage00.repl")
+(load "deploy-stage01.repl")
+(load "deploy-stage02.repl")
+(load "Stage_02/[6.1.1]_EQUITY.repl")
+
+(begin-tx)
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "--- [PROBE · can the creator add a 9th nonce to an E| collection?] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
+        (owner:string KST.ANHD)
+        (id:string "E|TSEQ-98c486052a51")
+        (nd:object{DpdcUdcV2.DPDC|NonceData}
+            (ref-DPDC-UDC::UDC_NonceData
+                0.0 0.0 "ninth" "a nonce that should not exist" (ref-DPDC-UDC::UDC_NoMetaData)
+                (ref-DPDC-UDC::UDC_URI|Type true false false false false false false)
+                (ref-DPDC-UDC::UDC_URI|Data "ipfs://a" "" "" "" "" "" "")
+                (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)
+            )
+        )
+    )
+    (print (format "<(nonces-used BEFORE)> => {}" [(ref-DPDC::UR_NoncesUsed id true)]))
+    (print (format "<(r-nft-create holder [UR_Verum5])> => {}" [(ref-DPDC::UR_Verum5 id true)]))
+    (print (format "<(creator-konto)> => {}" [(ref-DPDC::UR_CreatorKonto id true)]))
+    (print (format "<(owner-konto)>   => {}" [(ref-DPDC::UR_OwnerKonto id true)]))
+    ;; THE PROBE. If this prints a success string, the documented invariant is not enforced.
+    ;; NO `try`. Pact 5 evaluates a `try` body in READ-ONLY mode, so the DB insert was refused by
+    ;; the HARNESS and not by any rule -- which looks identical to a working invariant in the log
+    ;; and is exactly the sort of false green this probe exists to avoid.
+    (print (format "<(DPSF|C_Create 9th nonce)> => {}"
+        [(ref-TS02-C1::DPSF|C_Create owner (ref-DPDC::UR_Verum5 id true) id [1] [nd])]))
+    (print (format "<(nonces-used AFTER)>  => {}" [(ref-DPDC::UR_NoncesUsed id true)]))
+)
+(env-sigs [])
+(commit-tx)

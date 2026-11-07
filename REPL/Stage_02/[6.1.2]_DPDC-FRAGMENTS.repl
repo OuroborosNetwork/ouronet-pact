@@ -75,7 +75,7 @@
     (
         (ref-DPDC:module{DpdcV3} DPDC)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (owner:string KST.ANHD)
         (nd:object{DpdcUdcV2.DPDC|NonceData}
             (ref-DPDC-UDC::UDC_NonceData
@@ -135,7 +135,7 @@
     (
         (ref-DPDC:module{DpdcV3} DPDC)
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (owner:string KST.ANHD)
         (lumy:string KST.LUMY)
         (id:string "TFRG-98c486052a51")
@@ -174,7 +174,7 @@
 (let
     (
         (ref-DPDC:module{DpdcV3} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (lumy:string KST.LUMY)
         (id:string "TFRG-98c486052a51")
     )
@@ -203,7 +203,7 @@
 (let
     (
         (ref-DPDC:module{DpdcV3} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (lumy:string KST.LUMY)
         (id:string "TFRG-98c486052a51")
     )
@@ -251,7 +251,7 @@
 (let
     (
         (ref-DPDC:module{DpdcV3} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (lumy:string KST.LUMY)
         (id:string "TFRG-98c486052a51")
     )
@@ -279,7 +279,7 @@
 (let
     (
         (ref-DPDC:module{DpdcV3} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (lumy:string KST.LUMY)
         (emma:string KST.EMMA)
         (id:string "TFRG-98c486052a51")
@@ -334,7 +334,7 @@
 (let
     (
         (ref-DPDC:module{DpdcV3} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (owner:string KST.ANHD)
         (lumy:string KST.LUMY)
         (emma:string KST.EMMA)

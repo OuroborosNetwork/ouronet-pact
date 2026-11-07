@@ -114,7 +114,7 @@
         (lumy:string KST.LUMY)
         (dhoc:string "DHOC-98c486052a51")
         (ref-DPDC:module{DpdcV3} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
     )
     ;; 500 silver wholes -> 500000 fragment nonces (-2); each 1000-frag block = 10 quintessence when staked
     (ref-TS02-C1::DPSF|C_MakeFragments anhd anhd dhoc 2 500)

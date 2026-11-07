@@ -1,0 +1,331 @@
+;;
+;; REPL/modules/EQUITY-MANAGEMENT.repl — canonical integration layout
+;;   Inter-tx:   ;;|| NEXT >     Intra-tx: ;;==== <TX> · mm · <slug> ==== + banner
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/modules/EQUITY-MANAGEMENT.repl")
+(print "================================================================")
+(print "")
+;; REPL/modules/EQUITY-MANAGEMENT.repl — WHO MAY MANAGE A COMPANY, AND WHAT THE SHARE MATHS DOES.
+;; Fresh boot: Stage 00 + Stage 1 + Stage 2 + the EQUITY suite.
+;; Run: cd REPL && pact modules/EQUITY-MANAGEMENT.repl
+;;
+;; WHY THIS FILE EXISTS. Before 2026-11-07 there was NOT ONE assertion anywhere in the tree
+;; exercising equity-collection management from any account. 29,536 green assertions said
+;; nothing about it, and what they were silent about was severe:
+;;
+;;   - an `E|` collection's owner-account is the DPDC smart account, so every owner-gated
+;;     operation named a contract and the human who founded the company could do none of them;
+;;   - the AQP pool governor derived from that same owner, so a company could not create a
+;;     pool for its own shares, add a score to it, enable staking, or vacate it;
+;;   - `DPSF|C_IssueCompany`'s @doc claimed "Only 8 Elements can exist in this Collection, and
+;;     no more can be added". Nothing enforced it. MEASURED: nonces-used went 8 -> 9;
+;;   - there was no way to issue or retire shares at all -- `[6.1.1]_EQUITY.repl` raises supply
+;;     with `env-module-admin` and says so, because no client path existed.
+;;
+;; THE INVARIANT EVERYTHING HANGS ON:  escrow == m x K
+;;   m = total shares / 1,000,000           K = SUM over tiers (units x S_tier)
+;; Make moves shares into escrow; Break moves them out; Convert leaves K alone. Issue and
+;; Retire now split pro-rata so the equality survives: per million, K to/from the escrow and
+;; (1,000,000 - K) to/from the holder.
+;;
+(load "../deploy-stage00.repl")
+(load "../deploy-stage01.repl")
+(load "../deploy-stage02.repl")
+(load "../Stage_02/[6.1.1]_EQUITY.repl")
+
+;;|| NEXT >
+;;
+(begin-tx "EQM-1 — the backing invariant, and the split arithmetic")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "")
+(print "=== EQM-1 — escrow == m x K, through Make, Issue and Retire ===================")
+;;==== EQM-1 · 01 · env-sigs (caps) ====
+(print "--- [EQM-1 · 01 · env-sigs (caps)] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== EQM-1 · 02 · package half the company, then issue and retire ====
+(print "--- [EQM-1 · 02 · package half the company, then issue and retire] ---")
+(let
+    (
+        (patron:string KST.ANHD)
+        (creator:string KST.ANHD)
+        (id:string "E|TSEQ-98c486052a51")
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-EQUITY:module{EquityV5} EQUITY)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
+    )
+    (let ((dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME)))
+        ;;BASELINE. The EQUITY suite leaves the company whole: 1,000,000 shares, nothing packaged.
+        (map print
+            [
+                (expect (format "<<EQM-1>> baseline m got={} expected=1" [(ref-EQUITY::URC_ShareMillions id)])
+                        1 (ref-EQUITY::URC_ShareMillions id))
+                (expect (format "<<EQM-1>> baseline K got={} expected=0" [(ref-EQUITY::URC_PackageConstant id)])
+                        0 (ref-EQUITY::URC_PackageConstant id))
+                (expect (format "<<EQM-1>> baseline escrow backed got={} needed={}"
+                                [(ref-EQUITY::URC_EscrowHeld id) (ref-EQUITY::URC_RequiredEscrow id)])
+                        (ref-EQUITY::URC_RequiredEscrow id) (ref-EQUITY::URC_EscrowHeld id))
+            ]
+        )
+        ;;PACKAGE 500,000 SHARES INTO NONCE 4 (tier 3, 0.5 promille = 500 shares/unit at m=1).
+        ;;1000 units x 500 = 500,000 = exactly the 50% cap, so K = 500,000 and capacity falls to 0.
+        (print (format "<(Make 500,000 shares -> nonce 4)> => \"{}\""
+            [(ref-TS02-C1::DPSF|C_MorphEquity patron creator id 1 500000 4)]))
+        (map print
+            [
+                (expect (format "<<EQM-1>> K after Make got={} expected=500000" [(ref-EQUITY::URC_PackageConstant id)])
+                        500000 (ref-EQUITY::URC_PackageConstant id))
+                (expect (format "<<EQM-1>> escrow after Make got={} expected=500000" [(ref-EQUITY::URC_EscrowHeld id)])
+                        500000 (ref-EQUITY::URC_EscrowHeld id))
+                ;;MAKE DOES NOT BURN SHARES -- it escrows them. Total supply is untouched.
+                (expect (format "<<EQM-1>> total shares UNCHANGED by Make got={} expected=1000000"
+                                [(ref-DPDC::UR_NonceSupply id true 1)])
+                        1000000 (ref-DPDC::UR_NonceSupply id true 1))
+                (expect (format "<<EQM-1>> ...and the capacity is now exhausted got={} expected=0"
+                                [(ref-EQUITY::URC_CombineCapacity id)])
+                        0 (ref-EQUITY::URC_CombineCapacity id))
+            ]
+        )
+        ;;ISSUE 9 MILLION. m: 1 -> 10, so required escrow 500,000 -> 5,000,000.
+        ;;Split per million at K=500,000 is 500,000 / 500,000, so +4,500,000 each.
+        (let
+            (
+                (creator-before:integer (ref-DPDC::UR_AccountNonceSupply creator id true 1))
+            )
+            (print (format "<(DPSF|C_IssueShares 9 million)> => \"{}\""
+                [(ref-TS02-C1::DPSF|C_IssueShares patron creator id 9)]))
+            (map print
+                [
+                    (expect (format "<<EQM-1>> m after Issue got={} expected=10" [(ref-EQUITY::URC_ShareMillions id)])
+                            10 (ref-EQUITY::URC_ShareMillions id))
+                    (expect (format "<<EQM-1>> K is INVARIANT under issuance got={} expected=500000"
+                                    [(ref-EQUITY::URC_PackageConstant id)])
+                            500000 (ref-EQUITY::URC_PackageConstant id))
+                    (expect (format "<<EQM-1>> escrow rescaled to m x K got={} expected=5000000"
+                                    [(ref-EQUITY::URC_EscrowHeld id)])
+                            5000000 (ref-EQUITY::URC_EscrowHeld id))
+                    (expect (format "<<EQM-1>> creator received the OTHER leg got={} expected=4500000"
+                                    [(- (ref-DPDC::UR_AccountNonceSupply creator id true 1) creator-before)])
+                            4500000 (- (ref-DPDC::UR_AccountNonceSupply creator id true 1) creator-before))
+                    (expect (format "<<EQM-1>> escrow still backed got={} needed={}"
+                                    [(ref-EQUITY::URC_EscrowHeld id) (ref-EQUITY::URC_RequiredEscrow id)])
+                            (ref-EQUITY::URC_RequiredEscrow id) (ref-EQUITY::URC_EscrowHeld id))
+                ]
+            )
+        )
+        ;;THE PACKAGES DID NOT CHANGE HANDS OR VALUE IN PERCENTAGE TERMS -- they are still half
+        ;;the company. At m=10 a tier-3 unit is worth 10 x 500 = 5,000 shares; 1000 units =
+        ;;5,000,000 = half of 10,000,000.
+        (map print
+            [
+                (expect (format "<<EQM-1>> a tier-3 unit scaled with the company got={} expected=5000"
+                                [(ref-EQUITY::URC_SingleSharePerMillions id 3)])
+                        5000 (ref-EQUITY::URC_SingleSharePerMillions id 3))
+            ]
+        )
+        ;;RETIRE 1 MILLION. m: 10 -> 9, escrow 5,000,000 -> 4,500,000, creator -500,000.
+        (let
+            (
+                (creator-before:integer (ref-DPDC::UR_AccountNonceSupply creator id true 1))
+            )
+            (print (format "<(DPSF|C_RetireShares 1 million)> => \"{}\""
+                [(ref-TS02-C1::DPSF|C_RetireShares patron creator id 1)]))
+            (map print
+                [
+                    (expect (format "<<EQM-1>> m after Retire got={} expected=9" [(ref-EQUITY::URC_ShareMillions id)])
+                            9 (ref-EQUITY::URC_ShareMillions id))
+                    (expect (format "<<EQM-1>> escrow rescaled DOWN got={} expected=4500000"
+                                    [(ref-EQUITY::URC_EscrowHeld id)])
+                            4500000 (ref-EQUITY::URC_EscrowHeld id))
+                    (expect (format "<<EQM-1>> creator burned only THEIR leg got={} expected=-500000"
+                                    [(- (ref-DPDC::UR_AccountNonceSupply creator id true 1) creator-before)])
+                            -500000 (- (ref-DPDC::UR_AccountNonceSupply creator id true 1) creator-before))
+                    (expect (format "<<EQM-1>> escrow STILL backed got={} needed={}"
+                                    [(ref-EQUITY::URC_EscrowHeld id) (ref-EQUITY::URC_RequiredEscrow id)])
+                            (ref-EQUITY::URC_RequiredEscrow id) (ref-EQUITY::URC_EscrowHeld id))
+                ]
+            )
+        )
+    )
+)
+;;==== EQM-1 · 03 · env-sigs (caps) ====
+(print "--- [EQM-1 · 03 · env-sigs (caps)] ---")
+(env-sigs [])
+(commit-tx)
+(print "=== END EQM-1 =================================================================")
+(print "")
+
+;;|| NEXT >
+;;
+(begin-tx "EQM-2 — the refusals: granularity, floor, holding, authority")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "")
+(print "=== EQM-2 — what the two doors refuse ========================================")
+;;==== EQM-2 · 01 · env-sigs (caps) ====
+(print "--- [EQM-2 · 01 · env-sigs (caps)] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+;;==== EQM-2 · 02 · refusals ====
+(print "--- [EQM-2 · 02 · refusals] ---")
+(let
+    (
+        (patron:string KST.ANHD)
+        (creator:string KST.ANHD)
+        (stranger:string KST.EMMA)
+        (id:string "E|TSEQ-98c486052a51")
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-EQUITY:module{EquityV5} EQUITY)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
+    )
+    (map print
+        [
+            ;;A STRANGER IS NOT THE COMPANY. This is the whole point of the change: authority is
+            ;;the CREATOR, and it is proved first, before any validation.
+            (expect-failure "<<EQM-2>> a stranger cannot issue shares"
+                (ref-TS02-C1::DPSF|C_IssueShares patron stranger id 1))
+            (expect-failure "<<EQM-2>> a stranger cannot retire shares"
+                (ref-TS02-C1::DPSF|C_RetireShares patron stranger id 1))
+            (expect-failure "<<EQM-2>> a stranger cannot halt the company's shares"
+                (ref-TS02-C1::DPSF|C_PauseCompany patron stranger id true))
+            ;;WHOLE MILLIONS ONLY. `URC_SharesPerMillion` divides by SHARE_UNIT with INTEGER
+            ;;division; a fractional company truncates and every tier value collapses with it.
+            (expect-failure "Share millions must be a positive whole number of millions"
+                (ref-TS02-C1::DPSF|C_IssueShares patron creator id 0))
+            ;;THE FOUNDING MILLION IS THE FLOOR.
+            (expect-failure "must keep at least 1 million"
+                (ref-TS02-C1::DPSF|C_RetireShares patron creator id 9))
+            ;;TO RETIRE, YOU MUST HOLD YOUR LEG OF IT -- asserted on the VALIDATOR, not through
+            ;;the entrypoint. Reaching it end-to-end would need the creator to be short of their
+            ;;own leg, and at m=9 with K=500,000 the only amounts large enough are blocked by the
+            ;;floor first. An earlier version of this line asked the creator to retire 8 million
+            ;;and expected a refusal; 8 x (1,000,000 - 500,000) = 4,000,000 against a balance of
+            ;;4,500,000, so it SUCCEEDED -- the test was wrong, not the rule. Pinning the
+            ;;validator directly lets the account be chosen rather than arranged for.
+            (expect-failure "requires holding"
+                (ref-EQUITY::UEV_RetireHolding id stranger 1))
+            ;;...and it PASSES for an account that does hold the leg, so the assertion above is
+            ;;not merely a broken call.
+            (expect "<<EQM-2>> the creator does hold their leg of 1 million" true
+                (try false (!= "" (format "{}" [(ref-EQUITY::UEV_RetireHolding id creator 1)]))))
+        ]
+    )
+    ;;THE SHARE COUNT HAS EXACTLY TWO DOORS. Raw add/burn on nonce 1 is refused even for an
+    ;;account that holds the role, because a share movement must settle the escrow at the same
+    ;;time and these entrypoints cannot.
+    (map print
+        [
+            (expect-failure "its share count changes only through EQUITY::C_IssueShares"
+                (ref-TS02-C1::DPSF|C_AddQuantity patron creator id 1 1000000))
+            (expect-failure "its share count changes only through EQUITY::C_IssueShares"
+                (ref-TS02-C1::DPSF|C_Burn patron creator id 1 1000))
+        ]
+    )
+    ;;THE NONCE SET IS SEALED. Measured as reachable before this round: nonces-used 8 -> 9.
+    (expect-failure "<<EQM-2>> the eight elements are sealed -- no ninth nonce"
+        "sealed at issuance"
+        (ref-TS02-C1::DPSF|C_Create patron (ref-DPDC::UR_Verum5 id true) id [1]
+            [(DPDC-UDC.UDC_NonceData 0.0 0.0 "x" "x" (DPDC-UDC.UDC_NoMetaData)
+                (DPDC-UDC.UDC_URI|Type true false false false false false false)
+                (DPDC-UDC.UDC_URI|Data "ipfs://a" "" "" "" "" "" "")
+                (DPDC-UDC.UDC_ZeroURI|Data) (DPDC-UDC.UDC_ZeroURI|Data))]))
+    (map print
+        [
+            (expect (format "<<EQM-2>> ...and nonces-used is still 8 got={}" [(ref-DPDC::UR_NoncesUsed id true)])
+                    8 (ref-DPDC::UR_NoncesUsed id true))
+            ;;NOTHING ABOVE MOVED THE COMPANY.
+            (expect (format "<<EQM-2>> escrow still backed after every refusal got={} needed={}"
+                            [(ref-EQUITY::URC_EscrowHeld id) (ref-EQUITY::URC_RequiredEscrow id)])
+                    (ref-EQUITY::URC_RequiredEscrow id) (ref-EQUITY::URC_EscrowHeld id))
+        ]
+    )
+)
+;;==== EQM-2 · 03 · env-sigs (caps) ====
+(print "--- [EQM-2 · 03 · env-sigs (caps)] ---")
+(env-sigs [])
+(commit-tx)
+(print "=== END EQM-2 =================================================================")
+(print "")
+
+;;|| NEXT >
+;;
+(begin-tx "EQM-3 — company governance: pause, branding, and the AQP governor")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "")
+(print "=== EQM-3 — the COMPANY bucket reaches the creator ===========================")
+;;==== EQM-3 · 01 · env-sigs (caps) ====
+(print "--- [EQM-3 · 01 · env-sigs (caps)] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== EQM-3 · 02 · pause, branding, pool governor ====
+(print "--- [EQM-3 · 02 · pause, branding, pool governor] ---")
+(let
+    (
+        (patron:string KST.ANHD)
+        (creator:string KST.ANHD)
+        (id:string "E|TSEQ-98c486052a51")
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
+    )
+    ;;THE POOL GOVERNOR. Twelve AQP operations derive from this one reader; before the change it
+    ;;returned the DPDC smart account and a company could not run a pool over its own shares.
+    (map print
+        [
+            (expect "<<EQM-3>> the AQP governor of an equity collection is its CREATOR"
+                    (ref-DPDC::UR_CreatorKonto id true)
+                    (ref-AQP::URC_AqpOwnerKontoFromClassAndAsset 3 id))
+            ;;AND IT IS NOT THE OWNER -- stated separately, because an assertion that only
+            ;;checked "equals creator" would pass on a collection where the two are the same.
+            (expect "<<EQM-3>> ...which is NOT its owner" false
+                    (= (ref-DPDC::UR_OwnerKonto id true) (ref-AQP::URC_AqpOwnerKontoFromClassAndAsset 3 id)))
+            ;;A NORMAL SFT COLLECTION IS UNCHANGED: still governed by its owner.
+            (expect "<<EQM-3>> a non-equity SFT pool still derives from the OWNER"
+                    (ref-DPDC::UR_OwnerKonto "DHCD-98c486052a51" true)
+                    (ref-AQP::URC_AqpOwnerKontoFromClassAndAsset 3 "DHCD-98c486052a51"))
+        ]
+    )
+    ;;BRANDING -- the company's public face, now reachable by the company.
+    (print (format "<(DPSF|C_SetCompanyBranding)> => \"{}\""
+        [(ref-TS02-C1::DPSF|C_SetCompanyBranding patron creator id
+            "ipfs://logo" "A tokenised company" "https://example.test" [])]))
+    ;;PAUSE -- a trading halt. `can-pause` was FALSE at issuance before this round, which made
+    ;;C_TogglePause dead for EVERYONE, creator and admin alike.
+    (print (format "<(DPSF|C_PauseCompany true)> => \"{}\""
+        [(ref-TS02-C1::DPSF|C_PauseCompany patron creator id true)]))
+    (map print
+        [
+            (expect (format "<<EQM-3>> the company is halted got={} expected=true"
+                            [(ref-DPDC::UR_IsPaused id true)])
+                    true (ref-DPDC::UR_IsPaused id true))
+        ]
+    )
+    ;;A HALT THAT LEFT PACKAGING RUNNING WOULD NOT BE A HALT. Make moves shares through <dpdc>
+    ;;with DPDC-T::C_Transfer, so the pause reaches it.
+    ;;PRINTED, NOT BARE. `expect-failure` RETURNS its verdict as a string -- it does not abort
+    ;;on a failed expectation -- so a bare call discards the result and the assertion reports
+    ;;nothing either way. This one was bare in the first cut and produced no output line at all.
+    (map print
+        [
+            (expect-failure "<<EQM-3>> Make is halted too, not just transfers"
+                (ref-TS02-C1::DPSF|C_MorphEquity patron creator id 1 500000 4))
+        ]
+    )
+    (print (format "<(DPSF|C_PauseCompany false)> => \"{}\""
+        [(ref-TS02-C1::DPSF|C_PauseCompany patron creator id false)]))
+    (map print
+        [
+            (expect (format "<<EQM-3>> ...and trading resumes got={} expected=false"
+                            [(ref-DPDC::UR_IsPaused id true)])
+                    false (ref-DPDC::UR_IsPaused id true))
+        ]
+    )
+)
+;;==== EQM-3 · 03 · env-sigs (caps) ====
+(print "--- [EQM-3 · 03 · env-sigs (caps)] ---")
+(env-sigs [])
+(commit-tx)
+(print "=== END EQM-3 =================================================================")
+(print "")
+(print "=== END FILE REPL/modules/EQUITY-MANAGEMENT.repl ==============================")

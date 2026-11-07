@@ -364,6 +364,33 @@
                 (r-nft-create-account:string (ref-DPDC::UR_Verum5 id son))
             )
             (enforce (= l1 l2) (format "Incompatible Input Data for Registering {}" [msg]))
+            ;;THE EQUITY NONCE SET IS SEALED AT ISSUANCE. 2026-11-07.
+            ;;
+            ;;An `E|` collection is a tokenised company: nonce 1 is the barebone share and nonces
+            ;;2-8 are the seven PERCENTAGE tiers (0.1 promille .. 1%). The tier table `EQUITY.S`
+            ;;has exactly seven entries, so a ninth nonce has no tier, no share-equivalent, and is
+            ;;invisible to `UR_TierSupplies` and therefore to the 50% packaging cap -- while still
+            ;;being a transferable unit inside a share register that a buyer cannot tell from a
+            ;;real tier.
+            ;;
+            ;;MEASURED, NOT ASSUMED. `TS02-C1::DPSF|C_IssueCompany`'s @doc has always claimed
+            ;;"Only 8 Elements can exist in this Collection, and no more can be added". Nothing
+            ;;enforced it. `REPL/_probe_equity_nonce_lock.repl` drove the real call and got
+            ;;`nonces-used` 8 -> 9 with a success string. The claim was prose.
+            ;;
+            ;;WHY `nonces-used = 0` IS THE DISCRIMINATOR rather than a role or a flag. EQUITY
+            ;;populates all eight in ONE call, from `C_IssueShareholderCollection`, while the
+            ;;collection still reports zero nonces used. So this admits the issuing transaction
+            ;;and refuses every later one -- for EVERY caller, the DPDC smart account included.
+            ;;A role can be moved and a flag can be argued about; a closed door cannot.
+            (if (UC_IzEquityCollectionId id)
+                (enforce
+                    (= (ref-DPDC::UR_NoncesUsed id son) 0)
+                    (format
+                        "{} is an EQUITY collection: its eight elements are sealed at issuance and no further nonce can be created"
+                        [id]))
+                true
+            )
             (map
                 (lambda
                     (idx:integer)
@@ -579,6 +606,25 @@
     ;;
     (defun UC_AndTruths:bool (truths:[bool])
         (fold (and) true truths)
+    )
+    (defun UC_IzEquityCollectionId:bool (id:string)
+        @doc "True when <id> names an EQUITY (shareholder) collection. \
+            \ \
+            \ A DELIBERATE SECOND HOME FOR THE `E|` RULE, and the duplication is forced rather \
+            \ than careless. The canonical predicate is `EQUITY::URC_IzEquitySemiFungible`, and \
+            \ its @doc rightly says a rule copied four times is a rule that will be changed in \
+            \ three. But EQUITY is `11_EQUITY+.pact` and this is `03_DPDC-C.pact`: EQUITY deploys \
+            \ LAST in the DPDC family precisely because it calls into this module, so a modref \
+            \ the other way is a dependency cycle, not a style choice. \
+            \ \
+            \ The alternative was to host it in `02_DPDC` and publish it through `DpdcV3` -- a \
+            \ bump that rebinds TWENTY-FOUR modules to centralise a two-token string compare. \
+            \ This file already hand-writes the same test for pricing (URCi_RegisterCollectables \
+            \ Price's Elite discount), so the copy count does not change by adding this. \
+            \ \
+            \ IF THE PREFIX EVER MOVES, the sites are: here, EQUITY's own two, and DPDC-T's \
+            \ royalty branch."
+        (= (take 2 id) "E|")
     )
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;

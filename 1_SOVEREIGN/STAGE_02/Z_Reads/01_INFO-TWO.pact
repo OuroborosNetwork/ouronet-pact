@@ -1145,7 +1145,7 @@
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 (ref-DPDC-I:module{DpdcIssueV3} DPDC-I)
-                (ref-EQUITY:module{EquityV4} EQUITY)
+                (ref-EQUITY:module{EquityV5} EQUITY)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount creator-account))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -1160,7 +1160,7 @@
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
-                (ref-EQUITY:module{EquityV4} EQUITY)
+                (ref-EQUITY:module{EquityV5} EQUITY)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo

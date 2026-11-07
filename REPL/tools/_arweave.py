@@ -1255,7 +1255,7 @@ def selftest_repl():
     A("    (")
     A("        (ref-DPDC:module{DpdcV3} DPDC)")
     A("        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)")
-    A("        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)")
+    A("        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)")
     A("        (owner:string KST.ANHD)")
     A('        (b:string "|")')
     A("    )")

@@ -4646,6 +4646,24 @@
     "type": "[string]"
    }
   ],
+  "TS02-C1.DPSF|C_IssueShares": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "executor",
+    "type": "string"
+   },
+   {
+    "name": "id",
+    "type": "string"
+   },
+   {
+    "name": "millions",
+    "type": "integer"
+   }
+  ],
   "TS02-C1.DPSF|C_Make": [
    {
     "name": "patron",
@@ -4796,6 +4814,24 @@
     "type": "string"
    }
   ],
+  "TS02-C1.DPSF|C_PauseCompany": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "executor",
+    "type": "string"
+   },
+   {
+    "name": "id",
+    "type": "string"
+   },
+   {
+    "name": "toggle",
+    "type": "bool"
+   }
+  ],
   "TS02-C1.DPSF|C_RemoveNonceScore": [
    {
     "name": "patron",
@@ -4920,6 +4956,54 @@
    {
     "name": "amounts",
     "type": "[integer]"
+   }
+  ],
+  "TS02-C1.DPSF|C_RetireShares": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "executor",
+    "type": "string"
+   },
+   {
+    "name": "id",
+    "type": "string"
+   },
+   {
+    "name": "millions",
+    "type": "integer"
+   }
+  ],
+  "TS02-C1.DPSF|C_SetCompanyBranding": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "executor",
+    "type": "string"
+   },
+   {
+    "name": "id",
+    "type": "string"
+   },
+   {
+    "name": "logo",
+    "type": "string"
+   },
+   {
+    "name": "description",
+    "type": "string"
+   },
+   {
+    "name": "website",
+    "type": "string"
+   },
+   {
+    "name": "social",
+    "type": "[object{BrandingV3.SocialSchema}]"
    }
   ],
   "TS02-C1.DPSF|C_ToggleAddQuantityRole": [
@@ -5731,6 +5815,24 @@
    },
    {
     "name": "entity-id",
+    "type": "string"
+   },
+   {
+    "name": "months",
+    "type": "integer"
+   }
+  ],
+  "TS02-C1.DPSF|C_UpgradeCompanyBranding": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "executor",
+    "type": "string"
+   },
+   {
+    "name": "id",
     "type": "string"
    },
    {
@@ -19240,5 +19342,5 @@
   "TS02-DPAD.DEMIPAD|C_RetrieveTrueFungible": "INFO-TWO.INFO_DEMIPAD|RetrieveTrueFungible",
   "TS02-DPAD.DEMIPAD|C_Withdraw": "INFO-TWO.INFO_DEMIPAD|Withdraw"
  },
- "surfaceHash": "05d85615e8565cb3"
+ "surfaceHash": "2fd7c5f9dcde2589"
 }

@@ -150,6 +150,26 @@ INDIRECT = {
     # and the burns pass wipe-mode FALSE, selecting the second arm. Their WIPE twins pass TRUE
     # and take the first, which is why those are 4g and these are not.
     "06_DPDC-MNG.pact::C_BurnSFT": "wipe-mode FALSE",
+    # 11_EQUITY+'s five COMPANY-GOVERNANCE entrypoints (2026-11-07). Their executor is proven
+    # IN PLACE, first thing in the capability, by
+    #   CAP_EquityCreator executor id -> UEV_ExecutorIzCompanyCreator
+    #     -> (enforce (= executor (DPDC::UR_CreatorKonto id true)))
+    #     -> DPDC::CAP_Creator -> CAP_EnforceAccountOwnership (UR_CreatorKonto id true)
+    # so BOTH halves hold: the declared executor IS the creator, and the caller owns that
+    # account. It is INDIRECT rather than DIRECT only because the enforce lives one `defun` hop
+    # away inside CAP_EquityCreator, which the direct matcher cannot see through.
+    #
+    # THE SECOND HALF IS NOT DECORATION -- it was missing in this round's first cut and the gate
+    # could not have caught it, because CAP_EquityCreator alone READS LIKE a proof. A stranger
+    # issued shares successfully in `modules/EQUITY-MANAGEMENT.repl` <<EQM-2>>: ownership of the
+    # DERIVED creator account passed on the creator's signature while the executor argument was
+    # EMMA's. Authority proven, actor unnamed -- the exact shape this tool exists to catch, found
+    # by a test rather than by the tool, because the function was too new to be registered here.
+    "11_EQUITY+.pact::C_IssueShares":            "CAP_EquityCreator",
+    "11_EQUITY+.pact::C_RetireShares":           "CAP_EquityCreator",
+    "11_EQUITY+.pact::C_TogglePauseShares":      "CAP_EquityCreator",
+    "11_EQUITY+.pact::C_SetCompanyBranding":     "CAP_EquityCreator",
+    "11_EQUITY+.pact::C_UpgradeCompanyBranding": "CAP_EquityCreator",
     "06_DPDC-MNG.pact::C_BurnNFT": "wipe-mode FALSE",
     # 11_EQUITY+ (2026-09-22). The same INTERNAL-HOP shape as 19_SWPU's swaps: the executor is
     # handed to a SAME-MODULE XI_ helper (XI_Make/Break/ConvertPackageShares), and only that

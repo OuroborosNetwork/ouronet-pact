@@ -63,7 +63,7 @@
 (print "--- [FIXTURE adversarial-collections · 03 · issue] ---")
     (let
         (
-            (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+            (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         )
         ;;   cu   cco  ccc  casr   cnfcr  cf     cw     cp
         (print (ref-TS02-C1::DPSF|C_Issue patron patron patron "AdversarialLockedSft" "ADVC"

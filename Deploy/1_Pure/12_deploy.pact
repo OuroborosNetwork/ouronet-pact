@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 12 of 26
 ;; This is STEP 12 of 27 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-11 must have run first, including the init steps between deploys.
-;; 5 source file(s), 379,580 gas measured in the REPL gas model, 284,255 bytes
+;; 5 source file(s), 379,580 gas measured in the REPL gas model, 291,880 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/02_DPDC.pact
@@ -11,7 +11,7 @@
 ;;   1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/05_DPDC-R.pact
 ;;   1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/06_DPDC-MNG.pact
 ;;
-;; TOTAL: 6 interface(s), 5 module(s), 20 table(s)
+;; TOTAL: 4 interface(s), 5 module(s), 20 table(s)
 ;; What it DEPLOYS, in load order:
 ;;   -- 1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/02_DPDC.pact
 ;;      interface  BrandingUsageTertiaryV3
@@ -30,7 +30,6 @@
 ;;      table      DPNF|T|Account
 ;;      table      DPNF|T|AccountSupplies
 ;;   -- 1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/03_DPDC-C.pact
-;;      interface  DpdcCreateV3
 ;;      module     DPDC-C
 ;;      table      P|T
 ;;      table      P|MT
@@ -45,7 +44,6 @@
 ;;      table      P|T
 ;;      table      P|MT
 ;;   -- 1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/06_DPDC-MNG.pact
-;;      interface  DpdcManagementV3
 ;;      module     DPDC-MNG
 ;;      table      P|T
 ;;      table      P|MT
@@ -2123,118 +2121,8 @@
 ;; History/shared registry: 1_SOVEREIGN/STAGE_02/0_Interfaces/02_Core.pact
 ;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface DpdcCreateV3
-    @doc "Exposes Collectables Create Functions, containining the Credit and Debit Variants"
+;; DpdcCreateV3: already deployed and unchanged -- see LIVE_INTERFACES
 
-    ;;<=========================================================================>
-    ;;{1}  GOVERNANCE
-    ;;{G1}  constants
-    ;;{G2}  schemas
-    ;;{G3}  tables  ⟨cannot exist in an interface⟩
-    ;;{G4}  capabilities
-    ;;{G5}  functions
-
-    ;;<=========================================================================>
-    ;;{2}  POLICY
-    ;;{P1}  constants
-    ;;{P2}  schemas
-    ;;{P3}  tables  ⟨cannot exist in an interface⟩
-    ;;{P4}  capabilities
-    ;;{P5}  functions
-
-    ;;<=========================================================================>
-    ;;{3}  CST
-    ;;{3.1}  constants
-    ;;{3.2}  schemas
-    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
-
-    ;;<=========================================================================>
-    ;;{4}  CAPABILITIES
-    ;;{C1}  Trivial [bronze]
-    ;;{C2}  Simple
-    ;;{C3}  Composed
-    ;;{C4}  Ownership [gold]
-
-    ;;<=========================================================================>
-    ;;{5}  FUNCTIONS
-    ;;{5.1}  Construct [CT/UDC]
-    ;;{5.2}  Compute [UC]
-    ;;
-    ;;  [UC]
-    ;;
-    (defun UC_AndTruths:bool (truths:[bool]))
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    ;;
-    ;;  [URCi]
-    ;;
-    (defun URCi_RegisterCollectablesPrice:decimal (id:string son:bool amounts:[integer]))
-    (defun URCi_CreateNewNonces:object{IgnisCollectorV4.OutputCumulator} (id:string son:bool amounts:[integer]))
-    ;;{5.4}  Validate [UEV/CAP]
-    ;;
-    ;;  [UEV]
-    ;;
-    (defun UEV_NonceDataForCreation (ind:object{DpdcUdcV2.DPDC|NonceData}))
-    (defun UEV_NonceType (nonce:integer fragments-or-native:bool))
-    (defun UEV_NonceTypeMapper (nonces:[integer] fragments-or-native:bool))
-    (defun UEV_HybridNonces:object{OuronetIntegersV2.SplitIntegers} (nonces:[integer]))
-    ;;{5.5}  Write [W]
-    ;;{5.6}  Aux/X
-    ;;
-    ;;  [X]
-    ;;
-    (defun XE_CreditSFT-FragmentNonce (account:string id:string nonce:integer amount:integer))
-    (defun XE_CreditNFT-FragmentNonce (account:string id:string nonce:integer amount:integer))
-    (defun XE_DebitSFT-FragmentNonce (account:string id:string nonce:integer amount:integer wipe-mode:bool))
-    (defun XE_DebitNFT-FragmentNonce (account:string id:string nonce:integer amount:integer wipe-mode:bool))
-    ;;
-    (defun XB_CreditSFT-Nonce (account:string id:string nonce:integer amount:integer))
-    (defun XB_CreditNFT-Nonce (account:string id:string nonce:integer amount:integer))
-    (defun XE_DebitSFT-Nonce (account:string id:string nonce:integer amount:integer wipe-mode:bool))
-    (defun XE_DebitNFT-Nonce (account:string id:string nonce:integer amount:integer wipe-mode:bool))
-    ;;
-    (defun XE_CreditSFT-FragmentNonces (account:string id:string nonces:[integer] amounts:[integer]))
-    (defun XE_CreditNFT-FragmentNonces (account:string id:string nonces:[integer] amounts:[integer]))
-    (defun XE_DebitSFT-FragmentNonces (account:string id:string nonces:[integer] amounts:[integer] wipe-mode:bool))
-    (defun XE_DebitNFT-FragmentNonces (account:string id:string nonces:[integer] amounts:[integer] wipe-mode:bool))
-    ;;
-    (defun XB_CreditSFT-Nonces (account:string id:string nonces:[integer] amounts:[integer]))
-    (defun XB_CreditNFT-Nonces (account:string id:string nonces:[integer] amounts:[integer]))
-    (defun XE_DebitSFT-Nonces (account:string id:string nonces:[integer] amounts:[integer] wipe-mode:bool))
-    (defun XE_DebitNFT-Nonces (account:string id:string nonces:[integer] amounts:[integer] wipe-mode:bool))
-    ;;
-    (defun XE_CreditSFT-HybridNonces (account:string id:string nonces:[integer] amounts:[integer]))
-    (defun XE_CreditNFT-HybridNonces (account:string id:string nonces:[integer] amounts:[integer]))
-    (defun XE_DebitSFT-HybridNonces (account:string id:string nonces:[integer] amounts:[integer]))
-    (defun XE_DebitNFT-HybridNonces (account:string id:string nonces:[integer] amounts:[integer]))
-    ;;{5.7}  User [A/C]
-    ;;
-    ;;  [C]
-    ;;
-    (defun C_CreateNewNonce:object{IgnisCollectorV4.OutputCumulator}
-        (
-            patron:string executor:string
-            id:string son:bool nonce-class:integer amount:integer
-            input-nonce-data:object{DpdcUdcV2.DPDC|NonceData} sft-set-mode:bool
-        )
-    )
-    (defun C_CreateNewNonces:object{IgnisCollectorV4.OutputCumulator}
-        (
-            patron:string executor:string
-            id:string son:bool amounts:[integer]
-            input-nonce-datas:[object{DpdcUdcV2.DPDC|NonceData}]
-        )
-    )
-
-
-    ;;<=========================================================================>
-    ;; ADDED 2026-10-12 -- interface-membership sweep (StoicSyntax-Prefixes.md Sec5,
-    ;; owner ruling). Every one of these was already live in the module body; this
-    ;; closes the gap between what the module DOES and what its interface SAYS it does.
-    ;;<=========================================================================>
-    (defun UEV_Amount (amount:integer))
-    (defun UEV_ExecutorIsCreateRole (executor:string id:string son:bool))
-    (defun UEV_FragmentCreditAmount (amount:integer))
-)
 ;;
 (module DPDC-C GOV
     @doc "DPDC-C is the collectables create/credit/debit engine, implementing DpdcCreateV2 \
@@ -2485,6 +2373,33 @@
                 (r-nft-create-account:string (ref-DPDC::UR_Verum5 id son))
             )
             (enforce (= l1 l2) (format "Incompatible Input Data for Registering {}" [msg]))
+            ;;THE EQUITY NONCE SET IS SEALED AT ISSUANCE. 2026-11-07.
+            ;;
+            ;;An `E|` collection is a tokenised company: nonce 1 is the barebone share and nonces
+            ;;2-8 are the seven PERCENTAGE tiers (0.1 promille .. 1%). The tier table `EQUITY.S`
+            ;;has exactly seven entries, so a ninth nonce has no tier, no share-equivalent, and is
+            ;;invisible to `UR_TierSupplies` and therefore to the 50% packaging cap -- while still
+            ;;being a transferable unit inside a share register that a buyer cannot tell from a
+            ;;real tier.
+            ;;
+            ;;MEASURED, NOT ASSUMED. `TS02-C1::DPSF|C_IssueCompany`'s @doc has always claimed
+            ;;"Only 8 Elements can exist in this Collection, and no more can be added". Nothing
+            ;;enforced it. `REPL/_probe_equity_nonce_lock.repl` drove the real call and got
+            ;;`nonces-used` 8 -> 9 with a success string. The claim was prose.
+            ;;
+            ;;WHY `nonces-used = 0` IS THE DISCRIMINATOR rather than a role or a flag. EQUITY
+            ;;populates all eight in ONE call, from `C_IssueShareholderCollection`, while the
+            ;;collection still reports zero nonces used. So this admits the issuing transaction
+            ;;and refuses every later one -- for EVERY caller, the DPDC smart account included.
+            ;;A role can be moved and a flag can be argued about; a closed door cannot.
+            (if (UC_IzEquityCollectionId id)
+                (enforce
+                    (= (ref-DPDC::UR_NoncesUsed id son) 0)
+                    (format
+                        "{} is an EQUITY collection: its eight elements are sealed at issuance and no further nonce can be created"
+                        [id]))
+                true
+            )
             (map
                 (lambda
                     (idx:integer)
@@ -2700,6 +2615,25 @@
     ;;
     (defun UC_AndTruths:bool (truths:[bool])
         (fold (and) true truths)
+    )
+    (defun UC_IzEquityCollectionId:bool (id:string)
+        @doc "True when <id> names an EQUITY (shareholder) collection. \
+            \ \
+            \ A DELIBERATE SECOND HOME FOR THE `E|` RULE, and the duplication is forced rather \
+            \ than careless. The canonical predicate is `EQUITY::URC_IzEquitySemiFungible`, and \
+            \ its @doc rightly says a rule copied four times is a rule that will be changed in \
+            \ three. But EQUITY is `11_EQUITY+.pact` and this is `03_DPDC-C.pact`: EQUITY deploys \
+            \ LAST in the DPDC family precisely because it calls into this module, so a modref \
+            \ the other way is a dependency cycle, not a style choice. \
+            \ \
+            \ The alternative was to host it in `02_DPDC` and publish it through `DpdcV3` -- a \
+            \ bump that rebinds TWENTY-FOUR modules to centralise a two-token string compare. \
+            \ This file already hand-writes the same test for pricing (URCi_RegisterCollectables \
+            \ Price's Elite discount), so the copy count does not change by adding this. \
+            \ \
+            \ IF THE PREFIX EVER MOVES, the sites are: here, EQUITY's own two, and DPDC-T's \
+            \ royalty branch."
+        (= (take 2 id) "E|")
     )
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;
@@ -4998,125 +4932,8 @@
 ;; History/shared registry: 1_SOVEREIGN/STAGE_02/0_Interfaces/02_Core.pact
 ;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface DpdcManagementV3
-    @doc "Exposes Collectables Management Functions"
+;; DpdcManagementV3: already deployed and unchanged -- see LIVE_INTERFACES
 
-    ;;<=========================================================================>
-    ;;{1}  GOVERNANCE
-    ;;{G1}  constants
-    ;;{G2}  schemas
-    ;;{G3}  tables  ⟨cannot exist in an interface⟩
-    ;;{G4}  capabilities
-    ;;{G5}  functions
-
-    ;;<=========================================================================>
-    ;;{2}  POLICY
-    ;;{P1}  constants
-    ;;{P2}  schemas
-    ;;{P3}  tables  ⟨cannot exist in an interface⟩
-    ;;{P4}  capabilities
-    ;;{P5}  functions
-
-    ;;<=========================================================================>
-    ;;{3}  CST
-    ;;{3.1}  constants
-    ;;{3.2}  schemas
-    ;;
-    (defschema RemovableNonces
-        @doc "Removable Nonces are Class 0 Nonces held by a given Account with greater than 0 supply \
-        \ Given an <account>, a dpdc <id>, and a list of <nonces>, they can be filtered to Removable Nonces"
-        r-nonces:[integer]
-        r-amounts:[integer]
-    )
-    (defschema DPDC-MNG|WipeSlicePlan
-        @doc "Hydra wipe slice plan: the URHC_WipePure output partitioned into <slice-count> \
-        \ disjoint contiguous |RemovableNonces| slices, each fed to one <Cp_WipeSlice> tx. \
-        \ Offline plan only (UI dirty-read) — never persisted on-chain."
-        account:string
-        id:string
-        son:bool
-        slice-count:integer
-        slices:[object{RemovableNonces}]
-    )
-    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
-
-    ;;<=========================================================================>
-    ;;{4}  CAPABILITIES
-    ;;{C1}  Trivial [bronze]
-    ;;{C2}  Simple
-    ;;{C3}  Composed
-    ;;{C4}  Ownership [gold]
-
-    ;;<=========================================================================>
-    ;;{5}  FUNCTIONS
-    ;;{5.1}  Construct [CT/UDC]
-    (defun UDC_RemovableNonces:object{RemovableNonces} (a:[integer] b:[integer]))
-    (defun UDC_WipeSlicePlan:object{DPDC-MNG|WipeSlicePlan}
-        (a:string b:string c:bool d:integer e:[object{RemovableNonces}]))
-    ;;{5.2}  Compute [UC]
-    (defun UC_ComputeMinWipeSliceCount:integer (nonce-count:integer))
-    (defun UC_BuildWipeSlicePlan:object{DPDC-MNG|WipeSlicePlan}
-        (account:string id:string son:bool removable-nonces-obj:object{RemovableNonces} slice-count:integer))
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    ;;
-    ;;  [URCi]
-    ;;
-    (defun URCi_Control:object{IgnisCollectorV4.OutputCumulator} (id:string son:bool))
-    (defun URCi_TogglePause:object{IgnisCollectorV4.OutputCumulator} (id:string son:bool))
-    (defun URCi_AddQuantity:object{IgnisCollectorV4.OutputCumulator} (id:string))
-    (defun URCi_RespawnNFT:object{IgnisCollectorV4.OutputCumulator} (id:string))
-    (defun URCi_BurnSFT:object{IgnisCollectorV4.OutputCumulator} (id:string))
-    (defun URCi_WipeSlim:object{IgnisCollectorV4.OutputCumulator} (id:string))
-    (defun URCi_BurnNFT:object{IgnisCollectorV4.OutputCumulator} (id:string))
-    (defun URCi_WipeNonce:object{IgnisCollectorV4.OutputCumulator} (id:string son:bool))
-    (defun URCi_WipeCumulator:object{IgnisCollectorV4.OutputCumulator} (id:string son:bool removable-nonces-obj:object{RemovableNonces}))
-    ;;
-    ;;  [URDC/URC/UDC]  RemovableNonces builders (dirty-read helpers, also used by INFO preview)
-    (defun URHC_WipePure:object{RemovableNonces} (account:string id:string son:bool))
-    (defun URHC_BuildWipeSlicePlan:object{DPDC-MNG|WipeSlicePlan} (account:string id:string son:bool slice-count:integer))
-    (defun URC_FilterAccountViableNonces:object{RemovableNonces} (account:string id:string son:bool nonces:[integer]))
-    ;;{5.4}  Validate [UEV/CAP]
-    ;;{5.5}  Write [W]
-    ;;{5.6}  Aux/X
-    ;;{5.7}  User [A/C]
-    ;;
-    ;; [C]
-    ;;
-    (defun C_Control:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string id:string son:bool cu:bool cco:bool ccc:bool casr:bool ctncr:bool cf:bool cw:bool cp:bool))
-    (defun C_TogglePause:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string id:string son:bool toggle:bool))
-    ;;
-    ;;  [CREDIT-SINGLE]
-    ;;  [SFT]
-    (defun C_AddQuantity:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string id:string nonce:integer amount:integer))
-    ;;  [NFT]
-    (defun C_RespawnNFT:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string id:string nonce:integer))
-    ;;
-    ;;  [DEBIT-SINGLE]
-    ;;  [SFT]
-    (defun C_BurnSFT:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string id:string nonce:integer amount:integer))
-    (defun C_WipeSlim:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string executee:string id:string nonce:integer amount:integer))
-    ;;  [NFT]
-    (defun C_BurnNFT:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string id:string nonce:integer))
-    ;;  [SFT+NFT]
-    (defun C_WipeNonce:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string executee:string id:string son:bool nonce:integer))
-    ;;
-    ;;  [DEBIT-MULTIPLE]
-    ;;  [SFT+NFT]
-    (defun CC_WipeHeavy:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string executee:string id:string son:bool))
-    (defun C_WipePure:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string executee:string id:string son:bool removable-nonces-obj:object{RemovableNonces}))
-    (defun C_WipeClean:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string executee:string id:string son:bool nonces:[integer]))
-    (defun C_WipeDirty:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string executee:string id:string son:bool nonces:[integer]))
-    (defun Cp_WipeSlice:object{IgnisCollectorV4.OutputCumulator} (account:string id:string son:bool removable-nonces-obj:object{RemovableNonces}))
-
-
-    ;;<=========================================================================>
-    ;; ADDED 2026-10-12 -- interface-membership sweep (StoicSyntax-Prefixes.md Sec5,
-    ;; owner ruling). Every one of these was already live in the module body; this
-    ;; closes the gap between what the module DOES and what its interface SAYS it does.
-    ;;<=========================================================================>
-    (defun UC_CeilDiv:integer (numerator:integer denominator:integer))
-    (defun UEV_ExecutorIsCollectionOwner (executor:string id:string son:bool))
-)
 ;;
 (module DPDC-MNG GOV
     @doc "Management module for the DPDC collectables (NFT/SFT) family, implementing \
@@ -5369,6 +5186,33 @@
                 )
                 "Invalid Data for Adding Quantity for an SFT Nonce"
             )
+            ;;EQUITY SHARES HAVE EXACTLY TWO DOORS, AND THIS IS NOT ONE OF THEM. 2026-11-07.
+            ;;
+            ;;Nonce 1 of an `E|` collection is the company's share count. It may only change
+            ;;through `EQUITY::C_IssueShares` and `EQUITY::C_RetireShares`, because a share
+            ;;movement is not a mint -- it has to settle the ESCROW at the same time, pro-rata,
+            ;;or the packages outlive their collateral (see EQUITY's `escrow = m x K` note).
+            ;;A raw add or burn here would move one side of that equation and not the other.
+            ;;
+            ;;NONCE 1 ONLY. Tiers 2-8 keep using this path: Make, Break and Convert mint and burn
+            ;;package units through <dpdc>, and those operations maintain the invariant by
+            ;;construction.
+            ;;
+            ;;SCOPE, STATED HONESTLY. This refuses every caller except <dpdc> itself, which is
+            ;;what EQUITY acts as. It does NOT lock out the project signature that can act as
+            ;;<dpdc> directly -- closing that would mean an `XE_` behind `P|UEV_IMC` and a
+            ;;`DpdcManagementV3` bump, and that interface is NAMED INSIDE three others
+            ;;(TalosStageTwo_ClientOne/Two, InfoTwo), so the bump cascades two levels deep to
+            ;;seal a door only the protocol admin can open. The same reservation already applies
+            ;;to every other sealed equity operation.
+            (if (and (UC_IzEquityCollectionId id) (= nonce 1))
+                (enforce
+                    (= account (ref-DPDC::GOV|DPDC|SC_NAME))
+                    (format "{} is an EQUITY collection: its share count changes only through EQUITY::C_IssueShares / C_RetireShares"
+                        [id])
+                )
+                true
+            )
             ;;Account Ownership
             (ref-DALOS::CAP_EnforceAccountOwnership account)
             ;;Correct add quantity role
@@ -5382,6 +5226,33 @@
         (let
             (
                 (ref-DPDC:module{DpdcV3} DPDC)
+            )
+            ;;EQUITY SHARES HAVE EXACTLY TWO DOORS, AND THIS IS NOT ONE OF THEM. 2026-11-07.
+            ;;
+            ;;Nonce 1 of an `E|` collection is the company's share count. It may only change
+            ;;through `EQUITY::C_IssueShares` and `EQUITY::C_RetireShares`, because a share
+            ;;movement is not a mint -- it has to settle the ESCROW at the same time, pro-rata,
+            ;;or the packages outlive their collateral (see EQUITY's `escrow = m x K` note).
+            ;;A raw add or burn here would move one side of that equation and not the other.
+            ;;
+            ;;NONCE 1 ONLY. Tiers 2-8 keep using this path: Make, Break and Convert mint and burn
+            ;;package units through <dpdc>, and those operations maintain the invariant by
+            ;;construction.
+            ;;
+            ;;SCOPE, STATED HONESTLY. This refuses every caller except <dpdc> itself, which is
+            ;;what EQUITY acts as. It does NOT lock out the project signature that can act as
+            ;;<dpdc> directly -- closing that would mean an `XE_` behind `P|UEV_IMC` and a
+            ;;`DpdcManagementV3` bump, and that interface is NAMED INSIDE three others
+            ;;(TalosStageTwo_ClientOne/Two, InfoTwo), so the bump cascades two levels deep to
+            ;;seal a door only the protocol admin can open. The same reservation already applies
+            ;;to every other sealed equity operation.
+            (if (and (UC_IzEquityCollectionId id) (= nonce 1))
+                (enforce
+                    (= account (ref-DPDC::GOV|DPDC|SC_NAME))
+                    (format "{} is an EQUITY collection: its share count changes only through EQUITY::C_IssueShares / C_RetireShares"
+                        [id])
+                )
+                true
             )
             ;;Account Ownership - via Debit Function
             ;;Correct burn role
@@ -5597,6 +5468,21 @@
             (/ numerator denominator)
             (+ 1 (/ numerator denominator))
         )
+    )
+    (defun UC_IzEquityCollectionId:bool (id:string)
+        @doc "True when <id> names an EQUITY (shareholder) collection. \
+            \ \
+            \ A FORCED SECOND HOME for the `E|` rule, the same way `DPDC-C` carries one. The \
+            \ canonical predicate is `EQUITY::URC_IzEquitySemiFungible`, but EQUITY is \
+            \ `11_EQUITY+.pact` and calls INTO this module, so it necessarily deploys after it \
+            \ and a modref back would be a cycle. Hosting it in `02_DPDC` instead means \
+            \ publishing it through `DpdcV3` -- twenty-four modules rebound for a two-token \
+            \ string compare. \
+            \ \
+            \ THE SITES, so this is findable: here, `DPDC-C::UC_IzEquityCollectionId`, EQUITY's \
+            \ own `URC_IzEquitySemiFungible` and `UEV_EquitySemiFungibleID`, DPDC-C's pricing \
+            \ branch and DPDC-T's royalty branch."
+        (= (take 2 id) "E|")
     )
     (defun UC_ComputeMinWipeSliceCount:integer (nonce-count:integer)
         @doc "Hydra wipe UI SEED: the minimum <Cp_WipeSlice> count for <nonce-count> nonces \

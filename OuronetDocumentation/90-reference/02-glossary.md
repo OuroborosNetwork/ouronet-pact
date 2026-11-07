@@ -14,14 +14,14 @@ Counts are of definitions in the tree, interface declarations included.
 | prefix | uses | what it promises |
 |---|---:|---|
 | `UR_` | 1,546 | reads one row or field by key |
-| `C_` | 1,388 | client entry — builds the bill; reachable only through Talos |
-| `URC_` | 800 | reads and derives; no `enforce` |
-| `UEV_` | 675 | reads and `enforce`s; failure aborts the transaction |
+| `C_` | 1,408 | client entry — builds the bill; reachable only through Talos |
+| `URC_` | 808 | reads and derives; no `enforce` |
+| `UEV_` | 685 | reads and `enforce`s; failure aborts the transaction |
 | `INFO_` | 650 | operation preview returning a client-facing cost and description |
 | `URCi_` | 646 | **cost reader** — the single source both billing and the preview call |
 | `A_` | 564 | admin-key mutation |
-| `UC_` | 532 | pure compute on arguments only — no table reads, no `enforce` |
-| `XI_` | 398 | internal write, this module only, under a capability |
+| `UC_` | 536 | pure compute on arguments only — no table reads, no `enforce` |
+| `XI_` | 400 | internal write, this module only, under a capability |
 | `XE_` | 362 | entry point for other modules only |
 | `UDC_` | 348 | data construction — a named constructor for an object |
 | `CT_` | 281 | a constant, exposed as a function |
@@ -34,7 +34,7 @@ Counts are of definitions in the tree, interface declarations included.
 | `XB_` | 64 | callable both internally and externally |
 | `SC_` | 52 | smart-contract account name — a constant, exposed as a function |
 | `CCp_` | 50 | client recipe that reaches a scan |
-| `CAP_` | 42 | account-ownership enforcement |
+| `CAP_` | 43 | account-ownership enforcement |
 | `URHC_` | 42 | scan and derive. Off the execution path |
 | `URCv_` | 37 | `URC_` with an intrinsic guard |
 | `UCv_` | 34 | `UC_` whose `enforce` is intrinsic to its own computation |

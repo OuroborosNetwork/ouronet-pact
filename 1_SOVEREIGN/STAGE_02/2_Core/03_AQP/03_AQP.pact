@@ -1627,13 +1627,29 @@
     )
     ;;
     (defun URC_AqpOwnerKontoFromClassAndAsset:string (aqp-class:integer asset-id:string)
-        @doc "Resolve pool governor konto from aqp-class and canonical native asset-id (issue-time or pre-pool-row)."
+        @doc "Resolve pool governor konto from aqp-class and canonical native asset-id (issue-time or pre-pool-row). \
+            \ \
+            \ AN EQUITY COLLECTION RESOLVES TO ITS CREATOR, not its owner, and that exception is \
+            \ the whole point of this reader having a branch at all. \
+            \ \
+            \ Every other sovereign asset's owner-konto is a smart account whose key a human \
+            \ holds, so deriving the governor from the ASSET is the same thing as naming its \
+            \ controller. An `E|` collection breaks that assumption: its owner-account IS the \
+            \ DPDC smart account, deliberately, because the collection is automanaged and its \
+            \ nonce set is sealed. So the derivation named a contract, and the twelve operations \
+            \ downstream of this one line -- pool creation, add/revoke score, enable/disable \
+            \ stake, the three-phase score revoke, and the entire vacate surface -- were \
+            \ unreachable by the company that owned the shares. The pool could not even be made \
+            \ functional: C_AddScore is gated here, and C_EnablePoolStake requires a score. \
+            \ \
+            \ The creator is the only party to an equity collection that is not a contract."
         (let
             (
                 (ref-SWP:module{SwapperV5} SWP)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
                 (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
                 (ref-DPDC:module{DpdcV3} DPDC)
+                (ref-EQUITY:module{EquityV5} EQUITY)
             )
             (if (= aqp-class 0)
                 (ref-SWP::UR_OwnerKonto (ref-SWP::UR_GetLpSwpair asset-id))
@@ -1642,7 +1658,10 @@
                     (if (= aqp-class 2)
                         (ref-DPOF::UR_Konto asset-id)
                         (if (= aqp-class 3)
-                            (ref-DPDC::UR_OwnerKonto asset-id true)
+                            (if (ref-EQUITY::URC_IzEquitySemiFungible asset-id)
+                                (ref-DPDC::UR_CreatorKonto asset-id true)
+                                (ref-DPDC::UR_OwnerKonto asset-id true)
+                            )
                             (ref-DPDC::UR_OwnerKonto asset-id false)
                         )
                     )

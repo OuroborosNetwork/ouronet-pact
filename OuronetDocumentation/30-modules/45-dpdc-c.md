@@ -44,7 +44,9 @@ Above the state core, below everything that issues or moves a collectable.
 | `P|` policy | 9 | inter-module authorisation | `P|A_Add`, `P|A_AddIMP`, `P|A_Define`, `P|A_RemoveIMP`, `P|A_SetIMP`, `P|Info` …+3 |
 | *(unclassified)* | 4 | carries no StoicSyntax prefix | `CT_Bar`, `GOV|Demiurgoi`, `XIv_CreditOrDebitDPDC`, `XIv_MappedCreditOrDebitDPDC` |
 
-> Repository and chain agree on every declared shape.
+> **The repository differs from what is deployed.** Everything above describes the CHAIN, which is what a caller actually reaches. The difference is stated rather than resolved:
+>
+> - **functions** in the repository only: `UC_IzEquityCollectionId`
 
 **Capabilities** -- 35
 

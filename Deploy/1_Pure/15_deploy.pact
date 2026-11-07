@@ -7,10 +7,9 @@
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/02_SCORE.pact
 ;;
-;; TOTAL: 1 interface(s), 1 module(s), 13 table(s)
+;; TOTAL: 0 interface(s), 1 module(s), 13 table(s)
 ;; What it DEPLOYS, in load order:
 ;;   -- 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/02_SCORE.pact
-;;      interface  AcquisitionScoresV5
 ;;      module     AQP-SCORE
 ;;      table      P|T
 ;;      table      P|MT
@@ -40,276 +39,8 @@
 ;; PRIOR: AcquisitionScoresV2 -> V2 (2026-10-06): five URH_ definition-inspection
 ;; readers added. The bump was affordable only because the canon sweep already redeploys all ten
 ;; modules that name the interface; on its own it would not have been worth the cascade.
-(interface AcquisitionScoresV5
-    @doc "Interface for the AQP scoring layer. Declares readers for score config/totals, \
-        \ per-(account,pool,score) user weights, SF nonce weights, and NF trait/class \
-        \ definitions with revision nonces; stake-weight URC_ deltas; XE_ hooks for \
-        \ aqpool/fvt links and applying stake deltas; and \
-        \ C_Issue/C_Control/C_CreateBoostLink/C_IssueTriplet/score-definition and \
-        \ score-model client entrypoints returning IGNIS OutputCumulators."
+;; AcquisitionScoresV5: already deployed and unchanged -- see LIVE_INTERFACES
 
-    ;;<=========================================================================>
-    ;;{1}  GOVERNANCE
-    ;;{G1}  constants
-    ;;{G2}  schemas
-    ;;{G3}  tables  ⟨cannot exist in an interface⟩
-    ;;{G4}  capabilities
-    ;;{G5}  functions
-
-    ;;<=========================================================================>
-    ;;{2}  POLICY
-    ;;{P1}  constants
-    ;;{P2}  schemas
-    ;;{P3}  tables  ⟨cannot exist in an interface⟩
-    ;;{P4}  capabilities
-    ;;{P5}  functions
-    ;;
-    (defun P|UEV_IMC ())
-
-    ;;<=========================================================================>
-    ;;{3}  CST
-    ;;{3.1}  constants
-    ;;{3.2}  schemas
-    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
-
-    ;;<=========================================================================>
-    ;;{4}  CAPABILITIES
-    ;;{C1}  Trivial [bronze]
-    ;;{C2}  Simple
-    ;;{C3}  Composed
-    ;;{C4}  Ownership [gold]
-
-    ;;<=========================================================================>
-    ;;{5}  FUNCTIONS
-    ;;{5.1}  Construct [CT/UDC]
-    ;;{5.2}  Compute [UC]
-    ;; [UC]  compute
-    (defun UCk_UserScore:string (ouronet-account:string pool-id:string score-id:string))
-    (defun UCk_SFScore:string (score-id:string dpsf-id:string nonce:integer))
-    (defun UCk_NFScore:string (score-id:string dpnf-id:string trait-key:string trait-value:string dpnf-nonce-class:integer))
-    (defun UCk_SFDefRevision:string (score-id:string dpsf-id:string))
-    (defun UCk_NFDefRevision:string (score-id:string dpnf-id:string))
-    (defun UCk_NFTraitKeys:string (score-id:string dpnf-id:string))
-    (defun UCk_Triplet:string (bronze-score-id:string silver-score-id:string golden-score-id:string))
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    ;; [UR]  read
-    (defun UR_SCR|ScoreOwnerKonto:string (score-id:string))
-    (defun UR_SCR|ScoreCanUpgrade:bool (score-id:string))
-    (defun UR_SCR|ScoreCanChangeOwner:bool (score-id:string))
-    (defun UR_SCR|ScoreBoostClassLink:string (score-id:string))
-    (defun UR_SCR|ScoreBoostLink:string (score-id:string))
-    (defun UR_SCR|ScoreAqpoolLink:string (score-id:string))
-    (defun UR_SCR|ScoreFvtLink:string (score-id:string))
-    (defun UR_SCR|ScoreDebBoost:bool (score-id:string))
-    (defun UR_SCR|ScoreDriftLocked:bool (score-id:string))
-    (defun AA_MigrateDriftLocked:string ())
-    (defun UR_SCR|ScorePrecision:integer (score-id:string))
-    (defun UR_SCR|ScoreTotalBaseScore:decimal (score-id:string))
-    (defun UR_SCR|ScoreTotalBoostedScore:decimal (score-id:string))
-    (defun UR_SCR|ScoreTotalDebScore:decimal (score-id:string))
-    (defun UR_SCR|ScoreTotalBaseDebScore:decimal (score-id:string))
-    (defun UR_SCR|ScoreTotalBoostedDebScore:decimal (score-id:string))
-    (defun UR_SCR|ScoreNzsCount:integer (score-id:string))
-    (defun UR_SCR|ScoreVacateGeneration:integer (score-id:string))
-    (defun UR_SCR|ScoreClass:integer (score-id:string))
-    (defun UR_SCR|ScoreLpDenominator:string (score-id:string))
-    (defun UR_SCR|ScoreMxFrozen:decimal (score-id:string))
-    (defun UR_SCR|ScoreMxSleeping:decimal (score-id:string))
-    (defun UR_SCR|ScoreMxHibernated:decimal (score-id:string))
-    (defun UR_SCR|ScoreSftEquality:bool (score-id:string))
-    (defun UR_SCR|ScoreNftScoreModel:integer (score-id:string))
-    (defun UR_SCR|ScoreScoreId:string (score-id:string))
-    (defun UR_U-SCR|UserScoreBaseScore:decimal (ouronet-account:string pool-id:string score-id:string))
-    (defun UR_U-SCR|UserScoreBoostedScore:decimal (ouronet-account:string pool-id:string score-id:string))
-    (defun UR_U-SCR|UserScoreDebScore:decimal (ouronet-account:string pool-id:string score-id:string))
-    (defun UR_U-SCR|UserScoreBaseDebScore:decimal (ouronet-account:string pool-id:string score-id:string))
-    (defun UR_U-SCR|UserScoreBoostedDebScore:decimal (ouronet-account:string pool-id:string score-id:string))
-    (defun URC_U-SCR|UserScoreDebStale:bool (ouronet-account:string pool-id:string score-id:string))
-    (defun UR_U-SCR|UserScoreOuronetAccount:string (ouronet-account:string pool-id:string score-id:string))
-    (defun UR_U-SCR|UserScorePoolId:string (ouronet-account:string pool-id:string score-id:string))
-    (defun UR_U-SCR|UserScoreScoreId:string (ouronet-account:string pool-id:string score-id:string))
-    (defun UR_S-DEF|SFScoreNonceScoreValue:decimal (score-id:string dpsf-id:string nonce:integer))
-    (defun UR_S-DEF|SFScoreScoreId:string (score-id:string dpsf-id:string nonce:integer))
-    (defun UR_S-DEF|SFScoreDpsfId:string (score-id:string dpsf-id:string nonce:integer))
-    (defun UR_S-DEF|SFScoreNonce:integer (score-id:string dpsf-id:string nonce:integer))
-    (defun UR_N-DEF|NFTraitScoreTraitScoreValue:decimal (score-id:string dpnf-id:string trait-key:string trait-value:string))
-    (defun UR_N-DEF|NFTraitScoreScoreId:string (score-id:string dpnf-id:string trait-key:string trait-value:string))
-    (defun UR_N-DEF|NFTraitScoreDpnfId:string (score-id:string dpnf-id:string trait-key:string trait-value:string))
-    (defun UR_N-DEF|NFTraitScoreTraitKey:string (score-id:string dpnf-id:string trait-key:string trait-value:string))
-    (defun UR_N-DEF|NFTraitScoreTraitValue:string (score-id:string dpnf-id:string trait-key:string trait-value:string))
-    (defun UR_N-DEF|NFClassScoreTraitScoreValue:decimal (score-id:string dpnf-id:string dpnf-nonce-class:integer))
-    (defun UR_N-DEF|NFClassScoreScoreId:string (score-id:string dpnf-id:string dpnf-nonce-class:integer))
-    (defun UR_N-DEF|NFClassScoreDpnfId:string (score-id:string dpnf-id:string dpnf-nonce-class:integer))
-    (defun UR_N-DEF|NFClassScoreNonceClass:integer (score-id:string dpnf-id:string dpnf-nonce-class:integer))
-    (defun UR_S-DEF-REV|SFDefRevisionRevisionNonce:integer (score-id:string dpsf-id:string))
-    (defun UR_S-DEF-REV|SFDefRevisionScoreId:string (score-id:string dpsf-id:string))
-    (defun UR_S-DEF-REV|SFDefRevisionDpsfId:string (score-id:string dpsf-id:string))
-    (defun UR_N-DEF-REV|NFDefRevisionGlobalRevisionNonce:integer (score-id:string dpnf-id:string))
-    (defun UR_N-DEF-REV|NFDefRevisionTraitRevisionNonce:integer (score-id:string dpnf-id:string))
-    (defun UR_N-DEF-REV|NFDefRevisionClassRevisionNonce:integer (score-id:string dpnf-id:string))
-    (defun UR_N-DEF-REV|NFDefRevisionScoreId:string (score-id:string dpnf-id:string))
-    (defun UR_N-DEF-REV|NFDefRevisionDpnfId:string (score-id:string dpnf-id:string))
-    (defun UR_SCR|TripletBronzeScoreId:string (triplet-id:string))
-    (defun UR_SCR|TripletSilverScoreId:string (triplet-id:string))
-    (defun UR_SCR|TripletGoldenScoreId:string (triplet-id:string))
-    (defun UR_SCR|TripletCategory:string (triplet-id:string))
-    (defun UR_SCR|TripletId:string (triplet-id:string))
-    (defun UR_SCR|TripletTrueTriplet:bool (triplet-id:string))
-    (defun UR_SCR|ScoreTriplet:bool (score-id:string))
-    (defun UR_SCR|ScoreTripletId:string (score-id:string))
-    (defun URC_TripletExists:bool (triplet-id:string))
-    (defun URC_TripletCategoryMatchesFvtClass:bool (triplet-category:string fvt-class:integer))
-    (defun URC_SignedBaseDeltaForDpnfStake:decimal (score-id:string dpnf-id:string nonces:[integer] nonce-amounts:[integer] direction:bool))
-    (defun URC_IsTrueTriplet:bool (id0:string id1:string id2:string))
-    ;; [URH] heavy-read
-    ;;
-    (defun URH_SCR|AllScoreIds:[string] ())
-    ;; Definition inspection — a score names no asset, it names DEFINITIONS keyed to one.
-    ;; These five are the only way to read back which assets a score was defined against,
-    ;; and therefore the only way to detect a definition written against the wrong asset
-    ;; (which saves cleanly and then scores 0 forever). V2 addition, 2026-10-06.
-    (defun URH_SCR|SFScoreDefinition:[object{AcquisitionSchemasV3.SCR|SF|Schema}] (score-id:string dpsf-id:string))
-    (defun URH_SCR|NFTraitScoreDefinition:[object{AcquisitionSchemasV3.SCR|NF|TraitSchema}] (score-id:string dpnf-id:string))
-    (defun URH_SCR|NFClassScoreDefinition:[object{AcquisitionSchemasV3.SCR|NF|ClassSchema}] (score-id:string dpnf-id:string))
-    (defun URH_SCR|ScoreDefinedSemiFungibles:[string] (score-id:string))
-    (defun URH_SCR|ScoreDefinedNonFungibles:[string] (score-id:string))
-    ;;
-    ;; [URCi]   cost readers — single source for exec billing + INFO preview
-    (defun URCi_IssueScore:object{IgnisCollectorV4.OutputCumulator} (owner-konto:string output:[string]))
-    (defun URCi_IssueScoreStoa:decimal ())
-    (defun URCi_RotateOwnership:object{IgnisCollectorV4.OutputCumulator} (score-id:string))
-    (defun URCi_Control:object{IgnisCollectorV4.OutputCumulator} (score-id:string))
-    (defun URCi_CreateBoostClassLink:object{IgnisCollectorV4.OutputCumulator} (score-id:string))
-    (defun URCi_CreateBoostLink:object{IgnisCollectorV4.OutputCumulator} (score-id:string))
-    (defun URCi_EnableDebBoost:object{IgnisCollectorV4.OutputCumulator} (score-id:string))
-    (defun URCi_LockScoreDrift:object{IgnisCollectorV4.OutputCumulator} (score-id:string))
-    (defun URCi_IssueTriplet:object{IgnisCollectorV4.OutputCumulator} (silver-score-id:string output:[string]))
-    (defun URCi_IssueSemiFungibleScoreDefinition:object{IgnisCollectorV4.OutputCumulator} (score-id:string nonces:[integer]))
-    (defun URCi_IssueNonFungibleScoreDefinition:object{IgnisCollectorV4.OutputCumulator} (score-id:string trait-keys:[string]))
-    (defun URCi_IssueNonFungibleSetScoreDefinition:object{IgnisCollectorV4.OutputCumulator} (score-id:string dpnf-nonce-classes:[integer]))
-    (defun URCi_IssueScoreModel:object{IgnisCollectorV4.OutputCumulator} (op-key:string patron:string output:[string]))
-    (defun URCi_CombineTripletModel:object{IgnisCollectorV4.OutputCumulator} (patron:string output:[string]))
-    ;;{5.4}  Validate [UEV/CAP]
-    ;; [UEV] enforce
-    (defun UEV_NonFungibleScoreDefinition
-        (score-id:string dpnf-id:string trait-score-values:[decimal] trait-keys:[string] trait-values:[string] dpnf-nonce-classes:[integer])
-    )
-    ;;{5.5}  Write [W]
-    ;;{5.6}  Aux/X
-    ;; [XE]
-    ;;
-    (defun XE_CreateAqpoolLink:string
-        (score-id:string pool-id:string)
-    )
-    (defun XE_RevokeAqpoolLink:string
-        (score-id:string pool-id:string)
-    )
-    (defun XE_CreateFvtLink:string
-        (score-id:string fvt-id:string)
-    )
-    (defun XE_ApplyTrueFungibleStakeDelta:object{IgnisCollectorV4.OutputCumulator}
-        (pool-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool employed-ids:[string] native-leg:bool)
-    )
-    (defun XE_RefreshUserScoreDeb:string (ouronet-account:string pool-id:string score-id:string))
-    (defun XE_NukeScoreForVacate:string (score-id:string))
-    (defun XE_ApplyOrtoFungibleStakeDelta:object{IgnisCollectorV4.OutputCumulator}
-        (pool-id:string beneficiary-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal] direction:bool employed-ids:[string])
-    )
-    (defun XE_ApplyCollectableStakeDelta:object{IgnisCollectorV4.OutputCumulator}
-        (
-            pool-id:string
-            beneficiary-id:string
-            collectable-id:string
-            son:bool
-            nonces:[integer]
-            nonce-amounts:[integer]
-            direction:bool
-            employed-ids:[string]
-        )
-    )
-    ;;{5.7}  User [A/C]
-    ;; [C]   client
-    ;;
-    (defun C_IssueLiquidityScore:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string executor:string score-name:string precision:integer lp-denominator:string mx-frozen:decimal mx-sleeping:decimal)
-    )
-    (defun C_IssueTrueFungibleScore:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string executor:string score-name:string precision:integer mx-frozen:decimal)
-    )
-    (defun C_IssueOrtoFungibleScore:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string executor:string score-name:string precision:integer mx-sleeping:decimal mx-hibernated:decimal)
-    )
-    (defun C_IssueSemiFungibleScore:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string executor:string score-name:string precision:integer sft-equality:bool)
-    )
-    (defun C_IssueNonFungibleScore:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string executor:string score-name:string precision:integer nft-score-model:integer)
-    )
-    (defun C_RotateOwnership:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string executee:string score-id:string))
-    (defun C_Control:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string score-id:string new-can-upgrade:bool new-can-change-owner:bool))
-    (defun C_CreateBoostClassLink:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string score-id:string boost-class-id:string))
-    (defun C_CreateBoostLink:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string score-id:string boost-score-id:string))
-    (defun C_EnableDebBoost:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string score-id:string))
-    (defun C_LockScoreDrift:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string score-id:string))
-    (defun C_IssueTriplet:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string executor:string bronze-score-id:string silver-score-id:string golden-score-id:string)
-    )
-    (defun C_IssueSemiFungibleScoreDefinition:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string executor:string score-id:string dpsf-id:string nonces:[integer] nonce-score-values:[decimal])
-    )
-    (defun C_IssueNonFungibleScoreDefinition:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string executor:string score-id:string dpnf-id:string trait-keys:[string] trait-values:[string] trait-score-values:[decimal])
-    )
-    (defun C_IssueNonFungibleSetScoreDefinition:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string executor:string score-id:string dpnf-id:string dpnf-nonce-classes:[integer] class-score-values:[decimal])
-    )
-    (defun C_IssueSingleScoreModel:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string executor:string model-name:string score-class:integer collectable-id:string precision:integer nonces:[integer] nonce-score-values:[decimal] boost-class-id:string)
-    )
-    (defun C_CombineTripletScoreModel:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string executor:string model-name:string bronze-model-id:string silver-model-id:string golden-model-id:string)
-    )
-    (defun C_IssueScoreFromModel:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string executor:string model-id:string agency-name:string)
-    )
-
-
-    ;;<=========================================================================>
-    ;; ADDED 2026-10-12 -- interface-membership sweep (StoicSyntax-Prefixes.md Sec5,
-    ;; owner ruling). Every one of these was already live in the module body; this
-    ;; closes the gap between what the module DOES and what its interface SAYS it does.
-    ;;<=========================================================================>
-    (defun XE_ApplyRawBaseDelta:string (ouronet-account:string pool-id:string score-id:string signed-base-delta:decimal))
-    (defun XE_DrainBase:string (ouronet-account:string pool-id:string score-id:string))
-    (defun XE_SetScoreMultipliers:string (score-id:string mx-frozen:decimal mx-sleeping:decimal mx-hibernated:decimal))
-    (defun UC_ComputeTripletId:string (bronze-score-id:string silver-score-id:string golden-score-id:string))
-    (defun UC_DecayMonthsRemaining:integer (remaining-seconds:decimal cap-months:integer))
-    (defun UC_MxAtMonths:decimal (mx-ceiling:decimal months:integer cap-months:integer))
-    (defun UC_MxForRemaining:decimal (mx-ceiling:decimal remaining-seconds:decimal cap-months:integer))
-    (defun UC_MxFrozenFloor:decimal (mx-sleeping:decimal))
-    (defun UC_MxOrderingOk:bool (mx-frozen:decimal mx-sleeping:decimal))
-    (defun UC_MxSleepIntervalOk:bool (mx-sleeping:decimal))
-    (defun UC_SleepMonthsRemaining:integer (remaining-seconds:decimal))
-    (defun UC_SleepMxAtMonths:decimal (mx-ceiling:decimal months:integer))
-    (defun UCk_NFClassScore:string (score-id:string dpnf-id:string dpnf-nonce-class:integer))
-    (defun UCk_NFTraitScore:string (score-id:string dpnf-id:string trait-key:string trait-value:string))
-    (defun UCk_SleepStake:string (dpof-id:string nonce:integer))
-    (defun UEV_DpnfStakeScoreContext (ouronet-account:string pool-id:string score-id:string))
-    (defun UEV_DpofSpecialStakeScoreContext (ouronet-account:string pool-id:string score-id:string))
-    (defun UEV_DpofStakeScoreContext (ouronet-account:string pool-id:string score-id:string))
-    (defun UEV_DpsfStakeScoreContext (ouronet-account:string pool-id:string score-id:string))
-    (defun UEV_DptfStakeScoreContext (ouronet-account:string pool-id:string score-id:string))
-    (defun UEV_ExecutorIzScoreOwner (executor:string score-id:string))
-    (defun UEV_IzNonFungibleScoreDefinitionTraitBranch:bool (trait-keys:[string] dpnf-nonce-classes:[integer]))
-    (defun UEV_LpStakeScoreContext (ouronet-account:string pool-id:string score-id:string lp-id:string))
-    (defun UEV_NonFungibleScoreDefinitionSet (dpnf-id:string precision:integer dpnf-nonce-classes:[integer] class-score-values:[decimal]))
-    (defun UEV_NonFungibleScoreDefinitionTrait (dpnf-id:string precision:integer trait-keys:[string] trait-values:[string] trait-score-values:[decimal]))
-    (defun UEV_SemiFungibleScoreDefinition (score-id:string dpsf-id:string nonces:[integer] nonce-score-values:[decimal]))
-    (defun URH_SCR|PoolScoreIdsWithHolders:[string] (pool-id:string))
-    (defun URH_SCR|ScoreHolderAccounts:[string] (pool-id:string score-id:string))
-    (defun UR_SCR|ModelEntityType:integer (model-id:string))
-    (defun UR_SCR|SleepRemainingAtStake:decimal (dpof-id:string nonce:integer))
-)
 (module AQP-SCORE GOV
     @doc "AQP-SCORE — sovereign acquisition scoring for AQP pools. Owns global score configuration and totals (SCR|T|Score), per (ouronet-account, pool-id, score-id) user triples (SCR|T|UserScore), semi-fungible nonce weights (SCR|T|SF|Score) and SF DefRevision, and non-fungible definitions on SCR|T|NF|TraitScore vs SCR|T|NF|ClassScore with NF DefRevision split into global-, trait-, and class-revision nonces so trackers and URCX stake math can gate expensive selects. \
         \ Public surface: AcquisitionScoresV5 reads and stake-weight URC_*; Talos-facing C_* builds IGNIS (and STOA where applicable) and acquires client caps; XI_* performs table writes under require-capability (SECURE / SCR|XI>*); XE_* is for forward modules and likewise does not enforce — the guarding defcap or C_* owns validation and enforce. UCx_ / URCx_ helpers exist only as operands inside URC_* stake deltas. \
@@ -3057,7 +2788,7 @@
             \ have other nonces and a stake path is the wrong place to discover that it does."
         (let
             (
-                (ref-EQUITY:module{EquityV4} EQUITY)
+                (ref-EQUITY:module{EquityV5} EQUITY)
                 ;;
                 (l:integer (length nonces))
             )
@@ -3107,7 +2838,7 @@
             \ All three branches are point-read/compute only — statically light (URC), no stake-path scan."
         (let
             (
-                (ref-EQUITY:module{EquityV4} EQUITY)
+                (ref-EQUITY:module{EquityV5} EQUITY)
                 ;;
                 (sft-equality:bool (UR_SCR|ScoreSftEquality score-id))
                 (raw-weight:decimal
@@ -3926,7 +3657,7 @@
             (
                 (ref-U|INT:module{OuronetIntegersV2} U|INT)
                 (ref-DPDC:module{DpdcV3} DPDC)
-                (ref-EQUITY:module{EquityV4} EQUITY)
+                (ref-EQUITY:module{EquityV5} EQUITY)
                 ;;
                 (l1:integer (length nonces))
                 (l2:integer (length nonce-score-values))

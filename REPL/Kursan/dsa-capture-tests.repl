@@ -118,7 +118,7 @@
         (anhd:string KST.ANHD)
         (dhoc:string "DHOC-98c486052a51")
         (ref-DPDC:module{DpdcV3} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
     )
     (ref-TS02-C1::DPSF|C_MakeFragments anhd anhd dhoc 1 50)   ; bronze whole 1 -> -1  (50000 frags -> q 50)
     (ref-TS02-C1::DPSF|C_MakeFragments anhd anhd dhoc 2 50)   ; silver whole 2 -> -2  (50000 frags -> q 500)
@@ -331,7 +331,7 @@
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV6} AQP-FVT)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV3} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
     )
     (let
