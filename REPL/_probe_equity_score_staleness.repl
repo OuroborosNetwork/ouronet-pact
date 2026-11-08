@@ -1,0 +1,55 @@
+;;
+;; DOES ISSUING SHARES STALE A STAKED EQUITY SCORE?
+;;
+;; `URCx_EquityShareRawWeight` reads the share value LIVE. But the score system does not store a
+;; weight -- it stores an ACCUMULATOR, and `XI_1|UpdateScoreDataForSemiFungible` applies a signed
+;; DELTA computed at the moment of the stake or unstake. If the share count moves in between, the
+;; two legs are computed against different scales.
+;;
+;; The function's own @doc says the design leaned on this being impossible:
+;;   "AND TODAY IT CANNOT MOVE ... a stored table would not be stale YET."
+;; PureV23 made it move. So this measures what actually happens.
+;;
+(load "deploy-stage00.repl")
+(load "deploy-stage01.repl")
+(load "deploy-stage02.repl")
+(load "Stage_02/[6.1.1]_EQUITY.repl")
+
+(begin-tx)
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "--- [PROBE . stake at m=1, issue shares, read the score] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner:string KST.ANHD)
+        (id:string "E|TSEQ-98c486052a51")
+        (ref-EQUITY:module{EquityV5} EQUITY)
+        (ref-DPDC:module{DpdcV3} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
+    )
+    (print (format "<(m BEFORE)> => {}   <(tier-3 unit worth)> => {} shares"
+        [(ref-EQUITY::URC_ShareMillions id)
+         (ref-EQUITY::URC_SingleSharePerMillions id 3)]))
+    ;; package 500,000 shares into nonce 4 so there is something tier-valued to reason about
+    (print (format "<(Make 500,000 -> nonce 4)> => \"{}\""
+        [(ref-TS02-C1::DPSF|C_MorphEquity patron owner id 1 500000 4)]))
+    (print (format "<(K after Make)> => {}   <(escrow)> => {}"
+        [(ref-EQUITY::URC_PackageConstant id) (ref-EQUITY::URC_EscrowHeld id)]))
+    ;; now ISSUE 1 million more shares
+    (print (format "<(DPSF|C_IssueShares 1 million)> => \"{}\""
+        [(ref-TS02-C1::DPSF|C_IssueShares patron owner id 1)]))
+    (print (format "<(m AFTER)> => {}   <(tier-3 unit worth)> => {} shares"
+        [(ref-EQUITY::URC_ShareMillions id)
+         (ref-EQUITY::URC_SingleSharePerMillions id 3)]))
+    (print (format "<(K AFTER -- must be unchanged)> => {}   <(escrow)> => {}  <(required)> => {}"
+        [(ref-EQUITY::URC_PackageConstant id)
+         (ref-EQUITY::URC_EscrowHeld id)
+         (ref-EQUITY::URC_RequiredEscrow id)]))
+    ;; THE QUESTION: what does the raw weight of a held position read NOW vs before?
+    (print (format "<(raw weight of 1000 tier-3 units, read NOW)> => {}"
+        [(AQP-SCORE.URCx_EquityShareRawWeight id [4] [1000])]))
+)
+(env-sigs [])
+(commit-tx)

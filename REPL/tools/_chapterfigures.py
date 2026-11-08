@@ -138,7 +138,21 @@ def main():
         for b in bad:
             print("   " + b)
         print("\nThe chapter's own rule is that a figure is read, not remembered. Re-read it.")
-        return 1
+        # EXIT 2, NOT 1 -- "BUILT, AWAITING A HUMAN".
+        #
+        # Nothing here failed. The registry regenerated correctly, the claims were checked
+        # correctly, and the answer is that the surface MOVED and someone has to re-read the
+        # prose. Reporting that as exit 1 says the build broke, which is false.
+        #
+        # Owner, 2026-11-08, on seeing a red step 8 after a successful deploy: *"we wouldn't
+        # show failed on a step, because it would mean it failed, when it actually had a
+        # succeeding answer."* Exactly -- and a red that is routinely wrong teaches people to
+        # ignore the red that matters.
+        #
+        # The convention already existed for `_auditdelta`'s missing judgement block; this is
+        # the same category and had simply never been classified. The GATE is unaffected: it
+        # tests for non-zero, so drift is still fatal there.
+        return 2
     print(f"chapter figures: clean -- {len(CLAIMS)} claims checked against the registry "
           f"({fig['entrypoints']} entrypoints, {fig['previews']} previews)")
     return 0

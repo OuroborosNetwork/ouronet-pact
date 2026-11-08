@@ -113,11 +113,23 @@ def main() -> int:
             # the terminal, so without this every header appeared AFTER the output it
             # introduces — which makes a four-step build unreadable at the moment one fails.
             print(f"\n=== {script} {' '.join(args) or '(build)'} -- {what}", flush=True)
-            if run(script, args) != 0:
-                # `_auditdelta --check` is the judgement gate: everything built, and a
-                # changed module has no judgement block yet. Any OTHER non-zero here is a
-                # generator that genuinely failed.
-                if script == "_auditdelta.py" and args == ["--check"]:
+            rc = run(script, args)
+            if rc != 0:
+                # TWO KINDS OF NON-ZERO, AND THE CODE SAYS WHICH.
+                #
+                # EXIT 2 = everything built and a HUMAN INPUT is outstanding. A tool reports it
+                # for itself now, rather than this orchestrator inferring it from the script's
+                # name: `_auditdelta --check` (a changed module with no judgement block) and
+                # `_chapterfigures --check` (the surface moved, the prose must be re-read).
+                #
+                # The name-matching this replaces was wrong the moment a SECOND tool joined the
+                # category -- which is what happened on 2026-11-08, when a clean deploy painted
+                # step 8 red because `_chapterfigures` had no way to say "this is not a break".
+                # A classifier that must be edited for every new member is one that will be out
+                # of date the first time someone forgets.
+                #
+                # Anything else is a generator that genuinely failed.
+                if rc == 2:
                     awaiting = True
                 else:
                     failed.append(f"{script} {' '.join(args)}".strip())
