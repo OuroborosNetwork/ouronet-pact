@@ -7,7 +7,7 @@ Every client entrypoint Ouronet exposes — **447** of them — with the preview
 that prices it and whether the gas station pays for it.
 
 **Bind preview arguments by NAME, never by position.** A preview's parameter list
-differs from its entrypoint's in **425**
+differs from its entrypoint's in **431**
 cases. Positional binding does not fail — the values are mostly strings, so a wrong
 mapping type-checks and returns a confident price for a different question.
 
@@ -270,7 +270,7 @@ mapping type-checks and returns a confident price for a different question.
 | `DPSF|C_EnableSetClassFragmentation` | `INFO-TWO.INFO_DPSF|EnableSetClassFragmentation` | yes |
 | `DPSF|C_Issue` | `INFO-TWO.INFO_DPSF|Issue` | yes |
 | `DPSF|C_IssueCompany` | `INFO-TWO.INFO_DPSF|IssueCompany` | yes |
-| `DPSF|C_IssueShares` | `—` | yes |
+| `DPSF|C_IssueShares` | `INFO-TWO.INFO_DPSF|IssueShares` | yes |
 | `DPSF|C_Make` | `INFO-TWO.INFO_DPSF|Make` | yes |
 | `DPSF|C_MakeFragments` | `INFO-TWO.INFO_DPSF|MakeFragments` | yes |
 | `DPSF|C_MergeFragments` | `INFO-TWO.INFO_DPSF|MergeFragments` | yes |
@@ -278,15 +278,15 @@ mapping type-checks and returns a confident price for a different question.
 | `DPSF|C_MoveCreateRole` | `INFO-TWO.INFO_DPSF|MoveCreateRole` | yes |
 | `DPSF|C_MoveRecreateRole` | `INFO-TWO.INFO_DPSF|MoveRecreateRole` | yes |
 | `DPSF|C_MoveSetUriRole` | `INFO-TWO.INFO_DPSF|MoveSetUriRole` | yes |
-| `DPSF|C_PauseCompany` | `—` | yes |
+| `DPSF|C_PauseCompany` | `INFO-TWO.INFO_DPSF|PauseCompany` | yes |
 | `DPSF|C_RemoveNonceScore` | `INFO-TWO.INFO_DPSF|RemoveNonceScore` | yes |
 | `DPSF|C_RemoveSetNonceScore` | `INFO-TWO.INFO_DPSF|RemoveSetNonceScore` | yes |
 | `DPSF|C_RenameSet` | `INFO-TWO.INFO_DPSF|RenameSet` | yes |
 | `DPSF|C_Repurpose` | `INFO-TWO.INFO_DPSF|Repurpose` | yes |
 | `DPSF|C_RepurposeFragments` | `INFO-TWO.INFO_DPSF|RepurposeFragments` | yes |
-| `DPSF|C_RetireShares` | `—` | yes |
-| `DPSF|C_RotateCompanyCreator` | `—` | yes |
-| `DPSF|C_SetCompanyBranding` | `—` | yes |
+| `DPSF|C_RetireShares` | `INFO-TWO.INFO_DPSF|RetireShares` | yes |
+| `DPSF|C_RotateCompanyCreator` | `INFO-TWO.INFO_DPSF|RotateCompanyCreator` | yes |
+| `DPSF|C_SetCompanyBranding` | `INFO-TWO.INFO_DPSF|SetCompanyBranding` | yes |
 | `DPSF|C_ToggleAddQuantityRole` | `INFO-TWO.INFO_DPSF|ToggleAddQuantityRole` | yes |
 | `DPSF|C_ToggleBurnRole` | `INFO-TWO.INFO_DPSF|ToggleBurnRole` | yes |
 | `DPSF|C_ToggleExemptionRole` | `INFO-TWO.INFO_DPSF|ToggleExemptionRole` | yes |
@@ -319,7 +319,7 @@ mapping type-checks and returns a confident price for a different question.
 | `DPSF|C_UpdateSetNonceURI` | `INFO-TWO.INFO_DPSF|UpdateSetNonceURI` | yes |
 | `DPSF|C_UpdateSetNonces` | `INFO-TWO.INFO_DPSF|UpdateSetNonces` | yes |
 | `DPSF|C_UpgradeBranding` | `INFO-TWO.INFO_DPSF|UpgradeBranding` | yes |
-| `DPSF|C_UpgradeCompanyBranding` | `—` | yes |
+| `DPSF|C_UpgradeCompanyBranding` | `INFO-TWO.INFO_DPSF|UpgradeCompanyBranding` | yes |
 | `DPSF|C_WipeClean` | `INFO-TWO.INFO_DPSF|WipeClean` | yes |
 | `DPSF|C_WipeDirty` | `INFO-TWO.INFO_DPSF|WipeDirty` | yes |
 | `DPSF|C_WipeNonce` | `INFO-TWO.INFO_DPSF|WipeNonce` | yes |

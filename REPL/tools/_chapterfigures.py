@@ -89,9 +89,9 @@ def figures():
 
 # (file, the exact substring the prose must contain, key into figures(), how it is written)
 CLAIMS = [
-    ("03-cost-preview.md", "**425 of the 441 entrypoints have a preview", "preview_params_diff", 425),
+    ("03-cost-preview.md", "**431 of the 447 entrypoints have a preview", "preview_params_diff", 431),
     ("03-cost-preview.md", "Only 16 match",                          "preview_params_same", 16),
-    ("03-cost-preview.md", "carries **453** of them",                "previews",            453),
+    ("03-cost-preview.md", "carries **460** of them",                "previews",            460),
     # PAIRED IS NOT THE ENTRYPOINT COUNT, and conflating them is how this line went stale once
     # already. CORRECTED 2026-10-10: the gap it described is CLOSED -- all 437 entrypoints now
     # have an `INFO_` preview, because PureV6 gave the four `CC_Vacate*` the previews they had
@@ -99,7 +99,7 @@ CLAIMS = [
     # the two look interchangeable the first time. They are still different questions; this row
     # checks `paired`, and it will diverge again the next time an entrypoint ships ahead of its
     # preview.
-    ("03-cost-preview.md", "**all 441** client",                     "paired",              441),
+    ("03-cost-preview.md", "**all 447** client",                     "paired",              447),
     ("03-cost-preview.md", "**Twenty-one** entrypoints have a reader", "alias_paired",      21),
     ("02-signing-and-caps.md", "439 of the 447 client entrypoints",  "sponsored",           439),
     ("02-signing-and-caps.md", "Every one of those 439",             "sponsored",           439),

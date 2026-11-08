@@ -154,31 +154,7 @@ DEFPACT_DECL = re.compile(r'\(defpact\s+([A-Za-z0-9|_-]+)')
 # the one entry this table ever held (`DPTF|C_ClearDispoForeign`, awaiting PureV2/20) was removed
 # on 2026-09-26 when the deploy landed and the check itself reported the exemption stale. That is
 # the design -- an exemption that outlives its cause fails the gate rather than lingering.
-# THE SECOND ENTRY THIS TABLE HAS EVER HELD, 2026-11-07, and it is the same shape as the first:
-# six entrypoints deployed in PureV23 whose `INFO_` readers are WRITTEN but not yet on chain.
-#
-# The readers exist in `Z_Reads/01_INFO-TWO.pact` -- `INFO_DPSF|IssueShares`, `|RetireShares`,
-# `|PauseCompany`, `|SetCompanyBranding`, `|UpgradeCompanyBranding`, `|RotateCompanyCreator`,
-# driven and priced in `REPL/_probe_equity_previews` before being committed (9,018 IGNIS for a
-# 9-million issuance, 750 STOA for a branding upgrade, free for a rotation). The registry is
-# built from `describe-module`, so it cannot see them until INFO-TWO is redeployed.
-#
-# SO THIS IS AN ORDERING MISTAKE, NOT AN EXEMPTION ON THE MERITS. PureV23 shipped the entrypoints
-# and left their previews for a second round; they should have travelled together, and the only
-# reason they did not is that the preview gap was found by the package's own test afterwards
-# rather than before. PureV24 carries INFO-TWO alone and closes it.
-#
-# IT REMOVES ITSELF. `stale_ex` below fails the gate the moment these pair, which is exactly how
-# the previous entry died when its deploy landed. Do not pre-emptively delete this block -- let
-# the check tell you.
-PREVIEW_EXEMPT = {
-    "TS02-C1.DPSF|C_IssueShares":            "INFO_ written, awaiting PureV24 (INFO-TWO)",
-    "TS02-C1.DPSF|C_RetireShares":           "INFO_ written, awaiting PureV24 (INFO-TWO)",
-    "TS02-C1.DPSF|C_PauseCompany":           "INFO_ written, awaiting PureV24 (INFO-TWO)",
-    "TS02-C1.DPSF|C_SetCompanyBranding":     "INFO_ written, awaiting PureV24 (INFO-TWO)",
-    "TS02-C1.DPSF|C_UpgradeCompanyBranding": "INFO_ written, awaiting PureV24 (INFO-TWO)",
-    "TS02-C1.DPSF|C_RotateCompanyCreator":   "INFO_ written, awaiting PureV24 (INFO-TWO)",
-}
+PREVIEW_EXEMPT = {}
 
 PREVIEW_ALIAS = {
     # 1. citizen sales
