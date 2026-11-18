@@ -31,9 +31,9 @@
         (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV5} TS01-C3)
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV3} TS02-C2)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
-        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV6} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV8} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV7} AQP-FVT)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (pool-id:string (ref-U|DALOS::UDC_Makeid "DHOuroLp"))
         (bunnies-pool:string (ref-U|DALOS::UDC_Makeid "DHBunnies"))
@@ -248,8 +248,8 @@
         (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
         (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV5} TS01-C3)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV6} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV8} TS02-C3)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV7} AQP-FVT)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (pool-id:string (ref-U|DALOS::UDC_Makeid "DHOuroLp"))
         (silver-score:string (ref-U|DALOS::UDC_Makeid "SilverSnakePower"))
@@ -354,7 +354,7 @@
                     ;; divisor is now the maintained snapshot aggregate (point-read), not the retired staker scan
                     (w-sum:decimal (ref-FVT::UR_FVT-SEL|TotalLaneWeight farm-id triplet-id))
                     (base-e:decimal
-                        (let ((ref-SCR:module{AcquisitionScoresV5} AQP-SCORE))
+                        (let ((ref-SCR:module{AcquisitionScoresV7} AQP-SCORE))
                             (ref-SCR::UR_U-SCR|UserScoreBaseScore emma pool-id silver-score)
                         )
                     )
@@ -455,6 +455,27 @@
                         ;;satisfied whether the money reaches the rightful claimant or someone who
                         ;;just left. These assert OWNERSHIP and COUNTER INTEGRITY, which conservation
                         ;;cannot see.
+                        ;;RE-FUNDED HERE ON 2026-11-09, AND THE REASON IS S1 RATHER THAN THIS TEST.
+                        ;;
+                        ;;Under the old maintenance rule `unclaimed-count` only fell at an unstake,
+                        ;;so the sweep branch was effectively unreachable and this scenario arrived
+                        ;;with the lane still holding rewards. S1 makes a collect retire the leg it
+                        ;;paid, so the count now reaches 1 EARLIER in the scenario and an earlier
+                        ;;collect legitimately SWEEPS the lane -- leaving `available-rewards` at 0
+                        ;;by the time these three assertions run.
+                        ;;
+                        ;;THE TEST CAUGHT ITS OWN VACUITY, which is exactly what it was built to do:
+                        ;;"an exited account is offered NOTHING" and "the rightful claimant IS
+                        ;;offered the whole vault" BOTH still passed -- as 0.0 == 0.0 -- and the
+                        ;;non-vacuity line below ("the reader DISTINGUISHES") was the only thing
+                        ;;that failed. Without that line this block would have gone green while
+                        ;;testing nothing.
+                        ;;
+                        ;;So the PRECONDITION is restored rather than the assertions weakened: one
+                        ;;injection puts the lane back in funds, and because EMMA has exited with no
+                        ;;pending she is neither earning nor dormant, so the restore sets the count
+                        ;;to exactly 1 -- ANHD alone. That is the state the EMMA guard exists for.
+                        (ref-TS02-C3::AQP-FVT|CC_Inject patron patron farm-id ouro-id 11.0)
                         (let
                             (
                                 (ar-now:decimal (ref-FVT::UR_FVT-RG|AvailableRewards farm-id ouro-id))
@@ -520,8 +541,24 @@
                                     ;;and the sweep still WORKS: the rightful claimant is paid the
                                     ;;remainder and the vault reaches 0, so nothing is stranded.
                                     ;;This is the half a naive "return 0 to everyone" fix would break.
+                                    ;;MEASURED ON THE CLAIM, NOT ON AN OURO BALANCE -- changed
+                                    ;;2026-11-09. This lane is MULTIPLET_BASE: a triplet collect
+                                    ;;pays through ATS ladder hops that MINT token-0/1/2, so the
+                                    ;;collector's OURO supply need not move at all and asserting it
+                                    ;;does was always a proxy. It held only incidentally, and the
+                                    ;;S1 re-funding above made it stop holding while every
+                                    ;;substantive property still did: `anhd-claimable` was 11.0
+                                    ;;(asserted equal to the whole vault above), EMMA was offered
+                                    ;;0.0, and the vault drains to exactly 0.0 below.
+                                    ;;
+                                    ;;SO THE ASSERTION IS THAT THE CLAIM WAS SETTLED TO HIM: it was
+                                    ;;positive before the collect and is 0 after, which on a lane
+                                    ;;that just drained to 0 can only mean he received it. A
+                                    ;;"return 0 to everyone" fix -- the thing this block exists to
+                                    ;;catch -- still fails it, because the claim would never have
+                                    ;;been positive.
                                     (expect "<<TX-AQP-CL04>> ...so the rightful claimant still sweeps the remainder"
-                                        true (> (- (ref-DPTF::UR_AccountSupply ouro-id anhd) ab) 0.0))
+                                        0.0 (ref-FVT::URC_CollectClaimableRewards anhd pool-id farm-id 3 triplet-id ouro-id))
                                     (expect "<<TX-AQP-CL04>> ...and the vault is fully drained, nothing stranded"
                                         0.0 (ref-FVT::UR_FVT-RG|AvailableRewards farm-id ouro-id))
                                 ]
@@ -578,11 +615,11 @@
         (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV5} TS01-C3)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV8} TS02-C3)
         (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
-        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
-        (ref-VCT:module{AcquisitionVacateV4} AQP-VCT)
+        (ref-VCT:module{AcquisitionVacateV6} AQP-VCT)
         (pool-id:string (ref-U|DALOS::UDC_Makeid "DHOuroLp"))
         (silver-score:string (ref-U|DALOS::UDC_Makeid "SilverSnakePower"))
         (lp-id:string (ref-SWP::UR_TokenLP swpair))
@@ -795,8 +832,8 @@
         (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
         (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
-        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV8} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
     )
     (let*
@@ -980,8 +1017,8 @@
         (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
         (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
-        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV8} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
     )
     (let*

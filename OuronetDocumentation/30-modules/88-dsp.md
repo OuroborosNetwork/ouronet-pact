@@ -19,7 +19,7 @@ _To be written._
 
 | | |
 |---|---|
-| module hash | `90WdpH3ByuV5n1CDGD76z4XY79Gh4LFwzpHYlxS5QXQ` |
+| module hash | `oJHuxCa64EBiP9Js3-p4AyJ3eaB_XdKrxQMG0FgysOU` |
 | deployed size | 61,738 characters |
 | implements | `OuronetPolicyV2`, `DispenserV3` |
 | repository source | `2_CITIZEN/Stage_Z/03_DSP+.pact` |

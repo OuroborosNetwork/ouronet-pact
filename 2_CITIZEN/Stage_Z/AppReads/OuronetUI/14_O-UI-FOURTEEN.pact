@@ -135,9 +135,9 @@
             \ score is while disagreeing only about whose numbers are shown."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
                 (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
-                (ref-RPS:module{AcquisitionRewardPerShareV5} RPS)
+                (ref-RPS:module{AcquisitionRewardPerShareV8} RPS)
                 (ref-U|CT:module{OuronetConstantsV2} U|CT)
             )
             (let
@@ -229,7 +229,7 @@
             \ -- the schema says so in as many words -- so bronze/silver/golden here name \
             \ positions and imply no ranking. Answers an empty list for a non-triplet rather \
             \ than aborting, so a caller can ask unconditionally."
-        (let ((ref-SCR:module{AcquisitionScoresV5} AQP-SCORE))
+        (let ((ref-SCR:module{AcquisitionScoresV7} AQP-SCORE))
             (if (ref-SCR::URC_TripletExists triplet-id)
                 [(ref-SCR::UR_SCR|TripletBronzeScoreId triplet-id)
                  (ref-SCR::UR_SCR|TripletSilverScoreId triplet-id)
@@ -246,7 +246,7 @@
             \ score carries `triplet-id`, so walking the scores finds every triplet that has a \
             \ member -- which is every triplet that can matter to anyone. A triplet with no \
             \ member scores would be invisible here and is also inert."
-        (let ((ref-SCR:module{AcquisitionScoresV5} AQP-SCORE))
+        (let ((ref-SCR:module{AcquisitionScoresV7} AQP-SCORE))
             (map (lambda (s:string)
                      (let ((def:object (URC_14|ScoreDefinition s)))
                          (+ def {"rungs": (URC_14|TripletRungs (at "triplet-id" def))})))
@@ -263,7 +263,7 @@
             \ tier did to (base + boost), and 1.0 when there is nothing to divide."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
             )
             (let
                 (
@@ -316,7 +316,7 @@
             \   than this module reaching across a boundary it has no reason to own."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
                 (ref-U|CT:module{OuronetConstantsV2} U|CT)
             )
             (+ (URC_14|MyScoreInPool account pool-id score-id)

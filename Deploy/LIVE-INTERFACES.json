@@ -1,0 +1,799 @@
+{
+ "probed": "2026-11-11",
+ "node": "https://node2.stoachain.com",
+ "note": "Written ONLY by _liveinterfaces.py --probe. Hand-editing reintroduces the assumption that aborted the V26 round at transaction 01.",
+ "interfaces": {
+  "AcquisitionAnchorsV3": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/01_ANK.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 8722,
+   "repo_bytes": 8722
+  },
+  "AcquisitionFarmsVaultsTreasuriesV7": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/05_FVT.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 17628,
+   "repo_bytes": 17628
+  },
+  "AcquisitionPoolBootV2": {
+   "live": true,
+   "source": "2_CITIZEN/5_VaultsMinter/04_AQP-BOOT.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 5247,
+   "repo_bytes": 5247
+  },
+  "AcquisitionPoolsV3": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/03_AQP.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 18321,
+   "repo_bytes": 18321
+  },
+  "AcquisitionRewardCostsV1": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/04b_RPSC.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 3668,
+   "repo_bytes": 3668
+  },
+  "AcquisitionRewardEvictionV2": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/08b_EVCT.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 2617,
+   "repo_bytes": 2617
+  },
+  "AcquisitionRewardPerShareV8": {
+   "live": false,
+   "source": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/04_RPS.pact"
+  },
+  "AcquisitionSchemasV5": {
+   "live": false,
+   "source": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/00_AQP-SCHEMAS.pact"
+  },
+  "AcquisitionScoresV7": {
+   "live": false,
+   "source": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/02_SCORE.pact"
+  },
+  "AcquisitionVacateV6": {
+   "live": false,
+   "source": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/06_VCT.pact"
+  },
+  "AgeOfZalmoxis": {
+   "live": true,
+   "source": "2_CITIZEN/1_AOZ/01_AOZ+.pact",
+   "identical": false,
+   "signatures_match": true,
+   "live_bytes": 1286,
+   "repo_bytes": 2469
+  },
+  "AqpMtxV2": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/07_MTX-AQP.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 1621,
+   "repo_bytes": 1621
+  },
+  "AutostakeComputerV3": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_01/2_Core/08_ATS.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 2884,
+   "repo_bytes": 2884
+  },
+  "AutostakeUsageV4": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_01/2_Core/10_ATSU.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 6646,
+   "repo_bytes": 6646
+  },
+  "AutostakeV4": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_01/2_Core/08_ATS.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 14725,
+   "repo_bytes": 14725
+  },
+  "Bloodshed": {
+   "live": true,
+   "source": "2_CITIZEN/2_BloodshedMinter/01_BSD-L.pact",
+   "identical": false,
+   "signatures_match": false,
+   "live_bytes": 4229,
+   "repo_bytes": 6797
+  },
+  "BrandingUsagePrimaryV3": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_01/2_Core/05_DPTF.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 1650,
+   "repo_bytes": 1650
+  },
+  "BrandingUsageSecondaryV3": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_01/2_Core/18_SWPLC.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 1716,
+   "repo_bytes": 1716
+  },
+  "BrandingUsageTertiaryV3": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/02_DPDC.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 1638,
+   "repo_bytes": 1638
+  },
+  "BrandingV3": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_01/2_Core/04_BRD.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 3948,
+   "repo_bytes": 3948
+  },
+  "BreadthFirstSearchV2": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_01/1_Utilities/13_U_BFS.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 1940,
+   "repo_bytes": 1940
+  },
+  "CitizenLaunchpadTalosV1": {
+   "live": true,
+   "source": "2_CITIZEN/7_Launchpad/99_TS02-CPAD.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 2110,
+   "repo_bytes": 2110
+  },
+  "CodexV4": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_01/2_Core/21_CODEX.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 6589,
+   "repo_bytes": 6589
+  },
+  "DemiourgosLaunchpadV3": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_02/2_Core/02_DEMIPAD/00_Demipad.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 8382,
+   "repo_bytes": 8382
+  },
+  "DemiourgosPactMetaFungibleV8": {
+   "live": false,
+   "source": "1_SOVEREIGN/STAGE_01/2_Core/00_DPMF.pact"
+  },
+  "DemiourgosPactOrtoFungibleV3": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_01/2_Core/06_DPOF.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 14966,
+   "repo_bytes": 14966
+  },
+  "DemiourgosPactTrueFungibleV3": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_01/2_Core/05_DPTF.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 13357,
+   "repo_bytes": 13357
+  },
+  "DiaStoaPidV2": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_01/1_Utilities/01_U_CT.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 1365,
+   "repo_bytes": 1365
+  },
+  "DispenserV3": {
+   "live": true,
+   "source": "2_CITIZEN/Stage_Z/03_DSP+.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 2102,
+   "repo_bytes": 2102
+  },
+  "DpdcCreateV3": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/03_DPDC-C.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 5171,
+   "repo_bytes": 5171
+  },
+  "DpdcFragmentsV3": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/09_DPDC-F.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 2740,
+   "repo_bytes": 2740
+  },
+  "DpdcIssueV3": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/04_DPDC-I.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 2399,
+   "repo_bytes": 2399
+  },
+  "DpdcManagementV3": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/06_DPDC-MNG.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 6396,
+   "repo_bytes": 6396
+  },
+  "DpdcNonceV3": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/10_DPDC-N.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 4000,
+   "repo_bytes": 4000
+  },
+  "DpdcRolesV3": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/05_DPDC-R.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 4523,
+   "repo_bytes": 4523
+  },
+  "DpdcSetsV3": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/08_DPDC-S.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 8765,
+   "repo_bytes": 8765
+  },
+  "DpdcTransferV3": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/07_DPDC-T.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 4052,
+   "repo_bytes": 4052
+  },
+  "DpdcUdcV2": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/01_DPDC-UDC.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 10999,
+   "repo_bytes": 10999
+  },
+  "DpdcV3": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/02_DPDC.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 12354,
+   "repo_bytes": 12354
+  },
+  "DpofUdcV2": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_01/2_Core/06_DPOF.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 3869,
+   "repo_bytes": 3869
+  },
+  "DsaV3": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/08_DSA.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 5048,
+   "repo_bytes": 5048
+  },
+  "EliteV2": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_01/2_Core/07_ELITE.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 1532,
+   "repo_bytes": 1532
+  },
+  "EquityV5": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/11_EQUITY+.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 5766,
+   "repo_bytes": 5766
+  },
+  "IgnisCollectorV4": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_01/2_Core/02_IGNIS.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 6353,
+   "repo_bytes": 6353
+  },
+  "InfoOneV3": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_01/Z_Reads/02_INFO-ONE+.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 25669,
+   "repo_bytes": 25669
+  },
+  "InfoTwoV3": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 3573,
+   "repo_bytes": 3573
+  },
+  "OUiEightV2": {
+   "live": true,
+   "source": "2_CITIZEN/Stage_Z/AppReads/OuronetUI/08_O-UI-EIGHT.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 1030,
+   "repo_bytes": 1030
+  },
+  "OUiFourV1": {
+   "live": true,
+   "source": "2_CITIZEN/Stage_Z/AppReads/OuronetUI/04_O-UI-FOUR.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 344,
+   "repo_bytes": 344
+  },
+  "OUiFourteenV1": {
+   "live": true,
+   "source": "2_CITIZEN/Stage_Z/AppReads/OuronetUI/14_O-UI-FOURTEEN.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 1453,
+   "repo_bytes": 1453
+  },
+  "OUiNineV2": {
+   "live": true,
+   "source": "2_CITIZEN/Stage_Z/AppReads/OuronetUI/09_O-UI-NINE.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 1207,
+   "repo_bytes": 1207
+  },
+  "OUiOneV1": {
+   "live": true,
+   "source": "2_CITIZEN/Stage_Z/AppReads/OuronetUI/01_O-UI-ONE.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 801,
+   "repo_bytes": 801
+  },
+  "OUiSevenV1": {
+   "live": true,
+   "source": "2_CITIZEN/Stage_Z/AppReads/OuronetUI/07_O-UI-SEVEN.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 757,
+   "repo_bytes": 757
+  },
+  "OUiTenV1": {
+   "live": true,
+   "source": "2_CITIZEN/Stage_Z/AppReads/OuronetUI/10_O-UI-TEN.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 1210,
+   "repo_bytes": 1210
+  },
+  "OUiThirteenV1": {
+   "live": true,
+   "source": "2_CITIZEN/Stage_Z/AppReads/OuronetUI/13_O-UI-THIRTEEN.pact",
+   "identical": false,
+   "signatures_match": true,
+   "live_bytes": 881,
+   "repo_bytes": 1244
+  },
+  "OUiThreeV2": {
+   "live": true,
+   "source": "2_CITIZEN/Stage_Z/AppReads/OuronetUI/03_O-UI-THREE.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 1031,
+   "repo_bytes": 1031
+  },
+  "OUiTwelveV1": {
+   "live": true,
+   "source": "2_CITIZEN/Stage_Z/AppReads/OuronetUI/12_O-UI-TWELVE.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 1558,
+   "repo_bytes": 1558
+  },
+  "OUiTwoV1": {
+   "live": true,
+   "source": "2_CITIZEN/Stage_Z/AppReads/OuronetUI/02_O-UI-TWO.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 1201,
+   "repo_bytes": 1201
+  },
+  "OuroborosV3": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_01/2_Core/13_OUROBOROS.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 3095,
+   "repo_bytes": 3095
+  },
+  "OuronetConstantsV2": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_01/1_Utilities/01_U_CT.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 3279,
+   "repo_bytes": 3279
+  },
+  "OuronetDalosV3": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_01/2_Core/01_DALOS.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 11475,
+   "repo_bytes": 11475
+  },
+  "OuronetDecimalsV2": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_01/1_Utilities/07_U_DEC.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 1609,
+   "repo_bytes": 1609
+  },
+  "OuronetGasStationV2": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_01/1_Utilities/03_U_ST.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 1971,
+   "repo_bytes": 1971
+  },
+  "OuronetGuardsV2": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_01/1_Utilities/02_U_G.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 1503,
+   "repo_bytes": 1503
+  },
+  "OuronetIdsV1": {
+   "live": true,
+   "source": "2_CITIZEN/Stage_Z/AppReads/00_Ids.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 2524,
+   "repo_bytes": 2524
+  },
+  "OuronetInfoV3": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_01/2_Core/02_IGNIS.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 3223,
+   "repo_bytes": 3223
+  },
+  "OuronetIntegersV2": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_01/1_Utilities/06_U_INT.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 2682,
+   "repo_bytes": 2682
+  },
+  "OuronetPolicyV2": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_01/2_Core/01_DALOS.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 5521,
+   "repo_bytes": 5521
+  },
+  "PUiOneV1": {
+   "live": true,
+   "source": "2_CITIZEN/Stage_Z/AppReads/Pythia/01_P-UI-ONE.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 423,
+   "repo_bytes": 423
+  },
+  "PythiaLedgerV4": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_01/2_Core/22_PYTHIA.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 3841,
+   "repo_bytes": 3841
+  },
+  "PythiaV7": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_01/2_Core/22_PYTHIA.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 6004,
+   "repo_bytes": 6004
+  },
+  "ReservedAccountsV2": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_01/1_Utilities/04_U_RS.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 1392,
+   "repo_bytes": 1392
+  },
+  "SaleCustodiansV3": {
+   "live": true,
+   "source": "2_CITIZEN/7_Launchpad/3_Custodians/03_Custodians.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 2564,
+   "repo_bytes": 2564
+  },
+  "SaleSnakesV3": {
+   "live": true,
+   "source": "2_CITIZEN/7_Launchpad/2_Snakes/02_Snakes.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 2493,
+   "repo_bytes": 2493
+  },
+  "SparksV3": {
+   "live": true,
+   "source": "2_CITIZEN/7_Launchpad/1_Spark/01_Spark.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 3013,
+   "repo_bytes": 3013
+  },
+  "StoaLiquidStakingV3": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_01/2_Core/12_LIQUID.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 3636,
+   "repo_bytes": 3636
+  },
+  "StoicPayV4": {
+   "live": true,
+   "source": "2_CITIZEN/7_Launchpad/4_StoicPay/04_STOICPAY.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 2302,
+   "repo_bytes": 2302
+  },
+  "StringProcessorV2": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_01/1_Utilities/05_U_LST.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 2130,
+   "repo_bytes": 2130
+  },
+  "SwapTracerV4": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_01/2_Core/14_SWPT.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 11542,
+   "repo_bytes": 11542
+  },
+  "SwapperIssueV5": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_01/2_Core/16_SWPI.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 13302,
+   "repo_bytes": 13302
+  },
+  "SwapperLiquidityClientV3": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_01/2_Core/18_SWPLC.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 5580,
+   "repo_bytes": 5580
+  },
+  "SwapperLiquidityV3": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_01/2_Core/17_SWPL.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 8029,
+   "repo_bytes": 8029
+  },
+  "SwapperMtxV5": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_01/2_Core/20_MTX-SWP.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 3060,
+   "repo_bytes": 3060
+  },
+  "SwapperUsageV4": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_01/2_Core/19_SWPU.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 9854,
+   "repo_bytes": 9854
+  },
+  "SwapperV5": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_01/2_Core/15_SWP.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 9711,
+   "repo_bytes": 9711
+  },
+  "TalosStageOne_AdminV2": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_01/3_Talos/01_TS01-A.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 3767,
+   "repo_bytes": 3767
+  },
+  "TalosStageOne_ClientFourV9": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_01/3_Talos/06_TS01-C4.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 3473,
+   "repo_bytes": 3473
+  },
+  "TalosStageOne_ClientOneV3": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_01/3_Talos/02_TS01-C1.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 8318,
+   "repo_bytes": 8318
+  },
+  "TalosStageOne_ClientPactsV5": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_01/3_Talos/05_TS01-P.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 2472,
+   "repo_bytes": 2472
+  },
+  "TalosStageOne_ClientThreeV5": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_01/3_Talos/04_TS01-C3.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 6785,
+   "repo_bytes": 6785
+  },
+  "TalosStageOne_ClientTwoV3": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_01/3_Talos/03_TS01-C2.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 10050,
+   "repo_bytes": 10050
+  },
+  "TalosStageTwo_ClientOneV5": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 13019,
+   "repo_bytes": 13019
+  },
+  "TalosStageTwo_ClientThreeV8": {
+   "live": false,
+   "source": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact"
+  },
+  "TalosStageTwo_ClientTwoV3": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 11302,
+   "repo_bytes": 11302
+  },
+  "TalosStageTwo_DemiPadV4": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_02/3_Talos/05_TS02-DPAD.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 3352,
+   "repo_bytes": 3352
+  },
+  "TrueFungibleTransferV3": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_01/2_Core/09_TFT.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 6000,
+   "repo_bytes": 6000
+  },
+  "UtilityAtsV3": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_01/1_Utilities/09_U_ATS.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 3164,
+   "repo_bytes": 3164
+  },
+  "UtilityDalosGlyphsV3": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_01/1_Utilities/08_U_DALOS.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 1954,
+   "repo_bytes": 1954
+  },
+  "UtilityDalosV2": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_01/1_Utilities/08_U_DALOS.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 2318,
+   "repo_bytes": 2318
+  },
+  "UtilityDptfV2": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_01/1_Utilities/10_U_DPTF.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 2064,
+   "repo_bytes": 2064
+  },
+  "UtilitySwpV3": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_01/1_Utilities/12_U_SWP.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 9987,
+   "repo_bytes": 9987
+  },
+  "UtilityVstV2": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_01/1_Utilities/11_U_VST.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 2102,
+   "repo_bytes": 2102
+  },
+  "VestingV3": {
+   "live": true,
+   "source": "1_SOVEREIGN/STAGE_01/2_Core/11_VST.pact",
+   "identical": true,
+   "signatures_match": true,
+   "live_bytes": 9717,
+   "repo_bytes": 9717
+  }
+ }
+}

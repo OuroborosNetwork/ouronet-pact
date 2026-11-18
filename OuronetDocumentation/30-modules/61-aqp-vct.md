@@ -19,9 +19,9 @@ _To be written._
 
 | | |
 |---|---|
-| module hash | `H51xmVWEkoRqhbmkER1YqDldSruV177-syiqR8zpEv0` |
+| module hash | `9AD-U3kFxv64JwhSBDrKW0BmJs4KdQm7iNI5W6ySo8o` |
 | deployed size | 190,605 characters |
-| implements | `OuronetPolicyV2`, `AcquisitionVacateV4` |
+| implements | `OuronetPolicyV2`, `AcquisitionVacateV5` |
 | repository source | `1_SOVEREIGN/STAGE_02/2_Core/03_AQP/06_VCT.pact` |
 
 **Tables it owns** — 2

@@ -19,7 +19,7 @@ _To be written._
 
 | | |
 |---|---|
-| module hash | `meIcpLzGn0VRD9KY7erIeC-IL3_u8RMHuy3Yqam5wjY` |
+| module hash | `wPhTnxZSefqBBPl5ddY_NGTBeDIJ-ov9qyOrDX8SpFE` |
 | deployed size | 43,004 characters |
 | implements | `AcquisitionRewardCostsV1` |
 | repository source | `1_SOVEREIGN/STAGE_02/2_Core/03_AQP/04b_RPSC.pact` |

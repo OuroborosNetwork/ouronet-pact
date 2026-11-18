@@ -19,9 +19,9 @@ _To be written._
 
 | | |
 |---|---|
-| module hash | `7qQQy669gTyImeU3Ic5IB7i-gnN7eCkSDMVl_Vibrbw` |
-| deployed size | 35,430 characters |
-| implements | `OuronetPolicyV2`, `AcquisitionRewardEvictionV1` |
+| module hash | `ZS2uR2BmOGVxQllo4RP4gFKfLwfzVDszhTRurPy-aE0` |
+| deployed size | 49,286 characters |
+| implements | `OuronetPolicyV2`, `AcquisitionRewardEvictionV2` |
 | repository source | `1_SOVEREIGN/STAGE_02/2_Core/03_AQP/08b_EVCT.pact` |
 
 **Tables it owns** — 2
@@ -32,7 +32,7 @@ _To be written._
 
 `EVCT|C>EVICT-MULTI`, `EVCT|C>EVICT-SINGLE`, `EVCT|C>FULL-EVICT`, `GOV`, `GOV|EVCT_ADMIN`, `P|EVCT|CALLER`, `P|EVCT|RECIPE`, `SECURE`
 
-**Functions** — 26, grouped by what their prefix promises
+**Functions** — 30, grouped by what their prefix promises
 
 | family | n | the promise | names |
 |---|---:|---|---|
@@ -40,9 +40,9 @@ _To be written._
 | `URHC_` heavy derived reads | 3 | a scan, then derivation | `URHC_BuildEvictPlans`, `URHC_BuildEvictSlicePlan`, `URHC_EvictLegCount` |
 | `URH_` heavy reads | 1 | a scan -- expensive by construction | `URH_EvictInventory` |
 | `UEV_` validators | 1 | read and enforce; may abort the transaction | `UEV_EvictSliceShape` |
-| `UC_` pure compute | 3 | arguments only -- no reads, no enforce | `UC_CeilDiv`, `UC_EmptyOc`, `UC_EvictLegsFromParallelArrays` |
+| `UC_` pure compute | 6 | arguments only -- no reads, no enforce | `UC_CeilDiv`, `UC_EmptyOc`, `UC_EvictBulkArrays`, `UC_EvictLaneAmounts`, `UC_EvictLaneReceivers`, `UC_EvictLegsFromParallelArrays` |
 | `CAP_` ownership gates | 1 | account-ownership enforcement | `CAP_EvctFvtOwner` |
-| `XI_` protected (internal) | 1 | this module only | `XI_EvictLegs` |
+| `XI_` protected (internal) | 2 | this module only | `XI_EvictLegs`, `XI_EvictPlainLegsBulked` |
 | `CCp_` client recipe (heavy) | 1 | multi-transaction, reaches a scan | `CCp_EvictMultiRewards` |
 | `CC_` client (heavy) | 2 | client entrypoint; reaches a scan | `CC_EvictSingleReward`, `CC_FullEvictRewards` |
 | `P|` policy | 9 | inter-module authorisation | `P|A_Add`, `P|A_AddIMP`, `P|A_Define`, `P|A_RemoveIMP`, `P|A_SetIMP`, `P|Info` …+3 |
@@ -54,7 +54,7 @@ _To be written._
 
 `EVCT|C>EVICT-MULTI`, `EVCT|C>EVICT-SINGLE`, `EVCT|C>FULL-EVICT`, `GOV`, `GOV|EVCT_ADMIN`, `P|EVCT|CALLER`, `P|EVCT|RECIPE`, `SECURE`
 
-**Functions** -- 26, grouped by what the prefix promises
+**Functions** -- 30, grouped by what the prefix promises
 
 *Cost readers* (3) — price an operation; the exec path and the preview both call these
 
@@ -76,9 +76,9 @@ _To be written._
 
 `P|UEV_IMC`, `UEV_EvictSliceShape`
 
-*Pure compute* (3) — arguments only; no reads, no enforce
+*Pure compute* (6) — arguments only; no reads, no enforce
 
-`UC_CeilDiv`, `UC_EmptyOc`, `UC_EvictLegsFromParallelArrays`
+`UC_CeilDiv`, `UC_EmptyOc`, `UC_EvictBulkArrays`, `UC_EvictLaneAmounts`, `UC_EvictLaneReceivers`, `UC_EvictLegsFromParallelArrays`
 
 *Ownership checks* (1) — account-ownership enforcement
 
@@ -96,9 +96,9 @@ _To be written._
 
 `P|A_Add`, `P|A_AddIMP`, `P|A_Define`, `P|A_RemoveIMP`, `P|A_SetIMP`
 
-*Internal writes* (1) — this module only; writes under a capability
+*Internal writes* (2) — this module only; writes under a capability
 
-`XI_EvictLegs`
+`XI_EvictLegs`, `XI_EvictPlainLegsBulked`
 
 *Policy* (2) — inter-module authorisation
 

@@ -111,9 +111,11 @@ NEW_TO_OLD = {
     "AcquisitionFarmsVaultsTreasuriesV3": "AcquisitionFarmsVaultsTreasuriesV2",
     "AcquisitionVacateV3": "AcquisitionVacateV2", "DsaV3": "DsaV2",
     "AcquisitionSchemasV2": "AcquisitionSchemasV1",
-    # BUMPED 2026-11-07 (equity company governance added five DPSF wrappers). What is LIVE is
-    # V3, so the new name maps to it; the V3->V2 line it replaces is kept below as history.
-    "TalosStageTwo_ClientOneV4": "TalosStageTwo_ClientOneV3",
+    # BUMPED 2026-11-08 (the equity share-count stake gate renamed two wrappers C_ -> CC_).
+    # PureV24 shipped V4, so V4 is what is LIVE and the new repo name maps straight to it. The
+    # V4->V3 line this replaces was correct only until that round landed, which is exactly the
+    # rot the header above warns about: this map has to be re-pointed the day a round ships.
+    "TalosStageTwo_ClientOneV5": "TalosStageTwo_ClientOneV4",
     "TalosStageTwo_ClientTwoV3": "TalosStageTwo_ClientTwoV2",
     "TalosStageTwo_ClientThreeV3": "TalosStageTwo_ClientThreeV2",
     "TalosStageTwo_DemiPadV3": "TalosStageTwo_DemiPadV2",

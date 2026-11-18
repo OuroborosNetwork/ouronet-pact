@@ -324,9 +324,9 @@
     ;;{3.2}  schemas
     ;;
     ;;{3.3}  tables
-    (deftable DSA|T|Template:{AcquisitionSchemasV3.DSA|Template})                    ;; Key = <FVT-ID>
-    (deftable DSA|T|Agency:{AcquisitionSchemasV3.DSA|Agency})                        ;; Key = <FVT-ID> | <Score-Entity-ID>
-    (deftable DSA|T|OracleAuth:{AcquisitionSchemasV3.DSA|OracleAuth})                ;; Key = <FVT-ID>
+    (deftable DSA|T|Template:{AcquisitionSchemasV5.DSA|Template})                    ;; Key = <FVT-ID>
+    (deftable DSA|T|Agency:{AcquisitionSchemasV5.DSA|Agency})                        ;; Key = <FVT-ID> | <Score-Entity-ID>
+    (deftable DSA|T|OracleAuth:{AcquisitionSchemasV5.DSA|OracleAuth})                ;; Key = <FVT-ID>
 
     ;;<=========================================================================>
     ;;{4}  CAPABILITIES
@@ -494,17 +494,17 @@
     )
     ;;
     ;; [UDC] construct
-    (defun UDC_DSA|Template:object{AcquisitionSchemasV3.DSA|Template}
+    (defun UDC_DSA|Template:object{AcquisitionSchemasV5.DSA|Template}
         (model-id:string unit-score:integer active:bool fvt-id:string)
-        @doc "Core constructor for object{AcquisitionSchemasV3.DSA|Template}."
+        @doc "Core constructor for object{AcquisitionSchemasV5.DSA|Template}."
         {"model-id"            : model-id
         ,"unit-score"          : unit-score
         ,"active"              : active
         ,"fvt-id"              : fvt-id}
     )
-    (defun UDC_DSA|Agency:object{AcquisitionSchemasV3.DSA|Agency}
+    (defun UDC_DSA|Agency:object{AcquisitionSchemasV5.DSA|Agency}
         (operator-konto:string fee-per-mille:integer nodes:integer uptime:integer fvt-id:string score-entity-id:string)
-        @doc "Core constructor for object{AcquisitionSchemasV3.DSA|Agency}."
+        @doc "Core constructor for object{AcquisitionSchemasV5.DSA|Agency}."
         {"operator-konto" : operator-konto
         ,"fee-per-mille"  : fee-per-mille
         ,"nodes"          : nodes
@@ -512,9 +512,9 @@
         ,"fvt-id"         : fvt-id
         ,"score-entity-id": score-entity-id}
     )
-    (defun UDC_DSA|OracleAuth:object{AcquisitionSchemasV3.DSA|OracleAuth}
+    (defun UDC_DSA|OracleAuth:object{AcquisitionSchemasV5.DSA|OracleAuth}
         (oracle-guard:guard fvt-id:string)
-        @doc "Core constructor for object{AcquisitionSchemasV3.DSA|OracleAuth}."
+        @doc "Core constructor for object{AcquisitionSchemasV5.DSA|OracleAuth}."
         {"oracle-guard" : oracle-guard
         ,"fvt-id"       : fvt-id}
     )
@@ -531,7 +531,7 @@
     )
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;; [UR]  read
-    (defun UR_DSA-TMP|Template:object{AcquisitionSchemasV3.DSA|Template} (fvt-id:string)
+    (defun UR_DSA-TMP|Template:object{AcquisitionSchemasV5.DSA|Template} (fvt-id:string)
         @doc "Reads the full DSA template row for a vault."
         (read DSA|T|Template fvt-id)
     )
@@ -547,7 +547,7 @@
         @doc "Reads whether a DSA vault template is active."
         (at "active" (read DSA|T|Template fvt-id ["active"]))
     )
-    (defun UR_DSA-AGN|Agency:object{AcquisitionSchemasV3.DSA|Agency} (fvt-id:string score-entity-id:string)
+    (defun UR_DSA-AGN|Agency:object{AcquisitionSchemasV5.DSA|Agency} (fvt-id:string score-entity-id:string)
         @doc "Reads the full agency row (absent ⇒ defaults: no operator, min fee, no nodes, full uptime)."
         (with-default-read DSA|T|Agency (UCk_Agency fvt-id score-entity-id)
             {"operator-konto": "", "fee-per-mille": DSA_FEE_MIN, "nodes": 0, "uptime": DSA_UPTIME_FULL
@@ -589,7 +589,7 @@
             \ the model's nonce values). The open gate + the capture divisor read this."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
             )
             (+ (ref-SCR::UR_SCR|ScoreTotalBaseScore (ref-SCR::UR_SCR|TripletBronzeScoreId score-entity-id))
                (+ (ref-SCR::UR_SCR|ScoreTotalBaseScore (ref-SCR::UR_SCR|TripletSilverScoreId score-entity-id))
@@ -746,12 +746,12 @@
     )
     ;;{5.5}  Write [W]
     ;; [W]   write
-    (defun WI_Template:string (fvt-id:string row:object{AcquisitionSchemasV3.DSA|Template})
+    (defun WI_Template:string (fvt-id:string row:object{AcquisitionSchemasV5.DSA|Template})
         @doc "Insert a DSA vault template row. require SECURE."
         (require-capability (SECURE))
         (insert DSA|T|Template fvt-id row)
     )
-    (defun WI_Agency:string (fvt-id:string score-entity-id:string row:object{AcquisitionSchemasV3.DSA|Agency})
+    (defun WI_Agency:string (fvt-id:string score-entity-id:string row:object{AcquisitionSchemasV5.DSA|Agency})
         @doc "Insert a DSA agency row. require SECURE."
         (require-capability (SECURE))
         (insert DSA|T|Agency (UCk_Agency fvt-id score-entity-id) row)
@@ -766,7 +766,7 @@
         (require-capability (SECURE))
         (update DSA|T|Agency (UCk_Agency fvt-id score-entity-id) {"fee-per-mille" : fee-per-mille})
     )
-    (defun WI_OracleAuth:string (fvt-id:string row:object{AcquisitionSchemasV3.DSA|OracleAuth})
+    (defun WI_OracleAuth:string (fvt-id:string row:object{AcquisitionSchemasV5.DSA|OracleAuth})
         @doc "Write (set / rotate) a DSA vault's oracle authority row. require SECURE."
         (require-capability (SECURE))
         (write DSA|T|OracleAuth fvt-id row)
@@ -832,7 +832,7 @@
         (with-capability (DSA|C>SET-ORACLE-AUTH patron executor fvt-id)
             (let
                 (
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV6} AQP-FVT)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV7} AQP-FVT)
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )

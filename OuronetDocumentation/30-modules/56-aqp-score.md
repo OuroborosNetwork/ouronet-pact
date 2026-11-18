@@ -19,9 +19,9 @@ Between the pools and the reward distributor.
 
 | | |
 |---|---|
-| module hash | `RMgOjMECNVmHjZ16tRzKGZkvLHEgaaq4EVzn2LysnHM` |
-| deployed size | 295,523 characters |
-| implements | `OuronetPolicyV2`, `AcquisitionScoresV5` |
+| module hash | `L5IX1AcSt0E8gkKpr1C12-mFeJmNzlVykCXYXldsRFE` |
+| deployed size | 300,381 characters |
+| implements | `OuronetPolicyV2`, `AcquisitionScoresV6` |
 | repository source | `1_SOVEREIGN/STAGE_02/2_Core/03_AQP/02_SCORE.pact` |
 
 **Tables it owns** — 13
@@ -55,7 +55,10 @@ Between the pools and the reward distributor.
 | `P|` policy | 9 | inter-module authorisation | `P|A_Add`, `P|A_AddIMP`, `P|A_Define`, `P|A_RemoveIMP`, `P|A_SetIMP`, `P|Info` …+3 |
 | *(unclassified)* | 126 | carries no StoicSyntax prefix | `CT_AqpScName`, `CT_Bar`, `CT_EmptyCumulator`, `GOV|Demiurgoi`, `UDC_SCR|NF|ClassSchema`, `UDC_SCR|NF|DefRevision` …+120 |
 
-> Repository and chain agree on every declared shape.
+> **The repository differs from what is deployed.** Everything above describes the CHAIN, which is what a caller actually reaches. The difference is stated rather than resolved:
+>
+> - **capabilities** in the repository only: `SCR|C>SET-SINGLE-SHARE-WEIGHT`
+> - **functions** in the repository only: `C_SetSingleShareWeight`, `URCi_SetSingleShareWeight`, `UR_SCR|SingleShareWeight`, `WU_Score|SingleShareWeight`, `XI_SetSingleShareWeight`
 
 **Capabilities** -- 40
 

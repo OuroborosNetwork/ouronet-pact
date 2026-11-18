@@ -1,7 +1,7 @@
 ;; net: v1   ·   dev: v2   ;; AcquisitionRewardPerShare V4 -> V5 (2026-10-29): 14 declarations
 ;; REMOVED -- the cost/client surface moved to AQP-RPSC (04b_RPSC.pact) to free deploy
 ;; bytes for the AQP|SC_NAME reward ladder. See that file's header for the seam.
-(interface AcquisitionRewardPerShareV5
+(interface AcquisitionRewardPerShareV8
     @doc "RPS reward-per-share ledger interface (extracted from AQP-FVT, #75). Per-field \
         \ global/member/user/stream + member-vault + forced-fix readers, the SECURE-composed \
         \ IMC-gated XE_ writer entrypoints FVT drives, and the royalty-custody XE_/URCi that \
@@ -29,8 +29,8 @@
     (defun UR_FVT-RG|RewardEnabled:bool (fvt-id:string dptf-id:string))
     (defun UR_FVT-RG|MinInjectAmount:decimal (fvt-id:string dptf-id:string))
     (defun AA_MigrateMinInject:string ())
-    (defun XE_XI_SetMinInjectAmount:string (fvt-id:string reward-dptf-id:string min-inject-amount:decimal))
-    (defun XE_XI_FixUserFvtDebIn:object{IgnisCollectorV4.OutputCumulator} (fvt-id:string user-id:string members:[string] reward-rows:[string]))
+    (defun XE_SetMinInjectAmount:string (fvt-id:string reward-dptf-id:string min-inject-amount:decimal))
+    (defun XE_FixUserFvtDebIn:object{IgnisCollectorV4.OutputCumulator} (fvt-id:string user-id:string members:[string] reward-rows:[string]))
     (defun UR_FVT-RG|RewardKind:string (fvt-id:string dptf-id:string))
     (defun UR_FVT-SEL|Enabled:bool (fvt-id:string score-entity-id:string))
     (defun UR_FVT-SEL|ScoreEntityType:integer (fvt-id:string score-entity-id:string))
@@ -44,36 +44,35 @@
     (defun XE_FvtSweepRecomputeChunk:object{IgnisCollectorV4.OutputCumulator} (fvt-id:string score-entity-id:string swept-boost-class-id:string users:[string]))
     (defun XE_SetAgencyFee:string (fvt-id:string score-entity-id:string operator-konto:string fee-per-mille:integer))
     (defun XE_WithdrawRoyalty:object{IgnisCollectorV4.OutputCumulator} (patron:string fvt-id:string reward-dptf-id:string destination:string))
-    (defun XE_WI_QualitySplit:string (fvt-id:string dptf-id:string mode:string bronze-split:[integer] silver-split:[integer] gold-split:[integer]))
-    (defun XE_WU_FvtForcedFixCount|Zero:string (fvt-id:string dptf-id:string user-id:string))
-    (defun XE_WU_MemberVault|AvailableRewards:string (fvt-id:string score-entity-id:string dptf-id:string available-rewards:decimal))
-    (defun XE_WU_RpsGlobal|AvailableRewards:string (fvt-id:string dptf-id:string available-rewards:decimal))
-    (defun XE_WU_RpsUser|LastRps:string (user-id:string fvt-id:string score-entity-id:string dptf-id:string last-rps:decimal))
-    (defun XE_WU_RpsUser|PendingRewards:string (user-id:string fvt-id:string score-entity-id:string dptf-id:string pending-rewards:decimal))
-    (defun XE_XI_2|SettleMemberTier2:object{IgnisCollectorV4.OutputCumulator} (fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string))
-    (defun XE_XI_AddRewardLink:string (fvt-id:string reward-dptf-id:string segmentation:bool reward-kind:string multiplet-family-id:string))
-    (defun XE_XI_AddScoreEntity:string (fvt-id:string score-entity-type:integer score-entity-id:string swpair:string ghost-weight:decimal))
-    (defun XE_XI_BookCollectUnclaimed:object{IgnisCollectorV4.OutputCumulator} (patron:string pool-id:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string))
-    (defun XE_XI_FixUserFvtDeb:object{IgnisCollectorV4.OutputCumulator} (user-id:string fvt-id:string))
-    (defun XE_XI_FixUserFvtDebPenalizedIn:object{IgnisCollectorV4.OutputCumulator} (fvt-id:string reward-dptf-id:string user-id:string members:[string] reward-rows:[string]))
-    (defun XE_XI_FixUserMemberDeb:object{IgnisCollectorV4.OutputCumulator} (user-id:string fvt-id:string score-entity-type:integer score-entity-id:string))
-    (defun XE_XI_FvtAddStream:object{IgnisCollectorV4.OutputCumulator} (op-key:string patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer))
-    (defun XE_XI_FvtInjectCore:object{IgnisCollectorV4.OutputCumulator} (op-key:string patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal))
-    (defun XE_XI_FvtSweepRecomputeChunk:object{IgnisCollectorV4.OutputCumulator} (fvt-id:string score-entity-id:string swept-boost-class-id:string users:[string]))
-    (defun XE_XI_FvtSweepRecomputeWindow:integer (score-ids:[string] boost-class-id:string win-lo:integer win-hi:integer))
-    (defun XE_XI_IssueMultipletFamily:string (token-0-id:string
+    (defun XE_QualitySplit:string (fvt-id:string dptf-id:string mode:string bronze-split:[integer] silver-split:[integer] gold-split:[integer]))
+    (defun XE_FvtForcedFixCount|Zero:string (fvt-id:string dptf-id:string user-id:string))
+    (defun XE_MemberVault|AvailableRewards:string (fvt-id:string score-entity-id:string dptf-id:string available-rewards:decimal))
+    (defun XE_RpsGlobal|AvailableRewards:string (fvt-id:string dptf-id:string available-rewards:decimal))
+    (defun XE_RpsUser|LastRps:string (user-id:string fvt-id:string score-entity-id:string dptf-id:string last-rps:decimal))
+    (defun XE_RpsUser|PendingRewards:string (user-id:string fvt-id:string score-entity-id:string dptf-id:string pending-rewards:decimal))
+    (defun XE_2|SettleMemberTier2:object{IgnisCollectorV4.OutputCumulator} (fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string))
+    (defun XE_AddRewardLink:string (fvt-id:string reward-dptf-id:string segmentation:bool reward-kind:string multiplet-family-id:string))
+    (defun XE_AddScoreEntity:string (fvt-id:string score-entity-type:integer score-entity-id:string swpair:string ghost-weight:decimal))
+    (defun XE_BookCollectUnclaimed:object{IgnisCollectorV4.OutputCumulator} (patron:string pool-id:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string payout:decimal))
+    (defun XE_FixUserFvtDeb:object{IgnisCollectorV4.OutputCumulator} (user-id:string fvt-id:string))
+    (defun XE_FixUserFvtDebPenalizedIn:object{IgnisCollectorV4.OutputCumulator} (fvt-id:string reward-dptf-id:string user-id:string members:[string] reward-rows:[string]))
+    (defun XE_FixUserMemberDeb:object{IgnisCollectorV4.OutputCumulator} (user-id:string fvt-id:string score-entity-type:integer score-entity-id:string))
+    (defun XE_FvtAddStream:object{IgnisCollectorV4.OutputCumulator} (op-key:string patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer))
+    (defun XE_FvtInjectCore:object{IgnisCollectorV4.OutputCumulator} (op-key:string patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal))
+    (defun XE_FvtSweepRecomputeWindow:integer (score-ids:[string] boost-class-id:string win-lo:integer win-hi:integer))
+    (defun XE_IssueMultipletFamily:string (token-0-id:string
             token-1-id:string
             token-2-id:string
             ats-0-1-id:string
             ats-1-2-id:string))
-    (defun XE_XI_ReleaseStream:object{IgnisCollectorV4.OutputCumulator} (fvt-id:string reward-dptf-id:string))
-    (defun XE_XI_RotateOwnership:string (fvt-id:string new-owner-konto:string))
-    (defun XE_XI_SetMosaic:string (fvt-id:string mosaic:bool))
-    (defun XE_XI_SetSplitMode:string (fvt-id:string split-mode:string))
-    (defun XE_XI_SyncFvtPresence:object{IgnisCollectorV4.OutputCumulator} (beneficiary-id:string distinct-fvts:[string] direction:bool))
-    (defun XE_XI_ToggleRewardLink:string (fvt-id:string reward-dptf-id:string enabled:bool))
-    (defun XE_XI_ToggleScoreEntityLink:string (fvt-id:string score-entity-id:string enabled:bool))
-    (defun XE_XI_TransferRewardDptfFromVault:object{IgnisCollectorV4.OutputCumulator} (patron:string collector:string pool-id:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string))
+    (defun XE_ReleaseStream:object{IgnisCollectorV4.OutputCumulator} (fvt-id:string reward-dptf-id:string))
+    (defun XE_RotateOwnership:string (fvt-id:string new-owner-konto:string))
+    (defun XE_SetMosaic:string (fvt-id:string mosaic:bool))
+    (defun XE_SetSplitMode:string (fvt-id:string split-mode:string))
+    (defun XE_SyncFvtPresence:object{IgnisCollectorV4.OutputCumulator} (beneficiary-id:string distinct-fvts:[string] direction:bool))
+    (defun XE_ToggleRewardLink:string (fvt-id:string reward-dptf-id:string enabled:bool))
+    (defun XE_ToggleScoreEntityLink:string (fvt-id:string score-entity-id:string enabled:bool))
+    (defun XE_TransferRewardDptfFromVault:object{IgnisCollectorV4.OutputCumulator} (patron:string collector:string pool-id:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string))
 
     ;;<=========================================================================>
     ;; ADDED 2026-10-12 -- interface-membership sweep (StoicSyntax-Prefixes.md Sec5,
@@ -82,22 +81,20 @@
     ;;<=========================================================================>
     (defun XE_AdmitDelegationMember:string (fvt-id:string triplet-id:string operator:string))
     (defun XE_BankScorePendingRewards:object{IgnisCollectorV4.OutputCumulator} (beneficiary-id:string pool-id:string plan:object))
-    (defun XE_BookStakeUnclaimedCounts:object{IgnisCollectorV4.OutputCumulator} (beneficiary-id:string pool-id:string settle-bundle:object))
-    (defun XE_CheckpointStakeRps:object{IgnisCollectorV4.OutputCumulator} (beneficiary-id:string pool-id:string settle-bundle:object))
+    (defun XE_BookStakeUnclaimedCounts:object{IgnisCollectorV4.OutputCumulator} (beneficiary-id:string pool-id:string settle-bundle:object{AcquisitionSchemasV5.FVT|StakeSettleBundle}))
+    (defun XE_CheckpointStakeRps:object{IgnisCollectorV4.OutputCumulator} (beneficiary-id:string pool-id:string settle-bundle:object{AcquisitionSchemasV5.FVT|StakeSettleBundle}))
     (defun XE_FvtFixUserChunk:object{IgnisCollectorV4.OutputCumulator} (fvt-id:string reward-dptf-id:string users:[string]))
     (defun XE_SetExternalOracle:string (on:bool))
     (defun XE_SetMemberCapture:string (fvt-id:string score-entity-id:string capture-units:decimal capture-weight:decimal oracle-ts:time))
     (defun XE_SetMemberDelegation:string (fvt-id:string score-entity-id:string delegation:bool))
     (defun XE_SetOracleValidity:string (seconds:integer))
     (defun XE_SweepSyncTripletLaneWeights:object{IgnisCollectorV4.OutputCumulator} (beneficiary-id:string fvt-id:string score-entity-id:string))
-    (defun XE_WI_FvtRewardAggregate:string (fvt-id:string row:object{AcquisitionSchemasV3.FVT|RewardAggregate}))
-    (defun XE_WI_RpsGlobal:string (fvt-id:string dptf-id:string row:object{AcquisitionSchemasV3.FVT|RPS|Global}))
-    (defun XE_WI_ScoreEntityLink:string (fvt-id:string score-entity-id:string row:object{AcquisitionSchemasV3.FVT|ScoreEntityLink}))
-    (defun XE_XI_BookStakeUnclaimedCounts:object{IgnisCollectorV4.OutputCumulator} (beneficiary-id:string pool-id:string settle-bundle:object{AcquisitionSchemasV3.FVT|StakeSettleBundle}))
-    (defun XE_XI_CheckpointStakeRps:object{IgnisCollectorV4.OutputCumulator} (beneficiary-id:string pool-id:string settle-bundle:object{AcquisitionSchemasV3.FVT|StakeSettleBundle}))
-    (defun XE_XI_RpsPreScore:object{IgnisCollectorV4.OutputCumulator} (beneficiary-id:string pool-id:string settle-bundle:object{AcquisitionSchemasV3.FVT|StakeSettleBundle}))
-    (defun XE_XI_SyncFvtTotalDebMirrors:object{IgnisCollectorV4.OutputCumulator} (pre-member-debs:[object{AcquisitionSchemasV3.FVT|MemberPreDeb}]))
-    (defun XE_XI_SyncTripletLaneWeights:object{IgnisCollectorV4.OutputCumulator} (beneficiary-id:string settle-plans:[object{AcquisitionSchemasV3.FVT|SettleScorePlan}]))
+    (defun XE_FvtRewardAggregate:string (fvt-id:string row:object{AcquisitionSchemasV5.FVT|RewardAggregate}))
+    (defun XE_RpsGlobal:string (fvt-id:string dptf-id:string row:object{AcquisitionSchemasV5.FVT|RPS|Global}))
+    (defun XE_ScoreEntityLink:string (fvt-id:string score-entity-id:string row:object{AcquisitionSchemasV5.FVT|ScoreEntityLink}))
+    (defun XE_RpsPreScore:object{IgnisCollectorV4.OutputCumulator} (beneficiary-id:string pool-id:string settle-bundle:object{AcquisitionSchemasV5.FVT|StakeSettleBundle}))
+    (defun XE_SyncFvtTotalDebMirrors:object{IgnisCollectorV4.OutputCumulator} (pre-member-debs:[object{AcquisitionSchemasV5.FVT|MemberPreDeb}]))
+    (defun XE_SyncTripletLaneWeights:object{IgnisCollectorV4.OutputCumulator} (beneficiary-id:string settle-plans:[object{AcquisitionSchemasV5.FVT|SettleScorePlan}]))
     (defun UC_ComputeInjectGainedRps:decimal (reward-amount:decimal denominator:decimal))
     (defun UC_GasPrice:decimal (full-price:decimal trigger:bool))
     (defun UC_PerMilleRow:bool (row:[integer]))
@@ -218,7 +215,7 @@
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     (implements OuronetPolicyV2)
-    (implements AcquisitionRewardPerShareV5)
+    (implements AcquisitionRewardPerShareV8)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -489,6 +486,7 @@
     (defcap SECURE ()
         true
     )
+
     (defcap RPS|XE>WRITE ()
         @doc "Forward entry: FVT (registered IMC caller) drives one RPS ledger write. Composes SECURE."
         (compose-capability (SECURE))
@@ -497,20 +495,20 @@
     ;;{S}  SCHEMAS
     ;;<=========================================================================>
     ;;{T}  TABLES
-    (deftable FVT|T|RPS|Global:{AcquisitionSchemasV3.FVT|RPS|Global})
-    (deftable FVT|T|RPS|Member:{AcquisitionSchemasV3.FVT|RPS|Member})
-    (deftable FVT|T|RPS|User:{AcquisitionSchemasV3.FVT|RPS|User})
-    (deftable FVT|T|RPS|Stream:{AcquisitionSchemasV3.FVT|RPS|Stream})
-    (deftable FVT|T|MemberVault:{AcquisitionSchemasV3.FVT|MemberVault})
-    (deftable FVT|T|MemberUserWeight:{AcquisitionSchemasV3.FVT|MemberUserWeight})
-    (deftable FVT|T|ForcedFixCount:{AcquisitionSchemasV3.FVT|ForcedFixCount})
-    (deftable FVT|T|RewardAggregate:{AcquisitionSchemasV3.FVT|RewardAggregate})
-    (deftable FVT|T|ScoreEntityLink:{AcquisitionSchemasV3.FVT|ScoreEntityLink})
-    (deftable FVT|T|MultipletFamily:{AcquisitionSchemasV3.FVT|MultipletFamily})
-    (deftable FVT|T|UserPresence:{AcquisitionSchemasV3.FVT|UserPresence})
-    (deftable FVT|T|AgencyFee:{AcquisitionSchemasV3.FVT|AgencyFee})
-    (deftable FVT|T|QualitySplit:{AcquisitionSchemasV3.FVT|QualitySplit})
-    (deftable FVT|T|DsaOracleConfig:{AcquisitionSchemasV3.FVT|DsaOracleConfig})
+    (deftable FVT|T|RPS|Global:{AcquisitionSchemasV5.FVT|RPS|Global})
+    (deftable FVT|T|RPS|Member:{AcquisitionSchemasV5.FVT|RPS|Member})
+    (deftable FVT|T|RPS|User:{AcquisitionSchemasV5.FVT|RPS|User})
+    (deftable FVT|T|RPS|Stream:{AcquisitionSchemasV5.FVT|RPS|Stream})
+    (deftable FVT|T|MemberVault:{AcquisitionSchemasV5.FVT|MemberVault})
+    (deftable FVT|T|MemberUserWeight:{AcquisitionSchemasV5.FVT|MemberUserWeight})
+    (deftable FVT|T|ForcedFixCount:{AcquisitionSchemasV5.FVT|ForcedFixCount})
+    (deftable FVT|T|RewardAggregate:{AcquisitionSchemasV5.FVT|RewardAggregate})
+    (deftable FVT|T|ScoreEntityLink:{AcquisitionSchemasV5.FVT|ScoreEntityLink})
+    (deftable FVT|T|MultipletFamily:{AcquisitionSchemasV5.FVT|MultipletFamily})
+    (deftable FVT|T|UserPresence:{AcquisitionSchemasV5.FVT|UserPresence})
+    (deftable FVT|T|AgencyFee:{AcquisitionSchemasV5.FVT|AgencyFee})
+    (deftable FVT|T|QualitySplit:{AcquisitionSchemasV5.FVT|QualitySplit})
+    (deftable FVT|T|DsaOracleConfig:{AcquisitionSchemasV5.FVT|DsaOracleConfig})
     ;;<=========================================================================>
     ;;{5}  FUNCTIONS
     (defcap FVT|XE>SWEEP-FIX (fvt-id:string)
@@ -553,11 +551,11 @@
         ;;not exist aborted on "row not found" and this enforce was unreachable for EVERY input.
         ;;URC_TripletExists is deliberately a with-default-read so it can answer for a missing
         ;;row; it just never got the chance. Hoisted above the let so it can do its job.
-        (let ((ref-SCR:module{AcquisitionScoresV5} AQP-SCORE))
+        (let ((ref-SCR:module{AcquisitionScoresV7} AQP-SCORE))
             (enforce (ref-SCR::URC_TripletExists triplet-id) "Triplet must be issued in AQP-SCORE"))
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
                 (ref-DALOS:module{OuronetDalosV3} DALOS)
                 (bronze-id:string (ref-SCR::UR_SCR|TripletBronzeScoreId triplet-id))
                 (silver-id:string (ref-SCR::UR_SCR|TripletSilverScoreId triplet-id))
@@ -595,9 +593,10 @@
 
 
 
-    (defun UDC_FVT|ScoreEntityLink:object{AcquisitionSchemasV3.FVT|ScoreEntityLink}
+    (defun UDC_FVT|ScoreEntityLink:object{AcquisitionSchemasV5.FVT|ScoreEntityLink}
         (
             score-entity-type:integer
+            earning-user-count:integer
             enabled:bool
             swpair:string
             ghost-tvl-weight:decimal
@@ -609,10 +608,11 @@
             fvt-id:string
             score-entity-id:string
         )
-        @doc "Core constructor for object{AcquisitionSchemasV3.FVT|ScoreEntityLink}. DSA fields (delegation / capture-units / \
+        @doc "Core constructor for object{AcquisitionSchemasV5.FVT|ScoreEntityLink}. DSA fields (delegation / capture-units / \
             \ capture-weight / oracle-ts) pass through faithfully — a normal member passes \
             \ false / 0.0 / 0.0 / STREAM_EPOCH; DSA passes an agency's live capture."
         {"score-entity-type"        : score-entity-type
+        ,"earning-user-count"       : earning-user-count
         ,"enabled"                  : enabled
         ,"swpair"                   : swpair
         ,"ghost-tvl-weight"         : ghost-tvl-weight
@@ -625,12 +625,13 @@
         ,"score-entity-id"          : score-entity-id}
     )
 
-    (defun UDC_FVT|RPS|Global:object{AcquisitionSchemasV3.FVT|RPS|Global}
+    (defun UDC_FVT|RPS|Global:object{AcquisitionSchemasV5.FVT|RPS|Global}
         (
             reward-enabled:bool
             current-rps:decimal
             available-rewards:decimal
             unclaimed-count:integer
+            dormant-claim-count:integer
             zombie-rewards:decimal
             segmentation:bool
             reward-kind:string
@@ -643,13 +644,14 @@
             fvt-id:string
             dptf-id:string
         )
-        @doc "Core constructor for object{AcquisitionSchemasV3.FVT|RPS|Global}. Stream-ledger fields (stream-count / \
+        @doc "Core constructor for object{AcquisitionSchemasV5.FVT|RPS|Global}. Stream-ledger fields (stream-count / \
             \ stream-last-release / stream-unreleased) + the DSA royalty-rewards pool pass through faithfully; \
             \ true inserts seed them 0 / STREAM_EPOCH / 0.0 / 0.0 (a fresh lane has no stream, no royalty)."
         {"reward-enabled"       : reward-enabled
         ,"current-rps"          : current-rps
         ,"available-rewards"    : available-rewards
         ,"unclaimed-count"      : unclaimed-count
+        ,"dormant-claim-count"  : dormant-claim-count
         ,"zombie-rewards"       : zombie-rewards
         ,"segmentation"         : segmentation
         ,"reward-kind"          : reward-kind
@@ -663,7 +665,7 @@
         ,"dptf-id"              : dptf-id}
     )
 
-    (defun UDC_FVT|RPS|Stream:object{AcquisitionSchemasV3.FVT|RPS|Stream}
+    (defun UDC_FVT|RPS|Stream:object{AcquisitionSchemasV5.FVT|RPS|Stream}
         (
             rate:decimal
             finish:time
@@ -673,7 +675,7 @@
             dptf-id:string
             position:integer
         )
-        @doc "Core constructor for object{AcquisitionSchemasV3.FVT|RPS|Stream} — one active linear-release stream position."
+        @doc "Core constructor for object{AcquisitionSchemasV5.FVT|RPS|Stream} — one active linear-release stream position."
         {"rate"             : rate
         ,"finish"           : finish
         ,"amount"           : amount
@@ -683,7 +685,7 @@
         ,"position"         : position}
     )
 
-    (defun UDC_FVT|MultipletFamily:object{AcquisitionSchemasV3.FVT|MultipletFamily}
+    (defun UDC_FVT|MultipletFamily:object{AcquisitionSchemasV5.FVT|MultipletFamily}
         (
             token-0-id:string
             token-1-id:string
@@ -694,7 +696,7 @@
             active:bool
             multiplet-family-id:string
         )
-        @doc "Core constructor for object{AcquisitionSchemasV3.FVT|MultipletFamily}."
+        @doc "Core constructor for object{AcquisitionSchemasV5.FVT|MultipletFamily}."
         {"token-0-id"           : token-0-id
         ,"token-1-id"           : token-1-id
         ,"token-2-id"           : token-2-id
@@ -705,7 +707,7 @@
         ,"multiplet-family-id"  : multiplet-family-id}
     )
 
-    (defun UDC_FVT|RPS|Member:object{AcquisitionSchemasV3.FVT|RPS|Member}
+    (defun UDC_FVT|RPS|Member:object{AcquisitionSchemasV5.FVT|RPS|Member}
         (
             last-farm-rps-g:decimal
             member-deb-rps:decimal
@@ -714,7 +716,7 @@
             score-entity-id:string
             dptf-id:string
         )
-        @doc "Core constructor for object{AcquisitionSchemasV3.FVT|RPS|Member}."
+        @doc "Core constructor for object{AcquisitionSchemasV5.FVT|RPS|Member}."
         {"last-farm-rps-g"          : last-farm-rps-g
         ,"member-deb-rps"           : member-deb-rps
         ,"pending-member-rewards"   : pending-member-rewards
@@ -723,7 +725,7 @@
         ,"dptf-id"                  : dptf-id}
     )
 
-    (defun UDC_FVT|RPS|User:object{AcquisitionSchemasV3.FVT|RPS|User}
+    (defun UDC_FVT|RPS|User:object{AcquisitionSchemasV5.FVT|RPS|User}
         (
             last-rps:decimal
             pending-rewards:decimal
@@ -732,7 +734,7 @@
             score-entity-id:string
             dptf-id:string
         )
-        @doc "Core constructor for object{AcquisitionSchemasV3.FVT|RPS|User}."
+        @doc "Core constructor for object{AcquisitionSchemasV5.FVT|RPS|User}."
         {"last-rps"         : last-rps
         ,"pending-rewards"  : pending-rewards
         ,"user-id"          : user-id
@@ -741,38 +743,38 @@
         ,"dptf-id"          : dptf-id}
     )
 
-    (defun UDC_FVT|SettleFvtRewards:object{AcquisitionSchemasV3.FVT|SettleFvtRewards}
+    (defun UDC_FVT|SettleFvtRewards:object{AcquisitionSchemasV5.FVT|SettleFvtRewards}
         (fvt-id:string reward-dptf-ids:[string])
-        @doc "Constructor for object{AcquisitionSchemasV3.FVT|SettleFvtRewards} — one URH_FVT|SettleFvtRewardBundle entry."
+        @doc "Constructor for object{AcquisitionSchemasV5.FVT|SettleFvtRewards} — one URH_FVT|SettleFvtRewardBundle entry."
         {"fvt-id"           : fvt-id
         ,"reward-dptf-ids"  : reward-dptf-ids}
     )
 
-    (defun UDC_FVT|SettleScorePlan:object{AcquisitionSchemasV3.FVT|SettleScorePlan}
+    (defun UDC_FVT|SettleScorePlan:object{AcquisitionSchemasV5.FVT|SettleScorePlan}
         (score-entity-type:integer score-entity-id:string fvt-id:string reward-dptf-ids:[string])
-        @doc "Constructor for object{AcquisitionSchemasV3.FVT|SettleScorePlan} — one URC_SettleScorePlanRows entry."
+        @doc "Constructor for object{AcquisitionSchemasV5.FVT|SettleScorePlan} — one URC_SettleScorePlanRows entry."
         {"score-entity-type" : score-entity-type
         ,"score-entity-id"   : score-entity-id
         ,"fvt-id"            : fvt-id
         ,"reward-dptf-ids"   : reward-dptf-ids}
     )
 
-    (defun UDC_FVT|ScorePreNzFlag:object{AcquisitionSchemasV3.FVT|ScorePreNzFlag}
+    (defun UDC_FVT|ScorePreNzFlag:object{AcquisitionSchemasV5.FVT|ScorePreNzFlag}
         (score-id:string was-nz:bool)
-        @doc "Constructor for object{AcquisitionSchemasV3.FVT|ScorePreNzFlag} — pre-SCORE nz snapshot for one employed score."
+        @doc "Constructor for object{AcquisitionSchemasV5.FVT|ScorePreNzFlag} — pre-SCORE nz snapshot for one employed score."
         {"score-id" : score-id
         ,"was-nz"   : was-nz}
     )
 
-    (defun UDC_FVT|StakeSettleBundle:object{AcquisitionSchemasV3.FVT|StakeSettleBundle}
+    (defun UDC_FVT|StakeSettleBundle:object{AcquisitionSchemasV5.FVT|StakeSettleBundle}
         (
             settle-scores:[string]
             distinct-fvts:[string]
-            settle-plans:[object{AcquisitionSchemasV3.FVT|SettleScorePlan}]
-            pre-nz-flags:[object{AcquisitionSchemasV3.FVT|ScorePreNzFlag}]
-            pre-member-debs:[object{AcquisitionSchemasV3.FVT|MemberPreDeb}]
+            settle-plans:[object{AcquisitionSchemasV5.FVT|SettleScorePlan}]
+            pre-nz-flags:[object{AcquisitionSchemasV5.FVT|ScorePreNzFlag}]
+            pre-member-debs:[object{AcquisitionSchemasV5.FVT|MemberPreDeb}]
         )
-        @doc "Constructor for object{AcquisitionSchemasV3.FVT|StakeSettleBundle} — shared phase 2.1 / 2.35 / 2.4 settle scope."
+        @doc "Constructor for object{AcquisitionSchemasV5.FVT|StakeSettleBundle} — shared phase 2.1 / 2.35 / 2.4 settle scope."
         {"settle-scores"    : settle-scores
         ,"distinct-fvts"    : distinct-fvts
         ,"settle-plans"     : settle-plans
@@ -872,6 +874,36 @@
             {"unclaimed-count": 0} {"unclaimed-count" := uc} uc)
     )
 
+    (defun UR_FVT-MV|DormantClaimCount:integer (fvt-id:string score-entity-id:string dptf-id:string)
+        @doc "Member mini-vault dormant-claim-count: users in this member still OWED but earning \
+            \ nothing at the next accrual -- fully unstaked without collecting, or sitting under a \
+            \ toggled-off link. 0 when absent. \
+            \ \
+            \ THE TIER-1 HALF OF THE S1 RESTORE: `unclaimed-count := earning-user-count + this`. \
+            \ \
+            \ KEY-TESTED BECAUSE THE FIELD IS NEWER THAN THE ROWS. It was added 2026-11-09 to a \
+            \ schema whose 52 rows already exist on chain, and a pre-existing row carries no such \
+            \ FIELD. NOTHING DEFAULTS ONE: `with-default-read` defaults an absent ROW, and `try` \
+            \ does NOT catch the failure either -- both MEASURED, not assumed, after this exact \
+            \ mistake in `coin.UR_URV|VaultDormantCount` aborted every coinbase on chain 0 and \
+            \ froze the braid for sixteen hours on 2026-11-09. The only form that survives is \
+            \ reading the row as an OBJECT and testing `contains` before `at`. 0 is also the \
+            \ correct pre-migration VALUE. The guard is NOT a substitute for \
+            \ the one-shot repair that RAN ON 2026-11-10 and was then REMOVED from this module \
+            \ (a migration cannot be un-deployed, only left as dead surface, so it was deleted in \
+            \ the round that followed). The guard stays because the COLUMN stays absent on any row \
+            \ written before that date and never touched since."
+        ;;READ THE ROW, THEN TEST FOR THE KEY. Do not bind it, do not `at` it, do not `try` it.
+        (let
+            (
+                (row:object (try {} (read FVT|T|MemberVault (UCk_RpsMember fvt-id score-entity-id dptf-id))))
+            )
+            (if (contains "dormant-claim-count" row)
+                (at "dormant-claim-count" row)
+                0)
+        )
+    )
+
     (defun UR_FVT-UP|IsPresent:bool (fvt-id:string ouronet-account:string)
         @doc "True while this user holds a live position in ≥1 of the FVT's score-entities; false/absent otherwise."
         (with-default-read FVT|T|UserPresence (UCk_UserPresence fvt-id ouronet-account)
@@ -919,6 +951,40 @@
         (at "total-nzs-count" (read FVT|T|RewardAggregate fvt-id ["total-nzs-count"]))
     )
 
+    (defun UR_FVT|EarningLegCount:integer (fvt-id:string)
+        @doc "`(user, score-entity)` pairs holding non-zero weight anywhere on this FVT -- the number \
+            \ of legs that RECEIVE a share of the next accrual. \
+            \ \
+            \ NOT `total-nzs-count`, AND THE DIFFERENCE IS NOT COSMETIC. `nzs-count` is per SCORE and \
+            \ one member can employ several scores: measured on chain, DHOuroLp employs THREE and the \
+            \ same six accounts hold all three, so a sum over employed scores counts one user three \
+            \ times for ONE leg. Restoring `unclaimed-count` from such a sum sets it ABOVE the \
+            \ collectable legs, the sweep never reaches 1, and the dust accrues exactly as before. \
+            \ \
+            \ KEY-TESTED BECAUSE THE FIELD IS NEWER THAN THE ROWS. It was added 2026-11-09 to a \
+            \ schema whose 52 rows already exist on chain, and a pre-existing row carries no such \
+            \ FIELD. NOTHING DEFAULTS ONE: `with-default-read` defaults an absent ROW, and `try` \
+            \ does NOT catch the failure either -- both MEASURED, not assumed, after this exact \
+            \ mistake in `coin.UR_URV|VaultDormantCount` aborted every coinbase on chain 0 and \
+            \ froze the braid for sixteen hours on 2026-11-09. The only form that survives is \
+            \ reading the row as an OBJECT and testing `contains` before `at`. 0 is also the \
+            \ correct pre-migration VALUE. The guard is NOT a substitute for \
+            \ the one-shot repair that RAN ON 2026-11-10 and was then REMOVED from this module \
+            \ (a migration cannot be un-deployed, only left as dead surface, so it was deleted in \
+            \ the round that followed). The guard stays because the COLUMN stays absent on any row \
+            \ written before that date and never touched since."
+        ;;READ THE ROW, THEN TEST FOR THE KEY. Do not bind it, do not `at` it, do not `try` it.
+        ;;The column list is dropped on purpose: naming an absent column in one aborts too.
+        (let
+            (
+                (row:object (try {} (read FVT|T|RewardAggregate fvt-id)))
+            )
+            (if (contains "earning-leg-count" row)
+                (at "earning-leg-count" row)
+                0)
+        )
+    )
+
     (defun UR_FVT|EnabledRewardCount:integer (fvt-id:string)
         @doc "Reads enabled-reward-count from FVT row."
         (at "enabled-reward-count" (read FVT|T|RewardAggregate fvt-id ["enabled-reward-count"]))
@@ -946,22 +1012,32 @@
     )
 
 
-    (defun UR_FVT-SEL|ScoreEntityLink:object{AcquisitionSchemasV3.FVT|ScoreEntityLink} (fvt-id:string score-entity-id:string)
+    (defun UR_FVT-SEL|ScoreEntityLink:object{AcquisitionSchemasV5.FVT|ScoreEntityLink} (fvt-id:string score-entity-id:string)
         @doc "Reads ScoreEntityLink row; absent rows read as disabled with farm sentinels via default object."
-        (with-default-read FVT|T|ScoreEntityLink (UCk_ScoreEntityLink fvt-id score-entity-id)
-            (UDC_FVT|ScoreEntityLink CT_SCORE_ENTITY_SCORE false BAR 0.0 0.0 false 0.0 0.0 STREAM_EPOCH fvt-id score-entity-id)
-            {"score-entity-type"        := et
-            ,"enabled"                  := en
-            ,"swpair"                   := sp
-            ,"ghost-tvl-weight"         := w
-            ,"total-lane-weight"        := tlw
-            ,"delegation"               := dg
-            ,"capture-units"            := cu
-            ,"capture-weight"          := cw
-            ,"oracle-ts"                := ots
-            ,"fvt-id"                   := fid
-            ,"score-entity-id"          := seid}
-            (UDC_FVT|ScoreEntityLink et en sp w tlw dg cu cw ots fid seid)
+        ;;ONE read, THEN test for the key -- and the `earning-user-count` BIND that used to sit in
+        ;;this `with-default-read` is why this matters more here than anywhere else. A default
+        ;;object covers an absent ROW and NOTHING covers an absent COLUMN, so that bind aborted on
+        ;;all 13 pre-existing link rows; every other `UR_FVT-SEL|*` reader fans out of this one,
+        ;;so it would have taken the entire member surface -- and the migration itself -- with it.
+        (let
+            (
+                (row:object (try {} (read FVT|T|ScoreEntityLink (UCk_ScoreEntityLink fvt-id score-entity-id))))
+            )
+            (if (contains "score-entity-id" row)
+                (UDC_FVT|ScoreEntityLink
+                    (at "score-entity-type" row)
+                    (if (contains "earning-user-count" row) (at "earning-user-count" row) 0)
+                    (at "enabled" row)
+                    (at "swpair" row)
+                    (at "ghost-tvl-weight" row)
+                    (at "total-lane-weight" row)
+                    (at "delegation" row)
+                    (at "capture-units" row)
+                    (at "capture-weight" row)
+                    (at "oracle-ts" row)
+                    (at "fvt-id" row)
+                    (at "score-entity-id" row))
+                (UDC_FVT|ScoreEntityLink CT_SCORE_ENTITY_SCORE 0 false BAR 0.0 0.0 false 0.0 0.0 STREAM_EPOCH fvt-id score-entity-id))
         )
     )
 
@@ -973,6 +1049,35 @@
     (defun UR_FVT-SEL|ScoreEntityType:integer (fvt-id:string score-entity-id:string)
         @doc "Reads score-entity-type from ScoreEntityLink row."
         (at "score-entity-type" (UR_FVT-SEL|ScoreEntityLink fvt-id score-entity-id))
+    )
+
+    (defun UR_FVT-SEL|EarningUserCount:integer (fvt-id:string score-entity-id:string)
+        @doc "Users with NON-ZERO weight on this member -- the tier-1 earning count. Lane-independent, \
+            \ because weight is not per reward token, which is why it lives on the link row rather \
+            \ than on the per-lane mini-vault. \
+            \ \
+            \ KEY-TESTED BECAUSE THE FIELD IS NEWER THAN THE ROWS. It was added 2026-11-09 to a \
+            \ schema whose 52 rows already exist on chain, and a pre-existing row carries no such \
+            \ FIELD. NOTHING DEFAULTS ONE: `with-default-read` defaults an absent ROW, and `try` \
+            \ does NOT catch the failure either -- both MEASURED, not assumed, after this exact \
+            \ mistake in `coin.UR_URV|VaultDormantCount` aborted every coinbase on chain 0 and \
+            \ froze the braid for sixteen hours on 2026-11-09. The only form that survives is \
+            \ reading the row as an OBJECT and testing `contains` before `at`. 0 is also the \
+            \ correct pre-migration VALUE. The guard is NOT a substitute for \
+            \ the one-shot repair that RAN ON 2026-11-10 and was then REMOVED from this module \
+            \ (a migration cannot be un-deployed, only left as dead surface, so it was deleted in \
+            \ the round that followed). The guard stays because the COLUMN stays absent on any row \
+            \ written before that date and never touched since."
+        ;;READ THE ROW, THEN TEST FOR THE KEY. Reads the TABLE rather than going through
+        ;;`UR_FVT-SEL|ScoreEntityLink`, so this guard stands on its own.
+        (let
+            (
+                (row:object (try {} (read FVT|T|ScoreEntityLink (UCk_ScoreEntityLink fvt-id score-entity-id))))
+            )
+            (if (contains "earning-user-count" row)
+                (at "earning-user-count" row)
+                0)
+        )
     )
 
     (defun UR_FVT-SEL|Swpair:string (fvt-id:string score-entity-id:string)
@@ -1031,26 +1136,35 @@
         (at "score-entity-id" (UR_FVT-SEL|ScoreEntityLink fvt-id score-entity-id))
     )
 
-    (defun UR_FVT-RG|RpsGlobal:object{AcquisitionSchemasV3.FVT|RPS|Global} (fvt-id:string dptf-id:string)
+    (defun UR_FVT-RG|RpsGlobal:object{AcquisitionSchemasV5.FVT|RPS|Global} (fvt-id:string dptf-id:string)
         @doc "Reads global RPS row for one reward token; absent rows read as disabled with zeroed rps fields."
-        (with-default-read FVT|T|RPS|Global (UCk_RpsGlobal fvt-id dptf-id)
-            (UDC_FVT|RPS|Global false 0.0 0.0 0 0.0 false CT_REWARD_KIND_PLAIN BAR 0 STREAM_EPOCH 0.0 0.0 CT_DEFAULT_MIN_INJECT fvt-id dptf-id)
-            {"reward-enabled"       := re
-            ,"current-rps"          := cr
-            ,"available-rewards"    := ar
-            ,"unclaimed-count"      := uc
-            ,"zombie-rewards"       := zb
-            ,"segmentation"         := seg
-            ,"reward-kind"          := rk
-            ,"multiplet-family-id"    := tfid
-            ,"stream-count"         := sc
-            ,"stream-last-release"  := slr
-            ,"stream-unreleased"    := sur
-            ,"royalty-rewards"      := ry
-            ,"min-inject-amount"    := mia
-            ,"fvt-id"               := fid
-            ,"dptf-id"              := did}
-            (UDC_FVT|RPS|Global re cr ar uc zb seg rk tfid sc slr sur ry mia fid did)
+        ;;ONE read, THEN test for the key. Same defect as `UR_FVT-SEL|ScoreEntityLink`: the
+        ;;`dormant-claim-count` bind that used to sit here aborted on all 11 pre-existing lane
+        ;;rows, and every `UR_FVT-RG|*` reader -- reward-enabled, current-rps, available-rewards,
+        ;;unclaimed-count -- fans out of this one.
+        (let
+            (
+                (row:object (try {} (read FVT|T|RPS|Global (UCk_RpsGlobal fvt-id dptf-id))))
+            )
+            (if (contains "dptf-id" row)
+                (UDC_FVT|RPS|Global
+                    (at "reward-enabled" row)
+                    (at "current-rps" row)
+                    (at "available-rewards" row)
+                    (at "unclaimed-count" row)
+                    (if (contains "dormant-claim-count" row) (at "dormant-claim-count" row) 0)
+                    (at "zombie-rewards" row)
+                    (at "segmentation" row)
+                    (at "reward-kind" row)
+                    (at "multiplet-family-id" row)
+                    (at "stream-count" row)
+                    (at "stream-last-release" row)
+                    (at "stream-unreleased" row)
+                    (at "royalty-rewards" row)
+                    (at "min-inject-amount" row)
+                    (at "fvt-id" row)
+                    (at "dptf-id" row))
+                (UDC_FVT|RPS|Global false 0.0 0.0 0 0 0.0 false CT_REWARD_KIND_PLAIN BAR 0 STREAM_EPOCH 0.0 0.0 CT_DEFAULT_MIN_INJECT fvt-id dptf-id))
         )
     )
 
@@ -1082,6 +1196,39 @@
     (defun UR_FVT-RG|UnclaimedCount:integer (fvt-id:string dptf-id:string)
         @doc "Reads unclaimed-count from global RPS row."
         (at "unclaimed-count" (UR_FVT-RG|RpsGlobal fvt-id dptf-id))
+    )
+
+    (defun UR_FVT-RG|DormantClaimCount:integer (fvt-id:string dptf-id:string)
+        @doc "Reads dormant-claim-count from the global RPS row: legs on this lane still OWED but \
+            \ earning nothing at the next accrual. \
+            \ \
+            \ THE GLOBAL HALF OF THE S1 RESTORE: `unclaimed-count := earning-leg-count + this`. It \
+            \ exists because the two cannot be derived from one another -- an orphan is absent from \
+            \ every stake-side count and is still owed, which is exactly the case the canonical \
+            \ `coin` vault removed its `nzs` reset for. \
+            \ \
+            \ KEY-TESTED BECAUSE THE FIELD IS NEWER THAN THE ROWS. It was added 2026-11-09 to a \
+            \ schema whose 52 rows already exist on chain, and a pre-existing row carries no such \
+            \ FIELD. NOTHING DEFAULTS ONE: `with-default-read` defaults an absent ROW, and `try` \
+            \ does NOT catch the failure either -- both MEASURED, not assumed, after this exact \
+            \ mistake in `coin.UR_URV|VaultDormantCount` aborted every coinbase on chain 0 and \
+            \ froze the braid for sixteen hours on 2026-11-09. The only form that survives is \
+            \ reading the row as an OBJECT and testing `contains` before `at`. 0 is also the \
+            \ correct pre-migration VALUE. The guard is NOT a substitute for \
+            \ the one-shot repair that RAN ON 2026-11-10 and was then REMOVED from this module \
+            \ (a migration cannot be un-deployed, only left as dead surface, so it was deleted in \
+            \ the round that followed). The guard stays because the COLUMN stays absent on any row \
+            \ written before that date and never touched since."
+        ;;READ THE ROW, THEN TEST FOR THE KEY. Reads the TABLE rather than going through
+        ;;`UR_FVT-RG|RpsGlobal`, so this guard stands on its own.
+        (let
+            (
+                (row:object (try {} (read FVT|T|RPS|Global (UCk_RpsGlobal fvt-id dptf-id))))
+            )
+            (if (contains "dormant-claim-count" row)
+                (at "dormant-claim-count" row)
+                0)
+        )
     )
 
     (defun UR_FVT-RG|ZombieRewards:decimal (fvt-id:string dptf-id:string)
@@ -1134,12 +1281,12 @@
         (at "royalty-rewards" (UR_FVT-RG|RpsGlobal fvt-id dptf-id))
     )
 
-    (defun UR_FVT-RS|Stream:object{AcquisitionSchemasV3.FVT|RPS|Stream} (fvt-id:string dptf-id:string position:integer)
+    (defun UR_FVT-RS|Stream:object{AcquisitionSchemasV5.FVT|RPS|Stream} (fvt-id:string dptf-id:string position:integer)
         @doc "Reads one FVT|T|RPS|Stream row (an active stream position). Positions 1..stream-count always exist."
         (read FVT|T|RPS|Stream (UCk_RpsStream fvt-id dptf-id position))
     )
 
-    (defun UR_FVT-MF|MultipletFamily:object{AcquisitionSchemasV3.FVT|MultipletFamily} (multiplet-family-id:string)
+    (defun UR_FVT-MF|MultipletFamily:object{AcquisitionSchemasV5.FVT|MultipletFamily} (multiplet-family-id:string)
         @doc "Reads full MultipletFamily row."
         (read FVT|T|MultipletFamily multiplet-family-id)
     )
@@ -1184,7 +1331,7 @@
         (at "multiplet-family-id" (read FVT|T|MultipletFamily multiplet-family-id ["multiplet-family-id"]))
     )
 
-    (defun UR_FVT-RM|RpsMember:object{AcquisitionSchemasV3.FVT|RPS|Member} (fvt-id:string score-entity-id:string dptf-id:string)
+    (defun UR_FVT-RM|RpsMember:object{AcquisitionSchemasV5.FVT|RPS|Member} (fvt-id:string score-entity-id:string dptf-id:string)
         @doc "Reads member-score RPS row; absent rows read as zero g_i / L_i / pending-member-rewards."
         (with-default-read FVT|T|RPS|Member (UCk_RpsMember fvt-id score-entity-id dptf-id)
             (UDC_FVT|RPS|Member 0.0 0.0 0.0 fvt-id score-entity-id dptf-id)
@@ -1228,7 +1375,7 @@
         (at "dptf-id" (UR_FVT-RM|RpsMember fvt-id score-entity-id dptf-id))
     )
 
-    (defun UR_FVT-RU|RpsUser:object{AcquisitionSchemasV3.FVT|RPS|User}
+    (defun UR_FVT-RU|RpsUser:object{AcquisitionSchemasV5.FVT|RPS|User}
         (user-id:string fvt-id:string score-entity-id:string dptf-id:string)
         @doc "Reads user RPS row; absent rows read as zero pending and zero last-rps checkpoint."
         (with-default-read FVT|T|RPS|User (UCk_RpsUser user-id fvt-id score-entity-id dptf-id)
@@ -1370,7 +1517,7 @@
         (let
             (
                 (ref-SWP:module{SwapperV5} SWP)
-                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
                 ;;
                 (staked-amount:decimal
                     (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET)
@@ -1463,7 +1610,7 @@
         @doc "Vault/treasury Tier-2 member weight: score total-deb or sum of triplet score totals."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
             )
             (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET)
                 (let
@@ -1521,7 +1668,7 @@
             \ weight, and it equals URC_TripletUserDebSum by construction — same basis as the non-true path."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
                 (bronze-id:string (ref-SCR::UR_SCR|TripletBronzeScoreId triplet-id))
                 (silver-id:string (ref-SCR::UR_SCR|TripletSilverScoreId triplet-id))
                 (golden-id:string (ref-SCR::UR_SCR|TripletGoldenScoreId triplet-id))
@@ -1549,7 +1696,7 @@
             \ its own aqpool-link. Matches the non-true divisor (Σ of the 3 scores' total-deb) → conservation."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
                 (bronze-id:string (ref-SCR::UR_SCR|TripletBronzeScoreId triplet-id))
                 (silver-id:string (ref-SCR::UR_SCR|TripletSilverScoreId triplet-id))
                 (golden-id:string (ref-SCR::UR_SCR|TripletGoldenScoreId triplet-id))
@@ -1576,7 +1723,7 @@
             \ to pay anyone, which is why no admin correction tx is needed to recover the zeroed snapshots."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
             )
             (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET)
                 (URC_TripletUserDebSum user-id score-entity-id)
@@ -1593,7 +1740,7 @@
             \ singular members (BAR for triplets, whose branch ignores it)."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
             )
             (fold (or) false
                 (map
@@ -1619,7 +1766,7 @@
         @doc "Map employed SCR score-id to score-entity-type + score-entity-id for RPS banking."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
             )
             (if (ref-SCR::UR_SCR|ScoreTriplet score-id)
                 {"score-entity-type" : CT_SCORE_ENTITY_TRIPLET
@@ -1666,7 +1813,7 @@
         @doc "True when employed score maps to enabled ScoreEntityLink on issued FVT with ≥1 reward DPTF."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
                 (entity:object (URC_ResolveEmployedScoreEntity score-id))
                 (fvt-id:string (ref-SCR::UR_SCR|ScoreFvtLink score-id))
                 (score-entity-id:string (at "score-entity-id" entity))
@@ -1704,7 +1851,7 @@
         @doc "Employed scores that run phase 2.1 settle — fvt-link≠BAR and parent ScoreEntityLink enabled."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
             )
             (filter
                 (lambda (score-id:string)
@@ -1732,7 +1879,7 @@
         @doc "Internal: distinct SCR|ScoreFvtLink values for settle-scores — one FVT entity counted once for IGNIS and settle scope."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
             )
             (distinct
                 ;; map: settle-eligible scores → SCR fvt-link (dedupe for URD bundle scope)
@@ -1747,12 +1894,12 @@
     )
 
     (defun URC_FvtRewardDptfIdsFromBundle:[string]
-        (fvt-id:string fvt-reward-bundle:[object{AcquisitionSchemasV3.FVT|SettleFvtRewards}])
+        (fvt-id:string fvt-reward-bundle:[object{AcquisitionSchemasV5.FVT|SettleFvtRewards}])
         @doc "Internal: cheap bundle lookup (filter ≤7 rows) on URH_FVT|SettleFvtRewardBundle — avoids repeat select when scores share FVT."
         (at "reward-dptf-ids"
             (at 0
                 (filter
-                    (lambda (row:object{AcquisitionSchemasV3.FVT|SettleFvtRewards})
+                    (lambda (row:object{AcquisitionSchemasV5.FVT|SettleFvtRewards})
                         (= (at "fvt-id" row) fvt-id)
                     )
                     fvt-reward-bundle
@@ -1849,16 +1996,39 @@
             ;;never that the caller is a staker, holds a claim, or has already collected. And
             ;;`gc == 1` is a NORMAL END-OF-LIFE STATE, not an attack precondition.
             ;;
-            ;;THE GUARD IS `deb-user > 0`, and it is the predicate the COLLECT PATH ITSELF uses:
+            ;;THE GUARD WAS `deb-user > 0` UNTIL 2026-11-09, AND ITS REASONING EXPIRED WITH S1.
+            ;;It was justified above as the predicate the collect path itself uses -- "
             ;;XI_1|BookCollectUnclaimed removes a caller from the claimant set exactly when its deb
-            ;;reaches 0. So "still in the set" is "deb > 0", and reader and counter now agree --
-            ;;the same reader-vs-writer disagreement that GS-07 fixed in P|UR_IMP.
-            (if (and (= gc 1) (> deb-user 0.0))
-                (UR_FVT-RG|AvailableRewards fvt-id reward-dptf-id)
-                (if (fold (and) true
-                        [(= (UR_FVT|FvtClass fvt-id) 0) (= mc 1) (> deb-user 0.0)])
-                    (UR_FVT-MV|AvailableRewards fvt-id score-entity-id reward-dptf-id)
-                    (URC_UserTier1AvailableRewards patron fvt-id score-entity-id reward-dptf-id deb-user)
+            ;;reaches 0, so still-in-the-set is deb > 0". That is no longer true: under S1 a collect
+            ;;retires a leg whenever it ZEROED A CLAIM, staked or not. Carrying the old guard forward
+            ;;would recreate the reader-vs-writer disagreement it was written to end -- this time in
+            ;;the other direction, BLOCKING a legitimate last claimant.
+            ;;
+            ;;IT WAS ALSO WRONG IN BOTH DIRECTIONS UNDER THE NEW MEANING:
+            ;;  - too NARROW -- a DORMANT leg (unstaked, still owed, or a toggled-off member) has
+            ;;    deb 0 and can legitimately be the last leg owed on the lane. The old guard refuses
+            ;;    it, so the remainder stays stranded exactly in the wind-down the sweep exists for.
+            ;;  - not what the EMMA incident actually needed. The theft there was an exited account
+            ;;    with NOTHING OWED collecting the sweep. What makes that safe is not "has stake", it
+            ;;    is "is owed something".
+            ;;
+            ;;SO THE GUARD IS THE CALLER'S OWN CLAIMABLE. It is stricter than `deb-user > 0` where
+            ;;that mattered -- EMMA's own claimable was 0, so she is still refused -- and admits the
+            ;;dormant last claimant that the old guard wrongly excluded. It is also the figure this
+            ;;function is already computing, so reader and writer agree by construction rather than
+            ;;by a cross-reference that can go stale, which is how this guard came to need rewriting.
+            (let
+                (
+                    (own:decimal
+                        (URC_UserTier1AvailableRewards patron fvt-id score-entity-id reward-dptf-id deb-user))
+                )
+                (if (and (= gc 1) (> own 0.0))
+                    (UR_FVT-RG|AvailableRewards fvt-id reward-dptf-id)
+                    (if (fold (and) true
+                            [(= (UR_FVT|FvtClass fvt-id) 0) (= mc 1) (> own 0.0)])
+                        (UR_FVT-MV|AvailableRewards fvt-id score-entity-id reward-dptf-id)
+                        own
+                    )
                 )
             )
         )
@@ -1885,7 +2055,7 @@
                         (lambda (acc:decimal idx:integer)
                             (let*
                                 (
-                                    (s:object{AcquisitionSchemasV3.FVT|RPS|Stream} (UR_FVT-RS|Stream fvt-id dptf-id idx))
+                                    (s:object{AcquisitionSchemasV5.FVT|RPS|Stream} (UR_FVT-RS|Stream fvt-id dptf-id idx))
                                     (remaining:decimal (- (at "amount" s) (at "released" s)))
                                     (rel:decimal
                                         (if (>= now (at "finish" s))
@@ -1964,7 +2134,7 @@
                                 (lambda (acc:object idx:integer)
                                     (let
                                         (
-                                            (s:object{AcquisitionSchemasV3.FVT|RPS|Stream} (UR_FVT-RS|Stream fvt-id dptf-id idx))
+                                            (s:object{AcquisitionSchemasV5.FVT|RPS|Stream} (UR_FVT-RS|Stream fvt-id dptf-id idx))
                                         )
                                         {
                                         "rate"
@@ -1999,12 +2169,12 @@
                 ))
         ))
 
-    (defun URC_SettleScorePlanRows:[object{AcquisitionSchemasV3.FVT|SettleScorePlan}]
-        (settle-scores:[string] fvt-reward-bundle:[object{AcquisitionSchemasV3.FVT|SettleFvtRewards}])
+    (defun URC_SettleScorePlanRows:[object{AcquisitionSchemasV5.FVT|SettleScorePlan}]
+        (settle-scores:[string] fvt-reward-bundle:[object{AcquisitionSchemasV5.FVT|SettleFvtRewards}])
         @doc "Distinct score-entity settle plans — triplet members collapse to one triplet-id plan."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
                 (entity-ids:[string]
                     (distinct
                         (map
@@ -2045,7 +2215,7 @@
         @doc "Internal: true when SCR|T|UserScore base, boosted, or deb is > 0 for (beneficiary, pool, score)."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
             )
             (fold (or) false
                 [
@@ -2058,11 +2228,11 @@
     )
 
     (defun URC_PreScoreWasNonZeroForScore:bool
-        (pre-nz-flags:[object{AcquisitionSchemasV3.FVT|ScorePreNzFlag}] score-id:string)
+        (pre-nz-flags:[object{AcquisitionSchemasV5.FVT|ScorePreNzFlag}] score-id:string)
         @doc "Internal: lookup was-nz from pre-SCORE snapshot for one score-id."
         (fold (or) false
             (map
-                (lambda (flag:object{AcquisitionSchemasV3.FVT|ScorePreNzFlag})
+                (lambda (flag:object{AcquisitionSchemasV5.FVT|ScorePreNzFlag})
                     (if (= (at "score-id" flag) score-id)
                         (at "was-nz" flag)
                         false
@@ -2073,11 +2243,11 @@
         )
     )
 
-    (defun URC_SettlePlanEmployedScoreIds:[string] (plan:object{AcquisitionSchemasV3.FVT|SettleScorePlan})
+    (defun URC_SettlePlanEmployedScoreIds:[string] (plan:object{AcquisitionSchemasV5.FVT|SettleScorePlan})
         @doc "Employed SCR score-ids for nz/unclaimed probes — triplet plans expand to bronze/silver/golden."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
                 (entity-type:integer (at "score-entity-type" plan))
                 (entity-id:string (at "score-entity-id" plan))
             )
@@ -2092,7 +2262,7 @@
         )
     )
 
-    (defun URC_BuildPreScoreNzFlags:[object{AcquisitionSchemasV3.FVT|ScorePreNzFlag}]
+    (defun URC_BuildPreScoreNzFlags:[object{AcquisitionSchemasV5.FVT|ScorePreNzFlag}]
         (beneficiary-id:string pool-id:string settle-scores:[string])
         @doc "Pre-SCORE nz snapshot per employed score-id."
         (map
@@ -2108,12 +2278,12 @@
             beneficiary-id:string
             fvt-id:string
             reward-dptf-id:string
-            plans:[object{AcquisitionSchemasV3.FVT|SettleScorePlan}]
+            plans:[object{AcquisitionSchemasV5.FVT|SettleScorePlan}]
         )
         @doc "Internal: true when user has pending-rewards > 0 on any employed score for (fvt, reward-dptf)."
         (fold (or) false
             (map
-                (lambda (plan:object{AcquisitionSchemasV3.FVT|SettleScorePlan})
+                (lambda (plan:object{AcquisitionSchemasV5.FVT|SettleScorePlan})
                     (> (UR_FVT-RU|PendingRewards beneficiary-id fvt-id (at "score-entity-id" plan) reward-dptf-id) 0.0)
                 )
                 plans
@@ -2179,7 +2349,7 @@
             \ never refresh. The exemption is therefore gone and ALL members are deb-based."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
                 (triplet:bool (= score-entity-type CT_SCORE_ENTITY_TRIPLET))
             )
             (if triplet
@@ -2230,7 +2400,7 @@
             \ both fold the SAME URH_FvtPresentUsers, so they agree by construction."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
             )
             (fold (+) 0
                 (map
@@ -2299,7 +2469,7 @@
         )
     )
 
-    (defun URH_FVT|SettleFvtRewardBundle:[object{AcquisitionSchemasV3.FVT|SettleFvtRewards}] (distinct-fvts:[string])
+    (defun URH_FVT|SettleFvtRewardBundle:[object{AcquisitionSchemasV5.FVT|SettleFvtRewards}] (distinct-fvts:[string])
         @doc "Expensive read: ONE select on FVT|T|RPS|Global for all distinct-fvts, then group to SettleFvtRewards rows. \
             \ Not N× URH_FVT-RG|EnabledRewardRows — single table pass per C_*StakeFlow."
         (let
@@ -2316,7 +2486,7 @@
                     )
                 )
             )
-            ;; map: distinct FVT entities → object{AcquisitionSchemasV3.FVT|SettleFvtRewards} (filter flat-rows; no second select)
+            ;; map: distinct FVT entities → object{AcquisitionSchemasV5.FVT|SettleFvtRewards} (filter flat-rows; no second select)
             (map
                 (lambda (fvt-id:string)
                     (UDC_FVT|SettleFvtRewards fvt-id
@@ -2353,7 +2523,7 @@
         )
     )
 
-    (defun URHC_BuildInjectScorePlans:[object{AcquisitionSchemasV3.FVT|SettleScorePlan}] (fvt-id:string)
+    (defun URHC_BuildInjectScorePlans:[object{AcquisitionSchemasV5.FVT|SettleScorePlan}] (fvt-id:string)
         @doc "Enabled ScoreEntityLinks on FVT × enabled reward dptf-ids — ghost TVL lazy-sync scope."
         (let
             (
@@ -2385,16 +2555,16 @@
                 (employed-ids:[string] (ref-AQP::URC_PoolActiveScoreIds pool-id))
                 (settle-scores:[string] (URC_SettleEligibleEmployedScores employed-ids))
                 (distinct-fvts:[string] (URC_SettleDistinctFvtLinks settle-scores))
-                (fvt-reward-bundle:[object{AcquisitionSchemasV3.FVT|SettleFvtRewards}] (URH_FVT|SettleFvtRewardBundle distinct-fvts))
-                (settle-plans:[object{AcquisitionSchemasV3.FVT|SettleScorePlan}] (URC_SettleScorePlanRows settle-scores fvt-reward-bundle))
-                (pre-nz-flags:[object{AcquisitionSchemasV3.FVT|ScorePreNzFlag}]
+                (fvt-reward-bundle:[object{AcquisitionSchemasV5.FVT|SettleFvtRewards}] (URH_FVT|SettleFvtRewardBundle distinct-fvts))
+                (settle-plans:[object{AcquisitionSchemasV5.FVT|SettleScorePlan}] (URC_SettleScorePlanRows settle-scores fvt-reward-bundle))
+                (pre-nz-flags:[object{AcquisitionSchemasV5.FVT|ScorePreNzFlag}]
                     (URC_BuildPreScoreNzFlags beneficiary-id pool-id settle-scores)
                 )
                 ;; M2/#11: pre-SCORE live deb-weight per settled member, so phase 4.6 can delta the vault
                 ;; total-deb mirror over only the touched members (no scan).
-                (pre-member-debs:[object{AcquisitionSchemasV3.FVT|MemberPreDeb}]
+                (pre-member-debs:[object{AcquisitionSchemasV5.FVT|MemberPreDeb}]
                     (map
-                        (lambda (plan:object{AcquisitionSchemasV3.FVT|SettleScorePlan})
+                        (lambda (plan:object{AcquisitionSchemasV5.FVT|SettleScorePlan})
                             {"fvt-id"            : (at "fvt-id" plan)
                             ,"score-entity-type" : (at "score-entity-type" plan)
                             ,"score-entity-id"   : (at "score-entity-id" plan)
@@ -2614,7 +2784,7 @@
     )
 
     (defun WI_FvtRewardAggregate:string
-        (fvt-id:string row:object{AcquisitionSchemasV3.FVT|RewardAggregate})
+        (fvt-id:string row:object{AcquisitionSchemasV5.FVT|RewardAggregate})
         @doc "Insert FVT|T|RewardAggregate row (issue only) — reward aggregates (#75 B' Stage 1)."
         (require-capability (SECURE))
         (insert FVT|T|RewardAggregate fvt-id row)
@@ -2639,6 +2809,14 @@
         @doc "Update total-deb-score mirror on FVT|T (vault/treasury inject denominator reporting)."
         (require-capability (SECURE))
         (update FVT|T|RewardAggregate fvt-id {"total-deb-score": total-deb-score})
+    )
+
+    (defun WU_Fvt|EarningLegCount:string
+        (fvt-id:string earning-leg-count:integer)
+        @doc "Update earning-leg-count on FVT|T -- the `(user, member)` legs that receive a share of \
+            \ the next accrual. Written at the stake/unstake membership transition, never derived."
+        (require-capability (SECURE))
+        (update FVT|T|RewardAggregate fvt-id {"earning-leg-count": earning-leg-count})
     )
 
     (defun WU_Fvt|EnabledRewardCount:string
@@ -2684,7 +2862,7 @@
     )
 
     (defun WI_ScoreEntityLink:string
-        (fvt-id:string score-entity-id:string row:object{AcquisitionSchemasV3.FVT|ScoreEntityLink})
+        (fvt-id:string score-entity-id:string row:object{AcquisitionSchemasV5.FVT|ScoreEntityLink})
         @doc "Insert FVT|T|ScoreEntityLink full row (C_AddScoreEntity admission)."
         (require-capability (SECURE))
         (insert FVT|T|ScoreEntityLink (UCk_ScoreEntityLink fvt-id score-entity-id) row)
@@ -2744,6 +2922,7 @@
         (write FVT|T|MemberVault (UCk_RpsMember fvt-id score-entity-id dptf-id)
             {"available-rewards"       : available-rewards
             ,"unclaimed-count"         : (UR_FVT-MV|UnclaimedCount fvt-id score-entity-id dptf-id)
+            ,"dormant-claim-count"     : (UR_FVT-MV|DormantClaimCount fvt-id score-entity-id dptf-id)
             ,"fvt-id"                  : fvt-id
             ,"score-entity-id"         : score-entity-id
             ,"dptf-id"                 : dptf-id})
@@ -2759,6 +2938,7 @@
             )
             (write FVT|T|MemberVault (UCk_RpsMember fvt-id score-entity-id dptf-id)
                 {"unclaimed-count"     : (if direction (+ old-uc 1) (if (> old-uc 0) (- old-uc 1) 0))
+                ,"dormant-claim-count" : (UR_FVT-MV|DormantClaimCount fvt-id score-entity-id dptf-id)
                 ,"available-rewards"   : (UR_FVT-MV|AvailableRewards fvt-id score-entity-id dptf-id)
                 ,"fvt-id"              : fvt-id
                 ,"score-entity-id"     : score-entity-id
@@ -2801,14 +2981,14 @@
     )
 
     (defun WI_MultipletFamily:string
-        (multiplet-family-id:string row:object{AcquisitionSchemasV3.FVT|MultipletFamily})
+        (multiplet-family-id:string row:object{AcquisitionSchemasV5.FVT|MultipletFamily})
         @doc "Insert FVT|T|MultipletFamily full row (C_IssueMultipletFamily only)."
         (require-capability (SECURE))
         (insert FVT|T|MultipletFamily multiplet-family-id row)
     )
 
     (defun WI_RpsGlobal:string
-        (fvt-id:string dptf-id:string row:object{AcquisitionSchemasV3.FVT|RPS|Global})
+        (fvt-id:string dptf-id:string row:object{AcquisitionSchemasV5.FVT|RPS|Global})
         @doc "Insert FVT|T|RPS|Global full row (C_AddRewardLink admission)."
         (require-capability (SECURE))
         (insert FVT|T|RPS|Global (UCk_RpsGlobal fvt-id dptf-id) row)
@@ -2842,6 +3022,50 @@
         @doc "Update available-rewards on FVT|T|RPS|Global."
         (require-capability (SECURE))
         (update FVT|T|RPS|Global (UCk_RpsGlobal fvt-id dptf-id) {"available-rewards": available-rewards})
+    )
+
+    (defun WU_RpsGlobal|DormantClaimCount:string
+        (fvt-id:string dptf-id:string dormant-claim-count:integer)
+        @doc "Update dormant-claim-count on FVT|T|RPS|Global."
+        (require-capability (SECURE))
+        (update FVT|T|RPS|Global (UCk_RpsGlobal fvt-id dptf-id)
+            {"dormant-claim-count": dormant-claim-count})
+    )
+
+    (defun WU_MemberVault|UnclaimedCountSet:string
+        (fvt-id:string score-entity-id:string dptf-id:string unclaimed-count:integer)
+        @doc "SET the member mini-vault unclaimed-count to an absolute value (upsert, preserving the \
+            \ rest of the row). The accrual restore needs a SET, not the +/-1 that \
+            \ `WU_MemberVault|UnclaimedCount` performs."
+        (require-capability (SECURE))
+        (write FVT|T|MemberVault (UCk_RpsMember fvt-id score-entity-id dptf-id)
+            {"available-rewards"   : (UR_FVT-MV|AvailableRewards fvt-id score-entity-id dptf-id)
+            ,"unclaimed-count"     : unclaimed-count
+            ,"dormant-claim-count" : (UR_FVT-MV|DormantClaimCount fvt-id score-entity-id dptf-id)
+            ,"fvt-id"              : fvt-id
+            ,"score-entity-id"     : score-entity-id
+            ,"dptf-id"             : dptf-id})
+    )
+
+    (defun WU_MemberVault|DormantClaimCount:string
+        (fvt-id:string score-entity-id:string dptf-id:string dormant-claim-count:integer)
+        @doc "Update dormant-claim-count on FVT|T|MemberVault (upsert, preserving the row)."
+        (require-capability (SECURE))
+        (write FVT|T|MemberVault (UCk_RpsMember fvt-id score-entity-id dptf-id)
+            {"available-rewards"   : (UR_FVT-MV|AvailableRewards fvt-id score-entity-id dptf-id)
+            ,"unclaimed-count"     : (UR_FVT-MV|UnclaimedCount fvt-id score-entity-id dptf-id)
+            ,"dormant-claim-count" : dormant-claim-count
+            ,"fvt-id"              : fvt-id
+            ,"score-entity-id"     : score-entity-id
+            ,"dptf-id"             : dptf-id})
+    )
+
+    (defun WU_SEL|EarningUserCount:string
+        (fvt-id:string score-entity-id:string earning-user-count:integer)
+        @doc "Update earning-user-count on FVT|T|ScoreEntityLink."
+        (require-capability (SECURE))
+        (update FVT|T|ScoreEntityLink (UCk_ScoreEntityLink fvt-id score-entity-id)
+            {"earning-user-count": earning-user-count})
     )
 
     (defun WU_RpsGlobal|UnclaimedCount:string
@@ -2887,28 +3111,28 @@
     )
 
     (defun WW_RpsStream:string
-        (fvt-id:string dptf-id:string position:integer row:object{AcquisitionSchemasV3.FVT|RPS|Stream})
+        (fvt-id:string dptf-id:string position:integer row:object{AcquisitionSchemasV5.FVT|RPS|Stream})
         @doc "Upsert a FVT|T|RPS|Stream row (add-stream + drip compaction rewrite; overwrites a stale pruned slot)."
         (require-capability (SECURE))
         (write FVT|T|RPS|Stream (UCk_RpsStream fvt-id dptf-id position) row)
     )
 
     (defun WI_RpsMember:string
-        (fvt-id:string score-entity-id:string dptf-id:string row:object{AcquisitionSchemasV3.FVT|RPS|Member})
+        (fvt-id:string score-entity-id:string dptf-id:string row:object{AcquisitionSchemasV5.FVT|RPS|Member})
         @doc "Insert FVT|T|RPS|Member full row (phase 2.1 ensure path)."
         (require-capability (SECURE))
         (insert FVT|T|RPS|Member (UCk_RpsMember fvt-id score-entity-id dptf-id) row)
     )
 
     (defun WW_RpsMember:string
-        (fvt-id:string score-entity-id:string dptf-id:string row:object{AcquisitionSchemasV3.FVT|RPS|Member})
+        (fvt-id:string score-entity-id:string dptf-id:string row:object{AcquisitionSchemasV5.FVT|RPS|Member})
         @doc "Upsert full FVT|T|RPS|Member row (Tier-2 settle paths)."
         (require-capability (SECURE))
         (write FVT|T|RPS|Member (UCk_RpsMember fvt-id score-entity-id dptf-id) row)
     )
 
     (defun WI_RpsUser:string
-        (user-id:string fvt-id:string score-entity-id:string dptf-id:string row:object{AcquisitionSchemasV3.FVT|RPS|User})
+        (user-id:string fvt-id:string score-entity-id:string dptf-id:string row:object{AcquisitionSchemasV5.FVT|RPS|User})
         @doc "Insert FVT|T|RPS|User full row (phase 2.1 ensure path)."
         (require-capability (SECURE))
         (insert FVT|T|RPS|User (UCk_RpsUser user-id fvt-id score-entity-id dptf-id) row)
@@ -2990,10 +3214,10 @@
         @doc "Under SECURE: insert enabled ScoreEntityLink; farm adds W_i to S; lock membership-mode when non-mosaic."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
             )
             (WI_ScoreEntityLink fvt-id score-entity-id
-                (UDC_FVT|ScoreEntityLink score-entity-type true swpair ghost-weight 0.0 false 0.0 0.0 STREAM_EPOCH fvt-id score-entity-id)
+                (UDC_FVT|ScoreEntityLink score-entity-type 0 true swpair ghost-weight 0.0 false 0.0 0.0 STREAM_EPOCH fvt-id score-entity-id)
             )
             (WU_Fvt|MemberLinkCount fvt-id (+ (UR_FVT|MemberLinkCount fvt-id) 1))
             (if (and (not (UR_FVT|Mosaic fvt-id)) (= (UR_FVT|MembershipMode fvt-id) CT_MEMBERSHIP_MODE_BAR))
@@ -3015,7 +3239,8 @@
     )
 
     ;;Protection: Class 1 — Innate protection offered by WU_ScoreEntityLink|Enabled,
-    ;;Protection:          WU_Fvt|TotalGhostTvlWeight, WU_Fvt|TotalDebScore
+    ;;Protection:          WU_Fvt|TotalGhostTvlWeight, WU_Fvt|TotalDebScore,
+    ;;Protection:          WU_RpsGlobal|DormantClaimCount, WU_Fvt|EarningLegCount
     (defun XI_ToggleScoreEntityLink:string
         (fvt-id:string score-entity-id:string enabled:bool)
         @doc "Under SECURE (FVT|C>TOGGLE-SCORE-ENTITY-LINK): flip enabled; farm adjusts S by ±W_i on change."
@@ -3056,6 +3281,65 @@
                 (WU_Fvt|TotalDebScore fvt-id (+ (UR_FVT|TotalDebScore fvt-id) deb-delta))
                 fvt-id
             )
+            ;;===>S1 T8 / T9 (2026-11-09)=== move this member's legs between EARNING and DORMANT.
+            ;;
+            ;;WHY A TOGGLE HAS TO TOUCH THESE COUNTERS AT ALL. A disabled member earns nothing from
+            ;;new injections (`settle-scores` filters on `enabled`) but -- since F3 -- can still
+            ;;COLLECT what it already accrued. So its legs are OWED-BUT-NOT-EARNING, which is
+            ;;exactly `dormant`. Leave them in `earning-leg-count` and the accrual restore counts
+            ;;legs that receive nothing: the count reads HIGH, never reaches 1, and the sweep stops
+            ;;firing. Leave them out of BOTH and it reads LOW: `= 1` fires while the disabled
+            ;;member is still owed, and the sweeper takes its rewards. That second one costs
+            ;;somebody money, which is why neither "do nothing" option is available.
+            ;;
+            ;;IT MOVES THE WHOLE EARNING-USER COUNT, NOT ONLY THE OWED ONES, AND THAT IS DELIBERATE.
+            ;;Counting only the owed legs would need, per user, whether their claimable on this
+            ;;member is positive -- a scan over the FVT's present users, on what is otherwise a
+            ;;point-write admin op. The wholesale move OVERCOUNTS `dormant` by the users who happen
+            ;;to be owed nothing, so the restored count can read high and the sweep can STALL while
+            ;;a member is disabled. That degrades to dust RETAINED, never dust misallocated -- the
+            ;;safe direction -- it is bounded to the abnormal state, and T9 reverses it exactly on
+            ;;re-enable.
+            ;;
+            ;;PER LANE, because `dormant-claim-count` is per (fvt, reward-token) while the earning
+            ;;count is not: a member's users earn on every enabled lane, so disabling it makes them
+            ;;dormant on every one. The loop is over LANES (a handful), never over users.
+            (if changed
+                (let
+                    (
+                        (n:integer (UR_FVT-SEL|EarningUserCount fvt-id score-entity-id))
+                    )
+                    (if (= n 0)
+                        "no earning legs on this member -- nothing to reclassify"
+                        (let
+                            (
+                                ;;`[string]`, not rows -- the reader returns the enabled lanes'
+                                ;;reward-dptf-ids directly.
+                                (lanes:[string] (URH_FVT-RG|EnabledRewardRows fvt-id))
+                            )
+                            (map
+                                (lambda (lane:string)
+                                    (let
+                                        (
+                                            (d:integer (UR_FVT-RG|DormantClaimCount fvt-id lane))
+                                        )
+                                        (WU_RpsGlobal|DormantClaimCount fvt-id lane
+                                            (if enabled
+                                                (if (> d n) (- d n) 0)
+                                                (+ d n)))
+                                    )
+                                )
+                                lanes
+                            )
+                            ;;T8 disable: the legs stop earning. T9 enable: they earn again.
+                            (WU_Fvt|EarningLegCount fvt-id
+                                (let ((e:integer (UR_FVT|EarningLegCount fvt-id)))
+                                    (if enabled (+ e n) (if (> e n) (- e n) 0))))
+                        )
+                    )
+                )
+                "link state unchanged -- counters untouched"
+            )
         )
     )
 
@@ -3089,7 +3373,7 @@
         (WI_RpsGlobal fvt-id reward-dptf-id
             ;; A NEW LANE IS BORN AT THE DEFAULT FLOOR, which is why `C_AddRewardLink` needed no new
             ;; parameter: an owner who never thinks about a minimum still gets one.
-            (UDC_FVT|RPS|Global true 0.0 0.0 0 0.0 segmentation reward-kind multiplet-family-id 0 STREAM_EPOCH 0.0 0.0 CT_DEFAULT_MIN_INJECT fvt-id reward-dptf-id)
+            (UDC_FVT|RPS|Global true 0.0 0.0 0 0 0.0 segmentation reward-kind multiplet-family-id 0 STREAM_EPOCH 0.0 0.0 CT_DEFAULT_MIN_INJECT fvt-id reward-dptf-id)
         )
         (WU_Fvt|EnabledRewardCount fvt-id (+ (UR_FVT|EnabledRewardCount fvt-id) 1))
         fvt-id
@@ -3291,15 +3575,18 @@
 
     ;;Protection: Class 1 — Innate protection offered by XI_1|BookCollectUnclaimed
     (defun XI_BookCollectUnclaimed:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string pool-id:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
-        @doc "Tier 0 collect unclaimed wrapper."
+        (patron:string pool-id:string fvt-id:string score-entity-type:integer score-entity-id:string
+         reward-dptf-id:string payout:decimal)
+        @doc "Tier 0 collect unclaimed wrapper. `payout` is what PHASE 5 actually paid -- see \
+            \ `XI_1|BookCollectUnclaimed` for why it must be threaded rather than re-read."
         ;; SECURE: granted by XI_1|BookCollectUnclaimed (underlying W_).
-        (XI_1|BookCollectUnclaimed patron pool-id fvt-id score-entity-type score-entity-id reward-dptf-id)
+        (XI_1|BookCollectUnclaimed patron pool-id fvt-id score-entity-type score-entity-id reward-dptf-id payout)
     )
 
     ;;Protection: Class 1 — Innate protection offered by WU_MemberVault|UnclaimedCount
     (defun XI_1|BookCollectUnclaimed:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string pool-id:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
+        (patron:string pool-id:string fvt-id:string score-entity-type:integer score-entity-id:string
+         reward-dptf-id:string payout:decimal)
         @doc "PHASE 3.1 collect — coin step 3 · XI_URV|UpdateUnclaimedCount false when user-supply=0; \
             \ FVT adapt: deb-score=0 on this score."
         ;; SECURE: granted by XI_2|BumpRpsGlobalUnclaimed (underlying W_).
@@ -3331,13 +3618,56 @@
         (let
             (
                 (deb:decimal (URC_ScoreEntityUserWeight patron fvt-id pool-id score-entity-type score-entity-id))
-                (pending:decimal (UR_FVT-RU|PendingRewards patron fvt-id score-entity-id reward-dptf-id))
+                ;;THE PAYOUT IS PASSED IN, AND BOTH ALTERNATIVES WERE TRIED AND MEASURED WRONG.
+                ;;
+                ;;`pending-rewards` (the first attempt) is only the BANKED part of a claim; a
+                ;;staker's accrual lives in the RPS delta until collect settles it, so the field
+                ;;reads 0 for the common case -- a still-staked holder collecting accrued rewards.
+                ;;Measured: the first collector was paid 3.5 and the count stayed at 2.
+                ;;
+                ;;RE-READING `URC_CollectClaimableRewards` here (the second attempt) is wrong for a
+                ;;subtler reason: PHASE 5 runs BEFORE this phase and has ALREADY decremented
+                ;;available-rewards, so for the LAST claimant -- the one that just swept the lane --
+                ;;the re-read returns 0 and the retirement silently does not fire. Measured: the
+                ;;sweep paid out correctly and the count stopped at 1 instead of 0.
+                ;;
+                ;;So the condition must be the figure PHASE 5 ITSELF used, threaded from the caller.
+                ;;That is also the only version that cannot drift from what was actually paid.
             )
-            (if (and (= deb 0.0) (> pending 0.0))
+            ;;S1 (2026-11-09): A COLLECT NOW RETIRES THE LEG WHENEVER IT ZEROED A CLAIM.
+            ;;
+            ;;THE OLD CONDITION WAS `deb == 0 AND pending > 0` -- i.e. retire only an account that
+            ;;had already UNSTAKED. A still-staked account that collected to zero was never retired,
+            ;;which is the whole of S1: the count only ever fell at an unstake, so on a live
+            ;;aggregator it never reached 1 and the last-claimant dust sweep was unreachable.
+            ;;
+            ;;THE NEW CONDITION IS `pending > 0` ALONE -- this leg had something to collect, and the
+            ;;collect has now taken it, so it is no longer a leg with a positive claimable. It is
+            ;;restored at the next accrual by `XI_2|RestoreUnclaimedFromCounts`, which counts it
+            ;;through `earning-leg-count` if it is still staked.
+            ;;
+            ;;AND A DORMANT LEG IS RETIRED FROM BOTH COUNTERS (T4). `deb == 0` means this leg earns
+            ;;nothing at the next accrual, so it was counted in `dormant-claim-count`; leaving it
+            ;;there would hold the restored figure permanently high and make `= 1` unreachable all
+            ;;over again -- the defect, one counter over.
+            ;;
+            ;;ORDERING IS UNCHANGED AND STILL LOAD-BEARING: this runs in PHASE 3, BEFORE the PHASE 2
+            ;;pending reset, because afterwards `pending` is 0 for everyone and no condition here
+            ;;could distinguish a leg that had a claim from one that never did.
+            (if (> payout 0.0)
                 (do
+                    ;;T3: the leg no longer has a positive claimable.
                     (XI_2|BumpRpsGlobalUnclaimed fvt-id reward-dptf-id false)
-                    ;; #10 Tier-1: this user left the member's claimant set → decrement its mini-vault count
+                    ;; #10 Tier-1: and the same, one tier down, so the member sweep sees it too.
                     (WU_MemberVault|UnclaimedCount fvt-id score-entity-id reward-dptf-id false)
+                    ;;T4: if it was OWED-BUT-NOT-EARNING, it leaves the dormant set as well.
+                    (if (= deb 0.0)
+                        (do
+                            (XI_2|BumpRpsGlobalDormant fvt-id reward-dptf-id false)
+                            (XI_2|BumpMemberVaultDormant fvt-id score-entity-id reward-dptf-id false)
+                        )
+                        true
+                    )
                 )
                 true
             )
@@ -3347,14 +3677,14 @@
 
     ;;Protection: Class 1 — Innate protection offered by WU_Fvt|TotalDebScore
     (defun XI_SyncFvtTotalDebMirrors:object{IgnisCollectorV4.OutputCumulator}
-        (pre-member-debs:[object{AcquisitionSchemasV3.FVT|MemberPreDeb}])
+        (pre-member-debs:[object{AcquisitionSchemasV5.FVT|MemberPreDeb}])
         @doc "After SCORE phase 4 (M2/#11): INCREMENTALLY update each touched vault/treasury member's FVT \
             \ total-deb-score mirror by (new live deb-weight − pre-SCORE deb-weight). No `keys` scan — only the \
             \ members settled this tx are touched (bounded). Farm members are skipped (ghost-tvl / split-at-inject). \
             \ Sequential map accumulates correctly when several members share one FVT."
         ;; SECURE: granted by WU_Fvt|TotalDebScore (underlying W_).
         (map
-            (lambda (m:object{AcquisitionSchemasV3.FVT|MemberPreDeb})
+            (lambda (m:object{AcquisitionSchemasV5.FVT|MemberPreDeb})
                 (let
                     (
                         (fvt-id:string (at "fvt-id" m))
@@ -3382,7 +3712,7 @@
     ;;Protection: Class 1 — Innate protection offered by WU_ScoreEntityLink|TotalLaneWeight,
     ;;Protection:          WW_MemberUserWeight
     (defun XI_SyncTripletLaneWeights:object{IgnisCollectorV4.OutputCumulator}
-        (beneficiary-id:string settle-plans:[object{AcquisitionSchemasV3.FVT|SettleScorePlan}])
+        (beneficiary-id:string settle-plans:[object{AcquisitionSchemasV5.FVT|SettleScorePlan}])
         @doc "Phase 4.6 — after SCORE: for each TRUE-triplet member (any FVT class) the staker touched, \
             \ re-snapshot the user's Level-1 weight (live w-user) and adjust ScoreEntityLink.total-lane-weight \
             \ by (new − old). Mirrors the read-old-at-2.3 / write-after-SCORE ordering XI_SyncFvtTotalDebMirrors \
@@ -3393,10 +3723,10 @@
         ;; SECURE: granted by WU_ScoreEntityLink|TotalLaneWeight / WW_MemberUserWeight (underlying W_).
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
             )
             (map
-                (lambda (plan:object{AcquisitionSchemasV3.FVT|SettleScorePlan})
+                (lambda (plan:object{AcquisitionSchemasV5.FVT|SettleScorePlan})
                     (let
                         (
                             (fvt-id:string (at "fvt-id" plan))
@@ -3478,7 +3808,7 @@
 
     ;;Protection: Class 1 — Innate protection offered by XI_ReleaseStream
     (defun XI_RpsPreScore:object{IgnisCollectorV4.OutputCumulator}
-        (beneficiary-id:string pool-id:string settle-bundle:object{AcquisitionSchemasV3.FVT|StakeSettleBundle})
+        (beneficiary-id:string pool-id:string settle-bundle:object{AcquisitionSchemasV5.FVT|StakeSettleBundle})
         @doc "RPS prelude orchestrator — ghost TVL sync, ensure rows, bank pending at OLD deb (UrStoa UpdatePendingRewards block)."
         ;; SECURE: granted by XI_1|SyncFarmGhostTvlForEmployedScores / XI_1|EnsureScoreRewardRows / XI_1|BankScorePendingRewards (underlying W_).
         (let
@@ -3488,20 +3818,20 @@
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 (settle-scores:[string] (at "settle-scores" settle-bundle))
                 (distinct-fvts:[string] (at "distinct-fvts" settle-bundle))
-                (settle-plans:[object{AcquisitionSchemasV3.FVT|SettleScorePlan}] (at "settle-plans" settle-bundle))
+                (settle-plans:[object{AcquisitionSchemasV5.FVT|SettleScorePlan}] (at "settle-plans" settle-bundle))
             )
             ;; PHASE 2.0 — DRIP every affected reward lane FIRST (checkpoint) so the ghost-TVL / Tier-2 settle and
             ;; the per-user banking below run against the now-current index (streamed rewards vest up to `now`).
             ;; Uses the plans' own reward-dptf-ids (no extra scan); a lane shared by two plans is dripped twice —
             ;; the 2nd drip is a no-op (elapsed 0). No-op entirely when no lane on the plan carries a live stream.
             (map
-                (lambda (plan:object{AcquisitionSchemasV3.FVT|SettleScorePlan})
+                (lambda (plan:object{AcquisitionSchemasV5.FVT|SettleScorePlan})
                     (map (lambda (reward-dptf-id:string) (XI_ReleaseStream (at "fvt-id" plan) reward-dptf-id))
                          (at "reward-dptf-ids" plan)))
                 settle-plans)
             (XI_1|SyncFarmGhostTvlForEmployedScores settle-plans)
             (map
-                (lambda (plan:object{AcquisitionSchemasV3.FVT|SettleScorePlan})
+                (lambda (plan:object{AcquisitionSchemasV5.FVT|SettleScorePlan})
                     (do
                         (XI_1|EnsureScoreRewardRows beneficiary-id plan)
                         (XI_1|BankScorePendingRewards beneficiary-id pool-id plan)
@@ -3520,7 +3850,7 @@
 
     ;;Protection: Class 1 — Innate protection offered by XI_2|EnsureRpsMemberRow
     (defun XI_1|EnsureScoreRewardRows
-        (beneficiary-id:string plan:object{AcquisitionSchemasV3.FVT|SettleScorePlan})
+        (beneficiary-id:string plan:object{AcquisitionSchemasV5.FVT|SettleScorePlan})
         @doc "Phase 2.2 — UrStoa ≡ insert UrStoaVaultUser when account absent (IzAccount false)."
         ;; SECURE: granted by XI_2|EnsureRpsMemberRow (underlying W_).
         (let
@@ -3548,7 +3878,7 @@
     ;;Protection: Class 1 — Innate protection offered by XI_2|SettleMemberTier2,
     ;;Protection:          XI_2|BankUserTier1Pending
     (defun XI_1|BankScorePendingRewards
-        (beneficiary-id:string pool-id:string plan:object{AcquisitionSchemasV3.FVT|SettleScorePlan})
+        (beneficiary-id:string pool-id:string plan:object{AcquisitionSchemasV5.FVT|SettleScorePlan})
         @doc "Phase 2.3 — UrStoa ≡ XI_URV|UpdatePendingRewards (bank at OLD deb × ΔL_i)."
         ;; SECURE: granted by XI_2|SettleMemberTier2 / XI_2|BankUserTier1Pending (underlying W_).
         (let
@@ -3576,8 +3906,8 @@
     ;;Protection: Class 1 — Innate protection offered by WU_ScoreEntityLink|GhostTvlWeight,
     ;;Protection:          WU_Fvt|TotalGhostTvlWeight
     (defun XI_1|SyncFarmGhostTvlForEmployedScores:object{IgnisCollectorV4.OutputCumulator}
-        (score-plans:[object{AcquisitionSchemasV3.FVT|SettleScorePlan}])
-        @doc "Core ghost-TVL sync (phase 2.1 / inject / collect): SWP→FVT reconcile per object{AcquisitionSchemasV3.FVT|SettleScorePlan}. \
+        (score-plans:[object{AcquisitionSchemasV5.FVT|SettleScorePlan}])
+        @doc "Core ghost-TVL sync (phase 2.1 / inject / collect): SWP→FVT reconcile per object{AcquisitionSchemasV5.FVT|SettleScorePlan}. \
             \ Caller builds plans once with reward-dptf-ids from a single URH_FVT|SettleFvtRewardBundle — no URD in child XI. \
             \ Per row: read SWP::UR_StoaValue via swpair; if W_live ≠ W_cached settle Tier-2 at old W_i, \
             \ write ghost-tvl-weight, adjust FVT|T.total-ghost-tvl-weight. \
@@ -3589,7 +3919,7 @@
             )
             ;; map: employed score plans (farm ghost-TVL reconcile per score × FVT link)
             (map
-                (lambda (plan:object{AcquisitionSchemasV3.FVT|SettleScorePlan})
+                (lambda (plan:object{AcquisitionSchemasV5.FVT|SettleScorePlan})
                     (let
                         (
                             (score-entity-type:integer (at "score-entity-type" plan))
@@ -3901,7 +4231,7 @@
         (require-capability (SECURE))
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
                 (triplet:bool (= score-entity-type CT_SCORE_ENTITY_TRIPLET))
                 (bronze-id:string (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET) (ref-SCR::UR_SCR|TripletBronzeScoreId score-entity-id) score-entity-id))
                 (silver-id:string (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET) (ref-SCR::UR_SCR|TripletSilverScoreId score-entity-id) score-entity-id))
@@ -3912,7 +4242,7 @@
             (if (URC_FvtMemberDebNeedsFix fvt-id user-id score-entity-type score-entity-id)
                 (let
                     (
-                        (pre-member-debs:[object{AcquisitionSchemasV3.FVT|MemberPreDeb}]
+                        (pre-member-debs:[object{AcquisitionSchemasV5.FVT|MemberPreDeb}]
                             [ {"fvt-id"            : fvt-id
                               ,"score-entity-type" : score-entity-type
                               ,"score-entity-id"   : score-entity-id
@@ -3978,7 +4308,7 @@
         (require-capability (SECURE))
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
                 (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
                 (triplet:bool (= score-entity-type CT_SCORE_ENTITY_TRIPLET))
                 (triplet-true:bool (and (= score-entity-type CT_SCORE_ENTITY_TRIPLET) (ref-SCR::UR_SCR|TripletTrueTriplet score-entity-id)))
@@ -4003,7 +4333,7 @@
             ;; swept class's boost part stale in the very rows the weight is read from. One path for everyone.
             (let
                 (
-                    (pre-member-debs:[object{AcquisitionSchemasV3.FVT|MemberPreDeb}]
+                    (pre-member-debs:[object{AcquisitionSchemasV5.FVT|MemberPreDeb}]
                         [ {"fvt-id"            : fvt-id
                           ,"score-entity-type" : score-entity-type
                           ,"score-entity-id"   : score-entity-id
@@ -4172,7 +4502,7 @@
                                 (lambda (acc:object idx:integer)
                                     (let*
                                         (
-                                            (s:object{AcquisitionSchemasV3.FVT|RPS|Stream} (UR_FVT-RS|Stream fvt-id reward-dptf-id idx))
+                                            (s:object{AcquisitionSchemasV5.FVT|RPS|Stream} (UR_FVT-RS|Stream fvt-id reward-dptf-id idx))
                                             (remaining:decimal (- (at "amount" s) (at "released" s)))
                                             (finished:bool (>= now (at "finish" s)))
                                             (rel:decimal
@@ -4200,18 +4530,32 @@
                             )
                         )
                         (total:decimal (at "total" walk))
-                        (survivors:[object{AcquisitionSchemasV3.FVT|RPS|Stream}] (at "keep" walk))
+                        (survivors:[object{AcquisitionSchemasV5.FVT|RPS|Stream}] (at "keep" walk))
                         (k:integer (length survivors))
                     )
                     ;; 1. distribute the released slice (also flushes escrowed zombie; zero-weight interval → zombie)
                     (if (> total 0.0) (XI_DistributeInjectAmount fvt-id reward-dptf-id total) (UC_EmptyOc))
+                    ;; 1b. RESTORE unclaimed-count · S1 T2, 2026-11-09
+                    ;;
+                    ;;T2 IS THE TRANSITION THAT IS EASIEST TO MISS, and missing it is the dangerous
+                    ;;direction. A streamed lane's claimables go positive as the CLOCK moves -- there
+                    ;;is no injection at all. Restoring only at inject (T1) would leave such a lane
+                    ;;reading LOW, so `= 1` fires while other legs are owed and the sweeper takes
+                    ;;their rewards. Any implementation of S1 that handles only T1 is wrong.
+                    ;;
+                    ;;GUARDED ON `total > 0.0` FOR THE SAME REASON THE DISTRIBUTE IS: a drip that
+                    ;;released nothing made no claimable positive, so there is nothing to restore and
+                    ;;rewriting the count would only overwrite a figure the collects have been
+                    ;;correctly decrementing. `XI_ReleaseStream` is called at the TOP of inject and
+                    ;;of collect, so this runs often and must be inert when it has no work.
+                    (if (> total 0.0) (XI_2|RestoreUnclaimedFromCounts fvt-id reward-dptf-id) (UC_EmptyOc))
                     ;; 2. rewrite survivors compacted to positions 1..k (position field re-stamped)
                     (if (> k 0)
                         (map
                             (lambda (i:integer)
                                 (let
                                     (
-                                        (r:object{AcquisitionSchemasV3.FVT|RPS|Stream} (at i survivors))
+                                        (r:object{AcquisitionSchemasV5.FVT|RPS|Stream} (at i survivors))
                                     )
                                     (WW_RpsStream fvt-id reward-dptf-id (+ i 1)
                                         (UDC_FVT|RPS|Stream (at "rate" r) (at "finish" r) (at "amount" r)
@@ -4263,7 +4607,30 @@
                     ;; (divisor > 0 → farm split-at-inject / vault G bump, available-rewards += R_eff, zombie→0) and
                     ;; the ESCROW-on-empty case (divisor 0 → hold `amount` as zombie, kept out of the M1 sweep).
                     (XI_DistributeInjectAmount fvt-id reward-dptf-id amount)
-                    ;; PHASE 4.1 — Do not reset unclaimed-count · UrStoa comment-only slot
+                    ;;===>PHASE 4.1=== RESTORE unclaimed-count · S1, 2026-11-09
+                    ;;
+                    ;;THIS SLOT WAS A COMMENT FOR AS LONG AS IT EXISTED -- "Do not reset
+                    ;;unclaimed-count · UrStoa comment-only slot" -- inherited from the canonical
+                    ;;`coin` vault, where the reset WAS removed, and removed CORRECTLY: it reset to
+                    ;;`nzs`, and `nzs` cannot see an account that unstaked while still owed, so the
+                    ;;count read LOW, `= 1` fired while someone else was owed, and the sweeper took
+                    ;;their rewards. coin's live source states that reasoning twice.
+                    ;;
+                    ;;WHAT WAS LOST IN INHERITING THE CONCLUSION WITHOUT THE REASON: with NO restore
+                    ;;at all, `unclaimed-count` only ever falls at an unstake, so on a live
+                    ;;aggregator it never reaches 1 and the dust sweep is unreachable. Measured on
+                    ;;mainnet 2026-11-08: the count exceeded the positive-claimable leg count on ALL
+                    ;;ELEVEN live lanes, and three lanes held a balance with ZERO collectable legs.
+                    ;;
+                    ;;THE RESTORE IS SAFE BECAUSE IT DOES NOT USE A STAKE-SIDE COUNT. It is
+                    ;;`earning-leg-count + dormant-claim-count`, and the dormant half is exactly the
+                    ;;set `nzs` was blind to. Two point reads and one write -- O(1), so inject stays
+                    ;;agnostic to the number of legs.
+                    ;;
+                    ;;AFTER PHASE 2+3, NOT BEFORE: the distribute is what makes the claimables
+                    ;;positive, so the count being restored has to describe the state that phase
+                    ;;left behind.
+                    (XI_2|RestoreUnclaimedFromCounts fvt-id reward-dptf-id)
                     (URCi_Inject op-key fvt-id [fvt-id reward-dptf-id (format "{}" [amount])])
                 ]
                 []
@@ -4370,7 +4737,7 @@
                 (lambda (acc:object sid:string)
                     (let
                         (
-                            (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+                            (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
                             (seen-before:integer (at "seen" acc))
                             (fvt:string (ref-SCR::UR_SCR|ScoreFvtLink sid))
                             (member:string
@@ -4413,6 +4780,149 @@
                 score-ids))
     )
 
+    ;;Protection: Class 1 — Innate protection offered by WU_Fvt|EarningLegCount
+
+    ;;Protection: Class 1 — Innate protection offered by WU_Fvt|EarningLegCount
+    (defun XI_2|BumpFvtEarningLegs (fvt-id:string direction:bool)
+        @doc "Internal (depth 2]): +/-1 on `FVT|RewardAggregate.earning-leg-count`, floored at 0."
+        ;; SECURE: granted by WU_Fvt|EarningLegCount (underlying W_).
+        (let
+            (
+                (old-c:integer (UR_FVT|EarningLegCount fvt-id))
+            )
+            (WU_Fvt|EarningLegCount fvt-id
+                (if direction (+ old-c 1) (if (> old-c 0) (- old-c 1) 0)))
+        )
+    )
+
+    ;;Protection: Class 1 — Innate protection offered by WU_SEL|EarningUserCount
+    (defun XI_2|BumpSelEarningUsers (fvt-id:string score-entity-id:string direction:bool)
+        @doc "Internal (depth 2]): +/-1 on `FVT|ScoreEntityLink.earning-user-count`, floored at 0."
+        ;; SECURE: granted by WU_SEL|EarningUserCount (underlying W_).
+        (let
+            (
+                (old-c:integer (UR_FVT-SEL|EarningUserCount fvt-id score-entity-id))
+            )
+            (WU_SEL|EarningUserCount fvt-id score-entity-id
+                (if direction (+ old-c 1) (if (> old-c 0) (- old-c 1) 0)))
+        )
+    )
+
+    ;;Protection: Class 1 — Innate protection offered by WU_RpsGlobal|DormantClaimCount
+    (defun XI_2|BumpRpsGlobalDormant (fvt-id:string reward-dptf-id:string direction:bool)
+        @doc "Internal (depth 2]): +/-1 on the lane's `dormant-claim-count`, floored at 0."
+        ;; SECURE: granted by WU_RpsGlobal|DormantClaimCount (underlying W_).
+        (let
+            (
+                (old-c:integer (UR_FVT-RG|DormantClaimCount fvt-id reward-dptf-id))
+            )
+            (WU_RpsGlobal|DormantClaimCount fvt-id reward-dptf-id
+                (if direction (+ old-c 1) (if (> old-c 0) (- old-c 1) 0)))
+        )
+    )
+
+    ;;Protection: Class 1 — Innate protection offered by WU_MemberVault|DormantClaimCount
+    (defun XI_2|BumpMemberVaultDormant
+        (fvt-id:string score-entity-id:string reward-dptf-id:string direction:bool)
+        @doc "Internal (depth 2]): +/-1 on the member mini-vault's `dormant-claim-count`, floored at 0."
+        ;; SECURE: granted by WU_MemberVault|DormantClaimCount (underlying W_).
+        (let
+            (
+                (old-c:integer (UR_FVT-MV|DormantClaimCount fvt-id score-entity-id reward-dptf-id))
+            )
+            (WU_MemberVault|DormantClaimCount fvt-id score-entity-id reward-dptf-id
+                (if direction (+ old-c 1) (if (> old-c 0) (- old-c 1) 0)))
+        )
+    )
+
+    ;;Protection: Class 1 — Innate protection offered by WU_RpsGlobal|UnclaimedCount
+    (defun XI_2|RestoreUnclaimedFromCounts:object{IgnisCollectorV4.OutputCumulator}
+        (fvt-id:string reward-dptf-id:string)
+        @doc "ACCRUAL (T1 inject · T2 stream release): reset this lane's `unclaimed-count` to the \
+            \ number of legs that now have a positive claimable -- `earning-leg-count + \
+            \ dormant-claim-count`. \
+            \ \
+            \ THIS IS THE PHASE THE PORT LEFT AS A COMMENT. The inject core carries a named slot, \
+            \ `PHASE 4.1 -- Do not reset unclaimed-count`, inherited from the canonical `coin` vault \
+            \ where the reset was REMOVED because it reset to `nzs` -- and `nzs` cannot see an \
+            \ account that unstaked while still owed, so the count read LOW and the sweeper took \
+            \ another account's rewards. That reasoning is correct and is why this does NOT reset to \
+            \ a stake-side count: the dormant legs are counted separately and ADDED back. \
+            \ \
+            \ O(1), WHICH IS THE WHOLE REASON THE SECOND COUNTER EXISTS. Inject must not scale with \
+            \ the number of legs -- two point reads and one write, no walk. \
+            \ \
+            \ T2 IS NOT OPTIONAL. A streamed lane's claimables go positive as the clock moves, with \
+            \ no injection at all; restoring only at inject would leave such a lane reading LOW and \
+            \ fire `= 1` while other legs are owed. \
+            \ \
+            \ THE APPROXIMATION, STATED: a staker whose share FLOORS to zero is counted here and \
+            \ will never collect, so the count can stall above 1 and the sweep not fire. That \
+            \ degrades to dust RETAINED, never dust misallocated -- the same state as before this \
+            \ change, and strictly safer than the alternative of reading low. \
+            \ \
+            \ AND IT REFUSES TO RESTORE A ZERO OVER A POSITIVE STORED COUNT, which is what makes \
+            \ this phase safe on a row the 2026-11-10 repair never reached. Both counters read 0 on \
+            \ a row that predates them -- correctly, because the guarded readers default rather \
+            \ than abort -- so an unguarded restore would write 0 over a lane whose legs are still \
+            \ owed, and the next collect would see a count below 1 and sweep the WHOLE lane to one \
+            \ account. That is the one irreversible direction. Skipping the write instead leaves \
+            \ the stored (over-)count in place: the sweep stalls, dust is retained, and the figure \
+            \ corrects itself the moment the migration runs or any leg stakes. \
+            \ \
+            \ THE CASE IT GIVES UP IS EMPTY: `restored = 0` means no leg earns and no leg is owed, \
+            \ so there is no claimant the count could mis-pay. Such a lane's residue is reached by \
+            \ the whole-aggregator evict, which zeroes each lane exactly. The deploy ORDER is \
+            \ therefore no longer load-bearing for correctness -- only for how long the dust sits."
+        ;; SECURE: granted by WU_RpsGlobal|UnclaimedCount (underlying W_).
+        ;;RETURNS AN EMPTY CUMULATOR, not the writer's string: this runs as a PHASE inside the
+        ;;inject and drip cumulator chains, which are typed `[object{OutputCumulator}]`. It bills
+        ;;nothing of its own -- three reads and a write, already covered by the op's own price.
+        (let
+            (
+                (restored:integer
+                    (+ (UR_FVT|EarningLegCount fvt-id)
+                       (UR_FVT-RG|DormantClaimCount fvt-id reward-dptf-id)))
+                (stored:integer (UR_FVT-RG|UnclaimedCount fvt-id reward-dptf-id))
+            )
+            ;;NEVER write a 0 over a positive stored count -- see the @doc. Both branches are
+            ;;`:string` because the writer is, and an `if` must unify.
+            (if (and (= restored 0) (> stored 0))
+                (format "unclaimed-count left at {} -- S1 counters not yet repaired on {}|{}"
+                    [stored fvt-id reward-dptf-id])
+                (WU_RpsGlobal|UnclaimedCount fvt-id reward-dptf-id restored))
+        )
+        (UC_EmptyOc)
+    )
+
+    ;;Protection: Class 1 — Innate protection offered by WU_MemberVault|UnclaimedCountSet
+    (defun XI_2|RestoreMemberUnclaimedFromCounts
+        (fvt-id:string score-entity-id:string reward-dptf-id:string)
+        @doc "ACCRUAL, tier 1: the member mini-vault twin of `XI_2|RestoreUnclaimedFromCounts` -- \
+            \ `unclaimed-count := earning-user-count + dormant-claim-count` for one member on one lane. \
+            \ \
+            \ CARRIES THE SAME ZERO REFUSAL, for the same reason and with the same bound: before \
+            \ the 2026-11-10 repair reaches a row, both counters read 0 on a pre-existing member row, \
+            \ and writing that 0 over a positive stored count would arm the tier-1 `mc == 1` sweep \
+            \ on a member whose users are still owed. OuroLpFarm is the one live farm and the one \
+            \ lane measured holding tier-1 dust, so this is the branch that would actually fire."
+        ;; SECURE: granted by WU_MemberVault|UnclaimedCount (underlying W_).
+        (let
+            (
+                (restored:integer
+                    (+ (UR_FVT-SEL|EarningUserCount fvt-id score-entity-id)
+                       (UR_FVT-MV|DormantClaimCount fvt-id score-entity-id reward-dptf-id)))
+                (stored:integer (UR_FVT-MV|UnclaimedCount fvt-id score-entity-id reward-dptf-id))
+            )
+            ;;NEVER write a 0 over a positive stored count -- see the @doc. Both branches are
+            ;;`:string` because the writer is, and an `if` must unify.
+            (if (and (= restored 0) (> stored 0))
+                (format "member unclaimed-count left at {} -- S1 counters not yet repaired on {}|{}|{}"
+                    [stored fvt-id score-entity-id reward-dptf-id])
+                (WU_MemberVault|UnclaimedCountSet fvt-id score-entity-id reward-dptf-id restored))
+        )
+    )
+
     ;;Protection: Class 1 — Innate protection offered by WU_RpsGlobal|UnclaimedCount
     (defun XI_2|BumpRpsGlobalUnclaimed
         (fvt-id:string reward-dptf-id:string direction:bool)
@@ -4432,15 +4942,17 @@
         )
     )
 
-    ;;Protection: Class 1 — Innate protection offered by WU_MemberVault|UnclaimedCount
+    ;;Protection: Class 1 — Innate protection offered by XI_2|BumpFvtEarningLegs,
+    ;;Protection:          XI_2|BumpRpsGlobalDormant, XI_2|BumpSelEarningUsers,
+    ;;Protection:          XI_2|BumpMemberVaultDormant
     (defun XI_1|BookUnclaimedForFvtRewardLine
         (
             beneficiary-id:string
             pool-id:string
             fvt-id:string
             reward-dptf-id:string
-            plans:[object{AcquisitionSchemasV3.FVT|SettleScorePlan}]
-            pre-nz-flags:[object{AcquisitionSchemasV3.FVT|ScorePreNzFlag}]
+            plans:[object{AcquisitionSchemasV5.FVT|SettleScorePlan}]
+            pre-nz-flags:[object{AcquisitionSchemasV5.FVT|ScorePreNzFlag}]
         )
         @doc "Internal (phase 2.35 · depth 1]): one (fvt, reward-dptf) unclaimed transition — OR was/is across pool employed scores on that fvt."
         ;; SECURE: granted by XI_2|BumpRpsGlobalUnclaimed (underlying W_).
@@ -4449,7 +4961,7 @@
                 (was-claimant:bool
                     (fold (or) false
                         (map
-                            (lambda (plan:object{AcquisitionSchemasV3.FVT|SettleScorePlan})
+                            (lambda (plan:object{AcquisitionSchemasV5.FVT|SettleScorePlan})
                                 (fold (or) false
                                     (map
                                         (lambda (score-id:string)
@@ -4466,7 +4978,7 @@
                 (is-claimant:bool
                     (fold (or) false
                         (map
-                            (lambda (plan:object{AcquisitionSchemasV3.FVT|SettleScorePlan})
+                            (lambda (plan:object{AcquisitionSchemasV5.FVT|SettleScorePlan})
                                 (fold (or) false
                                     (map
                                         (lambda (score-id:string)
@@ -4484,12 +4996,42 @@
                     (URC_StakeAnyPendingOnFvtRewardLine beneficiary-id fvt-id reward-dptf-id plans)
                 )
             )
+            ;;S1 (2026-11-09): THE EARNING COUNT MOVES HERE, and `unclaimed-count` NO LONGER DOES.
+            ;;
+            ;;WHY THE OLD RULE COULD NOT WORK. `unclaimed-count` was incremented when an account
+            ;;became a claimant and decremented when it stopped being one -- so a STILL-STAKED
+            ;;account that collected to zero was never retired. On a live aggregator the count
+            ;;therefore never reached 1 and the last-claimant dust sweep was unreachable. Measured
+            ;;on mainnet: the count exceeded the positive-claimable leg count on ALL ELEVEN lanes.
+            ;;
+            ;;WHAT MOVES NOW. This site maintains `earning-leg-count` -- the `(user, member)` legs
+            ;;that will RECEIVE a share of the next accrual -- and, when a leg leaves with a live
+            ;;claim, moves it into `dormant-claim-count`. `unclaimed-count` itself is RESTORED at
+            ;;accrual from `earning + dormant` and DECREMENTED at collect; see
+            ;;`XI_1|BookCollectUnclaimed` and `XI_2|RestoreUnclaimedFromCounts`.
+            ;;
+            ;;T7 (stake) DELIBERATELY DOES NOT TOUCH `unclaimed-count`. Staking grants future
+            ;;accrual, not a present claim -- the new staker's claimable is 0 until the next inject
+            ;;or stream release. Counting it now would hold the count above the number of legs that
+            ;;can actually be collected and make `= 1` unreachable again, which is the defect.
             (if (and (not was-claimant) is-claimant)
-                (XI_2|BumpRpsGlobalUnclaimed fvt-id reward-dptf-id true)
+                ;;T7: a new earning leg. No claim yet.
+                (XI_2|BumpFvtEarningLegs fvt-id true)
                 (if (and was-claimant (not is-claimant))
-                    (if (not any-pending)
-                        (XI_2|BumpRpsGlobalUnclaimed fvt-id reward-dptf-id false)
-                        true
+                    (do
+                        ;;T5/T6: the leg stops earning either way.
+                        (XI_2|BumpFvtEarningLegs fvt-id false)
+                        ;;T5: it exits OWED -> it becomes DORMANT, so the next accrual still counts
+                        ;;it. This is the case a reset to `nzs` loses, and losing it makes the count
+                        ;;read LOW -- `= 1` fires while this account is still owed and the sweeper
+                        ;;takes its rewards. The canonical `coin` vault removed its own `nzs` reset
+                        ;;for exactly this reason, and says so twice in its live source.
+                        ;;T6: a clean exit (nothing pending) leaves nothing to collect and nothing
+                        ;;to count.
+                        (if any-pending
+                            (XI_2|BumpRpsGlobalDormant fvt-id reward-dptf-id true)
+                            true
+                        )
                     )
                     true
                 )
@@ -4497,7 +5039,7 @@
             ;; #10 Tier-1: the SAME claimant transition, but per MEMBER (plan), drives that member's mini-vault
             ;; unclaimed-count — so the member sweep knows when its last user is collecting.
             (map
-                (lambda (plan:object{AcquisitionSchemasV3.FVT|SettleScorePlan})
+                (lambda (plan:object{AcquisitionSchemasV5.FVT|SettleScorePlan})
                     (let
                         (
                             (m-entity:string (at "score-entity-id" plan))
@@ -4511,12 +5053,22 @@
                             (m-pending:bool
                                 (> (UR_FVT-RU|PendingRewards beneficiary-id fvt-id m-entity reward-dptf-id) 0.0))
                         )
+                        ;;THE SAME THREE TRANSITIONS, ONE TIER DOWN, and the member tier is NOT
+                        ;;optional: the member branch of the sweep (`mc == 1`) is FARM-ONLY and the
+                        ;;chain has exactly one farm -- `OuroLpFarm`, measured holding 27 sub-units
+                        ;;of stranded dust with zero collectable legs. Fixing only the global
+                        ;;counter would leave the one aggregator where tier-1 dust actually forms
+                        ;;still unable to sweep it.
                         (if (and (not m-was) m-is)
-                            (WU_MemberVault|UnclaimedCount fvt-id m-entity reward-dptf-id true)
+                            (XI_2|BumpSelEarningUsers fvt-id m-entity true)
                             (if (and m-was (not m-is))
-                                (if (not m-pending)
-                                    (WU_MemberVault|UnclaimedCount fvt-id m-entity reward-dptf-id false)
-                                    true)
+                                (do
+                                    (XI_2|BumpSelEarningUsers fvt-id m-entity false)
+                                    (if m-pending
+                                        (XI_2|BumpMemberVaultDormant fvt-id m-entity reward-dptf-id true)
+                                        true
+                                    )
+                                )
                                 true))
                     )
                 )
@@ -4527,7 +5079,7 @@
 
     ;;Protection: Class 1 — Innate protection offered by XI_1|BookUnclaimedForFvtRewardLine
     (defun XI_BookStakeUnclaimedCounts:object{IgnisCollectorV4.OutputCumulator}
-        (beneficiary-id:string pool-id:string settle-bundle:object{AcquisitionSchemasV3.FVT|StakeSettleBundle})
+        (beneficiary-id:string pool-id:string settle-bundle:object{AcquisitionSchemasV5.FVT|StakeSettleBundle})
         @doc "Internal (C_*StakeFlow phase 2.35 · depth 0]): RPS|Global unclaimed-count after SCORE (UrStoa XI_URV|UpdateUnclaimedCount). \
             \ Once per (fvt-id, reward-dptf-id) per tx — OR was/is claimant across employed scores on that fvt in this pool. \
             \ Decrement only when user leaves claimant set and has no pending on that reward line. \
@@ -4539,17 +5091,17 @@
                 ;;
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 (distinct-fvts:[string] (at "distinct-fvts" settle-bundle))
-                (settle-plans:[object{AcquisitionSchemasV3.FVT|SettleScorePlan}] (at "settle-plans" settle-bundle))
-                (pre-nz-flags:[object{AcquisitionSchemasV3.FVT|ScorePreNzFlag}] (at "pre-nz-flags" settle-bundle))
+                (settle-plans:[object{AcquisitionSchemasV5.FVT|SettleScorePlan}] (at "settle-plans" settle-bundle))
+                (pre-nz-flags:[object{AcquisitionSchemasV5.FVT|ScorePreNzFlag}] (at "pre-nz-flags" settle-bundle))
             )
             ;; map: distinct FVT entities — one unclaimed pass per fvt × enabled reward lines
             (map
                 (lambda (fvt-id:string)
                     (let
                         (
-                            (plans:[object{AcquisitionSchemasV3.FVT|SettleScorePlan}]
+                            (plans:[object{AcquisitionSchemasV5.FVT|SettleScorePlan}]
                                 (filter
-                                    (lambda (plan:object{AcquisitionSchemasV3.FVT|SettleScorePlan})
+                                    (lambda (plan:object{AcquisitionSchemasV5.FVT|SettleScorePlan})
                                         (= (at "fvt-id" plan) fvt-id)
                                     )
                                     settle-plans
@@ -4580,7 +5132,7 @@
 
     ;;Protection: Class 1 — Innate protection offered by WU_RpsUser|LastRps
     (defun XI_CheckpointStakeRps:object{IgnisCollectorV4.OutputCumulator}
-        (beneficiary-id:string pool-id:string settle-bundle:object{AcquisitionSchemasV3.FVT|StakeSettleBundle})
+        (beneficiary-id:string pool-id:string settle-bundle:object{AcquisitionSchemasV5.FVT|StakeSettleBundle})
         @doc "Internal (C_*StakeFlow phase 2.4 · depth 0]): advance last-rps to NEW L_i after SCORE deb mutation (UrStoa XI_URV|UpdateUserRPS). \
             \ settle-bundle from URHC_BuildStakeSettleBundle (same scope as phase 2.1; no second URD). \
             \ Only existing FVT|T|RPS|User rows are updated. \
@@ -4591,11 +5143,11 @@
                 (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 ;;
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
-                (checkpoint-plans:[object{AcquisitionSchemasV3.FVT|SettleScorePlan}] (at "settle-plans" settle-bundle))
+                (checkpoint-plans:[object{AcquisitionSchemasV5.FVT|SettleScorePlan}] (at "settle-plans" settle-bundle))
             )
             ;; map: employed score plans (same scope as phase 2.1 settle)
             (map
-                (lambda (plan:object{AcquisitionSchemasV3.FVT|SettleScorePlan})
+                (lambda (plan:object{AcquisitionSchemasV5.FVT|SettleScorePlan})
                     (let
                         (
                             (fvt-id:string (at "fvt-id" plan))
@@ -4885,7 +5437,7 @@
         (with-capability (FVT|XE>ADMIT-DELEGATION fvt-id triplet-id operator)
             (let
                 (
-                    (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
                 )
                 (ref-SCR::XE_CreateFvtLink (ref-SCR::UR_SCR|TripletBronzeScoreId triplet-id) fvt-id)
                 (ref-SCR::XE_CreateFvtLink (ref-SCR::UR_SCR|TripletSilverScoreId triplet-id) fvt-id)
@@ -5007,31 +5559,67 @@
         )
     )
 
-    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
     (defun XE_BookStakeUnclaimedCounts:object{IgnisCollectorV4.OutputCumulator}
-        (beneficiary-id:string pool-id:string settle-bundle:object)
+        (beneficiary-id:string pool-id:string settle-bundle:object{AcquisitionSchemasV5.FVT|StakeSettleBundle})
         @doc "Forward (stake/unstake/collect flow): book the beneficiary's unclaimed-reward counts for \
-            \ <pool-id> from <settle-bundle> so later collects settle the correct outstanding units. P|UEV_IMC + SECURE."
+            \ <pool-id> from <settle-bundle> so later collects settle the correct outstanding units. P|UEV_IMC + RPS|XE>WRITE. \
+            \ \
+            \ MERGED 2026-11-09 FROM TWO LIVE DUPLICATES. A second copy of this function existed as \
+            \ `XE_XI_BookStakeUnclaimedCounts` -- both declared in the interface, both reached: this one from VCT by \
+            \ DOT-CALL, that one from FVT by MODREF, 6 and 5 call sites. They were FUNCTIONALLY \
+            \ IDENTICAL: same inner `XI_`, same authority, because `RPS|XE>WRITE` and `SECURE` \
+            \ grant the same thing -- that defcap only `compose-capability`s SECURE. What differed \
+            \ was cosmetic: an untyped `settle-bundle` here against the schema-typed one there. \
+            \ \
+            \ THE SURVIVOR TAKES THE STRONGER SHAPE -- the typed parameter, which matches the inner \
+            \ function's own signature, so a malformed bundle is refused at the module boundary \
+            \ rather than one call deeper. Nothing is relaxed: every caller already had to satisfy \
+            \ that schema or the call would have failed inside. \
+            \ \
+            \ WHY IT SURVIVED SO LONG -- a NON-CANONICAL PREFIX HID IT. `XE_XI_` has no form in the \
+            \ canon, so the compound name read as a different KIND of thing rather than as a second \
+            \ copy of this one. It surfaced only when the prefix sweep tried to rename it and \
+            \ COLLIDED with this name. See FINDINGS-2026-11-08.md F8."
         (P|UEV_IMC)
-        (with-capability (SECURE)
+        (with-capability (RPS|XE>WRITE)
             (XI_BookStakeUnclaimedCounts beneficiary-id pool-id settle-bundle)
         )
     )
 
-    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
     (defun XE_CheckpointStakeRps:object{IgnisCollectorV4.OutputCumulator}
-        (beneficiary-id:string pool-id:string settle-bundle:object)
+        (beneficiary-id:string pool-id:string settle-bundle:object{AcquisitionSchemasV5.FVT|StakeSettleBundle})
         @doc "Forward (stake/unstake/collect flow): checkpoint the beneficiary's reward-per-share (RPS) baseline \
-            \ for <pool-id> from <settle-bundle> so subsequent accrual is measured from the new stake state. P|UEV_IMC + SECURE."
+            \ for <pool-id> from <settle-bundle> so subsequent accrual is measured from the new stake state. P|UEV_IMC + RPS|XE>WRITE. \
+            \ \
+            \ MERGED 2026-11-09 FROM TWO LIVE DUPLICATES. A second copy of this function existed as \
+            \ `XE_XI_CheckpointStakeRps` -- both declared in the interface, both reached: this one from VCT by \
+            \ DOT-CALL, that one from FVT by MODREF, 6 and 5 call sites. They were FUNCTIONALLY \
+            \ IDENTICAL: same inner `XI_`, same authority, because `RPS|XE>WRITE` and `SECURE` \
+            \ grant the same thing -- that defcap only `compose-capability`s SECURE. What differed \
+            \ was cosmetic: an untyped `settle-bundle` here against the schema-typed one there. \
+            \ \
+            \ THE SURVIVOR TAKES THE STRONGER SHAPE -- the typed parameter, which matches the inner \
+            \ function's own signature, so a malformed bundle is refused at the module boundary \
+            \ rather than one call deeper. Nothing is relaxed: every caller already had to satisfy \
+            \ that schema or the call would have failed inside. \
+            \ \
+            \ WHY IT SURVIVED SO LONG -- a NON-CANONICAL PREFIX HID IT. `XE_XI_` has no form in the \
+            \ canon, so the compound name read as a different KIND of thing rather than as a second \
+            \ copy of this one. It surfaced only when the prefix sweep tried to rename it and \
+            \ COLLIDED with this name. See FINDINGS-2026-11-08.md F8."
         (P|UEV_IMC)
-        (with-capability (SECURE)
+        (with-capability (RPS|XE>WRITE)
             (XI_CheckpointStakeRps beneficiary-id pool-id settle-bundle)
         )
     )
     ;;{5-XE}  FORWARD ENTRYPOINTS (writer wrappers for FVT)
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          RPS|XE>WRITE
-    (defun XE_WI_FvtRewardAggregate:string (fvt-id:string row:object{AcquisitionSchemasV3.FVT|RewardAggregate})
+    (defun XE_FvtRewardAggregate:string (fvt-id:string row:object{AcquisitionSchemasV5.FVT|RewardAggregate})
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (WI_FvtRewardAggregate fvt-id row)
@@ -5039,7 +5627,7 @@
     )
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          RPS|XE>WRITE
-    (defun XE_WI_QualitySplit:string (fvt-id:string dptf-id:string mode:string bronze-split:[integer] silver-split:[integer] gold-split:[integer])
+    (defun XE_QualitySplit:string (fvt-id:string dptf-id:string mode:string bronze-split:[integer] silver-split:[integer] gold-split:[integer])
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (WI_QualitySplit fvt-id dptf-id mode bronze-split silver-split gold-split)
@@ -5047,7 +5635,7 @@
     )
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          RPS|XE>WRITE
-    (defun XE_WI_RpsGlobal:string (fvt-id:string dptf-id:string row:object{AcquisitionSchemasV3.FVT|RPS|Global})
+    (defun XE_RpsGlobal:string (fvt-id:string dptf-id:string row:object{AcquisitionSchemasV5.FVT|RPS|Global})
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (WI_RpsGlobal fvt-id dptf-id row)
@@ -5055,7 +5643,7 @@
     )
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          RPS|XE>WRITE
-    (defun XE_WI_ScoreEntityLink:string (fvt-id:string score-entity-id:string row:object{AcquisitionSchemasV3.FVT|ScoreEntityLink})
+    (defun XE_ScoreEntityLink:string (fvt-id:string score-entity-id:string row:object{AcquisitionSchemasV5.FVT|ScoreEntityLink})
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (WI_ScoreEntityLink fvt-id score-entity-id row)
@@ -5063,7 +5651,7 @@
     )
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          RPS|XE>WRITE
-    (defun XE_WU_FvtForcedFixCount|Zero:string (fvt-id:string dptf-id:string user-id:string)
+    (defun XE_FvtForcedFixCount|Zero:string (fvt-id:string dptf-id:string user-id:string)
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (WU_FvtForcedFixCount|Zero fvt-id dptf-id user-id)
@@ -5071,7 +5659,7 @@
     )
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          RPS|XE>WRITE
-    (defun XE_WU_MemberVault|AvailableRewards:string (fvt-id:string score-entity-id:string dptf-id:string available-rewards:decimal)
+    (defun XE_MemberVault|AvailableRewards:string (fvt-id:string score-entity-id:string dptf-id:string available-rewards:decimal)
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (WU_MemberVault|AvailableRewards fvt-id score-entity-id dptf-id available-rewards)
@@ -5079,7 +5667,7 @@
     )
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          RPS|XE>WRITE
-    (defun XE_WU_RpsGlobal|AvailableRewards:string (fvt-id:string dptf-id:string available-rewards:decimal)
+    (defun XE_RpsGlobal|AvailableRewards:string (fvt-id:string dptf-id:string available-rewards:decimal)
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (WU_RpsGlobal|AvailableRewards fvt-id dptf-id available-rewards)
@@ -5087,7 +5675,7 @@
     )
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          RPS|XE>WRITE
-    (defun XE_WU_RpsUser|LastRps:string (user-id:string fvt-id:string score-entity-id:string dptf-id:string last-rps:decimal)
+    (defun XE_RpsUser|LastRps:string (user-id:string fvt-id:string score-entity-id:string dptf-id:string last-rps:decimal)
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (WU_RpsUser|LastRps user-id fvt-id score-entity-id dptf-id last-rps)
@@ -5095,7 +5683,7 @@
     )
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          RPS|XE>WRITE
-    (defun XE_WU_RpsUser|PendingRewards:string (user-id:string fvt-id:string score-entity-id:string dptf-id:string pending-rewards:decimal)
+    (defun XE_RpsUser|PendingRewards:string (user-id:string fvt-id:string score-entity-id:string dptf-id:string pending-rewards:decimal)
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (WU_RpsUser|PendingRewards user-id fvt-id score-entity-id dptf-id pending-rewards)
@@ -5103,7 +5691,7 @@
     )
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          RPS|XE>WRITE
-    (defun XE_XI_2|SettleMemberTier2:object{IgnisCollectorV4.OutputCumulator} (fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
+    (defun XE_2|SettleMemberTier2:object{IgnisCollectorV4.OutputCumulator} (fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (XI_2|SettleMemberTier2 fvt-id score-entity-type score-entity-id reward-dptf-id)
@@ -5111,7 +5699,7 @@
     )
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          RPS|XE>WRITE
-    (defun XE_XI_AddRewardLink:string (fvt-id:string reward-dptf-id:string segmentation:bool reward-kind:string multiplet-family-id:string)
+    (defun XE_AddRewardLink:string (fvt-id:string reward-dptf-id:string segmentation:bool reward-kind:string multiplet-family-id:string)
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (XI_AddRewardLink fvt-id reward-dptf-id segmentation reward-kind multiplet-family-id)
@@ -5119,7 +5707,7 @@
     )
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          RPS|XE>WRITE
-    (defun XE_XI_AddScoreEntity:string (fvt-id:string score-entity-type:integer score-entity-id:string swpair:string ghost-weight:decimal)
+    (defun XE_AddScoreEntity:string (fvt-id:string score-entity-type:integer score-entity-id:string swpair:string ghost-weight:decimal)
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (XI_AddScoreEntity fvt-id score-entity-type score-entity-id swpair ghost-weight)
@@ -5127,31 +5715,15 @@
     )
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          RPS|XE>WRITE
-    (defun XE_XI_BookCollectUnclaimed:object{IgnisCollectorV4.OutputCumulator} (patron:string pool-id:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
+    (defun XE_BookCollectUnclaimed:object{IgnisCollectorV4.OutputCumulator} (patron:string pool-id:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string payout:decimal)
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
-            (XI_BookCollectUnclaimed patron pool-id fvt-id score-entity-type score-entity-id reward-dptf-id)
+            (XI_BookCollectUnclaimed patron pool-id fvt-id score-entity-type score-entity-id reward-dptf-id payout)
         )
     )
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          RPS|XE>WRITE
-    (defun XE_XI_BookStakeUnclaimedCounts:object{IgnisCollectorV4.OutputCumulator} (beneficiary-id:string pool-id:string settle-bundle:object{AcquisitionSchemasV3.FVT|StakeSettleBundle})
-        (P|UEV_IMC)
-        (with-capability (RPS|XE>WRITE)
-            (XI_BookStakeUnclaimedCounts beneficiary-id pool-id settle-bundle)
-        )
-    )
-    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
-    ;;Protection:          RPS|XE>WRITE
-    (defun XE_XI_CheckpointStakeRps:object{IgnisCollectorV4.OutputCumulator} (beneficiary-id:string pool-id:string settle-bundle:object{AcquisitionSchemasV3.FVT|StakeSettleBundle})
-        (P|UEV_IMC)
-        (with-capability (RPS|XE>WRITE)
-            (XI_CheckpointStakeRps beneficiary-id pool-id settle-bundle)
-        )
-    )
-    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
-    ;;Protection:          RPS|XE>WRITE
-    (defun XE_XI_FixUserFvtDeb:object{IgnisCollectorV4.OutputCumulator} (user-id:string fvt-id:string)
+    (defun XE_FixUserFvtDeb:object{IgnisCollectorV4.OutputCumulator} (user-id:string fvt-id:string)
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (XI_FixUserFvtDeb user-id fvt-id)
@@ -5159,7 +5731,7 @@
     )
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          RPS|XE>WRITE
-    (defun XE_XI_FixUserFvtDebPenalizedIn:object{IgnisCollectorV4.OutputCumulator} (fvt-id:string reward-dptf-id:string user-id:string members:[string] reward-rows:[string])
+    (defun XE_FixUserFvtDebPenalizedIn:object{IgnisCollectorV4.OutputCumulator} (fvt-id:string reward-dptf-id:string user-id:string members:[string] reward-rows:[string])
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (XI_FixUserFvtDebPenalizedIn fvt-id reward-dptf-id user-id members reward-rows)
@@ -5167,10 +5739,10 @@
     )
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          RPS|XE>WRITE
-    (defun XE_XI_FixUserFvtDebIn:object{IgnisCollectorV4.OutputCumulator} (fvt-id:string user-id:string members:[string] reward-rows:[string])
+    (defun XE_FixUserFvtDebIn:object{IgnisCollectorV4.OutputCumulator} (fvt-id:string user-id:string members:[string] reward-rows:[string])
         @doc "NON-penalized fix that takes the HOISTED member/reward-row lists — the plain twin of \
-            \ XE_XI_FixUserFvtDebPenalizedIn, added 2026-10-23 for the non-owner inject branch. \
-            \ Without it that branch had to call XE_XI_FixUserFvtDeb, which re-derives both lists \
+            \ XE_FixUserFvtDebPenalizedIn, added 2026-10-23 for the non-owner inject branch. \
+            \ Without it that branch had to call XE_FixUserFvtDeb, which re-derives both lists \
             \ INSIDE itself (two heavy selects per user), costing 2N heavy reads against the owner \
             \ branch's 2. Same fix, same absence of a forced-fix count; only the scans are shared."
         (P|UEV_IMC)
@@ -5180,7 +5752,7 @@
     )
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          RPS|XE>WRITE
-    (defun XE_XI_SetMinInjectAmount:string (fvt-id:string reward-dptf-id:string min-inject-amount:decimal)
+    (defun XE_SetMinInjectAmount:string (fvt-id:string reward-dptf-id:string min-inject-amount:decimal)
         @doc "Set the lane's per-injection floor. Owner authority is proven by the caller's \
             \ FVT|C>SET-MIN-INJECT-AMOUNT, exactly as every other reward-link setter here."
         (P|UEV_IMC)
@@ -5190,7 +5762,7 @@
     )
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          RPS|XE>WRITE
-    (defun XE_XI_FixUserMemberDeb:object{IgnisCollectorV4.OutputCumulator} (user-id:string fvt-id:string score-entity-type:integer score-entity-id:string)
+    (defun XE_FixUserMemberDeb:object{IgnisCollectorV4.OutputCumulator} (user-id:string fvt-id:string score-entity-type:integer score-entity-id:string)
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (XI_FixUserMemberDeb user-id fvt-id score-entity-type score-entity-id)
@@ -5198,7 +5770,7 @@
     )
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          RPS|XE>WRITE
-    (defun XE_XI_FvtAddStream:object{IgnisCollectorV4.OutputCumulator} (op-key:string patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
+    (defun XE_FvtAddStream:object{IgnisCollectorV4.OutputCumulator} (op-key:string patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (XIv_FvtAddStream op-key patron injector fvt-id reward-dptf-id amount duration)
@@ -5206,7 +5778,7 @@
     )
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          RPS|XE>WRITE
-    (defun XE_XI_FvtInjectCore:object{IgnisCollectorV4.OutputCumulator} (op-key:string patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal)
+    (defun XE_FvtInjectCore:object{IgnisCollectorV4.OutputCumulator} (op-key:string patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal)
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (XI_FvtInjectCore op-key patron injector fvt-id reward-dptf-id amount)
@@ -5214,15 +5786,7 @@
     )
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          RPS|XE>WRITE
-    (defun XE_XI_FvtSweepRecomputeChunk:object{IgnisCollectorV4.OutputCumulator} (fvt-id:string score-entity-id:string swept-boost-class-id:string users:[string])
-        (P|UEV_IMC)
-        (with-capability (RPS|XE>WRITE)
-            (XI_FvtSweepRecomputeChunk fvt-id score-entity-id swept-boost-class-id users)
-        )
-    )
-    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
-    ;;Protection:          RPS|XE>WRITE
-    (defun XE_XI_FvtSweepRecomputeWindow:integer (score-ids:[string] boost-class-id:string win-lo:integer win-hi:integer)
+    (defun XE_FvtSweepRecomputeWindow:integer (score-ids:[string] boost-class-id:string win-lo:integer win-hi:integer)
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (XI_FvtSweepRecomputeWindow score-ids boost-class-id win-lo win-hi)
@@ -5230,7 +5794,7 @@
     )
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          RPS|XE>WRITE
-    (defun XE_XI_IssueMultipletFamily:string (token-0-id:string
+    (defun XE_IssueMultipletFamily:string (token-0-id:string
             token-1-id:string
             token-2-id:string
             ats-0-1-id:string
@@ -5242,7 +5806,7 @@
     )
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          RPS|XE>WRITE
-    (defun XE_XI_ReleaseStream:object{IgnisCollectorV4.OutputCumulator} (fvt-id:string reward-dptf-id:string)
+    (defun XE_ReleaseStream:object{IgnisCollectorV4.OutputCumulator} (fvt-id:string reward-dptf-id:string)
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (XI_ReleaseStream fvt-id reward-dptf-id)
@@ -5250,7 +5814,7 @@
     )
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          RPS|XE>WRITE
-    (defun XE_XI_RotateOwnership:string (fvt-id:string new-owner-konto:string)
+    (defun XE_RotateOwnership:string (fvt-id:string new-owner-konto:string)
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (XI_RotateOwnership fvt-id new-owner-konto)
@@ -5258,7 +5822,7 @@
     )
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          RPS|XE>WRITE
-    (defun XE_XI_RpsPreScore:object{IgnisCollectorV4.OutputCumulator} (beneficiary-id:string pool-id:string settle-bundle:object{AcquisitionSchemasV3.FVT|StakeSettleBundle})
+    (defun XE_RpsPreScore:object{IgnisCollectorV4.OutputCumulator} (beneficiary-id:string pool-id:string settle-bundle:object{AcquisitionSchemasV5.FVT|StakeSettleBundle})
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (XI_RpsPreScore beneficiary-id pool-id settle-bundle)
@@ -5266,7 +5830,7 @@
     )
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          RPS|XE>WRITE
-    (defun XE_XI_SetMosaic:string (fvt-id:string mosaic:bool)
+    (defun XE_SetMosaic:string (fvt-id:string mosaic:bool)
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (XI_SetMosaic fvt-id mosaic)
@@ -5274,7 +5838,7 @@
     )
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          RPS|XE>WRITE
-    (defun XE_XI_SetSplitMode:string (fvt-id:string split-mode:string)
+    (defun XE_SetSplitMode:string (fvt-id:string split-mode:string)
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (XI_SetSplitMode fvt-id split-mode)
@@ -5282,7 +5846,7 @@
     )
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          RPS|XE>WRITE
-    (defun XE_XI_SyncFvtPresence:object{IgnisCollectorV4.OutputCumulator} (beneficiary-id:string distinct-fvts:[string] direction:bool)
+    (defun XE_SyncFvtPresence:object{IgnisCollectorV4.OutputCumulator} (beneficiary-id:string distinct-fvts:[string] direction:bool)
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (XI_SyncFvtPresence beneficiary-id distinct-fvts direction)
@@ -5290,7 +5854,7 @@
     )
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          RPS|XE>WRITE
-    (defun XE_XI_SyncFvtTotalDebMirrors:object{IgnisCollectorV4.OutputCumulator} (pre-member-debs:[object{AcquisitionSchemasV3.FVT|MemberPreDeb}])
+    (defun XE_SyncFvtTotalDebMirrors:object{IgnisCollectorV4.OutputCumulator} (pre-member-debs:[object{AcquisitionSchemasV5.FVT|MemberPreDeb}])
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (XI_SyncFvtTotalDebMirrors pre-member-debs)
@@ -5298,7 +5862,7 @@
     )
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          RPS|XE>WRITE
-    (defun XE_XI_SyncTripletLaneWeights:object{IgnisCollectorV4.OutputCumulator} (beneficiary-id:string settle-plans:[object{AcquisitionSchemasV3.FVT|SettleScorePlan}])
+    (defun XE_SyncTripletLaneWeights:object{IgnisCollectorV4.OutputCumulator} (beneficiary-id:string settle-plans:[object{AcquisitionSchemasV5.FVT|SettleScorePlan}])
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (XI_SyncTripletLaneWeights beneficiary-id settle-plans)
@@ -5306,7 +5870,7 @@
     )
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          RPS|XE>WRITE
-    (defun XE_XI_ToggleRewardLink:string (fvt-id:string reward-dptf-id:string enabled:bool)
+    (defun XE_ToggleRewardLink:string (fvt-id:string reward-dptf-id:string enabled:bool)
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (XI_ToggleRewardLink fvt-id reward-dptf-id enabled)
@@ -5314,7 +5878,7 @@
     )
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          RPS|XE>WRITE
-    (defun XE_XI_ToggleScoreEntityLink:string (fvt-id:string score-entity-id:string enabled:bool)
+    (defun XE_ToggleScoreEntityLink:string (fvt-id:string score-entity-id:string enabled:bool)
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (XI_ToggleScoreEntityLink fvt-id score-entity-id enabled)
@@ -5322,7 +5886,7 @@
     )
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          RPS|XE>WRITE
-    (defun XE_XI_TransferRewardDptfFromVault:object{IgnisCollectorV4.OutputCumulator} (patron:string collector:string pool-id:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
+    (defun XE_TransferRewardDptfFromVault:object{IgnisCollectorV4.OutputCumulator} (patron:string collector:string pool-id:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (XI_TransferRewardDptfFromVault patron collector pool-id fvt-id score-entity-type score-entity-id reward-dptf-id)

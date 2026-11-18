@@ -334,7 +334,7 @@
             \ recompute-set size. Read-only; sweep-in-progress keeps it fixed across defpact steps."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
             )
             (fold (+) 0
                 (map
@@ -358,7 +358,7 @@
                 (lambda (acc:object sid:string)
                     (let
                         (
-                            (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+                            (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
                             (seen-before:integer (at "seen" acc))
                             (fvt:string (ref-SCR::UR_SCR|ScoreFvtLink sid))
                             (member:string
@@ -442,7 +442,7 @@
         (step
             (let
                 (
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV6} AQP-FVT)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV7} AQP-FVT)
                 )
                 (require-capability (MTX-AQP|C>INJECT patron fvt-id reward-dptf-id amount))
               (let
@@ -465,7 +465,7 @@
                         )
                         (if iz-owner
                             (RPS.XE_FvtFixUserChunk fvt-id reward-dptf-id stale)
-                            (map (lambda (u:string) (RPS.XE_XI_FixUserFvtDeb u fvt-id)) stale)
+                            (map (lambda (u:string) (RPS.XE_FixUserFvtDeb u fvt-id)) stale)
                         )
                         (ref-IGNIS::XE_CollectIgnis patron (ref-FVT::XB_FvtInject patron executor fvt-id reward-dptf-id amount))
                         (yield {"injected" : true})
@@ -477,7 +477,7 @@
                         )
                         (if iz-owner
                             (RPS.XE_FvtFixUserChunk fvt-id reward-dptf-id (take N_FIX stale))
-                            (map (lambda (u:string) (RPS.XE_XI_FixUserFvtDeb u fvt-id)) (take N_FIX stale))
+                            (map (lambda (u:string) (RPS.XE_FixUserFvtDeb u fvt-id)) (take N_FIX stale))
                         )
                         (yield {"injected" : false})
                         (format "MTX Inject 1|2: fixed {} of {} stale — {} remain, continue to step 2." [N_FIX (length stale) remaining])
@@ -496,7 +496,7 @@
                         (let
                             (
                                 (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
-                                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV6} AQP-FVT)
+                                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV7} AQP-FVT)
                                 (stale:[string] (RPS.URH_FvtStalePresentUsers fvt-id))
                                 ;; Same owner/non-owner split as step 0 — see its note. A defpact
                                 ;; that penalized only on its SECOND step would be the same
@@ -505,7 +505,7 @@
                             )
                             (if iz-owner
                                 (RPS.XE_FvtFixUserChunk fvt-id reward-dptf-id stale)
-                                (map (lambda (u:string) (RPS.XE_XI_FixUserFvtDeb u fvt-id)) stale)
+                                (map (lambda (u:string) (RPS.XE_FixUserFvtDeb u fvt-id)) stale)
                             )
                             (ref-IGNIS::XE_CollectIgnis patron (ref-FVT::XB_FvtInject patron executor fvt-id reward-dptf-id amount))
                             (format "MTX Inject 2|2: fixed {} remaining stale staker(s) and INJECTED {} {}." [(length stale) amount reward-dptf-id])
@@ -532,7 +532,7 @@
             (let
                 (
                     (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV6} AQP-FVT)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV7} AQP-FVT)
                 )
                 (require-capability (MTX-AQP|C>SWEEP-REVOKE patron executor anchor-id))
                 (let
@@ -578,7 +578,7 @@
                     (with-capability (MTX-AQP|C>SWEEP-REVOKE patron executor anchor-id)
                         (let
                             (
-                                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV6} AQP-FVT)
+                                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV7} AQP-FVT)
                                 (total:integer (URC_SweepTotalPresent score-ids))
                             )
                             (let

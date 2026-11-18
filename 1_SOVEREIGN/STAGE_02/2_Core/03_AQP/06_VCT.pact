@@ -1,5 +1,5 @@
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface AcquisitionVacateV4
+(interface AcquisitionVacateV6
     @doc "Interface for the AQP pool-vacate subsystem. Declares UC_ helpers for slice \
         \ sizing, URC_/URH_ readers for vacate progress, per-asset inventory and gas-bounded \
         \ owner-array checks, URHC_ slice-plan builders, per-fungibility XB_Vacate leg \
@@ -96,18 +96,18 @@
     (defun UC_DecimalAmountsRowToInt:[integer] (amounts:[decimal]))
     (defun UC_EmptyOc:object{IgnisCollectorV4.OutputCumulator} ())
     (defun UC_GasMaxForKind:integer (vacate-kind:integer))
-    (defun UC_OwnerRowNonceTotal:integer (owner-rows:[object{AcquisitionSchemasV3.VCT|VacateNonceLeg}]))
-    (defun UC_VacateCollectableLegsToVacateArrays:object (legs:[object{AcquisitionSchemasV3.VCT|VacateNonceLeg}]))
+    (defun UC_OwnerRowNonceTotal:integer (owner-rows:[object{AcquisitionSchemasV5.VCT|VacateNonceLeg}]))
+    (defun UC_VacateCollectableLegsToVacateArrays:object (legs:[object{AcquisitionSchemasV5.VCT|VacateNonceLeg}]))
     (defun UC_VacateDecimalAmountsToIntegers:[integer] (amounts:[decimal]))
     (defun UC_VacateKindSon:bool (vacate-kind:integer))
     (defun UC_VacateMergeDecimalNonceRowsForBeneficiary:object (beneficiary-id:string beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[decimal]]))
     (defun UC_VacateMergeIntNonceRowsForBeneficiary:object (beneficiary-id:string beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]]))
-    (defun UC_VacateOfLegsToVacateArrays:object (legs:[object{AcquisitionSchemasV3.VCT|VacateNonceLeg}]))
+    (defun UC_VacateOfLegsToVacateArrays:object (legs:[object{AcquisitionSchemasV5.VCT|VacateNonceLeg}]))
     (defun UC_VacateOrtoDestinations:[string] (owner-ids:[string] beneficiary-ids:[string]))
-    (defun UC_VacateSumAmountForBeneficiaryFromLegs:decimal (beneficiary-id:string legs:[object{AcquisitionSchemasV3.VCT|VacateTfLeg}]))
-    (defun UC_VacateTfLegsToTftBulkArrays:object (legs:[object{AcquisitionSchemasV3.VCT|VacateTfLeg}]))
+    (defun UC_VacateSumAmountForBeneficiaryFromLegs:decimal (beneficiary-id:string legs:[object{AcquisitionSchemasV5.VCT|VacateTfLeg}]))
+    (defun UC_VacateTfLegsToTftBulkArrays:object (legs:[object{AcquisitionSchemasV5.VCT|VacateTfLeg}]))
     (defun UC_VacateUniqueBeneficiaries:[string] (beneficiary-ids:[string]))
-    (defun UC_VacateUniqueBeneficiariesFromLegs:[string] (legs:[object{AcquisitionSchemasV3.VCT|VacateTfLeg}]))
+    (defun UC_VacateUniqueBeneficiariesFromLegs:[string] (legs:[object{AcquisitionSchemasV5.VCT|VacateTfLeg}]))
     (defun UC_ZeroIntAmountsRow:[integer] (nonces:[integer]))
     (defun UEV_ExecutorIzVacatePoolOwner (executor:string pool-id:string))
     (defun UEV_TrueFungibleStakeNotReserved (dptf-id:string))
@@ -141,8 +141,8 @@
 ;; Bulk transfer list: parallel owner-ids, beneficiary-ids, amounts (or nonces per owner row).
 ;; Table unwind dedupes by unique beneficiary (shared beneficiaries across owners).
 ;;
-;; TF vacate unit of work = one object{AcquisitionSchemasV3.VCT|VacateTfLeg} (owner × beneficiary × balance).
-;;   URHC_VacateTfOwnerRows → legs; all TF vacate XI_* take legs:[object{AcquisitionSchemasV3.VCT|VacateTfLeg}].
+;; TF vacate unit of work = one object{AcquisitionSchemasV5.VCT|VacateTfLeg} (owner × beneficiary × balance).
+;;   URHC_VacateTfOwnerRows → legs; all TF vacate XI_* take legs:[object{AcquisitionSchemasV5.VCT|VacateTfLeg}].
 ;;
 ;; Phases for FULL TF VACATE (unwind before transfer):
 ;;   2] Trackers — per leg: AQP|XE_ZeroDptfTrackerSlot (write-only)
@@ -166,7 +166,7 @@
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     (implements OuronetPolicyV2)
-    (implements AcquisitionVacateV4)
+    (implements AcquisitionVacateV6)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -409,7 +409,7 @@
                 (class-ok:bool (ref-AQP::URC_StakeTrueFungiblePoolClassOk pool-id))
                 (asset-ok:bool (ref-AQP::URC_StakeTrueFungibleDptfMatchesPool pool-id dptf-id))
                 (gas-ok:bool (URC_TfOwnerArraysGasOk owner-ids beneficiary-ids amounts))
-                (legs:[object{AcquisitionSchemasV3.VCT|VacateTfLeg}]
+                (legs:[object{AcquisitionSchemasV5.VCT|VacateTfLeg}]
                     (UC_TfLegsFromParallelArrays owner-ids beneficiary-ids amounts))
                 (owners-ok:bool (URC_VacateTfLegsOk pool-id dptf-id legs))
             )
@@ -606,7 +606,7 @@
         )
     )
     ;; [UDC] construct
-    (defun UDC_TfSlicePayload:object{AcquisitionSchemasV3.VCT|SlicePayload}
+    (defun UDC_TfSlicePayload:object{AcquisitionSchemasV5.VCT|SlicePayload}
         (
             pool-id:string
             asset-id:string
@@ -626,7 +626,7 @@
         ,"nonces-array"         : []
         ,"amounts-array"        : []}
     )
-    (defun UDC_NonceSlicePayload:object{AcquisitionSchemasV3.VCT|SlicePayload}
+    (defun UDC_NonceSlicePayload:object{AcquisitionSchemasV5.VCT|SlicePayload}
         (
             pool-id:string
             asset-id:string
@@ -647,14 +647,14 @@
         ,"nonces-array"         : nonces-array
         ,"amounts-array"        : amounts-array}
     )
-    (defun UDC_VacateSlicePlan:object{AcquisitionSchemasV3.VCT|VacateSlicePlan}
+    (defun UDC_VacateSlicePlan:object{AcquisitionSchemasV5.VCT|VacateSlicePlan}
         (
             vacate-job-id:string
             pool-id:string
             asset-id:string
             vacate-asset-kind:integer
             slice-count:integer
-            slices:[object{AcquisitionSchemasV3.VCT|SlicePayload}]
+            slices:[object{AcquisitionSchemasV5.VCT|SlicePayload}]
         )
         @doc "Construct the offline VacateSlicePlan the UI drives: job id, pool / asset, vacate kind, slice \
             \ count, and the per-slice payloads (one gas-bounded batch tx each)."
@@ -666,38 +666,38 @@
         ,"slices"               : slices}
     )
     ;;
-    (defun UDC_VacateTfLeg:object{AcquisitionSchemasV3.VCT|VacateTfLeg}
+    (defun UDC_VacateTfLeg:object{AcquisitionSchemasV5.VCT|VacateTfLeg}
         (owner-id:string beneficiary-id:string balance:decimal)
         @doc "Construct a TF vacate leg object (owner, beneficiary, staked balance)."
         {"owner-id" : owner-id, "beneficiary-id" : beneficiary-id, "balance" : balance}
     )
-    (defun UDC_VacateNonceRow:object{AcquisitionSchemasV3.VCT|VacateNonceRow}
+    (defun UDC_VacateNonceRow:object{AcquisitionSchemasV5.VCT|VacateNonceRow}
         (owner-id:string beneficiary-id:string nonce:integer balance:decimal)
         @doc "Construct a single-nonce vacate row object (owner, beneficiary, nonce, balance)."
         {"owner-id" : owner-id, "beneficiary-id" : beneficiary-id, "nonce" : nonce, "balance" : balance}
     )
-    (defun UDC_VacateNonceLeg:object{AcquisitionSchemasV3.VCT|VacateNonceLeg}
+    (defun UDC_VacateNonceLeg:object{AcquisitionSchemasV5.VCT|VacateNonceLeg}
         (owner-id:string beneficiary-id:string nonces:[integer] amounts:[decimal])
         @doc "Construct a per-owner nonce vacate leg object (owner, beneficiary, nonces, amounts)."
         {"owner-id" : owner-id, "beneficiary-id" : beneficiary-id, "nonces" : nonces, "amounts" : amounts}
     )
-    (defun UDC_VacateTfLane:object{AcquisitionSchemasV3.VCT|VacateTfLane}
-        (asset-id:string legs:[object{AcquisitionSchemasV3.VCT|VacateTfLeg}])
+    (defun UDC_VacateTfLane:object{AcquisitionSchemasV5.VCT|VacateTfLane}
+        (asset-id:string legs:[object{AcquisitionSchemasV5.VCT|VacateTfLeg}])
         @doc "Construct a TF vacate lane object (asset-id + its TF legs)."
         {"asset-id" : asset-id, "legs" : legs}
     )
-    (defun UDC_VacateNonceLane:object{AcquisitionSchemasV3.VCT|VacateNonceLane}
-        (asset-id:string legs:[object{AcquisitionSchemasV3.VCT|VacateNonceLeg}])
+    (defun UDC_VacateNonceLane:object{AcquisitionSchemasV5.VCT|VacateNonceLane}
+        (asset-id:string legs:[object{AcquisitionSchemasV5.VCT|VacateNonceLeg}])
         @doc "Construct a nonce vacate lane object (asset-id + its nonce legs)."
         {"asset-id" : asset-id, "legs" : legs}
     )
-    (defun UDC_VacateTfInventory:object{AcquisitionSchemasV3.VCT|VacateTfInventory}
-        (legs:[object{AcquisitionSchemasV3.VCT|VacateTfLeg}])
+    (defun UDC_VacateTfInventory:object{AcquisitionSchemasV5.VCT|VacateTfInventory}
+        (legs:[object{AcquisitionSchemasV5.VCT|VacateTfLeg}])
         @doc "Construct a TF vacate inventory object (legs + derived leg-count)."
         {"legs" : legs, "leg-count" : (length legs)}
     )
-    (defun UDC_VacateNonceLegInventory:object{AcquisitionSchemasV3.VCT|VacateNonceLegInventory}
-        (legs:[object{AcquisitionSchemasV3.VCT|VacateNonceLeg}])
+    (defun UDC_VacateNonceLegInventory:object{AcquisitionSchemasV5.VCT|VacateNonceLegInventory}
+        (legs:[object{AcquisitionSchemasV5.VCT|VacateNonceLeg}])
         @doc "Construct a nonce vacate inventory object (legs + derived leg-count)."
         {"legs" : legs, "leg-count" : (length legs)}
     )
@@ -759,16 +759,16 @@
             (map (lambda (ns:[integer]) (length ns)) nonces-array)
         )
     )
-    (defun UC_OwnerRowNonceTotal:integer (owner-rows:[object{AcquisitionSchemasV3.VCT|VacateNonceLeg}])
+    (defun UC_OwnerRowNonceTotal:integer (owner-rows:[object{AcquisitionSchemasV5.VCT|VacateNonceLeg}])
         @doc "Total nonce count across per-owner vacate nonce rows (sum of each row's nonce count)."
         (fold
             (+)
             0
-            (map (lambda (row:object{AcquisitionSchemasV3.VCT|VacateNonceLeg}) (length (at "nonces" row))) owner-rows)
+            (map (lambda (row:object{AcquisitionSchemasV5.VCT|VacateNonceLeg}) (length (at "nonces" row))) owner-rows)
         )
     )
-    (defun UC_SplitNonceOwnerRowToMax:[object{AcquisitionSchemasV3.VCT|VacateNonceLeg}]
-        (owner-row:object{AcquisitionSchemasV3.VCT|VacateNonceLeg} max-nonces:integer)
+    (defun UC_SplitNonceOwnerRowToMax:[object{AcquisitionSchemasV5.VCT|VacateNonceLeg}]
+        (owner-row:object{AcquisitionSchemasV5.VCT|VacateNonceLeg} max-nonces:integer)
         @doc "Split one per-owner nonce row into <= max-nonces-sized chunks (preserving owner/beneficiary), so \
             \ each resulting slice tx stays within the gas budget. Returns [owner-row] unchanged when it already fits."
         (let
@@ -804,14 +804,14 @@
             )
         )
     )
-    (defun UC_ExpandNonceOwnerRowsForGasMax:[object{AcquisitionSchemasV3.VCT|VacateNonceLeg}]
-        (owner-rows:[object{AcquisitionSchemasV3.VCT|VacateNonceLeg}] max-nonces:integer)
+    (defun UC_ExpandNonceOwnerRowsForGasMax:[object{AcquisitionSchemasV5.VCT|VacateNonceLeg}]
+        (owner-rows:[object{AcquisitionSchemasV5.VCT|VacateNonceLeg}] max-nonces:integer)
         @doc "Expand per-owner nonce rows into gas-bounded rows by splitting any row whose nonce count exceeds \
             \ <max-nonces> (via UC_SplitNonceOwnerRowToMax)."
         (fold
             (lambda
-                (acc:[object{AcquisitionSchemasV3.VCT|VacateNonceLeg}]
-                    owner-row:object{AcquisitionSchemasV3.VCT|VacateNonceLeg}
+                (acc:[object{AcquisitionSchemasV5.VCT|VacateNonceLeg}]
+                    owner-row:object{AcquisitionSchemasV5.VCT|VacateNonceLeg}
                 )
                 (+ acc (UC_SplitNonceOwnerRowToMax owner-row max-nonces))
             )
@@ -839,33 +839,33 @@
         @doc "Floor a decimal amounts matrix to integers, row by row."
         (map UC_DecimalAmountsRowToInt rows)
     )
-    (defun UC_TfSlicePayloadFromOwnerRows:object{AcquisitionSchemasV3.VCT|SlicePayload}
-        (pool-id:string asset-id:string owner-rows:[object{AcquisitionSchemasV3.VCT|VacateTfLeg}])
+    (defun UC_TfSlicePayloadFromOwnerRows:object{AcquisitionSchemasV5.VCT|SlicePayload}
+        (pool-id:string asset-id:string owner-rows:[object{AcquisitionSchemasV5.VCT|VacateTfLeg}])
         @doc "Build a TF vacate SlicePayload from per-owner TF legs (projects the owner / beneficiary / balance \
             \ parallel arrays and stamps VACATE-KIND-TF)."
         (UDC_TfSlicePayload
             pool-id
             asset-id
             VACATE-KIND-TF
-            (map (lambda (row:object{AcquisitionSchemasV3.VCT|VacateTfLeg}) (at "owner-id" row)) owner-rows)
-            (map (lambda (row:object{AcquisitionSchemasV3.VCT|VacateTfLeg}) (at "beneficiary-id" row)) owner-rows)
-            (map (lambda (row:object{AcquisitionSchemasV3.VCT|VacateTfLeg}) (at "balance" row)) owner-rows)
+            (map (lambda (row:object{AcquisitionSchemasV5.VCT|VacateTfLeg}) (at "owner-id" row)) owner-rows)
+            (map (lambda (row:object{AcquisitionSchemasV5.VCT|VacateTfLeg}) (at "beneficiary-id" row)) owner-rows)
+            (map (lambda (row:object{AcquisitionSchemasV5.VCT|VacateTfLeg}) (at "balance" row)) owner-rows)
         )
     )
-    (defun UC_NonceSlicePayloadFromOwnerRows:object{AcquisitionSchemasV3.VCT|SlicePayload}
-        (pool-id:string asset-id:string vacate-kind:integer owner-rows:[object{AcquisitionSchemasV3.VCT|VacateNonceLeg}])
+    (defun UC_NonceSlicePayloadFromOwnerRows:object{AcquisitionSchemasV5.VCT|SlicePayload}
+        (pool-id:string asset-id:string vacate-kind:integer owner-rows:[object{AcquisitionSchemasV5.VCT|VacateNonceLeg}])
         @doc "Build a nonce (OF/SF/NF) vacate SlicePayload from per-owner nonce rows: OF carries zeroed amounts, \
             \ SF/NF floor the decimal amounts to integers."
         (let
             (
                 (nonces-array:[[integer]]
-                    (map (lambda (row:object{AcquisitionSchemasV3.VCT|VacateNonceLeg}) (at "nonces" row)) owner-rows)
+                    (map (lambda (row:object{AcquisitionSchemasV5.VCT|VacateNonceLeg}) (at "nonces" row)) owner-rows)
                 )
                 (amounts-array:[[integer]]
                     (if (= vacate-kind VACATE-KIND-OF)
                         (UC_ZeroIntAmountsMatrix nonces-array)
                         (UC_DecimalAmountsMatrixToInt
-                            (map (lambda (row:object{AcquisitionSchemasV3.VCT|VacateNonceLeg}) (at "amounts" row)) owner-rows)
+                            (map (lambda (row:object{AcquisitionSchemasV5.VCT|VacateNonceLeg}) (at "amounts" row)) owner-rows)
                         )
                     )
                 )
@@ -874,19 +874,19 @@
                 pool-id
                 asset-id
                 vacate-kind
-                (map (lambda (row:object{AcquisitionSchemasV3.VCT|VacateNonceLeg}) (at "owner-id" row)) owner-rows)
-                (map (lambda (row:object{AcquisitionSchemasV3.VCT|VacateNonceLeg}) (at "beneficiary-id" row)) owner-rows)
+                (map (lambda (row:object{AcquisitionSchemasV5.VCT|VacateNonceLeg}) (at "owner-id" row)) owner-rows)
+                (map (lambda (row:object{AcquisitionSchemasV5.VCT|VacateNonceLeg}) (at "beneficiary-id" row)) owner-rows)
                 nonces-array
                 amounts-array
             )
         )
     )
-    (defun UC_BuildTfVacateSlicePlanFromOwnerRows:object{AcquisitionSchemasV3.VCT|VacateSlicePlan}
+    (defun UC_BuildTfVacateSlicePlanFromOwnerRows:object{AcquisitionSchemasV5.VCT|VacateSlicePlan}
         (
             pool-id:string
             asset-id:string
             slice-count:integer
-            owner-rows:[object{AcquisitionSchemasV3.VCT|VacateTfLeg}]
+            owner-rows:[object{AcquisitionSchemasV5.VCT|VacateTfLeg}]
         )
         @doc "Pure compute: partition TF owner-rows into slice payloads (no table reads)."
         (let
@@ -909,7 +909,7 @@
                                 (count:integer
                                     (if (< owners-per-slice (- L start)) owners-per-slice (- L start))
                                 )
-                                (slice-owner-rows:[object{AcquisitionSchemasV3.VCT|VacateTfLeg}]
+                                (slice-owner-rows:[object{AcquisitionSchemasV5.VCT|VacateTfLeg}]
                                     (if (= count 0) [] (take count (drop start owner-rows)))
                                 )
                             )
@@ -921,13 +921,13 @@
             )
         )
     )
-    (defun UC_BuildNonceVacateSlicePlanFromOwnerRows:object{AcquisitionSchemasV3.VCT|VacateSlicePlan}
+    (defun UC_BuildNonceVacateSlicePlanFromOwnerRows:object{AcquisitionSchemasV5.VCT|VacateSlicePlan}
         (
             pool-id:string
             asset-id:string
             vacate-kind:integer
             slice-count:integer
-            owner-rows:[object{AcquisitionSchemasV3.VCT|VacateNonceLeg}]
+            owner-rows:[object{AcquisitionSchemasV5.VCT|VacateNonceLeg}]
         )
         @doc "Pure compute: partition nonce owner-rows into slice payloads (no table reads)."
         (let
@@ -950,7 +950,7 @@
                                 (count:integer
                                     (if (< owners-per-slice (- L start)) owners-per-slice (- L start))
                                 )
-                                (slice-owner-rows:[object{AcquisitionSchemasV3.VCT|VacateNonceLeg}]
+                                (slice-owner-rows:[object{AcquisitionSchemasV5.VCT|VacateNonceLeg}]
                                     (if (= count 0) [] (take count (drop start owner-rows)))
                                 )
                             )
@@ -962,8 +962,8 @@
             )
         )
     )
-    (defun UC_MergeVacateNonceRowIntoLegs:[object{AcquisitionSchemasV3.VCT|VacateNonceLeg}]
-        (acc:[object{AcquisitionSchemasV3.VCT|VacateNonceLeg}] owner-id:string beneficiary-id:string nonce:integer amount:decimal)
+    (defun UC_MergeVacateNonceRowIntoLegs:[object{AcquisitionSchemasV5.VCT|VacateNonceLeg}]
+        (acc:[object{AcquisitionSchemasV5.VCT|VacateNonceLeg}] owner-id:string beneficiary-id:string nonce:integer amount:decimal)
         @doc "Fold step: append one active nonce row into grouped vacate legs (owner × beneficiary)."
         (if (= (length acc) 0)
             [
@@ -972,7 +972,7 @@
             (let
                 (
                     (last-idx:integer (- (length acc) 1))
-                    (last:object{AcquisitionSchemasV3.VCT|VacateNonceLeg} (at last-idx acc))
+                    (last:object{AcquisitionSchemasV5.VCT|VacateNonceLeg} (at last-idx acc))
                     (last-owner:string (at "owner-id" last))
                     (last-ben:string (at "beneficiary-id" last))
                 )
@@ -996,8 +996,8 @@
             )
         )
     )
-    (defun UC_MergeVacateCollectableRowIntoLegs:[object{AcquisitionSchemasV3.VCT|VacateNonceLeg}]
-        (acc:[object{AcquisitionSchemasV3.VCT|VacateNonceLeg}] owner-id:string beneficiary-id:string nonce:integer amount:decimal)
+    (defun UC_MergeVacateCollectableRowIntoLegs:[object{AcquisitionSchemasV5.VCT|VacateNonceLeg}]
+        (acc:[object{AcquisitionSchemasV5.VCT|VacateNonceLeg}] owner-id:string beneficiary-id:string nonce:integer amount:decimal)
         @doc "Fold step for collectable vacate legs — same grouping as UC_MergeVacateNonceRowIntoLegs."
         (if (= (length acc) 0)
             [
@@ -1006,7 +1006,7 @@
             (let
                 (
                     (last-idx:integer (- (length acc) 1))
-                    (last:object{AcquisitionSchemasV3.VCT|VacateNonceLeg} (at last-idx acc))
+                    (last:object{AcquisitionSchemasV5.VCT|VacateNonceLeg} (at last-idx acc))
                     (last-owner:string (at "owner-id" last))
                     (last-ben:string (at "beneficiary-id" last))
                 )
@@ -1047,24 +1047,24 @@
         ;;builder, and collapsing the duplicate removes it. Pinned by REPL/modules/AQP.repl <<AQP-F3>>.
         (UC_DecimalAmountsRowToInt amounts)
     )
-    (defun UC_VacateOfLegsToVacateArrays:object (legs:[object{AcquisitionSchemasV3.VCT|VacateNonceLeg}])
-        @doc "Build parallel OF vacate batch arrays from VacateOfInventory legs (object{AcquisitionSchemasV3.VCT|VacateNonceLeg}). Module: AQP-VCT."
+    (defun UC_VacateOfLegsToVacateArrays:object (legs:[object{AcquisitionSchemasV5.VCT|VacateNonceLeg}])
+        @doc "Build parallel OF vacate batch arrays from VacateOfInventory legs (object{AcquisitionSchemasV5.VCT|VacateNonceLeg}). Module: AQP-VCT."
         {
-            "owner-ids"             : (map (lambda (leg:object{AcquisitionSchemasV3.VCT|VacateNonceLeg}) (at "owner-id" leg)) legs)
-            ,"beneficiary-ids"      : (map (lambda (leg:object{AcquisitionSchemasV3.VCT|VacateNonceLeg}) (at "beneficiary-id" leg)) legs)
-            ,"nonces-array"         : (map (lambda (leg:object{AcquisitionSchemasV3.VCT|VacateNonceLeg}) (at "nonces" leg)) legs)
-            ,"nonce-amounts-array"  : (map (lambda (leg:object{AcquisitionSchemasV3.VCT|VacateNonceLeg}) (at "amounts" leg)) legs)
+            "owner-ids"             : (map (lambda (leg:object{AcquisitionSchemasV5.VCT|VacateNonceLeg}) (at "owner-id" leg)) legs)
+            ,"beneficiary-ids"      : (map (lambda (leg:object{AcquisitionSchemasV5.VCT|VacateNonceLeg}) (at "beneficiary-id" leg)) legs)
+            ,"nonces-array"         : (map (lambda (leg:object{AcquisitionSchemasV5.VCT|VacateNonceLeg}) (at "nonces" leg)) legs)
+            ,"nonce-amounts-array"  : (map (lambda (leg:object{AcquisitionSchemasV5.VCT|VacateNonceLeg}) (at "amounts" leg)) legs)
         }
     )
-    (defun UC_VacateCollectableLegsToVacateArrays:object (legs:[object{AcquisitionSchemasV3.VCT|VacateNonceLeg}])
+    (defun UC_VacateCollectableLegsToVacateArrays:object (legs:[object{AcquisitionSchemasV5.VCT|VacateNonceLeg}])
         @doc "Build parallel collectable vacate batch arrays from VacateCollectableInventory legs. \
             \ Integer amounts via UC_VacateDecimalAmountsToIntegers. Module: AQP-VCT."
         {
-            "owner-ids"         : (map (lambda (leg:object{AcquisitionSchemasV3.VCT|VacateNonceLeg}) (at "owner-id" leg)) legs)
-            ,"beneficiary-ids"  : (map (lambda (leg:object{AcquisitionSchemasV3.VCT|VacateNonceLeg}) (at "beneficiary-id" leg)) legs)
-            ,"nonces-array"     : (map (lambda (leg:object{AcquisitionSchemasV3.VCT|VacateNonceLeg}) (at "nonces" leg)) legs)
+            "owner-ids"         : (map (lambda (leg:object{AcquisitionSchemasV5.VCT|VacateNonceLeg}) (at "owner-id" leg)) legs)
+            ,"beneficiary-ids"  : (map (lambda (leg:object{AcquisitionSchemasV5.VCT|VacateNonceLeg}) (at "beneficiary-id" leg)) legs)
+            ,"nonces-array"     : (map (lambda (leg:object{AcquisitionSchemasV5.VCT|VacateNonceLeg}) (at "nonces" leg)) legs)
             ,"amounts-array"    : (map
-                (lambda (leg:object{AcquisitionSchemasV3.VCT|VacateNonceLeg})
+                (lambda (leg:object{AcquisitionSchemasV5.VCT|VacateNonceLeg})
                     (UC_VacateDecimalAmountsToIntegers (at "amounts" leg))
                 )
                 legs
@@ -1246,10 +1246,10 @@
         )
     )
     (defun UC_VacateUniqueBeneficiariesFromLegs:[string]
-        (legs:[object{AcquisitionSchemasV3.VCT|VacateTfLeg}])
+        (legs:[object{AcquisitionSchemasV5.VCT|VacateTfLeg}])
         @doc "Preserve first-seen order; dedupe beneficiaries for score/RPS phases."
         (fold
-            (lambda (acc:[string] leg:object{AcquisitionSchemasV3.VCT|VacateTfLeg})
+            (lambda (acc:[string] leg:object{AcquisitionSchemasV5.VCT|VacateTfLeg})
                 (let
                     (
                         (b:string (at "beneficiary-id" leg))
@@ -1262,13 +1262,13 @@
         )
     )
     (defun UC_VacateSumAmountForBeneficiaryFromLegs:decimal
-        (beneficiary-id:string legs:[object{AcquisitionSchemasV3.VCT|VacateTfLeg}])
+        (beneficiary-id:string legs:[object{AcquisitionSchemasV5.VCT|VacateTfLeg}])
         @doc "Sum leg balances for one beneficiary (rollup/score amount for deduped unwind)."
         (fold
             (+)
             0.0
             (map
-                (lambda (leg:object{AcquisitionSchemasV3.VCT|VacateTfLeg})
+                (lambda (leg:object{AcquisitionSchemasV5.VCT|VacateTfLeg})
                     (if (= beneficiary-id (at "beneficiary-id" leg))
                         (at "balance" leg)
                         0.0
@@ -1278,7 +1278,7 @@
             )
         )
     )
-    (defun UC_TfLegsFromParallelArrays:[object{AcquisitionSchemasV3.VCT|VacateTfLeg}]
+    (defun UC_TfLegsFromParallelArrays:[object{AcquisitionSchemasV5.VCT|VacateTfLeg}]
         (owner-ids:[string] beneficiary-ids:[string] amounts:[decimal])
         @doc "Build leg objects from parallel Legs batch arrays. Empty in, empty out."
         ;;SHADOWED-GUARD FIX (2026-09-13). `VCT|C>TRUE-FUNGIBLE-VACATE-BATCH` binds
@@ -1304,7 +1304,7 @@
         )
     )
     (defun UC_VacateTfLegsToTftBulkArrays:object
-        (legs:[object{AcquisitionSchemasV3.VCT|VacateTfLeg}])
+        (legs:[object{AcquisitionSchemasV5.VCT|VacateTfLeg}])
         @doc "One DPTF row: parallel receiver/amount inner lists for TFT::C_MultiBulkTransfer, \
             \ ONE ROW PER OWNER -- an owner who staked to several beneficiaries receives the SUM \
             \ of his legs, in a single entry."
@@ -1322,7 +1322,7 @@
             (
                 (owners:[string]
                     (UC_VacateBulkDestinations
-                        (map (lambda (leg:object{AcquisitionSchemasV3.VCT|VacateTfLeg}) (at "owner-id" leg)) legs)))
+                        (map (lambda (leg:object{AcquisitionSchemasV5.VCT|VacateTfLeg}) (at "owner-id" leg)) legs)))
             )
             {
                 "receiver-array" : [owners]
@@ -1332,7 +1332,7 @@
                             (lambda (o:string)
                                 (fold (+) 0.0
                                     (map
-                                        (lambda (leg:object{AcquisitionSchemasV3.VCT|VacateTfLeg})
+                                        (lambda (leg:object{AcquisitionSchemasV5.VCT|VacateTfLeg})
                                             (if (= o (at "owner-id" leg)) (at "balance" leg) 0.0)
                                         )
                                         legs
@@ -1363,7 +1363,7 @@
                 AQP|SC_NAME (r::URC_IsVirtualGasZero) [])
         ))
     (defun URCi_BatchVacateTrueFungible:decimal
-        (pool-id:string dptf-id:string legs:[object{AcquisitionSchemasV3.VCT|VacateTfLeg}])
+        (pool-id:string dptf-id:string legs:[object{AcquisitionSchemasV5.VCT|VacateTfLeg}])
         @doc "Variant-A shared cost estimator for CCp_BatchVacateTrueFungible. Mirrors \
             \ XI_VacateTrueFungibleFromLegs byte-for-byte: per-leg tracker-zero (medium) + per-unique- \
             \ beneficiary unwind (rollup biggest + free RPS-prezero + anchor-refresh [ANK per-live + XB \
@@ -1398,7 +1398,7 @@
         )
     )
     (defun URCi_BatchVacateOrtoFungible:decimal
-        (pool-id:string dpof-id:string legs:[object{AcquisitionSchemasV3.VCT|VacateNonceLeg}])
+        (pool-id:string dpof-id:string legs:[object{AcquisitionSchemasV5.VCT|VacateNonceLeg}])
         @doc "Variant-A shared cost estimator for CCp_BatchVacateOrtoFungible. Mirrors \
             \ XI_VacateOrtoFungibleBatch: the one bulk DPOF whole-nonce transfer (URCi_MoveCumulator over \
             \ all nonces) + per-owner-row tracker (medium × total-nonce-count) + per-unique-beneficiary \
@@ -1407,10 +1407,10 @@
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
-                (nonces-array:[[integer]] (map (lambda (l:object{AcquisitionSchemasV3.VCT|VacateNonceLeg}) (at "nonces" l)) legs))
+                (nonces-array:[[integer]] (map (lambda (l:object{AcquisitionSchemasV5.VCT|VacateNonceLeg}) (at "nonces" l)) legs))
                 (unique-benefs:[string]
                     (UC_VacateUniqueBeneficiaries
-                        (map (lambda (l:object{AcquisitionSchemasV3.VCT|VacateNonceLeg}) (at "beneficiary-id" l)) legs)))
+                        (map (lambda (l:object{AcquisitionSchemasV5.VCT|VacateNonceLeg}) (at "beneficiary-id" l)) legs)))
                 (all-nonces:[integer] (fold (+) [] nonces-array))
                 (score-delta:decimal (RPS.URC_StakeScoreDeltaSumForClasses pool-id [0 2]))
             )
@@ -1432,7 +1432,7 @@
         )
     )
     (defun URCi_BatchVacateCollectables:decimal
-        (pool-id:string collectable-id:string son:bool legs:[object{AcquisitionSchemasV3.VCT|VacateNonceLeg}])
+        (pool-id:string collectable-id:string son:bool legs:[object{AcquisitionSchemasV5.VCT|VacateNonceLeg}])
         @doc "Variant-A shared cost estimator for CCp_BatchVacateCollectables (son=DPSF/DPNF). Mirrors \
             \ XI_VacateCollectableBatch: the one bulk DPDC-T transfer + per-owner-row (tracker medium× \
             \ |nonces| + rollup medium×|nonces|) + per-unique-beneficiary score unwind = free RPS-prezero \
@@ -1441,20 +1441,20 @@
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
-                (nonces-array:[[integer]] (map (lambda (l:object{AcquisitionSchemasV3.VCT|VacateNonceLeg}) (at "nonces" l)) legs))
+                (nonces-array:[[integer]] (map (lambda (l:object{AcquisitionSchemasV5.VCT|VacateNonceLeg}) (at "nonces" l)) legs))
                 (amounts-array:[[integer]]
-                    (map (lambda (l:object{AcquisitionSchemasV3.VCT|VacateNonceLeg})
+                    (map (lambda (l:object{AcquisitionSchemasV5.VCT|VacateNonceLeg})
                             (map (lambda (q:decimal) (floor q)) (at "amounts" l))) legs))
                 (unique-benefs:[string]
                     (UC_VacateUniqueBeneficiaries
-                        (map (lambda (l:object{AcquisitionSchemasV3.VCT|VacateNonceLeg}) (at "beneficiary-id" l)) legs)))
+                        (map (lambda (l:object{AcquisitionSchemasV5.VCT|VacateNonceLeg}) (at "beneficiary-id" l)) legs)))
                 (score-delta:decimal (RPS.URC_StakeScoreDeltaSumForClasses pool-id (if son [3] [4])))
                 (anchor-flat:decimal (+ (RPS.URC_TierMedium) (RPS.URC_TierBiggest)))
             )
             (fold (+) 0.0
                 [ (RPS.URC_TierFixed (ref-I|OURONET::OI|UC_IfpFromOutputCumulator               ;; bulk DPDC-T transfer
                       (DPDC-T.URCi_BulkTransferCumulator collectable-id son AQP-POOL.AQP|SC_NAME
-                          (map (lambda (l:object{AcquisitionSchemasV3.VCT|VacateNonceLeg}) (at "owner-id" l)) legs)
+                          (map (lambda (l:object{AcquisitionSchemasV5.VCT|VacateNonceLeg}) (at "owner-id" l)) legs)
                           nonces-array amounts-array)))
                   (* (* 2.0 (RPS.URC_TierMedium)) (dec (length (fold (+) [] nonces-array))))    ;; per-row tracker + rollup (each medium×|nonces|)
                   (fold (+) 0.0
@@ -1472,7 +1472,7 @@
         )
     )
     (defun URCi_BatchDrainTrueFungible:decimal
-        (pool-id:string dptf-id:string legs:[object{AcquisitionSchemasV3.VCT|VacateTfLeg}])
+        (pool-id:string dptf-id:string legs:[object{AcquisitionSchemasV5.VCT|VacateTfLeg}])
         @doc "Variant-A shared cost estimator for CCp_BatchDrainTrueFungible. Mirrors \
             \ XI_DrainTrueFungibleFromLegs (score-FREE): Phase A per-leg = tracker-zero (medium) + rollup \
             \ (biggest). Phase B settle-triple (book + checkpoint + anchor-refresh [ANK per-live + XB \
@@ -1494,7 +1494,7 @@
                       (map
                           (lambda (benef:string)
                               (if (= (- (AQP-POOL.UR_AQP|UserUnn pool-id benef)
-                                        (length (filter (lambda (l:object{AcquisitionSchemasV3.VCT|VacateTfLeg}) (= (at "beneficiary-id" l) benef)) legs)))
+                                        (length (filter (lambda (l:object{AcquisitionSchemasV5.VCT|VacateTfLeg}) (= (at "beneficiary-id" l) benef)) legs)))
                                      0)
                                   (+ (RPS.URC_TierFixed (RPS.URC_BookStakeUnclaimedIgnis
                                         (at "distinct-fvts" (RPS.URHC_BuildStakeSettleBundle pool-id benef))))
@@ -1508,7 +1508,7 @@
         )
     )
     (defun URCi_BatchDrainOrtoFungible:decimal
-        (pool-id:string dpof-id:string legs:[object{AcquisitionSchemasV3.VCT|VacateNonceLeg}])
+        (pool-id:string dpof-id:string legs:[object{AcquisitionSchemasV5.VCT|VacateNonceLeg}])
         @doc "Variant-A shared cost estimator for CCp_BatchDrainOrtoFungible. Mirrors \
             \ XI_DrainOrtoFungibleBatch (score-free): bulk DPOF transfer + per-owner-row tracker (medium × \
             \ total-nonces) + settle-on-last-drain (book + checkpoint, NO anchor for OF) only for \
@@ -1519,8 +1519,8 @@
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 (unique-benefs:[string]
                     (UC_VacateUniqueBeneficiaries
-                        (map (lambda (l:object{AcquisitionSchemasV3.VCT|VacateNonceLeg}) (at "beneficiary-id" l)) legs)))
-                (all-nonces:[integer] (fold (+) [] (map (lambda (l:object{AcquisitionSchemasV3.VCT|VacateNonceLeg}) (at "nonces" l)) legs)))
+                        (map (lambda (l:object{AcquisitionSchemasV5.VCT|VacateNonceLeg}) (at "beneficiary-id" l)) legs)))
+                (all-nonces:[integer] (fold (+) [] (map (lambda (l:object{AcquisitionSchemasV5.VCT|VacateNonceLeg}) (at "nonces" l)) legs)))
                 (checkpoint:decimal (RPS.URC_TierFixed (RPS.URC_CheckpointStakeRpsIgnis)))
             )
             (fold (+) 0.0
@@ -1531,8 +1531,8 @@
                       (map
                           (lambda (benef:string)
                               (if (= (- (AQP-POOL.UR_AQP|UserUnn pool-id benef)
-                                        (fold (+) 0 (map (lambda (l:object{AcquisitionSchemasV3.VCT|VacateNonceLeg}) (length (at "nonces" l)))
-                                                         (filter (lambda (l:object{AcquisitionSchemasV3.VCT|VacateNonceLeg}) (= (at "beneficiary-id" l) benef)) legs))))
+                                        (fold (+) 0 (map (lambda (l:object{AcquisitionSchemasV5.VCT|VacateNonceLeg}) (length (at "nonces" l)))
+                                                         (filter (lambda (l:object{AcquisitionSchemasV5.VCT|VacateNonceLeg}) (= (at "beneficiary-id" l) benef)) legs))))
                                      0)
                                   (+ (RPS.URC_TierFixed (RPS.URC_BookStakeUnclaimedIgnis
                                         (at "distinct-fvts" (RPS.URHC_BuildStakeSettleBundle pool-id benef))))
@@ -1543,7 +1543,7 @@
         )
     )
     (defun URCi_BatchDrainCollectable:decimal
-        (pool-id:string collectable-id:string son:bool legs:[object{AcquisitionSchemasV3.VCT|VacateNonceLeg}])
+        (pool-id:string collectable-id:string son:bool legs:[object{AcquisitionSchemasV5.VCT|VacateNonceLeg}])
         @doc "Variant-A shared cost estimator for CCp_BatchDrainCollectable. Mirrors \
             \ XI_DrainCollectableBatch (score-free): bulk DPDC-T transfer + per-owner-row Phase A = tracker \
             \ (medium×|nonces|) + rollup (medium×|nonces|) + FLAT anchor-refresh (medium+biggest, per LEG \
@@ -1552,19 +1552,19 @@
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
-                (nonces-array:[[integer]] (map (lambda (l:object{AcquisitionSchemasV3.VCT|VacateNonceLeg}) (at "nonces" l)) legs))
+                (nonces-array:[[integer]] (map (lambda (l:object{AcquisitionSchemasV5.VCT|VacateNonceLeg}) (at "nonces" l)) legs))
                 (amounts-array:[[integer]]
-                    (map (lambda (l:object{AcquisitionSchemasV3.VCT|VacateNonceLeg})
+                    (map (lambda (l:object{AcquisitionSchemasV5.VCT|VacateNonceLeg})
                             (map (lambda (q:decimal) (floor q)) (at "amounts" l))) legs))
                 (unique-benefs:[string]
                     (UC_VacateUniqueBeneficiaries
-                        (map (lambda (l:object{AcquisitionSchemasV3.VCT|VacateNonceLeg}) (at "beneficiary-id" l)) legs)))
+                        (map (lambda (l:object{AcquisitionSchemasV5.VCT|VacateNonceLeg}) (at "beneficiary-id" l)) legs)))
                 (checkpoint:decimal (RPS.URC_TierFixed (RPS.URC_CheckpointStakeRpsIgnis)))
             )
             (fold (+) 0.0
                 [ (RPS.URC_TierFixed (ref-I|OURONET::OI|UC_IfpFromOutputCumulator               ;; bulk DPDC-T transfer
                       (DPDC-T.URCi_BulkTransferCumulator collectable-id son AQP-POOL.AQP|SC_NAME
-                          (map (lambda (l:object{AcquisitionSchemasV3.VCT|VacateNonceLeg}) (at "owner-id" l)) legs)
+                          (map (lambda (l:object{AcquisitionSchemasV5.VCT|VacateNonceLeg}) (at "owner-id" l)) legs)
                           nonces-array amounts-array)))
                   (* (* 2.0 (RPS.URC_TierMedium)) (dec (length (fold (+) [] nonces-array))))    ;; per-leg tracker + rollup
                   (* (+ (RPS.URC_TierMedium) (RPS.URC_TierBiggest)) (dec (length legs)))    ;; per-leg flat anchor refresh
@@ -1572,8 +1572,8 @@
                       (map
                           (lambda (benef:string)
                               (if (= (- (AQP-POOL.UR_AQP|UserUnn pool-id benef)
-                                        (fold (+) 0 (map (lambda (l:object{AcquisitionSchemasV3.VCT|VacateNonceLeg}) (length (at "nonces" l)))
-                                                         (filter (lambda (l:object{AcquisitionSchemasV3.VCT|VacateNonceLeg}) (= (at "beneficiary-id" l) benef)) legs))))
+                                        (fold (+) 0 (map (lambda (l:object{AcquisitionSchemasV5.VCT|VacateNonceLeg}) (length (at "nonces" l)))
+                                                         (filter (lambda (l:object{AcquisitionSchemasV5.VCT|VacateNonceLeg}) (= (at "beneficiary-id" l) benef)) legs))))
                                      0)
                                   (+ (RPS.URC_TierFixed (RPS.URC_BookStakeUnclaimedIgnis
                                         (at "distinct-fvts" (RPS.URHC_BuildStakeSettleBundle pool-id benef))))
@@ -1598,7 +1598,7 @@
             \ preview and nobody noticed. Renaming them to `CC_Vacate*` is what made the gap \
             \ visible; this closes it."
         (fold (+) 0.0
-            (map (lambda (l:object{AcquisitionSchemasV3.VCT|VacateTfLane})
+            (map (lambda (l:object{AcquisitionSchemasV5.VCT|VacateTfLane})
                      (URCi_BatchVacateTrueFungible pool-id (at "asset-id" l) (at "legs" l)))
                  (URH_VacateTrueFungiblePoolLegs pool-id)))
     )
@@ -1624,9 +1624,9 @@
     )
     (defun URCi_FullVacate:decimal
         (pool-id:string
-         tf-lanes:[object{AcquisitionSchemasV3.VCT|VacateTfLane}]
-         of-lanes:[object{AcquisitionSchemasV3.VCT|VacateNonceLane}]
-         coll-lanes:[object{AcquisitionSchemasV3.VCT|VacateNonceLane}]
+         tf-lanes:[object{AcquisitionSchemasV5.VCT|VacateTfLane}]
+         of-lanes:[object{AcquisitionSchemasV5.VCT|VacateNonceLane}]
+         coll-lanes:[object{AcquisitionSchemasV5.VCT|VacateNonceLane}]
          coll-son:bool)
         @doc "Variant-A shared cost estimator for CC_FullVacate, fed the same dirty-read lane plan the \
             \ exec's PHASE-1 scan produces. CC_FullVacate = Σ over lanes of the per-asset vacate recipe. \
@@ -1634,13 +1634,13 @@
             \ of this total. Reuses the three per-batch vacate readers."
         (fold (+) 0.0
             [ (fold (+) 0.0
-                  (map (lambda (l:object{AcquisitionSchemasV3.VCT|VacateTfLane})
+                  (map (lambda (l:object{AcquisitionSchemasV5.VCT|VacateTfLane})
                           (URCi_BatchVacateTrueFungible pool-id (at "asset-id" l) (at "legs" l))) tf-lanes))
               (fold (+) 0.0
-                  (map (lambda (l:object{AcquisitionSchemasV3.VCT|VacateNonceLane})
+                  (map (lambda (l:object{AcquisitionSchemasV5.VCT|VacateNonceLane})
                           (URCi_BatchVacateOrtoFungible pool-id (at "asset-id" l) (at "legs" l))) of-lanes))
               (fold (+) 0.0
-                  (map (lambda (l:object{AcquisitionSchemasV3.VCT|VacateNonceLane})
+                  (map (lambda (l:object{AcquisitionSchemasV5.VCT|VacateNonceLane})
                           (URCi_BatchVacateCollectables pool-id (at "asset-id" l) coll-son (at "legs" l))) coll-lanes))
             ])
     )
@@ -2057,7 +2057,7 @@
         )
     )
     (defun URC_VacateTfLegsOk:bool
-        (pool-id:string dptf-id:string legs:[object{AcquisitionSchemasV3.VCT|VacateTfLeg}])
+        (pool-id:string dptf-id:string legs:[object{AcquisitionSchemasV5.VCT|VacateTfLeg}])
         @doc "Full TF vacate: positive leg count ≤ VACATE-FULL-MAX-LEGS; each leg balance matches tracker + rollup."
         (let
             (
@@ -2070,7 +2070,7 @@
                     (> l 0)
                     (<= l VACATE-FULL-MAX-LEGS)
                     (fold
-                        (lambda (ok:bool leg:object{AcquisitionSchemasV3.VCT|VacateTfLeg})
+                        (lambda (ok:bool leg:object{AcquisitionSchemasV5.VCT|VacateTfLeg})
                             (and
                                 ok
                                 (URC_VacateTfLegBalancesOk
@@ -2156,7 +2156,7 @@
         (let
             (
                 (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
-                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
                 ;;
                 (nns:integer (ref-AQP::UR_AQP|PoolNns pool-id))
             )
@@ -2194,12 +2194,12 @@
         )
     )
     ;; [URH] heavy-read
-    (defun URHC_VacateTfOwnerRows:[object{AcquisitionSchemasV3.VCT|VacateTfLeg}]
+    (defun URHC_VacateTfOwnerRows:[object{AcquisitionSchemasV5.VCT|VacateTfLeg}]
         (pool-id:string dptf-id:string)
         @doc "TF vacate owner rows from URH_VacateTfInventory."
         (at "legs" (URH_VacateTfInventory pool-id dptf-id))
     )
-    (defun URHC_VacateNonceOwnerRowsRaw:[object{AcquisitionSchemasV3.VCT|VacateNonceLeg}]
+    (defun URHC_VacateNonceOwnerRowsRaw:[object{AcquisitionSchemasV5.VCT|VacateNonceLeg}]
         (pool-id:string asset-id:string vacate-kind:integer)
         @doc "Grouped nonce vacate owner rows from VCT inventory URD (unexpanded)."
         (let
@@ -2212,7 +2212,7 @@
             )
         )
     )
-    (defun URHC_VacateNonceOwnerRows:[object{AcquisitionSchemasV3.VCT|VacateNonceLeg}]
+    (defun URHC_VacateNonceOwnerRows:[object{AcquisitionSchemasV5.VCT|VacateNonceLeg}]
         (pool-id:string asset-id:string vacate-kind:integer)
         @doc "Nonce vacate owner rows gas-expanded for slice/full vacate chunk limits."
         (UC_ExpandNonceOwnerRowsForGasMax
@@ -2222,7 +2222,7 @@
     )
     ;; PHASE-1 SCAN (URH_): identical shape — one `let` binding the NAMED id-list (from the URC_ above), then
     ;; `map` the per-kind lane-builder over it. No inline id construction, no scan.
-    (defun URH_VacateTrueFungiblePoolLegs:[object{AcquisitionSchemasV3.VCT|VacateTfLane}] (pool-id:string)
+    (defun URH_VacateTrueFungiblePoolLegs:[object{AcquisitionSchemasV5.VCT|VacateTfLane}] (pool-id:string)
         @doc "PHASE-1 — the pool's DPTF lanes as {asset-id, legs}: ids from URC_VacatePoolTfIds, legs from \
             \ URHC_VacateTfOwnerRows. An empty lane → the consumer no-ops it."
         (let
@@ -2240,7 +2240,7 @@
             )
         )
     )
-    (defun URH_VacateOrtoFungiblePoolLegs:[object{AcquisitionSchemasV3.VCT|VacateNonceLane}] (pool-id:string)
+    (defun URH_VacateOrtoFungiblePoolLegs:[object{AcquisitionSchemasV5.VCT|VacateNonceLane}] (pool-id:string)
         @doc "PHASE-1 — the pool's DPOF lanes as {asset-id, legs}: ids from URC_VacatePoolOfIds, legs from \
             \ URHC_VacateNonceOwnerRowsRaw (kind OF)."
         (let
@@ -2258,7 +2258,7 @@
             )
         )
     )
-    (defun URH_VacateCollectablesPoolLegs:[object{AcquisitionSchemasV3.VCT|VacateNonceLane}] (pool-id:string son:bool)
+    (defun URH_VacateCollectablesPoolLegs:[object{AcquisitionSchemasV5.VCT|VacateNonceLane}] (pool-id:string son:bool)
         @doc "PHASE-1 — the pool's DPSF (son=true) / DPNF (son=false) collection lane as [{asset-id, legs}]: id \
             \ from URC_VacatePoolCollectableIds, legs from URHC_VacateNonceOwnerRowsRaw (kind DPSF/DPNF)."
         (let
@@ -2344,7 +2344,7 @@
             )
         )
     )
-    (defun URH_VacateOfNonceRows:[object{AcquisitionSchemasV3.VCT|VacateNonceRow}] (pool-id:string dpof-id:string)
+    (defun URH_VacateOfNonceRows:[object{AcquisitionSchemasV5.VCT|VacateNonceRow}] (pool-id:string dpof-id:string)
         @doc "Live per-nonce OF vacate rows for <pool-id>/<dpof-id> from the active DPOF tracker."
         (let
             (
@@ -2362,7 +2362,7 @@
         @doc "Live OF vacate inventory: folds the per-nonce rows into per-owner nonce legs (legs + leg-count)."
         (UDC_VacateNonceLegInventory
             (fold
-                (lambda (acc:[object{AcquisitionSchemasV3.VCT|VacateNonceLeg}] row:object{AcquisitionSchemasV3.VCT|VacateNonceRow})
+                (lambda (acc:[object{AcquisitionSchemasV5.VCT|VacateNonceLeg}] row:object{AcquisitionSchemasV5.VCT|VacateNonceRow})
                     (UC_MergeVacateNonceRowIntoLegs acc (at "owner-id" row) (at "beneficiary-id" row) (at "nonce" row) (at "balance" row))
                 )
                 []
@@ -2370,7 +2370,7 @@
             )
         )
     )
-    (defun URH_VacateCollectableNonceRows:[object{AcquisitionSchemasV3.VCT|VacateNonceRow}]
+    (defun URH_VacateCollectableNonceRows:[object{AcquisitionSchemasV5.VCT|VacateNonceRow}]
         (pool-id:string collectable-id:string son:bool)
         @doc "Live per-nonce collectable vacate rows for <pool-id>/<collectable-id> (<son> selects the DPSF vs \
             \ DPNF active tracker)."
@@ -2394,7 +2394,7 @@
         @doc "Live collectable vacate inventory: folds the per-nonce rows into per-owner nonce legs (legs + leg-count)."
         (UDC_VacateNonceLegInventory
             (fold
-                (lambda (acc:[object{AcquisitionSchemasV3.VCT|VacateNonceLeg}] row:object{AcquisitionSchemasV3.VCT|VacateNonceRow})
+                (lambda (acc:[object{AcquisitionSchemasV5.VCT|VacateNonceLeg}] row:object{AcquisitionSchemasV5.VCT|VacateNonceRow})
                     (UC_MergeVacateCollectableRowIntoLegs acc (at "owner-id" row) (at "beneficiary-id" row) (at "nonce" row) (at "balance" row))
                 )
                 []
@@ -2469,8 +2469,8 @@
         (let
             (
                 (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
-                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV6} AQP-FVT)
+                (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV7} AQP-FVT)
                 (fvt-ids:[string]
                     (distinct
                         (filter
@@ -2632,8 +2632,8 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV6} AQP-FVT)
-                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV7} AQP-FVT)
+                (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
                 ;;
                 (settle-bundle:object
                     (RPS.URHC_BuildStakeSettleBundle pool-id beneficiary-id)
@@ -2660,7 +2660,7 @@
     )
     ;;Protection: Class 1 — Innate protection offered by XE_ZeroDptfTrackerSlot
     (defun XI_1|VacateTrueFungibleUnwindFromLegs:object{IgnisCollectorV4.OutputCumulator}
-        (pool-id:string dptf-id:string legs:[object{AcquisitionSchemasV3.VCT|VacateTfLeg}])
+        (pool-id:string dptf-id:string legs:[object{AcquisitionSchemasV5.VCT|VacateTfLeg}])
         @doc "TF vacate phases 2–4: write-only tracker zero per leg; beneficiary unwind deduped by unique beneficiary."
         (let
             (
@@ -2670,7 +2670,7 @@
                 (unique-beneficiaries:[string] (UC_VacateUniqueBeneficiariesFromLegs legs))
                 (tracker-ocs:[object{IgnisCollectorV4.OutputCumulator}]
                     (map
-                        (lambda (leg:object{AcquisitionSchemasV3.VCT|VacateTfLeg})
+                        (lambda (leg:object{AcquisitionSchemasV5.VCT|VacateTfLeg})
                             (ref-AQP::XE_ZeroDptfTrackerSlot
                                 pool-id
                                 (at "owner-id" leg)
@@ -2700,7 +2700,7 @@
     )
     ;;Protection: Class 3 — Custom: P|VCT|RECIPE
     (defun XI_VacateTrueFungibleFromLegs:object{IgnisCollectorV4.OutputCumulator}
-        (pool-id:string dptf-id:string legs:[object{AcquisitionSchemasV3.VCT|VacateTfLeg}])
+        (pool-id:string dptf-id:string legs:[object{AcquisitionSchemasV5.VCT|VacateTfLeg}])
         @doc "TF vacate CONSUMER (per DPTF asset) — no scan. Phases 2–4 unwind from the pre-built leg list, then \
             \ phase 0 bulk TFT transfer last. Empty legs → no-op (the batch core is not empty-safe: a zero-leg \
             \ TF vacate would hit a 0.0 debit and abort)."
@@ -2734,7 +2734,7 @@
     ;;Protection:          XE_TrueFungibleBeneficiaryRollup,
     ;;Protection:          XE_RefreshTrueFungibleStakeAnchors
     (defun XI_1|DrainTrueFungibleFromLegs:object{IgnisCollectorV4.OutputCumulator}
-        (pool-id:string dptf-id:string legs:[object{AcquisitionSchemasV3.VCT|VacateTfLeg}])
+        (pool-id:string dptf-id:string legs:[object{AcquisitionSchemasV5.VCT|VacateTfLeg}])
         @doc "Vacate-v2 TF DRAIN phases 2-4 (no score delta). Per leg: zero the tracker row (nns--/unn--) AND \
             \ decrement the cross-pool rollup by the leg amount (amount-linear; owner-id unused in the bump). \
             \ THEN — unn is now decremented — for each unique beneficiary whose unn hit 0 (their LAST position \
@@ -2747,7 +2747,7 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV6} AQP-FVT)
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV7} AQP-FVT)
                 (unique-beneficiaries:[string] (UC_VacateUniqueBeneficiariesFromLegs legs))
             )
             ;; Phase A — per-leg tracker-zero (nns--/unn--) + cross-pool rollup decrement (side effects first)
@@ -2755,7 +2755,7 @@
                 (
                     (tracker-ocs:[object{IgnisCollectorV4.OutputCumulator}]
                         (map
-                            (lambda (leg:object{AcquisitionSchemasV3.VCT|VacateTfLeg})
+                            (lambda (leg:object{AcquisitionSchemasV5.VCT|VacateTfLeg})
                                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
                                     [
                                         (ref-AQP::XE_ZeroDptfTrackerSlot
@@ -2801,7 +2801,7 @@
     )
     ;;Protection: Class 3 — Custom: P|VCT|RECIPE
     (defun XI_DrainTrueFungibleFromLegs:object{IgnisCollectorV4.OutputCumulator}
-        (pool-id:string dptf-id:string legs:[object{AcquisitionSchemasV3.VCT|VacateTfLeg}])
+        (pool-id:string dptf-id:string legs:[object{AcquisitionSchemasV5.VCT|VacateTfLeg}])
         @doc "Vacate-v2 TF DRAIN CONSUMER (per DPTF asset) — no scan. Phases 2-4 drain-unwind from the pre-built \
             \ leg list, then phase 0 bulk TFT transfer back to owners last. Empty legs -> no-op. NO finalize: the \
             \ drain leaves the pool frozen; C_FinalizeVacate (nuke) re-enables it once nns==0. require P|VCT|RECIPE."
@@ -2833,7 +2833,7 @@
     )
     ;;Protection: Class 3 — Custom: P|VCT|RECIPE
     (defun XI_VacateOrtoFungibleFromLegs:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string pool-id:string dpof-id:string legs:[object{AcquisitionSchemasV3.VCT|VacateNonceLeg}])
+        (patron:string pool-id:string dpof-id:string legs:[object{AcquisitionSchemasV5.VCT|VacateNonceLeg}])
         @doc "OF vacate CONSUMER (per DPOF asset) — no scan. Unpack the pre-built nonce legs (owner/beneficiary/ \
             \ nonces + the real per-nonce decimal amounts the PHASE-1 URD scan already read off the tracker) into \
             \ the batch arrays and run bulk custody-return + unwind (XI_VacateOrtoFungibleBatch). Empty legs → \
@@ -2843,16 +2843,16 @@
         (if (= (length legs) 0)
             (UC_EmptyOc)
             (XI_VacateOrtoFungibleBatch patron pool-id dpof-id
-                (map (lambda (l:object{AcquisitionSchemasV3.VCT|VacateNonceLeg}) (at "owner-id" l)) legs)
-                (map (lambda (l:object{AcquisitionSchemasV3.VCT|VacateNonceLeg}) (at "beneficiary-id" l)) legs)
-                (map (lambda (l:object{AcquisitionSchemasV3.VCT|VacateNonceLeg}) (at "nonces" l)) legs)
-                (map (lambda (l:object{AcquisitionSchemasV3.VCT|VacateNonceLeg}) (at "amounts" l)) legs)
+                (map (lambda (l:object{AcquisitionSchemasV5.VCT|VacateNonceLeg}) (at "owner-id" l)) legs)
+                (map (lambda (l:object{AcquisitionSchemasV5.VCT|VacateNonceLeg}) (at "beneficiary-id" l)) legs)
+                (map (lambda (l:object{AcquisitionSchemasV5.VCT|VacateNonceLeg}) (at "nonces" l)) legs)
+                (map (lambda (l:object{AcquisitionSchemasV5.VCT|VacateNonceLeg}) (at "amounts" l)) legs)
             )
         )
     )
     ;;Protection: Class 3 — Custom: P|VCT|RECIPE
     (defun XI_VacateCollectablesFromLegs:object{IgnisCollectorV4.OutputCumulator}
-        (pool-id:string collectable-id:string son:bool legs:[object{AcquisitionSchemasV3.VCT|VacateNonceLeg}])
+        (pool-id:string collectable-id:string son:bool legs:[object{AcquisitionSchemasV5.VCT|VacateNonceLeg}])
         @doc "DPSF/DPNF vacate CONSUMER (per collection, son=DPSF/DPNF) — no scan. Unpack the pre-built nonce legs \
             \ into the batch arrays (collectable units are whole → floor the decimal amounts) and run bulk \
             \ custody-return + unwind (XI_VacateCollectableBatch). Empty legs → no-op. require P|VCT|RECIPE."
@@ -2860,17 +2860,17 @@
         (if (= (length legs) 0)
             (UC_EmptyOc)
             (XI_VacateCollectableBatch pool-id collectable-id son
-                (map (lambda (l:object{AcquisitionSchemasV3.VCT|VacateNonceLeg}) (at "owner-id" l)) legs)
-                (map (lambda (l:object{AcquisitionSchemasV3.VCT|VacateNonceLeg}) (at "beneficiary-id" l)) legs)
-                (map (lambda (l:object{AcquisitionSchemasV3.VCT|VacateNonceLeg}) (at "nonces" l)) legs)
-                (map (lambda (l:object{AcquisitionSchemasV3.VCT|VacateNonceLeg}) (map (lambda (q:decimal) (floor q)) (at "amounts" l))) legs)
+                (map (lambda (l:object{AcquisitionSchemasV5.VCT|VacateNonceLeg}) (at "owner-id" l)) legs)
+                (map (lambda (l:object{AcquisitionSchemasV5.VCT|VacateNonceLeg}) (at "beneficiary-id" l)) legs)
+                (map (lambda (l:object{AcquisitionSchemasV5.VCT|VacateNonceLeg}) (at "nonces" l)) legs)
+                (map (lambda (l:object{AcquisitionSchemasV5.VCT|VacateNonceLeg}) (map (lambda (q:decimal) (floor q)) (at "amounts" l))) legs)
             )
         )
     )
     ;; ── PHASE-2 POOL consumers: walk the PHASE-1 lanes → per-asset FromLegs consumer. No reads, no scans. ──
     ;;Protection: Class 3 — Custom: P|VCT|RECIPE
     (defun XI_VacateTrueFungiblePoolLegs:object{IgnisCollectorV4.OutputCumulator}
-        (pool-id:string lanes:[object{AcquisitionSchemasV3.VCT|VacateTfLane}])
+        (pool-id:string lanes:[object{AcquisitionSchemasV5.VCT|VacateTfLane}])
         @doc "TF-lane POOL consumer — no scan. Run XI_VacateTrueFungibleFromLegs on every pre-scanned DPTF lane \
             \ (native / F| frozen) and concatenate. Empty lane list → empty Oc. require P|VCT|RECIPE."
         (require-capability (P|VCT|RECIPE))
@@ -2882,7 +2882,7 @@
                 (UC_EmptyOc)
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
                     (map
-                        (lambda (lane:object{AcquisitionSchemasV3.VCT|VacateTfLane})
+                        (lambda (lane:object{AcquisitionSchemasV5.VCT|VacateTfLane})
                             (XI_VacateTrueFungibleFromLegs pool-id (at "asset-id" lane) (at "legs" lane)))
                         lanes)
                     [])
@@ -2891,7 +2891,7 @@
     )
     ;;Protection: Class 3 — Custom: P|VCT|RECIPE
     (defun XI_VacateOrtoFungiblePoolLegs:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string pool-id:string lanes:[object{AcquisitionSchemasV3.VCT|VacateNonceLane}])
+        (patron:string pool-id:string lanes:[object{AcquisitionSchemasV5.VCT|VacateNonceLane}])
         @doc "OF-lane POOL consumer — no scan. Run XI_VacateOrtoFungibleFromLegs on every pre-scanned DPOF lane \
             \ (Z|/H| satellite or class-2 standalone) and concatenate. Empty → empty Oc. require P|VCT|RECIPE."
         (require-capability (P|VCT|RECIPE))
@@ -2903,7 +2903,7 @@
                 (UC_EmptyOc)
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
                     (map
-                        (lambda (lane:object{AcquisitionSchemasV3.VCT|VacateNonceLane})
+                        (lambda (lane:object{AcquisitionSchemasV5.VCT|VacateNonceLane})
                             (XI_VacateOrtoFungibleFromLegs patron pool-id (at "asset-id" lane) (at "legs" lane)))
                         lanes)
                     [])
@@ -2912,7 +2912,7 @@
     )
     ;;Protection: Class 3 — Custom: P|VCT|RECIPE
     (defun XI_VacateCollectablesPoolLegs:object{IgnisCollectorV4.OutputCumulator}
-        (pool-id:string son:bool lanes:[object{AcquisitionSchemasV3.VCT|VacateNonceLane}])
+        (pool-id:string son:bool lanes:[object{AcquisitionSchemasV5.VCT|VacateNonceLane}])
         @doc "Collectable-lane POOL consumer — no scan. Run XI_VacateCollectablesFromLegs (son) on every \
             \ pre-scanned DPSF/DPNF lane and concatenate. Empty → empty Oc. require P|VCT|RECIPE."
         (require-capability (P|VCT|RECIPE))
@@ -2924,7 +2924,7 @@
                 (UC_EmptyOc)
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
                     (map
-                        (lambda (lane:object{AcquisitionSchemasV3.VCT|VacateNonceLane})
+                        (lambda (lane:object{AcquisitionSchemasV5.VCT|VacateNonceLane})
                             (XI_VacateCollectablesFromLegs pool-id (at "asset-id" lane) son (at "legs" lane)))
                         lanes)
                     [])
@@ -2948,7 +2948,7 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
-                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
                 ;;
                 (settle-bundle:object
                     (RPS.URHC_BuildStakeSettleBundle pool-id beneficiary-id)
@@ -2987,8 +2987,8 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV6} AQP-FVT)
-                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV7} AQP-FVT)
+                (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
                 ;;
                 (settle-bundle:object
                     (RPS.URHC_BuildStakeSettleBundle pool-id beneficiary-id)
@@ -3351,7 +3351,7 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                 (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV6} AQP-FVT)
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV7} AQP-FVT)
                 (L:integer (length owner-ids))
                 (unique-beneficiaries:[string] (UC_VacateUniqueBeneficiaries beneficiary-ids))
             )
@@ -3779,7 +3779,7 @@
             (let
                 (
                     (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
-                    (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
                 )
                 ;; 1] nuke each employed score: bulk-zero aggregates + bump vacate-generation (≤7 point writes)
                 (map

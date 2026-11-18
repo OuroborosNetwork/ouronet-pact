@@ -1,0 +1,46 @@
+{
+ "note": "_newcolumnsafety.py -- is every NEWLY-ADDED schema column read safely, everywhere?",
+ "columns": {
+  "FVT|MemberVault.dormant-claim-count": {
+   "field": "dormant-claim-count",
+   "schema": "FVT|MemberVault",
+   "source": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/00_AQP-SCHEMAS.pact",
+   "deployed_interface": "ouronet-ns.AcquisitionSchemasV3",
+   "first_seen": "2026-11-09",
+   "why": "added to a schema whose rows already existed on chain"
+  },
+  "FVT|RPS|Global.dormant-claim-count": {
+   "field": "dormant-claim-count",
+   "schema": "FVT|RPS|Global",
+   "source": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/00_AQP-SCHEMAS.pact",
+   "deployed_interface": "ouronet-ns.AcquisitionSchemasV3",
+   "first_seen": "2026-11-09",
+   "why": "added to a schema whose rows already existed on chain"
+  },
+  "FVT|RewardAggregate.earning-leg-count": {
+   "field": "earning-leg-count",
+   "schema": "FVT|RewardAggregate",
+   "source": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/00_AQP-SCHEMAS.pact",
+   "deployed_interface": "ouronet-ns.AcquisitionSchemasV3",
+   "first_seen": "2026-11-09",
+   "why": "added to a schema whose rows already existed on chain"
+  },
+  "FVT|ScoreEntityLink.earning-user-count": {
+   "field": "earning-user-count",
+   "schema": "FVT|ScoreEntityLink",
+   "source": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/00_AQP-SCHEMAS.pact",
+   "deployed_interface": "ouronet-ns.AcquisitionSchemasV3",
+   "first_seen": "2026-11-09",
+   "why": "added to a schema whose rows already existed on chain"
+  },
+  "UrStoaVaultSchema.dormant-claim-count": {
+   "field": "dormant-claim-count",
+   "schema": "UrStoaVaultSchema",
+   "source": "00_StoaSandbox/coin.pact",
+   "deployed_interface": "00_StoaSandbox/_canary/coin-pre-upgrade.pact",
+   "first_seen": "2026-11-09",
+   "why": "added to a schema whose rows already existed on chain"
+  }
+ },
+ "probed": "2026-11-09"
+}

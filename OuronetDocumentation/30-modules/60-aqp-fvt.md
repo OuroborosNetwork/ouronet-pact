@@ -19,51 +19,51 @@ _To be written._
 
 | | |
 |---|---|
-| module hash | `xBCNcNc3qpOhv1M3qPHYlLNWGVCtPyK5GcxFHvKcIM8` |
-| deployed size | 295,551 characters |
-| implements | `OuronetPolicyV2`, `AcquisitionFarmsVaultsTreasuriesV6` |
+| module hash | `jHzINQfxfLBEUTmeJRLCfczufO5I5pFuoBxcfTJ0wUU` |
+| deployed size | 310,631 characters |
+| implements | `OuronetPolicyV2`, `AcquisitionFarmsVaultsTreasuriesV7` |
 | repository source | `1_SOVEREIGN/STAGE_02/2_Core/03_AQP/05_FVT.pact` |
 
 **Tables it owns** — 5
 
 `FVT|T`, `FVT|T|SweepProgress`, `FVT|T|VacateFreeze`, `P|MT`, `P|T`
 
-**Capabilities** — 39
+**Capabilities** — 40
 
-`FVT|C>ADD-REWARD-LINK`, `FVT|C>ADD-SCORE-ENTITY`, `FVT|C>CLEAR-POOL-SWEEP`, `FVT|C>COLLECT`, `FVT|C>COLLECTABLE-STAKE-FLOW`, `FVT|C>CONTROL-FVT`, `FVT|C>INJECT`, `FVT|C>INJECT-FIX`, `FVT|C>INJECT-STREAM`, `FVT|C>ISSUE-FVT`, `FVT|C>ISSUE-MULTIPLET-FAMILY`, `FVT|C>LATCH-STREAM-ELIGIBLE`, `FVT|C>ORTO-FUNGIBLE-STAKE-FLOW`, `FVT|C>REASSIGN-COLLECTABLE-BENEFICIARY`, `FVT|C>REASSIGN-ORTO-BENEFICIARY`, `FVT|C>REASSIGN-TRUE-FUNGIBLE-BENEFICIARY`, `FVT|C>RELEASE-SPECIAL-CUSTODIAL`, `FVT|C>ROTATE-OWNERSHIP-FVT`, `FVT|C>SET-COMMON-DENOMINATOR`, `FVT|C>SET-MIN-INJECT-AMOUNT`, `FVT|C>SET-MOSAIC`, `FVT|C>SET-QUALITY-SPLIT`, `FVT|C>SET-SPLIT-MODE`, `FVT|C>SWEEP-DRAIN`, `FVT|C>SWEEP-REVOKE`, `FVT|C>TOGGLE-REWARD-LINK`, `FVT|C>TOGGLE-SCORE-ENTITY-LINK`, `FVT|C>TRUE-FUNGIBLE-STAKE-FLOW`, `FVT|C>UNSTALE-ALL`, `FVT|C>UNSTALE-MY-SCORES`, `FVT|C>UNSTALED`, `FVT|XE>EVICT-REWARD`, `FVT|XE>SWEEP-BRACKET`, `GOV`, `GOV|FVT_ADMIN`, `P|FVT|CALLER`, `P|FVT|REMOTE-GOV`, `P|SECURE-CALLER`, `SECURE`
+`FVT|C>ADD-REWARD-LINK`, `FVT|C>ADD-SCORE-ENTITY`, `FVT|C>CLEAR-POOL-SWEEP`, `FVT|C>COLLECT`, `FVT|C>COLLECTABLE-STAKE-FLOW`, `FVT|C>CONTROL-FVT`, `FVT|C>INJECT`, `FVT|C>INJECT-FIX`, `FVT|C>INJECT-STREAM`, `FVT|C>ISSUE-FVT`, `FVT|C>ISSUE-MULTIPLET-FAMILY`, `FVT|C>LATCH-STREAM-ELIGIBLE`, `FVT|C>ORTO-FUNGIBLE-STAKE-FLOW`, `FVT|C>REASSIGN-COLLECTABLE-BENEFICIARY`, `FVT|C>REASSIGN-ORTO-BENEFICIARY`, `FVT|C>REASSIGN-TRUE-FUNGIBLE-BENEFICIARY`, `FVT|C>RELEASE-SPECIAL-CUSTODIAL`, `FVT|C>ROTATE-OWNERSHIP-FVT`, `FVT|C>SET-COMMON-DENOMINATOR`, `FVT|C>SET-MIN-INJECT-AMOUNT`, `FVT|C>SET-MOSAIC`, `FVT|C>SET-QUALITY-SPLIT`, `FVT|C>SET-SPLIT-MODE`, `FVT|C>SWEEP-DRAIN`, `FVT|C>SWEEP-REVOKE`, `FVT|C>TOGGLE-REWARD-LINK`, `FVT|C>TOGGLE-SCORE-ENTITY-LINK`, `FVT|C>TRUE-FUNGIBLE-STAKE-FLOW`, `FVT|C>UNSTALE-ALL`, `FVT|C>UNSTALE-MY-SCORES`, `FVT|C>UNSTALED`, `FVT|XE>EVICT-BULK-PAY`, `FVT|XE>EVICT-REWARD`, `FVT|XE>SWEEP-BRACKET`, `GOV`, `GOV|FVT_ADMIN`, `P|FVT|CALLER`, `P|FVT|REMOTE-GOV`, `P|SECURE-CALLER`, `SECURE`
 
-**Functions** — 175, grouped by what their prefix promises
+**Functions** — 184, grouped by what their prefix promises
 
 | family | n | the promise | names |
 |---|---:|---|---|
 | `URCi_` cost readers | 11 | returns what an operation will charge | `URCi_ClearPoolSweep`, `URCi_CollectFull`, `URCi_Issue`, `URCi_IssueMultipletFamily`, `URCi_IssueStoa`, `URCi_LatchStreamEligible` …+5 |
 | `URH_` heavy reads | 3 | a scan -- expensive by construction | `URH_FvtEnabledScoreEntityIdsForFvt`, `URH_FvtPresentUsers`, `URH_FvtStalePresentUsers` |
-| `URC_` derived reads | 16 | read and derive; no enforce | `URC_CollectClaimableRewards`, `URC_CollectPoolId`, `URC_FvtUserStillPresent`, `URC_InjectDenominator`, `URC_LiveClaimable`, `URC_MaxStreamLanes` …+10 |
+| `URC_` derived reads | 17 | read and derive; no enforce | `URC_CollectClaimableRewards`, `URC_CollectPoolId`, `URC_EvictLegIsLadder`, `URC_FvtUserStillPresent`, `URC_InjectDenominator`, `URC_LiveClaimable` …+11 |
 | `UEV_` validators | 12 | read and enforce; may abort the transaction | `UEV_AddScoreEntityContext`, `UEV_AddScoreEntityScoreContext`, `UEV_AddScoreEntityTripletContext`, `UEV_CollectContext`, `UEV_DriftLockedScoreEntity`, `UEV_ExecutorIzFvtOwner` …+6 |
 | `UCk_` pure compute (key) | 4 | builds a composite table key | `UCk_RpsGlobal`, `UCk_RpsMember`, `UCk_RpsUser`, `UCk_ScoreEntityLink` |
 | `UC_` pure compute | 1 | arguments only -- no reads, no enforce | `UC_EmptyOc` |
 | `UR_` readers | 2 | table reads; no enforce, no writes | `UR_ExternalOracle`, `UR_OracleValidity` |
 | `WI_` writers (insert) | 1 | one write site each | `WI_Fvt` |
 | `WU_` writers (update) | 2 | one write site each | `WU_FvtSweepProgress`, `WU_FvtVacateFreeze` |
-| `XI_` protected (internal) | 12 | this module only | `XI_CollectDrip`, `XI_CollectForcedFixPenalty`, `XI_CollectPay`, `XI_CollectableStakePhases`, `XI_Control`, `XI_IssueFvt` …+6 |
-| `XE_` protected (external) | 8 | for other modules; opens with the IMC gate | `XE_EvictDrip`, `XE_EvictPay`, `XE_RefreshCollectableStakeAnchors`, `XE_RefreshTrueFungibleStakeAnchors`, `XE_SetFvtOracleOn`, `XE_SetFvtVacateFrozen` …+2 |
+| `XI_` protected (internal) | 13 | this module only | `XI_CollectDrip`, `XI_CollectForcedFixPenalty`, `XI_CollectPay`, `XI_CollectPayNoMove`, `XI_CollectableStakePhases`, `XI_Control` …+7 |
+| `XE_` protected (external) | 10 | for other modules; opens with the IMC gate | `XE_EvictBulkPay`, `XE_EvictDrip`, `XE_EvictPay`, `XE_EvictPayNoMove`, `XE_RefreshCollectableStakeAnchors`, `XE_RefreshTrueFungibleStakeAnchors` …+4 |
 | `XB_` protected (both) | 1 | internal and external | `XB_FvtInject` |
 | `AA_` admin (heavy) | 1 | admin key; reaches a scan somewhere in its tree | `AA_MigrateStreamEligible` |
 | `CCp_` client recipe (heavy) | 6 | multi-transaction, reaches a scan | `CCp_FvtFixSlice`, `CCp_InjectFixChunk`, `CCp_ReleaseSpecialCustodial`, `CCp_StakeSpecialCustodial`, `CCp_SweepRecomputeChunk`, `CCp_UnstaleAll` |
 | `CC_` client (heavy) | 15 | client entrypoint; reaches a scan | `CC_ClearPoolSweep`, `CC_Collect`, `CC_CollectableStakeFlow`, `CC_Inject`, `CC_InjectFinalize`, `CC_InjectStream` …+9 |
 | `C_` client | 13 | reached via Talos, never called directly | `C_AddRewardLink`, `C_AddScoreEntity`, `C_Control`, `C_Issue`, `C_IssueMultipletFamily`, `C_RotateOwnership` …+7 |
 | `P|` policy | 9 | inter-module authorisation | `P|A_Add`, `P|A_AddIMP`, `P|A_Define`, `P|A_RemoveIMP`, `P|A_SetIMP`, `P|Info` …+3 |
-| *(unclassified)* | 58 | carries no StoicSyntax prefix | `CT_AqpScName`, `CT_Bar`, `GOV|Demiurgoi`, `UDC_FVT|RewardAggregate`, `UDC_FVT|Schema`, `UEV_FVT|PoolReleasable` …+52 |
+| *(unclassified)* | 63 | carries no StoicSyntax prefix | `CT_AqpScName`, `CT_Bar`, `GOV|Demiurgoi`, `UDC_FVT|RewardAggregate`, `UDC_FVT|Schema`, `UEV_FVT|PoolReleasable` …+57 |
 
 > **The repository differs from what is deployed.** Everything above describes the CHAIN, which is what a caller actually reaches. The difference is stated rather than resolved:
 >
 > - **functions** in the repository only: `REPL_BootstrapTreasury`, `REPL_BootstrapVault`
 
-**Capabilities** -- 39
+**Capabilities** -- 40
 
-`FVT|C>ADD-REWARD-LINK`, `FVT|C>ADD-SCORE-ENTITY`, `FVT|C>CLEAR-POOL-SWEEP`, `FVT|C>COLLECT`, `FVT|C>COLLECTABLE-STAKE-FLOW`, `FVT|C>CONTROL-FVT`, `FVT|C>INJECT`, `FVT|C>INJECT-FIX`, `FVT|C>INJECT-STREAM`, `FVT|C>ISSUE-FVT`, `FVT|C>ISSUE-MULTIPLET-FAMILY`, `FVT|C>LATCH-STREAM-ELIGIBLE`, `FVT|C>ORTO-FUNGIBLE-STAKE-FLOW`, `FVT|C>REASSIGN-COLLECTABLE-BENEFICIARY`, `FVT|C>REASSIGN-ORTO-BENEFICIARY`, `FVT|C>REASSIGN-TRUE-FUNGIBLE-BENEFICIARY`, `FVT|C>RELEASE-SPECIAL-CUSTODIAL`, `FVT|C>ROTATE-OWNERSHIP-FVT`, `FVT|C>SET-COMMON-DENOMINATOR`, `FVT|C>SET-MIN-INJECT-AMOUNT`, `FVT|C>SET-MOSAIC`, `FVT|C>SET-QUALITY-SPLIT`, `FVT|C>SET-SPLIT-MODE`, `FVT|C>SWEEP-DRAIN`, `FVT|C>SWEEP-REVOKE`, `FVT|C>TOGGLE-REWARD-LINK`, `FVT|C>TOGGLE-SCORE-ENTITY-LINK`, `FVT|C>TRUE-FUNGIBLE-STAKE-FLOW`, `FVT|C>UNSTALE-ALL`, `FVT|C>UNSTALE-MY-SCORES`, `FVT|C>UNSTALED`, `FVT|XE>EVICT-REWARD`, `FVT|XE>SWEEP-BRACKET`, `GOV`, `GOV|FVT_ADMIN`, `P|FVT|CALLER`, `P|FVT|REMOTE-GOV`, `P|SECURE-CALLER`, `SECURE`
+`FVT|C>ADD-REWARD-LINK`, `FVT|C>ADD-SCORE-ENTITY`, `FVT|C>CLEAR-POOL-SWEEP`, `FVT|C>COLLECT`, `FVT|C>COLLECTABLE-STAKE-FLOW`, `FVT|C>CONTROL-FVT`, `FVT|C>INJECT`, `FVT|C>INJECT-FIX`, `FVT|C>INJECT-STREAM`, `FVT|C>ISSUE-FVT`, `FVT|C>ISSUE-MULTIPLET-FAMILY`, `FVT|C>LATCH-STREAM-ELIGIBLE`, `FVT|C>ORTO-FUNGIBLE-STAKE-FLOW`, `FVT|C>REASSIGN-COLLECTABLE-BENEFICIARY`, `FVT|C>REASSIGN-ORTO-BENEFICIARY`, `FVT|C>REASSIGN-TRUE-FUNGIBLE-BENEFICIARY`, `FVT|C>RELEASE-SPECIAL-CUSTODIAL`, `FVT|C>ROTATE-OWNERSHIP-FVT`, `FVT|C>SET-COMMON-DENOMINATOR`, `FVT|C>SET-MIN-INJECT-AMOUNT`, `FVT|C>SET-MOSAIC`, `FVT|C>SET-QUALITY-SPLIT`, `FVT|C>SET-SPLIT-MODE`, `FVT|C>SWEEP-DRAIN`, `FVT|C>SWEEP-REVOKE`, `FVT|C>TOGGLE-REWARD-LINK`, `FVT|C>TOGGLE-SCORE-ENTITY-LINK`, `FVT|C>TRUE-FUNGIBLE-STAKE-FLOW`, `FVT|C>UNSTALE-ALL`, `FVT|C>UNSTALE-MY-SCORES`, `FVT|C>UNSTALED`, `FVT|XE>EVICT-BULK-PAY`, `FVT|XE>EVICT-REWARD`, `FVT|XE>SWEEP-BRACKET`, `GOV`, `GOV|FVT_ADMIN`, `P|FVT|CALLER`, `P|FVT|REMOTE-GOV`, `P|SECURE-CALLER`, `SECURE`
 
-**Functions** -- 175, grouped by what the prefix promises
+**Functions** -- 184, grouped by what the prefix promises
 
 *Cost readers* (11) — price an operation; the exec path and the preview both call these
 
@@ -73,13 +73,13 @@ _To be written._
 
 `URH_FVT|ActiveSweepCoversPool`, `URH_FvtEnabledScoreEntityIdsForFvt`, `URH_FvtPresentUsers`, `URH_FvtStalePresentUsers`
 
-*Derived reads* (16) — read and compute; no enforce
+*Derived reads* (17) — read and compute; no enforce
 
-`URC_CollectClaimableRewards`, `URC_CollectPoolId`, `URC_FvtUserStillPresent`, `URC_InjectDenominator`, `URC_LiveClaimable`, `URC_MaxStreamLanes`, `URC_MemberEffectiveCapture`, `URC_MemberLevel2Weight`, `URC_PoolEmployedScoresFvtStakeReady`, `URC_ResolvePoolScoreId`, `URC_ResolveScoreEntitySwpair`, `URC_ScoreClassMatchesFvtClass`, `URC_ScoreEntityUserWeight`, `URC_StakeScoreDeltaSum`, `URC_StreamStatus`, `URC_UserTier1AvailableRewards`
+`URC_CollectClaimableRewards`, `URC_CollectPoolId`, `URC_EvictLegIsLadder`, `URC_FvtUserStillPresent`, `URC_InjectDenominator`, `URC_LiveClaimable`, `URC_MaxStreamLanes`, `URC_MemberEffectiveCapture`, `URC_MemberLevel2Weight`, `URC_PoolEmployedScoresFvtStakeReady`, `URC_ResolvePoolScoreId`, `URC_ResolveScoreEntitySwpair`, `URC_ScoreClassMatchesFvtClass`, `URC_ScoreEntityUserWeight`, `URC_StakeScoreDeltaSum`, `URC_StreamStatus`, `URC_UserTier1AvailableRewards`
 
-*Point reads* (50) — one row or field by key
+*Point reads* (54) — one row or field by key
 
-`P|UR_IMP`, `UR_ExternalOracle`, `UR_FVT-FFC|Count`, `UR_FVT-MV|AvailableRewards`, `UR_FVT-QS|BronzeSplit`, `UR_FVT-QS|GoldSplit`, `UR_FVT-QS|Mode`, `UR_FVT-RG|AvailableRewards`, `UR_FVT-RG|CurrentRps`, `UR_FVT-RG|MinInjectAmount`, `UR_FVT-RG|RewardEnabled`, `UR_FVT-RG|RewardKind`, `UR_FVT-RG|RoyaltyRewards`, `UR_FVT-RG|StreamCount`, `UR_FVT-RG|StreamUnreleased`, `UR_FVT-RG|UnclaimedCount`, `UR_FVT-RG|ZombieRewards`, `UR_FVT-RM|LastFarmRpsG`, `UR_FVT-RM|MemberDebRps`, `UR_FVT-RU|LastRps`, `UR_FVT-RU|PendingRewards`, `UR_FVT-SEL|CaptureUnits`, `UR_FVT-SEL|CaptureWeight`, `UR_FVT-SEL|Delegation`, `UR_FVT-SEL|Enabled`, `UR_FVT-SEL|GhostTvlWeight`, `UR_FVT-SEL|OracleTs`, `UR_FVT-SEL|ScoreEntityType`, `UR_FVT-SEL|Swpair`, `UR_FVT-SEL|TotalLaneWeight`, `UR_FVT-UP|IsPresent`, `UR_FVT|CanChangeOwner`, `UR_FVT|CanUpgrade`, `UR_FVT|CommonDenominator`, `UR_FVT|EnabledRewardCount`, `UR_FVT|Fvt`, `UR_FVT|FvtClass`, `UR_FVT|FvtId`, `UR_FVT|MembershipMode`, `UR_FVT|Mosaic`, `UR_FVT|OracleOn`, `UR_FVT|OwnerKonto`, `UR_FVT|SplitMode`, `UR_FVT|StreamEligible`, `UR_FVT|SweepActive`, `UR_FVT|SweepProgress`, `UR_FVT|TotalDebScore`, `UR_FVT|TotalGhostTvlWeight`, `UR_FVT|VacateFrozen`, `UR_OracleValidity`
+`P|UR_IMP`, `UR_ExternalOracle`, `UR_FVT-FFC|Count`, `UR_FVT-MV|AvailableRewards`, `UR_FVT-MV|DormantClaimCount`, `UR_FVT-QS|BronzeSplit`, `UR_FVT-QS|GoldSplit`, `UR_FVT-QS|Mode`, `UR_FVT-RG|AvailableRewards`, `UR_FVT-RG|CurrentRps`, `UR_FVT-RG|DormantClaimCount`, `UR_FVT-RG|MinInjectAmount`, `UR_FVT-RG|RewardEnabled`, `UR_FVT-RG|RewardKind`, `UR_FVT-RG|RoyaltyRewards`, `UR_FVT-RG|StreamCount`, `UR_FVT-RG|StreamUnreleased`, `UR_FVT-RG|UnclaimedCount`, `UR_FVT-RG|ZombieRewards`, `UR_FVT-RM|LastFarmRpsG`, `UR_FVT-RM|MemberDebRps`, `UR_FVT-RU|LastRps`, `UR_FVT-RU|PendingRewards`, `UR_FVT-SEL|CaptureUnits`, `UR_FVT-SEL|CaptureWeight`, `UR_FVT-SEL|Delegation`, `UR_FVT-SEL|EarningUserCount`, `UR_FVT-SEL|Enabled`, `UR_FVT-SEL|GhostTvlWeight`, `UR_FVT-SEL|OracleTs`, `UR_FVT-SEL|ScoreEntityType`, `UR_FVT-SEL|Swpair`, `UR_FVT-SEL|TotalLaneWeight`, `UR_FVT-UP|IsPresent`, `UR_FVT|CanChangeOwner`, `UR_FVT|CanUpgrade`, `UR_FVT|CommonDenominator`, `UR_FVT|EarningLegCount`, `UR_FVT|EnabledRewardCount`, `UR_FVT|Fvt`, `UR_FVT|FvtClass`, `UR_FVT|FvtId`, `UR_FVT|MembershipMode`, `UR_FVT|Mosaic`, `UR_FVT|OracleOn`, `UR_FVT|OwnerKonto`, `UR_FVT|SplitMode`, `UR_FVT|StreamEligible`, `UR_FVT|SweepActive`, `UR_FVT|SweepProgress`, `UR_FVT|TotalDebScore`, `UR_FVT|TotalGhostTvlWeight`, `UR_FVT|VacateFrozen`, `UR_OracleValidity`
 
 *Validators* (14) — read and enforce; failure aborts
 
@@ -113,17 +113,17 @@ _To be written._
 
 `P|A_Add`, `P|A_AddIMP`, `P|A_Define`, `P|A_RemoveIMP`, `P|A_SetIMP`
 
-*External entry* (8) — callable by other modules only
+*External entry* (10) — callable by other modules only
 
-`XE_EvictDrip`, `XE_EvictPay`, `XE_RefreshCollectableStakeAnchors`, `XE_RefreshTrueFungibleStakeAnchors`, `XE_SetFvtOracleOn`, `XE_SetFvtVacateFrozen`, `XE_SweepBegin`, `XE_SweepEnd`
+`XE_EvictBulkPay`, `XE_EvictDrip`, `XE_EvictPay`, `XE_EvictPayNoMove`, `XE_RefreshCollectableStakeAnchors`, `XE_RefreshTrueFungibleStakeAnchors`, `XE_SetFvtOracleOn`, `XE_SetFvtVacateFrozen`, `XE_SweepBegin`, `XE_SweepEnd`
 
 *Internal + external* (1) — callable both ways
 
 `XB_FvtInject`
 
-*Internal writes* (12) — this module only; writes under a capability
+*Internal writes* (14) — this module only; writes under a capability
 
-`XI_CollectDrip`, `XI_CollectForcedFixPenalty`, `XI_CollectPay`, `XI_CollectableStakePhases`, `XI_Control`, `XI_IssueFvt`, `XI_LatchStreamEligible`, `XI_OrtoStakePhases`, `XI_RefreshCollectableStakeAnchors`, `XI_RefreshTrueFungibleStakeAnchors`, `XI_SetCommonDenominator`, `XI_TrueFungibleStakePhases`
+`XI_1|CollectPayCore`, `XI_CollectDrip`, `XI_CollectForcedFixPenalty`, `XI_CollectPay`, `XI_CollectPayNoMove`, `XI_CollectableStakePhases`, `XI_Control`, `XI_IssueFvt`, `XI_LatchStreamEligible`, `XI_OrtoStakePhases`, `XI_RefreshCollectableStakeAnchors`, `XI_RefreshTrueFungibleStakeAnchors`, `XI_SetCommonDenominator`, `XI_TrueFungibleStakePhases`
 
 *Policy* (2) — inter-module authorisation
 

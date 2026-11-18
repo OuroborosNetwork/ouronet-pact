@@ -20,7 +20,7 @@
 ;; stale scores and the claimant is who pays. An eviction ZEROES it, because the beneficiary never
 ;; chose to collect and charging them would be billing them for not acting. Both halves of that
 ;; sentence are code: AQP-FVT::XI_CollectForcedFixPenalty on the collect path,
-;; AQP-EVCT::XE_EvictPay -> RPS::XE_WU_FvtForcedFixCount|Zero on the eviction path.
+;; AQP-EVCT::XE_EvictPay -> RPS::XE_FvtForcedFixCount|Zero on the eviction path.
 ;;
 (print "")
 (print "================================================================")
@@ -42,9 +42,9 @@
         (anhd:string KST.ANHD)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV6} AQP-FVT)
-        (ref-EVCT:module{AcquisitionRewardEvictionV1} AQP-EVCT)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV7} AQP-FVT)
+        (ref-EVCT:module{AcquisitionRewardEvictionV2} AQP-EVCT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV8} TS02-C3)
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
         (auryn-id:string "AURYN-98c486052a51")
         (fvt-owner:string (ref-FVT::UR_FVT|OwnerKonto fvt-id))

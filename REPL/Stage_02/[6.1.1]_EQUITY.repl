@@ -74,7 +74,7 @@
     (
         (ref-DPDC:module{DpdcV3} DPDC)
         (ref-EQUITY:module{EquityV5} EQUITY)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV5} TS02-C1)
         (owner:string KST.ANHD)
         (links:[string] (make-list 24 "ipfs://EquityTestLink"))
     )
@@ -141,7 +141,7 @@
     (
         (ref-DPDC:module{DpdcV3} DPDC)
         (ref-EQUITY:module{EquityV5} EQUITY)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV5} TS02-C1)
         (owner:string KST.ANHD)
         (id:string "E|TSEQ-98c486052a51")
     )
@@ -174,7 +174,7 @@
 (let
     (
         (ref-DPDC:module{DpdcV3} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV5} TS02-C1)
         (owner:string KST.ANHD)
         (id:string "E|TSEQ-98c486052a51")
     )
@@ -204,7 +204,7 @@
     (
         (ref-DPDC:module{DpdcV3} DPDC)
         (ref-EQUITY:module{EquityV5} EQUITY)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV5} TS02-C1)
         (owner:string KST.ANHD)
         (id:string "E|TSEQ-98c486052a51")
     )
@@ -255,7 +255,7 @@
 (print "--- [TX-EQUITY-003 - negative paths: capacity, modulo, invalid nonce/tier · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV5} TS02-C1)
         (owner:string KST.ANHD)
         (id:string "E|TSEQ-98c486052a51")
     )
@@ -346,29 +346,46 @@
 (let
     (
         (ref-EQ:module{EquityV5} EQUITY)
-        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
         (eq-id:string "E|TSEQ-98c486052a51")
         (t3:integer (ref-EQ::URC_SingleSharePerMillions "E|TSEQ-98c486052a51" 3))
     )
     (map print
         [
             (expect "<<TX-EQ-004>> nonce 1 is the share itself: 500 units = 500 shares"
-                500.0 (ref-SCR::URCx_EquityShareRawWeight eq-id [1] [500]))
+                500.0 (ref-SCR::URCx_EquityShareRawWeight 1.0 eq-id [1] [500]))
             (expect (format "<<TX-EQ-004>> nonce 4 is tier 3, worth {} shares apiece" [t3])
-                (dec t3) (ref-SCR::URCx_EquityShareRawWeight eq-id [4] [1]))
+                (dec t3) (ref-SCR::URCx_EquityShareRawWeight 1.0 eq-id [4] [1]))
             ;;PACKAGING IS WEIGHT-NEUTRAL -- the whole point. One tier-3 package weighs exactly
             ;;what the raw shares inside it weigh, so morphing moves no stake.
             (expect "<<TX-EQ-004>> one tier-3 package weighs the same as its shares loose"
-                (ref-SCR::URCx_EquityShareRawWeight eq-id [1] [t3])
-                (ref-SCR::URCx_EquityShareRawWeight eq-id [4] [1]))
+                (ref-SCR::URCx_EquityShareRawWeight 1.0 eq-id [1] [t3])
+                (ref-SCR::URCx_EquityShareRawWeight 1.0 eq-id [4] [1]))
             ;;ADDITIVE across a mixed stake, which is how a real holding arrives.
             (expect "<<TX-EQ-004>> a mixed stake sums its parts"
                 (+ 250.0 (dec t3))
-                (ref-SCR::URCx_EquityShareRawWeight eq-id [1 4] [250 1]))
+                (ref-SCR::URCx_EquityShareRawWeight 1.0 eq-id [1 4] [250 1]))
             ;;A nonce an equity collection cannot have scores 0 rather than aborting: a stake path
             ;;is the wrong place to discover a malformed collection.
             (expect "<<TX-EQ-004>> an out-of-range nonce contributes nothing, and does not abort"
-                0.0 (ref-SCR::URCx_EquityShareRawWeight eq-id [99] [10]))
+                0.0 (ref-SCR::URCx_EquityShareRawWeight 1.0 eq-id [99] [10]))
+            ;;────────────────────────────────────────────────────────────────────────────────
+            ;;SINGLE-SHARE-WEIGHT OFF. The score, not the asset, decides whether a RAW SHARE
+            ;;carries weight -- `single-share-weight` false passes 0.0 here. This is the whole
+            ;;reason the field exists: CompanySharesTreasury counts raw shares, SnakesTreasury
+            ;;counts only aggregated packages, and both weigh the SAME equity collection.
+            ;;
+            ;;THE SECOND ASSERTION IS THE ONE THAT MATTERS. Zeroing nonce 1 must leave the
+            ;;PACKAGE ladder untouched -- a flag that also damped tiers 2-8 would silently
+            ;;re-weight every package holder, and the figure on screen would still look sane.
+            (expect "<<TX-EQ-004>> with single-share-weight OFF a raw share weighs nothing"
+                0.0 (ref-SCR::URCx_EquityShareRawWeight 0.0 eq-id [1] [500]))
+            (expect (format "<<TX-EQ-004>> ...and tier 3 is untouched, still {} shares" [t3])
+                (dec t3) (ref-SCR::URCx_EquityShareRawWeight 0.0 eq-id [4] [1]))
+            ;;A MIXED STAKE LOSES EXACTLY ITS RAW-SHARE LEG, nothing else.
+            (expect "<<TX-EQ-004>> a mixed stake keeps its packages and drops its loose shares"
+                (dec t3)
+                (ref-SCR::URCx_EquityShareRawWeight 0.0 eq-id [1 4] [250 1]))
         ]
     )
     ""
@@ -397,13 +414,13 @@
 (let
     (
         (ref-DPDC:module{DpdcV3} DPDC)
-        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
         (eq-id:string "E|TSEQ-98c486052a51")
     )
     (map print
         [
             (expect "<<TX-EQ-004>> baseline: 1,000,000 shares => tier 3 is worth 500"
-                500.0 (ref-SCR::URCx_EquityShareRawWeight eq-id [4] [1]))
+                500.0 (ref-SCR::URCx_EquityShareRawWeight 1.0 eq-id [4] [1]))
             (expect "<<TX-EQ-004>> ...and the whole ladder is the one-million ladder"
                 [100 200 500 1000 2000 5000 10000] (EQUITY.URC_SharesPerMillion eq-id))
         ]
@@ -415,7 +432,7 @@
 (update DPDC.DPSF|T|Nonces (concat ["E|TSEQ-98c486052a51" "|" "1"]) { "nonce-supply" : 10000000 })
 (let
     (
-        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
         (eq-id:string "E|TSEQ-98c486052a51")
     )
     (map print
@@ -425,11 +442,11 @@
             ;;THE TRACKING PROPERTY. Same nonce, same quantity, same score -- ten times the weight,
             ;;because the share count moved and nothing was rewritten.
             (expect "<<TX-EQ-004>> the SAME tier-3 unit now weighs ten times as much"
-                5000.0 (ref-SCR::URCx_EquityShareRawWeight eq-id [4] [1]))
+                5000.0 (ref-SCR::URCx_EquityShareRawWeight 1.0 eq-id [4] [1]))
             ;;...while nonce 1 is unmoved: a raw share is a share at any company size, which is
             ;;what makes the two ends of the ladder distinguishable rather than a global multiplier.
             (expect "<<TX-EQ-004>> ...and a raw share still weighs exactly one"
-                250.0 (ref-SCR::URCx_EquityShareRawWeight eq-id [1] [250]))
+                250.0 (ref-SCR::URCx_EquityShareRawWeight 1.0 eq-id [1] [250]))
         ]
     )
     ""
@@ -438,13 +455,13 @@
 (update DPDC.DPSF|T|Nonces (concat ["E|TSEQ-98c486052a51" "|" "1"]) { "nonce-supply" : 1000000 })
 (let
     (
-        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
         (eq-id:string "E|TSEQ-98c486052a51")
     )
     (map print
         [
             (expect "<<TX-EQ-004>> restored: tier 3 is worth 500 again"
-                500.0 (ref-SCR::URCx_EquityShareRawWeight eq-id [4] [1]))
+                500.0 (ref-SCR::URCx_EquityShareRawWeight 1.0 eq-id [4] [1]))
         ]
     )
     ""

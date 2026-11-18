@@ -54,7 +54,7 @@
         (id:string "E|TSEQ-98c486052a51")
         (ref-DPDC:module{DpdcV3} DPDC)
         (ref-EQUITY:module{EquityV5} EQUITY)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV5} TS02-C1)
     )
     (let ((dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME)))
         ;;BASELINE. The EQUITY suite leaves the company whole: 1,000,000 shares, nothing packaged.
@@ -94,8 +94,8 @@
             (
                 (creator-before:integer (ref-DPDC::UR_AccountNonceSupply creator id true 1))
             )
-            (print (format "<(DPSF|C_IssueShares 9 million)> => \"{}\""
-                [(ref-TS02-C1::DPSF|C_IssueShares patron creator id 9)]))
+            (print (format "<(DPSF|CC_IssueShares 9 million)> => \"{}\""
+                [(ref-TS02-C1::DPSF|CC_IssueShares patron creator id 9)]))
             (map print
                 [
                     (expect (format "<<EQM-1>> m after Issue got={} expected=10" [(ref-EQUITY::URC_ShareMillions id)])
@@ -130,8 +130,8 @@
             (
                 (creator-before:integer (ref-DPDC::UR_AccountNonceSupply creator id true 1))
             )
-            (print (format "<(DPSF|C_RetireShares 1 million)> => \"{}\""
-                [(ref-TS02-C1::DPSF|C_RetireShares patron creator id 1)]))
+            (print (format "<(DPSF|CC_RetireShares 1 million)> => \"{}\""
+                [(ref-TS02-C1::DPSF|CC_RetireShares patron creator id 1)]))
             (map print
                 [
                     (expect (format "<<EQM-1>> m after Retire got={} expected=9" [(ref-EQUITY::URC_ShareMillions id)])
@@ -177,25 +177,25 @@
         (id:string "E|TSEQ-98c486052a51")
         (ref-DPDC:module{DpdcV3} DPDC)
         (ref-EQUITY:module{EquityV5} EQUITY)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV5} TS02-C1)
     )
     (map print
         [
             ;;A STRANGER IS NOT THE COMPANY. This is the whole point of the change: authority is
             ;;the CREATOR, and it is proved first, before any validation.
             (expect-failure "<<EQM-2>> a stranger cannot issue shares"
-                (ref-TS02-C1::DPSF|C_IssueShares patron stranger id 1))
+                (ref-TS02-C1::DPSF|CC_IssueShares patron stranger id 1))
             (expect-failure "<<EQM-2>> a stranger cannot retire shares"
-                (ref-TS02-C1::DPSF|C_RetireShares patron stranger id 1))
+                (ref-TS02-C1::DPSF|CC_RetireShares patron stranger id 1))
             (expect-failure "<<EQM-2>> a stranger cannot halt the company's shares"
                 (ref-TS02-C1::DPSF|C_PauseCompany patron stranger id true))
             ;;WHOLE MILLIONS ONLY. `URC_SharesPerMillion` divides by SHARE_UNIT with INTEGER
             ;;division; a fractional company truncates and every tier value collapses with it.
             (expect-failure "Share millions must be a positive whole number of millions"
-                (ref-TS02-C1::DPSF|C_IssueShares patron creator id 0))
+                (ref-TS02-C1::DPSF|CC_IssueShares patron creator id 0))
             ;;THE FOUNDING MILLION IS THE FLOOR.
             (expect-failure "must keep at least 1 million"
-                (ref-TS02-C1::DPSF|C_RetireShares patron creator id 9))
+                (ref-TS02-C1::DPSF|CC_RetireShares patron creator id 9))
             ;;TO RETIRE, YOU MUST HOLD YOUR LEG OF IT -- asserted on the VALIDATOR, not through
             ;;the entrypoint. Reaching it end-to-end would need the creator to be short of their
             ;;own leg, and at m=9 with K=500,000 the only amounts large enough are blocked by the
@@ -291,7 +291,7 @@
         (id:string "E|TSEQ-98c486052a51")
         (ref-DPDC:module{DpdcV3} DPDC)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV5} TS02-C1)
     )
     ;;THE POOL GOVERNOR. Twelve AQP operations derive from this one reader; before the change it
     ;;returned the DPDC smart account and a company could not run a pool over its own shares.
@@ -369,7 +369,7 @@
         (creator:string KST.ANHD)
         (heir:string KST.EMMA)
         (id:string "E|TSEQ-98c486052a51")
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV5} TS02-C1)
     )
     ;;ACCEPTANCE IS NOT OPTIONAL. `creator-account` is not consent-checked at issuance, so a
     ;;one-sided rotation would let anyone saddle any account with a company. With only the
@@ -392,7 +392,7 @@
         (id:string "E|TSEQ-98c486052a51")
         (ref-DPDC:module{DpdcV3} DPDC)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV5} TS02-C1)
     )
     (map print
         [
@@ -428,7 +428,7 @@
     (map print
         [
             (expect-failure "<<EQM-4>> the old creator can no longer issue shares"
-                (ref-TS02-C1::DPSF|C_IssueShares patron creator id 1))
+                (ref-TS02-C1::DPSF|CC_IssueShares patron creator id 1))
             (expect-failure "<<EQM-4>> ...nor halt its shares"
                 (ref-TS02-C1::DPSF|C_PauseCompany patron creator id true))
         ]

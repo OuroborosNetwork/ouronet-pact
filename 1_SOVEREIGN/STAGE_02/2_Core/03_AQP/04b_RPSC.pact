@@ -161,7 +161,7 @@
         @doc "Constructor for URC_CollectLadderPreview's answer: the per-token amounts a collect \
             \ actually pays out, plus the `mode` that decided the routing and the `payout` basis \
             \ they sum to. BARE object by design -- it describes no table row, and a schema would \
-            \ have to live in AcquisitionSchemasV3 and bump it for a read-only client preview. \
+            \ have to live in AcquisitionSchemasV5 and bump it for a read-only client preview. \
             \ `mode` is BAR for a non-ladder lane, where the whole payout lands on token-0."
         {"mode"             : mode
         ,"payout"           : payout
@@ -653,7 +653,7 @@
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
-                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
                 ;;
                 (pool-id:string
                     (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET)

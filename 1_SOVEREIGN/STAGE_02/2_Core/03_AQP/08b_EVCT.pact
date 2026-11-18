@@ -88,7 +88,7 @@
 ;; WHY THE MULTI SLICE IS PARALLEL ARRAYS RATHER THAN OBJECTS
 ;; ──────────────────────────────────────────────────────────────────────────────
 ;; A slice is four parallel arrays. They are PRIMITIVE arrays deliberately: an
-;; `object{Schema}` argument would have to live in `AcquisitionSchemasV3`, whose
+;; `object{Schema}` argument would have to live in `AcquisitionSchemasV5`, whose
 ;; bump cascades through nine modules. Parallel arrays need no shared schema, and
 ;; the objects are built inside this module where the schema is local. It is also
 ;; the shape `AQP-VCT::CCp_BatchVacateTrueFungible` already uses.
@@ -100,7 +100,7 @@
 ;; partial run returns only what is left.
 ;; ==============================================================================
 
-(interface AcquisitionRewardEvictionV1
+(interface AcquisitionRewardEvictionV2
     @doc "Reward eviction for an FVT: the owner collects on behalf of every staker with a \
         \ positive claimable. Plan readers, the slice partitioner, cost readers and THREE \
         \ owner-gated client entrypoints that differ only in how many legs one transaction \
@@ -112,6 +112,9 @@
     ;;{2}  FUN
     ;;{5.1}  Compute [UC/UCv]
     (defun UC_EvictLegsFromParallelArrays:[object] (beneficiaries:[string] score-entity-types:[integer] score-entity-ids:[string] reward-dptf-ids:[string]))
+    (defun UC_EvictBulkArrays:object (paid:[object]))
+    (defun UC_EvictLaneReceivers:[string] (lane:string paid:[object]))
+    (defun UC_EvictLaneAmounts:[decimal] (lane:string paid:[object]))
     (defun UC_CeilDiv:integer (numerator:integer denominator:integer))
     ;;{5.2}  Read [UR]
     ;;{5.3}  Read-Compute [URC/URCv]
@@ -144,7 +147,7 @@
 
     ;;{0}  IMPLEMENTERS
     (implements OuronetPolicyV2)
-    (implements AcquisitionRewardEvictionV1)
+    (implements AcquisitionRewardEvictionV2)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -374,12 +377,73 @@
             )
         )
     )
+    (defun UC_EvictBulkArrays:object (paid:[object])
+        @doc "Collected `{beneficiary, lane, amount}` rows -> the three parallel arrays \
+            \ `TFT::C_MultiBulkTransfer` takes: {id-lst, executee-array, transfer-amount-array}. \
+            \ One OUTER element per reward lane; the inner lists are that lane's receivers and \
+            \ their amounts. \
+            \ \
+            \ IT MERGES BY DESTINATION, AND THAT IS NOT AN OPTIMISATION. `DPTF|C>X-BULK-TRANSFER` \
+            \ runs `UEV_IzUnique` over its receiver list and REFUSES a repeat. One beneficiary \
+            \ holding two score entities on the same lane is two legs and ONE receiver -- the \
+            \ normal case, not a corner: measured on SubsidiaryTreasury, 27 positions pay 7 \
+            \ accounts. Feeding the raw per-leg list would fail every eviction on every \
+            \ aggregator where anyone holds two scores. \
+            \ \
+            \ THE SAME SHAPE MISMATCH THE VACATE PATH HIT, and it is worth naming because the \
+            \ symptom was identical: a leg is keyed on (beneficiary, score-entity, lane) because \
+            \ the booking is per score entity, while a transfer is addressed by ACCOUNT. \
+            \ `UC_VacateMergeIntRowsByDestination` exists for the same reason. \
+            \ \
+            \ AMOUNTS ARE SUMMED, NEVER LAST-WINS. A merge that overwrote would pay one of the \
+            \ two legs and silently drop the other, after BOTH had been booked as paid -- a \
+            \ claimable consumed and the tokens never sent. \
+            \ \
+            \ ORDER IS FIRST-SEEN, for lanes and for receivers within a lane, so the arrays are a \
+            \ deterministic function of the plan and a test can assert them."
+        (let
+            (
+                (lanes:[string]
+                    (fold
+                        (lambda (acc:[string] row:object)
+                            (let ((l:string (at "lane" row)))
+                                (if (contains l acc) acc (+ acc [l]))))
+                        []
+                        paid))
+            )
+            {"id-lst"                : lanes
+            ,"executee-array"        : (map (lambda (l:string) (UC_EvictLaneReceivers l paid)) lanes)
+            ,"transfer-amount-array" : (map (lambda (l:string) (UC_EvictLaneAmounts l paid)) lanes)}
+        )
+    )
+    (defun UC_EvictLaneReceivers:[string] (lane:string paid:[object])
+        @doc "First-seen-order distinct beneficiaries owed something on one lane."
+        (fold
+            (lambda (acc:[string] row:object)
+                (let ((b:string (at "beneficiary" row)))
+                    (if (or (!= (at "lane" row) lane) (contains b acc)) acc (+ acc [b]))))
+            []
+            paid)
+    )
+    (defun UC_EvictLaneAmounts:[decimal] (lane:string paid:[object])
+        @doc "Per-receiver TOTALS on one lane, in the order `UC_EvictLaneReceivers` returns them. \
+            \ Summed across every leg crediting the same account -- see `UC_EvictBulkArrays`."
+        (map
+            (lambda (b:string)
+                (fold (+) 0.0
+                    (map (lambda (row:object) (at "amount" row))
+                        (filter
+                            (lambda (row:object)
+                                (and (= (at "lane" row) lane) (= (at "beneficiary" row) b)))
+                            paid))))
+            (UC_EvictLaneReceivers lane paid))
+    )
     (defun UC_EvictLegsFromParallelArrays:[object]
         (beneficiaries:[string] score-entity-types:[integer] score-entity-ids:[string] reward-dptf-ids:[string])
         @doc "Zip four parallel arrays into leg objects. PURE -- the shape check is UEV_EvictSliceShape's \
             \ job and the caller has already run it, so this does no validation and reads nothing. \
             \ Mirrors AQP-VCT::UC_TfLegsFromParallelArrays: the arrays cross the module boundary \
-            \ because a shared OBJECT argument would have to live in AcquisitionSchemasV3, whose bump \
+            \ because a shared OBJECT argument would have to live in AcquisitionSchemasV5, whose bump \
             \ cascades through nine modules. Objects are built HERE, where the shape is local."
         (map
             (lambda (i:integer)
@@ -419,13 +483,13 @@
         (let
             (
                 (users:[string] (RPS.URH_FvtPresentUsers fvt-id))
-                (plans:[object{AcquisitionSchemasV3.FVT|SettleScorePlan}]
+                (plans:[object{AcquisitionSchemasV5.FVT|SettleScorePlan}]
                     (RPS.URHC_BuildInjectScorePlans fvt-id))
             )
             (filter
                 (lambda (leg:object) (> (at "claimable" leg) 0.0))
                 (fold
-                    (lambda (acc:[object] plan:object{AcquisitionSchemasV3.FVT|SettleScorePlan})
+                    (lambda (acc:[object] plan:object{AcquisitionSchemasV5.FVT|SettleScorePlan})
                         (+ acc
                            (let
                                (
@@ -623,7 +687,7 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV3} DALOS)
-                (ref-RPS:module{AcquisitionRewardPerShareV5} RPS)
+                (ref-RPS:module{AcquisitionRewardPerShareV8} RPS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership (ref-RPS::UR_FVT|OwnerKonto fvt-id))
         )
@@ -651,11 +715,108 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV6} AQP-FVT)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV7} AQP-FVT)
+                    ;;LADDER LEGS CANNOT BE BULKED -- they MINT through ATS hops rather than
+                    ;;transferring, with per-beneficiary split amounts, so no receiver list
+                    ;;expresses them. The predicate lives in AQP-FVT beside the branch it
+                    ;;mirrors; see URC_EvictLegIsLadder.
+                    (ladder:[object]
+                        (filter (lambda (leg:object)
+                                    (ref-FVT::URC_EvictLegIsLadder fvt-id
+                                        (at "score-entity-type" leg) (at "reward-dptf-id" leg)))
+                                legs))
+                    (plain:[object]
+                        (filter (lambda (leg:object)
+                                    (not (ref-FVT::URC_EvictLegIsLadder fvt-id
+                                        (at "score-entity-type" leg) (at "reward-dptf-id" leg))))
+                                legs))
                 )
-                (ref-IGNIS::UDC_ConcatenateOutputCumulators
-                    (map
-                        (lambda (leg:object)
+                ;;ONE PLAIN LEG IS NOT WORTH A BULK. A multi-bulk of a single receiver carries
+                ;;list overhead for nothing, and CC_EvictSingleReward is exactly that case -- it
+                ;;reaches here with a one-element list. So the single-leg shape keeps the path it
+                ;;has always had, byte for byte: it joins the ladder legs on the per-leg route.
+                ;;
+                ;;THE TWO ROUTES ARE SELECTED BY PARTITIONING THE LEGS, NOT BY TWO CALL SITES, and
+                ;;that is deliberate rather than tidy. Both the ladder legs and the lone plain leg
+                ;;take the IDENTICAL per-leg path, so expressing it once keeps the
+                ;;`ref-FVT::XE_EvictPay` edge in THIS function's body -- which the generated price
+                ;;sheet depends on. `_ignis_price_sheet.py` resolves an op's billing legs at DEPTH
+                ;;3 and escalates only when depth 3 finds NOTHING; a delegating helper here pushed
+                ;;`UC_IgnisPrice "AQP-FVT|CC_Collect"` to depth 4, so the row still "resolved" --
+                ;;partially -- and the published floor for CC_EvictSingleReward and
+                ;;CCp_EvictMultiRewards fell from 57 to 6. Measured, and caught by the gate. See
+                ;;FINDINGS-2026-11-08.md F7: the same shape as `C_Coil` delegating to `XB_Coil`,
+                ;;which took the sheet from 93 exact prices to 87 and was REVERTED for it.
+                (let
+                    (
+                        (unbulked:[object] (if (> (length plain) 1) ladder (+ ladder plain)))
+                    )
+                    (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                        [ (if (= (length unbulked) 0)
+                              (UC_EmptyOc)
+                              (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                                  (map
+                                      (lambda (leg:object)
+                                          (let
+                                              (
+                                                  (set-type:integer (at "score-entity-type" leg))
+                                                  (set-id:string    (at "score-entity-id" leg))
+                                                  (lane:string      (at "reward-dptf-id" leg))
+                                                  (who:string       (at "beneficiary" leg))
+                                              )
+                                              (ref-FVT::XE_EvictDrip evictor fvt-id set-type set-id lane)
+                                              (ref-FVT::XE_EvictPay patron evictor who fvt-id set-type set-id lane)
+                                          )
+                                      )
+                                      unbulked
+                                  )
+                                  []
+                              ))
+                          (if (> (length plain) 1)
+                              (XI_EvictPlainLegsBulked patron evictor fvt-id plain)
+                              (UC_EmptyOc))
+                        ]
+                        []
+                    )
+                )
+            )
+        )
+    )
+    ;;Protection: Class 3 — Custom: P|EVCT|RECIPE
+    (defun XI_EvictPlainLegsBulked:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string evictor:string fvt-id:string legs:[object])
+        @doc "Book every leg IN ORDER, then pay all of them in ONE multi-bulk transfer. \
+            \ \
+            \ WHY A `fold` AND NOT A `map` OVER HOISTED READS. The obvious bulking -- read every \
+            \ payout, transfer once, then book -- is WRONG, and wrong in the direction that pays \
+            \ people less without failing. `URC_CollectClaimableRewards` carries a LAST-CLAIMANT \
+            \ SWEEP: when a lane's unclaimed count reaches 1, the final claimant receives the \
+            \ entire remaining available-rewards, dust included. PHASE 3 decrements that count as \
+            \ each leg books. Reading all the payouts first shows every leg a count that never \
+            \ reaches 1, so nobody sweeps and the lane's remainder is stranded in the vault \
+            \ permanently. The panel states the consequence from the other side: *\"whichever \
+            \ payment lands last on a lane also sweeps its dust\"*. \
+            \ \
+            \ So the legs are still processed ONE AT A TIME AND IN ORDER -- drip, read, book -- \
+            \ exactly as the unbulked path does. The fold threads the amounts out; only the \
+            \ MOVEMENT is deferred. This module's own doc warned of the same hazard for the \
+            \ unbulked path: *\"Hoisting that read and subtracting a batch total would be wrong \
+            \ exactly when a slice carries two beneficiaries of one lane -- which is the normal \
+            \ case.\"* \
+            \ \
+            \ THE TOTAL IS THEREFORE IDENTICAL to the per-leg path, leg for leg, sweep included. \
+            \ That is the property the equivalence test asserts, and it is the only thing that \
+            \ makes this change safe to ship."
+        (require-capability (P|EVCT|RECIPE))
+        (let
+            (
+                ;;NO `ref-IGNIS` HERE. It was bound and never used once the cumulator
+                ;;concatenation moved up into `XI_EvictLegs` -- a resolved modref read by nothing,
+                ;;which `_conformance.py`'s dead-modref-binding rule is there to catch.
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV7} AQP-FVT)
+                (paid:[object]
+                    (fold
+                        (lambda (acc:[object] leg:object)
                             (let
                                 (
                                     (set-type:integer (at "score-entity-type" leg))
@@ -663,14 +824,59 @@
                                     (lane:string      (at "reward-dptf-id" leg))
                                     (who:string       (at "beneficiary" leg))
                                 )
+                                ;;DRIP FIRST, as the unbulked path does: a streamed lane reads
+                                ;;zero before its drip, so the amount must be taken after it.
                                 (ref-FVT::XE_EvictDrip evictor fvt-id set-type set-id lane)
-                                (ref-FVT::XE_EvictPay patron evictor who fvt-id set-type set-id lane)
+                                (+ acc
+                                    [ { "beneficiary" : who
+                                      , "lane"        : lane
+                                      , "amount"      : (ref-FVT::XE_EvictPayNoMove patron evictor
+                                                            who fvt-id set-type set-id lane) } ])
                             )
                         )
-                        legs
-                    )
-                    []
+                        []
+                        legs))
+            )
+            (let
+                (
+                    ;;THE DUST GOES OUT WITH THE PAYMENT, on a whole-aggregator run only.
+                    ;;
+                    ;;After a full evict every positive leg has been paid, so whatever remains in
+                    ;;a lane's `available-rewards` is unassigned -- flooring remainder that the
+                     ;;NO DUST BRANCH HERE ANY MORE -- REMOVED 2026-11-09 WHEN S1 LANDED.
+                    ;;
+                    ;;B2 shipped an eviction-only dust sweep (`XE_EvictSweepLaneDust`) because the
+                    ;;core's own last-claimant sweep was UNREACHABLE: a staked holder was never
+                    ;;retired from the claimant set, so the count never fell to 1. Measured over
+                    ;;three injection rounds on a two-claimant lane: 1e-24, carried, then 2e-24.
+                    ;;
+                    ;;S1 FIXED THE COUNT, SO THE CORE SWEEP NOW FIRES -- including during an
+                    ;;eviction, where the last leg paid on a lane is by construction the last leg
+                    ;;owed. Keeping both would leave TWO mechanisms zeroing one row by different
+                    ;;routes, which is exactly the pair that drifts. SPEC-UNIFIED-2026-11.md said so
+                    ;;in advance: "Delete `XE_EvictSweepLaneDust` only when S1 lands".
+                    ;;
+                    ;;AND IT WAS REMOVED ON EVIDENCE, NOT ON THE PLAN. A mutation round with all the
+                    ;;new code in place replaced the sweep's return with 0.0 and `modules/
+                    ;;EVICT-BULK.repl` STAYED GREEN -- the lane still closed at exactly 0.0, which
+                    ;;is the core sweep doing the work. A branch whose removal changes no assertion
+                    ;;is either untested or redundant; here it is redundant, and the suite that
+                    ;;proves the lane closes is the proof.
+                    (arr:object (UC_EvictBulkArrays paid))
                 )
+                ;;ONE CALL FOR EVERY LANE, AND IT RUNS INSIDE AQP-FVT. `C_MultiBulkTransfer`
+                ;;takes a list of tokens with a receiver list each, so an aggregator paying two
+                ;;lanes sends ONE transfer leg rather than two.
+                ;;
+                ;;THE CUSTODY STAYS WHERE IT ALREADY IS. This module holds no remote-governor
+                ;;capability on purpose -- see `P|EVCT|RECIPE` -- because every payout leg runs
+                ;;inside AQP-FVT under its own `P|FVT|REMOTE-GOV`. Calling TFT directly from here
+                ;;would have meant registering a governor for AQP-EVCT and ROTATING the guard set
+                ;;on AQP|SC_NAME, which that note calls the single most expensive step a new AQP
+                ;;module can incur, and whose botched form strips collect and vacate of their
+                ;;vault authority. A gas saving is not worth buying with that.
+                (ref-FVT::XE_EvictBulkPay patron evictor fvt-id
+                    (at "executee-array" arr) (at "id-lst" arr) (at "transfer-amount-array" arr))
             )
         )
     )
@@ -726,6 +932,8 @@
                     )
                     "Nothing to evict on at least one leg of this slice: re-read the plan and re-slice"
                 )
+                ;;A SLICE, so NO dust sweep: this run cannot know whether a leg it does
+                ;;not carry is still owed, and zeroing a lane there would delete a share.
                 (XI_EvictLegs patron evictor fvt-id legs)
             )
         )
@@ -796,6 +1004,9 @@
             \ -- its arrays were read in an earlier transaction."
         (P|UEV_IMC)
         (with-capability (EVCT|C>FULL-EVICT evictor fvt-id)
+            ;;THE WHOLE AGGREGATOR, so the lanes it clears end on exactly zero --
+            ;;every positive leg is paid here, which makes the remainder unassigned by
+            ;;construction. See XI_EvictPlainLegsBulked.
             (XI_EvictLegs patron evictor fvt-id (URHC_BuildEvictPlans fvt-id))
         )
     )

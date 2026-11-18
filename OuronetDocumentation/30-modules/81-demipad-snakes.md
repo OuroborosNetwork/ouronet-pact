@@ -19,7 +19,7 @@ _To be written._
 
 | | |
 |---|---|
-| module hash | `gHbhuZUMn_ls6eUgJJ_cK84GyEXrsPosSUkWMZvVhi4` |
+| module hash | `vUr0Fm3rds1_6cUoGKbbwh3zQjUCSXD3s8SFAsuKwQI` |
 | deployed size | 22,323 characters |
 | implements | `OuronetPolicyV2`, `SaleSnakesV3` |
 | repository source | `2_CITIZEN/7_Launchpad/2_Snakes/02_Snakes.pact` |

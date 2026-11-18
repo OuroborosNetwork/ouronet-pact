@@ -13,7 +13,7 @@
 > Dated captures (`memories/`, `HANDOFFS/`, `kursan/`, `agents/`) are **records, not rules**,
 > and are excluded by directory. Generated artefacts are excluded so nobody edits them.
 
-**76 guidance documents.** Read [`SKILL.md`](SKILL.md) first — it gives the ORDER.
+**84 guidance documents.** Read [`SKILL.md`](SKILL.md) first — it gives the ORDER.
 This page gives the COVERAGE.
 
 ## Start here
@@ -27,6 +27,7 @@ This page gives the COVERAGE.
 | [`CONTEXT.md`](CONTEXT.md) | Consolidated project facts, vocabulary and stage definitions — read early for shared language. |
 | [`DEPLOY-READY-GATE.md`](DEPLOY-READY-GATE.md) ⛔ **superseded** | Historical roadmap-1.7 deploy-readiness proof; its source-line gas cliff figure is superseded. |
 | [`DOCUMENTATION-PLAN.md`](DOCUMENTATION-PLAN.md) ⛔ **superseded** | Superseded plan for the OuronetDocumentation book; its BUILD-PLAN.md is now authoritative. |
+| [`FINDINGS-2026-11-08.md`](FINDINGS-2026-11-08.md) | LEDGER of the defects surfaced on 2026-11-08 while building equity gating and eviction bulking — what each is, the evidence, and which spec repairs it. |
 | [`HOW-AUDIT-PUBLISHING-WORKS.md`](HOW-AUDIT-PUBLISHING-WORKS.md) | MANDATORY before regenerating the Audit Book or OuronetDocumentation, or whenever new audit data must be processed: the one command, why it blocks, and how to write the judgement block that unblocks it. |
 | [`HOW-DEPLOY-ROUNDS-WORK.md`](HOW-DEPLOY-ROUNDS-WORK.md) | MANDATORY before building a Deploy/PureVn round: parity model, transitive cascade, backfills, post-deploy sequence. |
 | [`INDEX.md`](INDEX.md) | Directory map of the organized guidance tree — which folder answers which kind of question. |
@@ -35,8 +36,15 @@ This page gives the COVERAGE.
 | [`MODULE_ARCHITECTURE.md`](MODULE_ARCHITECTURE.md) | Prefixes, capability bands, Talos, client flows — read before touching a sovereign core or Talos module. |
 | [`POST-AUDIT-MAIN-ROADMAP.md`](POST-AUDIT-MAIN-ROADMAP.md) | Tracker for work queued once the audit worktrees land on main. |
 | [`README.md`](README.md) | What this folder is: persistent context for humans and AI; Claude skill route stubs are generated pointers only. |
+| [`SCAN-2026-11-08-live.md`](SCAN-2026-11-08-live.md) | Measured against StoaChain mainnet (node2.stoachain.com, chain 0) with read-only /local |
 | [`SKILL.md`](SKILL.md) | THE HUB. Load order, fast-recall non-negotiables, the scan-the-module-first habit, active-learning protocol. |
+| [`SPEC-UNIFIED-2026-11.md`](SPEC-UNIFIED-2026-11.md) | THE unifying specification for the 2026-11-08 findings set — the two defect classes, the dependency order, the round plan, and every owner decision in one list. Each finding's detail lives in its own spec; this is the document that sequences them. |
+| [`SPEC-class4-score-revaluation.md`](SPEC-class4-score-revaluation.md) | URCSignedBaseDeltaForDpnfStake dispatches on the NFT score model. Both arms read a live input; |
+| [`SPEC-coin-urstoa-vault.md`](SPEC-coin-urstoa-vault.md) | The vault's counter is documented as one thing and maintained as another, exactly as in S1. |
+| [`SPEC-disabled-link-strand.md`](SPEC-disabled-link-strand.md) | FVT|T|ScoreEntityLink.enabled is a freely-togglable flag whose intended job is to stop a member |
 | [`SPEC-round-simulator.md`](SPEC-round-simulator.md) | What _livesandbox.py --round proves against live chain state — and what it does NOT prove. |
+| [`SPEC-score-definition-reissue.md`](SPEC-score-definition-reissue.md) | A class-3 (DPSF) or class-4 (DPNF) score base is an accumulated signed delta, not a recomputed |
+| [`SPEC-unclaimed-count.md`](SPEC-unclaimed-count.md) | SPEC for the unclaimed-count repair round — the locked definition, every transition site, the schema change, the X-prefix canon sweep, the backfill, and the tests that would have caught the original drift. |
 | [`STAGE-TWO-BUCKET-ISSUANCE.md`](STAGE-TWO-BUCKET-ISSUANCE.md) | Stage-2 dispensing-bucket issuance design. |
 | [`STAGE-TWO-EMISSION.md`](STAGE-TWO-EMISSION.md) | Stage-2 OURO emission economics and the minter signature it implies. |
 | [`StoicSyntax-Prefixes.md`](StoicSyntax-Prefixes.md) | Every prefix decoded left-to-right, plus the patron/executor canon and the archive-mode spec. |

@@ -19,8 +19,8 @@ _To be written._
 
 | | |
 |---|---|
-| module hash | `GKPJi2LlS5XtmPt4oz6iSfru1rlalooqIjUwHkg_6Tk` |
-| deployed size | 127,002 characters |
+| module hash | `aq2uV9Zn60LbVNZ41a-oKn1sRn75dwpvMDHvnMK1U_U` |
+| deployed size | 126,999 characters |
 | implements | — |
 | repository source | `1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact` |
 
@@ -34,7 +34,9 @@ _To be written._
 |---|---:|---|---|
 | *(unclassified)* | 111 | carries no StoicSyntax prefix | `CT_Bar`, `GOV|Demiurgoi`, `INFO_AQP-ANK|IssueNonFungibleAnchor`, `INFO_AQP-ANK|IssueNonFungibleSetAnchor`, `INFO_AQP-ANK|IssueSemiFungibleAnchor`, `INFO_AQP-ANK|IssueTrueFungibleAnchor` …+105 |
 
-> Repository and chain agree on every declared shape.
+> **The repository differs from what is deployed.** Everything above describes the CHAIN, which is what a caller actually reaches. The difference is stated rather than resolved:
+>
+> - **functions** in the repository only: `INFO_AQP-SCR|SetSingleShareWeight`
 
 **Capabilities** -- 2
 

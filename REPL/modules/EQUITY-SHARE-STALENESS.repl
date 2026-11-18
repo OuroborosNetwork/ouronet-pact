@@ -1,0 +1,709 @@
+;;================================================================================
+(print "")
+(print "================================================================")
+(print "FILE  REPL/modules/EQUITY-SHARE-STALENESS.repl")
+(print "================================================================")
+(print "Legend (terminal observability):")
+(print "  <<…>>     expect doc (format …) — REPL logs pass/fail")
+(print "  <(DPSF|CC_IssueShares …)> => \"…\"   equity share door (return value)")
+(print "  <(AQP-POOL|URHC_…)> => \"…\"         re-rate engine work list (return value)")
+(print "  <(AQP-SCORE|UR_U-SCR|…)> => \"…\"    stored user base (return value)")
+(print "")
+(print "WHAT THIS PINS. An equity collection's share count can MOVE (EQUITY::C_IssueShares),")
+(print "and the class-3 stake weight reads that count LIVE. A score base is an ACCUMULATED")
+(print "SIGNED DELTA, so a stake that added W(m) reversed by an unstake computing W(m') keeps")
+(print "the difference. MEASURED before the fix, on this exact fixture: base -10,000.")
+(print "")
+(print "Two defences, and this file pins both:")
+(print "  A] DPSF|CC_IssueShares / CC_RetireShares REFUSE while any pool holds a live stake")
+(print "     (AQP-POOL::UEV_AQP|NoLiveStakeOfAsset) — so the window cannot be entered.")
+(print "  B] the re-rate engine now SUPPORTS class 3, so a base that is already wrong can be")
+(print "     driven back to the canonical target instead of being unrepairable.")
+(print "")
+(print "Requires prior load of [6.4]_AQP-EXHAUSTIVE-BOOT-POOLS — the only chain that stakes an")
+(print "EQUITY collection into a pool (DHCompany / DemiourgosShareholder / E|DH tier-6, ANHD).")
+(print "")
+(print "Source: ;;|| NEXT > between txs; ;;==== TX-EQSS-nn · mm · … ==== before each banner.")
+(print "REPL tests: (map print [(expect (format \"<<TX-EQSS-nn>> …\" […]) expected actual) …])")
+(print "")
+
+(load "../Stage00_Sanboxes.repl")
+(load "../Stage01_Tester.repl")
+(load "../deploy-stage02.repl")
+(load "../Stage_02/[5.2]_PopulateBloodshed.repl")
+(load "../Stage_02/[5.1]_PopulateNosferatu.repl")
+(load "../Stage_02/[5.4]_PopulateBunnies.repl")
+(load "../Stage_02/[6.2.1]_AQP-ANK.repl")
+(load "../Stage_02/[6.2.2]_AQP-SCORE.repl")
+(load "../Stage_02/[6.2.3]_AQP-POOL.repl")
+(load "../Stage_02/[6.2.9]_AQP-BOOT-FULL.repl")
+(load "../Stage_02/[6.4]_AQP-EXHAUSTIVE-PREP.repl")
+(load "../Stage_02/[6.4]_AQP-EXHAUSTIVE-BOOT-POOLS.repl")
+
+(print "")
+(print "===============EQUITY SHARE STALENESS TX Block==================")
+(print "")
+
+;;================================================================================
+(begin-tx "TX-EQSS-01 - the re-rate engine answers for class 3, and agrees with the stake path")
+(print "")
+(print "=== TX-EQSS-01 — class-3 support + engine/stake-path agreement ===============")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-EQSS-01 - engine answers for class 3 · 01 · let / invocation ==== =======
+(print "--- [TX-EQSS-01 · 01 · let / invocation] ---")
+;;THE AGREEMENT ASSERTION IS THE LOAD-BEARING ONE. `URHC_AQP|ScoreBackfillOutstanding` is
+;;empty exactly when every candidate's stored base already equals the engine's target, so on a
+;;freshly staked pool it is [] ONLY IF the target reproduces what the stake path wrote. Had the
+;;class-3 target been a reimplementation of the weighting rule rather than a CALL to
+;;`URC_SignedBaseDeltaForDpsfStake`, this is where the two copies would disagree -- and every
+;;backfill slice would then "repair" a correct row into a wrong one.
+(let
+    (
+        (anhd:string KST.ANHD)
+        (edh-id:string "E|DH-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+        (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
+    )
+    (let
+        (
+            (pool-id:string (ref-U|DALOS::UDC_Makeid "DHCompany"))
+            (score-id:string (ref-U|DALOS::UDC_Makeid "DemiourgosShareholder"))
+        )
+        (let
+            (
+                (supported:bool (ref-AQP::URC_AQP|ScoreBackfillSupported pool-id score-id))
+                (outstanding:[object] (ref-AQP::URHC_AQP|ScoreBackfillOutstanding pool-id score-id))
+                (leg-rows:object (ref-AQP::URH_AQP|ScoreBackfillLegRows pool-id))
+                (base:decimal (ref-SCR::UR_U-SCR|UserScoreBaseScore anhd pool-id score-id))
+            )
+            (map print
+                [
+                    (format "<(pool class)> => {}   <(score class)> => {}"
+                        [(ref-AQP::UR_AQP|PoolAqpClass pool-id)
+                         (ref-SCR::UR_SCR|ScoreClass score-id)])
+                    (format "<(AQP-POOL|URC_…ScoreBackfillSupported)> => {}" [supported])
+                    (format "<(AQP-POOL|URHC_…ScoreBackfillOutstanding)> => {}" [outstanding])
+                    (format "<(nat-rows)> => {}" [(at "nat-rows" leg-rows)])
+                    (format "<(stored base)> => {}" [base])
+                    ;;1] the fence now admits class 3 -- it returned false before 2026-11-08
+                    (expect (format "<<TX-EQSS-01>> class-3 score is re-ratable got={}" [supported])
+                        true supported)
+                    ;;2] the DPSF rows arrive on the nat-rows leg, carrying a nonce
+                    (expect (format "<<TX-EQSS-01>> leg-rows carry the DPSF position got={}"
+                            [(length (at "nat-rows" leg-rows))])
+                        true (> (length (at "nat-rows" leg-rows)) 0))
+                    (expect "<<TX-EQSS-01>> class-3 leg-rows have no frozen leg"
+                        0 (length (at "frz-rows" leg-rows)))
+                    (expect "<<TX-EQSS-01>> class-3 leg-rows have no sleeping leg"
+                        0 (length (at "slp-rows" leg-rows)))
+                    ;;3] a live stake carries a positive base
+                    (expect (format "<<TX-EQSS-01>> stored base positive got={}" [base])
+                        true (> base 0.0))
+                    ;;4] THE AGREEMENT: engine target == stake-path base, for every candidate
+                    (expect (format "<<TX-EQSS-01>> engine agrees with the stake path got={}" [outstanding])
+                        0 (length outstanding))
+                ]
+            )
+        )
+    )
+)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
+;;
+;;================================================================================
+(begin-tx "TX-EQSS-02 - both share doors REFUSE while the collection is staked")
+(print "")
+(print "=== TX-EQSS-02 — UEV_AQP|NoLiveStakeOfAsset closes the window ================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-EQSS-02 - both share doors refuse · 01 · env-sigs (caps) ==== ===========
+(print "--- [TX-EQSS-02 · 01 · env-sigs (caps)] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-EQSS-02 - both share doors refuse · 02 · refusals ==== ==================
+(print "--- [TX-EQSS-02 · 02 · refusals] ---")
+;;THE REFUSAL IS ASSERTED BY ITS MESSAGE, not merely by failing. A share door can fail for many
+;;unrelated reasons -- wrong executor, non-equity id, bad millions -- and a test that accepts any
+;;failure would still pass with the gate DELETED. Matching "is staked in" is what makes this
+;;test about the gate. Same reason [RT-C]_AdminImpersonation pins the treasury case by message.
+(let
+    (
+        (anhd:string KST.ANHD)
+        (edh-id:string "E|DH-98c486052a51")
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV5} TS02-C1)
+    )
+    (map print
+        [
+            (expect-failure
+                "<<TX-EQSS-02>> CC_IssueShares refuses, naming the blocking pool"
+                "is staked in"
+                (ref-TS02-C1::DPSF|CC_IssueShares anhd anhd edh-id 1))
+            ;;RETIREMENT IS NOT THE SAFE DIRECTION EITHER. It re-values packages DOWNWARD, so an
+            ;;unstake afterwards subtracts LESS than its stake added and the row keeps a positive
+            ;;residue -- a holder credited for weight they no longer carry. Opposite sign, same
+            ;;corruption, so the same gate guards it.
+            (expect-failure
+                "<<TX-EQSS-02>> CC_RetireShares refuses too -- the other direction corrupts as well"
+                "is staked in"
+                (ref-TS02-C1::DPSF|CC_RetireShares anhd anhd edh-id 1))
+        ]
+    )
+)
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
+;;
+;;================================================================================
+(begin-tx "TX-EQSS-03 - the sanctioned path: unstake nets to ZERO, then issue, then re-rate")
+(print "")
+(print "=== TX-EQSS-03 — vacate-free round trip at the new share value ===============")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-EQSS-03 - sanctioned path · 01 · unstake at the SAME weight ==== ========
+(print "--- [TX-EQSS-03 · 01 · unstake at the SAME weight] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;THE FIRST ASSERTION HERE IS THE WHOLE INVARIANT. `URC_SignedBaseDeltaForDpsfStake`'s contract
+;;is "a full unstake reverses exactly and nets to 0" -- and that holds ONLY while the share count
+;;has not moved between the two legs. This is the control: unstake with m unchanged, land on
+;;exactly 0.0. The pre-fix run of this same sequence, with an issuance in the middle, landed on
+;;-10,000 instead.
+(let
+    (
+        (anhd:string KST.ANHD)
+        (edh-id:string "E|DH-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+        (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
+        (ref-EQUITY:module{EquityV5} EQUITY)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV5} TS02-C1)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV8} TS02-C3)
+    )
+    (let
+        (
+            (pool-id:string (ref-U|DALOS::UDC_Makeid "DHCompany"))
+            (score-id:string (ref-U|DALOS::UDC_Makeid "DemiourgosShareholder"))
+        )
+        (let
+            (
+                (staked:integer (round (ref-AQP::UR_AQP|DPSFTrackerBalance pool-id edh-id anhd anhd 6)))
+                (unit-pre:integer (ref-EQUITY::URC_SingleSharePerMillions edh-id 5))
+                (base-pre:decimal (ref-SCR::UR_U-SCR|UserScoreBaseScore anhd pool-id score-id))
+            )
+            (print (format "<(staked units)> => {}   <(tier-6 unit worth)> => {} shares   <(base)> => {}"
+                [staked unit-pre base-pre]))
+            (print (format "<(AQP-POOL|CC_UnstakeSemiFungibleCollectable)> => \"{}\""
+                [(ref-TS02-C3::AQP-POOL|CC_UnstakeSemiFungibleCollectable
+                    anhd anhd anhd pool-id edh-id [6] [staked])]))
+            (let
+                (
+                    (base-mid:decimal (ref-SCR::UR_U-SCR|UserScoreBaseScore anhd pool-id score-id))
+                )
+                (map print
+                    [
+                        (format "<(base after full unstake)> => {}" [base-mid])
+                        (expect (format "<<TX-EQSS-03>> full unstake nets to EXACTLY zero got={}" [base-mid])
+                            0.0 base-mid)
+                        (expect (format "<<TX-EQSS-03>> score total not negative got={}"
+                                [(ref-SCR::UR_SCR|ScoreTotalBaseScore score-id)])
+                            false (< (ref-SCR::UR_SCR|ScoreTotalBaseScore score-id) 0.0))
+                    ]
+                )
+            )
+            ;;==== TX-EQSS-03 - sanctioned path · 02 · the door OPENS once nothing is staked ====
+            (print "--- [TX-EQSS-03 · 02 · the door OPENS once nothing is staked] ---")
+            (print (format "<(DPSF|CC_IssueShares 1 million)> => \"{}\""
+                [(ref-TS02-C1::DPSF|CC_IssueShares anhd anhd edh-id 1)]))
+            ;;==== TX-EQSS-03 - sanctioned path · 03 · re-stake prices at the NEW value ====
+            (print "--- [TX-EQSS-03 · 03 · re-stake prices at the NEW value] ---")
+            (print (format "<(AQP-POOL|CC_StakeSemiFungibleCollectable)> => \"{}\""
+                [(ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable anhd anhd anhd pool-id edh-id [6])]))
+            (let
+                (
+                    (unit-post:integer (ref-EQUITY::URC_SingleSharePerMillions edh-id 5))
+                    (base-post:decimal (ref-SCR::UR_U-SCR|UserScoreBaseScore anhd pool-id score-id))
+                    (outstanding:[object] (ref-AQP::URHC_AQP|ScoreBackfillOutstanding pool-id score-id))
+                )
+                (map print
+                    [
+                        (format "<(m)> => {}   <(tier-6 unit worth)> => {} -> {} shares"
+                            [(ref-EQUITY::URC_ShareMillions edh-id) unit-pre unit-post])
+                        (format "<(base re-staked)> => {}" [base-post])
+                        ;;the issuance really did re-value the tier
+                        (expect (format "<<TX-EQSS-03>> tier-6 unit re-valued {} -> {}" [unit-pre unit-post])
+                            true (> unit-post unit-pre))
+                        ;;and the re-stake is priced at the NEW value, exactly
+                        (expect (format "<<TX-EQSS-03>> re-stake priced at the new value got={}" [base-post])
+                            (* base-pre 2.0) base-post)
+                        ;;and the engine still agrees -- no phantom work after a legitimate re-rate
+                        (expect (format "<<TX-EQSS-03>> engine reports no outstanding work got={}" [outstanding])
+                            0 (length outstanding))
+                    ]
+                )
+            )
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
+;;
+;;================================================================================
+(begin-tx "TX-EQSS-04 - a stale class-3 base is SEEN and REPAIRED (the other half of the fix)")
+(print "")
+(print "=== TX-EQSS-04 — deb-staleness is blind to it; the re-rate engine is not =====")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-EQSS-04 - stale class-3 base seen and repaired · 01 · let / invocation ====
+(print "--- [TX-EQSS-04 · 01 · let / invocation] ---")
+;;WHY THIS USES CustodiansPool AND NOT THE EQUITY POOL. With the share doors gated, an equity
+;;base can no longer BE driven stale through any client path -- which is the point of the gate and
+;;also why the repair half needs a different lever to test. The SF SCORE DEFINITION is that
+;;lever: `AQP-SCR|C_IssueSemiFungibleScoreDefinition` re-weighs a nonce through `WW_SFScore`,
+;;which is an UPSERT with no emptiness check, so it re-values a live position exactly the way a
+;;share issuance used to. Same class-3 base, same corruption, and this one is still OPEN -- it is
+;;the sibling hole the share-count audit turned up, recorded here as a TEST rather than a note.
+(let
+    (
+        (anhd:string KST.ANHD)
+        (dhoc:string "DHOC-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+        (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV8} TS02-C3)
+    )
+    (let
+        (
+            (pool-id:string (ref-U|DALOS::UDC_Makeid "CustodiansPool"))
+        )
+        ;;THE FIXTURE IS DISCOVERED, NOT NAMED. CustodiansPool employs a bronze/silver/golden
+        ;;triplet and each member weighs ONE nonce, so which score carries a given holder's weight
+        ;;is a property of the boot, not something a test should assert by spelling. Naming
+        ;;`OuronetPrimeBronze` picked a score whose weight for the held nonce is 0.0, and the test
+        ;;then "passed" its way into an out-of-bounds read on an empty work list.
+        (let
+            (
+                (weighted:[string]
+                    (filter
+                        (lambda (sid:string)
+                            (> (ref-SCR::UR_U-SCR|UserScoreBaseScore anhd pool-id sid) 0.0))
+                        (ref-AQP::URC_PoolActiveScoreIds pool-id)))
+                (rows:[object] (ref-AQP::URH_AQP|ActiveDpsfTrackerRows pool-id dhoc))
+            )
+            (enforce (> (length weighted) 0)
+                "TX-EQSS-04 needs a class-3 score carrying real weight for ANHD in CustodiansPool")
+            (enforce (> (length rows) 0)
+                "TX-EQSS-04 needs a live DHOC position in CustodiansPool")
+        (let
+            (
+                (score-id:string (at 0 weighted))
+                (nonce:integer (at "nonce" (at 0 rows)))
+            )
+        (let
+            (
+                (val-pre:decimal (ref-SCR::UR_S-DEF|SFScoreNonceScoreValue score-id dhoc nonce))
+                (base-pre:decimal (ref-SCR::UR_U-SCR|UserScoreBaseScore anhd pool-id score-id))
+                (owner:string (ref-SCR::UR_SCR|ScoreOwnerKonto score-id))
+            )
+            (print (format "<(discovered)> => score {} weighs nonce {}" [score-id nonce]))
+            (map print
+                [
+                    (format "<(definition value for the held nonce)> => {}" [val-pre])
+                    (format "<(ANHD stored base)> => {}" [base-pre])
+                    (expect (format "<<TX-EQSS-04>> pre: a position carries weight got={}" [base-pre])
+                        true (> base-pre 0.0))
+                    (expect (format "<<TX-EQSS-04>> pre: engine reports no work got={}"
+                            [(ref-AQP::URHC_AQP|ScoreBackfillOutstanding pool-id score-id)])
+                        0 (length (ref-AQP::URHC_AQP|ScoreBackfillOutstanding pool-id score-id)))
+                ]
+            )
+            ;;==== TX-EQSS-04 - stale class-3 base · 02 · the route is now REFUSED ====
+            (print "--- [TX-EQSS-04 · 02 · halving a nonce weight under a live stake is REFUSED] ---")
+            ;;THIS TRANSACTION USED TO MANUFACTURE THE DEFECT, AND NOW PINS ITS CLOSURE. Until
+            ;;2026-11-08 it halved a nonce's definition weight WHILE ANHD held a staked position,
+            ;;then showed that (a) the stored base was wrong, (b) `UserScoreDebStale` was blind to
+            ;;it, and (c) `CCp_BackfillScoreSlice` could see and repair it. That demonstration is
+            ;;gone because the vector is gone: `SCR|C>ISSUE-SF-SCORE-DEFINITION` now carries the
+            ;;`nzs-count = 0` + `not drift-locked` gate its three reconfiguration siblings always
+            ;;had (owner ruling 2026-11-08 — a weight change does not re-value positions already
+            ;;staked, so the score must be vacated first).
+            ;;
+            ;;WHAT THE OLD ASSERTIONS PROVED IS NOT LOST, IT IS RELOCATED. The claim "deb-staleness
+            ;;cannot see a base error" is a property of `URC_U-SCR|UserScoreDebStale` — it
+            ;;recomputes the DERIVED layers FROM the stored base, so a base error moves neither
+            ;;side of its comparison — and it is still asserted below against a HEALTHY row, which
+            ;;is the only state now reachable. What can no longer be exhibited is a stale class-3
+            ;;base, because after PureV25 gated the equity-share vector and this round gated the
+            ;;definition vector, NO client entrypoint can produce one.
+            (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+            (map print
+                [
+                    ;;THE REFUSAL, BY ITS MESSAGE. ANHD signs and names the score's real owner, so
+                    ;;neither the executor binding nor the ownership keyset can be what rejects
+                    ;;this — the reconfiguration gate is the only thing left that can. (CLAUDE.md,
+                    ;;"authorisation precedes validation": choose the fixture that gets past the
+                    ;;first guard, or the test passes with the new guard deleted.)
+                    (expect-failure (format "<<TX-EQSS-04>> re-issuing nonce {} under a LIVE stake is REFUSED — vacate to reconfigure" [nonce])
+                        "the score must have no stakers (nzs-count = 0) — vacate to reconfigure — and the score must not be drift-locked"
+                        (ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScoreDefinition
+                            anhd owner score-id dhoc [nonce] [(/ val-pre 2.0)]))
+                    ;;AND NOTHING MOVED. An `expect-failure` proves the transaction aborted, not
+                    ;;that the definition is untouched — a guard placed after a write would abort
+                    ;;just as loudly while leaving the row changed.
+                    (expect (format "<<TX-EQSS-04>> the definition value is UNCHANGED by the refused call got={}" [val-pre])
+                        val-pre (ref-SCR::UR_S-DEF|SFScoreNonceScoreValue score-id dhoc nonce))
+                    (expect (format "<<TX-EQSS-04>> ...and so is the stored base got={}" [base-pre])
+                        base-pre (ref-SCR::UR_U-SCR|UserScoreBaseScore anhd pool-id score-id))
+                ]
+            )
+            (env-sigs [])
+            ;;==== TX-EQSS-04 - stale class-3 base · 03 · the engine agrees the row is healthy ====
+            (print "--- [TX-EQSS-04 · 03 · the engine agrees the row is healthy] ---")
+            ;;THE RE-RATE ENGINE IS NOT DEAD CODE, AND THIS IS WHERE THAT IS RECORDED. With both
+            ;;class-3 vectors gated it has nothing left to repair FOR CLASS 3 — matching the live
+            ;;chain, where `URHC_AQP|ScoreBackfillOutstanding` returns 0 for all 8 supported
+            ;;(pool, score) pairs (SCAN-2026-11-08-live.md §1). Its remaining purpose is class 4,
+            ;;whose model-0 weight reads `DPDC-S::URC_N|Score` LIVE and is moved by a different
+            ;;role holder in a module deployed BEFORE 02_SCORE — so a gate at the write site is
+            ;;architecturally impossible there and detect-and-repair is the only available answer
+            ;;(SPEC-class4-score-revaluation.md).
+            (let
+                (
+                    (outstanding:[object] (ref-AQP::URHC_AQP|ScoreBackfillOutstanding pool-id score-id))
+                    (deb-stale:bool (ref-SCR::URC_U-SCR|UserScoreDebStale anhd pool-id score-id))
+                )
+                (map print
+                    [
+                        (format "<(AQP-POOL|URHC_…ScoreBackfillOutstanding)> => {}" [outstanding])
+                        (format "<(AQP-SCORE|URC_…UserScoreDebStale)> => {}" [deb-stale])
+                        (expect (format "<<TX-EQSS-04>> the engine reports NO work — the gate held got={}" [(length outstanding)])
+                            0 (length outstanding))
+                        (expect (format "<<TX-EQSS-04>> deb-staleness also reports fresh got={}" [deb-stale])
+                            false deb-stale)
+                    ]
+                )
+            )
+            ;;==== TX-EQSS-04 - stale class-3 base · 04 · a slice on a healthy score is a safe no-op ====
+            (print "--- [TX-EQSS-04 · 04 · a slice on a healthy score is a safe no-op] ---")
+            ;;WORTH ASSERTING RATHER THAN ASSUMING. The repair route stays deployed and callable by
+            ;;the pool owner, so "what happens if someone runs it when nothing is wrong" is a real
+            ;;question with a money answer. It must drive the base to the canonical target, and on
+            ;;a healthy row the target IS the stored value — so the slice must change nothing.
+            (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+            (print (format "<(AQP-POOL|CCp_BackfillScoreSlice)> => \"{}\""
+                [(ref-TS02-C3::AQP-POOL|CCp_BackfillScoreSlice anhd pool-id score-id [anhd])]))
+            (env-sigs [])
+            (let
+                (
+                    (base-post:decimal (ref-SCR::UR_U-SCR|UserScoreBaseScore anhd pool-id score-id))
+                    (outstanding-post:[object] (ref-AQP::URHC_AQP|ScoreBackfillOutstanding pool-id score-id))
+                )
+                (map print
+                    [
+                        (format "<(ANHD base)> => {} -> {}" [base-pre base-post])
+                        (expect (format "<<TX-EQSS-04>> the slice is a NO-OP on a healthy row got={}" [base-post])
+                            base-pre base-post)
+                        (expect (format "<<TX-EQSS-04>> the sweep still CONVERGES -- no work left got={}" [outstanding-post])
+                            0 (length outstanding-post))
+                        (expect (format "<<TX-EQSS-04>> base never went negative got={}" [base-post])
+                            false (< base-post 0.0))
+                    ]
+                )
+            )
+        )
+        )
+        )
+    )
+)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;================================================================================
+(begin-tx "TX-EQSS-05 - a DRIFT-LOCKED score refuses a definition re-issue, on BOTH arms")
+(print "")
+(print "=== TX-EQSS-05 — the drift latch now reaches the definition writers ==================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+;;THE SECOND CONJUNCT, TESTED WHERE IT IS NOT SHADOWED. <<TX-EQSS-04>> exercises the same enforce
+;;but on a score WITH stakers, so `nzs-count = 0` fails first and the drift clause is never
+;;evaluated — delete `(not (UR_SCR|ScoreDriftLocked score-id))` and that test stays green. Both
+;;scores here are EMPTY, so `nzs-count` passes and the latch is the only thing that can refuse.
+;;(CLAUDE.md, "authorisation precedes validation": two state-dependent guards in one enforce expose
+;;only one at a time, and the fix is a second fixture rather than a reordering.)
+;;
+;;AND IT COVERS BOTH GUARD SITES. The guard lives in exactly two capabilities, not four:
+;;`SCR|C>ISSUE-SF-SCORE-DEFINITION` for class 3, and `SCR|XI>X_ISSUE-NF-SCORE-DEFINITION` — which
+;;BOTH NF entry caps (trait mode and set mode) `compose-capability` — for class 4. The set-mode arm
+;;is driven below; trait mode reaches the identical clause through the same composed capability.
+;;
+;;WHY THE LATCH MATTERED MORE THAN THE EMPTINESS CHECK. `SCR|C>LOCK-SCORE-DRIFT` is the strongest
+;;promise the module makes about weights — fully built, with field, reader, writer, entrypoint,
+;;`URCi_` and migration — and until 2026-11-08 NOT ONE definition writer consulted it. A score
+;;explicitly promised drift-proof could still have its per-nonce weights re-issued underneath its
+;;holders.
+(let
+    (
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV8} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
+        ;;
+        (patron:string KST.ANHD)
+        (coding-id:string "TheCodingDivision-98c486052a51")
+        ;;THE CLASS-4 FIXTURE TOOK TWO CORRECTIONS, AND BOTH ARE SHADOWING TRAPS. It must be
+        ;;EMPTY, LOCKABLE, and employed by a pool that stakes the very collectable the definition
+        ;;names:
+        ;;  - naming a collectable the pool does NOT stake is refused by an earlier validator
+        ;;    ("…would score nothing"), which would shadow the latch and pass §04 for the wrong
+        ;;    reason — hence `DHB`, the DHBloodshed pool's asset, and not `KBN`;
+        ;;  - `SubsidiaryBloodshed` is NOT lockable ("deb-boost must be off and boost-class-link
+        ;;    must be BAR"), so §03 aborted on it. `Bloodshed` satisfies both.
+        (bloodshed-id:string "Bloodshed-98c486052a51")
+        (dhcd-id:string "DHCD-98c486052a51")
+        (kbn-id:string "DHB-98c486052a51")
+    )
+    ;;==== TX-EQSS-05 · 01 · precondition — both scores EMPTY and UNLOCKED ====
+    (print "--- [TX-EQSS-05 · 01 · precondition — both scores EMPTY and UNLOCKED] ---")
+    (map print
+        [
+            (expect "<<TX-EQSS-05>> fixture: class-3 score is EMPTY and UNLOCKED, so only the latch can refuse it"
+                [3 0 false]
+                [(ref-SCR::UR_SCR|ScoreClass coding-id)
+                 (ref-SCR::UR_SCR|ScoreNzsCount coding-id)
+                 (ref-SCR::UR_SCR|ScoreDriftLocked coding-id)])
+            (expect "<<TX-EQSS-05>> fixture: class-4 score is EMPTY and UNLOCKED too"
+                [4 0 false]
+                [(ref-SCR::UR_SCR|ScoreClass bloodshed-id)
+                 (ref-SCR::UR_SCR|ScoreNzsCount bloodshed-id)
+                 (ref-SCR::UR_SCR|ScoreDriftLocked bloodshed-id)])
+        ]
+    )
+    ;;==== TX-EQSS-05 · 02 · baseline — while UNLOCKED both arms ACCEPT a re-issue ====
+    (print "--- [TX-EQSS-05 · 02 · baseline — while UNLOCKED both arms ACCEPT a re-issue] ---")
+    ;;THE HALF THAT PROVES THE GATE IS NOT A BLANKET REFUSAL. Without it, a guard that rejected
+    ;;every re-issue unconditionally would pass §04 identically.
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (map print
+        [
+            (expect "<<TX-EQSS-05>> SF arm: an empty, unlocked score ACCEPTS a definition re-issue"
+                7.5
+                (let ((_:string (ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScoreDefinition
+                                    patron (ref-SCR::UR_SCR|ScoreOwnerKonto coding-id)
+                                    coding-id dhcd-id [11] [7.5])))
+                    (ref-SCR::UR_S-DEF|SFScoreNonceScoreValue coding-id dhcd-id 11)))
+            (expect "<<TX-EQSS-05>> NF arm (set mode): likewise ACCEPTED while unlocked"
+                true
+                (!= "" (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleSetScoreDefinition
+                           patron (ref-SCR::UR_SCR|ScoreOwnerKonto bloodshed-id)
+                           bloodshed-id kbn-id [0] [1.0])))
+        ]
+    )
+    ;;==== TX-EQSS-05 · 03 · latch both scores ====
+    (print "--- [TX-EQSS-05 · 03 · latch both scores] ---")
+    (ref-TS02-C3::AQP-SCR|C_LockScoreDrift patron (ref-SCR::UR_SCR|ScoreOwnerKonto coding-id) coding-id)
+    (ref-TS02-C3::AQP-SCR|C_LockScoreDrift patron (ref-SCR::UR_SCR|ScoreOwnerKonto bloodshed-id) bloodshed-id)
+    (map print
+        [
+            (expect "<<TX-EQSS-05>> both scores are now drift-locked, and still EMPTY"
+                [true true 0 0]
+                [(ref-SCR::UR_SCR|ScoreDriftLocked coding-id)
+                 (ref-SCR::UR_SCR|ScoreDriftLocked bloodshed-id)
+                 (ref-SCR::UR_SCR|ScoreNzsCount coding-id)
+                 (ref-SCR::UR_SCR|ScoreNzsCount bloodshed-id)])
+        ]
+    )
+    ;;==== TX-EQSS-05 · 04 · THE LATCH REFUSES BOTH ARMS — the assertions that fail without F1 ====
+    (print "--- [TX-EQSS-05 · 04 · THE LATCH REFUSES BOTH ARMS] ---")
+    (map print
+        [
+            (expect-failure "<<TX-EQSS-05>> SF arm: a drift-locked score REFUSES a definition re-issue"
+                "the score must have no stakers (nzs-count = 0) — vacate to reconfigure — and the score must not be drift-locked"
+                (ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScoreDefinition
+                    patron (ref-SCR::UR_SCR|ScoreOwnerKonto coding-id) coding-id dhcd-id [11] [9.5]))
+            (expect-failure "<<TX-EQSS-05>> NF arm: the SHARED composed capability refuses it too"
+                "the score must have no stakers (nzs-count = 0) — vacate to reconfigure — and the score must not be drift-locked"
+                (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleSetScoreDefinition
+                    patron (ref-SCR::UR_SCR|ScoreOwnerKonto bloodshed-id) bloodshed-id kbn-id [0] [2.0]))
+            ;;AND THE REFUSED WRITE LEFT NOTHING BEHIND — an abort proves the tx failed, not that
+            ;;the row is intact; a guard placed after the write would abort just as loudly.
+            (expect "<<TX-EQSS-05>> the SF definition still holds the value set while unlocked"
+                7.5 (ref-SCR::UR_S-DEF|SFScoreNonceScoreValue coding-id dhcd-id 11))
+        ]
+    )
+    (env-sigs [])
+)
+(print "===^^^===")
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;================================================================================
+(begin-tx "TX-EQSS-06 - the re-rate engine can now ANSWER for a class-4 (DPNF) score")
+(print "")
+(print "=== TX-EQSS-06 — class 4 enters the re-rate engine =================================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+;;WHAT WAS WRONG WAS NOT A WRONG ANSWER, IT WAS AN INDISTINGUISHABLE ONE. Until 2026-11-09
+;;`URC_AQP|ScoreBackfillSupported` fenced class 4 out, and `URHC_AQP|ScoreBackfillOutstanding`
+;;returns `[]` for an unsupported score BY DESIGN -- its own @doc says so, and reads empty as fully
+;;rated. So a class-4 score reported exactly like a clean one whether it was clean or whether the
+;;engine was refusing to look.
+;;
+;;THAT IS NOT A CORNER OF THE SYSTEM. Measured against mainnet 2026-11-08: FIVE of the fifteen live
+;;scores are class 4 -- Bloodshed, SubsidiaryBloodshed, SubsidiaryBunnies, SubsidiaryNosferatu,
+;;NosferatuDracula -- spanning FOUR of the eight live pools. A third of the live surface had no
+;;staleness detector at all and read as healthy.
+;;
+;;THE ASSERTION THAT ACTUALLY PROVES THE NEW TARGET IS `outstanding = 0` ON A SCORE WITH A LIVE
+;;STAKER. `delta = target - stored base` per holder, so an empty work list on a staked score says
+;;the new `URH_AQP|ScoreTargetBaseForBeneficiaryNf` reproduces what the STAKE path wrote -- for the
+;;real holder, through the real DPNF tracker rows. Had it summed per nonce instead of handing the
+;;whole vector over once, or used the DPSF tracker, or mis-rounded the integer amounts, this would
+;;be non-empty. Support alone would not have shown that: a wrong target is "supported" too.
+(let
+    (
+        (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+        ;;
+        (pool:string "DHBunnies-98c486052a51")
+        (score:string "SubsidiaryBunnies-98c486052a51")
+    )
+    ;;==== TX-EQSS-06 · 01 · fixture — a class-4 score WITH a live staker ====
+    (print "--- [TX-EQSS-06 · 01 · fixture — a class-4 score WITH a live staker] ---")
+    (map print
+        [
+            (expect "<<TX-EQSS-06>> fixture: class 4, employed by its pool, and NOT empty (a staker exists)"
+                [4 pool true]
+                [(ref-SCR::UR_SCR|ScoreClass score)
+                 (ref-SCR::UR_SCR|ScoreAqpoolLink score)
+                 (> (ref-SCR::UR_SCR|ScoreNzsCount score) 0)])
+        ]
+    )
+    ;;==== TX-EQSS-06 · 02 · the engine now SUPPORTS it — the assertion that fails without F2 ====
+    (print "--- [TX-EQSS-06 · 02 · the engine now SUPPORTS it] ---")
+    (map print
+        [
+            ;;BEFORE 2026-11-09 THIS WAS `false`. The fence read `[0 1 3]`.
+            (expect "<<TX-EQSS-06>> class 4 is now SUPPORTED by the re-rate engine"
+                true
+                (ref-AQP::URC_AQP|ScoreBackfillSupported pool score))
+            ;;AND THE LEG SCAN REACHES THE RIGHT TRACKER. A class-4 pool holds a COLLECTABLE, so
+            ;;`URC_AQP|PoolLiquidityLegs` cannot be asked about it -- the branch is taken before
+            ;;that reader, and it must pick the DPNF tracker rather than the DPSF one. Non-empty
+            ;;`nat-rows` is what says it did; empty frz/slp is what says it did not fall through
+            ;;to the liquidity path.
+            (expect "<<TX-EQSS-06>> the leg scan reads the DPNF tracker — nat-rows populated, no liquidity legs"
+                [true 0 0]
+                (let ((lr:object (ref-AQP::URH_AQP|ScoreBackfillLegRows pool)))
+                    [(> (length (at "nat-rows" lr)) 0)
+                     (length (at "frz-rows" lr))
+                     (length (at "slp-rows" lr))]))
+        ]
+    )
+    ;;==== TX-EQSS-06 · 03 · the new target REPRODUCES the stake path ====
+    (print "--- [TX-EQSS-06 · 03 · the new target REPRODUCES the stake path] ---")
+    ;;THE LOAD-BEARING ASSERTION, AND IT CALLS THE TARGET DIRECTLY ON PURPOSE.
+    ;;
+    ;;`URHC_AQP|ScoreBackfillOutstanding` ALONE CANNOT PROVE THIS, and that is the finding itself:
+    ;;it returns `[]` for an UNSUPPORTED score, so "no work" passes identically whether the target
+    ;;is right or whether the engine is refusing to look. Measured -- reverting the fence to
+    ;;`[0 1 3]` turned the SUPPORT assertion above red and left the work-list assertion GREEN. A
+    ;;test built only on the work list would certify the defect.
+    ;;
+    ;;So the target is invoked through `URH_AQP|ScoreTargetBaseForBeneficiary`, the DISPATCHER,
+    ;;which consults the score class and NOT the fence -- and its answer is compared to the base
+    ;;the STAKE path actually wrote. That equality is false if the class-4 arm sums per nonce
+    ;;instead of handing the whole vector over once, reads the DPSF tracker, or mis-rounds the
+    ;;integer amounts; and it cannot be satisfied by refusing to answer.
+    (let*
+        (
+            (leg-rows:object (ref-AQP::URH_AQP|ScoreBackfillLegRows pool))
+            (holders:[string] (ref-AQP::URHC_AQP|ScoreBackfillCandidates pool score leg-rows))
+            (outstanding:[object] (ref-AQP::URHC_AQP|ScoreBackfillOutstanding pool score))
+        )
+        (enforce (> (length holders) 0) "TX-EQSS-06 needs at least one class-4 holder to compare")
+        (let
+            (
+                (who:string (at 0 holders))
+            )
+            (map print
+                [
+                    (format "<(holders)> => {}" [(length holders)])
+                    (format "<(AQP-POOL|URHC_…ScoreBackfillOutstanding)> => {}" [outstanding])
+                    ;;the discriminating one: TARGET == STORED BASE, via the dispatcher
+                    (expect (format "<<TX-EQSS-06>> the class-4 TARGET equals the base the stake path wrote got={}"
+                            [(ref-SCR::UR_U-SCR|UserScoreBaseScore who pool score)])
+                        (ref-SCR::UR_U-SCR|UserScoreBaseScore who pool score)
+                        (ref-AQP::URH_AQP|ScoreTargetBaseForBeneficiary
+                            pool score who
+                            (at "nat-rows" leg-rows) (at "frz-rows" leg-rows) (at "slp-rows" leg-rows)))
+                    ;;...and it is a REAL figure, not a vacuous 0 == 0
+                    (expect (format "<<TX-EQSS-06>> ...and that base is NON-ZERO, so the equality is not 0 == 0 got={}"
+                            [(ref-SCR::UR_U-SCR|UserScoreBaseScore who pool score)])
+                        true (> (ref-SCR::UR_U-SCR|UserScoreBaseScore who pool score) 0.0))
+                    (expect (format "<<TX-EQSS-06>> the work list is consequently empty got={}" [outstanding])
+                        0 (length outstanding))
+                    (expect "<<TX-EQSS-06>> ...and the cheap predicate agrees with the work list"
+                        false (ref-AQP::URHC_AQP|ScoreBackfillNeeded pool score))
+                ]
+            )
+        )
+    )
+    ;;==== TX-EQSS-06 · 04 · class 2 is STILL fenced out, deliberately ====
+    (print "--- [TX-EQSS-06 · 04 · class 2 is STILL fenced out, deliberately] ---")
+    ;;THE FENCE IS NOT NOW OPEN TO EVERYTHING. Class 2 (DPOF) weighs per-nonce amounts through a
+    ;;different pair of functions and has no target of its own, so admitting it would compute a
+    ;;delta from the wrong formula -- which does not fail, it writes a plausible wrong number into
+    ;;a maintained accumulator. Asserted as a NEGATIVE so that opening the fence further has to be
+    ;;a deliberate act that turns this line red.
+    (map print
+        [
+            (expect "<<TX-EQSS-06>> the supported-class list is exactly [0 1 3 4] — class 2 is refused"
+                [true true true true false]
+                (map (lambda (c:integer) (contains c [0 1 3 4])) [0 1 3 4 2]))
+            ;;F10's CLASS-2 BOUND IS **NOT** BEHAVIOURALLY TESTED HERE, AND SAYING SO IS THE POINT.
+            ;;
+            ;;`URC_AQP|ScoreMxChangeSafe` short-circuits to `true` for every class whose asset has no
+            ;;`DPTF|PropertiesTable` row -- freezing and sleeping are variants of a FUNGIBLE. Classes
+            ;;3 and 4 were lifted out on 2026-10-10; class 2 (DPOF) was left inside the scanning
+            ;;branch, where it reaches `ref-DPTF::UR_Frozen` on an ortofungible id and ABORTS. The
+            ;;bound was corrected `> 2` -> `> 1` on 2026-11-09.
+            ;;
+            ;;THERE IS NO CLASS-2 POOL TO TEST IT AGAINST -- not in any fixture and not on mainnet.
+            ;;Measured: the fixture tree holds classes 0, 1, 3 and 4; the eight live pools likewise.
+            ;;An earlier version of this block asserted `URC_AQP|ScoreMxChangeSafe` on a CLASS-4
+            ;;score and claimed to be testing the class-2 branch. A mutation round caught it:
+            ;;reverting the bound to `> 2` left this suite GREEN, because class 4 short-circuits
+            ;;under both bounds. The assertion looked behavioural and proved nothing.
+            ;;
+            ;;SO WHAT IS ASSERTED IS THE BOUND ITSELF, labelled as such: every collectable class
+            ;;must be short-circuited, and the two liquidity classes must not be. That IS a
+            ;;regression detector on the constant -- it goes red if the bound moves again -- and it
+            ;;is NOT evidence that the class-2 path executes correctly. Making it such evidence
+            ;;needs a DPOF pool fixture, recorded as the open item in FINDINGS-2026-11-08.md F10.
+            (expect "<<TX-EQSS-06>> F10 bound: collectable classes 2/3/4 short-circuit, liquidity classes 0/1 do not"
+                [false false true true true]
+                (map (lambda (c:integer) (> c 1)) [0 1 2 3 4]))
+        ]
+    )
+    ""
+)
+(print "===^^^===")
+(commit-tx)
+(print "")
+(print "================================================================")
+(print "EQUITY-SHARE-STALENESS END")
+(print "================================================================")

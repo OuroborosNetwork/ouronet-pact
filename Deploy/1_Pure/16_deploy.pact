@@ -1,29 +1,33 @@
 ;; ---------------------------------------------------------------------------
-;; OURONET DEPLOY -- file 16 of 26
-;; This is STEP 16 of 27 in the full sequence (see Deploy/MANIFEST.md).
+;; OURONET DEPLOY -- file 16 of 25
+;; This is STEP 16 of 26 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-15 must have run first, including the init steps between deploys.
-;; 1 source file(s), 242,927 gas measured in the REPL gas model, 250,476 bytes
+;; 1 source file(s), 328,763 gas measured in the REPL gas model, 338,321 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
-;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/03_AQP.pact
+;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/04_RPS.pact
 ;;
-;; TOTAL: 0 interface(s), 1 module(s), 13 table(s)
+;; TOTAL: 1 interface(s), 1 module(s), 16 table(s)
 ;; What it DEPLOYS, in load order:
-;;   -- 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/03_AQP.pact
-;;      module     AQP-POOL
+;;   -- 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/04_RPS.pact
+;;      interface  AcquisitionRewardPerShareV8
+;;      module     RPS
 ;;      table      P|T
 ;;      table      P|MT
-;;      table      AQP|T|Pool
-;;      table      AQP|T|DPTFTracker
-;;      table      AQP|T|DPOFTracker
-;;      table      AQP|T|DPSFTracker
-;;      table      AQP|T|DPNFTracker
-;;      table      AQP|T|BenDptfTotal
-;;      table      AQP|T|BenDpsfNonceTotal
-;;      table      AQP|T|BenDpnfNonceTotal
-;;      table      AQP|T|BenDpsfAnkMeta
-;;      table      AQP|T|BenDpnfAnkMeta
-;;      table      AQP|T|UserOccupancy
+;;      table      FVT|T|RPS|Global
+;;      table      FVT|T|RPS|Member
+;;      table      FVT|T|RPS|User
+;;      table      FVT|T|RPS|Stream
+;;      table      FVT|T|MemberUserWeight
+;;      table      FVT|T|MemberVault
+;;      table      FVT|T|ForcedFixCount
+;;      table      FVT|T|RewardAggregate
+;;      table      FVT|T|ScoreEntityLink
+;;      table      FVT|T|MultipletFamily
+;;      table      FVT|T|UserPresence
+;;      table      FVT|T|AgencyFee
+;;      table      FVT|T|QualitySplit
+;;      table      FVT|T|DsaOracleConfig
 ;;
 ;; Paste this whole file as ONE transaction. It needs the Ouronet admin signature
 ;; and the `ouronet-ns` namespace, which the first line sets.
@@ -31,37 +35,231 @@
 
 (namespace "ouronet-ns")
 
-;; ===== 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/03_AQP.pact ==============
-;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-;; AcquisitionPoolsV3: already deployed and unchanged -- see LIVE_INTERFACES
+;; ===== 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/04_RPS.pact ==============
+;; net: v1   ·   dev: v2   ;; AcquisitionRewardPerShare V4 -> V5 (2026-10-29): 14 declarations
+;; REMOVED -- the cost/client surface moved to AQP-RPSC (04b_RPSC.pact) to free deploy
+;; bytes for the AQP|SC_NAME reward ladder. See that file's header for the seam.
+(interface AcquisitionRewardPerShareV8
+    @doc "RPS reward-per-share ledger interface (extracted from AQP-FVT, #75). Per-field \
+        \ global/member/user/stream + member-vault + forced-fix readers, the SECURE-composed \
+        \ IMC-gated XE_ writer entrypoints FVT drives, and the royalty-custody XE_/URCi that \
+        \ DSA consumes. Object-returning full-row readers/constructors stay in the RPS module."
+    (defun UC_EmptyOc:object{IgnisCollectorV4.OutputCumulator} ())
+    (defun UCk_MultipletFamily:string (token-0-id:string token-1-id:string token-2-id:string))
+    (defun URC_CollectClaimableRewards:decimal (patron:string pool-id:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string))
+    (defun URC_FvtHasScoreEntityLinks:bool (fvt-id:string))
+    (defun URC_FvtRpsGlobalRowExists:bool (fvt-id:string dptf-id:string))
+    (defun URC_FvtScoreEntityLinkRowExists:bool (fvt-id:string score-entity-id:string))
+    (defun URC_FvtSweepTotalPresent:integer (score-ids:[string]))
+    (defun URC_FvtTier1IndexRps:decimal (fvt-id:string score-entity-id:string dptf-id:string))
+    (defun URC_MultipletFamilyExists:bool (multiplet-family-id:string))
+    (defun URC_ResolveScoreEntityGhostWeight:decimal (score-entity-type:integer score-entity-id:string fvt-class:integer swpair:string))
+    (defun URHC_BuildStakeSettleBundle:object (pool-id:string beneficiary-id:string))
+    (defun URH_FVT-RG|EnabledRewardRows:[string] (fvt-id:string))
+    (defun URH_FvtEnabledScoreEntityIdsForFvt:[string] (fvt-id:string))
+    (defun URH_FvtPresentUsers:[string] (fvt-id:string))
+    (defun URH_FvtStalePresentUsers:[string] (fvt-id:string))
+    (defun UR_FVT-FFC|Count:integer (fvt-id:string dptf-id:string user-id:string))
+    (defun UR_FVT-MF|Active:bool (multiplet-family-id:string))
+    (defun UR_FVT-MV|AvailableRewards:decimal (fvt-id:string score-entity-id:string dptf-id:string))
+    (defun UR_FVT-RG|AvailableRewards:decimal (fvt-id:string dptf-id:string))
+    (defun UR_FVT-RG|MultipletFamilyId:string (fvt-id:string dptf-id:string))
+    (defun UR_FVT-RG|RewardEnabled:bool (fvt-id:string dptf-id:string))
+    (defun UR_FVT-RG|MinInjectAmount:decimal (fvt-id:string dptf-id:string))
+    (defun AA_MigrateMinInject:string ())
+    (defun XE_SetMinInjectAmount:string (fvt-id:string reward-dptf-id:string min-inject-amount:decimal))
+    (defun XE_FixUserFvtDebIn:object{IgnisCollectorV4.OutputCumulator} (fvt-id:string user-id:string members:[string] reward-rows:[string]))
+    (defun UR_FVT-RG|RewardKind:string (fvt-id:string dptf-id:string))
+    (defun UR_FVT-SEL|Enabled:bool (fvt-id:string score-entity-id:string))
+    (defun UR_FVT-SEL|ScoreEntityType:integer (fvt-id:string score-entity-id:string))
+    (defun UR_FVT|FvtClass:integer (fvt-id:string))
+    (defun UR_FVT|MemberLinkCount:integer (fvt-id:string))
+    (defun UR_FVT|MembershipMode:string (fvt-id:string))
+    (defun UR_FVT|Mosaic:bool (fvt-id:string))
+    (defun UR_FVT|OwnerKonto:string (fvt-id:string))
+    (defun XE_BurnRoyalty:object{IgnisCollectorV4.OutputCumulator} (patron:string fvt-id:string reward-dptf-id:string))
+    (defun XE_FuelRoyalty:object{IgnisCollectorV4.OutputCumulator} (patron:string fvt-id:string reward-dptf-id:string swpair:string))
+    (defun XE_FvtSweepRecomputeChunk:object{IgnisCollectorV4.OutputCumulator} (fvt-id:string score-entity-id:string swept-boost-class-id:string users:[string]))
+    (defun XE_SetAgencyFee:string (fvt-id:string score-entity-id:string operator-konto:string fee-per-mille:integer))
+    (defun XE_WithdrawRoyalty:object{IgnisCollectorV4.OutputCumulator} (patron:string fvt-id:string reward-dptf-id:string destination:string))
+    (defun XE_QualitySplit:string (fvt-id:string dptf-id:string mode:string bronze-split:[integer] silver-split:[integer] gold-split:[integer]))
+    (defun XE_FvtForcedFixCount|Zero:string (fvt-id:string dptf-id:string user-id:string))
+    (defun XE_MemberVault|AvailableRewards:string (fvt-id:string score-entity-id:string dptf-id:string available-rewards:decimal))
+    (defun XE_RpsGlobal|AvailableRewards:string (fvt-id:string dptf-id:string available-rewards:decimal))
+    (defun XE_RpsUser|LastRps:string (user-id:string fvt-id:string score-entity-id:string dptf-id:string last-rps:decimal))
+    (defun XE_RpsUser|PendingRewards:string (user-id:string fvt-id:string score-entity-id:string dptf-id:string pending-rewards:decimal))
+    (defun XE_2|SettleMemberTier2:object{IgnisCollectorV4.OutputCumulator} (fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string))
+    (defun XE_AddRewardLink:string (fvt-id:string reward-dptf-id:string segmentation:bool reward-kind:string multiplet-family-id:string))
+    (defun XE_AddScoreEntity:string (fvt-id:string score-entity-type:integer score-entity-id:string swpair:string ghost-weight:decimal))
+    (defun XE_BookCollectUnclaimed:object{IgnisCollectorV4.OutputCumulator} (patron:string pool-id:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string payout:decimal))
+    (defun XE_FixUserFvtDeb:object{IgnisCollectorV4.OutputCumulator} (user-id:string fvt-id:string))
+    (defun XE_FixUserFvtDebPenalizedIn:object{IgnisCollectorV4.OutputCumulator} (fvt-id:string reward-dptf-id:string user-id:string members:[string] reward-rows:[string]))
+    (defun XE_FixUserMemberDeb:object{IgnisCollectorV4.OutputCumulator} (user-id:string fvt-id:string score-entity-type:integer score-entity-id:string))
+    (defun XE_FvtAddStream:object{IgnisCollectorV4.OutputCumulator} (op-key:string patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer))
+    (defun XE_FvtInjectCore:object{IgnisCollectorV4.OutputCumulator} (op-key:string patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal))
+    (defun XE_FvtSweepRecomputeWindow:integer (score-ids:[string] boost-class-id:string win-lo:integer win-hi:integer))
+    (defun XE_IssueMultipletFamily:string (token-0-id:string
+            token-1-id:string
+            token-2-id:string
+            ats-0-1-id:string
+            ats-1-2-id:string))
+    (defun XE_ReleaseStream:object{IgnisCollectorV4.OutputCumulator} (fvt-id:string reward-dptf-id:string))
+    (defun XE_RotateOwnership:string (fvt-id:string new-owner-konto:string))
+    (defun XE_SetMosaic:string (fvt-id:string mosaic:bool))
+    (defun XE_SetSplitMode:string (fvt-id:string split-mode:string))
+    (defun XE_SyncFvtPresence:object{IgnisCollectorV4.OutputCumulator} (beneficiary-id:string distinct-fvts:[string] direction:bool))
+    (defun XE_ToggleRewardLink:string (fvt-id:string reward-dptf-id:string enabled:bool))
+    (defun XE_ToggleScoreEntityLink:string (fvt-id:string score-entity-id:string enabled:bool))
+    (defun XE_TransferRewardDptfFromVault:object{IgnisCollectorV4.OutputCumulator} (patron:string collector:string pool-id:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string))
 
-(module AQP-POOL GOV
-    @doc "Sovereign acquisition-pool module. Owns pool definitions (asset, aqp-class, up to \
-        \ 7 employed scores, stake-enabled/vacate/sweep state, occupancy counts), \
-        \ per-position stake trackers for TF/OF/SF/NF assets, and per-beneficiary balance \
-        \ rollups with anchor-sync counters. Handles pool issuance, add/revoke score, \
-        \ enable/disable staking, custody transfers and anchor sync; stake/unstake token \
-        \ movement and tracker/rollup writes flow through its XE_/XB_ blocks driven by \
-        \ Talos/FVT."
+    ;;<=========================================================================>
+    ;; ADDED 2026-10-12 -- interface-membership sweep (StoicSyntax-Prefixes.md Sec5,
+    ;; owner ruling). Every one of these was already live in the module body; this
+    ;; closes the gap between what the module DOES and what its interface SAYS it does.
+    ;;<=========================================================================>
+    (defun XE_AdmitDelegationMember:string (fvt-id:string triplet-id:string operator:string))
+    (defun XE_BankScorePendingRewards:object{IgnisCollectorV4.OutputCumulator} (beneficiary-id:string pool-id:string plan:object))
+    (defun XE_BookStakeUnclaimedCounts:object{IgnisCollectorV4.OutputCumulator} (beneficiary-id:string pool-id:string settle-bundle:object{AcquisitionSchemasV5.FVT|StakeSettleBundle}))
+    (defun XE_CheckpointStakeRps:object{IgnisCollectorV4.OutputCumulator} (beneficiary-id:string pool-id:string settle-bundle:object{AcquisitionSchemasV5.FVT|StakeSettleBundle}))
+    (defun XE_FvtFixUserChunk:object{IgnisCollectorV4.OutputCumulator} (fvt-id:string reward-dptf-id:string users:[string]))
+    (defun XE_SetExternalOracle:string (on:bool))
+    (defun XE_SetMemberCapture:string (fvt-id:string score-entity-id:string capture-units:decimal capture-weight:decimal oracle-ts:time))
+    (defun XE_SetMemberDelegation:string (fvt-id:string score-entity-id:string delegation:bool))
+    (defun XE_SetOracleValidity:string (seconds:integer))
+    (defun XE_SweepSyncTripletLaneWeights:object{IgnisCollectorV4.OutputCumulator} (beneficiary-id:string fvt-id:string score-entity-id:string))
+    (defun XE_FvtRewardAggregate:string (fvt-id:string row:object{AcquisitionSchemasV5.FVT|RewardAggregate}))
+    (defun XE_RpsGlobal:string (fvt-id:string dptf-id:string row:object{AcquisitionSchemasV5.FVT|RPS|Global}))
+    (defun XE_ScoreEntityLink:string (fvt-id:string score-entity-id:string row:object{AcquisitionSchemasV5.FVT|ScoreEntityLink}))
+    (defun XE_RpsPreScore:object{IgnisCollectorV4.OutputCumulator} (beneficiary-id:string pool-id:string settle-bundle:object{AcquisitionSchemasV5.FVT|StakeSettleBundle}))
+    (defun XE_SyncFvtTotalDebMirrors:object{IgnisCollectorV4.OutputCumulator} (pre-member-debs:[object{AcquisitionSchemasV5.FVT|MemberPreDeb}]))
+    (defun XE_SyncTripletLaneWeights:object{IgnisCollectorV4.OutputCumulator} (beneficiary-id:string settle-plans:[object{AcquisitionSchemasV5.FVT|SettleScorePlan}]))
+    (defun UC_ComputeInjectGainedRps:decimal (reward-amount:decimal denominator:decimal))
+    (defun UC_GasPrice:decimal (full-price:decimal trigger:bool))
+    (defun UC_PerMilleRow:bool (row:[integer]))
+    (defun UCk_ForcedFixCount:string (fvt-id:string dptf-id:string user-id:string))
+    (defun UCk_MemberUserWeight:string (user-id:string fvt-id:string score-entity-id:string))
+    (defun UCk_RpsGlobal:string (fvt-id:string dptf-id:string))
+    (defun UCk_RpsMember:string (fvt-id:string score-entity-id:string dptf-id:string))
+    (defun UCk_RpsStream:string (fvt-id:string dptf-id:string position:integer))
+    (defun UCk_RpsUser:string (user-id:string fvt-id:string score-entity-id:string dptf-id:string))
+    (defun UCk_ScoreEntityLink:string (fvt-id:string score-entity-id:string))
+    (defun UCk_UserPresence:string (fvt-id:string ouronet-account:string))
+    (defun UEV_AddRewardLinkContext (fvt-id:string reward-dptf-id:string reward-kind:string multiplet-family-id:string))
+    (defun UEV_QualitySplitContext (fvt-id:string reward-dptf-id:string mode:string bronze-split:[integer] silver-split:[integer] gold-split:[integer]))
+    (defun UEV_TrueFungibleStakeBeneficiaryAccount (beneficiary-id:string))
+    (defun UEV_TrueFungibleStakeNotReserved (dptf-id:string))
+    (defun UEV_TrueFungibleStakeOwnerAccount (owner-id:string))
+    (defun UR_ExternalOracle:bool ())
+    (defun UR_FVT-AF|FeePerMille:integer (fvt-id:string score-entity-id:string))
+    (defun UR_FVT-AF|Operator:string (fvt-id:string score-entity-id:string))
+    (defun UR_FVT-MF|Ats01Id:string (multiplet-family-id:string))
+    (defun UR_FVT-MF|Ats12Id:string (multiplet-family-id:string))
+    (defun UR_FVT-MF|MultipletFamilyId:string (multiplet-family-id:string))
+    (defun UR_FVT-MF|Rank:integer (multiplet-family-id:string))
+    (defun UR_FVT-MF|Token0Id:string (multiplet-family-id:string))
+    (defun UR_FVT-MF|Token1Id:string (multiplet-family-id:string))
+    (defun UR_FVT-MF|Token2Id:string (multiplet-family-id:string))
+    (defun UR_FVT-MUW|ContribWeight:decimal (user-id:string fvt-id:string score-entity-id:string))
+    (defun UR_FVT-MV|UnclaimedCount:integer (fvt-id:string score-entity-id:string dptf-id:string))
+    (defun UR_FVT-QS|BronzeSplit:[integer] (fvt-id:string dptf-id:string))
+    (defun UR_FVT-QS|GoldSplit:[integer] (fvt-id:string dptf-id:string))
+    (defun UR_FVT-QS|Mode:string (fvt-id:string dptf-id:string))
+    (defun UR_FVT-QS|SilverSplit:[integer] (fvt-id:string dptf-id:string))
+    (defun UR_FVT-RG|CurrentRps:decimal (fvt-id:string dptf-id:string))
+    (defun UR_FVT-RG|DptfId:string (fvt-id:string dptf-id:string))
+    (defun UR_FVT-RG|FvtId:string (fvt-id:string dptf-id:string))
+    (defun UR_FVT-RG|RoyaltyRewards:decimal (fvt-id:string dptf-id:string))
+    (defun UR_FVT-RG|Segmentation:bool (fvt-id:string dptf-id:string))
+    (defun UR_FVT-RG|StreamCount:integer (fvt-id:string dptf-id:string))
+    (defun UR_FVT-RG|StreamLastRelease:time (fvt-id:string dptf-id:string))
+    (defun UR_FVT-RG|StreamUnreleased:decimal (fvt-id:string dptf-id:string))
+    (defun UR_FVT-RG|UnclaimedCount:integer (fvt-id:string dptf-id:string))
+    (defun UR_FVT-RG|ZombieRewards:decimal (fvt-id:string dptf-id:string))
+    (defun UR_FVT-RM|DptfId:string (fvt-id:string score-entity-id:string dptf-id:string))
+    (defun UR_FVT-RM|FvtId:string (fvt-id:string score-entity-id:string dptf-id:string))
+    (defun UR_FVT-RM|LastFarmRpsG:decimal (fvt-id:string score-entity-id:string dptf-id:string))
+    (defun UR_FVT-RM|MemberDebRps:decimal (fvt-id:string score-entity-id:string dptf-id:string))
+    (defun UR_FVT-RM|PendingMemberRewards:decimal (fvt-id:string score-entity-id:string dptf-id:string))
+    (defun UR_FVT-RM|ScoreEntityId:string (fvt-id:string score-entity-id:string dptf-id:string))
+    (defun UR_FVT-RU|DptfId:string (user-id:string fvt-id:string score-entity-id:string dptf-id:string))
+    (defun UR_FVT-RU|FvtId:string (user-id:string fvt-id:string score-entity-id:string dptf-id:string))
+    (defun UR_FVT-RU|LastRps:decimal (user-id:string fvt-id:string score-entity-id:string dptf-id:string))
+    (defun UR_FVT-RU|PendingRewards:decimal (user-id:string fvt-id:string score-entity-id:string dptf-id:string))
+    (defun UR_FVT-RU|ScoreEntityId:string (user-id:string fvt-id:string score-entity-id:string dptf-id:string))
+    (defun UR_FVT-RU|UserId:string (user-id:string fvt-id:string score-entity-id:string dptf-id:string))
+    (defun UR_FVT-SEL|CaptureUnits:decimal (fvt-id:string score-entity-id:string))
+    (defun UR_FVT-SEL|CaptureWeight:decimal (fvt-id:string score-entity-id:string))
+    (defun UR_FVT-SEL|Delegation:bool (fvt-id:string score-entity-id:string))
+    (defun UR_FVT-SEL|FvtId:string (fvt-id:string score-entity-id:string))
+    (defun UR_FVT-SEL|GhostTvlWeight:decimal (fvt-id:string score-entity-id:string))
+    (defun UR_FVT-SEL|OracleTs:time (fvt-id:string score-entity-id:string))
+    (defun UR_FVT-SEL|ScoreEntityId:string (fvt-id:string score-entity-id:string))
+    (defun UR_FVT-SEL|Swpair:string (fvt-id:string score-entity-id:string))
+    (defun UR_FVT-SEL|TotalLaneWeight:decimal (fvt-id:string score-entity-id:string))
+    (defun UR_FVT-UP|IsPresent:bool (fvt-id:string ouronet-account:string))
+    (defun UR_FVT|EnabledRewardCount:integer (fvt-id:string))
+    (defun UR_FVT|SplitMode:string (fvt-id:string))
+    (defun UR_FVT|TotalBaseScore:decimal (fvt-id:string))
+    (defun UR_FVT|TotalBoostedScore:decimal (fvt-id:string))
+    (defun UR_FVT|TotalDebScore:decimal (fvt-id:string))
+    (defun UR_FVT|TotalGhostTvlWeight:decimal (fvt-id:string))
+    (defun UR_FVT|TotalNzsCount:integer (fvt-id:string))
+    (defun UR_OracleValidity:integer ())
+)
+
+
+;; ==============================================================================
+;; THIS MODULE SHOULD HAVE BEEN CALLED `AQP-RPS`, AND NO LONGER CAN BE.
+;;
+;; It is the ONE member of the ten-module AQP family without the family prefix:
+;;   AQP-ANK  AQP-SCORE  AQP-POOL  AQP-FVT  AQP-VCT  AQP-DSA  AQP-INFO
+;;   AQP-RPSC  MTX-AQP  ...  and `RPS`.
+;; The name was a mistake at issue, and it is now permanent. Recorded here rather
+;; than left for the next reader to notice and wonder whether it is fixable.
+;;
+;; WHY IT CANNOT BE FIXED. A Pact module's name IS its identity, and `deftable`
+;; binds storage to it: redeploying as `AQP-RPS` would create EMPTY tables beside
+;; the live ones. Modules cannot be deleted in Pact, so `RPS` would persist either
+;; way. There is no database-level rename — this is consensus state, with no
+;; administrative channel to rewrite a module name.
+;;
+;; WHY MIGRATING IS WORSE THAN IT SOUNDS. Copying the rows out needs a
+;; cross-module `keys`/`select`, which Pact admin-gates on the OWNING module —
+;; `_conformance.py`'s `cross-module-scan` rule records the consequence: it
+;; "aborts with `Module admin necessary for operation but has not been acquired`
+;; for every caller on every chain -- there is no signer who can satisfy it". So
+;; the exporters would have to be added INSIDE this module (one more RPS deploy),
+;; every consumer re-pointed, and `RPS` would remain on chain forever as a dead
+;; shell. A great deal of risk against a live reward ledger, for a prefix.
+;;
+;; THE PRECEDENT IS ALREADY IN THIS TREE. DPMF was retired by ARCHIVE MODE rather
+;; than replacement, for exactly this reason — see StoicSyntax-Prefixes.md §7.21
+;; and CLAUDE.md: "a deployed module cannot be removed in Pact, so the live copy
+;; stays as it is". Keep the readers, drop the writers, bump the interface; the
+;; name survives regardless.
+;;
+;; OWNER RULING, 2026-10-29: leave it. The sibling split out of it on the same day
+;; carries the CORRECT name, `AQP-RPSC` (04b_RPSC.pact), so the family convention
+;; is right from here on and this file is the single documented exception.
+;; ==============================================================================
+(module RPS GOV
+    @doc "Reward-per-share (RPS) ledger/accountant extracted from AQP-FVT (task #75). \
+        \ NAME: should have been AQP-RPS -- see the block above for why it cannot be. \
+        \ Owns the RPS global/member/user/stream tables, member vaults, member-user \
+        \ weight mirror, forced-fix counts and royalty custody, plus the settle / inject / \
+        \ drip / deb-fix math. Leaf module: FVT drives it via XE_ entrypoints; structure \
+        \ fields are arg-passed so RPS reads no FVT table."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
-    ;;
     (implements OuronetPolicyV2)
-    (implements AcquisitionPoolsV3)
+    (implements AcquisitionRewardPerShareV8)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
-    ;;{G1}  constants
-    ;(implements DemiourgosPactDigitalCollectibles-UtilityPrototype)
-    ;;
-    (defconst GOV|MD_AQP                                (keyset-ref-guard (GOV|Demiurgoi)))
-    ;;{G2}  schemas
-    ;;{G3}  tables
-    ;;{G4}  capabilities
-    (defcap GOV ()                                      (compose-capability (GOV|AQP_ADMIN)))
-    (defcap GOV|AQP_ADMIN ()                            (enforce-guard GOV|MD_AQP))
-    ;;{G5}  functions
+    (defconst GOV|MD_RPS                                (keyset-ref-guard (GOV|Demiurgoi)))
+    (defcap GOV ()                                      (compose-capability (GOV|RPS_ADMIN)))
+    (defcap GOV|RPS_ADMIN ()                            (enforce-guard GOV|MD_RPS))
     (defun GOV|Demiurgoi ()
         (let
             (
@@ -70,29 +268,22 @@
             (ref-DALOS::GOV|Demiurgoi)
         )
     )
-
     ;;<=========================================================================>
     ;;{2}  POLICY
-    ;;{P1}  constants
     (defconst P|I                                       (P|Info))
-    ;;{P2}  schemas
-    ;;{P3}  tables
-    ;;
     (deftable P|T:{OuronetPolicyV2.P|S})
     (deftable P|MT:{OuronetPolicyV2.P|MS})
-    ;;{P4}  capabilities
-    (defcap P|AQP|CALLER ()
+    (defcap P|RPS|CALLER ()
         true
     )
-    (defcap P|AQP|REMOTE-GOV ()
-        @doc "Reserved local remote-gov slot — forward modules register P|*|REMOTE-GOV on P|T (FVT|RemoteAqpGov, VCT|RemoteAqpGov)."
+    (defcap P|RPS|REMOTE-GOV ()
+        @doc "Remote governor for AQP|SC_NAME vault TFT legs (inject/collect). Registered on AQP-POOL P|T as FVT|RemoteAqpGov."
         true
     )
     (defcap P|SECURE-CALLER ()
-        (compose-capability (P|AQP|CALLER))
+        (compose-capability (P|RPS|CALLER))
         (compose-capability (SECURE))
     )
-    ;;{P5}  functions
     (defun P|Info ()
         (let
             (
@@ -130,8 +321,37 @@
             (ref-U|G::UEV_Any (P|UR_IMP))
         )
     )
+    (defun AA_MigrateMinInject:string ()
+        @doc "ONE-TIME BACKFILL for the `min-inject-amount` field added to FVT|RPS|Global on \
+            \ 2026-10-23. HEAVY (`AA_`): walks every reward-lane row via `keys`. \
+            \ \
+            \ WHY A REAL PASS AND NOT A DEFAULTING READ. Pact's `with-default-read` supplies its \
+            \ default when the ROW is absent, not when a row is present but predates a field, so \
+            \ every lane written before this upgrade would fault the first time anything read the \
+            \ new field. The honest fix is to give those rows the value, which is what this does. \
+            \ \
+            \ IDEMPOTENT: writing the default over a row that already carries it is a no-op in \
+            \ effect, so re-running after a partial run is safe. It is NOT conditional on the \
+            \ field being absent, because testing for absence is the thing Pact will not let us \
+            \ do on a typed row -- so it overwrites unconditionally, and MUST therefore run \
+            \ BEFORE any owner sets a custom floor. It ships as a step of this deploy round for \
+            \ exactly that reason. \
+            \ \
+            \ If the lane count ever outgrows one transaction, this needs a paginated twin; at \
+            \ the time of writing the whole table is small enough that one pass is correct."
+        (with-capability (GOV|RPS_ADMIN)
+            (map
+                (lambda (k:string)
+                    (update FVT|T|RPS|Global k {"min-inject-amount": CT_DEFAULT_MIN_INJECT})
+                )
+                (keys FVT|T|RPS|Global)
+            )
+            (format "Backfilled min-inject-amount={} on {} reward-lane row(s)."
+                [CT_DEFAULT_MIN_INJECT (length (keys FVT|T|RPS|Global))])
+        )
+    )
     (defun P|A_Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|AQP_ADMIN)
+        (with-capability (GOV|RPS_ADMIN)
             (write P|T policy-name
                 {"policy" : policy-guard}
             )
@@ -141,7 +361,7 @@
         @doc "Registers <policy-guard> as a trusted inter-module caller of this module. \
             \ IDEMPOTENT: a guard already in the chain is left alone rather than appended \
             \ a second time. See OuronetPolicyV2 for why that is load-bearing."
-        (with-capability (GOV|AQP_ADMIN)
+        (with-capability (GOV|RPS_ADMIN)
             (let
                 (
                     (ref-U|LST:module{StringProcessorV2} U|LST)
@@ -167,7 +387,7 @@
         @doc "Revokes <policy-guard> from this module's guard chain. Removes EVERY occurrence, so \
             \ it doubles as the cleanup for duplicates left behind by the pre-idempotence append. \
             \ Refuses to drop this module's own SECURE seed -- see OuronetPolicyV2."
-        (with-capability (GOV|AQP_ADMIN)
+        (with-capability (GOV|RPS_ADMIN)
             (let
                 (
                     (ref-U|LST:module{StringProcessorV2} U|LST)
@@ -189,7 +409,7 @@
         @doc "Replaces this module's whole guard chain in one write -- the recovery hatch. \
             \ Deduplicates, and enforces that the module's own SECURE seed survives: without it \
             \ the module can no longer reach its own P|UEV_IMC-gated functions."
-        (with-capability (GOV|AQP_ADMIN)
+        (with-capability (GOV|RPS_ADMIN)
             (let
                 (
                     (dg:guard (create-capability-guard (SECURE)))
@@ -202,497 +422,91 @@
         )
     )
     (defun P|A_Define ()
-        @doc "Post-deploy IMC wiring (AQP-BOOT Step 0). TFT + DPOF vault transfer/receive on AQP|SC_NAME."
+        @doc "Post-deploy (AQP-BOOT Step 0): FVT SECURE on AQP-SCORE + AQP-POOL IMP; \
+            \ P|RPS|CALLER on TFT/DPOF/DPDC-T; FVT|RemoteAqpGov on AQP-POOL for inject/collect vault legs. \
+            \ Vacate recipes live in AQP-VCT."
         (let
             (
+                (ref-P|SCR:module{OuronetPolicyV2} AQP-SCORE)
+                (ref-P|AQP:module{OuronetPolicyV2} AQP-POOL)
                 (ref-P|TFT:module{OuronetPolicyV2} TFT)
                 (ref-P|DPOF:module{OuronetPolicyV2} DPOF)
                 (ref-P|DPDC-T:module{OuronetPolicyV2} DPDC-T)
+                (ref-P|DPTF:module{OuronetPolicyV2} DPTF)
+                (ref-P|SWPLC:module{OuronetPolicyV2} SWPLC)
+                (ref-P|ORBR:module{OuronetPolicyV2} OUROBOROS)
+                (ref-P|ATSU:module{OuronetPolicyV2} ATSU)
                 ;;
-                (ref-P|IGNIS:module{OuronetPolicyV2} IGNIS)
-                (mg:guard (create-capability-guard (P|AQP|CALLER)))
+                (dg:guard (create-capability-guard (SECURE)))
+                (mg:guard (create-capability-guard (P|RPS|CALLER)))
+                (rg:guard (create-capability-guard (P|RPS|REMOTE-GOV)))
             )
-            ;; AQP-POOL → TFT: XE_TrueFungibleTransfer calls TFT::C_Transfer; TFT P|UEV_IMC requires this guard.
+            (ref-P|SCR::P|A_AddIMP dg)
+            (ref-P|AQP::P|A_AddIMP dg)
+            (ref-P|AQP::P|A_Add "FVT|RemoteAqpGov" rg)
             (ref-P|TFT::P|A_AddIMP mg)
-            ;; AQP-POOL → DPOF: XE_OrtoFungibleTransfer calls DPOF::C_Transfer; vacate batch is AQP-VCT → DPOF::C_BulkTransfer.
             (ref-P|DPOF::P|A_AddIMP mg)
-            ;; AQP-POOL → DPDC-T: XE_CollectableTransfer calls DPDC-T::C_Transfer; vacate batch is AQP-VCT → DPDC-T::C_BulkTransfer.
             (ref-P|DPDC-T::P|A_AddIMP mg)
-            (ref-P|IGNIS::P|A_AddIMP mg)
-            true
+            ;; DPTF: FVT burns the royalty pool in place from AQP|SC_NAME (DSA royalty burn disposal).
+            (ref-P|DPTF::P|A_AddIMP mg)
+            ;; SWPLC: FVT fuels a swpair with the royalty pool from AQP|SC_NAME (DSA royalty fuel disposal).
+            (ref-P|SWPLC::P|A_AddIMP mg)
+            ;; OUROBOROS: FVT normalizes an IGNIS royalty leg to OURO (XB_Compress) before disposal.
+            (ref-P|ORBR::P|A_AddIMP mg)
+            (ref-P|ATSU::P|A_AddIMP mg)
         )
     )
-
     ;;<=========================================================================>
     ;;{3}  CST
-    ;;{3.1}  constants
+    (defconst CT_FVT_RPS_PREC 48)
+    (defconst STREAM_EPOCH:time (time "1970-01-01T00:00:00Z")
+        "Default stream-last-release for a lane with no live stream (irrelevant while stream-count = 0).")
+    (defconst CT_FORCED_FIX_RATE:decimal 10.0)
+    (defconst CT_DEFAULT_MIN_INJECT:decimal 1.0
+        "Per-lane injection floor used when the lane's owner has never set one. Read through \
+        \ `with-default-read`, so it applies to every pre-existing lane with no migration.")
     (defconst BAR                                       (CT_Bar))
-    (defconst GAS|ISSUE-POOL                        (let ((ref-IGNIS:module{IgnisCollectorV4} IGNIS)) (ref-IGNIS::UC_IgnisDeter "issue-pool")))
-    (defconst GAS|ADD-SCORE                         (let ((ref-IGNIS:module{IgnisCollectorV4} IGNIS)) (ref-IGNIS::UC_IgnisDeter "add-score")))
-    (defconst GAS|REVOKE-SCORE                      (let ((ref-IGNIS:module{IgnisCollectorV4} IGNIS)) (ref-IGNIS::UC_IgnisDeter "revoke-score")))
-    (defconst GAS|SET-POOL-STAKE                    (let ((ref-IGNIS:module{IgnisCollectorV4} IGNIS)) (ref-IGNIS::UC_IgnisDeter "pool-stake-toggle")))
-    (defconst GAS|SYNC-TF-ANCHORS                   (let ((ref-IGNIS:module{IgnisCollectorV4} IGNIS)) (ref-IGNIS::UC_IgnisDeter "sync-anchors")))
-    (defconst GAS|SYNC-COLLECTABLE-ANCHORS          (let ((ref-IGNIS:module{IgnisCollectorV4} IGNIS)) (ref-IGNIS::UC_IgnisDeter "sync-anchors")))
-    (defconst EOC                                       (CT_EmptyCumulator))
     (defconst AQP|SC_NAME                               (CT_AqpScName))
-    ;;{3.2}  schemas
-    ;;
-    ;; [1] AQP|T|Pool
-    ;;
-    ;; [2] AQP|T|DPTFTracker
-    ;;
-    ;; [3] AQP|T|DPOFTracker
-    ;;
-    ;; [4] AQP|T|DPSFTracker
-    ;;
-    ;; [5] AQP|T|DPNFTracker
-    ;;
-    ;; [8] AQP|T|BenDptfTotal
-    ;;Ben × asset rollups (pool-agnostic totals for ANK sync — see README_AQP.md § Anchor sync)
-    ;;
-    ;; [9] AQP|T|BenDpsfNonceTotal
-    ;;
-    ;; [10] AQP|T|BenDpnfNonceTotal
-    ;;
-    ;; [11] AQP|T|BenDpsfAnkMeta
-    ;;
-    ;; [12] AQP|T|BenDpnfAnkMeta
-    ;;
-    ;; [13] AQP|T|UserOccupancy
-    ;;{3.3}  tables
-    ;;
-    (deftable AQP|T|Pool:{AcquisitionSchemasV3.AQP|Schema})                                  ;;1] Key = <Pool-ID>
-    (deftable AQP|T|DPTFTracker:{AcquisitionSchemasV3.AQP|TrueFungibleTracker})              ;;2] Key = <Pool-ID> | <DPTF-ID> | <Owner-ID> | <Beneficiary-ID>
-    (deftable AQP|T|DPOFTracker:{AcquisitionSchemasV3.AQP|OrtoFungibleTracker})              ;;3] Key = <Pool-ID> | <DPOF-ID> | <Owner-ID> | <Beneficiary-ID> | <Nonce>
-    (deftable AQP|T|DPSFTracker:{AcquisitionSchemasV3.AQP|SemiFungibleTracker})              ;;4] Key = <Pool-ID> | <DPSF-ID> | <Owner-ID> | <Beneficiary-ID> | <Nonce>
-    (deftable AQP|T|DPNFTracker:{AcquisitionSchemasV3.AQP|NonFungibleTracker})               ;;5] Key = <Pool-ID> | <DPNF-ID> | <Owner-ID> | <Beneficiary-ID> | <Nonce>
-    (deftable AQP|T|BenDptfTotal:{AcquisitionSchemasV3.AQP|BenDptfTotal})                    ;;8] Key = <Beneficiary-ID> | <DPTF-ID>
-    (deftable AQP|T|BenDpsfNonceTotal:{AcquisitionSchemasV3.AQP|BenDpsfNonceTotal})          ;;9] Key = <Beneficiary-ID> | <DPSF-ID> | <Nonce>
-    (deftable AQP|T|BenDpnfNonceTotal:{AcquisitionSchemasV3.AQP|BenDpnfNonceTotal})          ;;10] Key = <Beneficiary-ID> | <DPNF-ID> | <Nonce>
-    (deftable AQP|T|BenDpsfAnkMeta:{AcquisitionSchemasV3.AQP|BenDpsfAnkMeta})                ;;11] Key = <Beneficiary-ID> | <DPSF-ID>
-    (deftable AQP|T|BenDpnfAnkMeta:{AcquisitionSchemasV3.AQP|BenDpnfAnkMeta})                ;;12] Key = <Beneficiary-ID> | <DPNF-ID>
-    (deftable AQP|T|UserOccupancy:{AcquisitionSchemasV3.AQP|UserOccupancy})                  ;;13] Key = <Pool-ID> | <Beneficiary-ID>
-
-    ;;<=========================================================================>
-    ;;{4}  CAPABILITIES
-    ;;{C1}  Trivial [bronze]
-    ;;
-    (defcap SECURE ()
-        true
-    )
-    ;;{C2}  Simple
-    (defcap AQP|GOV ()
-        @doc "Governor capability for the AQP|SC_NAME smart DALOS account (TFT/DPOF/DPDC vault send and receive). \
-            \ Composed only from this module — never compose AQP-ANK.AQP|GOV cross-module."
-        true
-    )
-    ;;{C3}  Composed
-    (defcap AQP|C>ISSUE-POOL
-        (executor:string pool-name:string asset-id:string aqp-class:integer)
-        @doc "Issue one acquisition pool (single @event). Validates pool-name, class, and asset-id; \
-            \ enforces canonical asset ownership from aqp-class + asset-id; composes SECURE for XI_IssuePool."
-        @event
-        (let
-            (
-                (ref-U|ATS:module{UtilityAtsV3} U|ATS)
-            )
-            ;;1] pool-name is a valid autostake index (unique pool id stem)
-            (ref-U|ATS::UEV_AutostakeIndex pool-name)
-            ;;2] aqp-class in 0..4 and asset-id matches class rules (native id, not a special prefix)
-            (UEV_IssuePoolClassAndAsset aqp-class asset-id)
-            ;;3] tx sender must own the canonical asset behind this pool class + asset-id
-            (CAP_AqpAssetOwner aqp-class asset-id)
-            (UEV_ExecutorIzAqpAssetOwner executor aqp-class asset-id)
-            (compose-capability (SECURE))
-        )
-    )
-    (defcap AQP|C>ADD-SCORE
-        (executor:string pool-id:string score-id:string slot-index:integer)
-        @doc "Assign score-id to score slot slot-index (first free; computed once in C_AddScore). Validates \
-            \ slot claim, pool/score pairing; CAP_PoolOwner. Score owner in SCR|XE>CREATE-AQPOOL-LINK on XE. \
-            \ Composes SECURE for XI_AddScoreToPool."
-        @event
-        (UEV_AddScorePoolAndScore pool-id score-id slot-index)
-        (CAP_PoolOwner pool-id)
-        (UEV_ExecutorIzPoolOwner executor pool-id)
-        (compose-capability (SECURE))
-    )
-    (defcap AQP|C>REVOKE-SCORE
-        (executor:string pool-id:string score-id:string slot-index:integer)
-        @doc "Revoke score-id from score slot slot-index (computed once in C_RevokeScore). Validates \
-            \ slot claim, zero totals, fvt-link BAR, boost-link dependents; CAP_PoolOwner. Score owner in \
-            \ SCR|XE>REVOKE-AQPOOL-LINK on XE. Composes SECURE for XI_RevokeScoreFromPool."
-        @event
-        (UEV_RevokeScorePoolAndScore pool-id score-id slot-index)
-        (CAP_PoolOwner pool-id)
-        (UEV_ExecutorIzPoolOwner executor pool-id)
-        (compose-capability (SECURE))
-    )
-    (defcap AQP|C>DISABLE-POOL-STAKE
-        (executor:string pool-id:string)
-        @doc "Pool owner pauses new stakes (stake-enabled → false). Idempotent when already false. \
-            \ Unstake and vacate are unaffected."
-        @event
-        (CAP_PoolOwner pool-id)
-        (UEV_ExecutorIzPoolOwner executor pool-id)
-        (compose-capability (SECURE))
-    )
-    (defcap AQP|C>ENABLE-POOL-STAKE
-        (executor:string pool-id:string)
-        @doc "Pool owner re-enables new stakes (stake-enabled → true). BLOCKED while a vacate session is in \
-            \ progress — the owner must finish the vacate or C_AbortVacate first (audit H2 / fix #5). \
-            \ Idempotent when already true; admission still requires ≥1 employed score and FVT pipeline ready."
-        @event
-        (enforce
-            (not (UR_AQP|PoolVacateInProgress pool-id))
-            "Cannot enable pool stake while a vacate is in progress; finish or abort the vacate first"
-        )
-        (CAP_PoolOwner pool-id)
-        (UEV_ExecutorIzPoolOwner executor pool-id)
-        (compose-capability (SECURE))
-    )
-    (defcap AQP|XE>TRUE-FUNGIBLE-POOL-CUSTODY
-        (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
-        @doc "Forward-only (FVT::CC_TrueFungibleStakeFlow phase 1]): validation for XE_TrueFungibleTransfer. \
-            \ Pool/beneficiary/tracker/rollup rules here; dptf-id/amount/debit via TFT::C_Transfer. \
-            \ CAP_StakeOwner (owner wallet); compose P|AQP|CALLER (TFT IMC); compose AQP|GOV (AQP|SC_NAME smart account — \
-            \ send and receive both require governor proof). XI_* writers have no enforce. Not @event — P|UEV_IMC on XE entry."
-        (let
-            (
-                (staked-bal:decimal (UR_AQP|DPTFTrackerBalance pool-id dptf-id owner-id beneficiary-id))
-                (rollup-bal:decimal (UR_AQP|BenDptfTotalBalance beneficiary-id dptf-id))
-                (class-ok:bool (URC_StakeTrueFungiblePoolClassOk pool-id))
-                (stake-admission-ok:bool (if direction (URC_PoolStakeAdmissionOk pool-id) (URC_PoolUnstakeAdmissionOk pool-id)))
-                (dptf-ok:bool (URC_StakeTrueFungibleDptfMatchesPool pool-id dptf-id))
-                (tracker-ok:bool (or direction (>= staked-bal amount)))
-                (rollup-ok:bool (or direction (>= rollup-bal amount)))
-            )
-            (enforce
-                (fold (and) true [class-ok stake-admission-ok dptf-ok tracker-ok rollup-ok])
-                "Invalid TF pool custody: pool class/stake admission/dptf-id or insufficient staked/rollup balance"
-            )
-            (UEV_StakeBeneficiaryAccount beneficiary-id)
-            (CAP_StakeOwner owner-id)
-            (compose-capability (P|AQP|CALLER))
-            (compose-capability (AQP|GOV))
-            (compose-capability (SECURE))
-        )
-    )
-    (defcap AQP|XE>ORTO-FUNGIBLE-POOL-CUSTODY
-        (
-            pool-id:string
-            owner-id:string
-            beneficiary-id:string
-            dpof-id:string
-            nonces:[integer]
-            nonce-amounts:[decimal]
-            direction:bool
-        )
-        @doc "Forward-only (FVT::CC_OrtoFungibleStakeFlow phase 1]): validation for XE_OrtoFungibleTransfer. \
-            \ Whole-nonce DPOF::C_Transfer only. CAP_StakeOwner; compose P|AQP|CALLER + AQP|GOV for vault custody."
-        (let
-            (
-                (stake-admission-ok:bool (if direction (URC_PoolStakeAdmissionOk pool-id) (URC_PoolUnstakeAdmissionOk pool-id)))
-                (class-ok:bool (URC_StakeOrtoFungiblePoolClassOk pool-id))
-                (dpof-ok:bool (URC_StakeOrtoFungibleDpofMatchesPool pool-id dpof-id))
-                ;; L1 #16: no whole-nonce-amount check — DPOF::C_Transfer moves WHOLE nonces (ignores amounts),
-                ;; and every caller sources nonce-amounts from UR_NoncesSupplies, so "amount == nonce supply" was a
-                ;; tautology. Whole-nonce is a structural invariant of the token transfer, not a cap-level check.
-                (tracker-ok:bool
-                    (if direction
-                        true
-                        (URC_OrtoUnstakeNoncesSufficient pool-id dpof-id owner-id beneficiary-id nonces nonce-amounts)
-                    )
-                )
-                (l-n:integer (length nonces))
-                (l-a:integer (length nonce-amounts))
-            )
-            (enforce
-                (fold (and) true [(> l-n 0) (= l-n l-a) stake-admission-ok class-ok dpof-ok tracker-ok])
-                "Invalid OF pool custody: pool class/dpof-id, equal nonce/amount length, stake admission, or insufficient tracker balance"
-            )
-            (if direction
-                (let
-                    (
-                        (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
-                    )
-                    (ref-DPOF::UEV_NoncesToAccount dpof-id owner-id nonces)
-                    (ref-DPOF::UEV_NoncesCirculating dpof-id nonces)
-                    (map
-                        (lambda (idx:integer)
-                            (ref-DPOF::UEV_Amount dpof-id (at idx nonce-amounts))
-                        )
-                        (enumerate 0 (- l-n 1))
-                    )
-                )
-                true
-            )
-            (UEV_StakeOrtoFungibleDpofLeg dpof-id)
-            ;; M5: beneficiary account must exist BOTH directions (owner may stake for self OR a foreign beneficiary;
-            ;; unstake removes that exact (owner, beneficiary) row). Mirror TF custody cap.
-            (UEV_StakeBeneficiaryAccount beneficiary-id)
-            (CAP_StakeOwner owner-id)
-            (compose-capability (P|AQP|CALLER))
-            (compose-capability (AQP|GOV))
-            (compose-capability (SECURE))
-        )
-    )
-    (defcap AQP|XE>COLLECTABLE-POOL-CUSTODY
-        (
-            pool-id:string
-            owner-id:string
-            beneficiary-id:string
-            collectable-id:string
-            son:bool
-            nonces:[integer]
-            nonce-amounts:[integer]
-            direction:bool
-        )
-        @doc "Forward-only (FVT::CC_CollectableStakeFlow phase 1]): DPDC::C_Transfer + tracker validation. \
-            \ son=true DPSF (class-3 pool); son=false DPNF (class-4 pool)."
-        (let
-            (
-                (stake-admission-ok:bool (if direction (URC_PoolStakeAdmissionOk pool-id) (URC_PoolUnstakeAdmissionOk pool-id)))
-                (class-ok:bool (URC_StakeCollectablePoolClassOk pool-id son))
-                (collectable-ok:bool (URC_StakeCollectableMatchesPool pool-id collectable-id))
-                (tracker-ok:bool
-                    (if direction
-                        true
-                        (URC_CollectableUnstakeNoncesSufficient
-                            pool-id collectable-id son owner-id beneficiary-id nonces nonce-amounts
-                        )
-                    )
-                )
-                (rollup-ok:bool
-                    (if direction
-                        true
-                        (URC_CollectableUnstakeRollupSufficient
-                            pool-id collectable-id son owner-id beneficiary-id nonces nonce-amounts
-                        )
-                    )
-                )
-                (l-n:integer (length nonces))
-                (l-a:integer (length nonce-amounts))
-            )
-            (enforce
-                (fold (and) true [(> l-n 0) (= l-n l-a) stake-admission-ok class-ok collectable-ok tracker-ok rollup-ok])
-                "Invalid collectable pool custody: pool class/collectable-id, stake admission, or insufficient tracker balance"
-            )
-            (if direction
-                (let
-                    (
-                        (ref-DPDC:module{DpdcV3} DPDC)
-                    )
-                    (ref-DPDC::UEV_NonceQuantityInclusionMapper owner-id collectable-id son nonces nonce-amounts)
-                )
-                true
-            )
-            (UEV_StakeCollectableLeg collectable-id son)
-            ;; M5: beneficiary account must exist BOTH directions (self OR foreign beneficiary). Mirror TF custody cap.
-            (UEV_StakeBeneficiaryAccount beneficiary-id)
-            (CAP_StakeOwner owner-id)
-            (compose-capability (P|AQP|CALLER))
-            (compose-capability (AQP|GOV))
-            (compose-capability (SECURE))
-        )
-    )
-    (defcap AQP|XE>SET-BENEFICIARY-DPTF-ANK-SYNC
-        (beneficiary-id:string dptf-id:string)
-        @doc "Backward-only (FVT::CC_TrueFungibleStakeFlow phase 2.2]): stamp last-ank-sync-count on BenDptfTotal. \
-            \ beneficiary/dptf validation here; full stake rules in FVT|C>TRUE-FUNGIBLE-STAKE-FLOW. \
-            \ Composes SECURE for XE write body. Not @event — P|UEV_IMC on XE entry."
-        (UEV_StakeBeneficiaryAccount beneficiary-id)
-        (UEV_StakeTrueFungibleDptfLeg dptf-id)
-        (compose-capability (SECURE))
-    )
-    (defcap AQP|C>UPDATE-SCORE-MULTIPLIERS
-        (patron:string executor:string score-id:string mx-frozen:decimal mx-sleeping:decimal mx-hibernated:decimal)
-        @doc "Re-set a score's frozen/sleeping multipliers. THE EMPTINESS GATE LIVES HERE because \
-            \ this is the only module that can see both the pool tracker and the score: AQP-SCORE \
-            \ deploys first and cannot read this tracker at all. Ownership, fee validity and the \
-            \ ordering invariant are enforced by the callee's own capability, which is where they \
-            \ belong — each layer proves what it can see. Patron pays IGNIS; composes SECURE."
-        @event
-        ;;THE EXECUTOR IS BOUND, not merely declared. `CAP_EnforceAccountOwnership` in the callee
-        ;;proves somebody signed for the score's OWNER, but the owner is a DERIVED account that
-        ;;names no actor (HANDOFF 4g) — without this the caller could put any name in the
-        ;;`executor` slot and the emitted event would implicate an account that never took part.
-        ;;`UEV_ExecutorIzScoreOwner` does this inside AQP-SCORE but is not interface-declared, so
-        ;;the same binding is made here from the reader that is.
-        (let
-            (
-                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
-            )
-            (enforce
-                (= executor (ref-SCR::UR_SCR|ScoreOwnerKonto score-id))
-                "executor must be the score owner"
-            )
-        )
-        ;;THE EMPTINESS GATE IS ENFORCED IN THE CLIENT BODY (`UEV_AQP|ScoreMxChangeSafe`), which
-        ;;binds its tracker scan before enforcing it -- a scan cannot be an `enforce` ARGUMENT
-        ;;anywhere, defcap or not. Kept out here so the heavy read is visible at the call site.
-        (compose-capability (SECURE))
-    )
-    (defcap AQP|C>BACKFILL-SCORE-SLICE
-        (patron:string pool-id:string score-id:string beneficiaries:[string])
-        @doc "One fed slice of the re-rate sweep: drive each listed holder's stored base to the \
-            \ canonical target for (pool-id, score-id). Patron pays IGNIS; composes SECURE. \
-            \ \
-            \ PERMISSIONLESS, LIKE THE ANCHOR SYNCS BESIDE IT, and that is a safety argument rather \
-            \ than a convenience. The slice cannot express a wrong outcome: it carries no amounts \
-            \ and no deltas, only WHICH ACCOUNTS to recompute, and the figure written is derived \
-            \ from the live tracker inside the transaction. So the worst a hostile caller achieves \
-            \ is paying IGNIS to make the chain MORE correct, while the pool stays repairable even \
-            \ if its owner never returns. Gating it on the owner would buy nothing and could strand \
-            \ a pool whose scores are provably mis-rated. \
-            \ \
-            \ NO MEMBERSHIP CHECK ON THE SLICE, DELIBERATELY. A listed account that is already \
-            \ correctly rated computes a delta of 0.0 and writes nothing, so a stale slice, an \
-            \ overlapping slice and a REPEATED account are all harmless — the target is recomputed \
-            \ immediately before each write, never batched ahead of the writes. That is the same \
-            \ property that makes two slices order-independent, and it is why this needs no job \
-            \ state: `URHC_AQP|ScoreBackfillOutstanding` reading [] is the completion record. \
-            \ \
-            \ THE ONE THING IT REFUSES is a score whose base is not Σ(amount × mx) at all \
-            \ (`URC_AQP|ScoreBackfillSupported`). There the formula itself is wrong, so every delta \
-            \ would be invented — and unlike a stale slice, that does not converge to anything."
-        @event
-        (enforce
-            (> (length beneficiaries) 0)
-            "Empty slice"
-        )
-        (enforce
-            (URC_AQP|ScoreBackfillSupported pool-id score-id)
-            "Score is not re-ratable: it must be a class-0 LP score employed by this pool and not an additive satellite"
-        )
-        (compose-capability (SECURE))
-    )
-    (defcap AQP|C>BEGIN-SCORE-REVOKE
-        (patron:string executor:string pool-id:string score-id:string slot-index:integer)
-        @doc "Phase 1 of 3 — vacate the score's POOL SLOT and freeze the pool for the drain. \
-            \ Pool owner only; patron pays IGNIS; composes SECURE. \
-            \ \
-            \ VACATING THE SLOT IS WHAT MAKES THE DRAIN LEGAL, and it is deliberately the only \
-            \ state this phase changes. A score that is LINKED to a pool but holds no SLOT is \
-            \ exactly 'being retired': it no longer scores anything new (it is out of \
-            \ `URC_PoolActiveScoreIds`, so no stake credits it), while the link that survives is \
-            \ what still identifies the pool its orphaned rows belong to. That one bit of \
-            \ asymmetry is the pending-revoke marker -- which is why this needs no new column and \
-            \ no migration. \
-            \ \
-            \ THE POOL FREEZES because the drain and the stake path would otherwise write the same \
-            \ score rows from both ends: a stake crediting a score mid-drain would re-create the \
-            \ weight the drain just retired, and the sweep would never converge."
-        @event
-        (UEV_BeginScoreRevoke pool-id score-id slot-index)
-        (CAP_PoolOwner pool-id)
-        (UEV_ExecutorIzPoolOwner executor pool-id)
-        (compose-capability (SECURE))
-    )
-    (defcap AQP|C>DRAIN-SCORE-SLICE
-        (patron:string pool-id:string score-id:string accounts:[string])
-        @doc "Phase 2 of 3 — retire one SLICE of the holders of a score this pool has stopped \
-            \ employing. Patron pays IGNIS; composes SECURE. \
-            \ \
-            \ THE GATE IS 'NOT SLOTTED, STILL LINKED', and both halves matter. Not slotted proves \
-            \ the owner has begun a revoke, so this cannot zero weight in a live score. Still \
-            \ linked proves the rows belong to THIS pool, so a caller cannot aim the drain at an \
-            \ unrelated pair. The score-side capability re-checks the link from its own tables; \
-            \ this checks the slot, which only this module can see. \
-            \ \
-            \ PERMISSIONLESS, for the same reason the re-rate sweep is: the slice carries no \
-            \ figures, only WHICH ACCOUNTS to retire, and the target is 0.0 by definition. There is \
-            \ no wrong outcome a hostile caller can express -- only IGNIS they can waste -- and a \
-            \ pool whose owner vanishes mid-revoke stays finishable by anyone."
-        @event
-        (enforce
-            (> (length accounts) 0)
-            "Empty slice"
-        )
-        (let
-            (
-                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
-            )
-            (enforce
-                (and
-                    (not (contains score-id (URC_PoolActiveScoreIds pool-id)))
-                    (= (ref-SCR::UR_SCR|ScoreAqpoolLink score-id) pool-id)
-                )
-                "Score is not mid-revoke on this pool: it must be unslotted but still linked"
-            )
-        )
-        (compose-capability (SECURE))
-    )
-    (defcap AQP|C>FINALIZE-SCORE-REVOKE
-        (patron:string executor:string pool-id:string score-id:string)
-        @doc "Phase 3 of 3 — cut the aqpool-link once the drain is provably complete. Pool owner; \
-            \ patron pays IGNIS; composes SECURE. \
-            \ \
-            \ COMPLETENESS IS MEASURED, NOT ASSERTED. The gate re-reads the drain's own work list \
-            \ and refuses while a single holder remains, so the link cannot be cut over weight that \
-            \ still exists. A client that trusted a caller's 'done' flag would strand exactly the \
-            \ rows nothing can find afterwards -- with the link gone, even the orphan scan loses \
-            \ the pool it belonged to."
-        @event
-        ;;COMPLETENESS IS ENFORCED IN THE CLIENT BODY (`UEV_AQP|ScoreDrainComplete`), which binds
-        ;;its user-score scan before enforcing it. Authorisation stays here, where it belongs.
-        (CAP_PoolOwner pool-id)
-        (UEV_ExecutorIzPoolOwner executor pool-id)
-        (compose-capability (SECURE))
-    )
-    (defcap AQP|C>SYNC-TF-ANCHORS
-        (patron:string beneficiary-id:string dptf-id:string)
-        @doc "Pool-agnostic ANK repair for one beneficiary × dptf-id leg. Patron pays IGNIS; composes SECURE."
-        @event
-        (enforce
-            (> (UR_AQP|BenDptfTotalBalance beneficiary-id dptf-id) 0.0)
-            "No cross-pool TF stake to sync"
-        )
-        (UEV_StakeBeneficiaryAccount beneficiary-id)
-        (UEV_StakeTrueFungibleDptfLeg dptf-id)
-        (compose-capability (SECURE))
-    )
-    (defcap AQP|C>SYNC-COLLECTABLE-ANCHORS
-        (patron:string beneficiary-id:string collectable-id:string son:bool)
-        @doc "Pool-agnostic ANK repair for DPSF (son=true) or DPNF (son=false). Patron pays IGNIS; composes SECURE."
-        @event
-        (enforce
-            (URC_BenCollectableHasStake beneficiary-id collectable-id son)
-            "No cross-pool collectable stake to sync"
-        )
-        (UEV_StakeBeneficiaryAccount beneficiary-id)
-        (UEV_StakeCollectableLeg collectable-id son)
-        (compose-capability (SECURE))
-    )
-    (defcap AQP|XE>SET-BEN-COLLECTABLE-ANK-SYNC
-        (beneficiary-id:string collectable-id:string son:bool)
-        @doc "Backward (FVT stake phase 3 / C_SyncCollectableAnchors): stamp BenDpsfAnkMeta or BenDpnfAnkMeta."
-        (UEV_StakeBeneficiaryAccount beneficiary-id)
-        (UEV_StakeCollectableLeg collectable-id son)
-        (compose-capability (SECURE))
-    )
-    ;;{C4}  Ownership [gold]
-
-    ;;<=========================================================================>
-    ;;{5}  FUNCTIONS
-    ;;{5.1}  Construct [CT/UDC]
-    (defun CT_Bar:string
-        ()
+    (defconst CT_REWARD_KIND_PLAIN                      "PLAIN")
+    (defconst CT_SCORE_ENTITY_TRIPLET                   3)
+    (defconst CT_MEMBERSHIP_MODE_BAR                    "BAR")
+    (defconst CT_MEMBERSHIP_MODE_SCORE                  "SCORE")
+    (defconst CT_MEMBERSHIP_MODE_STANDARD_TRIPLET       "STANDARD-TRIPLET")
+    (defconst CT_MEMBERSHIP_MODE_TRUE_TRIPLET           "TRUE-TRIPLET")
+    (defconst CT_REWARD_KIND_MULTIPLET_BASE             "MULTIPLET_BASE")
+    (defconst CT_REWARD_MODE_HETEROGENEOUS              "HETEROGENEOUS")
+    (defconst CT_REWARD_MODE_HOMOGENEOUS                "HOMOGENEOUS")
+    (defconst CT_SCORE_ENTITY_SCORE                     1)
+    (defconst CT_SPLIT_MODE_STAKED                      "SPLIT|STAKED")
+    (defconst CT_SPLIT_MODE_TVL                         "SPLIT|TVL")
+    (defconst DSA_ORACLE_TTL 90000
+        "Oracle validity window in seconds (25h = a daily oracle write + 1h overlap, so there is never a gap \
+       \ between last-write-expired and next-write). At inject, a delegation member whose last oracle write is \
+       \ older than this (now − oracle-ts > DSA_ORACLE_TTL) captures NOTHING (effective weight 0 ⇒ its whole \
+       \ share routes to the royalty pool). Only consulted when the FVT's oracle-on flag is set.")
+    (defconst FVT|DSA-ORACLE-KEY:string "GLOBAL")
+    (defconst GAS|ADD-REWARD-LINK                   (let ((ref-IGNIS:module{IgnisCollectorV4} IGNIS)) (ref-IGNIS::UC_IgnisDeter "add-reward-link")))
+    (defconst GAS|ADD-SCORE-ENTITY                  (let ((ref-IGNIS:module{IgnisCollectorV4} IGNIS)) (ref-IGNIS::UC_IgnisDeter "add-score-entity")))
+    (defconst GAS|COLLECT                           (let ((ref-IGNIS:module{IgnisCollectorV4} IGNIS)) (ref-IGNIS::UC_IgnisDeter "aqp-collect")))
+    (defconst GAS|INJECT                            (let ((ref-IGNIS:module{IgnisCollectorV4} IGNIS)) (ref-IGNIS::UC_IgnisDeter "aqp-inject")))
+    (defconst GAS|ISSUE-MULTIPLET-FAMILY            (let ((ref-IGNIS:module{IgnisCollectorV4} IGNIS)) (ref-IGNIS::UC_IgnisDeter "issue-multiplet")))
+    (defconst GAS|SET-COMMON-DENOMINATOR            (let ((ref-IGNIS:module{IgnisCollectorV4} IGNIS)) (ref-IGNIS::UC_IgnisDeter "fvt-split-setup")))
+    (defconst GAS|SET-MOSAIC                        (let ((ref-IGNIS:module{IgnisCollectorV4} IGNIS)) (ref-IGNIS::UC_IgnisDeter "fvt-split-setup")))
+    (defconst GAS|SET-QUALITY-SPLIT                 (let ((ref-IGNIS:module{IgnisCollectorV4} IGNIS)) (ref-IGNIS::UC_IgnisDeter "fvt-split-setup")))
+    (defconst GAS|SET-SPLIT-MODE                    (let ((ref-IGNIS:module{IgnisCollectorV4} IGNIS)) (ref-IGNIS::UC_IgnisDeter "fvt-split-setup")))
+    (defconst GAS|TOGGLE-REWARD-LINK                (let ((ref-IGNIS:module{IgnisCollectorV4} IGNIS)) (ref-IGNIS::UC_IgnisDeter "fvt-link-toggle")))
+    (defconst GAS|TOGGLE-SCORE-ENTITY-LINK          (let ((ref-IGNIS:module{IgnisCollectorV4} IGNIS)) (ref-IGNIS::UC_IgnisDeter "fvt-link-toggle")))
+    (defconst GAS|UNSTALE                           (let ((ref-IGNIS:module{IgnisCollectorV4} IGNIS)) (ref-IGNIS::UC_IgnisDeter "unstale")))
+    (defconst STREAM_MAX_LANES 49
+        "Hard ceiling on concurrent streams per lane (7x7 grid). The per-account cap (URC_MaxStreamLanes, by \
+       \ Elite tier of the FVT owner konto) is always <= this.")
+    (defun CT_Bar ()
         @doc "Returns CT_BAR constant."
         (let
             (
                 (ref-U|CT:module{OuronetConstantsV2} U|CT)
             )
             (ref-U|CT::CT_BAR)
-        )
-    )
-    (defun CT_EmptyCumulator ()
-        @doc "Empty IGNIS OutputCumulator for stub transfer legs."
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
-            )
-            (ref-IGNIS::UDC_EmptyOutputCumulatorV2)
         )
     )
     (defun CT_AqpScName:string
@@ -705,2225 +519,2190 @@
             (ref-ANK::GOV|AQP|SC_NAME)
         )
     )
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    (defcap SECURE ()
+        true
+    )
+
+    (defcap RPS|XE>WRITE ()
+        @doc "Forward entry: FVT (registered IMC caller) drives one RPS ledger write. Composes SECURE."
+        (compose-capability (SECURE))
+    )
+    ;;<=========================================================================>
+    ;;{S}  SCHEMAS
+    ;;<=========================================================================>
+    ;;{T}  TABLES
+    (deftable FVT|T|RPS|Global:{AcquisitionSchemasV5.FVT|RPS|Global})
+    (deftable FVT|T|RPS|Member:{AcquisitionSchemasV5.FVT|RPS|Member})
+    (deftable FVT|T|RPS|User:{AcquisitionSchemasV5.FVT|RPS|User})
+    (deftable FVT|T|RPS|Stream:{AcquisitionSchemasV5.FVT|RPS|Stream})
+    (deftable FVT|T|MemberVault:{AcquisitionSchemasV5.FVT|MemberVault})
+    (deftable FVT|T|MemberUserWeight:{AcquisitionSchemasV5.FVT|MemberUserWeight})
+    (deftable FVT|T|ForcedFixCount:{AcquisitionSchemasV5.FVT|ForcedFixCount})
+    (deftable FVT|T|RewardAggregate:{AcquisitionSchemasV5.FVT|RewardAggregate})
+    (deftable FVT|T|ScoreEntityLink:{AcquisitionSchemasV5.FVT|ScoreEntityLink})
+    (deftable FVT|T|MultipletFamily:{AcquisitionSchemasV5.FVT|MultipletFamily})
+    (deftable FVT|T|UserPresence:{AcquisitionSchemasV5.FVT|UserPresence})
+    (deftable FVT|T|AgencyFee:{AcquisitionSchemasV5.FVT|AgencyFee})
+    (deftable FVT|T|QualitySplit:{AcquisitionSchemasV5.FVT|QualitySplit})
+    (deftable FVT|T|DsaOracleConfig:{AcquisitionSchemasV5.FVT|DsaOracleConfig})
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    (defcap FVT|XE>SWEEP-FIX (fvt-id:string)
+        @doc "Forward (MTX-AQP MTX|n|C_Inject defpact): authorize a chunked deb-staleness FIX pass over an FVT's \
+            \ stale stakers — NO fund movement (settle + refresh + mirror-resync only). Composes SECURE."
+        (compose-capability (SECURE))
+    )
+
+    ;;NINE FVT|C>* defcaps were REMOVED here on 2026-09-10 (281 lines): ADD-REWARD-LINK,
+    ;;COLLECTABLE-STAKE-FLOW, ISSUE-FVT, ORTO-FUNGIBLE-STAKE-FLOW, SET-QUALITY-SPLIT,
+    ;;SET-SPLIT-MODE, TOGGLE-REWARD-LINK, TOGGLE-SCORE-ENTITY-LINK, TRUE-FUNGIBLE-STAKE-FLOW.
     ;;
-    ;; [UDC] construct
+    ;;They were duplicates left behind when those caps moved to AQP-FVT. A Pact capability is
+    ;;MODULE-SCOPED -- (with-capability (X ...)) binds the X of the CALLING module -- so RPS's
+    ;;copies could never be acquired: FVT defines and acquires its own, and nothing in RPS ever
+    ;;touched these. They also held 19 enforce sites that no input could reach, which inflated
+    ;;the P3.3 guard-pinning worklist with impossible work.
     ;;
-    ;; Default tracker and attribution rows for UR with-default-read.
-    (defun UDC_AQP|TrueFungibleTracker:object{AcquisitionSchemasV3.AQP|TrueFungibleTracker}
-        (bal:decimal pool-id:string dptf-id:string owner-id:string beneficiary-id:string)
-        @doc "Default DPTF tracker row (zero balance, key fields from arguments)."
-        {"balance"          : bal
-        ,"pool-id"          : pool-id
-        ,"dptf-id"          : dptf-id
-        ,"owner-id"         : owner-id
-        ,"beneficiary-id"   : beneficiary-id}
+    ;;Checked before removal: never acquired in RPS by with/require/compose-capability,
+    ;;create-capability-guard, install-capability or emit-event; RPS's interface declares no
+    ;;defcaps, so nothing obliged them to exist; and the only .repl mentions are COMMENTS that
+    ;;cite 05_FVT.pact as their source.
+
+
+
+
+
+
+    (defcap FVT|XE>ADMIT-DELEGATION (fvt-id:string triplet-id:string operator:string)
+        @doc "DSA: authorize admitting an OPERATOR-owned triplet as a delegation agency member on a class-0 DSA \
+            \ vault FVT — vault-like (swpair \"|\", ghost 0; its inject weight is capture, not ghost-tvl). Runs the \
+            \ STRUCTURAL subset of the normal triplet admission (triplet issued, category matches class, no \
+            \ pre-existing link, silver has an aqpool, all three fvt-links BAR) but with `silver-owner == operator` \
+            \ + the operator's account ownership, and SKIPS the LP-farm rules (swpair/lp-denominator/ghost-weight) \
+            \ — a delegation member does not use ghost-tvl. Isolated from C_AddScoreEntity's admission (never \
+            \ weakened). Composes SECURE for the XE_CreateFvtLink + XI_AddScoreEntity writes."
+        ;;SHADOWED-GUARD FIX: the existence check used to sit BELOW the let. Three of those
+        ;;bindings (TripletBronze/Silver/GoldenScoreId) are HARD reads of SCR|T|Triplet keyed by
+        ;;<triplet-id>, and Pact evaluates let bindings before the body -- so a triplet that does
+        ;;not exist aborted on "row not found" and this enforce was unreachable for EVERY input.
+        ;;URC_TripletExists is deliberately a with-default-read so it can answer for a missing
+        ;;row; it just never got the chance. Hoisted above the let so it can do its job.
+        (let ((ref-SCR:module{AcquisitionScoresV7} AQP-SCORE))
+            (enforce (ref-SCR::URC_TripletExists triplet-id) "Triplet must be issued in AQP-SCORE"))
+        (let
+            (
+                (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (bronze-id:string (ref-SCR::UR_SCR|TripletBronzeScoreId triplet-id))
+                (silver-id:string (ref-SCR::UR_SCR|TripletSilverScoreId triplet-id))
+                (golden-id:string (ref-SCR::UR_SCR|TripletGoldenScoreId triplet-id))
+                (silver-owner:string (ref-SCR::UR_SCR|ScoreOwnerKonto silver-id))
+                (silver-aqpool:string (ref-SCR::UR_SCR|ScoreAqpoolLink silver-id))
+            )
+            ;; NOTE: the triplet-category↔fvt-class check is intentionally SKIPPED for delegation — a DSA agency is
+            ;; an SF/quintessence triplet admitted to a class-0 FVT purely to ride the farm-split code; it does not
+            ;; fit the LP class model (see DSA-DELEGATED-STAKING-DESIGN.md §2). All class/LP rules are bypassed here.
+            (enforce
+                (fold (and) true
+                    [(= silver-owner operator)
+                     (not (URC_FvtScoreEntityLinkRowExists fvt-id triplet-id))
+                     (!= silver-aqpool BAR)
+                     (= (ref-SCR::UR_SCR|ScoreFvtLink bronze-id) BAR)
+                     (= (ref-SCR::UR_SCR|ScoreFvtLink silver-id) BAR)
+                     (= (ref-SCR::UR_SCR|ScoreFvtLink golden-id) BAR)])
+                "Invalid delegation admission: operator ownership, existing link, silver aqpool, or fvt-links")
+            (ref-DALOS::CAP_EnforceAccountOwnership operator)
+            (compose-capability (SECURE))
+        )
     )
-    (defun UDC_AQP|OrtoFungibleTracker:object{AcquisitionSchemasV3.AQP|OrtoFungibleTracker}
-        (bal:decimal pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer)
-        @doc "Default DPOF tracker row (zero balance, key fields from arguments)."
-        {"balance"          : bal
-        ,"pool-id"          : pool-id
-        ,"dpof-id"          : dpof-id
-        ,"owner-id"         : owner-id
-        ,"beneficiary-id"   : beneficiary-id
-        ,"nonce"            : nonce}
+
+    (defcap FVT|XE>DISPOSE-ROYALTY (fvt-id:string reward-dptf-id:string)
+        @doc "DSA royalty disposal: authorize moving the whole royalty pool (reward-dptf) OUT of the AQP pool-vault \
+            \ custody (AQP|SC_NAME) + zeroing royalty-rewards. Enforces a non-empty pool. Composes P|SECURE-CALLER + \
+            \ P|RPS|REMOTE-GOV — the AQP custody-governor authority for the TFT leg out of AQP|SC_NAME (same as \
+            \ FVT|C>INJECT). Owner authorization is enforced upstream in the DSA A_ shell."
+        (enforce (> (UR_FVT-RG|RoyaltyRewards fvt-id reward-dptf-id) 0.0) "No royalty to dispose")
+        (compose-capability (P|SECURE-CALLER))
+        (compose-capability (P|RPS|REMOTE-GOV))
     )
-    (defun UDC_AQP|SemiFungibleTracker:object{AcquisitionSchemasV3.AQP|SemiFungibleTracker}
-        (bal:decimal pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer)
-        @doc "Default DPSF tracker row (zero balance, key fields from arguments)."
-        {"balance"          : bal
-        ,"pool-id"          : pool-id
-        ,"dpsf-id"          : dpsf-id
-        ,"owner-id"         : owner-id
-        ,"beneficiary-id"   : beneficiary-id
-        ,"nonce"            : nonce}
+
+
+
+
+    (defun UDC_FVT|ScoreEntityLink:object{AcquisitionSchemasV5.FVT|ScoreEntityLink}
+        (
+            score-entity-type:integer
+            earning-user-count:integer
+            enabled:bool
+            swpair:string
+            ghost-tvl-weight:decimal
+            total-lane-weight:decimal
+            delegation:bool
+            capture-units:decimal
+            capture-weight:decimal
+            oracle-ts:time
+            fvt-id:string
+            score-entity-id:string
+        )
+        @doc "Core constructor for object{AcquisitionSchemasV5.FVT|ScoreEntityLink}. DSA fields (delegation / capture-units / \
+            \ capture-weight / oracle-ts) pass through faithfully — a normal member passes \
+            \ false / 0.0 / 0.0 / STREAM_EPOCH; DSA passes an agency's live capture."
+        {"score-entity-type"        : score-entity-type
+        ,"earning-user-count"       : earning-user-count
+        ,"enabled"                  : enabled
+        ,"swpair"                   : swpair
+        ,"ghost-tvl-weight"         : ghost-tvl-weight
+        ,"total-lane-weight"        : total-lane-weight
+        ,"delegation"               : delegation
+        ,"capture-units"            : capture-units
+        ,"capture-weight"           : capture-weight
+        ,"oracle-ts"                : oracle-ts
+        ,"fvt-id"                   : fvt-id
+        ,"score-entity-id"          : score-entity-id}
     )
-    (defun UDC_AQP|NonFungibleTracker:object{AcquisitionSchemasV3.AQP|NonFungibleTracker}
-        (bal:decimal pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer)
-        @doc "Default DPNF tracker row (zero balance, key fields from arguments)."
-        {"balance"          : bal
-        ,"pool-id"          : pool-id
-        ,"dpnf-id"          : dpnf-id
-        ,"owner-id"         : owner-id
-        ,"beneficiary-id"   : beneficiary-id
-        ,"nonce"            : nonce}
-    )
-    (defun UDC_AQP|BenDptfTotal:object{AcquisitionSchemasV3.AQP|BenDptfTotal}
-        (total:decimal sync-count:integer beneficiary-id:string dptf-id:string)
-        @doc "Default beneficiary DPTF rollup row (zero total, never synced)."
-        {"total-balance"        : total
-        ,"last-ank-sync-count"  : sync-count
-        ,"beneficiary-id"       : beneficiary-id
+
+    (defun UDC_FVT|RPS|Global:object{AcquisitionSchemasV5.FVT|RPS|Global}
+        (
+            reward-enabled:bool
+            current-rps:decimal
+            available-rewards:decimal
+            unclaimed-count:integer
+            dormant-claim-count:integer
+            zombie-rewards:decimal
+            segmentation:bool
+            reward-kind:string
+            multiplet-family-id:string
+            stream-count:integer
+            stream-last-release:time
+            stream-unreleased:decimal
+            royalty-rewards:decimal
+            min-inject-amount:decimal
+            fvt-id:string
+            dptf-id:string
+        )
+        @doc "Core constructor for object{AcquisitionSchemasV5.FVT|RPS|Global}. Stream-ledger fields (stream-count / \
+            \ stream-last-release / stream-unreleased) + the DSA royalty-rewards pool pass through faithfully; \
+            \ true inserts seed them 0 / STREAM_EPOCH / 0.0 / 0.0 (a fresh lane has no stream, no royalty)."
+        {"reward-enabled"       : reward-enabled
+        ,"current-rps"          : current-rps
+        ,"available-rewards"    : available-rewards
+        ,"unclaimed-count"      : unclaimed-count
+        ,"dormant-claim-count"  : dormant-claim-count
+        ,"zombie-rewards"       : zombie-rewards
+        ,"segmentation"         : segmentation
+        ,"reward-kind"          : reward-kind
+        ,"multiplet-family-id"    : multiplet-family-id
+        ,"stream-count"         : stream-count
+        ,"stream-last-release"  : stream-last-release
+        ,"stream-unreleased"    : stream-unreleased
+        ,"royalty-rewards"      : royalty-rewards
+        ,"min-inject-amount"    : min-inject-amount
+        ,"fvt-id"               : fvt-id
         ,"dptf-id"              : dptf-id}
     )
-    (defun UDC_AQP|BenDpsfNonceTotal:object{AcquisitionSchemasV3.AQP|BenDpsfNonceTotal}
-        (amount:integer beneficiary-id:string dpsf-id:string nonce:integer)
-        @doc "Default DPSF per-nonce rollup row (zero amount)."
-        {"amount"           : amount
-        ,"beneficiary-id"   : beneficiary-id
-        ,"dpsf-id"          : dpsf-id
-        ,"nonce"            : nonce}
-    )
-    (defun UDC_AQP|BenDpnfNonceTotal:object{AcquisitionSchemasV3.AQP|BenDpnfNonceTotal}
-        (amount:integer beneficiary-id:string dpnf-id:string nonce:integer)
-        @doc "Default DPNF per-nonce rollup row (zero amount)."
-        {"amount"           : amount
-        ,"beneficiary-id"   : beneficiary-id
-        ,"dpnf-id"          : dpnf-id
-        ,"nonce"            : nonce}
-    )
-    (defun UDC_AQP|BenDpsfAnkMeta:object{AcquisitionSchemasV3.AQP|BenDpsfAnkMeta}
-        (sync-count:integer active-nonce-count:integer beneficiary-id:string dpsf-id:string)
-        @doc "Default DPSF ANK meta row (never synced, no active nonces)."
-        {"last-ank-sync-count"  : sync-count
-        ,"active-nonce-count"   : active-nonce-count
-        ,"beneficiary-id"       : beneficiary-id
-        ,"dpsf-id"              : dpsf-id}
-    )
-    (defun UDC_AQP|BenDpnfAnkMeta:object{AcquisitionSchemasV3.AQP|BenDpnfAnkMeta}
-        (sync-count:integer active-nonce-count:integer beneficiary-id:string dpnf-id:string)
-        @doc "Default DPNF ANK meta row (never synced, no active nonces)."
-        {"last-ank-sync-count"  : sync-count
-        ,"active-nonce-count"   : active-nonce-count
-        ,"beneficiary-id"       : beneficiary-id
-        ,"dpnf-id"              : dpnf-id}
-    )
-    (defun UDC_AQP|UserOccupancy:object{AcquisitionSchemasV3.AQP|UserOccupancy}
-        (unn:integer pool-id:string beneficiary-id:string)
-        @doc "Vacate-v2 §4: default per (pool, beneficiary) occupancy row (unn = 0 when absent)."
-        {"unn"                  : unn
-        ,"pool-id"              : pool-id
-        ,"beneficiary-id"       : beneficiary-id}
-    )
-    (defun UDC_AQP|Schema:object{AcquisitionSchemasV3.AQP|Schema}
-        (aqp-class:integer asset-id:string aqp-id:string)
-        @doc "Default new pool row: all seven score slots BAR; aqp-id equals pool-id (table key). #FP1 universal \
-            \ nns: starts -1 only for LP pools (class 0, complex multi-leg — still nzs-based finalize) and 0 for \
-            \ occupancy-tracked pools (class 1 TF legs, 2/3/4 OF/SF/NF nonce positions)."
-        {"aqp-class"            : aqp-class
-        ,"asset-id"             : asset-id
-        ,"score-primary"        : BAR
-        ,"score-secondary"      : BAR
-        ,"score-tertiary"       : BAR
-        ,"score-quaternary"     : BAR
-        ,"score-quinary"        : BAR
-        ,"score-senary"         : BAR
-        ,"score-septenary"      : BAR
-        ,"stake-enabled"        : true
-        ,"vacate-in-progress"   : false
-        ,"sweep-in-progress"    : false
-        ,"nns"                  : (if (< aqp-class 1) -1 0)
-        ,"aqp-id"               : aqp-id}
-    )
-    (defun UDC_AQP|SchemaWithScoreSlots:object{AcquisitionSchemasV3.AQP|Schema}
-        (pool:object{AcquisitionSchemasV3.AQP|Schema}
-            score-primary:string
-            score-secondary:string
-            score-tertiary:string
-            score-quaternary:string
-            score-quinary:string
-            score-senary:string
-            score-septenary:string
+
+    (defun UDC_FVT|RPS|Stream:object{AcquisitionSchemasV5.FVT|RPS|Stream}
+        (
+            rate:decimal
+            finish:time
+            amount:decimal
+            released:decimal
+            fvt-id:string
+            dptf-id:string
+            position:integer
         )
-        @doc "Returns pool row with all seven score slots replaced (merge over the existing row)."
-        ;;MERGE ORDER FIX (2026-09-13). This was `(+ pool {…seven slots…})` and was therefore a
-        ;;COMPLETE NO-OP: Pact's object `+` gives precedence to the LEFT operand on key collisions
-        ;;-- verified live, `(+ {"a": 1, "b": 9} {"a": 2, "c": 3})` is `{"a": 1, "b": 9, "c": 3}`.
-        ;;The pool row already carries all seven slot keys, so every supplied value was discarded and
-        ;;the function returned its input unchanged, flatly contradicting its own @doc ("all seven
-        ;;score slots replaced").
-        ;;
-        ;;Caught by writing the first test this function has ever had: addressing slot N and reading
-        ;;back slot N returned the row's ORIGINAL score, not the one just written.
-        ;;
-        ;;NO BLAST RADIUS, which is why this is a repair rather than a deletion: its only caller is
-        ;;`UDC_AQP|SchemaWithScoreAtSlot` directly below, and THAT has no callers anywhere in the
-        ;;codebase. Neither is on the AcquisitionPoolsV1 interface, so no cascade. The live slot
-        ;;writer is a different mechanism entirely -- `UC_PoolScoreSlotPatch` builds a PARTIAL update
-        ;;map consumed by `WU_Pool|ScoreSlot`, which is correct and unaffected.
-        ;;Pinned slot-by-slot by REPL/modules/AQP.repl <<AQP-F10>>.
-        (+  {"score-primary"    : score-primary
-            ,"score-secondary"  : score-secondary
-            ,"score-tertiary"   : score-tertiary
-            ,"score-quaternary" : score-quaternary
-            ,"score-quinary"    : score-quinary
-            ,"score-senary"     : score-senary
-            ,"score-septenary"  : score-septenary}
-            pool
+        @doc "Core constructor for object{AcquisitionSchemasV5.FVT|RPS|Stream} — one active linear-release stream position."
+        {"rate"             : rate
+        ,"finish"           : finish
+        ,"amount"           : amount
+        ,"released"         : released
+        ,"fvt-id"           : fvt-id
+        ,"dptf-id"          : dptf-id
+        ,"position"         : position}
+    )
+
+    (defun UDC_FVT|MultipletFamily:object{AcquisitionSchemasV5.FVT|MultipletFamily}
+        (
+            token-0-id:string
+            token-1-id:string
+            token-2-id:string
+            ats-0-1-id:string
+            ats-1-2-id:string
+            rank:integer
+            active:bool
+            multiplet-family-id:string
+        )
+        @doc "Core constructor for object{AcquisitionSchemasV5.FVT|MultipletFamily}."
+        {"token-0-id"           : token-0-id
+        ,"token-1-id"           : token-1-id
+        ,"token-2-id"           : token-2-id
+        ,"ats-0-1-id"           : ats-0-1-id
+        ,"ats-1-2-id"           : ats-1-2-id
+        ,"rank"                 : rank
+        ,"active"               : active
+        ,"multiplet-family-id"  : multiplet-family-id}
+    )
+
+    (defun UDC_FVT|RPS|Member:object{AcquisitionSchemasV5.FVT|RPS|Member}
+        (
+            last-farm-rps-g:decimal
+            member-deb-rps:decimal
+            pending-member-rewards:decimal
+            fvt-id:string
+            score-entity-id:string
+            dptf-id:string
+        )
+        @doc "Core constructor for object{AcquisitionSchemasV5.FVT|RPS|Member}."
+        {"last-farm-rps-g"          : last-farm-rps-g
+        ,"member-deb-rps"           : member-deb-rps
+        ,"pending-member-rewards"   : pending-member-rewards
+        ,"fvt-id"                   : fvt-id
+        ,"score-entity-id"          : score-entity-id
+        ,"dptf-id"                  : dptf-id}
+    )
+
+    (defun UDC_FVT|RPS|User:object{AcquisitionSchemasV5.FVT|RPS|User}
+        (
+            last-rps:decimal
+            pending-rewards:decimal
+            user-id:string
+            fvt-id:string
+            score-entity-id:string
+            dptf-id:string
+        )
+        @doc "Core constructor for object{AcquisitionSchemasV5.FVT|RPS|User}."
+        {"last-rps"         : last-rps
+        ,"pending-rewards"  : pending-rewards
+        ,"user-id"          : user-id
+        ,"fvt-id"           : fvt-id
+        ,"score-entity-id"  : score-entity-id
+        ,"dptf-id"          : dptf-id}
+    )
+
+    (defun UDC_FVT|SettleFvtRewards:object{AcquisitionSchemasV5.FVT|SettleFvtRewards}
+        (fvt-id:string reward-dptf-ids:[string])
+        @doc "Constructor for object{AcquisitionSchemasV5.FVT|SettleFvtRewards} — one URH_FVT|SettleFvtRewardBundle entry."
+        {"fvt-id"           : fvt-id
+        ,"reward-dptf-ids"  : reward-dptf-ids}
+    )
+
+    (defun UDC_FVT|SettleScorePlan:object{AcquisitionSchemasV5.FVT|SettleScorePlan}
+        (score-entity-type:integer score-entity-id:string fvt-id:string reward-dptf-ids:[string])
+        @doc "Constructor for object{AcquisitionSchemasV5.FVT|SettleScorePlan} — one URC_SettleScorePlanRows entry."
+        {"score-entity-type" : score-entity-type
+        ,"score-entity-id"   : score-entity-id
+        ,"fvt-id"            : fvt-id
+        ,"reward-dptf-ids"   : reward-dptf-ids}
+    )
+
+    (defun UDC_FVT|ScorePreNzFlag:object{AcquisitionSchemasV5.FVT|ScorePreNzFlag}
+        (score-id:string was-nz:bool)
+        @doc "Constructor for object{AcquisitionSchemasV5.FVT|ScorePreNzFlag} — pre-SCORE nz snapshot for one employed score."
+        {"score-id" : score-id
+        ,"was-nz"   : was-nz}
+    )
+
+    (defun UDC_FVT|StakeSettleBundle:object{AcquisitionSchemasV5.FVT|StakeSettleBundle}
+        (
+            settle-scores:[string]
+            distinct-fvts:[string]
+            settle-plans:[object{AcquisitionSchemasV5.FVT|SettleScorePlan}]
+            pre-nz-flags:[object{AcquisitionSchemasV5.FVT|ScorePreNzFlag}]
+            pre-member-debs:[object{AcquisitionSchemasV5.FVT|MemberPreDeb}]
+        )
+        @doc "Constructor for object{AcquisitionSchemasV5.FVT|StakeSettleBundle} — shared phase 2.1 / 2.35 / 2.4 settle scope."
+        {"settle-scores"    : settle-scores
+        ,"distinct-fvts"    : distinct-fvts
+        ,"settle-plans"     : settle-plans
+        ,"pre-nz-flags"     : pre-nz-flags
+        ,"pre-member-debs"  : pre-member-debs}
+    )
+
+    (defun UCk_ScoreEntityLink:string (fvt-id:string score-entity-id:string)
+        @doc "Composite key for FVT|T|ScoreEntityLink: fvt-id | score-entity-id."
+        (concat [fvt-id BAR score-entity-id])
+    )
+
+    (defun UCk_RpsGlobal:string (fvt-id:string dptf-id:string)
+        @doc "Composite key for FVT|T|RPS|Global: fvt-id | dptf-id."
+        (concat [fvt-id BAR dptf-id])
+    )
+
+
+    (defun UCk_RpsMember:string (fvt-id:string score-entity-id:string dptf-id:string)
+        @doc "Composite key for FVT|T|RPS|Member: fvt-id | score-entity-id | dptf-id."
+        (concat [fvt-id BAR score-entity-id BAR dptf-id])
+    )
+
+    (defun UCk_RpsUser:string (user-id:string fvt-id:string score-entity-id:string dptf-id:string)
+        @doc "Composite key for FVT|T|RPS|User: user-id | fvt-id | score-entity-id | dptf-id."
+        (concat [user-id BAR fvt-id BAR score-entity-id BAR dptf-id])
+    )
+
+    (defun UCk_MemberUserWeight:string (user-id:string fvt-id:string score-entity-id:string)
+        @doc "Composite key for FVT|T|MemberUserWeight: user-id | fvt-id | score-entity-id."
+        (concat [user-id BAR fvt-id BAR score-entity-id])
+    )
+
+    (defun UCk_UserPresence:string (fvt-id:string ouronet-account:string)
+        @doc "Composite key for FVT|T|UserPresence: fvt-id | ouronet-id."
+        (concat [fvt-id BAR ouronet-account])
+    )
+
+    (defun UCk_ForcedFixCount:string (fvt-id:string dptf-id:string user-id:string)
+        @doc "Composite key for FVT|T|ForcedFixCount: fvt-id | dptf-id | user-id."
+        (concat [fvt-id BAR dptf-id BAR user-id])
+    )
+
+    (defun UCk_MultipletFamily:string (token-0-id:string token-1-id:string token-2-id:string)
+        @doc "Composite key for FVT|T|MultipletFamily: F | token-0 | token-1 | token-2."
+        (concat ["F" BAR token-0-id BAR token-1-id BAR token-2-id])
+    )
+
+    (defun UCk_RpsStream:string (fvt-id:string dptf-id:string position:integer)
+        @doc "Composite key for FVT|T|RPS|Stream: fvt-id | dptf-id | position."
+        (concat [fvt-id BAR dptf-id BAR (int-to-str 10 position)])
+    )
+
+    (defun UC_ComputeInjectGainedRps:decimal (reward-amount:decimal denominator:decimal)
+        @doc "Pure: Tier-2 G increment for one inject — floor(R / S, CT_FVT_RPS_PREC). UrStoa ≡ floor(stoa/S, STOA_PREC)."
+        (if (<= denominator 0.0)
+            0.0
+            (floor (/ reward-amount denominator) CT_FVT_RPS_PREC)
         )
     )
-    (defun UDC_AQP|SchemaWithScoreAtSlot:object{AcquisitionSchemasV3.AQP|Schema}
-        (pool:object{AcquisitionSchemasV3.AQP|Schema} slot-index:integer score-id:string)
-        @doc "Returns pool row with score-id written into slot-index (0=primary .. 6=septenary)."
-        (UDC_AQP|SchemaWithScoreSlots pool
-            (if (= slot-index 0) score-id (at "score-primary" pool))
-            (if (= slot-index 1) score-id (at "score-secondary" pool))
-            (if (= slot-index 2) score-id (at "score-tertiary" pool))
-            (if (= slot-index 3) score-id (at "score-quaternary" pool))
-            (if (= slot-index 4) score-id (at "score-quinary" pool))
-            (if (= slot-index 5) score-id (at "score-senary" pool))
-            (if (= slot-index 6) score-id (at "score-septenary" pool))
+
+    (defun UC_EmptyOc:object{IgnisCollectorV4.OutputCumulator} ()
+        @doc "Empty OutputCumulator for write-only inject/collect phase slots."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+            )
+            (ref-IGNIS::UDC_EmptyOutputCumulatorV2)
         )
     )
-    ;;{5.2}  Compute [UC]
-    ;; [UC]  compute
-    (defun UCk_DPTFTracker:string (pool-id:string dptf-id:string owner-id:string beneficiary-id:string)
-        @doc "Composite key for AQP|T|DPTFTracker: pool-id | dptf-id | owner-id | beneficiary-id."
-        (concat [pool-id BAR dptf-id BAR owner-id BAR beneficiary-id])
+
+    (defun UC_PerMilleRow:bool (row:[integer])
+        @doc "True when `row` is exactly 3 non-negative integers summing to 1000 (a heterogeneous lane split)."
+        (and
+            (= (length row) 3)
+            (and
+                (fold (and) true (map (lambda (x:integer) (>= x 0)) row))
+                (= (fold (+) 0 row) 1000)
+            )
+        )
     )
-    (defun UCk_DPOFTracker:string (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer)
-        @doc "Composite key for AQP|T|DPOFTracker: pool-id | dpof-id | owner-id | beneficiary-id | nonce."
-        (concat [pool-id BAR dpof-id BAR owner-id BAR beneficiary-id BAR (format "{}" [nonce])])
+
+    (defun UC_GasPrice:decimal (full-price:decimal trigger:bool)
+        @doc "Full price when live billing is on (trigger=false); 0.0 when the gas toggle zeroes it."
+        (if trigger 0.0 full-price)
     )
-    (defun UCk_DPSFTracker:string (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer)
-        @doc "Composite key for AQP|T|DPSFTracker: pool-id | dpsf-id | owner-id | beneficiary-id | nonce."
-        (concat [pool-id BAR dpsf-id BAR owner-id BAR beneficiary-id BAR (format "{}" [nonce])])
+
+    (defun UR_FVT-MV|AvailableRewards:decimal (fvt-id:string score-entity-id:string dptf-id:string)
+        @doc "Member mini-vault available-rewards (Tier-1 sweep); 0.0 when absent."
+        (with-default-read FVT|T|MemberVault (UCk_RpsMember fvt-id score-entity-id dptf-id)
+            {"available-rewards": 0.0} {"available-rewards" := ar} ar)
     )
-    (defun UCk_DPNFTracker:string (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer)
-        @doc "Composite key for AQP|T|DPNFTracker: pool-id | dpnf-id | owner-id | beneficiary-id | nonce."
-        (concat [pool-id BAR dpnf-id BAR owner-id BAR beneficiary-id BAR (format "{}" [nonce])])
+
+    (defun UR_FVT-MV|UnclaimedCount:integer (fvt-id:string score-entity-id:string dptf-id:string)
+        @doc "Member mini-vault unclaimed-count (users with a live claim); 0 when absent."
+        (with-default-read FVT|T|MemberVault (UCk_RpsMember fvt-id score-entity-id dptf-id)
+            {"unclaimed-count": 0} {"unclaimed-count" := uc} uc)
     )
-    (defun UCk_BenDptfTotal:string (beneficiary-id:string dptf-id:string)
-        @doc "Composite key for AQP|T|BenDptfTotal: beneficiary-id | dptf-id."
-        (concat [beneficiary-id BAR dptf-id])
+
+    (defun UR_FVT-MV|DormantClaimCount:integer (fvt-id:string score-entity-id:string dptf-id:string)
+        @doc "Member mini-vault dormant-claim-count: users in this member still OWED but earning \
+            \ nothing at the next accrual -- fully unstaked without collecting, or sitting under a \
+            \ toggled-off link. 0 when absent. \
+            \ \
+            \ THE TIER-1 HALF OF THE S1 RESTORE: `unclaimed-count := earning-user-count + this`. \
+            \ \
+            \ KEY-TESTED BECAUSE THE FIELD IS NEWER THAN THE ROWS. It was added 2026-11-09 to a \
+            \ schema whose 52 rows already exist on chain, and a pre-existing row carries no such \
+            \ FIELD. NOTHING DEFAULTS ONE: `with-default-read` defaults an absent ROW, and `try` \
+            \ does NOT catch the failure either -- both MEASURED, not assumed, after this exact \
+            \ mistake in `coin.UR_URV|VaultDormantCount` aborted every coinbase on chain 0 and \
+            \ froze the braid for sixteen hours on 2026-11-09. The only form that survives is \
+            \ reading the row as an OBJECT and testing `contains` before `at`. 0 is also the \
+            \ correct pre-migration VALUE. The guard is NOT a substitute for \
+            \ the one-shot repair that RAN ON 2026-11-10 and was then REMOVED from this module \
+            \ (a migration cannot be un-deployed, only left as dead surface, so it was deleted in \
+            \ the round that followed). The guard stays because the COLUMN stays absent on any row \
+            \ written before that date and never touched since."
+        ;;READ THE ROW, THEN TEST FOR THE KEY. Do not bind it, do not `at` it, do not `try` it.
+        (let
+            (
+                (row:object (try {} (read FVT|T|MemberVault (UCk_RpsMember fvt-id score-entity-id dptf-id))))
+            )
+            (if (contains "dormant-claim-count" row)
+                (at "dormant-claim-count" row)
+                0)
+        )
     )
-    (defun UCk_BenDpsfNonceTotal:string (beneficiary-id:string dpsf-id:string nonce:integer)
-        @doc "Composite key for AQP|T|BenDpsfNonceTotal: beneficiary-id | dpsf-id | nonce."
-        (concat [beneficiary-id BAR dpsf-id BAR (format "{}" [nonce])])
+
+    (defun UR_FVT-UP|IsPresent:bool (fvt-id:string ouronet-account:string)
+        @doc "True while this user holds a live position in ≥1 of the FVT's score-entities; false/absent otherwise."
+        (with-default-read FVT|T|UserPresence (UCk_UserPresence fvt-id ouronet-account)
+            {"is-present": false} {"is-present" := p} p)
     )
-    (defun UCk_BenDpnfNonceTotal:string (beneficiary-id:string dpnf-id:string nonce:integer)
-        @doc "Composite key for AQP|T|BenDpnfNonceTotal: beneficiary-id | dpnf-id | nonce."
-        (concat [beneficiary-id BAR dpnf-id BAR (format "{}" [nonce])])
+
+    (defun UR_FVT-FFC|Count:integer (fvt-id:string dptf-id:string user-id:string)
+        @doc "Inject-forced deb-fix count on this (fvt, reward lane, user) since the user last collected it; 0 absent."
+        (with-default-read FVT|T|ForcedFixCount (UCk_ForcedFixCount fvt-id dptf-id user-id)
+            {"count": 0} {"count" := c} c)
     )
-    (defun UCk_BenDpsfAnkMeta:string (beneficiary-id:string dpsf-id:string)
-        @doc "Composite key for AQP|T|BenDpsfAnkMeta: beneficiary-id | dpsf-id."
-        (concat [beneficiary-id BAR dpsf-id])
+
+    (defun UR_FVT|FvtClass:integer (fvt-id:string)
+        @doc "Reads fvt-class from FVT row."
+        (at "fvt-class" (read FVT|T|RewardAggregate fvt-id ["fvt-class"]))
     )
-    (defun UCk_BenDpnfAnkMeta:string (beneficiary-id:string dpnf-id:string)
-        @doc "Composite key for AQP|T|BenDpnfAnkMeta: beneficiary-id | dpnf-id."
-        (concat [beneficiary-id BAR dpnf-id])
+
+    (defun UR_FVT|OwnerKonto:string (fvt-id:string)
+        @doc "Reads owner-konto from FVT row."
+        (at "owner-konto" (read FVT|T|RewardAggregate fvt-id ["owner-konto"]))
     )
-    (defun UCk_UserOccupancy:string (pool-id:string beneficiary-id:string)
-        @doc "Composite key for AQP|T|UserOccupancy: pool-id | beneficiary-id."
-        (concat [pool-id BAR beneficiary-id])
+
+    (defun UR_FVT|TotalGhostTvlWeight:decimal (fvt-id:string)
+        @doc "Reads total-ghost-tvl-weight (Tier-2 sum S) from FVT row."
+        (at "total-ghost-tvl-weight" (read FVT|T|RewardAggregate fvt-id ["total-ghost-tvl-weight"]))
     )
-    (defun UC_PoolScoreSlotPatch:object
-        (slot-index:integer score-id:string)
-        @doc "Partial AQP|T|Pool update map for one score slot (0=primary .. 6=septenary)."
-        (if (= slot-index 0)
-            {"score-primary": score-id}
-            (if (= slot-index 1)
-                {"score-secondary": score-id}
-                (if (= slot-index 2)
-                    {"score-tertiary": score-id}
-                    (if (= slot-index 3)
-                        {"score-quaternary": score-id}
-                        (if (= slot-index 4)
-                            {"score-quinary": score-id}
-                            (if (= slot-index 5)
-                                {"score-senary": score-id}
-                                {"score-septenary": score-id}
+
+    (defun UR_FVT|TotalBaseScore:decimal (fvt-id:string)
+        @doc "Reads total-base-score mirror from FVT row."
+        (at "total-base-score" (read FVT|T|RewardAggregate fvt-id ["total-base-score"]))
+    )
+
+    (defun UR_FVT|TotalBoostedScore:decimal (fvt-id:string)
+        @doc "Reads total-boosted-score mirror from FVT row."
+        (at "total-boosted-score" (read FVT|T|RewardAggregate fvt-id ["total-boosted-score"]))
+    )
+
+    (defun UR_FVT|TotalDebScore:decimal (fvt-id:string)
+        @doc "Reads total-deb-score mirror from FVT row."
+        (at "total-deb-score" (read FVT|T|RewardAggregate fvt-id ["total-deb-score"]))
+    )
+
+    (defun UR_FVT|TotalNzsCount:integer (fvt-id:string)
+        @doc "Reads total-nzs-count mirror from FVT row."
+        (at "total-nzs-count" (read FVT|T|RewardAggregate fvt-id ["total-nzs-count"]))
+    )
+
+    (defun UR_FVT|EarningLegCount:integer (fvt-id:string)
+        @doc "`(user, score-entity)` pairs holding non-zero weight anywhere on this FVT -- the number \
+            \ of legs that RECEIVE a share of the next accrual. \
+            \ \
+            \ NOT `total-nzs-count`, AND THE DIFFERENCE IS NOT COSMETIC. `nzs-count` is per SCORE and \
+            \ one member can employ several scores: measured on chain, DHOuroLp employs THREE and the \
+            \ same six accounts hold all three, so a sum over employed scores counts one user three \
+            \ times for ONE leg. Restoring `unclaimed-count` from such a sum sets it ABOVE the \
+            \ collectable legs, the sweep never reaches 1, and the dust accrues exactly as before. \
+            \ \
+            \ KEY-TESTED BECAUSE THE FIELD IS NEWER THAN THE ROWS. It was added 2026-11-09 to a \
+            \ schema whose 52 rows already exist on chain, and a pre-existing row carries no such \
+            \ FIELD. NOTHING DEFAULTS ONE: `with-default-read` defaults an absent ROW, and `try` \
+            \ does NOT catch the failure either -- both MEASURED, not assumed, after this exact \
+            \ mistake in `coin.UR_URV|VaultDormantCount` aborted every coinbase on chain 0 and \
+            \ froze the braid for sixteen hours on 2026-11-09. The only form that survives is \
+            \ reading the row as an OBJECT and testing `contains` before `at`. 0 is also the \
+            \ correct pre-migration VALUE. The guard is NOT a substitute for \
+            \ the one-shot repair that RAN ON 2026-11-10 and was then REMOVED from this module \
+            \ (a migration cannot be un-deployed, only left as dead surface, so it was deleted in \
+            \ the round that followed). The guard stays because the COLUMN stays absent on any row \
+            \ written before that date and never touched since."
+        ;;READ THE ROW, THEN TEST FOR THE KEY. Do not bind it, do not `at` it, do not `try` it.
+        ;;The column list is dropped on purpose: naming an absent column in one aborts too.
+        (let
+            (
+                (row:object (try {} (read FVT|T|RewardAggregate fvt-id)))
+            )
+            (if (contains "earning-leg-count" row)
+                (at "earning-leg-count" row)
+                0)
+        )
+    )
+
+    (defun UR_FVT|EnabledRewardCount:integer (fvt-id:string)
+        @doc "Reads enabled-reward-count from FVT row."
+        (at "enabled-reward-count" (read FVT|T|RewardAggregate fvt-id ["enabled-reward-count"]))
+    )
+
+    (defun UR_FVT|MemberLinkCount:integer (fvt-id:string)
+        @doc "Reads member-link-count from FVT row (ScoreEntityLink admissions)."
+        (at "member-link-count" (read FVT|T|RewardAggregate fvt-id ["member-link-count"]))
+    )
+
+    (defun UR_FVT|Mosaic:bool (fvt-id:string)
+        @doc "Reads mosaic from FVT row."
+        (at "mosaic" (read FVT|T|RewardAggregate fvt-id ["mosaic"]))
+    )
+
+    (defun UR_FVT|MembershipMode:string (fvt-id:string)
+        @doc "Reads membership-mode from FVT row."
+        (at "membership-mode" (read FVT|T|RewardAggregate fvt-id ["membership-mode"]))
+    )
+
+    (defun UR_FVT|SplitMode:string (fvt-id:string)
+        @doc "Reads the farm reward-split mode (D1-G2): SPLIT|STAKED (participation, default) | SPLIT|TVL (pool-size). \
+            \ Farm (class 0) only consults it at inject; vault/treasury store the default but never read it."
+        (at "split-mode" (read FVT|T|RewardAggregate fvt-id ["split-mode"]))
+    )
+
+
+    (defun UR_FVT-SEL|ScoreEntityLink:object{AcquisitionSchemasV5.FVT|ScoreEntityLink} (fvt-id:string score-entity-id:string)
+        @doc "Reads ScoreEntityLink row; absent rows read as disabled with farm sentinels via default object."
+        ;;ONE read, THEN test for the key -- and the `earning-user-count` BIND that used to sit in
+        ;;this `with-default-read` is why this matters more here than anywhere else. A default
+        ;;object covers an absent ROW and NOTHING covers an absent COLUMN, so that bind aborted on
+        ;;all 13 pre-existing link rows; every other `UR_FVT-SEL|*` reader fans out of this one,
+        ;;so it would have taken the entire member surface -- and the migration itself -- with it.
+        (let
+            (
+                (row:object (try {} (read FVT|T|ScoreEntityLink (UCk_ScoreEntityLink fvt-id score-entity-id))))
+            )
+            (if (contains "score-entity-id" row)
+                (UDC_FVT|ScoreEntityLink
+                    (at "score-entity-type" row)
+                    (if (contains "earning-user-count" row) (at "earning-user-count" row) 0)
+                    (at "enabled" row)
+                    (at "swpair" row)
+                    (at "ghost-tvl-weight" row)
+                    (at "total-lane-weight" row)
+                    (at "delegation" row)
+                    (at "capture-units" row)
+                    (at "capture-weight" row)
+                    (at "oracle-ts" row)
+                    (at "fvt-id" row)
+                    (at "score-entity-id" row))
+                (UDC_FVT|ScoreEntityLink CT_SCORE_ENTITY_SCORE 0 false BAR 0.0 0.0 false 0.0 0.0 STREAM_EPOCH fvt-id score-entity-id))
+        )
+    )
+
+    (defun UR_FVT-SEL|Enabled:bool (fvt-id:string score-entity-id:string)
+        @doc "Reads enabled from ScoreEntityLink row."
+        (at "enabled" (UR_FVT-SEL|ScoreEntityLink fvt-id score-entity-id))
+    )
+
+    (defun UR_FVT-SEL|ScoreEntityType:integer (fvt-id:string score-entity-id:string)
+        @doc "Reads score-entity-type from ScoreEntityLink row."
+        (at "score-entity-type" (UR_FVT-SEL|ScoreEntityLink fvt-id score-entity-id))
+    )
+
+    (defun UR_FVT-SEL|EarningUserCount:integer (fvt-id:string score-entity-id:string)
+        @doc "Users with NON-ZERO weight on this member -- the tier-1 earning count. Lane-independent, \
+            \ because weight is not per reward token, which is why it lives on the link row rather \
+            \ than on the per-lane mini-vault. \
+            \ \
+            \ KEY-TESTED BECAUSE THE FIELD IS NEWER THAN THE ROWS. It was added 2026-11-09 to a \
+            \ schema whose 52 rows already exist on chain, and a pre-existing row carries no such \
+            \ FIELD. NOTHING DEFAULTS ONE: `with-default-read` defaults an absent ROW, and `try` \
+            \ does NOT catch the failure either -- both MEASURED, not assumed, after this exact \
+            \ mistake in `coin.UR_URV|VaultDormantCount` aborted every coinbase on chain 0 and \
+            \ froze the braid for sixteen hours on 2026-11-09. The only form that survives is \
+            \ reading the row as an OBJECT and testing `contains` before `at`. 0 is also the \
+            \ correct pre-migration VALUE. The guard is NOT a substitute for \
+            \ the one-shot repair that RAN ON 2026-11-10 and was then REMOVED from this module \
+            \ (a migration cannot be un-deployed, only left as dead surface, so it was deleted in \
+            \ the round that followed). The guard stays because the COLUMN stays absent on any row \
+            \ written before that date and never touched since."
+        ;;READ THE ROW, THEN TEST FOR THE KEY. Reads the TABLE rather than going through
+        ;;`UR_FVT-SEL|ScoreEntityLink`, so this guard stands on its own.
+        (let
+            (
+                (row:object (try {} (read FVT|T|ScoreEntityLink (UCk_ScoreEntityLink fvt-id score-entity-id))))
+            )
+            (if (contains "earning-user-count" row)
+                (at "earning-user-count" row)
+                0)
+        )
+    )
+
+    (defun UR_FVT-SEL|Swpair:string (fvt-id:string score-entity-id:string)
+        @doc "Reads swpair from ScoreEntityLink row."
+        (at "swpair" (UR_FVT-SEL|ScoreEntityLink fvt-id score-entity-id))
+    )
+
+    (defun UR_FVT-SEL|GhostTvlWeight:decimal (fvt-id:string score-entity-id:string)
+        @doc "Reads ghost-tvl-weight (W_i) from ScoreEntityLink row."
+        (at "ghost-tvl-weight" (UR_FVT-SEL|ScoreEntityLink fvt-id score-entity-id))
+    )
+
+    (defun UR_FVT-SEL|TotalLaneWeight:decimal (fvt-id:string score-entity-id:string)
+        @doc "Reads total-lane-weight (Σ w-user) from the ScoreEntityLink row. NOTE since 2026-10-08: this is a \
+            \ MAINTAINED MIRROR, no longer the Tier-2 divisor — URC_ScoreEntityMemberTier2Divisor reads the SCORE \
+            \ total-deb basis so numerator and divisor share one ledger. Kept for inspection and continuity."
+        (at "total-lane-weight" (UR_FVT-SEL|ScoreEntityLink fvt-id score-entity-id))
+    )
+
+    (defun UR_FVT-SEL|Delegation:bool (fvt-id:string score-entity-id:string)
+        @doc "DSA: is this member a delegation agency? false for a normal member."
+        (at "delegation" (UR_FVT-SEL|ScoreEntityLink fvt-id score-entity-id))
+    )
+
+    (defun UR_FVT-SEL|CaptureUnits:decimal (fvt-id:string score-entity-id:string)
+        @doc "DSA: an agency's ideal capacity = min(floor(Q/unit-score), nodes) — the IDEAL inject denominator term. 0.0 for a normal member."
+        (at "capture-units" (UR_FVT-SEL|ScoreEntityLink fvt-id score-entity-id))
+    )
+
+    (defun UR_FVT-SEL|CaptureWeight:decimal (fvt-id:string score-entity-id:string)
+        @doc "DSA: an agency's uptime-adjusted actual = capture-units × uptime/1000 — the inject NUMERATOR (pre-expiry). 0.0 for a normal member."
+        (at "capture-weight" (UR_FVT-SEL|ScoreEntityLink fvt-id score-entity-id))
+    )
+
+    (defun UR_FVT-SEL|OracleTs:time (fvt-id:string score-entity-id:string)
+        @doc "DSA: timestamp of the last oracle write for this agency (now − ts > 25h ⇒ expired ⇒ effective capture 0)."
+        (at "oracle-ts" (UR_FVT-SEL|ScoreEntityLink fvt-id score-entity-id))
+    )
+
+    (defun UR_FVT-MUW|ContribWeight:decimal (user-id:string fvt-id:string score-entity-id:string)
+        @doc "Reads a farm-triplet user's stored Level-1 weight snapshot; 0.0 when absent."
+        (with-default-read FVT|T|MemberUserWeight (UCk_MemberUserWeight user-id fvt-id score-entity-id)
+            {"contrib-weight"          : 0.0}
+            {"contrib-weight"          := cw}
+            cw
+        )
+    )
+
+    (defun UR_FVT-SEL|FvtId:string (fvt-id:string score-entity-id:string)
+        @doc "Reads fvt-id from ScoreEntityLink row."
+        (at "fvt-id" (UR_FVT-SEL|ScoreEntityLink fvt-id score-entity-id))
+    )
+
+    (defun UR_FVT-SEL|ScoreEntityId:string (fvt-id:string score-entity-id:string)
+        @doc "Reads score-entity-id from ScoreEntityLink row."
+        (at "score-entity-id" (UR_FVT-SEL|ScoreEntityLink fvt-id score-entity-id))
+    )
+
+    (defun UR_FVT-RG|RpsGlobal:object{AcquisitionSchemasV5.FVT|RPS|Global} (fvt-id:string dptf-id:string)
+        @doc "Reads global RPS row for one reward token; absent rows read as disabled with zeroed rps fields."
+        ;;ONE read, THEN test for the key. Same defect as `UR_FVT-SEL|ScoreEntityLink`: the
+        ;;`dormant-claim-count` bind that used to sit here aborted on all 11 pre-existing lane
+        ;;rows, and every `UR_FVT-RG|*` reader -- reward-enabled, current-rps, available-rewards,
+        ;;unclaimed-count -- fans out of this one.
+        (let
+            (
+                (row:object (try {} (read FVT|T|RPS|Global (UCk_RpsGlobal fvt-id dptf-id))))
+            )
+            (if (contains "dptf-id" row)
+                (UDC_FVT|RPS|Global
+                    (at "reward-enabled" row)
+                    (at "current-rps" row)
+                    (at "available-rewards" row)
+                    (at "unclaimed-count" row)
+                    (if (contains "dormant-claim-count" row) (at "dormant-claim-count" row) 0)
+                    (at "zombie-rewards" row)
+                    (at "segmentation" row)
+                    (at "reward-kind" row)
+                    (at "multiplet-family-id" row)
+                    (at "stream-count" row)
+                    (at "stream-last-release" row)
+                    (at "stream-unreleased" row)
+                    (at "royalty-rewards" row)
+                    (at "min-inject-amount" row)
+                    (at "fvt-id" row)
+                    (at "dptf-id" row))
+                (UDC_FVT|RPS|Global false 0.0 0.0 0 0 0.0 false CT_REWARD_KIND_PLAIN BAR 0 STREAM_EPOCH 0.0 0.0 CT_DEFAULT_MIN_INJECT fvt-id dptf-id))
+        )
+    )
+
+    (defun UR_FVT-RG|RewardEnabled:bool (fvt-id:string dptf-id:string)
+        @doc "Reads reward-enabled from global RPS row."
+        (at "reward-enabled" (UR_FVT-RG|RpsGlobal fvt-id dptf-id))
+    )
+
+    (defun UR_FVT-RG|CurrentRps:decimal (fvt-id:string dptf-id:string)
+        @doc "Reads current-rps (Tier-2 G) from global RPS row."
+        (at "current-rps" (UR_FVT-RG|RpsGlobal fvt-id dptf-id))
+    )
+
+    (defun UR_FVT-RG|MinInjectAmount:decimal (fvt-id:string dptf-id:string)
+        @doc "The owner's per-lane minimum for ONE injection. ABSENT READS AS 1.0 — the whole \
+            \ point of `with-default-read` here: every lane that existed before this table, and \
+            \ every lane whose owner never set a floor, answers 1.0 without a migration pass ever \
+            \ touching it. A floor exists because `CC_Inject` runs its stale-fix loop regardless \
+            \ of amount, so without one a dust injection could force-fix (and, when the owner is \
+            \ the injector, force-BILL) an entire membership for a token's smallest unit."
+        (at "min-inject-amount" (UR_FVT-RG|RpsGlobal fvt-id dptf-id))
+    )
+
+    (defun UR_FVT-RG|AvailableRewards:decimal (fvt-id:string dptf-id:string)
+        @doc "Reads available-rewards from global RPS row."
+        (at "available-rewards" (UR_FVT-RG|RpsGlobal fvt-id dptf-id))
+    )
+
+    (defun UR_FVT-RG|UnclaimedCount:integer (fvt-id:string dptf-id:string)
+        @doc "Reads unclaimed-count from global RPS row."
+        (at "unclaimed-count" (UR_FVT-RG|RpsGlobal fvt-id dptf-id))
+    )
+
+    (defun UR_FVT-RG|DormantClaimCount:integer (fvt-id:string dptf-id:string)
+        @doc "Reads dormant-claim-count from the global RPS row: legs on this lane still OWED but \
+            \ earning nothing at the next accrual. \
+            \ \
+            \ THE GLOBAL HALF OF THE S1 RESTORE: `unclaimed-count := earning-leg-count + this`. It \
+            \ exists because the two cannot be derived from one another -- an orphan is absent from \
+            \ every stake-side count and is still owed, which is exactly the case the canonical \
+            \ `coin` vault removed its `nzs` reset for. \
+            \ \
+            \ KEY-TESTED BECAUSE THE FIELD IS NEWER THAN THE ROWS. It was added 2026-11-09 to a \
+            \ schema whose 52 rows already exist on chain, and a pre-existing row carries no such \
+            \ FIELD. NOTHING DEFAULTS ONE: `with-default-read` defaults an absent ROW, and `try` \
+            \ does NOT catch the failure either -- both MEASURED, not assumed, after this exact \
+            \ mistake in `coin.UR_URV|VaultDormantCount` aborted every coinbase on chain 0 and \
+            \ froze the braid for sixteen hours on 2026-11-09. The only form that survives is \
+            \ reading the row as an OBJECT and testing `contains` before `at`. 0 is also the \
+            \ correct pre-migration VALUE. The guard is NOT a substitute for \
+            \ the one-shot repair that RAN ON 2026-11-10 and was then REMOVED from this module \
+            \ (a migration cannot be un-deployed, only left as dead surface, so it was deleted in \
+            \ the round that followed). The guard stays because the COLUMN stays absent on any row \
+            \ written before that date and never touched since."
+        ;;READ THE ROW, THEN TEST FOR THE KEY. Reads the TABLE rather than going through
+        ;;`UR_FVT-RG|RpsGlobal`, so this guard stands on its own.
+        (let
+            (
+                (row:object (try {} (read FVT|T|RPS|Global (UCk_RpsGlobal fvt-id dptf-id))))
+            )
+            (if (contains "dormant-claim-count" row)
+                (at "dormant-claim-count" row)
+                0)
+        )
+    )
+
+    (defun UR_FVT-RG|ZombieRewards:decimal (fvt-id:string dptf-id:string)
+        @doc "Reads zombie-rewards (escrow-on-empty limbo balance) from the global RPS row; 0.0 when absent."
+        (at "zombie-rewards" (UR_FVT-RG|RpsGlobal fvt-id dptf-id))
+    )
+
+    (defun UR_FVT-RG|Segmentation:bool (fvt-id:string dptf-id:string)
+        @doc "Reads segmentation flag from global RPS row."
+        (at "segmentation" (UR_FVT-RG|RpsGlobal fvt-id dptf-id))
+    )
+
+    (defun UR_FVT-RG|FvtId:string (fvt-id:string dptf-id:string)
+        @doc "Reads fvt-id from global RPS row."
+        (at "fvt-id" (UR_FVT-RG|RpsGlobal fvt-id dptf-id))
+    )
+
+    (defun UR_FVT-RG|DptfId:string (fvt-id:string dptf-id:string)
+        @doc "Reads dptf-id from global RPS row."
+        (at "dptf-id" (UR_FVT-RG|RpsGlobal fvt-id dptf-id))
+    )
+
+    (defun UR_FVT-RG|RewardKind:string (fvt-id:string dptf-id:string)
+        @doc "Reads reward-kind from global RPS row."
+        (at "reward-kind" (UR_FVT-RG|RpsGlobal fvt-id dptf-id))
+    )
+
+    (defun UR_FVT-RG|MultipletFamilyId:string (fvt-id:string dptf-id:string)
+        @doc "Reads multiplet-family-id from global RPS row."
+        (at "multiplet-family-id" (UR_FVT-RG|RpsGlobal fvt-id dptf-id))
+    )
+
+    (defun UR_FVT-RG|StreamCount:integer (fvt-id:string dptf-id:string)
+        @doc "Reads stream-count (live linear-release stream positions on this lane; 0 = none) from global RPS row."
+        (at "stream-count" (UR_FVT-RG|RpsGlobal fvt-id dptf-id))
+    )
+
+    (defun UR_FVT-RG|StreamLastRelease:time (fvt-id:string dptf-id:string)
+        @doc "Reads stream-last-release (shared lane drip checkpoint) from global RPS row."
+        (at "stream-last-release" (UR_FVT-RG|RpsGlobal fvt-id dptf-id))
+    )
+
+    (defun UR_FVT-RG|StreamUnreleased:decimal (fvt-id:string dptf-id:string)
+        @doc "Reads stream-unreleased (custodied-but-not-yet-dripped total on this lane) from global RPS row."
+        (at "stream-unreleased" (UR_FVT-RG|RpsGlobal fvt-id dptf-id))
+    )
+
+    (defun UR_FVT-RG|RoyaltyRewards:decimal (fvt-id:string dptf-id:string)
+        @doc "DSA: the royalty pool (uptime-shortfall custody) on this lane; 0.0 when absent / non-delegation."
+        (at "royalty-rewards" (UR_FVT-RG|RpsGlobal fvt-id dptf-id))
+    )
+
+    (defun UR_FVT-RS|Stream:object{AcquisitionSchemasV5.FVT|RPS|Stream} (fvt-id:string dptf-id:string position:integer)
+        @doc "Reads one FVT|T|RPS|Stream row (an active stream position). Positions 1..stream-count always exist."
+        (read FVT|T|RPS|Stream (UCk_RpsStream fvt-id dptf-id position))
+    )
+
+    (defun UR_FVT-MF|MultipletFamily:object{AcquisitionSchemasV5.FVT|MultipletFamily} (multiplet-family-id:string)
+        @doc "Reads full MultipletFamily row."
+        (read FVT|T|MultipletFamily multiplet-family-id)
+    )
+
+    (defun UR_FVT-MF|Token0Id:string (multiplet-family-id:string)
+        @doc "Reads token-0-id from MultipletFamily row."
+        (at "token-0-id" (read FVT|T|MultipletFamily multiplet-family-id ["token-0-id"]))
+    )
+
+    (defun UR_FVT-MF|Token1Id:string (multiplet-family-id:string)
+        @doc "Reads token-1-id from MultipletFamily row."
+        (at "token-1-id" (read FVT|T|MultipletFamily multiplet-family-id ["token-1-id"]))
+    )
+
+    (defun UR_FVT-MF|Token2Id:string (multiplet-family-id:string)
+        @doc "Reads token-2-id from MultipletFamily row."
+        (at "token-2-id" (read FVT|T|MultipletFamily multiplet-family-id ["token-2-id"]))
+    )
+
+    (defun UR_FVT-MF|Ats01Id:string (multiplet-family-id:string)
+        @doc "Reads ats-0-1-id from MultipletFamily row."
+        (at "ats-0-1-id" (read FVT|T|MultipletFamily multiplet-family-id ["ats-0-1-id"]))
+    )
+
+    (defun UR_FVT-MF|Ats12Id:string (multiplet-family-id:string)
+        @doc "Reads ats-1-2-id from MultipletFamily row."
+        (at "ats-1-2-id" (read FVT|T|MultipletFamily multiplet-family-id ["ats-1-2-id"]))
+    )
+
+    (defun UR_FVT-MF|Rank:integer (multiplet-family-id:string)
+        @doc "Reads rank (lane count) from MultipletFamily row."
+        (at "rank" (read FVT|T|MultipletFamily multiplet-family-id ["rank"]))
+    )
+
+    (defun UR_FVT-MF|Active:bool (multiplet-family-id:string)
+        @doc "Reads active from MultipletFamily row."
+        (at "active" (read FVT|T|MultipletFamily multiplet-family-id ["active"]))
+    )
+
+    (defun UR_FVT-MF|MultipletFamilyId:string (multiplet-family-id:string)
+        @doc "Reads multiplet-family-id from MultipletFamily row."
+        (at "multiplet-family-id" (read FVT|T|MultipletFamily multiplet-family-id ["multiplet-family-id"]))
+    )
+
+    (defun UR_FVT-RM|RpsMember:object{AcquisitionSchemasV5.FVT|RPS|Member} (fvt-id:string score-entity-id:string dptf-id:string)
+        @doc "Reads member-score RPS row; absent rows read as zero g_i / L_i / pending-member-rewards."
+        (with-default-read FVT|T|RPS|Member (UCk_RpsMember fvt-id score-entity-id dptf-id)
+            (UDC_FVT|RPS|Member 0.0 0.0 0.0 fvt-id score-entity-id dptf-id)
+            {"last-farm-rps-g"          := g
+            ,"member-deb-rps"          := l
+            ,"pending-member-rewards"  := ptr
+            ,"fvt-id"                   := fid
+            ,"score-entity-id"                 := sid
+            ,"dptf-id"                  := did}
+            (UDC_FVT|RPS|Member g l ptr fid sid did)
+        )
+    )
+
+    (defun UR_FVT-RM|LastFarmRpsG:decimal (fvt-id:string score-entity-id:string dptf-id:string)
+        @doc "Reads last-farm-rps-g (g_i) from member RPS row."
+        (at "last-farm-rps-g" (UR_FVT-RM|RpsMember fvt-id score-entity-id dptf-id))
+    )
+
+    (defun UR_FVT-RM|MemberDebRps:decimal (fvt-id:string score-entity-id:string dptf-id:string)
+        @doc "Reads member-deb-rps (L_i) from member RPS row."
+        (at "member-deb-rps" (UR_FVT-RM|RpsMember fvt-id score-entity-id dptf-id))
+    )
+
+    (defun UR_FVT-RM|PendingMemberRewards:decimal (fvt-id:string score-entity-id:string dptf-id:string)
+        @doc "Reads pending-member-rewards from member RPS row."
+        (at "pending-member-rewards" (UR_FVT-RM|RpsMember fvt-id score-entity-id dptf-id))
+    )
+
+    (defun UR_FVT-RM|FvtId:string (fvt-id:string score-entity-id:string dptf-id:string)
+        @doc "Reads fvt-id from member RPS row."
+        (at "fvt-id" (UR_FVT-RM|RpsMember fvt-id score-entity-id dptf-id))
+    )
+
+    (defun UR_FVT-RM|ScoreEntityId:string (fvt-id:string score-entity-id:string dptf-id:string)
+        @doc "Reads score-entity-id from member RPS row."
+        (at "score-entity-id" (UR_FVT-RM|RpsMember fvt-id score-entity-id dptf-id))
+    )
+
+    (defun UR_FVT-RM|DptfId:string (fvt-id:string score-entity-id:string dptf-id:string)
+        @doc "Reads dptf-id from member RPS row."
+        (at "dptf-id" (UR_FVT-RM|RpsMember fvt-id score-entity-id dptf-id))
+    )
+
+    (defun UR_FVT-RU|RpsUser:object{AcquisitionSchemasV5.FVT|RPS|User}
+        (user-id:string fvt-id:string score-entity-id:string dptf-id:string)
+        @doc "Reads user RPS row; absent rows read as zero pending and zero last-rps checkpoint."
+        (with-default-read FVT|T|RPS|User (UCk_RpsUser user-id fvt-id score-entity-id dptf-id)
+            (UDC_FVT|RPS|User 0.0 0.0 user-id fvt-id score-entity-id dptf-id)
+            {"last-rps"         := lr
+            ,"pending-rewards"  := pr
+            ,"user-id"          := uid
+            ,"fvt-id"           := fid
+            ,"score-entity-id"         := sid
+            ,"dptf-id"          := did}
+            (UDC_FVT|RPS|User lr pr uid fid sid did)
+        )
+    )
+
+    (defun UR_FVT-RU|LastRps:decimal (user-id:string fvt-id:string score-entity-id:string dptf-id:string)
+        @doc "Reads last-rps (user checkpoint vs L_i) from user RPS row."
+        (at "last-rps" (UR_FVT-RU|RpsUser user-id fvt-id score-entity-id dptf-id))
+    )
+
+    (defun UR_FVT-RU|PendingRewards:decimal (user-id:string fvt-id:string score-entity-id:string dptf-id:string)
+        @doc "Reads pending-rewards from user RPS row."
+        (at "pending-rewards" (UR_FVT-RU|RpsUser user-id fvt-id score-entity-id dptf-id))
+    )
+
+    (defun UR_FVT-RU|UserId:string (user-id:string fvt-id:string score-entity-id:string dptf-id:string)
+        @doc "Reads user-id from user RPS row."
+        (at "user-id" (UR_FVT-RU|RpsUser user-id fvt-id score-entity-id dptf-id))
+    )
+
+    (defun UR_FVT-RU|FvtId:string (user-id:string fvt-id:string score-entity-id:string dptf-id:string)
+        @doc "Reads fvt-id from user RPS row."
+        (at "fvt-id" (UR_FVT-RU|RpsUser user-id fvt-id score-entity-id dptf-id))
+    )
+
+    (defun UR_FVT-RU|ScoreEntityId:string (user-id:string fvt-id:string score-entity-id:string dptf-id:string)
+        @doc "Reads score-entity-id from user RPS row."
+        (at "score-entity-id" (UR_FVT-RU|RpsUser user-id fvt-id score-entity-id dptf-id))
+    )
+
+    (defun UR_FVT-RU|DptfId:string (user-id:string fvt-id:string score-entity-id:string dptf-id:string)
+        @doc "Reads dptf-id from user RPS row."
+        (at "dptf-id" (UR_FVT-RU|RpsUser user-id fvt-id score-entity-id dptf-id))
+    )
+
+    (defun URC_FvtHasScoreEntityLinks:bool (fvt-id:string)
+        @doc "True when member-link-count > 0 (cheap row read; preferred over keys/select)."
+        (> (UR_FVT|MemberLinkCount fvt-id) 0)
+    )
+
+    (defun URC_FvtScoreEntityLinkRowExists:bool (fvt-id:string score-entity-id:string)
+        @doc "True when FVT|T|ScoreEntityLink row exists (not default-read absent sentinel)."
+        (let
+            (
+                (trial (try false (read FVT|T|ScoreEntityLink (UCk_ScoreEntityLink fvt-id score-entity-id))))
+            )
+            (if (= (typeof trial) "bool") false true)
+        )
+    )
+
+    (defun URC_FvtRpsGlobalRowExists:bool (fvt-id:string dptf-id:string)
+        @doc "True when FVT|T|RPS|Global row exists."
+        (let
+            (
+                (trial (try false (read FVT|T|RPS|Global (UCk_RpsGlobal fvt-id dptf-id))))
+            )
+            (if (= (typeof trial) "bool") false true)
+        )
+    )
+
+    (defun URC_InjectDenominator:decimal (fvt-id:string)
+        @doc "Inject RPS divisor: farm S = total-ghost-tvl-weight (LEGACY cache — farms now use \
+            \ URC_FarmInjectDenominatorFresh); vault/treasury = the MAINTAINED total-deb-score mirror \
+            \ (point-read, incrementally kept — M2/#11). No scan, so it is defcap-safe (UEV_InjectContext)."
+        (if (= (UR_FVT|FvtClass fvt-id) 0)
+            (UR_FVT|TotalGhostTvlWeight fvt-id)
+            (UR_FVT|TotalDebScore fvt-id)
+        )
+    )
+
+    (defun URC_FarmInjectDenominatorFresh:decimal (fvt-id:string)
+        @doc "Split-at-inject farm S computed FRESH (audit LP redesign / Stage 2): sum of each enabled member's \
+            \ current staked STOA value (URC_MemberStakedStoaValue). No cache, no sync — the value is base-dependent \
+            \ so it must be read at inject. Enumerates members (URD) — inject is an infrequent, bounded operator path. \
+            \ DSA: a delegation member contributes its IDEAL capacity (capture-units), NOT its staked value — the \
+            \ ideal denominator that lets the uptime shortfall route to royalty (S §4)."
+        (let
+            (
+                (member-ids:[string] (URH_FvtEnabledScoreEntityIdsForFvt fvt-id))
+            )
+            (fold (+) 0.0
+                (map
+                    (lambda (score-entity-id:string)
+                        (if (UR_FVT-SEL|Delegation fvt-id score-entity-id)
+                            (UR_FVT-SEL|CaptureUnits fvt-id score-entity-id)
+                            (URC_MemberLevel2Weight
+                                fvt-id
+                                (UR_FVT-SEL|ScoreEntityType fvt-id score-entity-id)
+                                score-entity-id
+                                (UR_FVT-SEL|Swpair fvt-id score-entity-id)
                             )
                         )
                     )
+                    member-ids
                 )
             )
         )
     )
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    ;; [UR]  read
-    (defun UR_AQP|Pool:object{AcquisitionSchemasV3.AQP|Schema} (pool-id:string)
-        @doc "Reads full pool definition row from AQP|T|Pool."
-        (read AQP|T|Pool pool-id)
-    )
-    (defun UR_AQP|PoolAqpClass:integer (pool-id:string)
-        @doc "Reads aqp-class from pool row."
-        (at "aqp-class" (read AQP|T|Pool pool-id ["aqp-class"]))
-    )
-    (defun URC_AQP|ScoreMxChangeSafe:bool (score-id:string)
-        @doc "HEAVY (two tracker scans). True iff this score has NO frozen and NO sleeping position, \
-            \ which is exactly the condition under which its multipliers may be re-set without \
-            \ corrupting anybody's weight. \
-            \ \
-            \ WHY NOT `nzs-count = 0`, the obvious gate: it is the count of holders with ANY weight, \
-            \ so a score with ordinary native stakers fails it — and on the live chain that is \
-            \ SilverSnakePower, with three native holders, the score most in need of the change. \
-            \ Native stakes multiply by 1.0 and never read `mx` \
-            \ (`URC_SignedBaseDeltaForDptfLpStake`), so they are not what makes a change unsafe. \
-            \ The frozen and sleeping LEGS are. \
-            \ \
-            \ WHAT MAKES A CHANGE UNSAFE is not staleness. The base is an accumulated SIGNED delta \
-            \ that promises 'a full unstake reverses exactly and nets to 0'; change `mx` between a \
-            \ stake and its unstake and the reversal stops cancelling, the row can go NEGATIVE and \
-            \ the global total with it. Deb-staleness never compares `mx`, so nothing reports it. \
-            \ \
-            \ TEMPORARY. The owner's standing decision is that a change triggers a parallel re-rate \
-            \ sweep instead of being refused. When that sweep lands, this predicate stops being a \
-            \ gate and becomes the test for whether the sweep is NEEDED."
-        (let
+
+    (defun URC_MaxStreamLanes:integer (account:string)
+        @doc "Max concurrent streamed injects the FVT owner konto may run, by Elite tier (snapshot at inject, D5). \
+            \ Smart accounts have no Elite level, so they resolve to their sovereign standard account. \
+            \ slots = max(1, (major-1)*7 + minor): everyone gets >= 1, capped at STREAM_MAX_LANES (49 at tier 7.7)."
+        (let*
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
-                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
-                ;;
-                (pool-id:string (ref-SCR::UR_SCR|ScoreAqpoolLink score-id))
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                ;; 1. smart account → its controlling sovereign (standard) account; standard account → itself
+                (tier-acct:string
+                    (if (ref-DALOS::UR_AccountType account)
+                        (ref-DALOS::UR_AccountSovereign account)
+                        account))
+                ;; 2. the stored Elite tier of that account, as major.minor integers
+                (major:integer (ref-DALOS::UR_Elite-Tier-Major tier-acct))
+                (minor:integer (ref-DALOS::UR_Elite-Tier-Minor tier-acct))
+                ;; 3. tier → slot count; NOVICE (major 0) underflows to <1 and is floored to the guaranteed 1
+                (slots:integer (+ (* (- major 1) 7) minor))
             )
-            ;;A COLLECTION POOL HAS NO DPTF ASSET, AND READING ONE ABORTS. aqp-class 3 (DPSF) and
-            ;;4 (DPNF) hold a collection, which has no row in `DPTF|PropertiesTable` -- so the bare
-            ;;`UR_Frozen` below does not return a default, it ABORTS the whole transaction with
-            ;;"No value found in table ... for key: DHB-...". Measured 2026-10-10 against mainnet:
-            ;;ELEVEN of the fifteen live scores failed this way, which made
-            ;;`CC_UpdateScoreMultipliers` unusable for every collection score and reported it with
-            ;;a message naming neither the score nor the cause.
-            ;;
-            ;;TRUE IS THE CORRECT ANSWER, not merely the safe one: freezing and sleeping are
-            ;;variants of a FUNGIBLE. An asset that has no DPTF properties cannot have a frozen or
-            ;;sleeping DPTF leg, so there is nothing a multiplier change could mis-rate.
-            (if (or (= pool-id BAR) (> (UR_AQP|PoolAqpClass pool-id) 2))
-                true
-                (let
-                    (
-                        (asset:string (UR_AQP|PoolAssetId pool-id))
-                    )
-                    (let
-                        (
-                            (frozen:string (ref-DPTF::UR_Frozen asset))
-                            (sleeping:string (ref-DPTF::UR_Sleeping asset))
-                        )
-                        (and
-                            (if (= frozen BAR) true
-                                (= (length (URH_AQP|ActiveDptfTrackerRows pool-id frozen)) 0))
-                            (if (= sleeping BAR) true
-                                (= (length (URH_AQP|ActiveDpofTrackerRows pool-id sleeping)) 0)))
-                    )
-                )
-            )
+            (if (< slots 1) 1 slots)
         )
     )
-    (defun UR_AQP|PoolAssetId:string (pool-id:string)
-        @doc "Reads canonical asset-id from pool row."
-        (at "asset-id" (read AQP|T|Pool pool-id ["asset-id"]))
-    )
-    (defun UR_AQP|PoolScorePrimary:string (pool-id:string)
-        @doc "Reads score-primary slot from pool row."
-        (at "score-primary" (read AQP|T|Pool pool-id ["score-primary"]))
-    )
-    (defun UR_AQP|PoolScoreSecondary:string (pool-id:string)
-        @doc "Reads score-secondary slot from pool row."
-        (at "score-secondary" (read AQP|T|Pool pool-id ["score-secondary"]))
-    )
-    (defun UR_AQP|PoolScoreTertiary:string (pool-id:string)
-        @doc "Reads score-tertiary slot from pool row."
-        (at "score-tertiary" (read AQP|T|Pool pool-id ["score-tertiary"]))
-    )
-    (defun UR_AQP|PoolScoreQuaternary:string (pool-id:string)
-        @doc "Reads score-quaternary slot from pool row."
-        (at "score-quaternary" (read AQP|T|Pool pool-id ["score-quaternary"]))
-    )
-    (defun UR_AQP|PoolScoreQuinary:string (pool-id:string)
-        @doc "Reads score-quinary slot from pool row."
-        (at "score-quinary" (read AQP|T|Pool pool-id ["score-quinary"]))
-    )
-    (defun UR_AQP|PoolScoreSenary:string (pool-id:string)
-        @doc "Reads score-senary slot from pool row."
-        (at "score-senary" (read AQP|T|Pool pool-id ["score-senary"]))
-    )
-    (defun UR_AQP|PoolScoreSeptenary:string (pool-id:string)
-        @doc "Reads score-septenary slot from pool row."
-        (at "score-septenary" (read AQP|T|Pool pool-id ["score-septenary"]))
-    )
-    (defun UR_AQP|PoolAqpId:string (pool-id:string)
-        @doc "Reads aqp-id field from pool row."
-        (at "aqp-id" (read AQP|T|Pool pool-id ["aqp-id"]))
-    )
-    (defun UR_AQP|PoolStakeEnabled:bool (pool-id:string)
-        @doc "Reads stake-enabled from pool row (true at issue; owner may disable to pause new stakes)."
-        (at "stake-enabled" (read AQP|T|Pool pool-id ["stake-enabled"]))
-    )
-    (defun UR_AQP|PoolNns:integer (pool-id:string)
-        @doc "#FP1: reads the pool nns occupancy counter — -1 for amount pools (class 0/1); for nonce pools \
-            \ (class 2/3/4) the number of occupied nonce positions (0 = tracker empty, the finalize oracle)."
-        (at "nns" (read AQP|T|Pool pool-id ["nns"]))
-    )
-    (defun UR_AQP|UserUnn:integer (pool-id:string beneficiary-id:string)
-        @doc "Vacate-v2 §4: reads the (pool, beneficiary) occupancy counter — occupied tracker positions for \
-            \ this beneficiary (0 when absent). The fast-vacate drain settles a beneficiary the moment this \
-            \ decrements to 0 (their last position drained)."
-        (with-default-read AQP|T|UserOccupancy (UCk_UserOccupancy pool-id beneficiary-id)
-            {"unn" : 0} {"unn" := u} u)
-    )
-    (defun UR_AQP|PoolVacateInProgress:bool (pool-id:string)
-        @doc "Point read: true while an AQP-VCT vacate session is active on this pool (audit H2 / fix #5)."
-        (at "vacate-in-progress" (read AQP|T|Pool pool-id ["vacate-in-progress"]))
-    )
-    (defun UR_AQP|PoolSweepInProgress:bool (pool-id:string)
-        @doc "Point read: true while a re-score sweep (anchor retire/re-price) is active on this pool — blocks new \
-            \ stakes AND collect until the sweep completes (the aggregate-promile is in flux; sweep D3)."
-        (at "sweep-in-progress" (read AQP|T|Pool pool-id ["sweep-in-progress"]))
-    )
-    ;;
-    (defun UR_AQP|DPTFTracker:object{AcquisitionSchemasV3.AQP|TrueFungibleTracker}
-        (pool-id:string dptf-id:string owner-id:string beneficiary-id:string)
-        @doc "Reads DPTF tracker row; absent rows read as zero balance via default object."
-        (with-default-read AQP|T|DPTFTracker (UCk_DPTFTracker pool-id dptf-id owner-id beneficiary-id)
-            (UDC_AQP|TrueFungibleTracker 0.0 pool-id dptf-id owner-id beneficiary-id)
-            {"balance"          := bal
-            ,"pool-id"          := pid
-            ,"dptf-id"          := did
-            ,"owner-id"         := oid
-            ,"beneficiary-id"   := bid}
-            (UDC_AQP|TrueFungibleTracker bal pid did oid bid)
-        )
-    )
-    (defun UR_AQP|DPTFTrackerBalance:decimal (pool-id:string dptf-id:string owner-id:string beneficiary-id:string)
-        @doc "Reads staked DPTF balance from tracker row."
-        (at "balance" (UR_AQP|DPTFTracker pool-id dptf-id owner-id beneficiary-id))
-    )
-    (defun UR_AQP|DPTFTrackerPoolId:string (pool-id:string dptf-id:string owner-id:string beneficiary-id:string)
-        @doc "Reads pool-id from DPTF tracker row."
-        (at "pool-id" (UR_AQP|DPTFTracker pool-id dptf-id owner-id beneficiary-id))
-    )
-    (defun UR_AQP|DPTFTrackerDptfId:string (pool-id:string dptf-id:string owner-id:string beneficiary-id:string)
-        @doc "Reads dptf-id from DPTF tracker row."
-        (at "dptf-id" (UR_AQP|DPTFTracker pool-id dptf-id owner-id beneficiary-id))
-    )
-    (defun UR_AQP|DPTFTrackerOwnerId:string (pool-id:string dptf-id:string owner-id:string beneficiary-id:string)
-        @doc "Reads owner-id from DPTF tracker row."
-        (at "owner-id" (UR_AQP|DPTFTracker pool-id dptf-id owner-id beneficiary-id))
-    )
-    (defun UR_AQP|DPTFTrackerBeneficiaryId:string (pool-id:string dptf-id:string owner-id:string beneficiary-id:string)
-        @doc "Reads beneficiary-id from DPTF tracker row."
-        (at "beneficiary-id" (UR_AQP|DPTFTracker pool-id dptf-id owner-id beneficiary-id))
-    )
-    ;;
-    (defun UR_AQP|BenDptfTotal:object{AcquisitionSchemasV3.AQP|BenDptfTotal}
-        (beneficiary-id:string dptf-id:string)
-        @doc "Reads cross-pool DPTF stake rollup for beneficiary × dptf-id; absent row reads as zero total."
-        (with-default-read AQP|T|BenDptfTotal (UCk_BenDptfTotal beneficiary-id dptf-id)
-            (UDC_AQP|BenDptfTotal 0.0 0 beneficiary-id dptf-id)
-            {"total-balance"        := tb
-            ,"last-ank-sync-count"  := sc
-            ,"beneficiary-id"       := bid
-            ,"dptf-id"              := did}
-            (UDC_AQP|BenDptfTotal tb sc bid did)
-        )
-    )
-    (defun UR_AQP|BenDptfTotalBalance:decimal (beneficiary-id:string dptf-id:string)
-        @doc "Total DPTF staked by beneficiary across all pools for this exact dptf-id leg."
-        (at "total-balance" (UR_AQP|BenDptfTotal beneficiary-id dptf-id))
-    )
-    (defun UR_AQP|BenDptfLastAnkSyncCount:integer (beneficiary-id:string dptf-id:string)
-        @doc "ANK anchors-active count recorded at last anchor sync for this beneficiary × dptf-id."
-        (at "last-ank-sync-count" (UR_AQP|BenDptfTotal beneficiary-id dptf-id))
-    )
-    (defun URC_BenDptfAnchorsNeedSync:bool (beneficiary-id:string dptf-id:string)
-        @doc "True when beneficiary has positive cross-pool stake on dptf-id and ANK has more live anchors \
-            \ than were applied at last sync — UI signal for C_SyncTrueFungibleAnchors."
-        (let
-            (
-                (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
-                ;;
-                (total:decimal (UR_AQP|BenDptfTotalBalance beneficiary-id dptf-id))
-                (last-sync:integer (UR_AQP|BenDptfLastAnkSyncCount beneficiary-id dptf-id))
-                (live-count:integer (ref-ANK::UR_AA|AnchorsActive dptf-id))
-            )
-            (and (> total 0.0) (> live-count last-sync))
-        )
-    )
-    ;;
-    (defun UR_AQP|BenDpsfNonceTotal:object{AcquisitionSchemasV3.AQP|BenDpsfNonceTotal}
-        (beneficiary-id:string dpsf-id:string nonce:integer)
-        @doc "Reads cross-pool per-nonce DPSF rollup; absent row reads as zero amount."
-        (with-default-read AQP|T|BenDpsfNonceTotal
-            (UCk_BenDpsfNonceTotal beneficiary-id dpsf-id nonce)
-            (UDC_AQP|BenDpsfNonceTotal 0 beneficiary-id dpsf-id nonce)
-            {"amount"           := amt
-            ,"beneficiary-id"   := bid
-            ,"dpsf-id"          := did
-            ,"nonce"            := n}
-            (UDC_AQP|BenDpsfNonceTotal amt bid did n)
-        )
-    )
-    (defun UR_AQP|BenDpsfNonceAmount:integer (beneficiary-id:string dpsf-id:string nonce:integer)
-        @doc "Staked integer supply on one DPSF nonce across all pools for (beneficiary, dpsf-id)."
-        (at "amount" (UR_AQP|BenDpsfNonceTotal beneficiary-id dpsf-id nonce))
-    )
-    (defun UR_AQP|BenDpsfAnkMeta:object{AcquisitionSchemasV3.AQP|BenDpsfAnkMeta}
-        (beneficiary-id:string dpsf-id:string)
-        @doc "Reads ANK sync metadata for one DPSF leg; absent row reads as never synced / no active nonces."
-        (with-default-read AQP|T|BenDpsfAnkMeta
-            (UCk_BenDpsfAnkMeta beneficiary-id dpsf-id)
-            (UDC_AQP|BenDpsfAnkMeta 0 0 beneficiary-id dpsf-id)
-            {"last-ank-sync-count"  := sc
-            ,"active-nonce-count"   := anc
-            ,"beneficiary-id"       := bid
-            ,"dpsf-id"              := did}
-            (UDC_AQP|BenDpsfAnkMeta sc anc bid did)
-        )
-    )
-    (defun UR_AQP|BenDpsfLastAnkSyncCount:integer (beneficiary-id:string dpsf-id:string)
-        @doc "ANK anchors-active count recorded at last DPSF anchor sync for (beneficiary, dpsf-id)."
-        (at "last-ank-sync-count" (UR_AQP|BenDpsfAnkMeta beneficiary-id dpsf-id))
-    )
-    (defun UR_AQP|BenDpsfActiveNonceCount:integer (beneficiary-id:string dpsf-id:string)
-        @doc "O(1) count of positive BenDpsfNonceTotal rows — defcap-safe has-stake signal."
-        (at "active-nonce-count" (UR_AQP|BenDpsfAnkMeta beneficiary-id dpsf-id))
-    )
-    (defun URC_BenDpsfHasStake:bool (beneficiary-id:string dpsf-id:string)
-        @doc "True when beneficiary has any positive DPSF per-nonce rollup under dpsf-id (O(1) meta counter)."
-        (> (UR_AQP|BenDpsfActiveNonceCount beneficiary-id dpsf-id) 0)
-    )
-    (defun URC_BenDpsfAnchorsNeedSync:bool (beneficiary-id:string dpsf-id:string)
-        @doc "True when beneficiary has active DPSF stake and ANK has more live anchors on dpsf-id than at last sync."
-        (let
-            (
-                (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
-                ;;
-                (last-sync:integer (UR_AQP|BenDpsfLastAnkSyncCount beneficiary-id dpsf-id))
-                (live-count:integer (ref-ANK::UR_AA|AnchorsActive dpsf-id))
-            )
-            (and (URC_BenDpsfHasStake beneficiary-id dpsf-id) (> live-count last-sync))
-        )
-    )
-    ;;
-    (defun UR_AQP|BenDpnfNonceTotal:object{AcquisitionSchemasV3.AQP|BenDpnfNonceTotal}
-        (beneficiary-id:string dpnf-id:string nonce:integer)
-        @doc "Reads cross-pool per-nonce DPNF rollup; absent row reads as zero amount."
-        (with-default-read AQP|T|BenDpnfNonceTotal
-            (UCk_BenDpnfNonceTotal beneficiary-id dpnf-id nonce)
-            (UDC_AQP|BenDpnfNonceTotal 0 beneficiary-id dpnf-id nonce)
-            {"amount"           := amt
-            ,"beneficiary-id"   := bid
-            ,"dpnf-id"          := nid
-            ,"nonce"            := n}
-            (UDC_AQP|BenDpnfNonceTotal amt bid nid n)
-        )
-    )
-    (defun UR_AQP|BenDpnfNonceAmount:integer (beneficiary-id:string dpnf-id:string nonce:integer)
-        @doc "Staked integer supply on one DPNF nonce across all pools for (beneficiary, dpnf-id)."
-        (at "amount" (UR_AQP|BenDpnfNonceTotal beneficiary-id dpnf-id nonce))
-    )
-    (defun UR_AQP|BenDpnfAnkMeta:object{AcquisitionSchemasV3.AQP|BenDpnfAnkMeta}
-        (beneficiary-id:string dpnf-id:string)
-        @doc "Reads ANK sync metadata for one DPNF leg; absent row reads as never synced / no active nonces."
-        (with-default-read AQP|T|BenDpnfAnkMeta
-            (UCk_BenDpnfAnkMeta beneficiary-id dpnf-id)
-            (UDC_AQP|BenDpnfAnkMeta 0 0 beneficiary-id dpnf-id)
-            {"last-ank-sync-count"  := sc
-            ,"active-nonce-count"   := anc
-            ,"beneficiary-id"       := bid
-            ,"dpnf-id"              := nid}
-            (UDC_AQP|BenDpnfAnkMeta sc anc bid nid)
-        )
-    )
-    (defun UR_AQP|BenDpnfLastAnkSyncCount:integer (beneficiary-id:string dpnf-id:string)
-        @doc "ANK anchors-active count recorded at last DPNF anchor sync for (beneficiary, dpnf-id)."
-        (at "last-ank-sync-count" (UR_AQP|BenDpnfAnkMeta beneficiary-id dpnf-id))
-    )
-    (defun UR_AQP|BenDpnfActiveNonceCount:integer (beneficiary-id:string dpnf-id:string)
-        @doc "O(1) count of positive BenDpnfNonceTotal rows — defcap-safe has-stake signal."
-        (at "active-nonce-count" (UR_AQP|BenDpnfAnkMeta beneficiary-id dpnf-id))
-    )
-    (defun URC_BenDpnfHasStake:bool (beneficiary-id:string dpnf-id:string)
-        @doc "True when beneficiary has any positive DPNF per-nonce rollup under dpnf-id (O(1) meta counter)."
-        (> (UR_AQP|BenDpnfActiveNonceCount beneficiary-id dpnf-id) 0)
-    )
-    (defun URC_BenDpnfAnchorsNeedSync:bool (beneficiary-id:string dpnf-id:string)
-        @doc "True when beneficiary has active DPNF stake and ANK has more live anchors on dpnf-id than at last sync."
-        (let
-            (
-                (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
-                ;;
-                (last-sync:integer (UR_AQP|BenDpnfLastAnkSyncCount beneficiary-id dpnf-id))
-                (live-count:integer (ref-ANK::UR_AA|AnchorsActive dpnf-id))
-            )
-            (and (URC_BenDpnfHasStake beneficiary-id dpnf-id) (> live-count last-sync))
-        )
-    )
-    ;;
-    (defun UR_AQP|DPOFTracker:object{AcquisitionSchemasV3.AQP|OrtoFungibleTracker}
-        (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer)
-        @doc "Reads DPOF tracker row; absent rows read as zero balance via default object."
-        (with-default-read AQP|T|DPOFTracker (UCk_DPOFTracker pool-id dpof-id owner-id beneficiary-id nonce)
-            (UDC_AQP|OrtoFungibleTracker 0.0 pool-id dpof-id owner-id beneficiary-id nonce)
-            {"balance"          := bal
-            ,"pool-id"          := pid
-            ,"dpof-id"          := did
-            ,"owner-id"         := oid
-            ,"beneficiary-id"   := bid
-            ,"nonce"            := n}
-            (UDC_AQP|OrtoFungibleTracker bal pid did oid bid n)
-        )
-    )
-    (defun UR_AQP|DPOFTrackerBalance:decimal (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer)
-        @doc "Reads staked DPOF balance from tracker row."
-        (at "balance" (UR_AQP|DPOFTracker pool-id dpof-id owner-id beneficiary-id nonce))
-    )
-    (defun UR_AQP|DPOFTrackerPoolId:string (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer)
-        @doc "Reads pool-id from DPOF tracker row."
-        (at "pool-id" (UR_AQP|DPOFTracker pool-id dpof-id owner-id beneficiary-id nonce))
-    )
-    (defun UR_AQP|DPOFTrackerDpofId:string (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer)
-        @doc "Reads dpof-id from DPOF tracker row."
-        (at "dpof-id" (UR_AQP|DPOFTracker pool-id dpof-id owner-id beneficiary-id nonce))
-    )
-    (defun UR_AQP|DPOFTrackerOwnerId:string (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer)
-        @doc "Reads owner-id from DPOF tracker row."
-        (at "owner-id" (UR_AQP|DPOFTracker pool-id dpof-id owner-id beneficiary-id nonce))
-    )
-    (defun UR_AQP|DPOFTrackerBeneficiaryId:string (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer)
-        @doc "Reads beneficiary-id from DPOF tracker row."
-        (at "beneficiary-id" (UR_AQP|DPOFTracker pool-id dpof-id owner-id beneficiary-id nonce))
-    )
-    (defun UR_AQP|DPOFTrackerNonce:integer (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer)
-        @doc "Reads nonce from DPOF tracker row."
-        (at "nonce" (UR_AQP|DPOFTracker pool-id dpof-id owner-id beneficiary-id nonce))
-    )
-    ;;
-    (defun UR_AQP|DPSFTracker:object{AcquisitionSchemasV3.AQP|SemiFungibleTracker}
-        (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer)
-        @doc "Reads DPSF tracker row; absent rows read as zero balance via default object."
-        (with-default-read AQP|T|DPSFTracker (UCk_DPSFTracker pool-id dpsf-id owner-id beneficiary-id nonce)
-            (UDC_AQP|SemiFungibleTracker 0.0 pool-id dpsf-id owner-id beneficiary-id nonce)
-            {"balance"          := bal
-            ,"pool-id"          := pid
-            ,"dpsf-id"          := did
-            ,"owner-id"         := oid
-            ,"beneficiary-id"   := bid
-            ,"nonce"            := n}
-            (UDC_AQP|SemiFungibleTracker bal pid did oid bid n)
-        )
-    )
-    (defun UR_AQP|DPSFTrackerBalance:decimal (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer)
-        @doc "Reads staked DPSF balance from tracker row."
-        (at "balance" (UR_AQP|DPSFTracker pool-id dpsf-id owner-id beneficiary-id nonce))
-    )
-    (defun UR_AQP|DPSFTrackerPoolId:string (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer)
-        @doc "Reads pool-id from DPSF tracker row."
-        (at "pool-id" (UR_AQP|DPSFTracker pool-id dpsf-id owner-id beneficiary-id nonce))
-    )
-    (defun UR_AQP|DPSFTrackerDpsfId:string (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer)
-        @doc "Reads dpsf-id from DPSF tracker row."
-        (at "dpsf-id" (UR_AQP|DPSFTracker pool-id dpsf-id owner-id beneficiary-id nonce))
-    )
-    (defun UR_AQP|DPSFTrackerOwnerId:string (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer)
-        @doc "Reads owner-id from DPSF tracker row."
-        (at "owner-id" (UR_AQP|DPSFTracker pool-id dpsf-id owner-id beneficiary-id nonce))
-    )
-    (defun UR_AQP|DPSFTrackerBeneficiaryId:string (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer)
-        @doc "Reads beneficiary-id from DPSF tracker row."
-        (at "beneficiary-id" (UR_AQP|DPSFTracker pool-id dpsf-id owner-id beneficiary-id nonce))
-    )
-    (defun UR_AQP|DPSFTrackerNonce:integer (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer)
-        @doc "Reads nonce from DPSF tracker row."
-        (at "nonce" (UR_AQP|DPSFTracker pool-id dpsf-id owner-id beneficiary-id nonce))
-    )
-    ;;
-    (defun UR_AQP|DPNFTracker:object{AcquisitionSchemasV3.AQP|NonFungibleTracker}
-        (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer)
-        @doc "Reads DPNF tracker row; absent rows read as zero balance via default object."
-        (with-default-read AQP|T|DPNFTracker (UCk_DPNFTracker pool-id dpnf-id owner-id beneficiary-id nonce)
-            (UDC_AQP|NonFungibleTracker 0.0 pool-id dpnf-id owner-id beneficiary-id nonce)
-            {"balance"          := bal
-            ,"pool-id"          := pid
-            ,"dpnf-id"          := did
-            ,"owner-id"         := oid
-            ,"beneficiary-id"   := bid
-            ,"nonce"            := n}
-            (UDC_AQP|NonFungibleTracker bal pid did oid bid n)
-        )
-    )
-    (defun UR_AQP|DPNFTrackerBalance:decimal (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer)
-        @doc "Reads staked DPNF balance from tracker row."
-        (at "balance" (UR_AQP|DPNFTracker pool-id dpnf-id owner-id beneficiary-id nonce))
-    )
-    (defun UR_AQP|DPNFTrackerPoolId:string (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer)
-        @doc "Reads pool-id from DPNF tracker row."
-        (at "pool-id" (UR_AQP|DPNFTracker pool-id dpnf-id owner-id beneficiary-id nonce))
-    )
-    (defun UR_AQP|DPNFTrackerDpnfId:string (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer)
-        @doc "Reads dpnf-id from DPNF tracker row."
-        (at "dpnf-id" (UR_AQP|DPNFTracker pool-id dpnf-id owner-id beneficiary-id nonce))
-    )
-    (defun UR_AQP|DPNFTrackerOwnerId:string (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer)
-        @doc "Reads owner-id from DPNF tracker row."
-        (at "owner-id" (UR_AQP|DPNFTracker pool-id dpnf-id owner-id beneficiary-id nonce))
-    )
-    (defun UR_AQP|DPNFTrackerBeneficiaryId:string (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer)
-        @doc "Reads beneficiary-id from DPNF tracker row."
-        (at "beneficiary-id" (UR_AQP|DPNFTracker pool-id dpnf-id owner-id beneficiary-id nonce))
-    )
-    (defun UR_AQP|DPNFTrackerNonce:integer (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer)
-        @doc "Reads nonce from DPNF tracker row."
-        (at "nonce" (UR_AQP|DPNFTracker pool-id dpnf-id owner-id beneficiary-id nonce))
-    )
-    ;;
-    (defun URC_AqpOwnerKontoFromClassAndAsset:string (aqp-class:integer asset-id:string)
-        @doc "Resolve pool governor konto from aqp-class and canonical native asset-id (issue-time or pre-pool-row). \
-            \ \
-            \ AN EQUITY COLLECTION RESOLVES TO ITS CREATOR, not its owner, and that exception is \
-            \ the whole point of this reader having a branch at all. \
-            \ \
-            \ Every other sovereign asset's owner-konto is a smart account whose key a human \
-            \ holds, so deriving the governor from the ASSET is the same thing as naming its \
-            \ controller. An `E|` collection breaks that assumption: its owner-account IS the \
-            \ DPDC smart account, deliberately, because the collection is automanaged and its \
-            \ nonce set is sealed. So the derivation named a contract, and the twelve operations \
-            \ downstream of this one line -- pool creation, add/revoke score, enable/disable \
-            \ stake, the three-phase score revoke, and the entire vacate surface -- were \
-            \ unreachable by the company that owned the shares. The pool could not even be made \
-            \ functional: C_AddScore is gated here, and C_EnablePoolStake requires a score. \
-            \ \
-            \ The creator is the only party to an equity collection that is not a contract."
+
+    (defun URC_MemberStakedStoaValue:decimal
+        (score-entity-type:integer score-entity-id:string swpair:string)
+        @doc "Level-2 farm member weight = the member's STAKED value in wrapped-STOA (audit LP redesign / G2): \
+            \ staked LP amount (SCORE total-base) x per-LP STOA value (stoa-value / LP-supply). Uses the \
+            \ SWP-maintained stoa-value (cheap point read, refreshed by Talos on every SWP op). 0.0 until users stake. \
+            \ Triplet: SUM the three scores' total-base — the hub (boost-link BAR) carries the LP base, the two \
+            \ satellites are additive satellites (base 0), so the sum equals the single underlying LP position (mirrors \
+            \ URC_ScoreEntityMemberDebWeight's triplet handling; the hub is not necessarily the silver slot)."
         (let
             (
                 (ref-SWP:module{SwapperV5} SWP)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
-                (ref-DPDC:module{DpdcV3} DPDC)
-                (ref-EQUITY:module{EquityV5} EQUITY)
-            )
-            (if (= aqp-class 0)
-                (ref-SWP::UR_OwnerKonto (ref-SWP::UR_GetLpSwpair asset-id))
-                (if (= aqp-class 1)
-                    (ref-DPTF::UR_Konto asset-id)
-                    (if (= aqp-class 2)
-                        (ref-DPOF::UR_Konto asset-id)
-                        (if (= aqp-class 3)
-                            (if (ref-EQUITY::URC_IzEquitySemiFungible asset-id)
-                                (ref-DPDC::UR_CreatorKonto asset-id true)
-                                (ref-DPDC::UR_OwnerKonto asset-id true)
+                (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
+                ;;
+                (staked-amount:decimal
+                    (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET)
+                        (+
+                            (ref-SCR::UR_SCR|ScoreTotalBaseScore (ref-SCR::UR_SCR|TripletBronzeScoreId score-entity-id))
+                            (+
+                                (ref-SCR::UR_SCR|ScoreTotalBaseScore (ref-SCR::UR_SCR|TripletSilverScoreId score-entity-id))
+                                (ref-SCR::UR_SCR|ScoreTotalBaseScore (ref-SCR::UR_SCR|TripletGoldenScoreId score-entity-id))
                             )
-                            (ref-DPDC::UR_OwnerKonto asset-id false)
+                        )
+                        (ref-SCR::UR_SCR|ScoreTotalBaseScore score-entity-id)
+                    )
+                )
+                (lp-supply:decimal (ref-SWP::URC_LpCapacity swpair))
+                (per-lp:decimal
+                    (if (<= lp-supply 0.0)
+                        0.0
+                        (/ (ref-SWP::UR_StoaValue swpair) lp-supply)
+                    )
+                )
+            )
+            (floor (* staked-amount per-lp) CT_FVT_RPS_PREC)
+        )
+    )
+
+    (defun UR_ExternalOracle:bool ()
+        @doc "The GLOBAL DSA external-oracle switch (single row). ON (default) ⇒ delegation capture is gated by \
+            \ oracle freshness; OFF ⇒ oracling is bypassed and the stored capture-weight is trusted."
+        (with-default-read FVT|T|DsaOracleConfig FVT|DSA-ORACLE-KEY
+            {"external-oracle" : true} {"external-oracle" := x} x)
+    )
+
+    (defun UR_OracleValidity:integer ()
+        @doc "The GLOBAL DSA oracle-validity window in seconds (default DSA_ORACLE_TTL = 25h). An oracle write older \
+            \ than this captures nothing while external-oracle is ON."
+        (with-default-read FVT|T|DsaOracleConfig FVT|DSA-ORACLE-KEY
+            {"oracle-validity" : DSA_ORACLE_TTL} {"oracle-validity" := v} v)
+    )
+
+    (defun URC_MemberEffectiveCapture:decimal (fvt-id:string score-entity-id:string)
+        @doc "DSA agency inject NUMERATOR: the member's uptime-adjusted capture-weight, ZEROED when the GLOBAL \
+            \ external-oracle switch is ON AND this member's last oracle write has expired (now − oracle-ts > the \
+            \ global oracle-validity, default 25h). external-oracle OFF ⇒ capture-weight as-is (oracling bypassed, \
+            \ stored weight trusted). No/stale entry while ON ⇒ 0 (a default oracle-ts is always stale). Only \
+            \ meaningful for a delegation member (§4)."
+        (let
+            (
+                (cw:decimal (UR_FVT-SEL|CaptureWeight fvt-id score-entity-id))
+            )
+            (if (and (UR_ExternalOracle)
+                     (> (diff-time (at "block-time" (chain-data)) (UR_FVT-SEL|OracleTs fvt-id score-entity-id)) (dec (UR_OracleValidity))))
+                0.0
+                cw
+            )
+        )
+    )
+
+    (defun URC_ResolveScoreEntityGhostWeight:decimal
+        (score-entity-type:integer score-entity-id:string fvt-class:integer swpair:string)
+        @doc "Farm admission: W_i from SWP::UR_StoaValue(swpair); vault/treasury 0.0."
+        (let
+            (
+                (ref-SWP:module{SwapperV5} SWP)
+            )
+            (if (= fvt-class 0)
+                (ref-SWP::UR_StoaValue swpair)
+                0.0
+            )
+        )
+    )
+
+    (defun URC_MemberLevel2Weight:decimal
+        (fvt-id:string score-entity-type:integer score-entity-id:string swpair:string)
+        @doc "Mode-aware Level-2 W_i for a NON-delegation farm member (D1-G2 dual reward-split). Reads the farm's \
+            \ split-mode and returns: SPLIT|STAKED (participation, default) ⇒ the member's STAKED value \
+            \ (URC_MemberStakedStoaValue = staked LP amount × per-LP STOA value); SPLIT|TVL (pool-size) ⇒ the whole \
+            \ swpair TVL (URC_ResolveScoreEntityGhostWeight at farm class 0 = SWP::UR_StoaValue). Used IDENTICALLY by \
+            \ the fresh inject denominator S (URC_FarmInjectDenominatorFresh) and the per-member numerator \
+            \ (XI_1|FarmSplitInject / URC_ProjectedIndexAdvance) so member slices always sum to the injected amount. \
+            \ A mode switch re-weights only future injects (RPS is checkpoint-based). Delegation members bypass this \
+            \ (they weight by capture, not staked value/TVL)."
+        (if (= (UR_FVT|SplitMode fvt-id) CT_SPLIT_MODE_TVL)
+            (URC_ResolveScoreEntityGhostWeight score-entity-type score-entity-id 0 swpair)
+            (URC_MemberStakedStoaValue score-entity-type score-entity-id swpair)
+        )
+    )
+
+    (defun URC_ScoreEntityMemberDebWeight:decimal
+        (score-entity-type:integer score-entity-id:string)
+        @doc "Vault/treasury Tier-2 member weight: score total-deb or sum of triplet score totals."
+        (let
+            (
+                (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
+            )
+            (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET)
+                (let
+                    (
+                        (bronze-id:string (ref-SCR::UR_SCR|TripletBronzeScoreId score-entity-id))
+                        (silver-id:string (ref-SCR::UR_SCR|TripletSilverScoreId score-entity-id))
+                        (golden-id:string (ref-SCR::UR_SCR|TripletGoldenScoreId score-entity-id))
+                    )
+                    (+
+                        (ref-SCR::UR_SCR|ScoreTotalDebScore bronze-id)
+                        (+
+                            (ref-SCR::UR_SCR|ScoreTotalDebScore silver-id)
+                            (ref-SCR::UR_SCR|ScoreTotalDebScore golden-id)
                         )
                     )
+                )
+                (ref-SCR::UR_SCR|ScoreTotalDebScore score-entity-id)
+            )
+        )
+    )
+
+    (defun URC_ScoreEntityMemberWeight:decimal
+        (fvt-id:string score-entity-type:integer score-entity-id:string)
+        @doc "Tier-2 member tranche weight: farm ghost W_i; vault/treasury aggregate deb."
+        (if (= (UR_FVT|FvtClass fvt-id) 0)
+            (UR_FVT-SEL|GhostTvlWeight fvt-id score-entity-id)
+            (URC_ScoreEntityMemberDebWeight score-entity-type score-entity-id)
+        )
+    )
+
+    (defun URC_ScoreEntityMemberTier2Divisor:decimal
+        (fvt-id:string score-entity-type:integer score-entity-id:string)
+        @doc "Tier-2 L_i advance divisor = Σ of the member's scores' total-deb (3 legs for a triplet, its own \
+            \ for a singular score). Still a point-read, still no staker scan. \
+            \ CHANGED 2026-10-08: true triplets used to divide by the maintained total-lane-weight snapshot while \
+            \ their numerator came from the contrib-weight snapshot. Both snapshots were fed by the broken lane \
+            \ formula, so both were 0 and the tranche could not move. Now numerator and divisor share the SCORE \
+            \ deb basis, which SCORE maintains itself on every stake/unstake/deb-refresh — one basis, no \
+            \ second ledger to keep in step. fvt-id is retained in the signature for call-shape stability."
+        (URC_ScoreEntityMemberDebWeight score-entity-type score-entity-id)
+    )
+
+    (defun URC_ComputeTripletLanes:object
+        (user-id:string pool-id:string triplet-id:string)
+        @doc "Per-slot lane weights = each leg's STORED deb-score, read at that leg's OWN aqpool-link. \
+            \ `pool-id` is accepted for call-shape symmetry and deliberately IGNORED (each leg owns its pool). \
+            \ FIXED 2026-10-08. The previous formula was `silver base-score × that slot's ANK promile`, which \
+            \ was wrong three ways: (a) it DROPPED THE BASE — the hub's own lane was base×its-own-promile, so a \
+            \ holder with no boosters had w-user = 0 and the member's whole Tier-2 tranche was undistributable; \
+            \ (b) it ignored DEB entirely; (c) it assumed the hub is the SILVER slot, which the triplet rules do \
+            \ not guarantee (the hub is whichever leg has boost-link = BAR). Reading the stored deb-scores fixes \
+            \ all three at once and is slot-agnostic, because SCORE already computes exactly the owner's model: \
+            \ the hub row holds (base + its own boost)×deb and an additive-satellite row holds \
+            \ (hub base × that satellite's promile)×deb with base 0. Σ lanes is therefore the triplet's whole \
+            \ weight, and it equals URC_TripletUserDebSum by construction — same basis as the non-true path."
+        (let
+            (
+                (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
+                (bronze-id:string (ref-SCR::UR_SCR|TripletBronzeScoreId triplet-id))
+                (silver-id:string (ref-SCR::UR_SCR|TripletSilverScoreId triplet-id))
+                (golden-id:string (ref-SCR::UR_SCR|TripletGoldenScoreId triplet-id))
+                (lane-b:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore user-id (ref-SCR::UR_SCR|ScoreAqpoolLink bronze-id) bronze-id))
+                (lane-s:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore user-id (ref-SCR::UR_SCR|ScoreAqpoolLink silver-id) silver-id))
+                (lane-g:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore user-id (ref-SCR::UR_SCR|ScoreAqpoolLink golden-id) golden-id))
+            )
+            {"lane-b" : lane-b, "lane-s" : lane-s, "lane-g" : lane-g
+            ,"w-user" : (+ lane-b (+ lane-s lane-g))}
+        )
+    )
+
+    (defun URC_TripletUserLaneWeightLive:decimal
+        (user-id:string pool-id:string triplet-id:string)
+        @doc "Live w-user for a TRUE triplet = Σ of the three legs' deb-scores. Feeds the contrib-weight \
+            \ re-snapshot at stake/unstake (phase 4.6). Since 2026-10-08 BANKING ALSO READS THIS BASIS LIVE \
+            \ (via URC_TripletUserDebSum, the identical sum), so the snapshot is a maintained mirror rather \
+            \ than the source of truth — no stale snapshot can mis-pay a holder."
+        (at "w-user" (URC_ComputeTripletLanes user-id pool-id triplet-id))
+    )
+
+    (defun URC_TripletUserDebSum:decimal
+        (user-id:string triplet-id:string)
+        @doc "Non-true triplet user weight: Σ of the user's deb-score across the 3 bundled scores, each read at \
+            \ its own aqpool-link. Matches the non-true divisor (Σ of the 3 scores' total-deb) → conservation."
+        (let
+            (
+                (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
+                (bronze-id:string (ref-SCR::UR_SCR|TripletBronzeScoreId triplet-id))
+                (silver-id:string (ref-SCR::UR_SCR|TripletSilverScoreId triplet-id))
+                (golden-id:string (ref-SCR::UR_SCR|TripletGoldenScoreId triplet-id))
+            )
+            (+
+                (ref-SCR::UR_U-SCR|UserScoreDebScore user-id (ref-SCR::UR_SCR|ScoreAqpoolLink bronze-id) bronze-id)
+                (+
+                    (ref-SCR::UR_U-SCR|UserScoreDebScore user-id (ref-SCR::UR_SCR|ScoreAqpoolLink silver-id) silver-id)
+                    (ref-SCR::UR_U-SCR|UserScoreDebScore user-id (ref-SCR::UR_SCR|ScoreAqpoolLink golden-id) golden-id)
                 )
             )
         )
     )
-    (defun URC_AqpOwnerKonto:string (pool-id:string)
-        @doc "Resolve pool governor konto from AQP|T|Pool via URC_AqpOwnerKontoFromClassAndAsset."
-        (URC_AqpOwnerKontoFromClassAndAsset (UR_AQP|PoolAqpClass pool-id) (UR_AQP|PoolAssetId pool-id))
-    )
-    (defun URC_PoolActiveScoreIds:[string] (pool-id:string)
-        @doc "Non-BAR score-id values currently assigned on pool-id (primary through septenary order)."
-        (filter
-            (lambda (sid:string) (!= sid BAR))
-            [
-                (UR_AQP|PoolScorePrimary pool-id)
-                (UR_AQP|PoolScoreSecondary pool-id)
-                (UR_AQP|PoolScoreTertiary pool-id)
-                (UR_AQP|PoolScoreQuaternary pool-id)
-                (UR_AQP|PoolScoreQuinary pool-id)
-                (UR_AQP|PoolScoreSenary pool-id)
-                (UR_AQP|PoolScoreSeptenary pool-id)
-            ]
+
+    (defun URC_ScoreEntityUserWeight:decimal
+        (user-id:string fvt-id:string pool-id:string score-entity-type:integer score-entity-id:string)
+        @doc "Tier-1 user weight (numerator). Branches on the TRUE-TRIPLET flag (any FVT class): true triplet → \
+            \ ANY triplet → Σ user deb over the 3 bundled legs; singular score → SCR deb-user. \
+            \ CHANGED 2026-10-08: the true-triplet branch used to read the stored contrib-weight SNAPSHOT. Now \
+            \ that lanes ARE the legs' deb-scores, Σ lanes ≡ URC_TripletUserDebSum, so the live read is the same \
+            \ number with none of the snapshot's staleness surface — and conservation is the non-true argument \
+            \ verbatim: Σ over holders of (Σ legs user-deb) = Σ legs total-deb = the divisor. The snapshot is \
+            \ still MAINTAINED (XI_SyncTripletLaneWeights) so the columns stay meaningful, but nothing reads it \
+            \ to pay anyone, which is why no admin correction tx is needed to recover the zeroed snapshots."
+        (let
+            (
+                (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
+            )
+            (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET)
+                (URC_TripletUserDebSum user-id score-entity-id)
+                (ref-SCR::UR_U-SCR|UserScoreDebScore user-id pool-id score-entity-id)
+            )
         )
     )
-    (defun URC_StakeTrueFungibleDptfMatchesPool:bool (pool-id:string dptf-id:string)
-        @doc "True when dptf-id (native, or its REAL frozen counterpart) matches pool canonical \
-            \ asset-id for class 0/1 TF stake. \
-            \ \
-            \ THE FROZEN COUNTERPART'S ID IS NOT \"F|\" + THE NATIVE ID. It is a SEPARATELY \
-            \ minted token (`VST::XI_CreateSpecialTrueFungibleLink` -> `DPTF::XB_IssueFree` -> \
-            \ `XIv_Issue`'s `UDC_Makeid`), which appends its OWN block-hash-derived suffix, not \
-            \ the native token's. Stripping \"F|\" off a real frozen id and comparing the \
-            \ remainder to asset-id therefore matched almost nothing -- live proof: native \
-            \ `...LP-6D_MJJXmhuz3`, frozen `F|...LP-_MYr9VcKUkBx`, different suffixes; refused \
-            \ with \"Invalid dptf-id: leg does not match pool canonical asset\" on a real \
-            \ frozen-LP stake. The only correct test is the STORED link -- `frozen-link` is \
-            \ written bidirectionally by `XE_UpdateSpecialTrueFungible` (`XI_UpdateFrozen` runs \
-            \ once each direction), so `DPTF::UR_Frozen asset-id` IS the frozen counterpart's \
-            \ real id (BAR if none exists yet), the same lookup `URCv_CoreDptf` already uses \
-            \ for the reverse direction. DEFECT-LEDGER."
+
+    (defun URC_FvtUserStillPresent:bool (fvt-id:string user-id:string)
+        @doc "HEAVY (enumerates the FVT's enabled score-entities — one `select` over ScoreEntityLink): true iff the \
+            \ user still holds a nonzero Tier-1 weight in AT LEAST ONE of them. Used by the unstake-side presence \
+            \ recompute to decide whether to flip is-present → false. Must run AFTER phase 4 SCORE mutation + phase \
+            \ 4.6 lane re-snapshot so the weights reflect the post-unstake state. pool-id is only consulted for \
+            \ singular members (BAR for triplets, whose branch ignores it)."
+        (let
+            (
+                (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
+            )
+            (fold (or) false
+                (map
+                    (lambda (se-id:string)
+                        (let
+                            (
+                                (se-type:integer (UR_FVT-SEL|ScoreEntityType fvt-id se-id))
+                            )
+                            (> (URC_ScoreEntityUserWeight user-id fvt-id
+                                   (if (= se-type CT_SCORE_ENTITY_TRIPLET) BAR (ref-SCR::UR_SCR|ScoreAqpoolLink se-id))
+                                   se-type se-id)
+                               0.0)
+                        )
+                    )
+                    (URH_FvtEnabledScoreEntityIdsForFvt fvt-id)
+                )
+            )
+        )
+    )
+
+    (defun URC_ResolveEmployedScoreEntity:object
+        (score-id:string)
+        @doc "Map employed SCR score-id to score-entity-type + score-entity-id for RPS banking."
+        (let
+            (
+                (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
+            )
+            (if (ref-SCR::UR_SCR|ScoreTriplet score-id)
+                {"score-entity-type" : CT_SCORE_ENTITY_TRIPLET
+                ,"score-entity-id"   : (ref-SCR::UR_SCR|ScoreTripletId score-id)}
+                {"score-entity-type" : CT_SCORE_ENTITY_SCORE
+                ,"score-entity-id"   : score-id}
+            )
+        )
+    )
+
+    (defun URC_MultipletFamilyExists:bool (multiplet-family-id:string)
+        @doc "True when FVT|T|MultipletFamily row exists."
+        (let
+            (
+                (trial (try false (read FVT|T|MultipletFamily multiplet-family-id)))
+            )
+            (if (= (typeof trial) "bool") false true)
+        )
+    )
+
+    (defun URC_FvtHasAnyMemberLink:bool (fvt-id:string)
+        @doc "True when FVT has at least one ScoreEntityLink row (blocks C_SetMosaic). \
+            \ Uses URD keys filter — not select (select/keys disallowed inside defcaps)."
+        (URC_FvtHasScoreEntityLinks fvt-id)
+    )
+
+    (defun URC_FvtResolveClass:integer (fvt-id:string)
+        @doc "Probe FVT|T row: returns fvt-class, or -1 when the row is absent (read failure)."
+        (try -1 (UR_FVT|FvtClass fvt-id))
+    )
+
+    (defun URC_FvtExists:bool (fvt-id:string)
+        @doc "True when fvt-id is an issued FVT|T row (class resolves ≠ -1)."
+        (!= (URC_FvtResolveClass fvt-id) -1)
+    )
+
+    (defun URC_FvtHasEnabledRewardToken:bool (fvt-id:string)
+        @doc "True when FVT|T.enabled-reward-count > 0. Counter maintained by C_AddRewardLink (+1 on add) \
+            \ and C_ToggleRewardLink (±1 on reward-enabled flip). Returns false when FVT row absent."
+        (> (try 0 (UR_FVT|EnabledRewardCount fvt-id)) 0)
+    )
+
+    (defun URC_ScoreFvtStakeReady:bool (score-id:string)
+        @doc "True when employed score maps to enabled ScoreEntityLink on issued FVT with ≥1 reward DPTF."
+        (let
+            (
+                (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
+                (entity:object (URC_ResolveEmployedScoreEntity score-id))
+                (fvt-id:string (ref-SCR::UR_SCR|ScoreFvtLink score-id))
+                (score-entity-id:string (at "score-entity-id" entity))
+            )
+            (fold (and) true
+                [
+                    (!= fvt-id BAR)
+                    (URC_FvtExists fvt-id)
+                    (UR_FVT-SEL|Enabled fvt-id score-entity-id)
+                    (URC_FvtHasEnabledRewardToken fvt-id)
+                ]
+            )
+        )
+    )
+
+    (defun URC_PoolEmployedScoresFvtStakeReady:bool (pool-id:string)
+        @doc "True when pool has ≥1 employed score and every employed score passes URC_ScoreFvtStakeReady. \
+            \ Used by FVT|C>TRUE-FUNGIBLE-STAKE-FLOW."
+        (let
+            (
+                (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+                ;;
+                (employed-ids:[string] (ref-AQP::URC_PoolActiveScoreIds pool-id))
+            )
+            (if (= (length employed-ids) 0)
+                false
+                (fold (and) true
+                    (map (lambda (score-id:string) (URC_ScoreFvtStakeReady score-id)) employed-ids)
+                )
+            )
+        )
+    )
+
+    (defun URC_SettleEligibleEmployedScores:[string] (employed-ids:[string])
+        @doc "Employed scores that run phase 2.1 settle — fvt-link≠BAR and parent ScoreEntityLink enabled."
+        (let
+            (
+                (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
+            )
+            (filter
+                (lambda (score-id:string)
+                    (let
+                        (
+                            (fvt-link:string (ref-SCR::UR_SCR|ScoreFvtLink score-id))
+                            (entity:object (URC_ResolveEmployedScoreEntity score-id))
+                            (score-entity-id:string (at "score-entity-id" entity))
+                        )
+                        (fold (and) true
+                            [
+                                (!= score-entity-id BAR)
+                                (!= fvt-link BAR)
+                                (UR_FVT-SEL|Enabled fvt-link score-entity-id)
+                            ]
+                        )
+                    )
+                )
+                employed-ids
+            )
+        )
+    )
+
+    (defun URC_SettleDistinctFvtLinks:[string] (settle-scores:[string])
+        @doc "Internal: distinct SCR|ScoreFvtLink values for settle-scores — one FVT entity counted once for IGNIS and settle scope."
+        (let
+            (
+                (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
+            )
+            (distinct
+                ;; map: settle-eligible scores → SCR fvt-link (dedupe for URD bundle scope)
+                (map
+                    (lambda (score-id:string)
+                        (ref-SCR::UR_SCR|ScoreFvtLink score-id)
+                    )
+                    settle-scores
+                )
+            )
+        )
+    )
+
+    (defun URC_FvtRewardDptfIdsFromBundle:[string]
+        (fvt-id:string fvt-reward-bundle:[object{AcquisitionSchemasV5.FVT|SettleFvtRewards}])
+        @doc "Internal: cheap bundle lookup (filter ≤7 rows) on URH_FVT|SettleFvtRewardBundle — avoids repeat select when scores share FVT."
+        (at "reward-dptf-ids"
+            (at 0
+                (filter
+                    (lambda (row:object{AcquisitionSchemasV5.FVT|SettleFvtRewards})
+                        (= (at "fvt-id" row) fvt-id)
+                    )
+                    fvt-reward-bundle
+                )
+            )
+        )
+    )
+
+    (defun URC_FvtRpsUserRowExists:bool
+        (user-id:string fvt-id:string score-entity-id:string dptf-id:string)
+        @doc "Internal: true when FVT|T|RPS|User row exists (UrStoa UR_URV|IzAccount try-read pattern)."
+        (let
+            (
+                (trial (try false (read FVT|T|RPS|User (UCk_RpsUser user-id fvt-id score-entity-id dptf-id))))
+            )
+            (if (= (typeof trial) "bool") false true)
+        )
+    )
+
+    (defun URC_FvtRpsMemberRowExists:bool
+        (fvt-id:string score-entity-id:string dptf-id:string)
+        @doc "Internal: true when FVT|T|RPS|Member row exists."
+        (let
+            (
+                (trial (try false (read FVT|T|RPS|Member (UCk_RpsMember fvt-id score-entity-id dptf-id))))
+            )
+            (if (= (typeof trial) "bool") false true)
+        )
+    )
+
+    (defun URC_FvtTier1IndexRps:decimal
+        (fvt-id:string score-entity-id:string dptf-id:string)
+        @doc "Internal: Tier-1 accrual index vs user last-rps. Farm (class 0): L_i on RPS|Member. \
+            \ Vault/treasury (class 1/2): UrStoa single-tier — global G on RPS|Global (README vault simplification)."
+        (if (= (UR_FVT|FvtClass fvt-id) 0)
+            (UR_FVT-RM|MemberDebRps fvt-id score-entity-id dptf-id)
+            (UR_FVT-RG|CurrentRps fvt-id dptf-id)
+        )
+    )
+
+    (defun URC_UserTier1AvailableRewards:decimal
+        (user-id:string fvt-id:string score-entity-id:string dptf-id:string deb-user:decimal)
+        @doc "Internal: UrStoa URC_AvailableRewards — pending + floor(deb×(index−last_rps), reward DPTF decimals). \
+            \ index = L_i (farm) or G (vault/treasury). deb-user is pre-2.3 OLD SCR deb-score."
         (let
             (
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
-                (c:integer (UR_AQP|PoolAqpClass pool-id))
-                (asset-id:string (UR_AQP|PoolAssetId pool-id))
-                (core-ok:bool
-                    (or
-                        (= dptf-id asset-id)
-                        (and
-                            (= (URC_DptfLegPrefix dptf-id) "F|")
-                            (= dptf-id (ref-DPTF::UR_Frozen asset-id))
-                        )
-                    )
-                )
+                ;;
+                (current-pending:decimal (UR_FVT-RU|PendingRewards user-id fvt-id score-entity-id dptf-id))
+                (last-rps:decimal (UR_FVT-RU|LastRps user-id fvt-id score-entity-id dptf-id))
+                (index-rps:decimal (URC_FvtTier1IndexRps fvt-id score-entity-id dptf-id))
+                (reward-prec:integer (ref-DPTF::UR_Decimals dptf-id))
+                (diff-rps:decimal (- index-rps last-rps))
+                (gained:decimal (floor (* deb-user diff-rps) reward-prec))
             )
-            (if (= c 1)
-                core-ok
-                (if (= c 0)
-                    (and (URC_DptfIsLpNomenclature dptf-id) core-ok)
-                    false
+            (+ current-pending gained)
+        )
+    )
+
+    (defun URC_CollectClaimableRewards:decimal
+        (patron:string pool-id:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
+        @doc "UrStoa claimable with the two-tier last-claimant sweep (M1/#10): if this is the last user globally \
+            \ (global unclaimed-count 1) → pay the whole global available-rewards (sweeps the remainder); else, \
+            \ FARMS ONLY (class 0, two-tier L_i), if last user in this member (member unclaimed-count 1) → pay the \
+            \ member's available-rewards (sweeps the tier-1 floor dust); else the normal floored pending + \
+            \ weight×(index−last_rps). The member branch is FARM-ONLY: vault/treasury (class≠0) are single-tier \
+            \ (global G), their member mini-vault is never funded (inject bumps only the global pool), so their \
+            \ dust is swept by the gc==1 global branch — taking the member branch there would pay 0 (audit R2 \
+            \ regression fix: treasury single-staker-per-member had gc>1 ∧ mc==1 → paid the empty member vault). \
+            \ Amounts in token-0 (ATS base); the ladder converts downstream and is itself dust-free."
+        (let
+            (
+                (mc:integer (UR_FVT-MV|UnclaimedCount fvt-id score-entity-id reward-dptf-id))
+                (gc:integer (UR_FVT-RG|UnclaimedCount fvt-id reward-dptf-id))
+                (deb-user:decimal (URC_ScoreEntityUserWeight patron fvt-id pool-id score-entity-type score-entity-id))
+            )
+            ;;DEFECT FIXED 2026-09-14 (owner ruling, after the STOAICO GS-06 twin was found).
+            ;;Both sweep branches used to test ONLY a counter -- `gc` (global unclaimed-count) and
+            ;;`mc` (member unclaimed-count) -- and return a WHOLE-VAULT figure. Those counters are
+            ;;properties of the VAULT and of the MEMBER; neither says anything about the CALLER.
+            ;;`deb-user` was bound directly above and used only in the else-branch, so the one value
+            ;;that identifies the caller was discarded on exactly the two branches that pay out most.
+            ;;
+            ;;MEASURED, not reasoned about. Driving [6.4]_AQP-TRIPLET-COLLECT to the wind-down where
+            ;;ANHD is the sole real claimant (deb 10.0) and EMMA has fully exited (deb 0.0):
+            ;;
+            ;;    gc=1   emma-claimable = anhd-claimable   <- the reader could not tell them apart
+            ;;    EMMA (exited, deb=0) collected the sweep and the vault went to 0
+            ;;    ANHD  (the rightful sole claimant)       gained 0.0
+            ;;
+            ;;WORSE THAN THE STOAICO TWIN. There, a `last-collected-round` stamp written in another
+            ;;function made the wrong number unreachable as theft, so only the preview was wrong.
+            ;;Here there is NO such stamp: `UEV_CollectContext` checks pool/FVT/link/ownership and
+            ;;never that the caller is a staker, holds a claim, or has already collected. And
+            ;;`gc == 1` is a NORMAL END-OF-LIFE STATE, not an attack precondition.
+            ;;
+            ;;THE GUARD WAS `deb-user > 0` UNTIL 2026-11-09, AND ITS REASONING EXPIRED WITH S1.
+            ;;It was justified above as the predicate the collect path itself uses -- "
+            ;;XI_1|BookCollectUnclaimed removes a caller from the claimant set exactly when its deb
+            ;;reaches 0, so still-in-the-set is deb > 0". That is no longer true: under S1 a collect
+            ;;retires a leg whenever it ZEROED A CLAIM, staked or not. Carrying the old guard forward
+            ;;would recreate the reader-vs-writer disagreement it was written to end -- this time in
+            ;;the other direction, BLOCKING a legitimate last claimant.
+            ;;
+            ;;IT WAS ALSO WRONG IN BOTH DIRECTIONS UNDER THE NEW MEANING:
+            ;;  - too NARROW -- a DORMANT leg (unstaked, still owed, or a toggled-off member) has
+            ;;    deb 0 and can legitimately be the last leg owed on the lane. The old guard refuses
+            ;;    it, so the remainder stays stranded exactly in the wind-down the sweep exists for.
+            ;;  - not what the EMMA incident actually needed. The theft there was an exited account
+            ;;    with NOTHING OWED collecting the sweep. What makes that safe is not "has stake", it
+            ;;    is "is owed something".
+            ;;
+            ;;SO THE GUARD IS THE CALLER'S OWN CLAIMABLE. It is stricter than `deb-user > 0` where
+            ;;that mattered -- EMMA's own claimable was 0, so she is still refused -- and admits the
+            ;;dormant last claimant that the old guard wrongly excluded. It is also the figure this
+            ;;function is already computing, so reader and writer agree by construction rather than
+            ;;by a cross-reference that can go stale, which is how this guard came to need rewriting.
+            (let
+                (
+                    (own:decimal
+                        (URC_UserTier1AvailableRewards patron fvt-id score-entity-id reward-dptf-id deb-user))
+                )
+                (if (and (= gc 1) (> own 0.0))
+                    (UR_FVT-RG|AvailableRewards fvt-id reward-dptf-id)
+                    (if (fold (and) true
+                            [(= (UR_FVT|FvtClass fvt-id) 0) (= mc 1) (> own 0.0)])
+                        (UR_FVT-MV|AvailableRewards fvt-id score-entity-id reward-dptf-id)
+                        own
+                    )
                 )
             )
         )
     )
-    (defun URC_PoolScoreSlotValue:string (pool-id:string slot-index:integer)
-        @doc "Score-id at pool score slot 0..6 (primary..septenary); read via UR_AQP|PoolScore* helpers."
-        (if (= slot-index 0)
-            (UR_AQP|PoolScorePrimary pool-id)
-            (if (= slot-index 1)
-                (UR_AQP|PoolScoreSecondary pool-id)
-                (if (= slot-index 2)
-                    (UR_AQP|PoolScoreTertiary pool-id)
-                    (if (= slot-index 3)
-                        (UR_AQP|PoolScoreQuaternary pool-id)
-                        (if (= slot-index 4)
-                            (UR_AQP|PoolScoreQuinary pool-id)
-                            (if (= slot-index 5)
-                                (UR_AQP|PoolScoreSenary pool-id)
-                                (UR_AQP|PoolScoreSeptenary pool-id)
+
+    (defun URC_ReleasableToNow:decimal (fvt-id:string dptf-id:string)
+        @doc "Read-only: the total a drip would release RIGHT NOW across the lane's active streams — rate*elapsed \
+            \ floored to the token's decimals, or the exact remainder for a finished stream. Mirrors XI_ReleaseStream's \
+            \ per-stream rel WITHOUT writes (for URC_LiveClaimable / URC_StreamStatus). 0.0 when no stream is active."
+        (let
+            (
+                (count:integer (UR_FVT-RG|StreamCount fvt-id dptf-id))
+            )
+            (if (= count 0)
+                0.0
+                (let*
+                    (
+                        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                        (now:time (at "block-time" (chain-data)))
+                        (last:time (UR_FVT-RG|StreamLastRelease fvt-id dptf-id))
+                        (reward-dec:integer (ref-DPTF::UR_Decimals dptf-id))
+                    )
+                    (fold
+                        (lambda (acc:decimal idx:integer)
+                            (let*
+                                (
+                                    (s:object{AcquisitionSchemasV5.FVT|RPS|Stream} (UR_FVT-RS|Stream fvt-id dptf-id idx))
+                                    (remaining:decimal (- (at "amount" s) (at "released" s)))
+                                    (rel:decimal
+                                        (if (>= now (at "finish" s))
+                                            remaining
+                                            (let
+                                                (
+                                                    (by-rate:decimal (floor (* (at "rate" s) (diff-time now last)) reward-dec))
+                                                )
+                                                (if (> by-rate remaining) remaining by-rate)
+                                            )))
+                                )
+                                (+ acc rel)
+                            ))
+                        0.0
+                        (enumerate 1 count))
+                ))
+        ))
+
+    (defun URC_ProjectedIndexAdvance:decimal
+        (fvt-id:string score-entity-type:integer score-entity-id:string dptf-id:string releasable:decimal)
+        @doc "Read-only: the Tier-1 index (L_i / G) advance that distributing `releasable` right now would produce \
+            \ (for URC_LiveClaimable). VAULT/TREASURY: floor(releasable / total-deb-score, 48). FARM: member-slice = \
+            \ floor(releasable × member-STOA-weight / S, reward-dec), then floor(member-slice / member-deb-divisor, 48) \
+            \ — mirrors XI_1|FarmSplitInject (ignores the rare pending-member ptr flush). Uses UC_ComputeInjectGainedRps."
+        (if (= (UR_FVT|FvtClass fvt-id) 0)
+            (let*
+                (
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                    (reward-dec:integer (ref-DPTF::UR_Decimals dptf-id))
+                    (s-farm:decimal (URC_FarmInjectDenominatorFresh fvt-id))
+                    (w-i:decimal (URC_MemberLevel2Weight fvt-id score-entity-type score-entity-id (UR_FVT-SEL|Swpair fvt-id score-entity-id)))
+                    (member-slice:decimal (if (> s-farm 0.0) (floor (/ (* releasable w-i) s-farm) reward-dec) 0.0))
+                    (total-deb:decimal (URC_ScoreEntityMemberTier2Divisor fvt-id score-entity-type score-entity-id))
+                )
+                (if (> total-deb 0.0) (floor (/ member-slice total-deb) CT_FVT_RPS_PREC) 0.0)
+            )
+            (UC_ComputeInjectGainedRps releasable (URC_InjectDenominator fvt-id))))
+
+    (defun URC_LiveClaimable:decimal
+        (user-id:string fvt-id:string pool-id:string score-entity-type:integer score-entity-id:string dptf-id:string)
+        @doc "Read-only PROJECTION of the user's claimable INCLUDING stream time vested up to now (drips the lane in \
+            \ memory, no writes): pending + floor(deb-user × (projected-index − last-rps), reward-dec), where \
+            \ projected-index = current index + URC_ProjectedIndexAdvance(releasable-to-now). Lets the UI show accrual \
+            \ ticking with no tx. Uses the NORMAL per-user path — for the last-claimant dust-sweep edge the real \
+            \ collect pays the whole available-rewards, so this slightly under-estimates there (a UI hint, not a promise)."
+        (let*
+            (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (reward-dec:integer (ref-DPTF::UR_Decimals dptf-id))
+                (deb-user:decimal (URC_ScoreEntityUserWeight user-id fvt-id pool-id score-entity-type score-entity-id))
+                (releasable:decimal (URC_ReleasableToNow fvt-id dptf-id))
+                (proj-index:decimal
+                    (+ (URC_FvtTier1IndexRps fvt-id score-entity-id dptf-id)
+                       (URC_ProjectedIndexAdvance fvt-id score-entity-type score-entity-id dptf-id releasable)))
+                (pending:decimal (UR_FVT-RU|PendingRewards user-id fvt-id score-entity-id dptf-id))
+                (last-rps:decimal (UR_FVT-RU|LastRps user-id fvt-id score-entity-id dptf-id))
+            )
+            (+ pending (floor (* deb-user (- proj-index last-rps)) reward-dec))
+        ))
+
+    (defun URC_StreamStatus:object (fvt-id:string dptf-id:string)
+        @doc "Read-only lane stream summary for the UI (the 7x7 view): active-count (live positions 1..stream-count), \
+            \ total-rate (Σ rate over streams NOT yet finished), earliest-finish (soonest a stream ends; STREAM_EPOCH \
+            \ when none), unreleased (custodied-but-not-yet-dripped). Reads positions 1..stream-count."
+        (let
+            (
+                (count:integer (UR_FVT-RG|StreamCount fvt-id dptf-id))
+            )
+            (if (= count 0)
+                { "active-count" : 0, "total-rate" : 0.0, "earliest-finish" : STREAM_EPOCH, "unreleased" : 0.0 }
+                (let
+                    (
+                        (now:time (at "block-time" (chain-data)))
+                        (agg:object
+                            (fold
+                                (lambda (acc:object idx:integer)
+                                    (let
+                                        (
+                                            (s:object{AcquisitionSchemasV5.FVT|RPS|Stream} (UR_FVT-RS|Stream fvt-id dptf-id idx))
+                                        )
+                                        {
+                                        "rate"
+                                        :
+                                        (+ (at "rate" acc) (if (> (at "finish" s) now) (at "rate" s) 0.0))
+                                        ,
+                                        "earliest"
+                                        :
+                                        (if (< (at "finish" s) (at "earliest" acc)) (at "finish" s) (at "earliest" acc))
+                                        }
+                                    ))
+                                { "rate" : 0.0, "earliest" : (at "finish" (UR_FVT-RS|Stream fvt-id dptf-id 1)) }
+                                (enumerate 1 count)))
+                    )
+                    {
+                    "active-count"
+                    :
+                    count
+                    ,
+                    "total-rate"
+                    :
+                    (at "rate" agg)
+                    ,
+                    "earliest-finish"
+                    :
+                    (at "earliest" agg)
+                    ,
+                    "unreleased"
+                    :
+                    (UR_FVT-RG|StreamUnreleased fvt-id dptf-id)
+                    }
+                ))
+        ))
+
+    (defun URC_SettleScorePlanRows:[object{AcquisitionSchemasV5.FVT|SettleScorePlan}]
+        (settle-scores:[string] fvt-reward-bundle:[object{AcquisitionSchemasV5.FVT|SettleFvtRewards}])
+        @doc "Distinct score-entity settle plans — triplet members collapse to one triplet-id plan."
+        (let
+            (
+                (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
+                (entity-ids:[string]
+                    (distinct
+                        (map
+                            (lambda (score-id:string)
+                                (at "score-entity-id" (URC_ResolveEmployedScoreEntity score-id))
                             )
+                            settle-scores
                         )
                     )
                 )
             )
-        )
-    )
-    (defun URC_PriorScoreSlotsOccupied:bool (pool-id:string slot-index:integer)
-        @doc "Every slot index below slot-index is non-BAR; vacuously true when slot-index is 0."
-        (if (= slot-index 0)
-            true
-            (fold (and) true
-                (map
-                    (lambda (i:integer) (!= (URC_PoolScoreSlotValue pool-id i) BAR))
-                    (enumerate 0 (- slot-index 1))
-                )
-            )
-        )
-    )
-    (defun URC_FirstFreeScoreSlotIndex:integer (pool-id:string)
-        @doc "First empty score slot index 0..6 (primary..septenary), or -1 when all slots are taken."
-        (if (= (UR_AQP|PoolScorePrimary pool-id) BAR)
-            0
-            (if (= (UR_AQP|PoolScoreSecondary pool-id) BAR)
-                1
-                (if (= (UR_AQP|PoolScoreTertiary pool-id) BAR)
-                    2
-                    (if (= (UR_AQP|PoolScoreQuaternary pool-id) BAR)
-                        3
-                        (if (= (UR_AQP|PoolScoreQuinary pool-id) BAR)
-                            4
-                            (if (= (UR_AQP|PoolScoreSenary pool-id) BAR)
-                                5
-                                (if (= (UR_AQP|PoolScoreSeptenary pool-id) BAR)
-                                    6
-                                    -1
+            (map
+                (lambda (score-entity-id:string)
+                    (let
+                        (
+                            (probe-score:string
+                                (if (= (take 2 score-entity-id) "T|")
+                                    (ref-SCR::UR_SCR|TripletSilverScoreId score-entity-id)
+                                    score-entity-id
                                 )
                             )
+                            (fvt-id:string (ref-SCR::UR_SCR|ScoreFvtLink probe-score))
+                        )
+                        (UDC_FVT|SettleScorePlan
+                            (UR_FVT-SEL|ScoreEntityType fvt-id score-entity-id)
+                            score-entity-id
+                            fvt-id
+                            (URC_FvtRewardDptfIdsFromBundle fvt-id fvt-reward-bundle)
                         )
                     )
                 )
+                entity-ids
             )
         )
     )
-    (defun URC_ScoreSlotIndexForScore:integer (pool-id:string score-id:string)
-        @doc "Slot index 0..6 where score-id is assigned on pool-id, or -1 when not employed."
+
+    (defun URC_UserScoreTripleIsNonZero:bool (beneficiary-id:string pool-id:string score-id:string)
+        @doc "Internal: true when SCR|T|UserScore base, boosted, or deb is > 0 for (beneficiary, pool, score)."
         (let
             (
-                (lst:[string]
-                    [
-                        (UR_AQP|PoolScorePrimary pool-id)
-                        (UR_AQP|PoolScoreSecondary pool-id)
-                        (UR_AQP|PoolScoreTertiary pool-id)
-                        (UR_AQP|PoolScoreQuaternary pool-id)
-                        (UR_AQP|PoolScoreQuinary pool-id)
-                        (UR_AQP|PoolScoreSenary pool-id)
-                        (UR_AQP|PoolScoreSeptenary pool-id)
-                    ]
-                )
+                (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
             )
-            (cond
-                ((= score-id (at 0 lst)) 0)
-                ((= score-id (at 1 lst)) 1)
-                ((= score-id (at 2 lst)) 2)
-                ((= score-id (at 3 lst)) 3)
-                ((= score-id (at 4 lst)) 4)
-                ((= score-id (at 5 lst)) 5)
-                ((= score-id (at 6 lst)) 6)
-                -1
+            (fold (or) false
+                [
+                    (> (ref-SCR::UR_U-SCR|UserScoreBaseScore beneficiary-id pool-id score-id) 0.0)
+                    (> (ref-SCR::UR_U-SCR|UserScoreBoostedScore beneficiary-id pool-id score-id) 0.0)
+                    (> (ref-SCR::UR_U-SCR|UserScoreDebScore beneficiary-id pool-id score-id) 0.0)
+                ]
             )
         )
     )
-    (defun URC_NoEmployedBoostLinkTarget:bool (pool-id:string score-id:string)
-        @doc "True when no other employed pool score has boost-link pointing at score-id (triplet hub protection)."
-        (let
-            (
-                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
-                ;;
-                (active-ids:[string] (URC_PoolActiveScoreIds pool-id))
-            )
-            (fold (and) true
-                (map
-                    (lambda (peer-id:string)
-                        (if (= peer-id score-id)
-                            true
-                            (!= (ref-SCR::UR_SCR|ScoreBoostLink peer-id) score-id)
-                        )
-                    )
-                    active-ids
-                )
-            )
-        )
-    )
-    (defun URC_DptfLegPrefix:string (dptf-id:string)
-        @doc "First two characters of dptf-id (F|, R|, S|, W|, P|, or empty for short ids)."
-        (take 2 dptf-id)
-    )
-    (defun URC_DptfStakeIsNativeLeg:bool (dptf-id:string)
-        @doc "True when dptf-id is a native TF stake leg (not F| frozen prefix). Used for SCORE native-or-frozen internal flag."
-        (!= (URC_DptfLegPrefix dptf-id) "F|")
-    )
-    (defun URC_DptfStakeIsReservedLeg:bool (dptf-id:string)
-        @doc "True when dptf-id is R| reserved — stake paths reject this leg."
-        (= (URC_DptfLegPrefix dptf-id) "R|")
-    )
-    (defun URC_DptfIsLpNomenclature:bool (dptf-id:string)
-        @doc "True when dptf-id (after optional F| strip) uses LP token nomenclature S|, W|, or P|."
-        (let
-            (
-                (p2:string (URC_DptfLegPrefix dptf-id))
-                (core:string
-                    (if (= p2 "F|")
-                        (drop 2 dptf-id)
-                        dptf-id
-                    )
-                )
-            )
-            (contains (take 2 core) ["S|" "W|" "P|"])
-        )
-    )
-    (defun URC_PoolHasEmployedScores:bool (pool-id:string)
-        @doc "True when pool-id has at least one non-BAR score slot (required before stake)."
-        (> (length (URC_PoolActiveScoreIds pool-id)) 0)
-    )
-    (defun URC_PoolStakeAdmissionOk:bool (pool-id:string)
-        @doc "True when stake-enabled, pool has ≥1 employed score, AND no vacate session NOR re-score sweep is in \
-            \ progress (stake direction only). The vacate guard blocks new stakes mid-vacate (audit H2 / fix #5); \
-            \ the sweep guard blocks new stakes mid-sweep so the recompute set stays bounded (sweep D3)."
-        (fold (and) true
-            [
-                (UR_AQP|PoolStakeEnabled pool-id)
-                (URC_PoolHasEmployedScores pool-id)
-                (not (UR_AQP|PoolVacateInProgress pool-id))
-                (not (UR_AQP|PoolSweepInProgress pool-id))
-            ]
-        )
-    )
-    (defun URC_PoolUnstakeAdmissionOk:bool (pool-id:string)
-        @doc "True when the UNSTAKE direction is allowed: the pool must be neither vacate-in-progress \
-            \ NOR sweep-in-progress. A vacate session (begin→finalize) force-unwinds every staker \
-            \ itself, so a concurrent user-initiated unstake would race the same tracker/aggregate \
-            \ rows the drain writes — freeze it until finalize. (Unlike stake admission, this does \
-            \ NOT require stake-enabled or employed scores — exiting a disabled/empty pool stays \
-            \ allowed.) \
-            \ \
-            \ UNSTAKE IS NOW BLOCKED MID-SWEEP TOO, and it was not before — stake admission has \
-            \ carried the sweep guard since D3 while this direction only ever checked vacate. The \
-            \ asymmetry was wrong in a way that only a re-rate makes reachable: a sweep exists \
-            \ precisely because stored weights DISAGREE with their canonical targets, and an \
-            \ unstake reverses the STORED figure. Exiting mid-sweep therefore reverses a number \
-            \ the chain has already decided is wrong, and the residue it leaves behind is \
-            \ unrecoverable — the position is gone, so no later sweep can recompute what it \
-            \ should have been. Blocking the exit is the only way the reversal stays exact. \
-            \ \
-            \ The freeze is never a trap: every sweep that sets it is PERMISSIONLESS to run and \
-            \ `CC_ClearPoolSweep` is permissionless to call, so a holder who wants out can finish \
-            \ the work themselves rather than wait for an admin."
-        (and
-            (not (UR_AQP|PoolVacateInProgress pool-id))
-            (not (UR_AQP|PoolSweepInProgress pool-id))
-        )
-    )
-    (defun URC_StakeTrueFungiblePoolClassOk:bool (pool-id:string)
-        @doc "True when pool aqp-class is 0 (LP via TF) or 1 (non-LP DPTF)."
-        (let
-            (
-                (c:integer (UR_AQP|PoolAqpClass pool-id))
-            )
-            (or (= c 0) (= c 1))
-        )
-    )
-    (defun URC_StakeOrtoFungiblePoolClassOk:bool (pool-id:string)
-        @doc "True when pool aqp-class is 0 (LP + Z| orto), 1 (DPTF + sleep/hib DPOF satellites), or 2 (native DPOF)."
-        (let
-            (
-                (c:integer (UR_AQP|PoolAqpClass pool-id))
-            )
-            (or (= c 0) (or (= c 1) (= c 2)))
-        )
-    )
-    (defun URC_DpofLegPrefix:string (dpof-id:string)
-        @doc "First two characters of dpof-id (Z|, H|, or native collection prefix)."
-        (take 2 dpof-id)
-    )
-    (defun URC_StakeOrtoFungibleDpofMatchesPool:bool (pool-id:string dpof-id:string)
-        @doc "True when dpof-id is an allowed OF leg for pool aqp-class and canonical asset-id: \
-            \ class 2 native circulating; class 1 Z|/H| satellite linked to pool DPTF; class 0 Z| orto LP linked to pool native LP."
-        (let
-            (
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
-                ;;
-                (c:integer (UR_AQP|PoolAqpClass pool-id))
-                (asset-id:string (UR_AQP|PoolAssetId pool-id))
-                (p2:string (URC_DpofLegPrefix dpof-id))
-            )
-            (if (= c 2)
-                (and
-                    (= dpof-id asset-id)
-                    (not (contains p2 ["Z|" "H|"]))
-                )
-                (if (= c 1)
-                    (or
-                        (and (= p2 "Z|") (= (ref-DPOF::UR_Sleeping dpof-id) asset-id))
-                        (and (= p2 "H|") (= (ref-DPOF::UR_Hibernation dpof-id) asset-id))
-                    )
-                    (if (= c 0)
-                        (and
-                            (= p2 "Z|")
-                            (and
-                                (URC_DptfIsLpNomenclature asset-id)
-                                (= (ref-DPOF::UR_Sleeping dpof-id) asset-id)
-                            )
-                        )
+
+    (defun URC_PreScoreWasNonZeroForScore:bool
+        (pre-nz-flags:[object{AcquisitionSchemasV5.FVT|ScorePreNzFlag}] score-id:string)
+        @doc "Internal: lookup was-nz from pre-SCORE snapshot for one score-id."
+        (fold (or) false
+            (map
+                (lambda (flag:object{AcquisitionSchemasV5.FVT|ScorePreNzFlag})
+                    (if (= (at "score-id" flag) score-id)
+                        (at "was-nz" flag)
                         false
                     )
                 )
+                pre-nz-flags
             )
         )
     )
-    (defun URC_OrtoUnstakeNoncesSufficient:bool
-        (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonces:[integer] nonce-amounts:[decimal])
-        @doc "Unstake: each nonce has tracker balance ≥ unstake amount at the exact (owner, beneficiary) row. \
-            \ M5: beneficiary-id is caller-supplied (self OR foreign), not a self-key derivation."
+
+    (defun URC_SettlePlanEmployedScoreIds:[string] (plan:object{AcquisitionSchemasV5.FVT|SettleScorePlan})
+        @doc "Employed SCR score-ids for nz/unclaimed probes — triplet plans expand to bronze/silver/golden."
         (let
             (
-                (l:integer (length nonces))
+                (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
+                (entity-type:integer (at "score-entity-type" plan))
+                (entity-id:string (at "score-entity-id" plan))
             )
-            (fold
-                (and)
-                true
-                (map
-                    (lambda (idx:integer)
-                        (let
-                            (
-                                (n:integer (at idx nonces))
-                                (q:decimal (at idx nonce-amounts))
-                                (bal:decimal (UR_AQP|DPOFTrackerBalance pool-id dpof-id owner-id beneficiary-id n))
-                            )
-                            (>= bal q)
-                        )
-                    )
-                    (enumerate 0 (- l 1))
-                )
+            (if (= entity-type CT_SCORE_ENTITY_TRIPLET)
+                [
+                    (ref-SCR::UR_SCR|TripletBronzeScoreId entity-id)
+                    (ref-SCR::UR_SCR|TripletSilverScoreId entity-id)
+                    (ref-SCR::UR_SCR|TripletGoldenScoreId entity-id)
+                ]
+                [entity-id]
             )
         )
     )
-    (defun URC_StakeCollectablePoolClassOk:bool (pool-id:string son:bool)
-        @doc "True when pool aqp-class matches son: true→3 (DPSF), false→4 (DPNF)."
-        (= (UR_AQP|PoolAqpClass pool-id) (if son 3 4))
-    )
-    (defun URC_StakeCollectableMatchesPool:bool (pool-id:string collectable-id:string)
-        @doc "True when collectable-id equals pool canonical asset-id."
-        (= collectable-id (UR_AQP|PoolAssetId pool-id))
-    )
-    (defun URC_CollectableUnstakeNoncesSufficient:bool
-        (pool-id:string collectable-id:string son:bool owner-id:string beneficiary-id:string nonces:[integer] nonce-amounts:[integer])
-        @doc "Unstake: each nonce has tracker balance ≥ unstake amount at the exact (owner, beneficiary) row. \
-            \ M5: beneficiary-id is caller-supplied (self OR foreign), not a self-key derivation."
-        (let
-            (
-                (l:integer (length nonces))
-            )
-            (fold
-                (and)
-                true
-                (map
-                    (lambda (idx:integer)
-                        (let
-                            (
-                                (n:integer (at idx nonces))
-                                (q:integer (at idx nonce-amounts))
-                                (bal:decimal
-                                    (if son
-                                        (UR_AQP|DPSFTrackerBalance pool-id collectable-id owner-id beneficiary-id n)
-                                        (UR_AQP|DPNFTrackerBalance pool-id collectable-id owner-id beneficiary-id n)
-                                    )
-                                )
-                            )
-                            (>= bal (dec q))
-                        )
-                    )
-                    (enumerate 0 (- l 1))
-                )
-            )
-        )
-    )
-    (defun URC_BenCollectableHasStake:bool (beneficiary-id:string collectable-id:string son:bool)
-        @doc "True when beneficiary has active cross-pool collectable rollup (son dispatches DPSF vs DPNF table)."
-        (if son
-            (URC_BenDpsfHasStake beneficiary-id collectable-id)
-            (URC_BenDpnfHasStake beneficiary-id collectable-id)
-        )
-    )
-    (defun URC_CollectableUnstakeRollupSufficient:bool
-        (pool-id:string collectable-id:string son:bool owner-id:string beneficiary-id:string nonces:[integer] nonce-amounts:[integer])
-        @doc "Unstake: each nonce has cross-pool Ben* nonce rollup amount ≥ unstake amount for the beneficiary. \
-            \ M5: beneficiary-id is caller-supplied (self OR foreign), not a self-key derivation."
-        (let
-            (
-                (l:integer (length nonces))
-            )
-            (fold
-                (and)
-                true
-                (map
-                    (lambda (idx:integer)
-                        (let
-                            (
-                                (n:integer (at idx nonces))
-                                (q:integer (at idx nonce-amounts))
-                                (rollup-amt:integer
-                                    (if son
-                                        (UR_AQP|BenDpsfNonceAmount beneficiary-id collectable-id n)
-                                        (UR_AQP|BenDpnfNonceAmount beneficiary-id collectable-id n)
-                                    )
-                                )
-                            )
-                            (>= rollup-amt q)
-                        )
-                    )
-                    (enumerate 0 (- l 1))
-                )
-            )
-        )
-    )
-    ;;
-    (defun UR_AQP|PoolVacateSession:object
-        (pool-id:string)
-        @doc "Pool-row vacate session observability (AQP|T|Pool fields)."
-        (read AQP|T|Pool pool-id
-            ["vacate-in-progress"])
-    )
-    ;; [URH] heavy-read
-    ;; WU_BenDpnfAnkMeta|BeneficiaryId — select key; WU not needed.
-    ;; WU_BenDpnfAnkMeta|DpnfId — select key; WU not needed.
-    ;;
-    ;; Reads follow schema order: (1) AQP|Schema (2) TrueFungibleTracker (2b) BenDptfTotal \
-    ;;     (2c) BenDpsf* + BenDpnf* rollups \
-    ;;     (3) OrtoFungibleTracker (4) SemiFungibleTracker (5) NonFungibleTracker
-    ;;
-    (defun URH_AQP|AllPoolIds:[string] ()
-        @doc "Returns all row keys from AQP|T|Pool."
-        (keys AQP|T|Pool)
-    )
-    (defun URH_AQP|BenDpsfActiveNonceSupplies:[object] (beneficiary-id:string dpsf-id:string)
-        @doc "Nonce × amount objects for (beneficiary, dpsf-id) where rollup amount > 0 — DPSF resync inventory."
-        (let
-            (
-                (results
-                    (filter
-                        (lambda (x) (> (at "amount" x) 0))
-                        (select AQP|T|BenDpsfNonceTotal ["nonce" "amount"]
-                            (and?
-                                (where "beneficiary-id" (= beneficiary-id))
-                                (where "dpsf-id" (= dpsf-id))
-                            )
-                        )
-                    )
-                )
-            )
-            (if (= (length results) 0) [] results)
-        )
-    )
-    (defun URH_AQP|BenDpnfActiveNonceSupplies:[object] (beneficiary-id:string dpnf-id:string)
-        @doc "Nonce × amount objects for (beneficiary, dpnf-id) where rollup amount > 0 — DPNF resync inventory."
-        (let
-            (
-                (results
-                    (filter
-                        (lambda (x) (> (at "amount" x) 0))
-                        (select AQP|T|BenDpnfNonceTotal ["nonce" "amount"]
-                            (and?
-                                (where "beneficiary-id" (= beneficiary-id))
-                                (where "dpnf-id" (= dpnf-id))
-                            )
-                        )
-                    )
-                )
-            )
-            (if (= (length results) 0) [] results)
-        )
-    )
-    (defun URH_AQP|ActiveDptfTrackerRows:[object] (pool-id:string dptf-id:string)
-        @doc "Core pool read: active DPTF tracker rows (balance>0) for pool×asset."
-        (filter
-            (lambda (row:object) (> (at "balance" row) 0.0))
-            (select AQP|T|DPTFTracker ["owner-id" "beneficiary-id" "balance"]
-                (and?
-                    (where "pool-id" (= pool-id))
-                    (where "dptf-id" (= dptf-id))
-                )
-            )
-        )
-    )
-    (defun URH_AQP|ActiveDpofTrackerRows:[object] (pool-id:string dpof-id:string)
-        @doc "Core pool read: active DPOF tracker rows (balance>0) for pool×asset."
+
+    (defun URC_BuildPreScoreNzFlags:[object{AcquisitionSchemasV5.FVT|ScorePreNzFlag}]
+        (beneficiary-id:string pool-id:string settle-scores:[string])
+        @doc "Pre-SCORE nz snapshot per employed score-id."
         (map
-            (lambda (row:object)
-                {"owner-id": (at "owner-id" row), "beneficiary-id": (at "beneficiary-id" row),
-                 "nonce": (at "nonce" row), "balance": (at "balance" row)}
+            (lambda (score-id:string)
+                (UDC_FVT|ScorePreNzFlag score-id (URC_UserScoreTripleIsNonZero beneficiary-id pool-id score-id))
             )
-            (filter
-                (lambda (row:object) (> (at "balance" row) 0.0))
-                (select AQP|T|DPOFTracker ["owner-id" "beneficiary-id" "nonce" "balance"]
-                    (and?
-                        (where "pool-id" (= pool-id))
-                        (where "dpof-id" (= dpof-id))
-                    )
-                )
-            )
+            settle-scores
         )
     )
-    (defun URH_AQP|ActiveDpsfTrackerRows:[object] (pool-id:string dpsf-id:string)
-        @doc "Core pool read: active DPSF tracker rows (balance>0) for pool×asset."
-        (map
-            (lambda (row:object)
-                {"owner-id": (at "owner-id" row), "beneficiary-id": (at "beneficiary-id" row),
-                 "nonce": (at "nonce" row), "balance": (at "balance" row)}
-            )
-            (filter
-                (lambda (row:object) (> (at "balance" row) 0.0))
-                (select AQP|T|DPSFTracker ["owner-id" "beneficiary-id" "nonce" "balance"]
-                    (and?
-                        (where "pool-id" (= pool-id))
-                        (where "dpsf-id" (= dpsf-id))
-                    )
-                )
-            )
+
+    (defun URC_StakeAnyPendingOnFvtRewardLine:bool
+        (
+            beneficiary-id:string
+            fvt-id:string
+            reward-dptf-id:string
+            plans:[object{AcquisitionSchemasV5.FVT|SettleScorePlan}]
         )
-    )
-    (defun URH_AQP|ActiveDpnfTrackerRows:[object] (pool-id:string dpnf-id:string)
-        @doc "Core pool read: active DPNF tracker rows (balance>0) for pool×asset."
-        (map
-            (lambda (row:object)
-                {"owner-id": (at "owner-id" row), "beneficiary-id": (at "beneficiary-id" row),
-                 "nonce": (at "nonce" row), "balance": (at "balance" row)}
-            )
-            (filter
-                (lambda (row:object) (> (at "balance" row) 0.0))
-                (select AQP|T|DPNFTracker ["owner-id" "beneficiary-id" "nonce" "balance"]
-                    (and?
-                        (where "pool-id" (= pool-id))
-                        (where "dpnf-id" (= dpnf-id))
-                    )
-                )
-            )
-        )
-    )
-    ;;
-    ;; ── RE-RATE / BACK-FILL ENGINE ─────────────────────────────────────────────
-    ;; One question, asked four ways: WHAT BASE SHOULD THIS HOLDER HAVE RIGHT NOW?
-    ;;
-    ;;   target(holder) = floor(Σn × 1.0, p) + floor(Σf × mx-frozen, p) + Σ ledger(sleeping slots)
-    ;;
-    ;; The stored base is a MAINTAINED SIGNED ACCUMULATOR -- every stake adds a delta, every
-    ;; unstake subtracts one, and nothing ever recomputes across holders. That is what makes the
-    ;; system cheap, and it is why several separate problems reduce to this one function:
-    ;;
-    ;;   1] A SCORE WAS ADDED to a pool that already had stakers: every target is non-zero while
-    ;;      every base is 0. (The owner's bunny-pool question.)
-    ;;   2] A SCORE WAS REVOKED, or a row was ORPHANED: base non-zero, target 0.
-    ;;   3] ROUNDING DRIFT from a position staked in several tranches and withdrawn in one.
-    ;;
-    ;; NOTE WHAT IS *NOT* ON THAT LIST ANY MORE: a maturing sleeping batch. Its weight is derived
-    ;; from the STORED TERM in `SCR|T|SleepStake` -- how much of the lock the nonce had left when
-    ;; it was staked -- and never from the live clock, because a sleeping multiplier is fixed at
-    ;; STAKE time. The term is what is stored, not the weight: a term is ceiling-INDEPENDENT, so
-    ;; ONE row per nonce serves all of a pool's scores, each re-deriving its own figure at its own
-    ;; precision (`URC_SCR|SleepingLegHeldWeight`).
-    ;; A target that re-derived it from today's multiplier would drag the base away from the
-    ;; figure the unstake will reverse, and once the position is gone that gap is unrecoverable.
-    ;; A sleeping holder's weight is therefore meant to hold still: they already committed what
-    ;; they committed, and because the rate was set by REMAINING time there was never anything to
-    ;; gamble. Changing a score's mx CEILING does not retroactively move them either; re-rating
-    ;; an existing ledger to a new ceiling is deliberately separate work.
-    ;;
-    ;; APPLIED AS A DELTA, NEVER AS AN ABSOLUTE WRITE -- `target - current` goes through
-    ;; `SCR::XE_ApplyRawBaseDelta`, the same writer every stake uses, so the user row, the score's
-    ;; vault totals and `nzs-count` stay maintained by ONE piece of code. The alternative (a second
-    ;; writer that sets the base directly) would have to reproduce all three and would be free to
-    ;; disagree with the first.
-    ;;
-    ;; IDEMPOTENT, ORDER-INDEPENDENT, AND SELF-CHECKING. A slice recomputes the target from the
-    ;; tracker, so a replayed slice computes delta 0 and writes nothing; two disjoint slices touch
-    ;; disjoint user rows and compose into a shared total by += ; and `URHC_AQP|ScoreBackfillOutstanding`
-    ;; returning [] IS the proof that no sweep is needed. No job state, no cursor: the live table is
-    ;; the completion ledger. This is a FED SLICE, the parallel-safe recipe shape.
-    (defun UC_AQP|BackfillUniqueBeneficiaries:[string] (rows:[object])
-        @doc "First-seen-order dedupe of `beneficiary-id` across tracker rows. \
-            \ ONE BENEFICIARY MAY HOLD THROUGH MANY OWNERS and across all three legs, so the same \
-            \ account appears in several rows while owning exactly ONE user-score row. Collapsing \
-            \ them is what makes the target one figure per ACCOUNT rather than per row."
-        (fold
-            (lambda (acc:[string] row:object)
-                (let
-                    (
-                        (b:string (at "beneficiary-id" row))
-                    )
-                    (if (contains b acc) acc (+ acc [b]))
-                )
-            )
-            []
-            rows
-        )
-    )
-    (defun UC_AQP|BackfillRowsForBeneficiary:[object] (beneficiary-id:string rows:[object])
-        @doc "The subset of tracker rows crediting one beneficiary."
-        (filter
-            (lambda (row:object) (= (at "beneficiary-id" row) beneficiary-id))
-            rows
-        )
-    )
-    (defun UC_AQP|BackfillSumForBeneficiary:decimal (beneficiary-id:string rows:[object])
-        @doc "Σ `balance` over the rows crediting one beneficiary. RAW amount, UNWEIGHTED -- the \
-            \ multiplier is applied once to this sum, never per row, because the stake path floors \
-            \ ONCE PER CALL and a per-row floor would not reproduce it."
-        (fold (+) 0.0
+        @doc "Internal: true when user has pending-rewards > 0 on any employed score for (fvt, reward-dptf)."
+        (fold (or) false
             (map
-                (lambda (row:object) (at "balance" row))
-                (UC_AQP|BackfillRowsForBeneficiary beneficiary-id rows)
-            )
-        )
-    )
-    (defun URC_AQP|PoolLiquidityLegs:object (pool-id:string)
-        @doc "The three asset-ids a liquidity pool weighs: the native LP DPTF, its FROZEN DPTF twin \
-            \ and its SLEEPING DPOF twin. BAR when the asset declares no such twin, which is what \
-            \ the callers branch on -- an absent twin contributes nothing rather than refusing."
-        (let
-            (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
-                (asset:string (UR_AQP|PoolAssetId pool-id))
-            )
-            {"native"   : asset
-            ,"frozen"   : (ref-DPTF::UR_Frozen asset)
-            ,"sleeping" : (ref-DPTF::UR_Sleeping asset)}
-        )
-    )
-    (defun URC_AQP|ScoreBackfillSupported:bool (pool-id:string score-id:string)
-        @doc "True iff `target = Σ(amount × mx)` is the CORRECT formula for this score's base. \
-            \ Everything downstream refuses rather than computes when this is false, because a \
-            \ delta derived from the wrong formula does not fail -- it writes a plausible wrong \
-            \ number into a maintained accumulator, where it is indistinguishable from a real one. \
-            \ \
-            \ Three conditions, and the third is the one that is easy to miss: \
-            \ \
-            \ 1] THE SCORE IS EMPLOYED BY THIS POOL. A (pool, score) pair the chain does not relate \
-            \    has no holders and no meaning. \
-            \ 2] CLASS 0 OR CLASS 1 -- the two whose base really is `amount × mx`. Class 0 is LP \
-            \    via a true fungible, class 1 is a plain DPTF, and their per-leg arithmetic is \
-            \    IDENTICAL: `URC_SignedBaseDeltaForDptfStake` and \
-            \    `URC_SignedBaseDeltaForDptfLpStake` are both `floor(amount × mx, p)` with mx \
-            \    1.0 native / mx-frozen frozen. Pinned equal by [6.2.17] TX-RERATE-04, and the \
-            \    target still calls the one matching the class rather than relying on that. \
-            \    EXCLUDED: class 2 (DPOF) weighs per-nonce amounts through a DIFFERENT pair of \
-            \    functions, and classes 3/4 (SF/NF) weigh per-nonce and per-trait TABLE VALUES \
-            \    that are not amounts at all. Supporting class 2 is part of the sleeping-token \
-            \    custody work, not this engine. \
-            \ 3] NOT AN ADDITIVE SATELLITE. When a score has BOTH a boost-link and a boost-class- \
-            \    link, `URC_SingularUserScoreDeltaFromSignedUserBase` pins its stored base at \
-            \    EXACTLY 0.0 -- the hub owns the canonical base and the satellite is a boosting row. \
-            \    Its target under this formula is non-zero, so without this clause the sweep would \
-            \    compute a delta, apply it, read 0.0 back, and report the holder outstanding again \
-            \    FOREVER: a sweep that never converges and bills every pass. A satellite needs no \
-            \    back-fill of its own; when the HUB's base moves, the satellite's boosted/deb values \
-            \    go stale and the EXISTING deb-staleness sweep is what repairs them."
-        (let
-            (
-                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
-            )
-            (fold (and) true
-                [
-                    (= (ref-SCR::UR_SCR|ScoreAqpoolLink score-id) pool-id)
-                    (contains score-id (URC_PoolActiveScoreIds pool-id))
-                    (contains (ref-SCR::UR_SCR|ScoreClass score-id) [0 1])
-                    (not
-                        (and
-                            (!= (ref-SCR::UR_SCR|ScoreBoostLink score-id) BAR)
-                            (!= (ref-SCR::UR_SCR|ScoreBoostClassLink score-id) BAR)
-                        )
-                    )
-                ]
-            )
-        )
-    )
-    (defun URH_AQP|ScoreTargetBaseForBeneficiary:decimal
-        (pool-id:string score-id:string beneficiary-id:string
-         nat-rows:[object] frz-rows:[object] slp-rows:[object])
-        @doc "The canonical base ONE beneficiary should carry, from pre-scanned tracker rows. \
-            \ \
-            \ Takes the rows rather than reading them so the three `select`s happen ONCE per \
-            \ transaction instead of once per holder. \
-            \ \
-            \ THE DPTF LEGS ARE RECOMPUTED, THE SLEEPING LEG IS READ. `URC_SignedBaseDeltaFor*` \
-            \ are CALLED rather than reimplemented, so there is exactly one copy of the weighting \
-            \ rule -- and for native and frozen that recomputation is EXACT, because their \
-            \ multipliers never move (1.0 and a flat `mx-frozen`). \
-            \ \
-            \ The SLEEPING leg is recomputed too, but from the STORED TERM rather than the live \
-            \ clock: its multiplier was fixed at STAKE time from the lock's remaining term, and \
-            \ `SCR|T|SleepStake` is what remembers that term. Deriving it from today's remaining \
-            \ time instead would move the base off the figure the unstake reverses, and once the \
-            \ position is gone that gap is unrecoverable. The stake, the unstake and this target \
-            \ all call ONE function -- `URC_SCR|SleepingLegHeldWeight` -- so they cannot drift."
-        (let
-            (
-                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
-                (legs:object (URC_AQP|PoolLiquidityLegs pool-id))
-                (slp-mine:[object] (UC_AQP|BackfillRowsForBeneficiary beneficiary-id slp-rows))
-            )
-            (fold (+) 0.0
-                [
-                    ;;THE LEG FUNCTION FOLLOWS THE SCORE CLASS, not the other way round. The two
-                    ;;are the same arithmetic today -- `floor(amount x mx, p)` either way, pinned
-                    ;;equal by [6.2.17] TX-RERATE-04 -- so this branch changes no number. It is
-                    ;;here because the target must be whatever the STAKE PATH would have written,
-                    ;;and the stake path dispatches on class (XE_ApplyTrueFungibleStakeDelta sends
-                    ;;class 0 to XI_1|UpdateScoreDataForTrueFungibleLP and everything else to
-                    ;;XI_1|UpdateScoreDataForTrueFungible). Calling one function for both would
-                    ;;make the engine correct only while the two happen to agree, and silently
-                    ;;wrong the day one of them changes.
-                    (if (= (ref-SCR::UR_SCR|ScoreClass score-id) 0)
-                        (ref-SCR::URC_SignedBaseDeltaForDptfLpStake
-                            score-id (at "native" legs)
-                            (UC_AQP|BackfillSumForBeneficiary beneficiary-id nat-rows)
-                            true true)
-                        (ref-SCR::URC_SignedBaseDeltaForDptfStake
-                            score-id (at "native" legs)
-                            (UC_AQP|BackfillSumForBeneficiary beneficiary-id nat-rows)
-                            true true)
-                    )
-                    (if (= (at "frozen" legs) BAR)
-                        0.0
-                        (if (= (ref-SCR::UR_SCR|ScoreClass score-id) 0)
-                            (ref-SCR::URC_SignedBaseDeltaForDptfLpStake
-                                score-id (at "frozen" legs)
-                                (UC_AQP|BackfillSumForBeneficiary beneficiary-id frz-rows)
-                                false true)
-                            (ref-SCR::URC_SignedBaseDeltaForDptfStake
-                                score-id (at "frozen" legs)
-                                (UC_AQP|BackfillSumForBeneficiary beneficiary-id frz-rows)
-                                false true)
-                        )
-                    )
-                    ;;THE SLEEPING LEG IS DERIVED FROM THE STORED TERM, NOT FROM THE LIVE CLOCK,
-                    ;;and that is the difference between a sweep that converges and one that
-                    ;;quietly breaks every sleeping position it touches. A sleeping multiplier is
-                    ;;fixed when the lock is STAKED, from the time it had left at that moment, and
-                    ;;`SCR|T|SleepStake` records that term so the unstake gives back exactly what
-                    ;;the stake credited. If the target re-derived the leg from TODAY's remaining
-                    ;;time the sweep would move the base away from the figure the unstake will
-                    ;;reverse -- and once the position is gone that difference is unrecoverable.
-                    ;;
-                    ;;EXACT ONLY WHILE THE SCORE'S CEILING HOLDS STILL, and that is not an
-                    ;;assumption, it is an enforced pairing: `SCR|C>UPDATE-MULTIPLIERS` refuses a
-                    ;;change while any sleeping position exists. The two halves are one mechanism
-                    ;;-- the ledger stores a ceiling-independent TERM so one row can serve every
-                    ;;score on the pool, and the gate is what stops the ceiling moving underneath
-                    ;;it. Relaxing that gate without ALSO re-rating the stored legs would make the
-                    ;;unstake reverse at a rate the stake never credited.
-                    ;;
-                    ;;So the sweep repairs the NATIVE and FROZEN legs (whose multipliers are
-                    ;;constant, so recomputation is exact) and the add-score backfill, and leaves
-                    ;;sleeping weights where their owners earned them.
-                    ;;
-                    ;;CLASS 0 ONLY, still: a class-1 pool admits DPTF legs and nothing else
-                    ;;(URC_StakeTrueFungibleDptfMatchesPool), so its tracker can never hold a
-                    ;;sleeping row even when the asset declares a twin.
-                    (if (or (= (at "sleeping" legs) BAR)
-                            (!= (ref-SCR::UR_SCR|ScoreClass score-id) 0))
-                        0.0
-                        (ref-SCR::URC_SCR|SleepingLegHeldWeight
-                            score-id (at "sleeping" legs)
-                            (map (lambda (r:object) (at "nonce" r)) slp-mine)
-                            (map (lambda (r:object) (at "balance" r)) slp-mine)
-                            300
-                        )
-                    )
-                ]
-            )
-        )
-    )
-    (defun URH_AQP|ScoreBackfillLegRows:object (pool-id:string)
-        @doc "HEAVY (up to three tracker scans). The pool's whole live liquidity position, by leg: \
-            \ {nat-rows, frz-rows, slp-rows}. Scanned ONCE and threaded through every holder."
-        (let
-            (
-                (legs:object (URC_AQP|PoolLiquidityLegs pool-id))
-            )
-            {"nat-rows" : (URH_AQP|ActiveDptfTrackerRows pool-id (at "native" legs))
-            ,"frz-rows" : (if (= (at "frozen" legs) BAR)
-                            []
-                            (URH_AQP|ActiveDptfTrackerRows pool-id (at "frozen" legs)))
-            ,"slp-rows" : (if (= (at "sleeping" legs) BAR)
-                            []
-                            (URH_AQP|ActiveDpofTrackerRows pool-id (at "sleeping" legs)))}
-        )
-    )
-    (defun URHC_AQP|ScoreBackfillCandidates:[string] (pool-id:string score-id:string leg-rows:object)
-        @doc "HEAVY. Every account the sweep must consider: the UNION of the pool tracker's \
-            \ beneficiaries and `SCR::URH_SCR|ScoreHolderAccounts`. \
-            \ \
-            \ THE UNION IS NOT REDUNDANT, and taking only the first half is the bug that makes a \
-            \ back-fill look complete while leaving the worst rows behind. The tracker answers 'who \
-            \ holds a position', the score table answers 'who carries a base'. The two disagree in \
-            \ both directions, and each direction is a real repair: \
-            \ \
-            \   TRACKER ONLY -> a holder who staked before the score existed (target > 0, base 0). \
-            \   SCORE ONLY   -> an ORPHAN: base non-zero with no position left (target 0). This is \
-            \                   what `C_AddScore`'s unguarded signed delta produces, and it was \
-            \                   measured BELOW ZERO on the deployed chain. Nothing else enumerates \
-            \                   it, so no other sweep in the system can reach it."
-        (fold
-            (lambda (acc:[string] a:string) (if (contains a acc) acc (+ acc [a])))
-            (UC_AQP|BackfillUniqueBeneficiaries
-                (+ (+ (at "nat-rows" leg-rows) (at "frz-rows" leg-rows)) (at "slp-rows" leg-rows))
-            )
-            (let
-                (
-                    (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+                (lambda (plan:object{AcquisitionSchemasV5.FVT|SettleScorePlan})
+                    (> (UR_FVT-RU|PendingRewards beneficiary-id fvt-id (at "score-entity-id" plan) reward-dptf-id) 0.0)
                 )
-                (ref-SCR::URH_SCR|ScoreHolderAccounts pool-id score-id)
+                plans
             )
         )
     )
-    (defun URHC_AQP|ScoreBackfillOutstanding:[object] (pool-id:string score-id:string)
-        @doc "HEAVY. The sweep's WORK LIST and its 'is it needed?' answer in one read: every holder \
-            \ whose stored base disagrees with the canonical target, as \
-            \ {beneficiary-id, target, current, delta}, delta != 0. \
-            \ \
-            \ EMPTY MEANS FULLY RATED -- every slice would be a no-op. That is the signal a UI shows \
-            \ an admin as 'score stale', and the condition a pool can clear itself on. \
-            \ \
-            \ ALSO EMPTY for a score this engine does not support (`URC_AQP|ScoreBackfillSupported`). \
-            \ Zero rows, never a wrong count: an unsupported score's base is not Σ(amount × mx), so \
-            \ a 'delta' measured against that formula would be invented work that CORRUPTS the row \
-            \ if executed. Refusing to answer is the only safe answer."
-        (if (not (URC_AQP|ScoreBackfillSupported pool-id score-id))
-            []
-            (let
-                (
-                    (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
-                    (leg-rows:object (URH_AQP|ScoreBackfillLegRows pool-id))
+
+    (defun URC_SettleStakePendingIgnis:decimal (settle-scores:[string] distinct-fvts:[string])
+        @doc "Internal: phase 2.1 settle IGNIS from precomputed lists (C_*StakeFlow / URHC_BuildStakeSettleBundle). \
+            \ ignis|biggest × |settle-scores| + ignis|medium × Σ enabled-reward-count over distinct-fvts."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                ;;
+                (biggest:decimal (ref-IGNIS::UC_IgnisLeg "tier-biggest"))
+                (medium:decimal (ref-IGNIS::UC_IgnisLeg "tier-medium"))
+                (reward-tokens:integer
+                    (fold (+) 0
+                        ;; map: distinct FVT entities (sum enabled-reward-count for IGNIS medium leg)
+                        (map
+                            (lambda (fvt-id:string)
+                                (try 0 (UR_FVT|EnabledRewardCount fvt-id))
+                            )
+                            distinct-fvts
+                        )
+                    )
                 )
-                (filter
-                    (lambda (row:object) (!= (at "delta" row) 0.0))
-                    (map
-                        (lambda (b:string)
-                            (let
-                                (
-                                    (target:decimal
-                                        (URH_AQP|ScoreTargetBaseForBeneficiary
-                                            pool-id score-id b
-                                            (at "nat-rows" leg-rows)
-                                            (at "frz-rows" leg-rows)
-                                            (at "slp-rows" leg-rows)))
-                                    (current:decimal
-                                        (ref-SCR::UR_U-SCR|UserScoreBaseScore b pool-id score-id))
+            )
+            (+
+                (* (dec (length settle-scores)) biggest)
+                (* medium (dec reward-tokens))
+            )
+        )
+    )
+
+    (defun URC_BookStakeUnclaimedIgnis:decimal (distinct-fvts:[string])
+        @doc "Internal: IGNIS for XI_BookStakeUnclaimedCounts — ignis|medium × |distinct-fvts|."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+            )
+            (* (ref-IGNIS::UC_IgnisLeg "tier-medium") (dec (length distinct-fvts)))
+        )
+    )
+
+    (defun URC_CheckpointStakeRpsIgnis:decimal ()
+        @doc "Internal: IGNIS for XI_CheckpointStakeRps — flat 2 × ignis|biggest."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+            )
+            (* 2.0 (ref-IGNIS::UC_IgnisLeg "tier-biggest"))
+        )
+    )
+
+    (defun URC_FvtMemberDebNeedsFix:bool
+        (fvt-id:string user-id:string score-entity-type:integer score-entity-id:string)
+        @doc "True iff (user, member) is deb-stale — the exact condition XI_FixUserMemberDeb acts on. Shared by \
+            \ the sweep scan so scan and fix never disagree. \
+            \ CHANGED 2026-10-08: this used to return false for TRUE triplets, on the premise that their lanes \
+            \ were deb-INDEPENDENT. That premise died with the lane fix — every triplet weight is now a deb-score \
+            \ — and leaving the exemption would have made a true triplet the one member kind a DEB change could \
+            \ never refresh. The exemption is therefore gone and ALL members are deb-based."
+        (let
+            (
+                (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
+                (triplet:bool (= score-entity-type CT_SCORE_ENTITY_TRIPLET))
+            )
+            (if triplet
+                (fold (or) false
+                    [ (ref-SCR::URC_U-SCR|UserScoreDebStale user-id (ref-SCR::UR_SCR|ScoreAqpoolLink (ref-SCR::UR_SCR|TripletBronzeScoreId score-entity-id)) (ref-SCR::UR_SCR|TripletBronzeScoreId score-entity-id))
+                      (ref-SCR::URC_U-SCR|UserScoreDebStale user-id (ref-SCR::UR_SCR|ScoreAqpoolLink (ref-SCR::UR_SCR|TripletSilverScoreId score-entity-id)) (ref-SCR::UR_SCR|TripletSilverScoreId score-entity-id))
+                      (ref-SCR::URC_U-SCR|UserScoreDebStale user-id (ref-SCR::UR_SCR|ScoreAqpoolLink (ref-SCR::UR_SCR|TripletGoldenScoreId score-entity-id)) (ref-SCR::UR_SCR|TripletGoldenScoreId score-entity-id)) ])
+                (ref-SCR::URC_U-SCR|UserScoreDebStale user-id (ref-SCR::UR_SCR|ScoreAqpoolLink score-entity-id) score-entity-id))
+        )
+    )
+
+    (defun URC_FvtUserHasStaleMemberIn:bool (fvt-id:string user-id:string members:[string])
+        @doc "True iff the user has ≥1 deb-stale member among the PRE-COMPUTED `members` (the FVT's enabled \
+            \ score-entity-ids — user-INVARIANT). Lets a bulk scan compute the member list ONCE and reuse it for \
+            \ every present user, instead of re-scanning FVT|T|ScoreEntityLink per user (the accidental \
+            \ O(users × member-table) blow-up). Per-member work is point reads only."
+        (fold (or) false
+            (map
+                (lambda (m:string) (URC_FvtMemberDebNeedsFix fvt-id user-id (UR_FVT-SEL|ScoreEntityType fvt-id m) m))
+                members))
+    )
+
+    (defun URC_FvtUserHasStaleMember:bool (fvt-id:string user-id:string)
+        @doc "True iff the user has ≥1 deb-stale member in the FVT. Single-user convenience (does one member \
+            \ scan); BULK callers must use URC_FvtUserHasStaleMemberIn with a hoisted member list."
+        (URC_FvtUserHasStaleMemberIn fvt-id user-id (URH_FvtEnabledScoreEntityIdsForFvt fvt-id))
+    )
+
+    (defun URC_FvtUserStaleMemberCountIn:integer (fvt-id:string user-id:string members:[string])
+        @doc "Count of the user's deb-stale members among the PRE-COMPUTED `members` — the 2e forced-fix \
+            \ increment. Hoisted-member twin of URC_FvtUserStaleMemberCount (no per-user member re-scan)."
+        (fold (+) 0
+            (map
+                (lambda (m:string) (if (URC_FvtMemberDebNeedsFix fvt-id user-id (UR_FVT-SEL|ScoreEntityType fvt-id m) m) 1 0))
+                members))
+    )
+
+    (defun URC_FvtUserStaleMemberCount:integer (fvt-id:string user-id:string)
+        @doc "Count of the user's deb-stale members in the FVT (the 2e forced-fix increment). Single-user \
+            \ convenience (one member scan); bulk callers use URC_FvtUserStaleMemberCountIn."
+        (URC_FvtUserStaleMemberCountIn fvt-id user-id (URH_FvtEnabledScoreEntityIdsForFvt fvt-id))
+    )
+
+    (defun URC_FvtSweepTotalPresent:integer (score-ids:[string])
+        @doc "Total present holders across every FVT member employing the swept boost-class = the paginated \
+            \ recompute-set size for CC_SweepBegin. Read-only; sweep-in-progress keeps URH_FvtPresentUsers fixed \
+            \ across the CC-batch's txs. FVT-local twin of MTX-AQP::URC_SweepTotalPresent (the defpact's copy) — \
+            \ both fold the SAME URH_FvtPresentUsers, so they agree by construction."
+        (let
+            (
+                (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
+            )
+            (fold (+) 0
+                (map
+                    (lambda (sid:string) (length (URH_FvtPresentUsers (ref-SCR::UR_SCR|ScoreFvtLink sid))))
+                    score-ids))
+        )
+    )
+
+    (defun UR_FVT-AF|FeePerMille:integer (fvt-id:string score-entity-id:string)
+        @doc "A delegation member's operator fee-per-mille (0 when unset ⇒ no split)."
+        (with-default-read FVT|T|AgencyFee (UCk_ScoreEntityLink fvt-id score-entity-id)
+            {"fee-per-mille" : 0} {"fee-per-mille" := f} f)
+    )
+
+    (defun UR_FVT-AF|Operator:string (fvt-id:string score-entity-id:string)
+        @doc "A delegation member's operator konto (BAR when unset)."
+        (with-default-read FVT|T|AgencyFee (UCk_ScoreEntityLink fvt-id score-entity-id)
+            {"operator-konto" : BAR} {"operator-konto" := o} o)
+    )
+
+    (defun UR_FVT-QS|Mode:string (fvt-id:string dptf-id:string)
+        @doc "A MULTIPLET_BASE reward's quality-split mode (HOMOGENEOUS when unset ⇒ unchanged lane→one-token routing)."
+        (with-default-read FVT|T|QualitySplit (UCk_RpsGlobal fvt-id dptf-id)
+            {"mode" : CT_REWARD_MODE_HOMOGENEOUS} {"mode" := m} m)
+    )
+
+    (defun UR_FVT-QS|BronzeSplit:[integer] (fvt-id:string dptf-id:string)
+        @doc "Heterogeneous bronze-lane split [to-t0 to-t1 to-t2] per-mille."
+        (at "bronze-split" (read FVT|T|QualitySplit (UCk_RpsGlobal fvt-id dptf-id) ["bronze-split"]))
+    )
+
+    (defun UR_FVT-QS|SilverSplit:[integer] (fvt-id:string dptf-id:string)
+        @doc "Heterogeneous silver-lane split [to-t0 to-t1 to-t2] per-mille."
+        (at "silver-split" (read FVT|T|QualitySplit (UCk_RpsGlobal fvt-id dptf-id) ["silver-split"]))
+    )
+
+    (defun UR_FVT-QS|GoldSplit:[integer] (fvt-id:string dptf-id:string)
+        @doc "Heterogeneous gold-lane split [to-t0 to-t1 to-t2] per-mille."
+        (at "gold-split" (read FVT|T|QualitySplit (UCk_RpsGlobal fvt-id dptf-id) ["gold-split"]))
+    )
+
+    (defun URH_FvtPresentUsers:[string] (fvt-id:string)
+        @doc "HEAVY (one `select` over the small purpose-built presence table): all ouronet-ids currently marked \
+            \ present in this FVT. Used by the fresh/checked inject + anchor sweeps to enumerate an FVT's users \
+            \ without scanning RPS|User. Stale `true` rows are harmless (consumer no-ops on zero-weight)."
+        (map (at "ouronet-id")
+            (select FVT|T|UserPresence ["ouronet-id"]
+                (and? (where "fvt-id" (= fvt-id)) (where "is-present" (= true)))
+            )
+        )
+    )
+
+    (defun URH_FVT-RG|EnabledRewardRows:[string] (fvt-id:string)
+        @doc "Expensive read: enabled reward dptf-ids for one fvt-id (FVT|T|RPS|Global.reward-enabled true). \
+            \ Prefer URH_FVT|SettleFvtRewardBundle when resolving multiple distinct FVTs in one tx."
+        (map
+            (lambda (row:object)
+                (at "dptf-id" row)
+            )
+            (select FVT|T|RPS|Global ["dptf-id"]
+                (and?
+                    (where "fvt-id" (= fvt-id))
+                    (where "reward-enabled" (= true))
+                )
+            )
+        )
+    )
+
+    (defun URH_FVT|SettleFvtRewardBundle:[object{AcquisitionSchemasV5.FVT|SettleFvtRewards}] (distinct-fvts:[string])
+        @doc "Expensive read: ONE select on FVT|T|RPS|Global for all distinct-fvts, then group to SettleFvtRewards rows. \
+            \ Not N× URH_FVT-RG|EnabledRewardRows — single table pass per C_*StakeFlow."
+        (let
+            (
+                (flat-rows:[object]
+                    (if (= (length distinct-fvts) 0)
+                        []
+                        (select FVT|T|RPS|Global ["fvt-id" "dptf-id"]
+                            (and?
+                                (where "reward-enabled" (= true))
+                                (where "fvt-id" (lambda (fid:string) (contains fid distinct-fvts)))
+                            )
+                        )
+                    )
+                )
+            )
+            ;; map: distinct FVT entities → object{AcquisitionSchemasV5.FVT|SettleFvtRewards} (filter flat-rows; no second select)
+            (map
+                (lambda (fvt-id:string)
+                    (UDC_FVT|SettleFvtRewards fvt-id
+                        (map
+                            (lambda (row:object)
+                                (at "dptf-id" row)
+                            )
+                            (filter
+                                (lambda (row:object)
+                                    (= (at "fvt-id" row) fvt-id)
                                 )
-                                {"beneficiary-id" : b
-                                ,"target"         : target
-                                ,"current"        : current
-                                ,"delta"          : (- target current)}
+                                flat-rows
                             )
                         )
-                        (URHC_AQP|ScoreBackfillCandidates pool-id score-id leg-rows)
+                    )
+                )
+                distinct-fvts
+            )
+        )
+    )
+
+    (defun URH_FvtEnabledScoreEntityIdsForFvt:[string] (fvt-id:string)
+        @doc "Expensive read: enabled score-entity-ids for one FVT — inject/collect ghost-TV lazy sync scope."
+        (map
+            (lambda (row:object)
+                (at "score-entity-id" row)
+            )
+            (select FVT|T|ScoreEntityLink ["score-entity-id"]
+                (and?
+                    (where "fvt-id" (= fvt-id))
+                    (where "enabled" (= true))
+                )
+            )
+        )
+    )
+
+    (defun URHC_BuildInjectScorePlans:[object{AcquisitionSchemasV5.FVT|SettleScorePlan}] (fvt-id:string)
+        @doc "Enabled ScoreEntityLinks on FVT × enabled reward dptf-ids — ghost TVL lazy-sync scope."
+        (let
+            (
+                (reward-dptf-ids:[string] (URH_FVT-RG|EnabledRewardRows fvt-id))
+                (score-entity-ids:[string] (URH_FvtEnabledScoreEntityIdsForFvt fvt-id))
+            )
+            (map
+                (lambda (score-entity-id:string)
+                    (UDC_FVT|SettleScorePlan
+                        (UR_FVT-SEL|ScoreEntityType fvt-id score-entity-id)
+                        score-entity-id
+                        fvt-id
+                        reward-dptf-ids
+                    )
+                )
+                score-entity-ids
+            )
+        )
+    )
+
+    (defun URHC_BuildStakeSettleBundle:object
+        (pool-id:string beneficiary-id:string)
+        @doc "Internal: one URH_FVT|SettleFvtRewardBundle per C_*StakeFlow pass — reuse in phases 2.1, 2.35, and 2.4. \
+            \ pre-nz-flags snapshot beneficiary nz state before SCORE."
+        (let
+            (
+                (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+                ;;
+                (employed-ids:[string] (ref-AQP::URC_PoolActiveScoreIds pool-id))
+                (settle-scores:[string] (URC_SettleEligibleEmployedScores employed-ids))
+                (distinct-fvts:[string] (URC_SettleDistinctFvtLinks settle-scores))
+                (fvt-reward-bundle:[object{AcquisitionSchemasV5.FVT|SettleFvtRewards}] (URH_FVT|SettleFvtRewardBundle distinct-fvts))
+                (settle-plans:[object{AcquisitionSchemasV5.FVT|SettleScorePlan}] (URC_SettleScorePlanRows settle-scores fvt-reward-bundle))
+                (pre-nz-flags:[object{AcquisitionSchemasV5.FVT|ScorePreNzFlag}]
+                    (URC_BuildPreScoreNzFlags beneficiary-id pool-id settle-scores)
+                )
+                ;; M2/#11: pre-SCORE live deb-weight per settled member, so phase 4.6 can delta the vault
+                ;; total-deb mirror over only the touched members (no scan).
+                (pre-member-debs:[object{AcquisitionSchemasV5.FVT|MemberPreDeb}]
+                    (map
+                        (lambda (plan:object{AcquisitionSchemasV5.FVT|SettleScorePlan})
+                            {"fvt-id"            : (at "fvt-id" plan)
+                            ,"score-entity-type" : (at "score-entity-type" plan)
+                            ,"score-entity-id"   : (at "score-entity-id" plan)
+                            ,"pre-deb"           : (URC_ScoreEntityMemberDebWeight
+                                                       (at "score-entity-type" plan) (at "score-entity-id" plan))}
+                        )
+                        settle-plans
                     )
                 )
             )
+            (UDC_FVT|StakeSettleBundle settle-scores distinct-fvts settle-plans pre-nz-flags pre-member-debs)
         )
     )
-    (defun URHC_AQP|ScoreBackfillNeeded:bool (pool-id:string score-id:string)
-        @doc "HEAVY. True when a re-rate sweep has work left on (pool-id, score-id). The cheap \
-            \ question a client asks before paying for a slice, and the one a pool clears on."
-        (> (length (URHC_AQP|ScoreBackfillOutstanding pool-id score-id)) 0)
-    )
-    (defun URC_AQP|PoolHasWeightedStakers:bool (pool-id:string)
-        @doc "CHEAP (at most seven point reads). True when some employed score of this pool already \
-            \ carries weight -- which is the only thing that makes adding or revoking a score an \
-            \ expensive operation rather than a free one. \
-            \ \
-            \ WHY NOT THE TRACKER, WHICH IS THE OBVIOUS PLACE TO ASK: answering from the tracker \
-            \ costs a `select` per asset leg, and this is consulted on the ADD-SCORE path, which \
-            \ every pool owner walks. `nzs-count` is already maintained on each score by the stake \
-            \ writer, so the question 'has anybody got weight here' is a handful of point reads. \
-            \ \
-            \ WHY NOT `nns`, WHICH SOUNDS EXACTLY RIGHT: `nns` is the nonce-occupancy counter and \
-            \ it is **-1 on class 0 and class 1 pools** by construction (they are AMOUNT pools --\
-            \ see UR_AQP|PoolNns). On the live LP pools it would therefore answer -1 forever, and \
-            \ a gate built on it would never fire where it matters most. \
-            \ \
-            \ ONE BLIND SPOT, STATED: a holder whose weight is exactly 0 is not counted, so a pool \
-            \ staked ONLY by additive satellites (whose base is pinned at 0.0 by design) reads \
-            \ false. That shape cannot occur -- a satellite boosts off a hub's base, so the hub is \
-            \ employed by the same pool and carries the weight that makes this true."
+
+    (defun URH_FvtStalePresentUsers:[string] (fvt-id:string)
+        @doc "HEAVY sweep scan (M3 #12): the FVT's present users who have ≥1 deb-stale member — the exact set that \
+            \ CC_Inject / the MTX|n|C_Inject defpact / CCp_InjectFixChunk must fix before injecting. Computes the \
+            \ FVT's enabled members ONCE and reuses it across every present user (was O(users × ScoreEntityLink \
+            \ scan) — the per-user re-scan a 50-user scale probe measured at ~2M gas; now O(scan + users))."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+                (members:[string] (URH_FvtEnabledScoreEntityIdsForFvt fvt-id))
             )
-            (> (length
-                   (filter
-                       (lambda (sid:string) (> (ref-SCR::UR_SCR|ScoreNzsCount sid) 0))
-                       (URC_PoolActiveScoreIds pool-id)))
-               0)
+            (filter (lambda (u:string) (URC_FvtUserHasStaleMemberIn fvt-id u members)) (URH_FvtPresentUsers fvt-id))
         )
     )
-    (defun URHC_AQP|PoolOrphanedScores:[string] (pool-id:string)
-        @doc "HEAVY (one select over the user-score table). The scores this pool has STOPPED \
-            \ employing but whose holders still carry weight for them: \
-            \ \
-            \     orphans = (scores with holders in this pool) - (scores the pool employs) \
-            \ \
-            \ EVERY ENTRY IS A DRAIN SWEEP WAITING TO RUN, and an empty list is the pool saying it \
-            \ has no retired weight left anywhere. `C_RevokeScore` cannot do this work itself: the \
-            \ number of holders is unbounded, so retiring them is a paged, parallel job and not one \
-            \ transaction's writes."
-        (let
-            (
-                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
-                (employed:[string] (URC_PoolActiveScoreIds pool-id))
-            )
-            (filter
-                (lambda (sid:string) (not (contains sid employed)))
-                (ref-SCR::URH_SCR|PoolScoreIdsWithHolders pool-id)
-            )
-        )
-    )
-    (defun URHC_AQP|ScoreDrainOutstanding:[string] (pool-id:string score-id:string)
-        @doc "HEAVY. The accounts still carrying weight for a score this pool no longer employs -- \
-            \ the drain sweep's work list, and its completion record when it reads []. \
-            \ \
-            \ EMPTY FOR A SCORE THE POOL STILL EMPLOYS, never a wrong list: a live score is \
-            \ re-rated, not drained, and reporting its holders here would invite a caller to zero \
-            \ weight that is genuinely earned. The mirror of `URHC_AQP|ScoreBackfillOutstanding`, \
-            \ which is empty for exactly the scores this one answers for."
-        (if (contains score-id (URC_PoolActiveScoreIds pool-id))
-            []
-            (let
-                (
-                    (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
-                )
-                (ref-SCR::URH_SCR|ScoreHolderAccounts pool-id score-id)
-            )
-        )
-    )
-    (defun URHC_AQP|PoolSweepClear:bool (pool-id:string)
-        @doc "HEAVY. True when this pool has NO outstanding re-rate and NO outstanding drain on any \
-            \ score -- the condition under which `sweep-in-progress` may be released and the pool \
-            \ returned to trading. \
-            \ \
-            \ THE WHOLE GATE IN ONE READ, and it is deliberately the SAME read the clearing client \
-            \ enforces. A pool is unfrozen because the work is provably done, never because \
-            \ somebody asserted it was: a client that trusted a caller's 'finished' flag would \
-            \ unfreeze a half-swept pool, and the half left behind is weight nobody can see is \
-            \ wrong."
-        (and
-            (= (length
-                   (filter
-                       (lambda (sid:string) (URHC_AQP|ScoreBackfillNeeded pool-id sid))
-                       (URC_PoolActiveScoreIds pool-id)))
-               0)
-            (= (length (URHC_AQP|PoolOrphanedScores pool-id)) 0)
-        )
-    )
-    ;;
-    ;; ── M5 (#14) UI OBSERVABILITY ──────────────────────────────────────────────
-    ;; Cross-pool, dirty-read `select` helpers over the trackers (no maintained tables). For a user U:
-    ;;   ByOwner(U)       → every leg U staked (as owner). Split: self = rows where beneficiary-id = U;
-    ;;                       staked-for-others = rows where beneficiary-id != U.  (answers query A + B)
-    ;;   ByBeneficiary(U) → every leg staked FOR U (as beneficiary). gifted-by-others = rows where owner-id != U.
-    ;;                       (answers query C; owner-id = U rows are U's own self-stakes)
-    ;; TF is amount-based (no nonce); OF/SF/NF carry nonce + amount. Rows include pool-id + asset-id + the
-    ;; counterparty so the UI can display everything and has all inputs for any unstake.
-    (defun URH_AQP|DptfStakesByOwner:[object] (owner-id:string)
-        @doc "UI: all TF legs where OWNER = owner-id (balance>0), cross-pool. Row: {pool-id, dptf-id, beneficiary-id, balance}."
-        (map
-            (lambda (row:object)
-                {"pool-id": (at "pool-id" row), "dptf-id": (at "dptf-id" row),
-                 "beneficiary-id": (at "beneficiary-id" row), "balance": (at "balance" row)}
-            )
-            (filter (lambda (row:object) (> (at "balance" row) 0.0))
-                (select AQP|T|DPTFTracker ["pool-id" "dptf-id" "beneficiary-id" "balance"]
-                    (where "owner-id" (= owner-id))))
-        )
-    )
-    (defun URH_AQP|DptfStakesByBeneficiary:[object] (beneficiary-id:string)
-        @doc "UI: all TF legs where BENEFICIARY = beneficiary-id (balance>0), cross-pool. Row: {pool-id, dptf-id, owner-id, balance}."
-        (map
-            (lambda (row:object)
-                {"pool-id": (at "pool-id" row), "dptf-id": (at "dptf-id" row),
-                 "owner-id": (at "owner-id" row), "balance": (at "balance" row)}
-            )
-            (filter (lambda (row:object) (> (at "balance" row) 0.0))
-                (select AQP|T|DPTFTracker ["pool-id" "dptf-id" "owner-id" "balance"]
-                    (where "beneficiary-id" (= beneficiary-id))))
-        )
-    )
-    (defun URH_AQP|DpofStakesByOwner:[object] (owner-id:string)
-        @doc "UI: all OF legs where OWNER = owner-id (balance>0), cross-pool. Row: {pool-id, dpof-id, beneficiary-id, nonce, balance}."
-        (map
-            (lambda (row:object)
-                {"pool-id": (at "pool-id" row), "dpof-id": (at "dpof-id" row),
-                 "beneficiary-id": (at "beneficiary-id" row), "nonce": (at "nonce" row), "balance": (at "balance" row)}
-            )
-            (filter (lambda (row:object) (> (at "balance" row) 0.0))
-                (select AQP|T|DPOFTracker ["pool-id" "dpof-id" "beneficiary-id" "nonce" "balance"]
-                    (where "owner-id" (= owner-id))))
-        )
-    )
-    (defun URH_AQP|DpofStakesByBeneficiary:[object] (beneficiary-id:string)
-        @doc "UI: all OF legs where BENEFICIARY = beneficiary-id (balance>0), cross-pool. Row: {pool-id, dpof-id, owner-id, nonce, balance}."
-        (map
-            (lambda (row:object)
-                {"pool-id": (at "pool-id" row), "dpof-id": (at "dpof-id" row),
-                 "owner-id": (at "owner-id" row), "nonce": (at "nonce" row), "balance": (at "balance" row)}
-            )
-            (filter (lambda (row:object) (> (at "balance" row) 0.0))
-                (select AQP|T|DPOFTracker ["pool-id" "dpof-id" "owner-id" "nonce" "balance"]
-                    (where "beneficiary-id" (= beneficiary-id))))
-        )
-    )
-    (defun URH_AQP|DpsfStakesByOwner:[object] (owner-id:string)
-        @doc "UI: all SF legs where OWNER = owner-id (balance>0), cross-pool. Row: {pool-id, dpsf-id, beneficiary-id, nonce, balance}."
-        (map
-            (lambda (row:object)
-                {"pool-id": (at "pool-id" row), "dpsf-id": (at "dpsf-id" row),
-                 "beneficiary-id": (at "beneficiary-id" row), "nonce": (at "nonce" row), "balance": (at "balance" row)}
-            )
-            (filter (lambda (row:object) (> (at "balance" row) 0.0))
-                (select AQP|T|DPSFTracker ["pool-id" "dpsf-id" "beneficiary-id" "nonce" "balance"]
-                    (where "owner-id" (= owner-id))))
-        )
-    )
-    (defun URH_AQP|DpsfStakesByBeneficiary:[object] (beneficiary-id:string)
-        @doc "UI: all SF legs where BENEFICIARY = beneficiary-id (balance>0), cross-pool. Row: {pool-id, dpsf-id, owner-id, nonce, balance}."
-        (map
-            (lambda (row:object)
-                {"pool-id": (at "pool-id" row), "dpsf-id": (at "dpsf-id" row),
-                 "owner-id": (at "owner-id" row), "nonce": (at "nonce" row), "balance": (at "balance" row)}
-            )
-            (filter (lambda (row:object) (> (at "balance" row) 0.0))
-                (select AQP|T|DPSFTracker ["pool-id" "dpsf-id" "owner-id" "nonce" "balance"]
-                    (where "beneficiary-id" (= beneficiary-id))))
-        )
-    )
-    (defun URH_AQP|DpnfStakesByOwner:[object] (owner-id:string)
-        @doc "UI: all NF legs where OWNER = owner-id (balance>0), cross-pool. Row: {pool-id, dpnf-id, beneficiary-id, nonce, balance}."
-        (map
-            (lambda (row:object)
-                {"pool-id": (at "pool-id" row), "dpnf-id": (at "dpnf-id" row),
-                 "beneficiary-id": (at "beneficiary-id" row), "nonce": (at "nonce" row), "balance": (at "balance" row)}
-            )
-            (filter (lambda (row:object) (> (at "balance" row) 0.0))
-                (select AQP|T|DPNFTracker ["pool-id" "dpnf-id" "beneficiary-id" "nonce" "balance"]
-                    (where "owner-id" (= owner-id))))
-        )
-    )
-    (defun URH_AQP|DpnfStakesByBeneficiary:[object] (beneficiary-id:string)
-        @doc "UI: all NF legs where BENEFICIARY = beneficiary-id (balance>0), cross-pool. Row: {pool-id, dpnf-id, owner-id, nonce, balance}."
-        (map
-            (lambda (row:object)
-                {"pool-id": (at "pool-id" row), "dpnf-id": (at "dpnf-id" row),
-                 "owner-id": (at "owner-id" row), "nonce": (at "nonce" row), "balance": (at "balance" row)}
-            )
-            (filter (lambda (row:object) (> (at "balance" row) 0.0))
-                (select AQP|T|DPNFTracker ["pool-id" "dpnf-id" "owner-id" "nonce" "balance"]
-                    (where "beneficiary-id" (= beneficiary-id))))
-        )
-    )
-    ;; [URCi]   cost readers — single source for exec billing + INFO preview (config/sync)
-    (defun URCi_Issue:object{IgnisCollectorV4.OutputCumulator} (output:[string])
+
+    (defun URCi_Inject:object{IgnisCollectorV4.OutputCumulator} (op-key:string fvt-id:string output:[string])
+        @doc "Gas leg (konto = FVT owner) for the inject family. The ops sharing it have \
+            \ DIFFERENT component costs (CC_Inject 21 / CC_InjectStream 5 / \
+            \ CC_InjectFinalize 7 / MTX-AQP|2|CC_Inject 11), so the caller passes its \
+            \ TALOS OP KEY down through the XE_/XI_ inject boundary."
         (let
             (
                 (r:module{IgnisCollectorV4} IGNIS)
             )
             (r::UDC_ConstructOutputCumulator
-                (r::UC_IgnisPrice "AQP-POOL|C_Issue" "issue-pool")
-                AQP|SC_NAME (r::URC_IsVirtualGasZero) output)
+                (r::UC_IgnisPrice op-key "aqp-inject")
+                (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)
         ))
-    (defun URCi_IssueStoa:decimal ()
-        @doc "STOA cost for pool-issue: the deterrence expressed in DOLLARS, converted at the live \
-            \ STOA price by UC_StoaPrice (issue-pool = $10 => 100 STOA). Previously read the raw \
-            \ 'smart' usage price (0.02), a pre-rehaul STOA amount that was never \
-            \ dollar-denominated and so ignored the peg entirely."
+
+    (defun URC_TierMedium:decimal ()
+        @doc "IGNIS tier 'ignis|medium' behind the virtual-gas toggle."
         (let
             (
-                (r:module{IgnisCollectorV4} IGNIS)
-            )
-            (r::UC_StoaPrice "issue-pool")
-        ))
-    (defun URCi_AddScore:object{IgnisCollectorV4.OutputCumulator} (output:[string])
-        (let
-            (
-                (r:module{IgnisCollectorV4} IGNIS)
-            )
-            (r::UDC_ConstructOutputCumulator
-                (r::UC_IgnisPrice "AQP-POOL|C_AddScore" "add-score")
-                AQP|SC_NAME (r::URC_IsVirtualGasZero) output)
-        ))
-    (defun URCi_RevokeScore:object{IgnisCollectorV4.OutputCumulator} (output:[string])
-        (let
-            (
-                (r:module{IgnisCollectorV4} IGNIS)
-            )
-            (r::UDC_ConstructOutputCumulator
-                (r::UC_IgnisPrice "AQP-POOL|C_RevokeScore" "revoke-score")
-                AQP|SC_NAME (r::URC_IsVirtualGasZero) output)
-        ))
-    (defun URCi_SetPoolStake:object{IgnisCollectorV4.OutputCumulator} (output:[string])
-        @doc "Shared by Enable / Disable pool-stake — one component key is exact because \
-            \ AQP-POOL|C_EnablePoolStake and C_DisablePoolStake are both 6.0."
-        (let
-            (
-                (r:module{IgnisCollectorV4} IGNIS)
-            )
-            (r::UDC_ConstructOutputCumulator
-                (r::UC_IgnisPrice "AQP-POOL|C_EnablePoolStake" "pool-stake-toggle")
-                AQP|SC_NAME (r::URC_IsVirtualGasZero) output)
-        ))
-    (defun URCi_SyncTrueFungibleAnchors:object{IgnisCollectorV4.OutputCumulator} (output:[string])
-        @doc "Gas leg for the TF anchor sync; exec concats it with the anchor-repair + meta \
-            \ legs (state-dependent)."
-        (let
-            (
-                (r:module{IgnisCollectorV4} IGNIS)
-            )
-            (r::UDC_ConstructOutputCumulator
-                (r::UC_IgnisPrice "AQP-POOL|C_SyncTrueFungibleAnchors" "sync-anchors")
-                AQP|SC_NAME (r::URC_IsVirtualGasZero) output)
-        ))
-    (defun URCi_UpdateScoreMultipliers:object{IgnisCollectorV4.OutputCumulator} (output:[string])
-        @doc "Cost of re-setting a score's frozen/sleeping multipliers — a settings write, priced \
-            \ alongside the other one-shot score settings."
-        (let
-            (
-                (r:module{IgnisCollectorV4} IGNIS)
-            )
-            (r::UDC_ConstructOutputCumulator
-                (r::UC_IgnisPrice "AQP-POOL|CC_UpdateScoreMultipliers" "setup")
-                AQP|SC_NAME (r::URC_IsVirtualGasZero) output)
-        ))
-    (defun URCi_BackfillScoreSlice:object{IgnisCollectorV4.OutputCumulator}
-        (beneficiaries:[string] output:[string])
-        @doc "Gas leg for one re-rate slice. PRICED PER HOLDER, because that is what the \
-            \ transaction actually does — one target recomputation and one delta write each. A flat \
-            \ price would make a 1-account slice as expensive as a 40-account one and push callers \
-            \ toward the single shape the recipe exists to avoid."
-        (let
-            (
-                (r:module{IgnisCollectorV4} IGNIS)
-            )
-            (r::UDC_ConstructOutputCumulator
-                (* (dec (length beneficiaries))
-                   (r::UC_IgnisPrice "AQP-POOL|CCp_BackfillScoreSlice" "backfill"))
-                AQP|SC_NAME (r::URC_IsVirtualGasZero) output)
-        ))
-    (defun URCi_BeginScoreRevoke:object{IgnisCollectorV4.OutputCumulator} (output:[string])
-        @doc "Cost of vacating a score's pool slot to begin a revoke — a config write, priced with \
-            \ the other pool-settings ops."
-        (let
-            (
-                (r:module{IgnisCollectorV4} IGNIS)
-            )
-            (r::UDC_ConstructOutputCumulator
-                (r::UC_IgnisPrice "AQP-POOL|C_BeginScoreRevoke" "setup")
-                AQP|SC_NAME (r::URC_IsVirtualGasZero) output)
-        ))
-    (defun URCi_DrainScoreSlice:object{IgnisCollectorV4.OutputCumulator}
-        (accounts:[string] output:[string])
-        @doc "Gas leg for one drain slice. PRICED PER HOLDER, like the re-rate slice and for the \
-            \ same reason: the transaction does one read and one delta write per account, so a flat \
-            \ price would make a one-account slice cost what a forty-account slice costs and push \
-            \ callers toward the shape the recipe exists to avoid."
-        (let
-            (
-                (r:module{IgnisCollectorV4} IGNIS)
-            )
-            (r::UDC_ConstructOutputCumulator
-                (* (dec (length accounts))
-                   (r::UC_IgnisPrice "AQP-POOL|Cp_DrainScoreSlice" "backfill"))
-                AQP|SC_NAME (r::URC_IsVirtualGasZero) output)
-        ))
-    (defun URCi_FinalizeScoreRevoke:object{IgnisCollectorV4.OutputCumulator} (output:[string])
-        @doc "Cost of cutting the aqpool-link once a drain is complete — a config write."
-        (let
-            (
-                (r:module{IgnisCollectorV4} IGNIS)
-            )
-            (r::UDC_ConstructOutputCumulator
-                (r::UC_IgnisPrice "AQP-POOL|CC_FinalizeScoreRevoke" "setup")
-                AQP|SC_NAME (r::URC_IsVirtualGasZero) output)
-        ))
-    (defun URCi_SyncCollectableAnchors:object{IgnisCollectorV4.OutputCumulator} (output:[string])
-        @doc "Gas leg for the SF+NF anchor sync; exec concats it with the anchor-repair + \
-            \ meta legs (state-dependent). One component key is exact because \
-            \ AQP-POOL|C_SyncSemiFungibleAnchors and C_SyncNonFungibleAnchors are both 36.0."
-        (let
-            (
-                (r:module{IgnisCollectorV4} IGNIS)
-            )
-            (r::UDC_ConstructOutputCumulator
-                (r::UC_IgnisPrice "AQP-POOL|C_SyncSemiFungibleAnchors" "sync-anchors")
-                AQP|SC_NAME (r::URC_IsVirtualGasZero) output)
-        ))
-    (defun URCi_SyncTrueFungibleAnchorsFull:decimal (beneficiary-id:string dptf-id:string)
-        @doc "FULL reconstructed IGNIS ifp of C_SyncTrueFungibleAnchors: the read-only mirror of the exec's \
-            \ UDC_ConcatenateOutputCumulators [ico-ank ico-meta ico-gas]. ico-ank = ANK anchor-refresh (ignis|small \
-            \ x n-live, n-live = live TF anchors on dptf-id) reproducing XE_UpdateTrueFungibleUserAnchorValues; \
-            \ ico-meta = the biggest-tier sync-count stamp (XB_SetBenDptfAnkSyncCount); ico-gas = URCi_SyncTrueFungibleAnchors."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
-                (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
-                ;;
-                (n-live:integer (length (ref-ANK::UR_ANK|AnchorsForAsset dptf-id)))
             )
-            (fold (+) 0.0
-                [ (ref-I|OURONET::OI|UC_IfpFromOutputCumulator                                     ;; ico-ank
-                      (ref-IGNIS::UDC_ConstructOutputCumulator
-                          (ref-ANK::URC_TrueFungibleStakeAnchorRefreshIgnis n-live)
-                          AQP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []))
-                  (ref-I|OURONET::OI|UC_IfpFromOutputCumulator                                     ;; ico-meta
-                      (ref-IGNIS::UDC_LegCumulator "ank-sync-count-tf" AQP|SC_NAME))
-                  (ref-I|OURONET::OI|UC_IfpFromOutputCumulator                                     ;; ico-gas
-                      (URCi_SyncTrueFungibleAnchors [beneficiary-id dptf-id]))
-                ])
-        ))
-    (defun URCi_SyncCollectableAnchorsFull:decimal (beneficiary-id:string collectable-id:string)
-        @doc "FULL reconstructed IGNIS ifp of C_SyncCollectableAnchors (SF son=true / NF son=false — cost is \
-            \ son-independent). Read-only mirror of the exec's UDC_ConcatenateOutputCumulators [ico-ank ico-meta ico-gas]. \
-            \ ico-ank = ANK anchor-refresh (ignis|small x n-live, n-live = live anchors on collectable-id) reproducing \
-            \ XE_Resync{Semi,Non}FungibleUserAnchorValues (both use URC_TrueFungibleStakeAnchorRefreshIgnis); ico-meta = \
-            \ the biggest-tier sync-count stamp (XB_SetBenCollectableAnkSyncCount); ico-gas = URCi_SyncCollectableAnchors."
+            (UC_GasPrice (ref-IGNIS::UC_IgnisLeg "tier-medium") (ref-IGNIS::URC_IsVirtualGasZero))
+        )
+    )
+
+    (defun URC_TierBiggest:decimal ()
+        @doc "IGNIS tier 'ignis|biggest' behind the virtual-gas toggle."
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
                 (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
-                (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
-                ;;
-                (n-live:integer (length (ref-ANK::UR_ANK|AnchorsForAsset collectable-id)))
             )
-            (fold (+) 0.0
-                [ (ref-I|OURONET::OI|UC_IfpFromOutputCumulator                                     ;; ico-ank
-                      (ref-IGNIS::UDC_ConstructOutputCumulator
-                          (ref-ANK::URC_TrueFungibleStakeAnchorRefreshIgnis n-live)
-                          AQP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []))
-                  (ref-I|OURONET::OI|UC_IfpFromOutputCumulator                                     ;; ico-meta
-                      (ref-IGNIS::UDC_LegCumulator "ank-sync-count-tf" AQP|SC_NAME))
-                  (ref-I|OURONET::OI|UC_IfpFromOutputCumulator                                     ;; ico-gas
-                      (URCi_SyncCollectableAnchors [beneficiary-id collectable-id]))
-                ])
-        ))
-    ;;{5.4}  Validate [UEV/CAP]
-    ;; [UEV] enforce
-    (defun UEV_ScoreDefinitionTargetMatchesPool (score-id:string asset-id:string)
-        @doc "Refuses a weight definition written against a collection the score's EMPLOYING POOL \
-            \ does not stake. No-op while the score is employed by no pool. \
-            \ \
-            \ WHY (2026-10-06). A score carries no asset-id -- identity resolves Score -> \
-            \ aqpool-link -> Pool -> asset-id -- and the definition write validates the collection \
-            \ for EXISTENCE only. Pair that with `undefined nonce => 0` rather than a failure and a \
-            \ mistyped collection id writes a full set of structurally valid rows that are NEVER \
-            \ read: green transaction, dead weights, no signal anywhere. \
-            \ \
-            \ TWO POINT READS, NO SCAN, DELIBERATELY. The complete check -- enumerate every asset \
-            \ this score has definitions for and reject any that is not the pool's -- needs a \
-            \ URH_ table scan, which would make every caller in its tree HEAVY (CC_/AA_ doubling) \
-            \ and drag a rename through Talos for a guard that runs on a cold path. This asks the \
-            \ cheap half of the question and gets the case that actually bites: writing weights \
-            \ for the wrong collection on a score that is already employed, i.e. one that may \
-            \ already have stakers. \
-            \ \
-            \ WHAT IT DOES NOT CATCH, stated so nobody reads more into it: definitions written \
-            \ BEFORE the score is employed (aqpool-link is BAR, so there is nothing to compare \
-            \ against -- the UI flags these as unverified), and an NF trait-key no staked nonce \
-            \ carries, which no id comparison can detect."
-        (let
-            (
-                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
-                ;;
-                (aqpool:string (ref-SCR::UR_SCR|ScoreAqpoolLink score-id))
-            )
-            (enforce
-                (or (= aqpool BAR) (= asset-id (UR_AQP|PoolAssetId aqpool)))
-                (format
-                    "Score {} is employed by pool {}, which stakes {} -- a definition for {} would score nothing"
-                    [score-id aqpool (if (= aqpool BAR) BAR (UR_AQP|PoolAssetId aqpool)) asset-id]
-                )
-            )
+            (UC_GasPrice (ref-IGNIS::UC_IgnisLeg "tier-biggest") (ref-IGNIS::URC_IsVirtualGasZero))
         )
     )
-    (defun UEV_IssuePoolClassAndAsset (aqp-class:integer asset-id:string)
-        @doc "aqp-class 0..4 and asset-id existence / shape for that class (native id only at issue)."
+
+    (defun URC_TierFixed:decimal (gas-cost:decimal)
+        @doc "A FIXED IGNIS gas cost behind the virtual-gas toggle."
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
-                (ref-SWP:module{SwapperV5} SWP)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
-                (ref-DPDC:module{DpdcV3} DPDC)
-                ;;
-                (p2:string (take 2 asset-id))
-                (is-class-ok:bool (contains aqp-class (enumerate 0 4)))
-                (is-native:bool
-                    (not
-                        (fold (or) false
-                            [(= p2 "F|") (= p2 "Z|") (= p2 "H|") (= p2 "V|") (= p2 "R|")]
-                        )
-                    )
-                )
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
             )
-            (enforce
-                (fold (and) true
-                    [
-                        is-class-ok
-                        is-native
-                        (if (<= aqp-class 2)
-                            (enforce-one
-                                "Invalid pool issue asset-id for aqp-class"
-                                [
-                                    (enforce
-                                        (fold (and) true
-                                            [
-                                                (= aqp-class 0)
-                                                (contains p2 ["S|" "W|" "P|"])
-                                                (= asset-id (ref-SWP::UR_TokenLP (ref-SWP::UR_GetLpSwpair asset-id)))
-                                            ]
-                                        )
-                                        "class 0 asset-id must be native LP nomenclature matching its swap pair"
-                                    )
-                                    (enforce
-                                        (fold (and) true
-                                            [
-                                                (= aqp-class 1)
-                                                (not (contains p2 ["S|" "W|" "P|"]))
-                                            ]
-                                        )
-                                        "class 1 asset-id must be a non-LP DPTF"
-                                    )
-                                    (enforce
-                                        (fold (and) true
-                                            [
-                                                (= aqp-class 2)
-                                                (not
-                                                    (fold (or) false
-                                                        [
-                                                            (= (take 2 (ref-DPOF::UR_Ticker asset-id)) "Z|")
-                                                            (= (take 2 (ref-DPOF::UR_Ticker asset-id)) "H|")
-                                                        ]
-                                                    )
-                                                )
-                                            ]
-                                        )
-                                        "class 2 asset-id must not be a sleeping or hibernating DPOF collection"
-                                    )
-                                ]
-                            )
-                            true
-                        )
-                    ]
-                )
-                "Invalid pool issue aqp-class or asset-id"
-            )
-            (if (or (= aqp-class 0) (= aqp-class 1))
-                (ref-DPTF::UEV_id asset-id)
-                (if (= aqp-class 2)
-                    (ref-DPOF::UEV_id asset-id)
-                    (if (= aqp-class 3)
-                        (ref-DPDC::UEV_id asset-id true)
-                        (ref-DPDC::UEV_id asset-id false)
-                    )
-                )
-            )
+            (UC_GasPrice gas-cost (ref-IGNIS::URC_IsVirtualGasZero))
         )
     )
-    (defun UEV_AddScorePoolAndScore (pool-id:string score-id:string slot-index:integer)
-        @doc "Validates slot-index is the first free slot (caller supplies index from one URC_FirstFreeScoreSlotIndex); \
-            \ score exists with BAR aqpool-link; score-class matches pool; class-0 lp-denominator fits pool LP pair."
+
+    (defun URC_StakeScoreDeltaSum:decimal (pool-id:string)
+        @doc "Phase-4 leg: Σ SCORE.URC_StakeScoreDeltaIgnisUnit over POOL.URC_PoolActiveScoreIds (raw, ungated)."
+        (fold (+) 0.0
+            (map (lambda (sid:string) (AQP-SCORE.URC_StakeScoreDeltaIgnisUnit sid))
+                 (AQP-POOL.URC_PoolActiveScoreIds pool-id)))
+    )
+
+    (defun URC_StakeScoreDeltaSumForClasses:decimal (pool-id:string classes:[integer])
+        @doc "Class-matched phase-4 leg (OF/SF/NF): Σ SCORE.URC_StakeScoreDeltaIgnisUnit over the pool's \
+            \ employed scores whose SCORE.UR_SCR|ScoreClass ∈ classes — mirrors XE_Apply{OrtoFungible, \
+            \ Collectable}StakeDelta, which emit 0.0 for non-matching classes (OF: {0,2}; SF: {3}; NF: {4})."
+        (fold (+) 0.0
+            (map (lambda (sid:string) (AQP-SCORE.URC_StakeScoreDeltaIgnisUnit sid))
+                 (filter (lambda (sid:string) (contains (AQP-SCORE.UR_SCR|ScoreClass sid) classes))
+                         (AQP-POOL.URC_PoolActiveScoreIds pool-id))))
+    )
+
+    (defun UEV_TrueFungibleStakeOwnerAccount (owner-id:string)
+        @doc "Recipe cap: owner-id must be an activated Ouronet account (signer proof in AQP|XE>TRUE-FUNGIBLE-POOL-CUSTODY)."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
-                (ref-SWP:module{SwapperV5} SWP)
-                ;;
-                (aqp-class:integer (UR_AQP|PoolAqpClass pool-id))
-                (asset-id:string (UR_AQP|PoolAssetId pool-id))
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
             )
-            (enforce
-                (fold (and) true
-                    [
-                        (contains slot-index (enumerate 0 6))
-                        (= (URC_PoolScoreSlotValue pool-id slot-index) BAR)
-                        (URC_PriorScoreSlotsOccupied pool-id slot-index)
-                    ]
-                )
-                "Invalid or unavailable score slot index for pool"
-            )
-            ;;PRODUCED-TRIAGED (_eagerlet --produced, 2026-09-16): this message claims EXISTENCE, and a
-            ;;hard read of the same subject raises before it can say so. Not actionable in isolation --
-            ;;it is one of SEVEN AQP guards sharing one root cause and one blocker: the readers are
-            ;;shared with the INFO_ previews, and `Stage_02/[6.5]_AQP-INFO.repl` is DELIBERATELY
-            ;;fixture-free (it passes "SCR-x"/"DPNF-x" to all 83 AQP readers because AQP prices are
-            ;;argument-independent) and PINS those aborts. Defaulting a shared reader turns a pinned
-            ;;expect-failure red. Full reasoning at 02_SCORE.pact's SCR|XI>X_ISSUE-NF-SCORE-DEFINITION
-            ;;and DEFECT-LEDGER G-37..G-41 + 7.2b; 7.3 records the same blocker for RT-K-007's preview half.
-            (enforce
-                (fold (and) true
-                    [
-                        (= (ref-SCR::UR_SCR|ScoreScoreId score-id) score-id)
-                        (= (ref-SCR::UR_SCR|ScoreAqpoolLink score-id) BAR)
-                        (= (ref-SCR::UR_SCR|ScoreClass score-id) aqp-class)
-                        (not (contains score-id (URC_PoolActiveScoreIds pool-id)))
-                    ]
-                )
-                "Invalid score-id for pool assignment (missing score, class mismatch, aqpool-link set, or duplicate slot)"
-            )
-            (enforce
-                (if (= aqp-class 0)
-                    (let
-                        (
-                            (lp-denom:string (ref-SCR::UR_SCR|ScoreLpDenominator score-id))
-                            (swpair:string (ref-SWP::UR_GetLpSwpair asset-id))
-                            (pool-tokens:[string] (ref-SWP::UR_PoolTokens swpair))
-                        )
-                        (contains lp-denom pool-tokens)
-                    )
-                    true
-                )
-                "Class 0 score lp-denominator must appear in the swap pair for the pool native LP asset-id"
-            )
+            (ref-DALOS::UEV_EnforceAccountExists owner-id)
         )
     )
-    (defun UEV_RevokeScorePoolAndScore (pool-id:string score-id:string slot-index:integer)
-        @doc "Validates slot-index holds score-id with aqpool-link = pool-id, zero totals, fvt-link BAR, \
-            \ and no employed peer has boost-link = score-id (revoke dependents before hub)."
-        (let
-            (
-                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
-            )
-            (enforce (!= slot-index -1) "score-id is not assigned to pool")
-            (enforce
-                (fold (and) true
-                    [
-                        (contains slot-index (enumerate 0 6))
-                        (= (URC_PoolScoreSlotValue pool-id slot-index) score-id)
-                        (= (ref-SCR::UR_SCR|ScoreAqpoolLink score-id) pool-id)
-                        (= (ref-SCR::UR_SCR|ScoreTotalBaseScore score-id) 0.0)
-                        (= (ref-SCR::UR_SCR|ScoreTotalBoostedScore score-id) 0.0)
-                        (= (ref-SCR::UR_SCR|ScoreTotalDebScore score-id) 0.0)
-                        (= (ref-SCR::UR_SCR|ScoreNzsCount score-id) 0)
-                        (= (ref-SCR::UR_SCR|ScoreFvtLink score-id) BAR)
-                        (URC_NoEmployedBoostLinkTarget pool-id score-id)
-                    ]
-                )
-                "Invalid score revoke for pool (slot, aqpool-link, zero totals, fvt-link, or boost-link dependents)"
-            )
-        )
-    )
-    (defun UEV_AQP|ScoreMxChangeSafe (score-id:string)
-        @doc "HEAVY. Refuses a multiplier change while any frozen or sleeping position exists on the score -- the condition under which nothing can yet be mis-rated. \
-            \ \
-            \ THE SCAN IS BOUND BEFORE THE `enforce`, AND IT HAS TO BE. Pact evaluates an \
-            \ `enforce` CONDITION in read-only/sys-only mode, where a table scan is refused \
-            \ outright -- `select` there aborts the transaction with \"Operation disallowed in \
-            \ read-only or sys-only mode\". Binding the result in a `let` first moves the scan \
-            \ out of that mode, which is exactly what the tree already does for \
-            \ `URC_PoolStakeAdmissionOk` (`(enforce stake-admission-ok ...)`). \
-            \ \
-            \ MEASURED, AND THE OBVIOUS DIAGNOSIS WAS WRONG. The first reading of the abort was \
-            \ \"a defcap cannot run a select\", so these checks were moved out of their \
-            \ capabilities -- and failed in exactly the same way from a function body, because \
-            \ the capability was never the problem. A bound scan works fine inside a defcap. \
-            \ What cannot work, anywhere, is a scan as the argument to `enforce`. \
-            \ \
-            \ It stayed hidden because the only fixture that reached the multiplier gate used a \
-            \ score whose pool link was BAR, which short-circuits before the scan. Every score \
-            \ actually linked to a pool would have aborted on chain."
-        (let
-            (
-                (safe:bool (URC_AQP|ScoreMxChangeSafe score-id))
-            )
-            (enforce
-                safe
-                "A frozen or sleeping position exists for this score -- re-rate it first"
-            )
-        )
-    )
-    (defun UEV_AQP|ScoreDrainComplete (pool-id:string score-id:string)
-        @doc "HEAVY. Refuses to cut a score's aqpool-link while any holder still carries weight for it -- the last moment at which the remaining work is discoverable, since the link is what tells the orphan scan which pool those rows belong to. \
-            \ \
-            \ THE SCAN IS BOUND BEFORE THE `enforce`, AND IT HAS TO BE. Pact evaluates an \
-            \ `enforce` CONDITION in read-only/sys-only mode, where a table scan is refused \
-            \ outright -- `select` there aborts the transaction with \"Operation disallowed in \
-            \ read-only or sys-only mode\". Binding the result in a `let` first moves the scan \
-            \ out of that mode, which is exactly what the tree already does for \
-            \ `URC_PoolStakeAdmissionOk` (`(enforce stake-admission-ok ...)`). \
-            \ \
-            \ MEASURED, AND THE OBVIOUS DIAGNOSIS WAS WRONG. The first reading of the abort was \
-            \ \"a defcap cannot run a select\", so these checks were moved out of their \
-            \ capabilities -- and failed in exactly the same way from a function body, because \
-            \ the capability was never the problem. A bound scan works fine inside a defcap. \
-            \ What cannot work, anywhere, is a scan as the argument to `enforce`. \
-            \ \
-            \ It stayed hidden because the only fixture that reached the multiplier gate used a \
-            \ score whose pool link was BAR, which short-circuits before the scan. Every score \
-            \ actually linked to a pool would have aborted on chain."
-        (let
-            (
-                (remaining:integer (length (URHC_AQP|ScoreDrainOutstanding pool-id score-id)))
-            )
-            (enforce
-                (= remaining 0)
-                "Drain is not complete: holders still carry weight for this score"
-            )
-        )
-    )
-    (defun UEV_BeginScoreRevoke (pool-id:string score-id:string slot-index:integer)
-        @doc "Validates the STRUCTURAL half of a revoke: the slot really holds this score, the \
-            \ score links back, it is not wired into an FVT, and no employed peer boosts off it. \
-            \ \
-            \ EVERYTHING `UEV_RevokeScorePoolAndScore` CHECKS EXCEPT THE ZERO TOTALS, and the \
-            \ omission is the entire purpose. That validator refuses a score any holder still \
-            \ carries weight for -- correctly, because revoking it would strand that weight in the \
-            \ score's totals and its `nzs-count` with nothing left to reverse it. But it also made \
-            \ revoke UNREACHABLE on a pool anybody had staked into: there was no legitimate way to \
-            \ get the totals to zero, since an admin cannot unstake on a holder's behalf. \
-            \ \
-            \ So the zero-totals requirement moves from a precondition to a GOAL: this begins the \
-            \ revoke by vacating the slot, the drain sweep retires the holders in parallel slices, \
-            \ and `CC_FinalizeScoreRevoke` cuts the link once the work is provably done. The totals \
-            \ still have to be zero before the link goes -- just later, and reachably."
-        (let
-            (
-                (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
-            )
-            (enforce (!= slot-index -1) "score-id is not assigned to pool")
-            (enforce
-                (fold (and) true
-                    [
-                        (contains slot-index (enumerate 0 6))
-                        (= (URC_PoolScoreSlotValue pool-id slot-index) score-id)
-                        (= (ref-SCR::UR_SCR|ScoreAqpoolLink score-id) pool-id)
-                        (= (ref-SCR::UR_SCR|ScoreFvtLink score-id) BAR)
-                        (URC_NoEmployedBoostLinkTarget pool-id score-id)
-                    ]
-                )
-                "Invalid score revoke-begin for pool (slot, aqpool-link, fvt-link, or boost-link dependents)"
-            )
-        )
-    )
-    (defun UEV_StakeBeneficiaryAccount (beneficiary-id:string)
-        @doc "Stake paths: beneficiary must exist and be an activated standard (non-principal) Ouronet account."
+
+    (defun UEV_TrueFungibleStakeBeneficiaryAccount (beneficiary-id:string)
+        @doc "Recipe cap: beneficiary must exist and be an activated standard (non-principal) Ouronet account."
         (let
             (
                 (ref-DALOS:module{OuronetDalosV3} DALOS)
@@ -2932,1435 +2711,3246 @@
             (ref-DALOS::UEV_EnforceAccountType beneficiary-id false)
         )
     )
-    (defun UEV_StakeTrueFungibleDptfLeg (dptf-id:string)
-        @doc "Reject R| reserved; validate DPTF id exists via DPTF::UEV_id."
+
+    (defun UEV_TrueFungibleStakeNotReserved (dptf-id:string)
+        @doc "Recipe cap §4a: reject R| reserved leg — not covered by TFT::C_Transfer in phase 1."
+        (enforce (not (= (take 2 dptf-id) "R|")) "Reserved DPTF (R|) cannot be staked")
+    )
+
+    (defun UEV_AddRewardLinkContext
+        (fvt-id:string reward-dptf-id:string reward-kind:string multiplet-family-id:string)
+        @doc "C_AddRewardLink admission: one RPS|Global row per (fvt, dptf). multiplet-family-id BAR = plain-only metadata; \
+            \ F|… registers ladder for triplet-anchor collect (score anchors still plain). Kind derived in C_AddRewardLink."
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                ;;
+                (owner-konto:string (UR_FVT|OwnerKonto fvt-id))
+            )
+            (enforce
+                (not (URC_FvtRpsGlobalRowExists fvt-id reward-dptf-id))
+                "Reward link row already exists for this FVT and DPTF"
+            )
+            (if (= reward-kind CT_REWARD_KIND_MULTIPLET_BASE)
+                (let ((ignore:bool true))
+                ;;FIXED 2026-09-12: the BAR check is HOISTED out of the fold below.
+                ;;`fold` takes an already-built list, so every element is evaluated before `and` ever
+                ;;runs (verified: (fold (and) true [false (enforce false "X")]) raises X). The third
+                ;;element, `UR_FVT-MF|Active`, is a bare `read` of FVT|T|MultipletFamily -- so a BAR
+                ;;family id aborted with `No value found in table ... for key: |` before the enforce
+                ;;below could be consulted, and the sentence written for exactly that input never
+                ;;arrived. Being false in element ONE saved nothing, which is the whole trap.
+                ;;Checking it first, on its own, is what makes both messages reachable.
+                (enforce
+                    (!= multiplet-family-id BAR)
+                    "MULTIPLET_BASE reward requires a MultipletFamily id, not BAR"
+                )
+                (enforce
+                    (fold (and) true
+                        [
+                            (URC_MultipletFamilyExists multiplet-family-id)
+                            (UR_FVT-MF|Active multiplet-family-id)
+                            (= reward-dptf-id (UR_FVT-MF|Token0Id multiplet-family-id))
+                        ]
+                    )
+                    "MULTIPLET_BASE reward requires active MultipletFamily with reward-dptf-id = token-0-id"
+                ))
+                (enforce
+                    (and (= reward-kind CT_REWARD_KIND_PLAIN) (= multiplet-family-id BAR))
+                    "PLAIN reward requires reward-kind PLAIN and multiplet-family-id BAR"
+                )
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
+            (ref-DPTF::UEV_id reward-dptf-id)
+        )
+    )
+
+    (defun UEV_QualitySplitContext
+        (fvt-id:string reward-dptf-id:string mode:string bronze-split:[integer] silver-split:[integer] gold-split:[integer])
+        @doc "C_SetQualitySplit admission: the reward link must exist and be MULTIPLET_BASE with an active family \
+            \ (the split only means anything for a triplet ladder). mode in {HOMOGENEOUS, HETEROGENEOUS}. In \
+            \ HETEROGENEOUS mode each lane row is [to-t0 to-t1 to-t2] of exactly 3 non-negative per-mille weights \
+            \ summing to 1000; HOMOGENEOUS ignores the rows. Owner-gated."
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                ;;
+                (owner-konto:string (UR_FVT|OwnerKonto fvt-id))
+                (heterogeneous:bool (= mode CT_REWARD_MODE_HETEROGENEOUS))
+            )
+            ;; 1) the reward link must exist and be a MULTIPLET_BASE triplet ladder
+            (enforce (URC_FvtRpsGlobalRowExists fvt-id reward-dptf-id) "Reward link row must exist")
+            ;;FIXED 2026-09-12, same shape as UEV_AddRewardLinkContext above: the reward-kind test is
+            ;;HOISTED out of the fold. A PLAIN link carries a BAR family id, and the fold's third
+            ;;element hard-reads FVT|T|MultipletFamily with it -- so a PLAIN link aborted on the raw
+            ;;table key instead of being told it is not a MULTIPLET ladder.
+            (enforce
+                (= (UR_FVT-RG|RewardKind fvt-id reward-dptf-id) CT_REWARD_KIND_MULTIPLET_BASE)
+                "Quality split requires a MULTIPLET_BASE reward"
+            )
+            (enforce
+                (fold (and) true
+                    [
+                        (URC_MultipletFamilyExists (UR_FVT-RG|MultipletFamilyId fvt-id reward-dptf-id))
+                        (UR_FVT-MF|Active (UR_FVT-RG|MultipletFamilyId fvt-id reward-dptf-id))
+                    ]
+                )
+                "Quality split requires a MULTIPLET_BASE reward with an active MultipletFamily"
+            )
+            ;; 2) mode is one of the two known modes
+            (enforce
+                (or (= mode CT_REWARD_MODE_HOMOGENEOUS) heterogeneous)
+                "mode must be HOMOGENEOUS or HETEROGENEOUS"
+            )
+            ;; 3) in heterogeneous mode each lane row = 3 non-negative per-mille weights summing to 1000
+            (if heterogeneous
+                (enforce
+                    (fold (and) true
+                        [
+                            (UC_PerMilleRow bronze-split)
+                            (UC_PerMilleRow silver-split)
+                            (UC_PerMilleRow gold-split)
+                        ]
+                    )
+                    "Each lane split must be [to-t0 to-t1 to-t2] non-negative per-mille summing to 1000"
+                )
+                true
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
+        )
+    )
+
+    (defun WI_FvtRewardAggregate:string
+        (fvt-id:string row:object{AcquisitionSchemasV5.FVT|RewardAggregate})
+        @doc "Insert FVT|T|RewardAggregate row (issue only) — reward aggregates (#75 B' Stage 1)."
+        (require-capability (SECURE))
+        (insert FVT|T|RewardAggregate fvt-id row)
+    )
+
+    (defun WU_Fvt|OwnerKonto:string
+        (fvt-id:string owner-konto:string)
+        @doc "Update owner-konto on FVT|T."
+        (require-capability (SECURE))
+        (update FVT|T|RewardAggregate fvt-id {"owner-konto": owner-konto})
+    )
+
+    (defun WU_Fvt|TotalGhostTvlWeight:string
+        (fvt-id:string total-ghost-tvl-weight:decimal)
+        @doc "Update total-ghost-tvl-weight (farm S) on FVT|T."
+        (require-capability (SECURE))
+        (update FVT|T|RewardAggregate fvt-id {"total-ghost-tvl-weight": total-ghost-tvl-weight})
+    )
+
+    (defun WU_Fvt|TotalDebScore:string
+        (fvt-id:string total-deb-score:decimal)
+        @doc "Update total-deb-score mirror on FVT|T (vault/treasury inject denominator reporting)."
+        (require-capability (SECURE))
+        (update FVT|T|RewardAggregate fvt-id {"total-deb-score": total-deb-score})
+    )
+
+    (defun WU_Fvt|EarningLegCount:string
+        (fvt-id:string earning-leg-count:integer)
+        @doc "Update earning-leg-count on FVT|T -- the `(user, member)` legs that receive a share of \
+            \ the next accrual. Written at the stake/unstake membership transition, never derived."
+        (require-capability (SECURE))
+        (update FVT|T|RewardAggregate fvt-id {"earning-leg-count": earning-leg-count})
+    )
+
+    (defun WU_Fvt|EnabledRewardCount:string
+        (fvt-id:string enabled-reward-count:integer)
+        @doc "Update enabled-reward-count on FVT|T."
+        (require-capability (SECURE))
+        (update FVT|T|RewardAggregate fvt-id {"enabled-reward-count": enabled-reward-count})
+    )
+
+    (defun WU_Fvt|MemberLinkCount:string
+        (fvt-id:string member-link-count:integer)
+        @doc "Update member-link-count on FVT|T (C_AddScoreEntity / SetMosaic gate)."
+        (require-capability (SECURE))
+        (update FVT|T|RewardAggregate fvt-id {"member-link-count": member-link-count})
+    )
+
+    (defun WU_Fvt|Mosaic:string
+        (fvt-id:string mosaic:bool)
+        @doc "Update mosaic on FVT|T (C_SetMosaic only when no member links)."
+        (require-capability (SECURE))
+        (update FVT|T|RewardAggregate fvt-id {"mosaic": mosaic})
+    )
+
+    (defun WU2_Fvt|MosaicPolicy:string
+        (fvt-id:string mosaic:bool membership-mode:string)
+        @doc "Update mosaic and membership-mode together (C_SetMosaic)."
+        (require-capability (SECURE))
+        (update FVT|T|RewardAggregate fvt-id {"mosaic": mosaic, "membership-mode": membership-mode})
+    )
+
+    (defun WU_Fvt|MembershipMode:string
+        (fvt-id:string membership-mode:string)
+        @doc "Lock membership-mode on first non-mosaic admission."
+        (require-capability (SECURE))
+        (update FVT|T|RewardAggregate fvt-id {"membership-mode": membership-mode})
+    )
+
+    (defun WU_Fvt|SplitMode:string
+        (fvt-id:string split-mode:string)
+        @doc "Update the farm reward-split mode on FVT|T (C_SetSplitMode; farm-only, freely mutable)."
+        (require-capability (SECURE))
+        (update FVT|T|RewardAggregate fvt-id {"split-mode": split-mode})
+    )
+
+    (defun WI_ScoreEntityLink:string
+        (fvt-id:string score-entity-id:string row:object{AcquisitionSchemasV5.FVT|ScoreEntityLink})
+        @doc "Insert FVT|T|ScoreEntityLink full row (C_AddScoreEntity admission)."
+        (require-capability (SECURE))
+        (insert FVT|T|ScoreEntityLink (UCk_ScoreEntityLink fvt-id score-entity-id) row)
+    )
+
+    (defun WU_ScoreEntityLink|Enabled:string
+        (fvt-id:string score-entity-id:string enabled:bool)
+        @doc "Update enabled on FVT|T|ScoreEntityLink."
+        (require-capability (SECURE))
+        (update FVT|T|ScoreEntityLink (UCk_ScoreEntityLink fvt-id score-entity-id) {"enabled": enabled})
+    )
+
+    (defun WU_ScoreEntityLink|GhostTvlWeight:string
+        (fvt-id:string score-entity-id:string ghost-tvl-weight:decimal)
+        @doc "Update ghost-tvl-weight (W_i) on FVT|T|ScoreEntityLink."
+        (require-capability (SECURE))
+        (update FVT|T|ScoreEntityLink (UCk_ScoreEntityLink fvt-id score-entity-id) {"ghost-tvl-weight": ghost-tvl-weight})
+    )
+
+    (defun WU_ScoreEntityLink|TotalLaneWeight:string
+        (fvt-id:string score-entity-id:string total-lane-weight:decimal)
+        @doc "Update total-lane-weight (farm-triplet Level-1 divisor Σ w-user) on FVT|T|ScoreEntityLink."
+        (require-capability (SECURE))
+        (update FVT|T|ScoreEntityLink (UCk_ScoreEntityLink fvt-id score-entity-id) {"total-lane-weight": total-lane-weight})
+    )
+
+    (defun WU_ScoreEntityLink|Capture:string
+        (fvt-id:string score-entity-id:string capture-units:decimal capture-weight:decimal oracle-ts:time)
+        @doc "DSA: set an agency's capture fields (ideal capacity, uptime-adjusted actual, last-oracle timestamp) on FVT|T|ScoreEntityLink."
+        (require-capability (SECURE))
+        (update FVT|T|ScoreEntityLink (UCk_ScoreEntityLink fvt-id score-entity-id)
+            {"capture-units": capture-units, "capture-weight": capture-weight, "oracle-ts": oracle-ts})
+    )
+
+    (defun WU_ScoreEntityLink|Delegation:string
+        (fvt-id:string score-entity-id:string delegation:bool)
+        @doc "DSA: flip a member to (or from) a delegation agency on FVT|T|ScoreEntityLink."
+        (require-capability (SECURE))
+        (update FVT|T|ScoreEntityLink (UCk_ScoreEntityLink fvt-id score-entity-id) {"delegation": delegation})
+    )
+
+    (defun WW_MemberUserWeight:string
+        (user-id:string fvt-id:string score-entity-id:string contrib-weight:decimal)
+        @doc "Upsert farm-triplet per-user Level-1 weight snapshot (w-user at last stake/unstake)."
+        (require-capability (SECURE))
+        (write FVT|T|MemberUserWeight (UCk_MemberUserWeight user-id fvt-id score-entity-id)
+            {"contrib-weight"          : contrib-weight
+            ,"user-id"                 : user-id
+            ,"fvt-id"                  : fvt-id
+            ,"score-entity-id"         : score-entity-id})
+    )
+
+    (defun WU_MemberVault|AvailableRewards:string
+        (fvt-id:string score-entity-id:string dptf-id:string available-rewards:decimal)
+        @doc "Set member mini-vault available-rewards (upsert; preserves unclaimed-count)."
+        (require-capability (SECURE))
+        (write FVT|T|MemberVault (UCk_RpsMember fvt-id score-entity-id dptf-id)
+            {"available-rewards"       : available-rewards
+            ,"unclaimed-count"         : (UR_FVT-MV|UnclaimedCount fvt-id score-entity-id dptf-id)
+            ,"dormant-claim-count"     : (UR_FVT-MV|DormantClaimCount fvt-id score-entity-id dptf-id)
+            ,"fvt-id"                  : fvt-id
+            ,"score-entity-id"         : score-entity-id
+            ,"dptf-id"                 : dptf-id})
+    )
+
+    (defun WU_MemberVault|UnclaimedCount:string
+        (fvt-id:string score-entity-id:string dptf-id:string direction:bool)
+        @doc "Increment (true) / decrement (false, floored at 0) the member mini-vault unclaimed-count (upsert)."
+        (require-capability (SECURE))
+        (let
+            (
+                (old-uc:integer (UR_FVT-MV|UnclaimedCount fvt-id score-entity-id dptf-id))
+            )
+            (write FVT|T|MemberVault (UCk_RpsMember fvt-id score-entity-id dptf-id)
+                {"unclaimed-count"     : (if direction (+ old-uc 1) (if (> old-uc 0) (- old-uc 1) 0))
+                ,"dormant-claim-count" : (UR_FVT-MV|DormantClaimCount fvt-id score-entity-id dptf-id)
+                ,"available-rewards"   : (UR_FVT-MV|AvailableRewards fvt-id score-entity-id dptf-id)
+                ,"fvt-id"              : fvt-id
+                ,"score-entity-id"     : score-entity-id
+                ,"dptf-id"             : dptf-id})
+        )
+    )
+
+    (defun WW_UserPresence:string (fvt-id:string ouronet-account:string is-present:bool)
+        @doc "Upsert the user's presence flag for this FVT (SECURE). Add-only true on stake; recomputed false on \
+            \ the unstake that drops the user's last position."
+        (require-capability (SECURE))
+        (write FVT|T|UserPresence (UCk_UserPresence fvt-id ouronet-account)
+            {"is-present"  : is-present
+            ,"fvt-id"      : fvt-id
+            ,"ouronet-id"  : ouronet-account})
+    )
+
+    (defun WU_FvtForcedFixCount|Add:string (fvt-id:string dptf-id:string user-id:string n:integer)
+        @doc "Add n forced-fixes to (fvt, reward lane, user) — called by the enforced inject when it un-stales the \
+            \ user's scores. No-op when n≤0. Upsert (SECURE)."
+        (require-capability (SECURE))
+        (if (<= n 0)
+            "no forced fixes to record"
+            (write FVT|T|ForcedFixCount (UCk_ForcedFixCount fvt-id dptf-id user-id)
+                {"count"    : (+ (UR_FVT-FFC|Count fvt-id dptf-id user-id) n)
+                ,"fvt-id"   : fvt-id
+                ,"dptf-id"  : dptf-id
+                ,"user-id"  : user-id})
+        )
+    )
+
+    (defun WU_FvtForcedFixCount|Zero:string (fvt-id:string dptf-id:string user-id:string)
+        @doc "Zero the forced-fix count for (fvt, reward lane, user) after the penalty has been charged at collect (SECURE)."
+        (require-capability (SECURE))
+        (write FVT|T|ForcedFixCount (UCk_ForcedFixCount fvt-id dptf-id user-id)
+            {"count"    : 0
+            ,"fvt-id"   : fvt-id
+            ,"dptf-id"  : dptf-id
+            ,"user-id"  : user-id})
+    )
+
+    (defun WI_MultipletFamily:string
+        (multiplet-family-id:string row:object{AcquisitionSchemasV5.FVT|MultipletFamily})
+        @doc "Insert FVT|T|MultipletFamily full row (C_IssueMultipletFamily only)."
+        (require-capability (SECURE))
+        (insert FVT|T|MultipletFamily multiplet-family-id row)
+    )
+
+    (defun WI_RpsGlobal:string
+        (fvt-id:string dptf-id:string row:object{AcquisitionSchemasV5.FVT|RPS|Global})
+        @doc "Insert FVT|T|RPS|Global full row (C_AddRewardLink admission)."
+        (require-capability (SECURE))
+        (insert FVT|T|RPS|Global (UCk_RpsGlobal fvt-id dptf-id) row)
+    )
+
+    (defun WU_RpsGlobal|RewardEnabled:string
+        (fvt-id:string dptf-id:string reward-enabled:bool)
+        @doc "Update reward-enabled on FVT|T|RPS|Global."
+        (require-capability (SECURE))
+        (update FVT|T|RPS|Global (UCk_RpsGlobal fvt-id dptf-id) {"reward-enabled": reward-enabled})
+    )
+
+
+    (defun WU_RpsGlobal|MinInjectAmount:string
+        (fvt-id:string dptf-id:string min-inject-amount:decimal)
+        @doc "Update min-inject-amount on FVT|T|RPS|Global. Gates FUTURE injections only — it is \
+            \ checked at the door and touches no accrued state, so a change re-settles nothing."
+        (require-capability (SECURE))
+        (update FVT|T|RPS|Global (UCk_RpsGlobal fvt-id dptf-id) {"min-inject-amount": min-inject-amount})
+    )
+
+    (defun WU_RpsGlobal|CurrentRps:string
+        (fvt-id:string dptf-id:string current-rps:decimal)
+        @doc "Update current-rps (Tier-2 G) on FVT|T|RPS|Global."
+        (require-capability (SECURE))
+        (update FVT|T|RPS|Global (UCk_RpsGlobal fvt-id dptf-id) {"current-rps": current-rps})
+    )
+
+    (defun WU_RpsGlobal|AvailableRewards:string
+        (fvt-id:string dptf-id:string available-rewards:decimal)
+        @doc "Update available-rewards on FVT|T|RPS|Global."
+        (require-capability (SECURE))
+        (update FVT|T|RPS|Global (UCk_RpsGlobal fvt-id dptf-id) {"available-rewards": available-rewards})
+    )
+
+    (defun WU_RpsGlobal|DormantClaimCount:string
+        (fvt-id:string dptf-id:string dormant-claim-count:integer)
+        @doc "Update dormant-claim-count on FVT|T|RPS|Global."
+        (require-capability (SECURE))
+        (update FVT|T|RPS|Global (UCk_RpsGlobal fvt-id dptf-id)
+            {"dormant-claim-count": dormant-claim-count})
+    )
+
+    (defun WU_MemberVault|UnclaimedCountSet:string
+        (fvt-id:string score-entity-id:string dptf-id:string unclaimed-count:integer)
+        @doc "SET the member mini-vault unclaimed-count to an absolute value (upsert, preserving the \
+            \ rest of the row). The accrual restore needs a SET, not the +/-1 that \
+            \ `WU_MemberVault|UnclaimedCount` performs."
+        (require-capability (SECURE))
+        (write FVT|T|MemberVault (UCk_RpsMember fvt-id score-entity-id dptf-id)
+            {"available-rewards"   : (UR_FVT-MV|AvailableRewards fvt-id score-entity-id dptf-id)
+            ,"unclaimed-count"     : unclaimed-count
+            ,"dormant-claim-count" : (UR_FVT-MV|DormantClaimCount fvt-id score-entity-id dptf-id)
+            ,"fvt-id"              : fvt-id
+            ,"score-entity-id"     : score-entity-id
+            ,"dptf-id"             : dptf-id})
+    )
+
+    (defun WU_MemberVault|DormantClaimCount:string
+        (fvt-id:string score-entity-id:string dptf-id:string dormant-claim-count:integer)
+        @doc "Update dormant-claim-count on FVT|T|MemberVault (upsert, preserving the row)."
+        (require-capability (SECURE))
+        (write FVT|T|MemberVault (UCk_RpsMember fvt-id score-entity-id dptf-id)
+            {"available-rewards"   : (UR_FVT-MV|AvailableRewards fvt-id score-entity-id dptf-id)
+            ,"unclaimed-count"     : (UR_FVT-MV|UnclaimedCount fvt-id score-entity-id dptf-id)
+            ,"dormant-claim-count" : dormant-claim-count
+            ,"fvt-id"              : fvt-id
+            ,"score-entity-id"     : score-entity-id
+            ,"dptf-id"             : dptf-id})
+    )
+
+    (defun WU_SEL|EarningUserCount:string
+        (fvt-id:string score-entity-id:string earning-user-count:integer)
+        @doc "Update earning-user-count on FVT|T|ScoreEntityLink."
+        (require-capability (SECURE))
+        (update FVT|T|ScoreEntityLink (UCk_ScoreEntityLink fvt-id score-entity-id)
+            {"earning-user-count": earning-user-count})
+    )
+
+    (defun WU_RpsGlobal|UnclaimedCount:string
+        (fvt-id:string dptf-id:string unclaimed-count:integer)
+        @doc "Update unclaimed-count on FVT|T|RPS|Global."
+        (require-capability (SECURE))
+        (update FVT|T|RPS|Global (UCk_RpsGlobal fvt-id dptf-id) {"unclaimed-count": unclaimed-count})
+    )
+
+    (defun WU_RpsGlobal|ZombieRewards:string
+        (fvt-id:string dptf-id:string zombie-rewards:decimal)
+        @doc "Set zombie-rewards (escrow-on-empty limbo balance) on FVT|T|RPS|Global."
+        (require-capability (SECURE))
+        (update FVT|T|RPS|Global (UCk_RpsGlobal fvt-id dptf-id) {"zombie-rewards": zombie-rewards})
+    )
+
+    (defun WU_RpsGlobal|RoyaltyRewards:string
+        (fvt-id:string dptf-id:string royalty-rewards:decimal)
+        @doc "DSA: set royalty-rewards (the uptime-shortfall custody pool) on FVT|T|RPS|Global."
+        (require-capability (SECURE))
+        (update FVT|T|RPS|Global (UCk_RpsGlobal fvt-id dptf-id) {"royalty-rewards": royalty-rewards})
+    )
+
+    (defun WU_RpsGlobal|StreamCount:string
+        (fvt-id:string dptf-id:string stream-count:integer)
+        @doc "Set stream-count (live stream positions on this lane) on FVT|T|RPS|Global."
+        (require-capability (SECURE))
+        (update FVT|T|RPS|Global (UCk_RpsGlobal fvt-id dptf-id) {"stream-count": stream-count})
+    )
+
+    (defun WU_RpsGlobal|StreamLastRelease:string
+        (fvt-id:string dptf-id:string stream-last-release:time)
+        @doc "Set stream-last-release (shared lane drip checkpoint) on FVT|T|RPS|Global."
+        (require-capability (SECURE))
+        (update FVT|T|RPS|Global (UCk_RpsGlobal fvt-id dptf-id) {"stream-last-release": stream-last-release})
+    )
+
+    (defun WU_RpsGlobal|StreamUnreleased:string
+        (fvt-id:string dptf-id:string stream-unreleased:decimal)
+        @doc "Set stream-unreleased (custodied-but-not-yet-dripped total) on FVT|T|RPS|Global."
+        (require-capability (SECURE))
+        (update FVT|T|RPS|Global (UCk_RpsGlobal fvt-id dptf-id) {"stream-unreleased": stream-unreleased})
+    )
+
+    (defun WW_RpsStream:string
+        (fvt-id:string dptf-id:string position:integer row:object{AcquisitionSchemasV5.FVT|RPS|Stream})
+        @doc "Upsert a FVT|T|RPS|Stream row (add-stream + drip compaction rewrite; overwrites a stale pruned slot)."
+        (require-capability (SECURE))
+        (write FVT|T|RPS|Stream (UCk_RpsStream fvt-id dptf-id position) row)
+    )
+
+    (defun WI_RpsMember:string
+        (fvt-id:string score-entity-id:string dptf-id:string row:object{AcquisitionSchemasV5.FVT|RPS|Member})
+        @doc "Insert FVT|T|RPS|Member full row (phase 2.1 ensure path)."
+        (require-capability (SECURE))
+        (insert FVT|T|RPS|Member (UCk_RpsMember fvt-id score-entity-id dptf-id) row)
+    )
+
+    (defun WW_RpsMember:string
+        (fvt-id:string score-entity-id:string dptf-id:string row:object{AcquisitionSchemasV5.FVT|RPS|Member})
+        @doc "Upsert full FVT|T|RPS|Member row (Tier-2 settle paths)."
+        (require-capability (SECURE))
+        (write FVT|T|RPS|Member (UCk_RpsMember fvt-id score-entity-id dptf-id) row)
+    )
+
+    (defun WI_RpsUser:string
+        (user-id:string fvt-id:string score-entity-id:string dptf-id:string row:object{AcquisitionSchemasV5.FVT|RPS|User})
+        @doc "Insert FVT|T|RPS|User full row (phase 2.1 ensure path)."
+        (require-capability (SECURE))
+        (insert FVT|T|RPS|User (UCk_RpsUser user-id fvt-id score-entity-id dptf-id) row)
+    )
+
+    (defun WU_RpsUser|LastRps:string
+        (user-id:string fvt-id:string score-entity-id:string dptf-id:string last-rps:decimal)
+        @doc "Set last-rps on FVT|T|RPS|User. WRITES rather than UPDATES, and the asymmetry \
+            \ that removes is the whole point -- see WU_RpsUser|PendingRewards below."
+        (require-capability (SECURE))
+        (write FVT|T|RPS|User (UCk_RpsUser user-id fvt-id score-entity-id dptf-id)
+            (UDC_FVT|RPS|User last-rps (UR_FVT-RU|PendingRewards user-id fvt-id score-entity-id dptf-id)
+                user-id fvt-id score-entity-id dptf-id))
+    )
+
+    (defun WU_RpsUser|PendingRewards:string
+        (user-id:string fvt-id:string score-entity-id:string dptf-id:string pending-rewards:decimal)
+        @doc "Set pending-rewards on FVT|T|RPS|User. WRITES rather than UPDATES, because \
+            \ UR_FVT-RU|RpsUser READS this row via with-default-read at 0.0: a lane added after \
+            \ a user staked priced correctly for every reader with no row for the write side to \
+            \ update, and the update aborted the whole collect. C_AddRewardLink cannot backfill \
+            \ (unbounded in present stakers), and 0.0 is the checkpoint such a holder has, so \
+            \ carrying the sibling over at its read-side default invents no entitlement. Fixed \
+            \ in the two field writers -- the ONLY updates on this table -- so every caller is \
+            \ covered by construction. Live 2026-10-26; [6.3] <<TX-AQP-C02L>>."
+        (require-capability (SECURE))
+        (write FVT|T|RPS|User (UCk_RpsUser user-id fvt-id score-entity-id dptf-id)
+            (UDC_FVT|RPS|User (UR_FVT-RU|LastRps user-id fvt-id score-entity-id dptf-id) pending-rewards
+                user-id fvt-id score-entity-id dptf-id))
+    )
+
+    (defun WU_AgencyFee:string (fvt-id:string score-entity-id:string operator-konto:string fee-per-mille:integer)
+        @doc "Write a delegation member's operator + fee mirror. require SECURE."
+        (require-capability (SECURE))
+        (write FVT|T|AgencyFee (UCk_ScoreEntityLink fvt-id score-entity-id)
+            {"operator-konto" : operator-konto, "fee-per-mille" : fee-per-mille})
+    )
+
+    (defun WI_QualitySplit:string
+        (fvt-id:string dptf-id:string mode:string bronze-split:[integer] silver-split:[integer] gold-split:[integer])
+        @doc "Write a reward's quality-split config (mode + 3-lane matrix). require SECURE."
+        (require-capability (SECURE))
+        (write FVT|T|QualitySplit (UCk_RpsGlobal fvt-id dptf-id)
+            {"mode"         : mode
+            ,"bronze-split" : bronze-split
+            ,"silver-split" : silver-split
+            ,"gold-split"   : gold-split
+            ,"fvt-id"       : fvt-id
+            ,"dptf-id"      : dptf-id})
+    )
+
+    ;;Protection: Class 1 — Innate protection offered by WU2_Fvt|MosaicPolicy
+    (defun XI_SetMosaic:string
+        (fvt-id:string mosaic:bool)
+        @doc "Under SECURE (FVT|C>SET-MOSAIC): update mosaic; reset membership-mode to BAR."
+        (WU2_Fvt|MosaicPolicy fvt-id mosaic CT_MEMBERSHIP_MODE_BAR)
+    )
+
+    ;;Protection: Class 1 — Innate protection offered by WU_Fvt|SplitMode
+    (defun XI_SetSplitMode:string
+        (fvt-id:string split-mode:string)
+        @doc "Under SECURE (FVT|C>SET-SPLIT-MODE): update the farm reward-split mode (SPLIT|STAKED | SPLIT|TVL)."
+        (WU_Fvt|SplitMode fvt-id split-mode)
+    )
+
+    ;;Protection: Class 1 — Innate protection offered by WU_Fvt|OwnerKonto
+    (defun XI_RotateOwnership:string
+        (fvt-id:string new-owner-konto:string)
+        @doc "Under SECURE (FVT|C>ROTATE-OWNERSHIP-FVT): update owner-konto only."
+        ;; SECURE: granted by WU_Fvt|OwnerKonto (underlying W_).
+        (WU_Fvt|OwnerKonto fvt-id new-owner-konto)
+    )
+
+    ;;Protection: Class 1 — Innate protection offered by WI_ScoreEntityLink,
+    ;;Protection:          WU_Fvt|MemberLinkCount, WU_Fvt|MembershipMode,
+    ;;Protection:          WU_Fvt|TotalGhostTvlWeight, WU_Fvt|TotalDebScore
+    (defun XI_AddScoreEntity:string
+        (fvt-id:string score-entity-type:integer score-entity-id:string swpair:string ghost-weight:decimal)
+        @doc "Under SECURE: insert enabled ScoreEntityLink; farm adds W_i to S; lock membership-mode when non-mosaic."
+        (let
+            (
+                (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
+            )
+            (WI_ScoreEntityLink fvt-id score-entity-id
+                (UDC_FVT|ScoreEntityLink score-entity-type 0 true swpair ghost-weight 0.0 false 0.0 0.0 STREAM_EPOCH fvt-id score-entity-id)
+            )
+            (WU_Fvt|MemberLinkCount fvt-id (+ (UR_FVT|MemberLinkCount fvt-id) 1))
+            (if (and (not (UR_FVT|Mosaic fvt-id)) (= (UR_FVT|MembershipMode fvt-id) CT_MEMBERSHIP_MODE_BAR))
+                (WU_Fvt|MembershipMode fvt-id
+                    (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET)
+                        (if (ref-SCR::UR_SCR|TripletTrueTriplet score-entity-id)
+                            CT_MEMBERSHIP_MODE_TRUE_TRIPLET
+                            CT_MEMBERSHIP_MODE_STANDARD_TRIPLET)
+                        CT_MEMBERSHIP_MODE_SCORE))
+                fvt-id)
+            (if (= (UR_FVT|FvtClass fvt-id) 0)
+                (WU_Fvt|TotalGhostTvlWeight fvt-id (+ (UR_FVT|TotalGhostTvlWeight fvt-id) ghost-weight))
+                ;; M2/#11: vault/treasury — add the new member's LIVE deb-weight to the total-deb mirror
+                ;; (0 for a fresh member; nonzero if its scores already carry deb).
+                (WU_Fvt|TotalDebScore fvt-id
+                    (+ (UR_FVT|TotalDebScore fvt-id)
+                       (URC_ScoreEntityMemberDebWeight score-entity-type score-entity-id))))
+        )
+    )
+
+    ;;Protection: Class 1 — Innate protection offered by WU_ScoreEntityLink|Enabled,
+    ;;Protection:          WU_Fvt|TotalGhostTvlWeight, WU_Fvt|TotalDebScore,
+    ;;Protection:          WU_RpsGlobal|DormantClaimCount, WU_Fvt|EarningLegCount
+    (defun XI_ToggleScoreEntityLink:string
+        (fvt-id:string score-entity-id:string enabled:bool)
+        @doc "Under SECURE (FVT|C>TOGGLE-SCORE-ENTITY-LINK): flip enabled; farm adjusts S by ±W_i on change."
+        ;; SECURE: granted by WU_ScoreEntityLink|Enabled and WU_Fvt|TotalGhostTvlWeight (underlying W_).
+        (let
+            (
+                (prev-enabled:bool (UR_FVT-SEL|Enabled fvt-id score-entity-id))
+                (w:decimal (UR_FVT-SEL|GhostTvlWeight fvt-id score-entity-id))
+                (fvt-class:integer (UR_FVT|FvtClass fvt-id))
+                (changed:bool (!= enabled prev-enabled))
+                (delta:decimal
+                    (if (and (= fvt-class 0) changed)
+                        (if enabled w (- 0.0 w))
+                        0.0
+                    )
+                )
+                ;; M2/#11: vault/treasury total-deb mirror ± the member's LIVE deb-weight on enable/disable
+                (deb-delta:decimal
+                    (if (and (!= fvt-class 0) changed)
+                        (let
+                            (
+                                (d:decimal
+                                    (URC_ScoreEntityMemberDebWeight
+                                        (UR_FVT-SEL|ScoreEntityType fvt-id score-entity-id) score-entity-id))
+                            )
+                            (if enabled d (- 0.0 d))
+                        )
+                        0.0
+                    )
+                )
+            )
+            (WU_ScoreEntityLink|Enabled fvt-id score-entity-id enabled)
+            (if (!= delta 0.0)
+                (WU_Fvt|TotalGhostTvlWeight fvt-id (+ (UR_FVT|TotalGhostTvlWeight fvt-id) delta))
+                fvt-id
+            )
+            (if (!= deb-delta 0.0)
+                (WU_Fvt|TotalDebScore fvt-id (+ (UR_FVT|TotalDebScore fvt-id) deb-delta))
+                fvt-id
+            )
+            ;;===>S1 T8 / T9 (2026-11-09)=== move this member's legs between EARNING and DORMANT.
+            ;;
+            ;;WHY A TOGGLE HAS TO TOUCH THESE COUNTERS AT ALL. A disabled member earns nothing from
+            ;;new injections (`settle-scores` filters on `enabled`) but -- since F3 -- can still
+            ;;COLLECT what it already accrued. So its legs are OWED-BUT-NOT-EARNING, which is
+            ;;exactly `dormant`. Leave them in `earning-leg-count` and the accrual restore counts
+            ;;legs that receive nothing: the count reads HIGH, never reaches 1, and the sweep stops
+            ;;firing. Leave them out of BOTH and it reads LOW: `= 1` fires while the disabled
+            ;;member is still owed, and the sweeper takes its rewards. That second one costs
+            ;;somebody money, which is why neither "do nothing" option is available.
+            ;;
+            ;;IT MOVES THE WHOLE EARNING-USER COUNT, NOT ONLY THE OWED ONES, AND THAT IS DELIBERATE.
+            ;;Counting only the owed legs would need, per user, whether their claimable on this
+            ;;member is positive -- a scan over the FVT's present users, on what is otherwise a
+            ;;point-write admin op. The wholesale move OVERCOUNTS `dormant` by the users who happen
+            ;;to be owed nothing, so the restored count can read high and the sweep can STALL while
+            ;;a member is disabled. That degrades to dust RETAINED, never dust misallocated -- the
+            ;;safe direction -- it is bounded to the abnormal state, and T9 reverses it exactly on
+            ;;re-enable.
+            ;;
+            ;;PER LANE, because `dormant-claim-count` is per (fvt, reward-token) while the earning
+            ;;count is not: a member's users earn on every enabled lane, so disabling it makes them
+            ;;dormant on every one. The loop is over LANES (a handful), never over users.
+            (if changed
+                (let
+                    (
+                        (n:integer (UR_FVT-SEL|EarningUserCount fvt-id score-entity-id))
+                    )
+                    (if (= n 0)
+                        "no earning legs on this member -- nothing to reclassify"
+                        (let
+                            (
+                                ;;`[string]`, not rows -- the reader returns the enabled lanes'
+                                ;;reward-dptf-ids directly.
+                                (lanes:[string] (URH_FVT-RG|EnabledRewardRows fvt-id))
+                            )
+                            (map
+                                (lambda (lane:string)
+                                    (let
+                                        (
+                                            (d:integer (UR_FVT-RG|DormantClaimCount fvt-id lane))
+                                        )
+                                        (WU_RpsGlobal|DormantClaimCount fvt-id lane
+                                            (if enabled
+                                                (if (> d n) (- d n) 0)
+                                                (+ d n)))
+                                    )
+                                )
+                                lanes
+                            )
+                            ;;T8 disable: the legs stop earning. T9 enable: they earn again.
+                            (WU_Fvt|EarningLegCount fvt-id
+                                (let ((e:integer (UR_FVT|EarningLegCount fvt-id)))
+                                    (if enabled (+ e n) (if (> e n) (- e n) 0))))
+                        )
+                    )
+                )
+                "link state unchanged -- counters untouched"
+            )
+        )
+    )
+
+    ;;Protection: Class 1 — Innate protection offered by WI_MultipletFamily
+    (defun XI_IssueMultipletFamily:string
+        (
+            token-0-id:string
+            token-1-id:string
+            token-2-id:string
+            ats-0-1-id:string
+            ats-1-2-id:string
+        )
+        @doc "Under SECURE (FVT|C>ISSUE-MULTIPLET-FAMILY): insert active MultipletFamily row."
+        (let
+            (
+                (family-id:string (UCk_MultipletFamily token-0-id token-1-id token-2-id))
+            )
+            (WI_MultipletFamily family-id
+                (UDC_FVT|MultipletFamily token-0-id token-1-id token-2-id ats-0-1-id ats-1-2-id 3 true family-id)
+            )
+            family-id
+        )
+    )
+
+    ;;Protection: Class 1 — Innate protection offered by WI_RpsGlobal,
+    ;;Protection:          WU_Fvt|EnabledRewardCount
+    (defun XI_AddRewardLink:string
+        (fvt-id:string reward-dptf-id:string segmentation:bool reward-kind:string multiplet-family-id:string)
+        @doc "Under SECURE (FVT|C>ADD-REWARD-LINK): insert reward-enabled RPS|Global; +1 enabled-reward-count."
+        ;; SECURE: granted by WI_RpsGlobal and WU_Fvt|EnabledRewardCount (underlying W_).
+        (WI_RpsGlobal fvt-id reward-dptf-id
+            ;; A NEW LANE IS BORN AT THE DEFAULT FLOOR, which is why `C_AddRewardLink` needed no new
+            ;; parameter: an owner who never thinks about a minimum still gets one.
+            (UDC_FVT|RPS|Global true 0.0 0.0 0 0 0.0 segmentation reward-kind multiplet-family-id 0 STREAM_EPOCH 0.0 0.0 CT_DEFAULT_MIN_INJECT fvt-id reward-dptf-id)
+        )
+        (WU_Fvt|EnabledRewardCount fvt-id (+ (UR_FVT|EnabledRewardCount fvt-id) 1))
+        fvt-id
+    )
+
+    ;;Protection: Class 1 — Innate protection offered by WU_RpsGlobal|MinInjectAmount
+    (defun XI_SetMinInjectAmount:string
+        (fvt-id:string reward-dptf-id:string min-inject-amount:decimal)
+        @doc "Under SECURE (FVT|C>SET-MIN-INJECT-AMOUNT): set this lane's injection floor. \
+            \ Freely re-settable and affects FUTURE injections only — it gates the amount at the \
+            \ door and touches no accrued state, so there is nothing to re-settle on a change."
+        ;; SECURE: granted by WU_RpsGlobal|MinInjectAmount (underlying W_).
+        (WU_RpsGlobal|MinInjectAmount fvt-id reward-dptf-id min-inject-amount)
+        fvt-id
+    )
+
+    ;;Protection: Class 1 — Innate protection offered by WU_RpsGlobal|RewardEnabled,
+    ;;Protection:          WU_Fvt|EnabledRewardCount
+    (defun XI_ToggleRewardLink:string
+        (fvt-id:string reward-dptf-id:string enabled:bool)
+        @doc "Under SECURE (FVT|C>TOGGLE-REWARD-LINK): flip reward-enabled; ±1 enabled-reward-count on change."
+        ;; SECURE: granted by WU_RpsGlobal|RewardEnabled and WU_Fvt|EnabledRewardCount (underlying W_).
+        (let
+            (
+                (prev-enabled:bool (UR_FVT-RG|RewardEnabled fvt-id reward-dptf-id))
+                (count-delta:integer (if (= enabled prev-enabled) 0 (if enabled 1 -1)))
+            )
+            (WU_RpsGlobal|RewardEnabled fvt-id reward-dptf-id enabled)
+            (if (!= count-delta 0)
+                (WU_Fvt|EnabledRewardCount fvt-id (+ (UR_FVT|EnabledRewardCount fvt-id) count-delta))
+                fvt-id
+            )
+        )
+    )
+
+    ;;Protection: Class 1 — Innate protection offered by
+    ;;Protection:          XI_1|SyncFarmGhostTvlForEmployedScores
+    (defun XI_SyncFarmGhostTvlForInject:object{IgnisCollectorV4.OutputCumulator}
+        (fvt-id:string)
+        @doc "Tier 0 inject prelude: farm ghost-TVL lazy sync when needed."
+        ;; SECURE: granted by XI_1|SyncFarmGhostTvlForEmployedScores (underlying W_).
+        (if (= (UR_FVT|FvtClass fvt-id) 0)
+            (XI_1|SyncFarmGhostTvlForEmployedScores (URHC_BuildInjectScorePlans fvt-id))
+            (UC_EmptyOc)
+        )
+    )
+
+    ;;Protection: Class 2 — SECURE
+    (defun XI_TransferRewardDptfFromVault:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string collector:string pool-id:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
+        @doc "PHASE 1.1 collect — plain TFT or MULTIPLET_BASE lane split (Coil/Curl via ATSU). \
+            \ `collector` is the REWARD SUBJECT: its claimable amount is computed, its lanes are \
+            \ read, and every payout leg credits it. `patron` only pays IGNIS and is deliberately \
+            \ unused here -- the cumulator is built by the caller. \
+            \ \
+            \ THE SPLIT WAS HALF-DONE FOR ONE COMMIT AND IT IS WORTH KNOWING WHY. Band 3 first \
+            \ renamed only the final `C_Transfer` target, leaving the payout computed from `patron` \
+            \ and paid to `collector` -- compute one account's rewards, credit another's. It was \
+            \ harmless only because every call site still passed the same value twice. The gate did \
+            \ not catch it and could not: no ownership enforce disappeared, so AUTH-SURFACE.md was \
+            \ clean, and the assertion count was unchanged because no test varies the two. A \
+            \ mechanical invariant proves authorisation did not WEAKEN; it says nothing about \
+            \ whether a rename is SEMANTICALLY COMPLETE. Seven call sites had to move, not one."
+        (require-capability (SECURE))
+        (let
+            (
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
+                (ref-ATSU:module{AutostakeUsageV4} ATSU)
+                (ref-ATS:module{AutostakeV4} ATS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (reward-kind:string (UR_FVT-RG|RewardKind fvt-id reward-dptf-id))
+                (payout:decimal (URC_CollectClaimableRewards collector pool-id fvt-id score-entity-type score-entity-id reward-dptf-id))
+            )
+            ;;UNREACHABLE FROM THE LIVE PATH SINCE 2026-10-28, and kept deliberately.
+            ;;<CC_Collect> -- the only caller -- now enforces a positive claimable AFTER the
+            ;;stream drip, so a non-positive payout refuses there and never arrives here. This
+            ;;branch is what ALLOWED the defect: it turned a correct zero into a SUCCESSFUL
+            ;;transaction that emitted no transfer and still billed 57 IGNIS.
+            ;;
+            ;;It stays as a floor rather than becoming an <enforce>, because an <XI_> must not
+            ;;enforce and because a future caller reaching this with a zero should still write
+            ;;nothing rather than abort a batch mid-way. If a second caller ever appears, it owns
+            ;;the same refusal its predecessor does -- that is the thing to check, not this line.
+            (if (<= payout 0.0)
+                (UC_EmptyOc)
+                (if (and (= reward-kind CT_REWARD_KIND_MULTIPLET_BASE) (= score-entity-type CT_SCORE_ENTITY_TRIPLET))
+                    (let
+                        (
+                            (mf-id:string (UR_FVT-RG|MultipletFamilyId fvt-id reward-dptf-id))
+                            (lanes:object (URC_ComputeTripletLanes collector pool-id score-entity-id))
+                            (lane-b:decimal (at "lane-b" lanes))
+                            (lane-s:decimal (at "lane-s" lanes))
+                            (lane-g:decimal (at "lane-g" lanes))
+                            (w-total:decimal (at "w-user" lanes))
+                            (token-0:string (UR_FVT-MF|Token0Id mf-id))
+                            (ats-01:string (UR_FVT-MF|Ats01Id mf-id))
+                            (ats-12:string (UR_FVT-MF|Ats12Id mf-id))
+                            (prec:integer (ref-DPTF::UR_Decimals token-0))
+                            ;; Round B: HETEROGENEOUS ⇒ each lane splits across all 3 ladder tokens per the matrix
+                            (mode:string (UR_FVT-QS|Mode fvt-id reward-dptf-id))
+                            (amt-b:decimal (if (> w-total 0.0) (floor (* payout (/ lane-b w-total)) prec) 0.0))
+                            (amt-s:decimal (if (> w-total 0.0) (floor (* payout (/ lane-s w-total)) prec) 0.0))
+                            (amt-g:decimal (- payout (+ amt-b amt-s)))
+                            (fund-sg:decimal (+ amt-s amt-g))
+                        )
+                        ;;MOVED 2026-10-26: the two ATS viability probes used to live in the binding
+                        ;;group ABOVE, which Pact evaluates in full before this branch is taken --
+                        ;;so the HETEROGENEOUS path paid for three CoilData derivations it then
+                        ;;discarded, because it routes by the split matrix and never reads amt-s or
+                        ;;amt-g as lane amounts. They are now inside the branch that uses them.
+                        (if (= mode CT_REWARD_MODE_HETEROGENEOUS)
+                            ;; heterogeneous: each lane → all 3 ladder tokens per the FVT|QualitySplit matrix
+                            (XI_1|HeterogeneousLaneRoute patron collector fvt-id reward-dptf-id mf-id amt-b amt-s amt-g prec)
+                            ;; homogeneous (default): bronze → token-0 raw, silver → token-1, gold → token-2.
+                            ;;ONE pre-fund of the whole payout, then Coil(amt-s+amt-g) on ats-01 and
+                            ;;Coil(remainder) on ats-12 -- a Curl being a double Coil, Coil/Coil lands in
+                            ;;the same place for one fewer token-0 hop, one fewer mint and one fewer
+                            ;;derivation, using only the existing ATSU API.
+                            (if (<= fund-sg 0.0)
+                                (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                                    [
+                                        (if (> payout 0.0) (ref-TFT::C_Transfer patron AQP|SC_NAME collector token-0 payout true) (UC_EmptyOc))
+                                    ]
+                                    []
+                                )
+                                (let
+                                    (
+                                        ;; #10 precision fallback: when a tiny amount's pool-index result rounds
+                                        ;; below token precision to 0, SKIP that hop — the collector keeps the
+                                        ;; portion as token-0 (already funded by the single pre-fund above).
+                                        (h-all:object{AutostakeV4.CoilData}
+                                            (ref-ATS::URC_RewardBearingTokenAmounts ats-01 token-0 fund-sg))
+                                        ;;the token-1 the collector KEEPS, from amt-s ALONE: the pre-merge
+                                        ;;Coil(amt-s) figure, bit for bit. amt-g is the dust-free remainder of
+                                        ;;the lane split and so carries the merge rounding.
+                                        (rbt1-keep:decimal
+                                            (if (> amt-s 0.0)
+                                                (at "rbt-amount" (ref-ATS::URC_RewardBearingTokenAmounts ats-01 token-0 amt-s))
+                                                0.0))
+                                    )
+                                    (let
+                                        (
+                                            (rbt1-id:string (at "rbt-id" h-all))
+                                            (rbt1-ladder:decimal (- (at "rbt-amount" h-all) rbt1-keep))
+                                            ;;THE LADDER COILS AS AQP|SC_NAME, 2026-10-29. It coiled as <collector>,
+                                            ;;which worked only because a self-collect is signed BY the collector: a
+                                            ;;coil's first leg transfers OUT of the coiler, so C_Transfer enforces its
+                                            ;;ownership. Reward EVICTION has no such signature -- the FVT owner
+                                            ;;triggers it for somebody else -- so this ladder was reachable by the
+                                            ;;beneficiary alone. ATSU::XB_Coil splits funder from recipient and the AQP
+                                            ;;remote-governor guard satisfies AQP|SC_NAME, so ONE core now serves both
+                                            ;;collect and evict. A second ladder would be a FOURTH copy of this
+                                            ;;arithmetic -- see AQP-RPSC::URC_CollectLadderPreview on why that is the hazard.
+                                            ;;MODULE-QUALIFIED 2026-10-29: that reader moved out of
+                                            ;;this module in the RPSC split, so the bare name now
+                                            ;;points at nothing a reader of THIS file can find.
+                                            ;;
+                                            ;;AMOUNTS ARE IDENTICAL: rbt-amount is a pure function of
+                                            ;;(ats, rt, amount) and XE_UpdateRUR takes no account, so nothing
+                                            ;;per-account depends on who coiled. Only the endpoints move, at a cost of
+                                            ;;ONE extra transfer leg -- hop 1 must land at AQP|SC_NAME because its
+                                            ;;output is SPLIT (keep-share to the collector, ladder-share coiled on),
+                                            ;;and the keep-share then needs its own transfer.
+                                            ;;
+                                            ;;THE SKIP BRANCHES CARRY THE WHOLE PAYOUT. The pre-fund used to send
+                                            ;;<payout> unconditionally, so a precision-skipped hop silently left the
+                                            ;;collector holding that portion as token-0. Sending only <amt-b> breaks
+                                            ;;that, so each skip is now explicit: no hop 1 => the collector takes the
+                                            ;;whole payout as token-0; no hop 2 => ALL of rbt1, not the keep-share.
+                                            ;;Getting this wrong short-pays a beneficiary by exactly the amount a
+                                            ;;rounding skip was meant to preserve.
+                                            (hop1:bool (> (at "rbt-amount" h-all) 0.0))
+                                            (hop2:bool
+                                                (and (> rbt1-ladder 0.0)
+                                                     (> (at "rbt-amount" (ref-ATS::URC_RewardBearingTokenAmounts ats-12 rbt1-id rbt1-ladder)) 0.0)))
+                                        )
+                                        (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                                            [
+                                                (let ((t0:decimal (if hop1 amt-b payout)))
+                                                    (if (> t0 0.0) (ref-TFT::C_Transfer patron AQP|SC_NAME collector token-0 t0 true) (UC_EmptyOc)))
+                                                (if hop1 (ref-ATSU::XB_Coil patron AQP|SC_NAME AQP|SC_NAME ats-01 token-0 fund-sg) (UC_EmptyOc))
+                                                (let ((r1:decimal (if hop2 rbt1-keep (at "rbt-amount" h-all))))
+                                                    (if (and hop1 (> r1 0.0)) (ref-TFT::C_Transfer patron AQP|SC_NAME collector rbt1-id r1 true) (UC_EmptyOc)))
+                                                (if hop2 (ref-ATSU::XB_Coil patron AQP|SC_NAME collector ats-12 rbt1-id rbt1-ladder) (UC_EmptyOc))
+                                            ]
+                                            []
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                    )
+                    (ref-TFT::C_Transfer patron AQP|SC_NAME collector reward-dptf-id payout true)
+                )
+            )
+        )
+    )
+
+    ;;Protection: Class 1 — Innate protection offered by XI_1|BookCollectUnclaimed
+    (defun XI_BookCollectUnclaimed:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string pool-id:string fvt-id:string score-entity-type:integer score-entity-id:string
+         reward-dptf-id:string payout:decimal)
+        @doc "Tier 0 collect unclaimed wrapper. `payout` is what PHASE 5 actually paid -- see \
+            \ `XI_1|BookCollectUnclaimed` for why it must be threaded rather than re-read."
+        ;; SECURE: granted by XI_1|BookCollectUnclaimed (underlying W_).
+        (XI_1|BookCollectUnclaimed patron pool-id fvt-id score-entity-type score-entity-id reward-dptf-id payout)
+    )
+
+    ;;Protection: Class 1 — Innate protection offered by WU_MemberVault|UnclaimedCount
+    (defun XI_1|BookCollectUnclaimed:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string pool-id:string fvt-id:string score-entity-type:integer score-entity-id:string
+         reward-dptf-id:string payout:decimal)
+        @doc "PHASE 3.1 collect — coin step 3 · XI_URV|UpdateUnclaimedCount false when user-supply=0; \
+            \ FVT adapt: deb-score=0 on this score."
+        ;; SECURE: granted by XI_2|BumpRpsGlobalUnclaimed (underlying W_).
+        ;;IDEMPOTENCY FIX 2026-09-14. This decremented on `deb == 0` ALONE, with no check that the
+        ;;caller was ever IN the claimant set -- so any account whose weight is 0 could decrement
+        ;;the counter for somebody else, once per call, for the price of gas.
+        ;;
+        ;;WHY IT WAS REACHABLE HERE AND NOT IN THE MODEL. These phases are a port of the Stoa `coin`
+        ;;UrStoa vault -- the comments still name the steps ("coin step 3"). In `coin`, step 1 is
+        ;;`C_Transmit`, which routes through `X_TRANSFER` -> `UEV_Amount "Transfer requires a
+        ;;positive amount"`, so a caller with nothing to collect ABORTS before step 3 is reached.
+        ;;The port made its step 1 SKIP on a zero payout instead of aborting
+        ;;(`(if (<= payout 0.0) (UC_EmptyOc) ...)`), and with the abort gone the decrement became
+        ;;reachable by anyone. One divergence from the model, three steps away from its consequence.
+        ;;
+        ;;THE GUARD: a caller is in the claimant set iff it still has weight, OR it has unsettled
+        ;;pending. That is exactly the rule the STAKE path already uses to LEAVE the set --
+        ;;XI_1|BookUnclaimedForFvtRewardLine decrements on `was-claimant AND (not is-claimant) AND
+        ;;(not any-pending)`, deliberately keeping a fully-unstaked user counted while pending
+        ;;remains so that this collect can retire them. So:
+        ;;   deb == 0 AND pending  > 0  -> unstaked with a live claim; retire them now   (decrement)
+        ;;   deb == 0 AND pending == 0  -> already retired at unstake, or never counted   (no-op)
+        ;;Reader and writer now agree on who is counted, the same correction GS-07 made to P|UR_IMP.
+        ;;
+        ;;ORDERING: CC_Collect calls this in PHASE 3, which used to run AFTER the PHASE 2 pending
+        ;;reset -- by which point `pending` is 0 for everyone and the two cases above are
+        ;;indistinguishable. PHASE 3 is now sequenced BEFORE PHASE 2; the two touch disjoint state
+        ;;(counters vs pending-rewards) so the swap is observationally inert for every other caller.
+        (let
+            (
+                (deb:decimal (URC_ScoreEntityUserWeight patron fvt-id pool-id score-entity-type score-entity-id))
+                ;;THE PAYOUT IS PASSED IN, AND BOTH ALTERNATIVES WERE TRIED AND MEASURED WRONG.
+                ;;
+                ;;`pending-rewards` (the first attempt) is only the BANKED part of a claim; a
+                ;;staker's accrual lives in the RPS delta until collect settles it, so the field
+                ;;reads 0 for the common case -- a still-staked holder collecting accrued rewards.
+                ;;Measured: the first collector was paid 3.5 and the count stayed at 2.
+                ;;
+                ;;RE-READING `URC_CollectClaimableRewards` here (the second attempt) is wrong for a
+                ;;subtler reason: PHASE 5 runs BEFORE this phase and has ALREADY decremented
+                ;;available-rewards, so for the LAST claimant -- the one that just swept the lane --
+                ;;the re-read returns 0 and the retirement silently does not fire. Measured: the
+                ;;sweep paid out correctly and the count stopped at 1 instead of 0.
+                ;;
+                ;;So the condition must be the figure PHASE 5 ITSELF used, threaded from the caller.
+                ;;That is also the only version that cannot drift from what was actually paid.
+            )
+            ;;S1 (2026-11-09): A COLLECT NOW RETIRES THE LEG WHENEVER IT ZEROED A CLAIM.
+            ;;
+            ;;THE OLD CONDITION WAS `deb == 0 AND pending > 0` -- i.e. retire only an account that
+            ;;had already UNSTAKED. A still-staked account that collected to zero was never retired,
+            ;;which is the whole of S1: the count only ever fell at an unstake, so on a live
+            ;;aggregator it never reached 1 and the last-claimant dust sweep was unreachable.
+            ;;
+            ;;THE NEW CONDITION IS `pending > 0` ALONE -- this leg had something to collect, and the
+            ;;collect has now taken it, so it is no longer a leg with a positive claimable. It is
+            ;;restored at the next accrual by `XI_2|RestoreUnclaimedFromCounts`, which counts it
+            ;;through `earning-leg-count` if it is still staked.
+            ;;
+            ;;AND A DORMANT LEG IS RETIRED FROM BOTH COUNTERS (T4). `deb == 0` means this leg earns
+            ;;nothing at the next accrual, so it was counted in `dormant-claim-count`; leaving it
+            ;;there would hold the restored figure permanently high and make `= 1` unreachable all
+            ;;over again -- the defect, one counter over.
+            ;;
+            ;;ORDERING IS UNCHANGED AND STILL LOAD-BEARING: this runs in PHASE 3, BEFORE the PHASE 2
+            ;;pending reset, because afterwards `pending` is 0 for everyone and no condition here
+            ;;could distinguish a leg that had a claim from one that never did.
+            (if (> payout 0.0)
+                (do
+                    ;;T3: the leg no longer has a positive claimable.
+                    (XI_2|BumpRpsGlobalUnclaimed fvt-id reward-dptf-id false)
+                    ;; #10 Tier-1: and the same, one tier down, so the member sweep sees it too.
+                    (WU_MemberVault|UnclaimedCount fvt-id score-entity-id reward-dptf-id false)
+                    ;;T4: if it was OWED-BUT-NOT-EARNING, it leaves the dormant set as well.
+                    (if (= deb 0.0)
+                        (do
+                            (XI_2|BumpRpsGlobalDormant fvt-id reward-dptf-id false)
+                            (XI_2|BumpMemberVaultDormant fvt-id score-entity-id reward-dptf-id false)
+                        )
+                        true
+                    )
+                )
+                true
+            )
+        )
+        (UC_EmptyOc)
+    )
+
+    ;;Protection: Class 1 — Innate protection offered by WU_Fvt|TotalDebScore
+    (defun XI_SyncFvtTotalDebMirrors:object{IgnisCollectorV4.OutputCumulator}
+        (pre-member-debs:[object{AcquisitionSchemasV5.FVT|MemberPreDeb}])
+        @doc "After SCORE phase 4 (M2/#11): INCREMENTALLY update each touched vault/treasury member's FVT \
+            \ total-deb-score mirror by (new live deb-weight − pre-SCORE deb-weight). No `keys` scan — only the \
+            \ members settled this tx are touched (bounded). Farm members are skipped (ghost-tvl / split-at-inject). \
+            \ Sequential map accumulates correctly when several members share one FVT."
+        ;; SECURE: granted by WU_Fvt|TotalDebScore (underlying W_).
+        (map
+            (lambda (m:object{AcquisitionSchemasV5.FVT|MemberPreDeb})
+                (let
+                    (
+                        (fvt-id:string (at "fvt-id" m))
+                    )
+                    (if (= (UR_FVT|FvtClass fvt-id) 0)
+                        true
+                        (let
+                            (
+                                (new-deb:decimal
+                                    (URC_ScoreEntityMemberDebWeight (at "score-entity-type" m) (at "score-entity-id" m)))
+                                (delta:decimal (- new-deb (at "pre-deb" m)))
+                            )
+                            (if (!= delta 0.0)
+                                (WU_Fvt|TotalDebScore fvt-id (+ (UR_FVT|TotalDebScore fvt-id) delta))
+                                true)
+                        )
+                    )
+                )
+            )
+            pre-member-debs
+        )
+        (UC_EmptyOc)
+    )
+
+    ;;Protection: Class 1 — Innate protection offered by WU_ScoreEntityLink|TotalLaneWeight,
+    ;;Protection:          WW_MemberUserWeight
+    (defun XI_SyncTripletLaneWeights:object{IgnisCollectorV4.OutputCumulator}
+        (beneficiary-id:string settle-plans:[object{AcquisitionSchemasV5.FVT|SettleScorePlan}])
+        @doc "Phase 4.6 — after SCORE: for each TRUE-triplet member (any FVT class) the staker touched, \
+            \ re-snapshot the user's Level-1 weight (live w-user) and adjust ScoreEntityLink.total-lane-weight \
+            \ by (new − old). Mirrors the read-old-at-2.3 / write-after-SCORE ordering XI_SyncFvtTotalDebMirrors \
+            \ relies on. Non-true-triplet and singular members are skipped (they use the maintained SCR total-deb). \
+            \ CHANGED 2026-10-08: the live weight it snapshots is now Σ of the legs' deb-scores, and both the Tier-1 \
+            \ numerator and the Tier-2 divisor read that basis DIRECTLY. So this keeps the columns truthful but is \
+            \ no longer load-bearing for payouts — which is why the lane defect needed no corrective admin tx."
+        ;; SECURE: granted by WU_ScoreEntityLink|TotalLaneWeight / WW_MemberUserWeight (underlying W_).
+        (let
+            (
+                (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
+            )
+            (map
+                (lambda (plan:object{AcquisitionSchemasV5.FVT|SettleScorePlan})
+                    (let
+                        (
+                            (fvt-id:string (at "fvt-id" plan))
+                            (score-entity-type:integer (at "score-entity-type" plan))
+                            (score-entity-id:string (at "score-entity-id" plan))
+                        )
+                        (if (and (= score-entity-type CT_SCORE_ENTITY_TRIPLET) (ref-SCR::UR_SCR|TripletTrueTriplet score-entity-id))
+                            ;; silver-id's own AQP pool is the lane basis (matches the retired scan), independent
+                            ;; of whichever leg triggered this settle.
+                            (let
+                                (
+                                    (silver-pool:string
+                                        (ref-SCR::UR_SCR|ScoreAqpoolLink (ref-SCR::UR_SCR|TripletSilverScoreId score-entity-id)))
+                                )
+                                (let
+                                    (
+                                        (new-cw:decimal
+                                            (floor (URC_TripletUserLaneWeightLive beneficiary-id silver-pool score-entity-id) CT_FVT_RPS_PREC))
+                                        (old-cw:decimal (UR_FVT-MUW|ContribWeight beneficiary-id fvt-id score-entity-id))
+                                    )
+                                    (do
+                                        (WU_ScoreEntityLink|TotalLaneWeight fvt-id score-entity-id
+                                            (+ (UR_FVT-SEL|TotalLaneWeight fvt-id score-entity-id) (- new-cw old-cw)))
+                                        (WW_MemberUserWeight beneficiary-id fvt-id score-entity-id new-cw)
+                                    )
+                                )
+                            )
+                            true
+                        )
+                    )
+                )
+                settle-plans
+            )
+        )
+        (UC_EmptyOc)
+    )
+
+    ;;Protection: Class 1 — Innate protection offered by WW_UserPresence
+    (defun XI_MarkFvtPresence:object{IgnisCollectorV4.OutputCumulator}
+        (beneficiary-id:string distinct-fvts:[string])
+        @doc "Phase 4.7 — mark the staker present in every FVT this stake touched (add-only, idempotent `true`). \
+            \ `distinct-fvts` is already computed by the settle bundle, so this is a bounded set of point-writes, \
+            \ no scan. Over-marking is harmless: the sweep no-ops on a zero-weight user, and the unstake path \
+            \ recomputes `false` when the user's last position in an FVT is dropped."
+        ;; SECURE: granted by WW_UserPresence (underlying W_).
+        (map (lambda (fvt-id:string) (WW_UserPresence fvt-id beneficiary-id true)) distinct-fvts)
+        (UC_EmptyOc)
+    )
+
+    ;;Protection: Class 1 — Innate protection offered by WW_UserPresence
+    (defun XI_RecomputeFvtPresence:object{IgnisCollectorV4.OutputCumulator}
+        (beneficiary-id:string distinct-fvts:[string])
+        @doc "Phase 4.7 (UNSTAKE side) — for each FVT this unstake touched, recompute the user's membership across \
+            \ ALL of that FVT's score-entities (URC_FvtUserStillPresent) and write the result. Flips is-present → \
+            \ false exactly when this unstake dropped the user's LAST position in the FVT; stays true if the user \
+            \ is still in via another pool/score. HEAVY (a member enumeration per touched FVT), but unstake is a \
+            \ user-paced path and the presence table is the price of a scan-free sweep. Runs after phase 4/4.6."
+        ;; SECURE: granted by WW_UserPresence (underlying W_).
+        (map
+            (lambda (fvt-id:string)
+                (WW_UserPresence fvt-id beneficiary-id (URC_FvtUserStillPresent fvt-id beneficiary-id)))
+            distinct-fvts
+        )
+        (UC_EmptyOc)
+    )
+
+    ;;Protection: Class 1 — Innate protection offered by XI_MarkFvtPresence,
+    ;;Protection:          XI_RecomputeFvtPresence
+    (defun XI_SyncFvtPresence:object{IgnisCollectorV4.OutputCumulator}
+        (beneficiary-id:string distinct-fvts:[string] direction:bool)
+        @doc "Phase 4.7 dispatcher: STAKE (direction=true) → add-only mark present; UNSTAKE (false) → recompute \
+            \ membership and flip to false when the last position is gone. Keeps the stake path a cheap point-write \
+            \ while making the boolean truthful on withdrawal."
+        (if direction
+            (XI_MarkFvtPresence beneficiary-id distinct-fvts)
+            (XI_RecomputeFvtPresence beneficiary-id distinct-fvts)
+        )
+    )
+
+    ;;Protection: Class 1 — Innate protection offered by XI_ReleaseStream
+    (defun XI_RpsPreScore:object{IgnisCollectorV4.OutputCumulator}
+        (beneficiary-id:string pool-id:string settle-bundle:object{AcquisitionSchemasV5.FVT|StakeSettleBundle})
+        @doc "RPS prelude orchestrator — ghost TVL sync, ensure rows, bank pending at OLD deb (UrStoa UpdatePendingRewards block)."
+        ;; SECURE: granted by XI_1|SyncFarmGhostTvlForEmployedScores / XI_1|EnsureScoreRewardRows / XI_1|BankScorePendingRewards (underlying W_).
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                ;;
+                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                (settle-scores:[string] (at "settle-scores" settle-bundle))
+                (distinct-fvts:[string] (at "distinct-fvts" settle-bundle))
+                (settle-plans:[object{AcquisitionSchemasV5.FVT|SettleScorePlan}] (at "settle-plans" settle-bundle))
+            )
+            ;; PHASE 2.0 — DRIP every affected reward lane FIRST (checkpoint) so the ghost-TVL / Tier-2 settle and
+            ;; the per-user banking below run against the now-current index (streamed rewards vest up to `now`).
+            ;; Uses the plans' own reward-dptf-ids (no extra scan); a lane shared by two plans is dripped twice —
+            ;; the 2nd drip is a no-op (elapsed 0). No-op entirely when no lane on the plan carries a live stream.
+            (map
+                (lambda (plan:object{AcquisitionSchemasV5.FVT|SettleScorePlan})
+                    (map (lambda (reward-dptf-id:string) (XI_ReleaseStream (at "fvt-id" plan) reward-dptf-id))
+                         (at "reward-dptf-ids" plan)))
+                settle-plans)
+            (XI_1|SyncFarmGhostTvlForEmployedScores settle-plans)
+            (map
+                (lambda (plan:object{AcquisitionSchemasV5.FVT|SettleScorePlan})
+                    (do
+                        (XI_1|EnsureScoreRewardRows beneficiary-id plan)
+                        (XI_1|BankScorePendingRewards beneficiary-id pool-id plan)
+                    )
+                )
+                settle-plans
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (URC_SettleStakePendingIgnis settle-scores distinct-fvts)
+                AQP|SC_NAME
+                trigger
+                [pool-id "phase-2-rps-prelude"]
+            )
+        )
+    )
+
+    ;;Protection: Class 1 — Innate protection offered by XI_2|EnsureRpsMemberRow
+    (defun XI_1|EnsureScoreRewardRows
+        (beneficiary-id:string plan:object{AcquisitionSchemasV5.FVT|SettleScorePlan})
+        @doc "Phase 2.2 — UrStoa ≡ insert UrStoaVaultUser when account absent (IzAccount false)."
+        ;; SECURE: granted by XI_2|EnsureRpsMemberRow (underlying W_).
+        (let
+            (
+                (fvt-id:string (at "fvt-id" plan))
+                (score-entity-type:integer (at "score-entity-type" plan))
+                (score-entity-id:string (at "score-entity-id" plan))
+                (reward-dptf-ids:[string] (at "reward-dptf-ids" plan))
+            )
+            (map
+                (lambda (reward-dptf-id:string)
+                    (if (UR_FVT-RG|RewardEnabled fvt-id reward-dptf-id)
+                        ;; USER ROW DELIBERATELY NOT ENSURED: inserting at last-rps = L_i
+                        ;; is right for a newcomer and a silent total loss on a lane added
+                        ;; after the stake. 2.3 writes it at 0.0 and banks; 2.4 checkpoints.
+                        (XI_2|EnsureRpsMemberRow fvt-id score-entity-id reward-dptf-id)
+                        true
+                    )
+                )
+                reward-dptf-ids
+            )
+        )
+    )
+
+    ;;Protection: Class 1 — Innate protection offered by XI_2|SettleMemberTier2,
+    ;;Protection:          XI_2|BankUserTier1Pending
+    (defun XI_1|BankScorePendingRewards
+        (beneficiary-id:string pool-id:string plan:object{AcquisitionSchemasV5.FVT|SettleScorePlan})
+        @doc "Phase 2.3 — UrStoa ≡ XI_URV|UpdatePendingRewards (bank at OLD deb × ΔL_i)."
+        ;; SECURE: granted by XI_2|SettleMemberTier2 / XI_2|BankUserTier1Pending (underlying W_).
+        (let
+            (
+                (score-entity-type:integer (at "score-entity-type" plan))
+                (score-entity-id:string (at "score-entity-id" plan))
+                (fvt-id:string (at "fvt-id" plan))
+                (reward-dptf-ids:[string] (at "reward-dptf-ids" plan))
+            )
+            (map
+                (lambda (reward-dptf-id:string)
+                    (if (UR_FVT-RG|RewardEnabled fvt-id reward-dptf-id)
+                        (do
+                            (XI_2|SettleMemberTier2 fvt-id score-entity-type score-entity-id reward-dptf-id)
+                            (XI_2|BankUserTier1Pending beneficiary-id pool-id fvt-id score-entity-type score-entity-id reward-dptf-id)
+                        )
+                        true
+                    )
+                )
+                reward-dptf-ids
+            )
+        )
+    )
+
+    ;;Protection: Class 1 — Innate protection offered by WU_ScoreEntityLink|GhostTvlWeight,
+    ;;Protection:          WU_Fvt|TotalGhostTvlWeight
+    (defun XI_1|SyncFarmGhostTvlForEmployedScores:object{IgnisCollectorV4.OutputCumulator}
+        (score-plans:[object{AcquisitionSchemasV5.FVT|SettleScorePlan}])
+        @doc "Core ghost-TVL sync (phase 2.1 / inject / collect): SWP→FVT reconcile per object{AcquisitionSchemasV5.FVT|SettleScorePlan}. \
+            \ Caller builds plans once with reward-dptf-ids from a single URH_FVT|SettleFvtRewardBundle — no URD in child XI. \
+            \ Per row: read SWP::UR_StoaValue via swpair; if W_live ≠ W_cached settle Tier-2 at old W_i, \
+            \ write ghost-tvl-weight, adjust FVT|T.total-ghost-tvl-weight. \
+            \ Stake/unstake (XI_RpsPreScore) and tier-0 inject/collect wrappers call this."
+        ;; SECURE: granted by XI_2|SettleMemberTier2, WU_ScoreEntityLink|GhostTvlWeight, WU_Fvt|TotalGhostTvlWeight (underlying W_).
+        (let
+            (
+                (ref-SWP:module{SwapperV5} SWP)
+            )
+            ;; map: employed score plans (farm ghost-TVL reconcile per score × FVT link)
+            (map
+                (lambda (plan:object{AcquisitionSchemasV5.FVT|SettleScorePlan})
+                    (let
+                        (
+                            (score-entity-type:integer (at "score-entity-type" plan))
+                (score-entity-id:string (at "score-entity-id" plan))
+                            (fvt-id:string (at "fvt-id" plan))
+                            (reward-dptf-ids:[string] (at "reward-dptf-ids" plan))
+                        )
+                        (if
+                            (fold (and) true
+                                [
+                                    ;;CANNOT PROTECT: `fold` evaluates every conjunct eagerly, and
+                                    ;;UR_FVT|FvtClass below is a bare `read` of FVT|T|RewardAggregate
+                                    ;;— so a plan carrying a BAR fvt-id aborts in that read and takes
+                                    ;;the WHOLE batch settle with it, which is the opposite of what
+                                    ;;this check was written to do (skip the entry). Latent today:
+                                    ;;the plan builder does not emit BAR. Flagged by
+                                    ;;REPL/_foldeager.py; see REPL/modules/AQP.repl <<AQP-G31>>.
+                                    (!= score-entity-id BAR)
+                                    (!= fvt-id BAR)
+                                    (= (UR_FVT|FvtClass fvt-id) 0)
+                                    (UR_FVT-SEL|Enabled fvt-id score-entity-id)
+                                    ;; DSA delegation members ride the class-0 farm code but have no LP swpair ("|",
+                                    ;; ghost 0) — their inject weight is CAPTURE, not ghost-TVL. Skip the SWP sync.
+                                    (not (UR_FVT-SEL|Delegation fvt-id score-entity-id))
+                                ]
+                            )
+                            (let
+                                (
+                                    (swpair:string (UR_FVT-SEL|Swpair fvt-id score-entity-id))
+                                    (W-live:decimal (ref-SWP::UR_StoaValue swpair))
+                                    (W-cached:decimal (UR_FVT-SEL|GhostTvlWeight fvt-id score-entity-id))
+                                )
+                                (if (= W-live W-cached)
+                                    true
+                                    (let
+                                        (
+                                            (delta-W:decimal (- W-live W-cached))
+                                            (S:decimal (UR_FVT|TotalGhostTvlWeight fvt-id))
+                                        )
+                                        (map
+                                            (lambda (reward-dptf-id:string)
+                                                (XI_2|SettleMemberTier2 fvt-id score-entity-type score-entity-id reward-dptf-id)
+                                            )
+                                            reward-dptf-ids
+                                        )
+                                        (WU_ScoreEntityLink|GhostTvlWeight fvt-id score-entity-id W-live)
+                                        (WU_Fvt|TotalGhostTvlWeight fvt-id (+ S delta-W))
+                                        true
+                                    )
+                                )
+                            )
+                            true
+                        )
+                    )
+                )
+                score-plans
+            )
+        )
+        (UC_EmptyOc)
+    )
+
+    ;;Protection: Class 1 — Innate protection offered by WI_RpsMember
+    (defun XI_2|EnsureRpsMemberRow
+        (fvt-id:string score-entity-id:string reward-dptf-id:string)
+        @doc "Internal (phase 2.1 · depth 2 · 2.0]): ensure FVT|T|RPS|Member row for (fvt, score, reward DPTF); insert when absent."
+        ;; SECURE: granted by WI_RpsMember (underlying W_).
+        (if (not (URC_FvtRpsMemberRowExists fvt-id score-entity-id reward-dptf-id))
+            (WI_RpsMember fvt-id score-entity-id reward-dptf-id
+                (UDC_FVT|RPS|Member 0.0 0.0 0.0 fvt-id score-entity-id reward-dptf-id)
+            )
+            true
+        )
+    )
+
+
+    ;;Protection: Class 1 — Innate protection offered by WI_RpsMember, WW_RpsMember,
+    ;;Protection:          WU_MemberVault|AvailableRewards, WU_RpsUser|PendingRewards
+    (defun XI_1|FarmSplitInject:decimal
+        (fvt-id:string reward-dptf-id:string amount:decimal S:decimal)
+        @doc "Split-at-inject (audit LP redesign / Stage 2): distribute <amount> across enabled FARM members by \
+            \ their FRESH staked STOA value (member-slice = amount x W_i / S), advancing each member's Tier-1 \
+            \ index L_i (member-deb-rps) by member-slice / total-deb — or parking in pending-member-rewards when \
+            \ the member has value but no stakers (total-deb = 0). No global G: farms distribute at inject, not \
+            \ via a Tier-2 accumulator. Mirrors XI_2|SettleMemberTier2's row math with member-slice in place of earned. \
+            \ DSA: a delegation member's W_i is its EFFECTIVE capture (uptime-adjusted, 0 if expired), while S sums \
+            \ IDEAL capacity (capture-units); the per-member gap floor(amount×(ideal−W_i)/S) is the uptime shortfall, \
+            \ accumulated and RETURNED so the caller routes it to the royalty pool (0 for every normal member, whose \
+            \ ideal == W_i)."
+        ;; SECURE: granted by WI_RpsMember / WW_RpsMember (underlying W_).
         (let
             (
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                (member-ids:[string] (URH_FvtEnabledScoreEntityIdsForFvt fvt-id))
+                (reward-prec:integer (ref-DPTF::UR_Decimals reward-dptf-id))
             )
-            (enforce (not (URC_DptfStakeIsReservedLeg dptf-id)) "Reserved DPTF (R|) cannot be staked")
-            (ref-DPTF::UEV_id dptf-id)
+            (fold
+                (lambda (royalty-acc:decimal score-entity-id:string)
+                    (do
+                        (if (not (URC_FvtRpsMemberRowExists fvt-id score-entity-id reward-dptf-id))
+                            (WI_RpsMember fvt-id score-entity-id reward-dptf-id
+                                (UDC_FVT|RPS|Member 0.0 0.0 0.0 fvt-id score-entity-id reward-dptf-id)
+                            )
+                            true
+                        )
+                        (let
+                            (
+                                (score-entity-type:integer (UR_FVT-SEL|ScoreEntityType fvt-id score-entity-id))
+                                (swpair:string (UR_FVT-SEL|Swpair fvt-id score-entity-id))
+                                (delegation:bool (UR_FVT-SEL|Delegation fvt-id score-entity-id))
+                                ;; W_i (numerator): delegation ⇒ effective capture (uptime-adjusted, 0 if expired); else staked value
+                                (w-i:decimal
+                                    (if delegation
+                                        (URC_MemberEffectiveCapture fvt-id score-entity-id)
+                                        (URC_MemberLevel2Weight fvt-id score-entity-type score-entity-id swpair)))
+                                ;; ideal capacity: delegation ⇒ capture-units; else == W_i (so its gap is 0)
+                                (ideal-i:decimal
+                                    (if delegation (UR_FVT-SEL|CaptureUnits fvt-id score-entity-id) w-i))
+                                (member-slice:decimal (floor (/ (* amount w-i) S) reward-prec))
+                                ;; uptime shortfall for this member (0 for a normal member; ideal-i == w-i)
+                                (royalty-i:decimal (floor (/ (* amount (- ideal-i w-i)) S) reward-prec))
+                                (total-deb:decimal (URC_ScoreEntityMemberTier2Divisor fvt-id score-entity-type score-entity-id))
+                                ;; DSA operator fee: split the member-slice — the member index L_i advances by the
+                                ;; NET (1−fee) so EVERY staker accrues net, and the whole fee slice is credited
+                                ;; DIRECT to the operator's pending ⇒ operator earns own-share + fee (effective
+                                ;; own + fee·Σdelegators), delegators (1−fee), conserved. Only when a delegation
+                                ;; member has an operator fee AND live stakers (total-deb>0). Fee never touches a
+                                ;; stored weight, so a fee change reprices only the NEXT inject (O(1)).
+                                (operator:string (if delegation (UR_FVT-AF|Operator fvt-id score-entity-id) BAR))
+                                (fee-per-mille:integer
+                                    (if (fold (and) true [delegation (!= operator BAR) (> total-deb 0.0)])
+                                        (UR_FVT-AF|FeePerMille fvt-id score-entity-id)
+                                        0))
+                                (member-slice-fee:decimal
+                                    (if (> fee-per-mille 0)
+                                        (floor (/ (* member-slice (dec fee-per-mille)) 1000.0) reward-prec)
+                                        0.0))
+                                (member-slice-net:decimal (- member-slice member-slice-fee))
+                                (g-i:decimal (UR_FVT-RM|LastFarmRpsG fvt-id score-entity-id reward-dptf-id))
+                                (L-i:decimal (UR_FVT-RM|MemberDebRps fvt-id score-entity-id reward-dptf-id))
+                                (ptr:decimal (UR_FVT-RM|PendingMemberRewards fvt-id score-entity-id reward-dptf-id))
+                                (L-i-work:decimal
+                                    (if (and (> total-deb 0.0) (> ptr 0.0))
+                                        (+ L-i (floor (/ ptr total-deb) CT_FVT_RPS_PREC))
+                                        L-i
+                                    )
+                                )
+                                (ptr-work:decimal
+                                    (if (and (> total-deb 0.0) (> ptr 0.0)) 0.0 ptr)
+                                )
+                                (new-li:decimal
+                                    (if (> total-deb 0.0)
+                                        (+ L-i-work (floor (/ member-slice-net total-deb) CT_FVT_RPS_PREC))
+                                        L-i-work
+                                    )
+                                )
+                                (new-ptr:decimal
+                                    (if (and (= total-deb 0.0) (> member-slice-net 0.0))
+                                        (floor (+ ptr-work member-slice-net) reward-prec)
+                                        ptr-work
+                                    )
+                                )
+                            )
+                            (WW_RpsMember fvt-id score-entity-id reward-dptf-id
+                                (UDC_FVT|RPS|Member g-i new-li new-ptr fvt-id score-entity-id reward-dptf-id)
+                            )
+                            ;; #10 credit: this member's routed slice enters its mini-vault (Tier-1 dust sweep).
+                            ;; The FULL slice enters (net rides L_i, fee rides operator pending) so paid == routed.
+                            (WU_MemberVault|AvailableRewards fvt-id score-entity-id reward-dptf-id
+                                (+ (UR_FVT-MV|AvailableRewards fvt-id score-entity-id reward-dptf-id) member-slice)
+                            )
+                            ;; DSA operator fee: credit the whole fee slice DIRECT to the operator's pending
+                            ;; (survives deb refresh — pending is a free additive term, never scaled by weight).
+                            ;; No row pre-creation: this used to ensure the row at L_i, so an
+                            ;; operator who is ALSO a staker here forfeited their own Tier-1
+                            ;; accrual to receive a fee. WU_ writes at the read-side default,
+                            ;; harmless when deb is 0 and correct when it is not.
+                            (if (> member-slice-fee 0.0)
+                                (WU_RpsUser|PendingRewards operator fvt-id score-entity-id reward-dptf-id
+                                    (+ (UR_FVT-RU|PendingRewards operator fvt-id score-entity-id reward-dptf-id) member-slice-fee))
+                                true
+                            )
+                            ;; thread the uptime-shortfall accumulator (royalty-i is 0 for a normal member)
+                            (+ royalty-acc royalty-i)
+                        )
+                    )
+                )
+                0.0
+                member-ids
+            )
         )
     )
-    (defun UEV_StakeOrtoFungibleDpofLeg (dpof-id:string)
-        @doc "Validate issued DPOF id via DPOF::UEV_id."
+
+    ;;Protection: Class 1 — Innate protection offered by WI_RpsMember, WW_RpsMember,
+    ;;Protection:          WU_MemberVault|AvailableRewards
+    (defun XI_2|SettleMemberTier2:object{IgnisCollectorV4.OutputCumulator}
+        (fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
+        @doc "Internal (phase 2.1 · depth 2 · 2a]): Tier-2 settle per reward DPTF on FVT|T|RPS|Member. \
+            \ Farm: floor(W_i×(G−g_i), 48). Vault/Treasury: floor(D_i×(G−g_i), 48). Flush pending-member-rewards when deb > 0."
+        ;; SECURE: granted by WI_RpsMember / WW_RpsMember (underlying W_).
+        (do
+            (if (not (URC_FvtRpsMemberRowExists fvt-id score-entity-id reward-dptf-id))
+                (WI_RpsMember fvt-id score-entity-id reward-dptf-id
+                    (UDC_FVT|RPS|Member 0.0 0.0 0.0 fvt-id score-entity-id reward-dptf-id)
+                )
+                true
+            )
+            (let
+                (
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                    ;;
+                    (fvt-class:integer (UR_FVT|FvtClass fvt-id))
+                    (G:decimal (UR_FVT-RG|CurrentRps fvt-id reward-dptf-id))
+                    (g-i:decimal (UR_FVT-RM|LastFarmRpsG fvt-id score-entity-id reward-dptf-id))
+                    (total-deb:decimal (URC_ScoreEntityMemberTier2Divisor fvt-id score-entity-type score-entity-id))
+                    (L-i:decimal (UR_FVT-RM|MemberDebRps fvt-id score-entity-id reward-dptf-id))
+                    (ptr:decimal (UR_FVT-RM|PendingMemberRewards fvt-id score-entity-id reward-dptf-id))
+                    (reward-prec:integer (ref-DPTF::UR_Decimals reward-dptf-id))
+                    (L-i-work:decimal
+                        (if (and (> total-deb 0.0) (> ptr 0.0))
+                            (+ L-i (floor (/ ptr total-deb) CT_FVT_RPS_PREC))
+                            L-i
+                        )
+                    )
+                    (ptr-work:decimal
+                        (if (and (> total-deb 0.0) (> ptr 0.0)) 0.0 ptr)
+                    )
+                )
+                (if (= G g-i)
+                    (if (and (> total-deb 0.0) (> ptr 0.0))
+                        (WW_RpsMember fvt-id score-entity-id reward-dptf-id
+                            (UDC_FVT|RPS|Member g-i L-i-work ptr-work fvt-id score-entity-id reward-dptf-id)
+                        )
+                        true
+                    )
+                    (let
+                        (
+                            (weight:decimal (URC_ScoreEntityMemberWeight fvt-id score-entity-type score-entity-id))
+                            (earned:decimal (floor (* weight (- G g-i)) CT_FVT_RPS_PREC))
+                            (new-li:decimal
+                                (if (> total-deb 0.0)
+                                    (+ L-i-work (floor (/ earned total-deb) CT_FVT_RPS_PREC))
+                                    L-i-work
+                                )
+                            )
+                            (new-ptr:decimal
+                                (if (and (= total-deb 0.0) (> earned 0.0))
+                                    (floor (+ ptr-work earned) reward-prec)
+                                    ptr-work
+                                )
+                            )
+                        )
+                        (WW_RpsMember fvt-id score-entity-id reward-dptf-id
+                            (UDC_FVT|RPS|Member G new-li new-ptr fvt-id score-entity-id reward-dptf-id)
+                        )
+                        ;; #10 credit: vault Tier-2 earned enters this member's mini-vault (Tier-1 dust sweep)
+                        (WU_MemberVault|AvailableRewards fvt-id score-entity-id reward-dptf-id
+                            (+ (UR_FVT-MV|AvailableRewards fvt-id score-entity-id reward-dptf-id) earned)
+                        )
+                    )
+                )
+            )
+            (UC_EmptyOc)
+        )
+    )
+
+    ;;Protection: Class 1 — Innate protection offered by WU_RpsUser|PendingRewards
+    (defun XI_2|BankUserTier1Pending:object{IgnisCollectorV4.OutputCumulator}
+        (beneficiary-id:string pool-id:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
+        @doc "Internal (phase 2.1 · depth 2 · 2b]): bank user pending at OLD deb — UrStoa XI_URV|UpdatePendingRewards. \
+            \ Does not advance last-rps (phase 2.4 XI_CheckpointStakeRps)."
+        ;; SECURE: granted by WU_RpsUser|PendingRewards (underlying W_).
+        (do
+            (let
+                (
+                    ;;
+                    (deb-old:decimal (URC_ScoreEntityUserWeight beneficiary-id fvt-id pool-id score-entity-type score-entity-id))
+                    (new-pending:decimal (URC_UserTier1AvailableRewards beneficiary-id fvt-id score-entity-id reward-dptf-id deb-old))
+                )
+                (WU_RpsUser|PendingRewards beneficiary-id fvt-id score-entity-id reward-dptf-id new-pending)
+            )
+            (UC_EmptyOc)
+        )
+    )
+
+    ;;Protection: Class 2 — SECURE
+    (defun XI_FixUserMemberDeb:object{IgnisCollectorV4.OutputCumulator}
+        (user-id:string fvt-id:string score-entity-type:integer score-entity-id:string)
+        @doc "Single-member convenience: scans the FVT's reward rows once, then delegates to XI_FixUserMemberDebIn."
+        (require-capability (SECURE))
+        (XI_FixUserMemberDebIn user-id fvt-id score-entity-type score-entity-id (URH_FVT-RG|EnabledRewardRows fvt-id))
+    )
+
+    ;;Protection: Class 2 — SECURE
+    (defun XI_FixUserMemberDebIn:object{IgnisCollectorV4.OutputCumulator}
+        (user-id:string fvt-id:string score-entity-type:integer score-entity-id:string reward-rows:[string])
+        @doc "FIX one (user, member) settling over PRE-COMPUTED `reward-rows` (the FVT's enabled reward-dptf ids — \
+            \ batch-invariant), so a chunk fix scans FVT|T|RPS|Global ONCE, not per (user × member). \
+            \ Iff the member is deb-based (singular or NON-true triplet) AND stale for this \
+            \ user — (1) SETTLE the user's pending at the OLD deb across ALL of the FVT's enabled reward-dptfs and \
+            \ advance each last-rps to its current index (settle-before-weight-change MUST cover every stream, \
+            \ because the deb-score is shared across streams); (2) refresh the SCORE deb-score(s) to the live \
+            \ Elite-DEB (each triplet leg at its OWN aqpool-link); (3) resync the FVT total-deb mirror by the \
+            \ member delta; (4) for a TRUE triplet, re-snapshot its lanes so the maintained columns track the new \
+            \ deb (the PAYING weight is read live, so this is bookkeeping, not a payout input). \
+            \ No-op only when fresh — the old 'or a TRUE triplet (deb-independent lanes)' exemption is gone as \
+            \ of 2026-10-08, since triplet weights are deb-scores now. Does NOT pay out. \
+            \ NOTE: assumes the user's RPS|User rows exist for every enabled reward-dptf (ensured at stake); a \
+            \ reward-dptf enabled AFTER the user staked is a known edge (ensure-rows-first) — TODO."
+        (require-capability (SECURE))
         (let
             (
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+                (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
+                (triplet:bool (= score-entity-type CT_SCORE_ENTITY_TRIPLET))
+                (bronze-id:string (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET) (ref-SCR::UR_SCR|TripletBronzeScoreId score-entity-id) score-entity-id))
+                (silver-id:string (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET) (ref-SCR::UR_SCR|TripletSilverScoreId score-entity-id) score-entity-id))
+                (golden-id:string (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET) (ref-SCR::UR_SCR|TripletGoldenScoreId score-entity-id) score-entity-id))
+                ;; settle basis pool: singular -> its own; triplet -> silver leg (URC_ weight ignores pool for triplets)
+                (member-pool:string (ref-SCR::UR_SCR|ScoreAqpoolLink silver-id))
             )
-            (ref-DPOF::UEV_id dpof-id)
-        )
-    )
-    (defun UEV_StakeCollectableLeg (collectable-id:string son:bool)
-        @doc "Validate issued DPDC collectable id via DPDC::UEV_id."
-        (let
-            (
-                (ref-DPDC:module{DpdcV3} DPDC)
+            (if (URC_FvtMemberDebNeedsFix fvt-id user-id score-entity-type score-entity-id)
+                (let
+                    (
+                        (pre-member-debs:[object{AcquisitionSchemasV5.FVT|MemberPreDeb}]
+                            [ {"fvt-id"            : fvt-id
+                              ,"score-entity-type" : score-entity-type
+                              ,"score-entity-id"   : score-entity-id
+                              ,"pre-deb"           : (URC_ScoreEntityMemberDebWeight score-entity-type score-entity-id)} ])
+                    )
+                    ;; 1. settle EVERY reward stream at OLD deb, then advance its last-rps to the current index
+                    (map
+                        (lambda (rdptf:string)
+                            (do
+                                (XI_2|BankUserTier1Pending user-id member-pool fvt-id score-entity-type score-entity-id rdptf)
+                                (WU_RpsUser|LastRps user-id fvt-id score-entity-id rdptf
+                                    (URC_FvtTier1IndexRps fvt-id score-entity-id rdptf))))
+                        reward-rows)
+                    ;; 2. refresh the SCORE deb-score(s) to live (each triplet leg at its OWN pool)
+                    (if triplet
+                        (map
+                            (lambda (sid:string) (ref-SCR::XE_RefreshUserScoreDeb user-id (ref-SCR::UR_SCR|ScoreAqpoolLink sid) sid))
+                            [ bronze-id silver-id golden-id ])
+                        (ref-SCR::XE_RefreshUserScoreDeb user-id member-pool score-entity-id))
+                    ;; 3. resync the FVT total-deb mirror by the member delta
+                    (XI_SyncFvtTotalDebMirrors pre-member-debs)
+                    ;; 4. TRUE triplet: re-snapshot the lanes so contrib-weight / total-lane-weight track the new
+                    ;;    deb. Bookkeeping only — the paying weight is read live (URC_ScoreEntityUserWeight) since
+                    ;;    2026-10-08 — but a maintained column that silently diverges is how the lane defect hid.
+                    ;; Both branches must yield an OutputCumulator: this `if` is the LET'S VALUE,
+                    ;; and the let is the true arm of the needs-fix `if`, so it is this function's
+                    ;; return. A bare `true` here typechecks at parse and dies at runtime --
+                    ;; "argument is bool, but expected object{IgnisCollectorV4.OutputCumulator}",
+                    ;; five suites deep inside CC_Collect. XI_SyncTripletLaneWeights already ends
+                    ;; on UC_EmptyOc, so the two arms agree.
+                    (if (and triplet (ref-SCR::UR_SCR|TripletTrueTriplet score-entity-id))
+                        (XI_SyncTripletLaneWeights user-id
+                            [(UDC_FVT|SettleScorePlan score-entity-type score-entity-id fvt-id [])])
+                        (UC_EmptyOc))
+                )
+                (UC_EmptyOc)
             )
-            (ref-DPDC::UEV_id collectable-id son)
         )
     )
-    ;;
-    (defun UEV_ExecutorIzPoolOwner (executor:string pool-id:string)
-        @doc "Enforces that <executor> IS the pool's owner konto -- the SAME value CAP_PoolOwner \
-            \ resolves and key-checks, read through the same URC_ so the two can never disagree. \
-            \ It does not REPLACE that gate: CAP_PoolOwner proves the signer holds the owner's key, \
-            \ this proves the named actor IS that owner. Both are needed, because they are not the \
-            \ same question -- a sovereign asset's owner is a SMART account whose key a human holds, \
-            \ so the key check passes for an account the caller never names (see 01_ANK, 2026-09-20)."
-        (enforce (= executor (URC_AqpOwnerKonto pool-id))
-            (format "Executor {} is not the owner of pool {} (owner is {})"
-                [executor pool-id (URC_AqpOwnerKonto pool-id)]))
-    )
-    (defun UEV_ExecutorIzAqpAssetOwner (executor:string aqp-class:integer asset-id:string)
-        @doc "Issue-time form of UEV_ExecutorIzPoolOwner: the pool does not exist yet, so the \
-            \ authority is derived from the canonical asset for <aqp-class>/<asset-id>, mirroring \
-            \ CAP_AqpAssetOwner."
-        (enforce (= executor (URC_AqpOwnerKontoFromClassAndAsset aqp-class asset-id))
-            (format "Executor {} is not the owner of the canonical asset {} (owner is {})"
-                [executor asset-id (URC_AqpOwnerKontoFromClassAndAsset aqp-class asset-id)]))
-    )
-    (defun CAP_AqpAssetOwner (aqp-class:integer asset-id:string)
-        @doc "Issue / pre-pool: tx sender must own the canonical asset for aqp-class and asset-id."
-        (let 
-            (
-                (ref-DALOS:module{OuronetDalosV3} DALOS)
-            )
-            (ref-DALOS::CAP_EnforceAccountOwnership (URC_AqpOwnerKontoFromClassAndAsset aqp-class asset-id))
-        )
-    )
-    (defun CAP_PoolOwner (pool-id:string)
-        @doc "Post-issue pool governance: tx sender must own the canonical asset behind pool-id (URC_AqpOwnerKonto)."
-        (let 
-            (
-                (ref-DALOS:module{OuronetDalosV3} DALOS)
-            )
-            (ref-DALOS::CAP_EnforceAccountOwnership (URC_AqpOwnerKonto pool-id))
-        )
-    )
-    (defun CAP_StakeOwner (owner-id:string)
-        @doc "Stake / unstake: tx sender must own owner-id (depositor of tokens)."
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV3} DALOS)
-            )
-            (ref-DALOS::CAP_EnforceAccountOwnership owner-id)
-        )
-    )
-    ;;{5.5}  Write [W]
-    ;; [W]   write
-    ;;
-    ;; Twelve blocks — one per deftable (table order). Within each block: WI → WW → WU → WU2+ (only when needed).
-    ;; WU lists every schema field: defun when used; comment when [.], select key, or mutates via WW_*.
-    ;;
-    (defun WI_Pool:string
-        (pool-id:string row:object{AcquisitionSchemasV3.AQP|Schema})
-        @doc "Insert AQP|T|Pool full row (issue only)."
+
+    ;;Protection: Class 2 — SECURE
+    (defun XI_SweepRecomputeUserMember:object{IgnisCollectorV4.OutputCumulator}
+        (user-id:string fvt-id:string score-entity-type:integer score-entity-id:string swept-boost-class-id:string)
+        @doc "Single-holder convenience: scans the FVT's reward rows once, then delegates to XI_SweepRecomputeUserMemberIn."
         (require-capability (SECURE))
-        (insert AQP|T|Pool pool-id row)
+        (XI_SweepRecomputeUserMemberIn user-id fvt-id score-entity-type score-entity-id swept-boost-class-id (URH_FVT-RG|EnabledRewardRows fvt-id))
     )
-    ;; WW_Pool — not used: issue path is WI_Pool; other paths use WU_*.
-    (defun WU_Pool|StakeEnabled:string
-        (pool-id:string enabled:bool)
-        @doc "Update stake-enabled on AQP|T|Pool."
-        (require-capability (SECURE))
-        (update AQP|T|Pool pool-id {"stake-enabled": enabled})
-    )
-    (defun WU_Pool|SweepInProgress:string
-        (pool-id:string flag:bool)
-        @doc "Update sweep-in-progress on AQP|T|Pool (the re-score sweep freeze)."
-        (require-capability (SECURE))
-        (update AQP|T|Pool pool-id {"sweep-in-progress": flag})
-    )
-    (defun WU_Pool|ScoreSlot:string
-        (pool-id:string slot-index:integer score-id:string)
-        @doc "Write score-id into one pool score slot (0=primary .. 6=septenary)."
-        (require-capability (SECURE))
-        (update AQP|T|Pool pool-id (UC_PoolScoreSlotPatch slot-index score-id))
-    )
-    (defun WU4_Pool|VacateJobState:string
-        (pool-id:string vacate-in-progress:bool)
-        @doc "Update vacate-in-progress on AQP|T|Pool."
-        (require-capability (SECURE))
-        (update AQP|T|Pool pool-id
-            {"vacate-in-progress"   : vacate-in-progress}
-        )
-    )
-    (defun WU_Pool|Nns:string
-        (pool-id:string delta:integer)
-        @doc "#FP1: add <delta> to the pool nns occupancy counter. Defensive no-op on amount pools (nns=-1) — the \
-            \ nonce-tracker slot writers only call this for class 2/3/4, on a 0<->occupied position transition."
+
+    ;;Protection: Class 2 — SECURE
+    (defun XI_SweepRecomputeUserMemberIn:object{IgnisCollectorV4.OutputCumulator}
+        (user-id:string fvt-id:string score-entity-type:integer score-entity-id:string swept-boost-class-id:string reward-rows:[string])
+        @doc "Re-score sweep per-holder recompute settling over PRE-COMPUTED `reward-rows` (batch-invariant) — a \
+            \ sweep chunk scans FVT|T|RPS|Global once, not per holder. \
+            \ [orig] for one (user, member) after an anchor in `swept-boost-class-id` \
+            \ was removed/re-priced GLOBALLY. Order matters: (1) SETTLE every reward stream at the OLD weight + \
+            \ advance last-rps (banks pending before any weight change); then dispatch — TRUE triplet (deb- \
+            \ independent) → (2t) refold the Level-1 lanes at the live promile; deb-based (singular / non-true \
+            \ triplet) → (2) REFOLD the holder's aggregate-promile for the swept class (ANK — the DEEPER recompute \
+            \ XI_FixUserMemberDeb omits, since a DEF change makes the stored aggregate stale), (3) refresh the SCORE \
+            \ deb-score(s) at the new aggregate, (4) resync the FVT total-deb mirror. Reuses the SAME leaf primitives \
+            \ as the deb-fix, re-ordered to insert the aggregate refold. NO 2e penalty (owner-initiated, D4). \
+            \ require SECURE."
         (require-capability (SECURE))
         (let
             (
-                (cur:integer (at "nns" (read AQP|T|Pool pool-id ["nns"])))
+                (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
+                (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+                (triplet:bool (= score-entity-type CT_SCORE_ENTITY_TRIPLET))
+                (triplet-true:bool (and (= score-entity-type CT_SCORE_ENTITY_TRIPLET) (ref-SCR::UR_SCR|TripletTrueTriplet score-entity-id)))
+                (silver-id:string (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET) (ref-SCR::UR_SCR|TripletSilverScoreId score-entity-id) score-entity-id))
+                ;; settle basis pool: singular → its own; triplet → silver leg (URC_ weight ignores pool for triplets)
+                (member-pool:string (ref-SCR::UR_SCR|ScoreAqpoolLink silver-id))
             )
-            (if (= cur -1)
-                "nns N/A (amount pool)"
-                (update AQP|T|Pool pool-id {"nns" : (+ cur delta)})
+            ;; 1. settle EVERY reward stream at OLD weight, then advance its last-rps to the current index
+            (map
+                (lambda (rdptf:string)
+                    (do
+                        (XI_2|BankUserTier1Pending user-id member-pool fvt-id score-entity-type score-entity-id rdptf)
+                        (WU_RpsUser|LastRps user-id fvt-id score-entity-id rdptf
+                            (URC_FvtTier1IndexRps fvt-id score-entity-id rdptf))))
+                reward-rows)
+            ;; 2. refold the holder's aggregate-promile for the swept class — EVERY member kind needs it, because
+            ;;    the promile is what SCORE multiplies the base by to get the boost part. Must precede the refresh.
+            (ref-ANK::XE_RecomputeUserBoostAggregates user-id [swept-boost-class-id])
+            ;; CHANGED 2026-10-08: there used to be a `triplet-true` fork here that refolded ONLY the lanes for a
+            ;; true triplet and skipped the SCORE deb refresh, because lanes were computed from base × promile and
+            ;; owed nothing to deb. Lanes ARE the legs' deb-scores now, so skipping the refresh would leave the
+            ;; swept class's boost part stale in the very rows the weight is read from. One path for everyone.
+            (let
+                (
+                    (pre-member-debs:[object{AcquisitionSchemasV5.FVT|MemberPreDeb}]
+                        [ {"fvt-id"            : fvt-id
+                          ,"score-entity-type" : score-entity-type
+                          ,"score-entity-id"   : score-entity-id
+                          ,"pre-deb"           : (URC_ScoreEntityMemberDebWeight score-entity-type score-entity-id)} ])
+                )
+                ;; 3. refresh the SCORE deb-score(s) at the new aggregate (triplet legs at their OWN pools)
+                (if triplet
+                    (map
+                        (lambda (sid:string) (ref-SCR::XE_RefreshUserScoreDeb user-id (ref-SCR::UR_SCR|ScoreAqpoolLink sid) sid))
+                        [ (ref-SCR::UR_SCR|TripletBronzeScoreId score-entity-id) silver-id (ref-SCR::UR_SCR|TripletGoldenScoreId score-entity-id) ])
+                    (ref-SCR::XE_RefreshUserScoreDeb user-id member-pool score-entity-id))
+                ;; 4. resync the FVT total-deb mirror by the member delta
+                (XI_SyncFvtTotalDebMirrors pre-member-debs)
+                ;; 5. TRUE triplet: re-snapshot the maintained lane columns at the refreshed deb (bookkeeping).
+                (if triplet-true
+                    (XI_SyncTripletLaneWeights user-id
+                        [(UDC_FVT|SettleScorePlan score-entity-type score-entity-id fvt-id [])])
+                    true)
             )
+            (UC_EmptyOc)
         )
     )
-    (defun WU_User|Unn:string
-        (pool-id:string beneficiary-id:string delta:integer)
-        @doc "Vacate-v2 §4: add <delta> to the (pool, beneficiary) occupancy counter, in lockstep with the \
-            \ pool nns. Defensive no-op on amount pools (pool nns=-1, i.e. LP) — the tracker slot writers call \
-            \ this only on a 0<->occupied transition for occupancy-tracked pools (class 1/2/3/4)."
+
+    ;;Protection: Class 2 — SECURE
+    (defun XI_FixUserFvtDebIn:object{IgnisCollectorV4.OutputCumulator}
+        (user-id:string fvt-id:string members:[string] reward-rows:[string])
+        @doc "Fix the user's stale deb-based members among PRE-COMPUTED `members`, settling over PRE-COMPUTED \
+            \ `reward-rows` — both batch-invariant, so a chunk fix scans FVT|T|ScoreEntityLink AND FVT|T|RPS|Global \
+            \ ONCE, not once per user/member. require SECURE."
         (require-capability (SECURE))
-        (if (= (at "nns" (read AQP|T|Pool pool-id ["nns"])) -1)
-            "unn N/A (amount pool)"
-            (with-default-read AQP|T|UserOccupancy (UCk_UserOccupancy pool-id beneficiary-id)
-                {"unn" : 0} {"unn" := cur}
-                (write AQP|T|UserOccupancy (UCk_UserOccupancy pool-id beneficiary-id)
-                    (UDC_AQP|UserOccupancy (+ cur delta) pool-id beneficiary-id))
-            )
-        )
+        (map
+            (lambda (member-id:string)
+                (XI_FixUserMemberDebIn user-id fvt-id (UR_FVT-SEL|ScoreEntityType fvt-id member-id) member-id reward-rows))
+            members)
+        (UC_EmptyOc)
     )
-    (defun WU_Pool|Occupancy:string
-        (pool-id:string beneficiary-id:string delta:integer)
-        @doc "Vacate-v2: advance BOTH occupancy counters in lockstep on a tracker 0<->occupied transition — the \
-            \ pool nns (#FP1) and the (pool, beneficiary) unn (§4). Both share the nns=-1 LP guard internally, so \
-            \ this is a no-op on amount pools. The single call every tracker slot writer makes on a transition."
+
+    ;;Protection: Class 2 — SECURE
+    (defun XI_FixUserFvtDeb:object{IgnisCollectorV4.OutputCumulator}
+        (user-id:string fvt-id:string)
+        @doc "Fix ALL of a user's stale deb-based members in the FVT. Single-user convenience (one member scan); \
+            \ bulk callers use XI_FixUserFvtDebIn with a hoisted member list."
         (require-capability (SECURE))
-        (WU_Pool|Nns pool-id delta)
-        (WU_User|Unn pool-id beneficiary-id delta)
+        (XI_FixUserFvtDebIn user-id fvt-id (URH_FvtEnabledScoreEntityIdsForFvt fvt-id) (URH_FVT-RG|EnabledRewardRows fvt-id))
     )
-    (defun WU7_Pool|ScoreSlots:string
-        (pool-id:string
-            score-primary:string
-            score-secondary:string
-            score-tertiary:string
-            score-quaternary:string
-            score-quinary:string
-            score-senary:string
-            score-septenary:string
-        )
-        @doc "Replace all seven score slots on AQP|T|Pool (revoke compact path)."
+
+    ;;Protection: Class 2 — SECURE
+    (defun XI_FixUserFvtDebPenalized:object{IgnisCollectorV4.OutputCumulator}
+        (fvt-id:string reward-dptf-id:string user-id:string)
+        @doc "ENFORCED-INJECT variant: fix ALL the user's stale members (XI_FixUserFvtDeb) AND record the 2e \
+            \ forced-fix count on (fvt, reward-dptf, user) = how many members were stale (counted BEFORE the fix). \
+            \ The user pays that × RATE non-discountable IGNIS at his next collect of this lane. Self-fixing at \
+            \ collect (PHASE 6) uses plain XI_FixUserFvtDeb and is NOT penalized. require SECURE."
         (require-capability (SECURE))
-        (update AQP|T|Pool pool-id
-            {"score-primary"    : score-primary
-            ,"score-secondary"  : score-secondary
-            ,"score-tertiary"   : score-tertiary
-            ,"score-quaternary" : score-quaternary
-            ,"score-quinary"    : score-quinary
-            ,"score-senary"     : score-senary
-            ,"score-septenary"  : score-septenary}
-        )
+        (XI_FixUserFvtDebPenalizedIn fvt-id reward-dptf-id user-id (URH_FvtEnabledScoreEntityIdsForFvt fvt-id) (URH_FVT-RG|EnabledRewardRows fvt-id))
     )
-    ;; WU_Pool|AqpClass — not mutable [.]
-    ;; WU_Pool|AssetId — not mutable [.]
-    ;; WU_Pool|ScorePrimary — not used: mutates via WU_Pool|ScoreSlot or WU7_Pool|ScoreSlots.
-    ;; WU_Pool|ScoreSecondary — not used: mutates via WU_Pool|ScoreSlot or WU7_Pool|ScoreSlots.
-    ;; WU_Pool|ScoreTertiary — not used: mutates via WU_Pool|ScoreSlot or WU7_Pool|ScoreSlots.
-    ;; WU_Pool|ScoreQuaternary — not used: mutates via WU_Pool|ScoreSlot or WU7_Pool|ScoreSlots.
-    ;; WU_Pool|ScoreQuinary — not used: mutates via WU_Pool|ScoreSlot or WU7_Pool|ScoreSlots.
-    ;; WU_Pool|ScoreSenary — not used: mutates via WU_Pool|ScoreSlot or WU7_Pool|ScoreSlots.
-    ;; WU_Pool|ScoreSeptenary — not used: mutates via WU_Pool|ScoreSlot or WU7_Pool|ScoreSlots.
-    ;; WU_Pool|VacateInProgress — not used: mutates via WU4_Pool|VacateJobState.
-    ;; WU_Pool|AqpId — select key; WU not needed.
-    ;;
-    ;; WI_DPTFTracker — not used: first row touch is WW_DPTFTracker (upsert path).
-    (defun WW_DPTFTracker:string
-        (pool-id:string dptf-id:string owner-id:string beneficiary-id:string row:object{AcquisitionSchemasV3.AQP|TrueFungibleTracker})
-        @doc "Upsert full AQP|T|DPTFTracker row for (pool, dptf, owner, beneficiary)."
+
+    ;;Protection: Class 2 — SECURE
+    (defun XI_FixUserFvtDebPenalizedIn:object{IgnisCollectorV4.OutputCumulator}
+        (fvt-id:string reward-dptf-id:string user-id:string members:[string] reward-rows:[string])
+        @doc "Hoisted twin of XI_FixUserFvtDebPenalized: count + fix the user's stale members among PRE-COMPUTED \
+            \ `members`, settling over PRE-COMPUTED `reward-rows` (count + fix + settle all reuse the ONE member \
+            \ list AND ONE reward-rows list — no per-user re-scan). require SECURE."
         (require-capability (SECURE))
-        (write AQP|T|DPTFTracker (UCk_DPTFTracker pool-id dptf-id owner-id beneficiary-id) row)
-    )
-    ;; WU_DPTFTracker|Balance — not used: mutates via WW_DPTFTracker (full row).
-    ;; WU_DPTFTracker|PoolId — select key; WU not needed.
-    ;; WU_DPTFTracker|DptfId — select key; WU not needed.
-    ;; WU_DPTFTracker|OwnerId — select key; WU not needed.
-    ;; WU_DPTFTracker|BeneficiaryId — select key; WU not needed.
-    ;;
-    ;; WI_DPOFTracker — not used: first row touch is WW_DPOFTracker (upsert path).
-    (defun WW_DPOFTracker:string
-        (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer row:object{AcquisitionSchemasV3.AQP|OrtoFungibleTracker})
-        @doc "Upsert full AQP|T|DPOFTracker row for (pool, dpof, owner, beneficiary, nonce)."
-        (require-capability (SECURE))
-        (write AQP|T|DPOFTracker (UCk_DPOFTracker pool-id dpof-id owner-id beneficiary-id nonce) row)
-    )
-    ;; WU_DPOFTracker|Balance — not used: mutates via WW_DPOFTracker (full row).
-    ;; WU_DPOFTracker|PoolId — select key; WU not needed.
-    ;; WU_DPOFTracker|DpofId — select key; WU not needed.
-    ;; WU_DPOFTracker|OwnerId — select key; WU not needed.
-    ;; WU_DPOFTracker|BeneficiaryId — select key; WU not needed.
-    ;; WU_DPOFTracker|Nonce — select key; WU not needed.
-    ;;
-    ;; WI_DPSFTracker — not used: first row touch is WW_DPSFTracker (upsert path).
-    (defun WW_DPSFTracker:string
-        (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer row:object{AcquisitionSchemasV3.AQP|SemiFungibleTracker})
-        @doc "Upsert full AQP|T|DPSFTracker row for (pool, dpsf, owner, beneficiary, nonce)."
-        (require-capability (SECURE))
-        (write AQP|T|DPSFTracker (UCk_DPSFTracker pool-id dpsf-id owner-id beneficiary-id nonce) row)
-    )
-    ;; WU_DPSFTracker|Balance — not used: mutates via WW_DPSFTracker (full row).
-    ;; WU_DPSFTracker|PoolId — select key; WU not needed.
-    ;; WU_DPSFTracker|DpsfId — select key; WU not needed.
-    ;; WU_DPSFTracker|OwnerId — select key; WU not needed.
-    ;; WU_DPSFTracker|BeneficiaryId — select key; WU not needed.
-    ;; WU_DPSFTracker|Nonce — select key; WU not needed.
-    ;;
-    ;; WI_DPNFTracker — not used: first row touch is WW_DPNFTracker (upsert path).
-    (defun WW_DPNFTracker:string
-        (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer row:object{AcquisitionSchemasV3.AQP|NonFungibleTracker})
-        @doc "Upsert full AQP|T|DPNFTracker row for (pool, dpnf, owner, beneficiary, nonce)."
-        (require-capability (SECURE))
-        (write AQP|T|DPNFTracker (UCk_DPNFTracker pool-id dpnf-id owner-id beneficiary-id nonce) row)
-    )
-    ;; WU_DPNFTracker|Balance — not used: mutates via WW_DPNFTracker (full row).
-    ;; WU_DPNFTracker|PoolId — select key; WU not needed.
-    ;; WU_DPNFTracker|DpnfId — select key; WU not needed.
-    ;; WU_DPNFTracker|OwnerId — select key; WU not needed.
-    ;; WU_DPNFTracker|BeneficiaryId — select key; WU not needed.
-    ;; WU_DPNFTracker|Nonce — select key; WU not needed.
-    ;;
-    ;; WI_BenDptfTotal — not used: first row touch is WW_BenDptfTotal (upsert path).
-    (defun WW_BenDptfTotal:string
-        (beneficiary-id:string dptf-id:string row:object{AcquisitionSchemasV3.AQP|BenDptfTotal})
-        @doc "Upsert full AQP|T|BenDptfTotal row for (beneficiary, dptf-id)."
-        (require-capability (SECURE))
-        (write AQP|T|BenDptfTotal (UCk_BenDptfTotal beneficiary-id dptf-id) row)
-    )
-    (defun WU_BenDptfTotal|LastAnkSyncCount:string
-        (beneficiary-id:string dptf-id:string row:object{AcquisitionSchemasV3.AQP|BenDptfTotal} sync-count:integer)
-        @doc "Update last-ank-sync-count on AQP|T|BenDptfTotal; preserve other fields. \
-            \ <row> kept for call-site symmetry with collectable meta WU_*; write uses update (not object-+ merge)."
-        (require-capability (SECURE))
-        (update AQP|T|BenDptfTotal (UCk_BenDptfTotal beneficiary-id dptf-id)
-            {"last-ank-sync-count": sync-count}
-        )
-    )
-    ;; WU_BenDptfTotal|TotalBalance — not used: mutates via WW_BenDptfTotal (full row).
-    ;; WU_BenDptfTotal|BeneficiaryId — select key; WU not needed.
-    ;; WU_BenDptfTotal|DptfId — select key; WU not needed.
-    ;;
-    ;; WI_BenDpsfNonceTotal — not used: first row touch is WW_BenDpsfNonceTotal (upsert path).
-    (defun WW_BenDpsfNonceTotal:string
-        (beneficiary-id:string dpsf-id:string nonce:integer row:object{AcquisitionSchemasV3.AQP|BenDpsfNonceTotal})
-        @doc "Upsert full AQP|T|BenDpsfNonceTotal row for (beneficiary, dpsf-id, nonce)."
-        (require-capability (SECURE))
-        (write AQP|T|BenDpsfNonceTotal (UCk_BenDpsfNonceTotal beneficiary-id dpsf-id nonce) row)
-    )
-    ;; WU_BenDpsfNonceTotal|Amount — not used: mutates via WW_BenDpsfNonceTotal (full row).
-    ;; WU_BenDpsfNonceTotal|BeneficiaryId — select key; WU not needed.
-    ;; WU_BenDpsfNonceTotal|DpsfId — select key; WU not needed.
-    ;; WU_BenDpsfNonceTotal|Nonce — select key; WU not needed.
-    ;;
-    ;; WI_BenDpnfNonceTotal — not used: first row touch is WW_BenDpnfNonceTotal (upsert path).
-    (defun WW_BenDpnfNonceTotal:string
-        (beneficiary-id:string dpnf-id:string nonce:integer row:object{AcquisitionSchemasV3.AQP|BenDpnfNonceTotal})
-        @doc "Upsert full AQP|T|BenDpnfNonceTotal row for (beneficiary, dpnf-id, nonce)."
-        (require-capability (SECURE))
-        (write AQP|T|BenDpnfNonceTotal (UCk_BenDpnfNonceTotal beneficiary-id dpnf-id nonce) row)
-    )
-    ;; WU_BenDpnfNonceTotal|Amount — not used: mutates via WW_BenDpnfNonceTotal (full row).
-    ;; WU_BenDpnfNonceTotal|BeneficiaryId — select key; WU not needed.
-    ;; WU_BenDpnfNonceTotal|DpnfId — select key; WU not needed.
-    ;; WU_BenDpnfNonceTotal|Nonce — select key; WU not needed.
-    ;;
-    ;; WI_BenDpsfAnkMeta — not used: first row touch is WW_BenDpsfAnkMeta (upsert path).
-    (defun WW_BenDpsfAnkMeta:string
-        (beneficiary-id:string dpsf-id:string row:object{AcquisitionSchemasV3.AQP|BenDpsfAnkMeta})
-        @doc "Upsert full AQP|T|BenDpsfAnkMeta row for (beneficiary, dpsf-id)."
-        (require-capability (SECURE))
-        (write AQP|T|BenDpsfAnkMeta (UCk_BenDpsfAnkMeta beneficiary-id dpsf-id) row)
-    )
-    (defun WU_BenDpsfAnkMeta|LastAnkSyncCount:string
-        (beneficiary-id:string dpsf-id:string row:object{AcquisitionSchemasV3.AQP|BenDpsfAnkMeta} sync-count:integer)
-        @doc "Update last-ank-sync-count; preserve active-nonce-count from <row>."
-        (require-capability (SECURE))
-        (write AQP|T|BenDpsfAnkMeta (UCk_BenDpsfAnkMeta beneficiary-id dpsf-id)
-            (UDC_AQP|BenDpsfAnkMeta sync-count (at "active-nonce-count" row) beneficiary-id dpsf-id)
-        )
-    )
-    ;; WU_BenDpsfAnkMeta|BeneficiaryId — select key; WU not needed.
-    ;; WU_BenDpsfAnkMeta|DpsfId — select key; WU not needed.
-    ;;
-    ;; WI_BenDpnfAnkMeta — not used: first row touch is WW_BenDpnfAnkMeta (upsert path).
-    (defun WW_BenDpnfAnkMeta:string
-        (beneficiary-id:string dpnf-id:string row:object{AcquisitionSchemasV3.AQP|BenDpnfAnkMeta})
-        @doc "Upsert full AQP|T|BenDpnfAnkMeta row for (beneficiary, dpnf-id)."
-        (require-capability (SECURE))
-        (write AQP|T|BenDpnfAnkMeta (UCk_BenDpnfAnkMeta beneficiary-id dpnf-id) row)
-    )
-    (defun WU_BenDpnfAnkMeta|LastAnkSyncCount:string
-        (beneficiary-id:string dpnf-id:string row:object{AcquisitionSchemasV3.AQP|BenDpnfAnkMeta} sync-count:integer)
-        @doc "Update last-ank-sync-count; preserve active-nonce-count from <row>."
-        (require-capability (SECURE))
-        (write AQP|T|BenDpnfAnkMeta (UCk_BenDpnfAnkMeta beneficiary-id dpnf-id)
-            (UDC_AQP|BenDpnfAnkMeta sync-count (at "active-nonce-count" row) beneficiary-id dpnf-id)
-        )
-    )
-    ;;{5.6}  Aux/X
-    ;; [XI]
-    ;;Protection: Class 1 — Innate protection offered by WI_Pool
-    (defun XI_IssuePool:string
-        (pool-id:string aqp-class:integer asset-id:string)
-        @doc "Insert AQP|T|Pool under SECURE (from AQP|C>ISSUE-POOL). Write only; C_Issue builds IGNIS."
-        ;; SECURE: granted by WI_Pool (underlying W_).
-        (WI_Pool pool-id (UDC_AQP|Schema aqp-class asset-id pool-id))
-        pool-id
-    )
-    ;;Protection: Class 1 — Innate protection offered by WU_Pool|ScoreSlot
-    (defun XI_AddScoreToPool:string
-        (pool-id:string score-id:string slot-index:integer)
-        @doc "Write score-id into the first free slot (0=primary .. 6=septenary). Under SECURE from AQP|C>ADD-SCORE."
-        ;; SECURE: granted by WU_Pool|ScoreSlot (underlying W_).
-        (WU_Pool|ScoreSlot pool-id slot-index score-id)
-        score-id
-    )
-    ;;Protection: Class 1 — Innate protection offered by WU7_Pool|ScoreSlots
-    (defun XI_RevokeScoreFromPool:string
-        (pool-id:string slot-index:integer)
-        @doc "Remove score at slot-index and compact higher slots down (0=primary .. 6=septenary). Under SECURE from AQP|C>REVOKE-SCORE."
-        ;; SECURE: granted by WU7_Pool|ScoreSlots (underlying W_).
         (let
             (
-                (ref-U|LST:module{StringProcessorV2} U|LST)
-                ;;
-                (lst:[string]
+                (n:integer (URC_FvtUserStaleMemberCountIn fvt-id user-id members))
+            )
+            (XI_FixUserFvtDebIn user-id fvt-id members reward-rows)
+            (WU_FvtForcedFixCount|Add fvt-id reward-dptf-id user-id n)
+            (UC_EmptyOc)
+        )
+    )
+
+    ;;Protection: Class 2 — SECURE
+    (defun XI_DistributeInjectAmount:object{IgnisCollectorV4.OutputCumulator}
+        (fvt-id:string reward-dptf-id:string amount:decimal)
+        @doc "Escrow-aware distribution of `amount` (already in AQP|SC_NAME custody) to the CURRENT stakers of one \
+            \ reward lane — the shared PHASE 2+3 core used by BOTH an instant inject (XI_FvtInjectCore) and a stream \
+            \ drip (XI_ReleaseStream), so a streamed release is IDENTICAL to an instant inject of the same amount. \
+            \ FLUSH (divisor > 0): R_eff = amount + zombie; FARM split-at-inject over fresh S, VAULT/TREASURY \
+            \ G += R_eff / deb-sum; available-rewards += R_eff; zombie → 0. ESCROW (divisor 0, no stakers): hold \
+            \ `amount` as zombie-rewards, touch nothing else (kept out of the M1 last-claimant sweep). require SECURE."
+        (require-capability (SECURE))
+        (let
+            (
+                (zombie:decimal (UR_FVT-RG|ZombieRewards fvt-id reward-dptf-id))
+                (denominator:decimal
+                    (if (= (UR_FVT|FvtClass fvt-id) 0)
+                        (URC_FarmInjectDenominatorFresh fvt-id)
+                        (URC_InjectDenominator fvt-id)
+                    )
+                )
+            )
+            (if (> denominator 0.0)
+                ;; FLUSH — distribute amount + any escrowed zombie to the CURRENT stakers.
+                (let
+                    (
+                        (eff:decimal (+ amount zombie))
+                    )
+                    (let
+                        (
+                            ;; farm split RETURNS the DSA uptime shortfall (0 for a normal farm); vault/treasury has none.
+                            (royalty:decimal
+                                (if (= (UR_FVT|FvtClass fvt-id) 0)
+                                    (XI_1|FarmSplitInject fvt-id reward-dptf-id eff denominator)
+                                    (do
+                                        (WU_RpsGlobal|CurrentRps fvt-id reward-dptf-id
+                                            (+ (UR_FVT-RG|CurrentRps fvt-id reward-dptf-id)
+                                               (UC_ComputeInjectGainedRps eff denominator)))
+                                        0.0)
+                                )
+                            )
+                        )
+                        ;; available-rewards enters G only NOW (the flush) — bump by R_eff MINUS the DSA uptime
+                        ;; shortfall (royalty is 0 for a normal farm / vault ⇒ the full R_eff, exactly as before).
+                        (WU_RpsGlobal|AvailableRewards fvt-id reward-dptf-id
+                            (+ (UR_FVT-RG|AvailableRewards fvt-id reward-dptf-id) (- eff royalty)))
+                        ;; DSA: the uptime shortfall accrues to the royalty pool (custodied, out of available / G /
+                        ;; the M1 last-claimant sweep). Skip the write when there is none (non-delegation / full uptime).
+                        (if (> royalty 0.0)
+                            (WU_RpsGlobal|RoyaltyRewards fvt-id reward-dptf-id
+                                (+ (UR_FVT-RG|RoyaltyRewards fvt-id reward-dptf-id) royalty))
+                            "no royalty")
+                        ;; zombie fully consumed by this flush (skip the write when there was none).
+                        (if (> zombie 0.0)
+                            (WU_RpsGlobal|ZombieRewards fvt-id reward-dptf-id 0.0)
+                            "no escrow to clear")
+                    )
+                )
+                ;; ESCROW — no stakers (divisor 0): park `amount` in limbo, available-rewards untouched.
+                (WU_RpsGlobal|ZombieRewards fvt-id reward-dptf-id (+ zombie amount))
+            )
+            (UC_EmptyOc)
+        )
+    )
+
+    ;;Protection: Class 2 — SECURE
+    (defun XI_ReleaseStream:object{IgnisCollectorV4.OutputCumulator}
+        (fvt-id:string reward-dptf-id:string)
+        @doc "The DRIP / checkpoint for one reward lane. Releases the vested-since-last-drip slice of every active \
+            \ stream and distributes it via XI_DistributeInjectAmount (so a stream === an instant inject of that \
+            \ slice; a zero-weight interval escrows to zombie). Per stream: rel = min(rate * elapsed, amount - \
+            \ released), or the exact remainder once finished (flush → zero dust). Survivors are compacted to \
+            \ positions 1..k; finished streams are pruned (freeing slots). Fast no-op when stream-count = 0. \
+            \ require SECURE (writes G / available-rewards / the stream ledger)."
+        (require-capability (SECURE))
+        (let
+            (
+                (count:integer (UR_FVT-RG|StreamCount fvt-id reward-dptf-id))
+            )
+            (if (= count 0)
+                (UC_EmptyOc)                                        ;; fast path — no stream on this lane
+                (let*
+                    (
+                        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                        (now:time (at "block-time" (chain-data)))
+                        (last:time (UR_FVT-RG|StreamLastRelease fvt-id reward-dptf-id))
+                        ;; released amounts must be conformant to the reward token's precision — rate*elapsed is a
+                        ;; high-precision product, so FLOOR each slice to the token's decimals (the finish-flush later
+                        ;; releases amount-released, recovering the accumulated crumbs → exact per-stream conservation).
+                        (reward-dec:integer (ref-DPTF::UR_Decimals reward-dptf-id))
+                        ;; walk positions 1..count → { total released this drip, survivor rows (released advanced) }
+                        (walk:object
+                            (fold
+                                (lambda (acc:object idx:integer)
+                                    (let*
+                                        (
+                                            (s:object{AcquisitionSchemasV5.FVT|RPS|Stream} (UR_FVT-RS|Stream fvt-id reward-dptf-id idx))
+                                            (remaining:decimal (- (at "amount" s) (at "released" s)))
+                                            (finished:bool (>= now (at "finish" s)))
+                                            (rel:decimal
+                                                (if finished
+                                                    remaining                             ;; exact-remainder flush
+                                                    (let
+                                                        (
+                                                            (by-rate:decimal (floor (* (at "rate" s) (diff-time now last)) reward-dec))
+                                                        )
+                                                        (if (> by-rate remaining) remaining by-rate)
+                                                    )))
+                                        )
+                                        { "total" : (+ (at "total" acc) rel)
+                                        , "keep"  :
+                                            (if finished
+                                                (at "keep" acc)                           ;; pruned — freed slot
+                                                (+ (at "keep" acc)
+                                                   [ (UDC_FVT|RPS|Stream (at "rate" s) (at "finish" s) (at "amount" s)
+                                                        (+ (at "released" s) rel) fvt-id reward-dptf-id idx) ]))
+                                        }
+                                    )
+                                )
+                                { "total" : 0.0, "keep" : [] }
+                                (enumerate 1 count)
+                            )
+                        )
+                        (total:decimal (at "total" walk))
+                        (survivors:[object{AcquisitionSchemasV5.FVT|RPS|Stream}] (at "keep" walk))
+                        (k:integer (length survivors))
+                    )
+                    ;; 1. distribute the released slice (also flushes escrowed zombie; zero-weight interval → zombie)
+                    (if (> total 0.0) (XI_DistributeInjectAmount fvt-id reward-dptf-id total) (UC_EmptyOc))
+                    ;; 1b. RESTORE unclaimed-count · S1 T2, 2026-11-09
+                    ;;
+                    ;;T2 IS THE TRANSITION THAT IS EASIEST TO MISS, and missing it is the dangerous
+                    ;;direction. A streamed lane's claimables go positive as the CLOCK moves -- there
+                    ;;is no injection at all. Restoring only at inject (T1) would leave such a lane
+                    ;;reading LOW, so `= 1` fires while other legs are owed and the sweeper takes
+                    ;;their rewards. Any implementation of S1 that handles only T1 is wrong.
+                    ;;
+                    ;;GUARDED ON `total > 0.0` FOR THE SAME REASON THE DISTRIBUTE IS: a drip that
+                    ;;released nothing made no claimable positive, so there is nothing to restore and
+                    ;;rewriting the count would only overwrite a figure the collects have been
+                    ;;correctly decrementing. `XI_ReleaseStream` is called at the TOP of inject and
+                    ;;of collect, so this runs often and must be inert when it has no work.
+                    (if (> total 0.0) (XI_2|RestoreUnclaimedFromCounts fvt-id reward-dptf-id) (UC_EmptyOc))
+                    ;; 2. rewrite survivors compacted to positions 1..k (position field re-stamped)
+                    (if (> k 0)
+                        (map
+                            (lambda (i:integer)
+                                (let
+                                    (
+                                        (r:object{AcquisitionSchemasV5.FVT|RPS|Stream} (at i survivors))
+                                    )
+                                    (WW_RpsStream fvt-id reward-dptf-id (+ i 1)
+                                        (UDC_FVT|RPS|Stream (at "rate" r) (at "finish" r) (at "amount" r)
+                                            (at "released" r) fvt-id reward-dptf-id (+ i 1)))
+                                ))
+                            (enumerate 0 (- k 1)))
+                        "no survivors")
+                    ;; 3. update the lane cursor
+                    (WU_RpsGlobal|StreamCount fvt-id reward-dptf-id k)
+                    (WU_RpsGlobal|StreamUnreleased fvt-id reward-dptf-id
+                        (- (UR_FVT-RG|StreamUnreleased fvt-id reward-dptf-id) total))
+                    (WU_RpsGlobal|StreamLastRelease fvt-id reward-dptf-id now)
+                    (UC_EmptyOc)
+                )
+            )
+        )
+    )
+
+    ;;Protection: Class 2 — SECURE
+    (defun XI_FvtInjectCore:object{IgnisCollectorV4.OutputCumulator}
+        (op-key:string patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal)
+        @doc "THE single inject-CORE for ALL FVT classes — the ONLY place inject writes exist. C_Inject, CC_Inject \
+            \ and the MTX|n|C_Inject defpact terminal step all route through here (one code path to audit/fix). \
+            \ (1) custody transfer R injector→AQP|SC_NAME; (2) escrow-aware distribute over the divisor — FARM \
+            \ (class 0): S = fresh split-at-inject value-sum, distribute (amount + zombie) across members via \
+            \ XI_1|FarmSplitInject; VAULT/TREASURY: divisor = maintained total-deb-score mirror, G += (amount + \
+            \ zombie) / divisor. FLUSH (divisor > 0): available-rewards += (amount + zombie), zombie→0. ESCROW \
+            \ (divisor = 0, no stakers): hold `amount` as zombie-rewards, available-rewards untouched; \
+            \ (3) GAS|INJECT cumulator. Freshness is a CALLER concern: C_Inject is the naive path (distributes over \
+            \ the CURRENT divisor); CC_Inject / the defpact FIX every stale member first so the divisor is live. \
+            \ require SECURE. UrStoa ≡ XI_URV|UpdateVaultRPS/Supply."
+        (require-capability (SECURE))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
+                (owner-konto:string (UR_FVT|OwnerKonto fvt-id))
+                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                [
+                    ;;===>PHASE 0=== drip pending streams first (checkpoint) so an instant amount distributes on top of
+                    ;; a freshly-released lane — a live stream + an instant inject in the same tx compose correctly.
+                    (XI_ReleaseStream fvt-id reward-dptf-id)
+                    ;;===>PHASE 1=== custody transfer · UrStoa ≡ C_Transfer / C_Transmit
+                    (ref-TFT::C_Transfer patron injector AQP|SC_NAME reward-dptf-id amount true)
+                    ;;===>PHASE 2+3=== escrow-aware distribute + available-rewards (shared with the stream drip).
+                    ;; Reward tokens are ALREADY in custody. XI_DistributeInjectAmount handles both the FLUSH
+                    ;; (divisor > 0 → farm split-at-inject / vault G bump, available-rewards += R_eff, zombie→0) and
+                    ;; the ESCROW-on-empty case (divisor 0 → hold `amount` as zombie, kept out of the M1 sweep).
+                    (XI_DistributeInjectAmount fvt-id reward-dptf-id amount)
+                    ;;===>PHASE 4.1=== RESTORE unclaimed-count · S1, 2026-11-09
+                    ;;
+                    ;;THIS SLOT WAS A COMMENT FOR AS LONG AS IT EXISTED -- "Do not reset
+                    ;;unclaimed-count · UrStoa comment-only slot" -- inherited from the canonical
+                    ;;`coin` vault, where the reset WAS removed, and removed CORRECTLY: it reset to
+                    ;;`nzs`, and `nzs` cannot see an account that unstaked while still owed, so the
+                    ;;count read LOW, `= 1` fired while someone else was owed, and the sweeper took
+                    ;;their rewards. coin's live source states that reasoning twice.
+                    ;;
+                    ;;WHAT WAS LOST IN INHERITING THE CONCLUSION WITHOUT THE REASON: with NO restore
+                    ;;at all, `unclaimed-count` only ever falls at an unstake, so on a live
+                    ;;aggregator it never reaches 1 and the dust sweep is unreachable. Measured on
+                    ;;mainnet 2026-11-08: the count exceeded the positive-claimable leg count on ALL
+                    ;;ELEVEN live lanes, and three lanes held a balance with ZERO collectable legs.
+                    ;;
+                    ;;THE RESTORE IS SAFE BECAUSE IT DOES NOT USE A STAKE-SIDE COUNT. It is
+                    ;;`earning-leg-count + dormant-claim-count`, and the dormant half is exactly the
+                    ;;set `nzs` was blind to. Two point reads and one write -- O(1), so inject stays
+                    ;;agnostic to the number of legs.
+                    ;;
+                    ;;AFTER PHASE 2+3, NOT BEFORE: the distribute is what makes the claimables
+                    ;;positive, so the count being restored has to describe the state that phase
+                    ;;left behind.
+                    (XI_2|RestoreUnclaimedFromCounts fvt-id reward-dptf-id)
+                    (URCi_Inject op-key fvt-id [fvt-id reward-dptf-id (format "{}" [amount])])
+                ]
+                []
+            )
+        )
+    )
+
+    ;;Enforce: derived-in-flight -- the slot count is checked AFTER PHASE 0's drip has pruned finished
+    ;;          streams. The value does not exist before this function runs, so no caller-side capability
+    ;;          can see it; a finished stream frees its slot only once the drip prunes it.
+    ;;Protection: Class 2 — SECURE
+    (defun XIv_FvtAddStream:object{IgnisCollectorV4.OutputCumulator}
+        (op-key:string patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
+        @doc "Streamed inject CORE (linear vesting). (0) DRIP pending streams (checkpoint + prune finished → free \
+            \ slots); (0b) enforce a free stream slot on the POST-DRIP count under the FVT owner konto's Elite-tier \
+            \ cap; (1) custody-transfer `amount` injector→AQP|SC_NAME (held, invisible to available-rewards until \
+            \ dripped); (2) append a stream at the next compacted position (rate = amount/duration, finish = \
+            \ now+duration, released 0) and bump the lane cursor (stream-count, stream-unreleased += amount, \
+            \ stream-last-release = now). NO distribution here — later drips release it linearly. require SECURE."
+        (require-capability (SECURE))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
+                (owner-konto:string (UR_FVT|OwnerKonto fvt-id))
+                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+            )
+            ;; PHASE 0 — drip (checkpoint + prune finished streams) so the shared last-release is `now` before we add
+            (let
+                (
+                    (drip-oc:object{IgnisCollectorV4.OutputCumulator} (XI_ReleaseStream fvt-id reward-dptf-id))
+                )
+                ;; PHASE 0b — slot-cap on the POST-DRIP count (Elite tier of the FVT owner konto, D5)
+                ;;UNTESTABLE-EXTERNALLY: XIv_FvtAddStream sits behind (require-capability (SECURE)),
+                ;;and SECURE cannot be acquired from outside this module -- so no REPL negative test
+                ;;can reach this line. The guard is LIVE on the in-module path; it is NOT dead code.
+                (enforce (< (UR_FVT-RG|StreamCount fvt-id reward-dptf-id) (URC_MaxStreamLanes owner-konto))
+                    "FVT|Stream: stream slots full for this owner's Elite tier — use a direct (instant) inject")
+                (ref-IGNIS::UDC_ConcatenateOutputCumulators
                     [
-                        (UR_AQP|PoolScorePrimary pool-id)
-                        (UR_AQP|PoolScoreSecondary pool-id)
-                        (UR_AQP|PoolScoreTertiary pool-id)
-                        (UR_AQP|PoolScoreQuaternary pool-id)
-                        (UR_AQP|PoolScoreQuinary pool-id)
-                        (UR_AQP|PoolScoreSenary pool-id)
-                        (UR_AQP|PoolScoreSeptenary pool-id)
+                        drip-oc
+                        ;; PHASE 1 — custody transfer `amount` into AQP|SC_NAME (held until dripped)
+                        (ref-TFT::C_Transfer patron injector AQP|SC_NAME reward-dptf-id amount true)
+                        ;; PHASE 2 — append the stream at the next compacted position + bump the lane cursor
+                        (let*
+                            (
+                                (count:integer (UR_FVT-RG|StreamCount fvt-id reward-dptf-id))
+                                (now:time (at "block-time" (chain-data)))
+                                (new-pos:integer (+ count 1))
+                            )
+                            (WW_RpsStream fvt-id reward-dptf-id new-pos
+                                (UDC_FVT|RPS|Stream (/ amount (dec duration)) (add-time now duration) amount 0.0
+                                    fvt-id reward-dptf-id new-pos))
+                            (WU_RpsGlobal|StreamCount fvt-id reward-dptf-id new-pos)
+                            (WU_RpsGlobal|StreamUnreleased fvt-id reward-dptf-id
+                                (+ (UR_FVT-RG|StreamUnreleased fvt-id reward-dptf-id) amount))
+                            (WU_RpsGlobal|StreamLastRelease fvt-id reward-dptf-id now)
+                            (UC_EmptyOc)
+                        )
+                        ;; PHASE 3 — GAS (same lane event as an instant inject)
+                        (URCi_Inject op-key fvt-id [fvt-id reward-dptf-id (format "{}" [amount])])
                     ]
+                    []
                 )
-                (lst-v1:[string] (ref-U|LST::UC_RemoveItemAt lst slot-index))
-                (lst-v2:[string] (ref-U|LST::UC_AppL lst-v1 BAR))
-            )
-            (WU7_Pool|ScoreSlots pool-id
-                (at 0 lst-v2)
-                (at 1 lst-v2)
-                (at 2 lst-v2)
-                (at 3 lst-v2)
-                (at 4 lst-v2)
-                (at 5 lst-v2)
-                (at 6 lst-v2)
             )
         )
     )
-    ;;Protection: Class 1 — Innate protection offered by WW_DPSFTracker, WU_Pool|Occupancy,
-    ;;Protection:          WW_DPNFTracker
-    (defun XI_1|WriteCollectableTrackerSlot:object{IgnisCollectorV4.OutputCumulator}
-        (
-            pool-id:string
-            owner-id:string
-            beneficiary-id:string
-            collectable-id:string
-            son:bool
-            nonce:integer
-            amount:integer
-            direction:bool
-        )
-        @doc "One DPSF/DPNF tracker row — read balance, write ±amount (cap validates unstake sufficiency)."
-        ;; SECURE: granted by WW_DPSFTracker / WW_DPNFTracker (underlying W_).
+
+    ;;Protection: Class 2 — SECURE
+    (defun XI_FvtSweepRecomputeChunk:object{IgnisCollectorV4.OutputCumulator}
+        (fvt-id:string score-entity-id:string swept-boost-class-id:string users:[string])
+        @doc "Intra-module chunk: recompute a chunk of holders on one (fvt, member) after the swept anchor's global \
+            \ removal — per user runs XI_SweepRecomputeUserMember (settle → aggregate/lane refold → deb + mirror). \
+            \ NO fund movement, NO 2e penalty (owner sweep, D4). require SECURE. Shared by the intra-module client \
+            \ CC_SweepRevokeAnchor and the cross-module wrapper XE_FvtSweepRecomputeChunk."
+        (require-capability (SECURE))
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
-                ;;
-                (delta:decimal (if direction (dec amount) (- (dec amount))))
+                (reward-rows:[string] (URH_FVT-RG|EnabledRewardRows fvt-id))
             )
-            (if son
-                (let
-                    (
-                        (bal:decimal (UR_AQP|DPSFTrackerBalance pool-id collectable-id owner-id beneficiary-id nonce))
-                        (new-bal:decimal (+ bal delta))
-                    )
-                    (WW_DPSFTracker pool-id collectable-id owner-id beneficiary-id nonce
-                        (UDC_AQP|SemiFungibleTracker new-bal pool-id collectable-id owner-id beneficiary-id nonce)
-                    )
-                    ;; #FP1: pool nns occupancy — +1 when this position goes empty->occupied, -1 on last-amount removal
-                    (if (and (= bal 0.0) (> new-bal 0.0)) (WU_Pool|Occupancy pool-id beneficiary-id 1)
-                        (if (and (> bal 0.0) (= new-bal 0.0)) (WU_Pool|Occupancy pool-id beneficiary-id -1) "no nns transition"))
-                )
-                (let
-                    (
-                        (bal:decimal (UR_AQP|DPNFTrackerBalance pool-id collectable-id owner-id beneficiary-id nonce))
-                        (new-bal:decimal (+ bal delta))
-                    )
-                    (WW_DPNFTracker pool-id collectable-id owner-id beneficiary-id nonce
-                        (UDC_AQP|NonFungibleTracker new-bal pool-id collectable-id owner-id beneficiary-id nonce)
-                    )
-                    ;; #FP1: pool nns occupancy — +1 when this position goes empty->occupied, -1 on last-amount removal
-                    (if (and (= bal 0.0) (> new-bal 0.0)) (WU_Pool|Occupancy pool-id beneficiary-id 1)
-                        (if (and (> bal 0.0) (= new-bal 0.0)) (WU_Pool|Occupancy pool-id beneficiary-id -1) "no nns transition"))
-                )
-            )
-            (ref-IGNIS::UDC_LegCumulator "tracker-write-collectable" AQP|SC_NAME)
+            ;; DRIP each reward lane once (checkpoint) before the recompute loop → holders settle at now's index
+            (map (lambda (d:string) (XI_ReleaseStream fvt-id d)) reward-rows)
+            (map
+                (lambda (u:string)
+                    (XI_SweepRecomputeUserMemberIn u fvt-id (UR_FVT-SEL|ScoreEntityType fvt-id score-entity-id) score-entity-id swept-boost-class-id reward-rows))
+                users)
         )
+        (UC_EmptyOc)
     )
-    ;;Protection: Class 1 — Innate protection offered by XI_2|BumpBenDpsfNonceTotal,
-    ;;Protection:          XI_2|BumpBenDpnfNonceTotal
-    (defun XI_1|BumpBenCollectableNonceTotalSlot:object{IgnisCollectorV4.OutputCumulator}
-        (beneficiary-id:string collectable-id:string son:bool nonce:integer amount:integer direction:bool)
-        @doc "One BenDpsfNonceTotal or BenDpnfNonceTotal row — son dispatch to XI_2 leaf."
-        ;; SECURE: granted by XI_2|BumpBenDpsfNonceTotal / XI_2|BumpBenDpnfNonceTotal (underlying W_).
-        (if son
-            (XI_2|BumpBenDpsfNonceTotal beneficiary-id collectable-id nonce amount direction)
-            (XI_2|BumpBenDpnfNonceTotal beneficiary-id collectable-id nonce amount direction)
-        )
-    )
-    ;;Protection: Class 1 — Innate protection offered by WW_BenDpsfNonceTotal,
-    ;;Protection:          WW_BenDpsfAnkMeta
-    (defun XI_2|BumpBenDpsfNonceTotal:object{IgnisCollectorV4.OutputCumulator}
-        (beneficiary-id:string dpsf-id:string nonce:integer amount:integer direction:bool)
-        @doc "AQP|T|BenDpsfNonceTotal: bump amount ±supply for (beneficiary, dpsf-id, nonce) across pools. \
-            \ Also bumps BenDpsfAnkMeta.active-nonce-count when amount crosses 0↔positive."
-        ;; SECURE: granted by WW_BenDpsfNonceTotal / WW_BenDpsfAnkMeta (underlying W_).
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
-                ;;
-                (amt:integer (UR_AQP|BenDpsfNonceAmount beneficiary-id dpsf-id nonce))
-                (delta:integer (if direction amount (- amount)))
-                (new-amt:integer (+ amt delta))
-                (meta:object{AcquisitionSchemasV3.AQP|BenDpsfAnkMeta} (UR_AQP|BenDpsfAnkMeta beneficiary-id dpsf-id))
-                (sc:integer (at "last-ank-sync-count" meta))
-                (anc:integer (at "active-nonce-count" meta))
-                (new-anc:integer
-                    (if (and (= amt 0) (> new-amt 0))
-                        (+ anc 1)
-                        (if (and (> amt 0) (= new-amt 0))
-                            (- anc 1)
-                            anc
+
+    ;;Protection: Class 2 — SECURE
+    (defun XI_FvtSweepRecomputeWindow:integer
+        (score-ids:[string] boost-class-id:string win-lo:integer win-hi:integer)
+        @doc "Recompute holders whose GLOBAL flattened index — present users concatenated across score-ids in \
+            \ order — falls in [win-lo, win-hi). Per score, slice its present users to the window overlap and run \
+            \ one XI_FvtSweepRecomputeChunk. sweep-in-progress makes URH_FvtPresentUsers order deterministic across \
+            \ the CC-batch's txs, so (drop offset) pages without re-processing. Returns holders recomputed. The \
+            \ intra-module (require SECURE) twin of MTX-AQP::XI_SweepRecomputeWindow (which forwards the SAME \
+            \ per-member work via XE_FvtSweepRecomputeChunk) — both funnel through XI_FvtSweepRecomputeChunk, so \
+            \ the defun+gate and defpact paths recompute identically. require SECURE."
+        (require-capability (SECURE))
+        (at "processed"
+            (fold
+                (lambda (acc:object sid:string)
+                    (let
+                        (
+                            (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
+                            (seen-before:integer (at "seen" acc))
+                            (fvt:string (ref-SCR::UR_SCR|ScoreFvtLink sid))
+                            (member:string
+                                (if (ref-SCR::UR_SCR|ScoreTriplet sid) (ref-SCR::UR_SCR|ScoreTripletId sid) sid))
                         )
-                    )
-                )
-            )
-            (WW_BenDpsfNonceTotal beneficiary-id dpsf-id nonce
-                (UDC_AQP|BenDpsfNonceTotal new-amt beneficiary-id dpsf-id nonce)
-            )
-            (if (!= new-anc anc)
-                (WW_BenDpsfAnkMeta beneficiary-id dpsf-id
-                    (UDC_AQP|BenDpsfAnkMeta sc new-anc beneficiary-id dpsf-id)
-                )
-                true
-            )
-            (ref-IGNIS::UDC_LegCumulator "ben-nonce-total-sf" AQP|SC_NAME)
-        )
-    )
-    ;;Protection: Class 1 — Innate protection offered by WW_BenDpnfNonceTotal,
-    ;;Protection:          WW_BenDpnfAnkMeta
-    (defun XI_2|BumpBenDpnfNonceTotal:object{IgnisCollectorV4.OutputCumulator}
-        (beneficiary-id:string dpnf-id:string nonce:integer amount:integer direction:bool)
-        @doc "AQP|T|BenDpnfNonceTotal: bump amount ±supply for (beneficiary, dpnf-id, nonce) across pools. \
-            \ Also bumps BenDpnfAnkMeta.active-nonce-count when amount crosses 0↔positive."
-        ;; SECURE: granted by WW_BenDpnfNonceTotal / WW_BenDpnfAnkMeta (underlying W_).
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
-                ;;
-                (amt:integer (UR_AQP|BenDpnfNonceAmount beneficiary-id dpnf-id nonce))
-                (delta:integer (if direction amount (- amount)))
-                (new-amt:integer (+ amt delta))
-                (meta:object{AcquisitionSchemasV3.AQP|BenDpnfAnkMeta} (UR_AQP|BenDpnfAnkMeta beneficiary-id dpnf-id))
-                (sc:integer (at "last-ank-sync-count" meta))
-                (anc:integer (at "active-nonce-count" meta))
-                (new-anc:integer
-                    (if (and (= amt 0) (> new-amt 0))
-                        (+ anc 1)
-                        (if (and (> amt 0) (= new-amt 0))
-                            (- anc 1)
-                            anc
+                        (let
+                            (
+                                (users:[string] (URH_FvtPresentUsers fvt))
+                            )
+                            (let
+                                (
+                                    (seen-after:integer (+ seen-before (length users)))
+                                    (lo:integer (if (> win-lo seen-before) win-lo seen-before))
+                                )
+                                (let
+                                    (
+                                        (hi:integer (if (< win-hi seen-after) win-hi seen-after))
+                                    )
+                                    (if (> hi lo)
+                                        (let
+                                            (
+                                                (slice:[string] (take (- hi lo) (drop (- lo seen-before) users)))
+                                            )
+                                            (XI_FvtSweepRecomputeChunk fvt member boost-class-id slice)
+                                            {
+                                            "seen"
+                                            :
+                                            seen-after,
+                                            "processed"
+                                            :
+                                            (+ (at "processed" acc) (length slice))
+                                            }
+                                        )
+                                        {"seen": seen-after, "processed": (at "processed" acc)})
+                                )
+                            )
                         )
-                    )
-                )
-            )
-            (WW_BenDpnfNonceTotal beneficiary-id dpnf-id nonce
-                (UDC_AQP|BenDpnfNonceTotal new-amt beneficiary-id dpnf-id nonce)
-            )
-            (if (!= new-anc anc)
-                (WW_BenDpnfAnkMeta beneficiary-id dpnf-id
-                    (UDC_AQP|BenDpnfAnkMeta sc new-anc beneficiary-id dpnf-id)
-                )
-                true
-            )
-            (ref-IGNIS::UDC_LegCumulator "ben-nonce-total-nf" AQP|SC_NAME)
-        )
+                    ))
+                {"seen": 0, "processed": 0}
+                score-ids))
     )
-    ;;Protection: Class 1 — Innate protection offered by WW_DPTFTracker, WU_Pool|Occupancy
-    (defun XI_1|WriteDptfTrackerSlot:object{IgnisCollectorV4.OutputCumulator}
-        (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
-        @doc "One AQP|T|DPTFTracker row — read balance, write ±amount (cap validates unstake sufficiency)."
-        ;; SECURE: granted by WW_DPTFTracker (underlying W_).
+
+    ;;Protection: Class 1 — Innate protection offered by WU_Fvt|EarningLegCount
+
+    ;;Protection: Class 1 — Innate protection offered by WU_Fvt|EarningLegCount
+    (defun XI_2|BumpFvtEarningLegs (fvt-id:string direction:bool)
+        @doc "Internal (depth 2]): +/-1 on `FVT|RewardAggregate.earning-leg-count`, floored at 0."
+        ;; SECURE: granted by WU_Fvt|EarningLegCount (underlying W_).
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
-                ;;
-                (bal:decimal (UR_AQP|DPTFTrackerBalance pool-id dptf-id owner-id beneficiary-id))
-                (delta:decimal (if direction amount (- amount)))
-                (new-bal:decimal (+ bal delta))
+                (old-c:integer (UR_FVT|EarningLegCount fvt-id))
             )
-            (WW_DPTFTracker pool-id dptf-id owner-id beneficiary-id
-                (UDC_AQP|TrueFungibleTracker new-bal pool-id dptf-id owner-id beneficiary-id)
-            )
-            ;; #FP1 universal nns: TF leg occupancy — +1 empty->occupied, -1 occupied->empty (last amount out).
-            ;; No-op on LP pools (class 0, nns=-1) via the WU_Pool|Nns guard. Covers TF stake AND unstake.
-            (if (and (= bal 0.0) (> new-bal 0.0)) (WU_Pool|Occupancy pool-id beneficiary-id 1)
-                (if (and (> bal 0.0) (= new-bal 0.0)) (WU_Pool|Occupancy pool-id beneficiary-id -1) "no nns transition"))
-            (ref-IGNIS::UDC_LegCumulator "tracker-write-tf" AQP|SC_NAME)
+            (WU_Fvt|EarningLegCount fvt-id
+                (if direction (+ old-c 1) (if (> old-c 0) (- old-c 1) 0)))
         )
     )
-    ;;Protection: Class 1 — Innate protection offered by WW_DPTFTracker, WU_Pool|Occupancy
-    (defun XI_1|ZeroDptfTrackerSlot:object{IgnisCollectorV4.OutputCumulator}
-        (pool-id:string owner-id:string beneficiary-id:string dptf-id:string)
-        @doc "Vacate: write AQP|T|DPTFTracker balance=0. #FP1: reads the pre-balance so the pool nns occupancy \
-            \ counter can record the occupied->empty transition (the old 'no read' shortcut yields to correct nns)."
-        ;; SECURE: granted by WW_DPTFTracker (underlying W_).
+
+    ;;Protection: Class 1 — Innate protection offered by WU_SEL|EarningUserCount
+    (defun XI_2|BumpSelEarningUsers (fvt-id:string score-entity-id:string direction:bool)
+        @doc "Internal (depth 2]): +/-1 on `FVT|ScoreEntityLink.earning-user-count`, floored at 0."
+        ;; SECURE: granted by WU_SEL|EarningUserCount (underlying W_).
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
-                (bal:decimal (UR_AQP|DPTFTrackerBalance pool-id dptf-id owner-id beneficiary-id))
+                (old-c:integer (UR_FVT-SEL|EarningUserCount fvt-id score-entity-id))
             )
-            (WW_DPTFTracker pool-id dptf-id owner-id beneficiary-id
-                (UDC_AQP|TrueFungibleTracker 0.0 pool-id dptf-id owner-id beneficiary-id)
-            )
-            ;; #FP1 universal nns: zeroing an OCCUPIED leg is an occupied->empty transition (-1). No-op on LP.
-            (if (> bal 0.0) (WU_Pool|Occupancy pool-id beneficiary-id -1) "no nns transition")
-            (ref-IGNIS::UDC_LegCumulator "tracker-zero-tf" AQP|SC_NAME)
+            (WU_SEL|EarningUserCount fvt-id score-entity-id
+                (if direction (+ old-c 1) (if (> old-c 0) (- old-c 1) 0)))
         )
     )
-    ;;Protection: Class 1 — Innate protection offered by WW_BenDptfTotal
-    (defun XI_1|BumpBenDptfTotalSlot:object{IgnisCollectorV4.OutputCumulator}
-        (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
-        @doc "One AQP|T|BenDptfTotal row — bump total-balance ±amount; preserve last-ank-sync-count."
-        ;; SECURE: granted by WW_BenDptfTotal (underlying W_).
+
+    ;;Protection: Class 1 — Innate protection offered by WU_RpsGlobal|DormantClaimCount
+    (defun XI_2|BumpRpsGlobalDormant (fvt-id:string reward-dptf-id:string direction:bool)
+        @doc "Internal (depth 2]): +/-1 on the lane's `dormant-claim-count`, floored at 0."
+        ;; SECURE: granted by WU_RpsGlobal|DormantClaimCount (underlying W_).
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
-                ;;
-                (tb:decimal (UR_AQP|BenDptfTotalBalance beneficiary-id dptf-id))
-                (sc:integer (UR_AQP|BenDptfLastAnkSyncCount beneficiary-id dptf-id))
-                (delta:decimal (if direction amount (- amount)))
-                (new-total:decimal (+ tb delta))
+                (old-c:integer (UR_FVT-RG|DormantClaimCount fvt-id reward-dptf-id))
             )
-            (WW_BenDptfTotal beneficiary-id dptf-id
-                (UDC_AQP|BenDptfTotal new-total sc beneficiary-id dptf-id)
-            )
-            (ref-IGNIS::UDC_LegCumulator "ben-total-tf" AQP|SC_NAME)
+            (WU_RpsGlobal|DormantClaimCount fvt-id reward-dptf-id
+                (if direction (+ old-c 1) (if (> old-c 0) (- old-c 1) 0)))
         )
     )
-    ;;Protection: Class 1 — Innate protection offered by WW_DPOFTracker, WU_Pool|Occupancy
-    (defun XI_1|WriteDpofTrackerSlot:object{IgnisCollectorV4.OutputCumulator}
-        (
-            pool-id:string
-            owner-id:string
-            beneficiary-id:string
-            dpof-id:string
-            nonce:integer
-            amount:decimal
-            direction:bool
-        )
-        @doc "One AQP|T|DPOFTracker row — read UR_AQP|DPOFTrackerBalance, write ±amount (cap validates unstake sufficiency)."
-        ;; SECURE: granted by WW_DPOFTracker (underlying W_).
+
+    ;;Protection: Class 1 — Innate protection offered by WU_MemberVault|DormantClaimCount
+    (defun XI_2|BumpMemberVaultDormant
+        (fvt-id:string score-entity-id:string reward-dptf-id:string direction:bool)
+        @doc "Internal (depth 2]): +/-1 on the member mini-vault's `dormant-claim-count`, floored at 0."
+        ;; SECURE: granted by WU_MemberVault|DormantClaimCount (underlying W_).
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
-                ;;
-                (bal:decimal (UR_AQP|DPOFTrackerBalance pool-id dpof-id owner-id beneficiary-id nonce))
-                (delta:decimal (if direction amount (- amount)))
-                (new-bal:decimal (+ bal delta))
+                (old-c:integer (UR_FVT-MV|DormantClaimCount fvt-id score-entity-id reward-dptf-id))
             )
-            (WW_DPOFTracker pool-id dpof-id owner-id beneficiary-id nonce
-                (UDC_AQP|OrtoFungibleTracker new-bal pool-id dpof-id owner-id beneficiary-id nonce)
-            )
-            ;; #FP1: pool nns occupancy — OF moves the whole nonce, so every move is a full 0<->occupied transition
-            (if (and (= bal 0.0) (> new-bal 0.0)) (WU_Pool|Occupancy pool-id beneficiary-id 1)
-                (if (and (> bal 0.0) (= new-bal 0.0)) (WU_Pool|Occupancy pool-id beneficiary-id -1) "no nns transition"))
-            (ref-IGNIS::UDC_LegCumulator "tracker-write-of" AQP|SC_NAME)
+            (WU_MemberVault|DormantClaimCount fvt-id score-entity-id reward-dptf-id
+                (if direction (+ old-c 1) (if (> old-c 0) (- old-c 1) 0)))
         )
     )
-    ;; [XE]
-    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
-    ;;Protection:          P|SECURE-CALLER
-    (defun XE_SetVacateJobState:string
-        (pool-id:string vacate-in-progress:bool)
-        @doc "Write vacate-in-progress on AQP|T|Pool. P|UEV_IMC gates AQP-VCT caller."
-        (P|UEV_IMC)
-        (with-capability (P|SECURE-CALLER)
-            ;; SECURE: granted by WU4_Pool|VacateJobState (underlying W_).
-            (WU4_Pool|VacateJobState pool-id vacate-in-progress)
-        )
-        pool-id
-    )
-    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
-    ;;Protection:          P|SECURE-CALLER
-    (defun XE_SetSweepInProgress:string
-        (pool-id:string flag:bool)
-        @doc "Forward (re-score sweep · MTX-AQP): freeze/unfreeze a pool for a sweep — blocks new stakes AND collect \
-            \ while true (D3). P|UEV_IMC gates the caller; P|SECURE-CALLER composes SECURE."
-        (P|UEV_IMC)
-        (with-capability (P|SECURE-CALLER)
-            ;; SECURE: granted by WU_Pool|SweepInProgress (underlying W_).
-            (WU_Pool|SweepInProgress pool-id flag)
-        )
-        pool-id
-    )
-    ;;
-    ;; --- Block B · Phase 1 custody (FVT::C_*StakeFlow) ---
-    ;;   Phase 1 — move assets user↔vault and record pool-local + cross-pool custody.
-    ;;   1.1 Transfer          UrStoa ≡ X_UR|Transfer
-    ;;   1.2 Pool tracker      UrStoa ≡ (implicit in vault accounting)
-    ;;   1.3 Beneficiary rollup UrStoa ≡ N/A (TF cross-pool O(1) for ANK)
-    ;;
-    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
-    ;;Protection:          AQP|XE>TRUE-FUNGIBLE-POOL-CUSTODY
-    (defun XE_TrueFungibleTransfer:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
-        @doc "Phase 1.1 — UrStoa ≡ X_UR|Transfer. TFT::C_Transfer owner↔AQP|SC_NAME. Composes custody cap (validation once per tx). \
+
+    ;;Protection: Class 1 — Innate protection offered by WU_RpsGlobal|UnclaimedCount
+    (defun XI_2|RestoreUnclaimedFromCounts:object{IgnisCollectorV4.OutputCumulator}
+        (fvt-id:string reward-dptf-id:string)
+        @doc "ACCRUAL (T1 inject · T2 stream release): reset this lane's `unclaimed-count` to the \
+            \ number of legs that now have a positive claimable -- `earning-leg-count + \
+            \ dormant-claim-count`. \
             \ \
-            \ PROVISIONAL PATRON SLOT CLEARED, 2026-09-22. The inner transfer carried \
-            \ <owner-id> in the patron slot -- registered in _patronslots as provisional -- \
-            \ because no caller had a patron to give. 05_FVT's turn gave the stake flows a \
-            \ real one, so the payer is now the payer. HANDOFF 4e promises every provisional \
-            \ slot is written down AND re-pointed when its turn lands; this is the re-pointing."
+            \ THIS IS THE PHASE THE PORT LEFT AS A COMMENT. The inject core carries a named slot, \
+            \ `PHASE 4.1 -- Do not reset unclaimed-count`, inherited from the canonical `coin` vault \
+            \ where the reset was REMOVED because it reset to `nzs` -- and `nzs` cannot see an \
+            \ account that unstaked while still owed, so the count read LOW and the sweeper took \
+            \ another account's rewards. That reasoning is correct and is why this does NOT reset to \
+            \ a stake-side count: the dormant legs are counted separately and ADDED back. \
+            \ \
+            \ O(1), WHICH IS THE WHOLE REASON THE SECOND COUNTER EXISTS. Inject must not scale with \
+            \ the number of legs -- two point reads and one write, no walk. \
+            \ \
+            \ T2 IS NOT OPTIONAL. A streamed lane's claimables go positive as the clock moves, with \
+            \ no injection at all; restoring only at inject would leave such a lane reading LOW and \
+            \ fire `= 1` while other legs are owed. \
+            \ \
+            \ THE APPROXIMATION, STATED: a staker whose share FLOORS to zero is counted here and \
+            \ will never collect, so the count can stall above 1 and the sweep not fire. That \
+            \ degrades to dust RETAINED, never dust misallocated -- the same state as before this \
+            \ change, and strictly safer than the alternative of reading low. \
+            \ \
+            \ AND IT REFUSES TO RESTORE A ZERO OVER A POSITIVE STORED COUNT, which is what makes \
+            \ this phase safe on a row the 2026-11-10 repair never reached. Both counters read 0 on \
+            \ a row that predates them -- correctly, because the guarded readers default rather \
+            \ than abort -- so an unguarded restore would write 0 over a lane whose legs are still \
+            \ owed, and the next collect would see a count below 1 and sweep the WHOLE lane to one \
+            \ account. That is the one irreversible direction. Skipping the write instead leaves \
+            \ the stored (over-)count in place: the sweep stalls, dust is retained, and the figure \
+            \ corrects itself the moment the migration runs or any leg stakes. \
+            \ \
+            \ THE CASE IT GIVES UP IS EMPTY: `restored = 0` means no leg earns and no leg is owed, \
+            \ so there is no claimant the count could mis-pay. Such a lane's residue is reached by \
+            \ the whole-aggregator evict, which zeroes each lane exactly. The deploy ORDER is \
+            \ therefore no longer load-bearing for correctness -- only for how long the dust sits."
+        ;; SECURE: granted by WU_RpsGlobal|UnclaimedCount (underlying W_).
+        ;;RETURNS AN EMPTY CUMULATOR, not the writer's string: this runs as a PHASE inside the
+        ;;inject and drip cumulator chains, which are typed `[object{OutputCumulator}]`. It bills
+        ;;nothing of its own -- three reads and a write, already covered by the op's own price.
+        (let
+            (
+                (restored:integer
+                    (+ (UR_FVT|EarningLegCount fvt-id)
+                       (UR_FVT-RG|DormantClaimCount fvt-id reward-dptf-id)))
+                (stored:integer (UR_FVT-RG|UnclaimedCount fvt-id reward-dptf-id))
+            )
+            ;;NEVER write a 0 over a positive stored count -- see the @doc. Both branches are
+            ;;`:string` because the writer is, and an `if` must unify.
+            (if (and (= restored 0) (> stored 0))
+                (format "unclaimed-count left at {} -- S1 counters not yet repaired on {}|{}"
+                    [stored fvt-id reward-dptf-id])
+                (WU_RpsGlobal|UnclaimedCount fvt-id reward-dptf-id restored))
+        )
+        (UC_EmptyOc)
+    )
+
+    ;;Protection: Class 1 — Innate protection offered by WU_MemberVault|UnclaimedCountSet
+    (defun XI_2|RestoreMemberUnclaimedFromCounts
+        (fvt-id:string score-entity-id:string reward-dptf-id:string)
+        @doc "ACCRUAL, tier 1: the member mini-vault twin of `XI_2|RestoreUnclaimedFromCounts` -- \
+            \ `unclaimed-count := earning-user-count + dormant-claim-count` for one member on one lane. \
+            \ \
+            \ CARRIES THE SAME ZERO REFUSAL, for the same reason and with the same bound: before \
+            \ the 2026-11-10 repair reaches a row, both counters read 0 on a pre-existing member row, \
+            \ and writing that 0 over a positive stored count would arm the tier-1 `mc == 1` sweep \
+            \ on a member whose users are still owed. OuroLpFarm is the one live farm and the one \
+            \ lane measured holding tier-1 dust, so this is the branch that would actually fire."
+        ;; SECURE: granted by WU_MemberVault|UnclaimedCount (underlying W_).
+        (let
+            (
+                (restored:integer
+                    (+ (UR_FVT-SEL|EarningUserCount fvt-id score-entity-id)
+                       (UR_FVT-MV|DormantClaimCount fvt-id score-entity-id reward-dptf-id)))
+                (stored:integer (UR_FVT-MV|UnclaimedCount fvt-id score-entity-id reward-dptf-id))
+            )
+            ;;NEVER write a 0 over a positive stored count -- see the @doc. Both branches are
+            ;;`:string` because the writer is, and an `if` must unify.
+            (if (and (= restored 0) (> stored 0))
+                (format "member unclaimed-count left at {} -- S1 counters not yet repaired on {}|{}|{}"
+                    [stored fvt-id score-entity-id reward-dptf-id])
+                (WU_MemberVault|UnclaimedCountSet fvt-id score-entity-id reward-dptf-id restored))
+        )
+    )
+
+    ;;Protection: Class 1 — Innate protection offered by WU_RpsGlobal|UnclaimedCount
+    (defun XI_2|BumpRpsGlobalUnclaimed
+        (fvt-id:string reward-dptf-id:string direction:bool)
+        @doc "Internal (phase 2.35 · depth 2]): increment/decrement FVT|T|RPS|Global.unclaimed-count (UrStoa XI_URV|UpdateUnclaimedCount)."
+        ;; SECURE: granted by WU_RpsGlobal|UnclaimedCount (underlying W_).
+        (let
+            (
+                (old-uc:integer (UR_FVT-RG|UnclaimedCount fvt-id reward-dptf-id))
+                (new-uc:integer
+                    (if direction
+                        (+ old-uc 1)
+                        (if (> old-uc 0) (- old-uc 1) 0)
+                    )
+                )
+            )
+            (WU_RpsGlobal|UnclaimedCount fvt-id reward-dptf-id new-uc)
+        )
+    )
+
+    ;;Protection: Class 1 — Innate protection offered by XI_2|BumpFvtEarningLegs,
+    ;;Protection:          XI_2|BumpRpsGlobalDormant, XI_2|BumpSelEarningUsers,
+    ;;Protection:          XI_2|BumpMemberVaultDormant
+    (defun XI_1|BookUnclaimedForFvtRewardLine
+        (
+            beneficiary-id:string
+            pool-id:string
+            fvt-id:string
+            reward-dptf-id:string
+            plans:[object{AcquisitionSchemasV5.FVT|SettleScorePlan}]
+            pre-nz-flags:[object{AcquisitionSchemasV5.FVT|ScorePreNzFlag}]
+        )
+        @doc "Internal (phase 2.35 · depth 1]): one (fvt, reward-dptf) unclaimed transition — OR was/is across pool employed scores on that fvt."
+        ;; SECURE: granted by XI_2|BumpRpsGlobalUnclaimed (underlying W_).
+        (let
+            (
+                (was-claimant:bool
+                    (fold (or) false
+                        (map
+                            (lambda (plan:object{AcquisitionSchemasV5.FVT|SettleScorePlan})
+                                (fold (or) false
+                                    (map
+                                        (lambda (score-id:string)
+                                            (URC_PreScoreWasNonZeroForScore pre-nz-flags score-id)
+                                        )
+                                        (URC_SettlePlanEmployedScoreIds plan)
+                                    )
+                                )
+                            )
+                            plans
+                        )
+                    )
+                )
+                (is-claimant:bool
+                    (fold (or) false
+                        (map
+                            (lambda (plan:object{AcquisitionSchemasV5.FVT|SettleScorePlan})
+                                (fold (or) false
+                                    (map
+                                        (lambda (score-id:string)
+                                            (URC_UserScoreTripleIsNonZero beneficiary-id pool-id score-id)
+                                        )
+                                        (URC_SettlePlanEmployedScoreIds plan)
+                                    )
+                                )
+                            )
+                            plans
+                        )
+                    )
+                )
+                (any-pending:bool
+                    (URC_StakeAnyPendingOnFvtRewardLine beneficiary-id fvt-id reward-dptf-id plans)
+                )
+            )
+            ;;S1 (2026-11-09): THE EARNING COUNT MOVES HERE, and `unclaimed-count` NO LONGER DOES.
+            ;;
+            ;;WHY THE OLD RULE COULD NOT WORK. `unclaimed-count` was incremented when an account
+            ;;became a claimant and decremented when it stopped being one -- so a STILL-STAKED
+            ;;account that collected to zero was never retired. On a live aggregator the count
+            ;;therefore never reached 1 and the last-claimant dust sweep was unreachable. Measured
+            ;;on mainnet: the count exceeded the positive-claimable leg count on ALL ELEVEN lanes.
+            ;;
+            ;;WHAT MOVES NOW. This site maintains `earning-leg-count` -- the `(user, member)` legs
+            ;;that will RECEIVE a share of the next accrual -- and, when a leg leaves with a live
+            ;;claim, moves it into `dormant-claim-count`. `unclaimed-count` itself is RESTORED at
+            ;;accrual from `earning + dormant` and DECREMENTED at collect; see
+            ;;`XI_1|BookCollectUnclaimed` and `XI_2|RestoreUnclaimedFromCounts`.
+            ;;
+            ;;T7 (stake) DELIBERATELY DOES NOT TOUCH `unclaimed-count`. Staking grants future
+            ;;accrual, not a present claim -- the new staker's claimable is 0 until the next inject
+            ;;or stream release. Counting it now would hold the count above the number of legs that
+            ;;can actually be collected and make `= 1` unreachable again, which is the defect.
+            (if (and (not was-claimant) is-claimant)
+                ;;T7: a new earning leg. No claim yet.
+                (XI_2|BumpFvtEarningLegs fvt-id true)
+                (if (and was-claimant (not is-claimant))
+                    (do
+                        ;;T5/T6: the leg stops earning either way.
+                        (XI_2|BumpFvtEarningLegs fvt-id false)
+                        ;;T5: it exits OWED -> it becomes DORMANT, so the next accrual still counts
+                        ;;it. This is the case a reset to `nzs` loses, and losing it makes the count
+                        ;;read LOW -- `= 1` fires while this account is still owed and the sweeper
+                        ;;takes its rewards. The canonical `coin` vault removed its own `nzs` reset
+                        ;;for exactly this reason, and says so twice in its live source.
+                        ;;T6: a clean exit (nothing pending) leaves nothing to collect and nothing
+                        ;;to count.
+                        (if any-pending
+                            (XI_2|BumpRpsGlobalDormant fvt-id reward-dptf-id true)
+                            true
+                        )
+                    )
+                    true
+                )
+            )
+            ;; #10 Tier-1: the SAME claimant transition, but per MEMBER (plan), drives that member's mini-vault
+            ;; unclaimed-count — so the member sweep knows when its last user is collecting.
+            (map
+                (lambda (plan:object{AcquisitionSchemasV5.FVT|SettleScorePlan})
+                    (let
+                        (
+                            (m-entity:string (at "score-entity-id" plan))
+                            (m-sids:[string] (URC_SettlePlanEmployedScoreIds plan))
+                            (m-was:bool
+                                (fold (or) false
+                                    (map (lambda (sid:string) (URC_PreScoreWasNonZeroForScore pre-nz-flags sid)) m-sids)))
+                            (m-is:bool
+                                (fold (or) false
+                                    (map (lambda (sid:string) (URC_UserScoreTripleIsNonZero beneficiary-id pool-id sid)) m-sids)))
+                            (m-pending:bool
+                                (> (UR_FVT-RU|PendingRewards beneficiary-id fvt-id m-entity reward-dptf-id) 0.0))
+                        )
+                        ;;THE SAME THREE TRANSITIONS, ONE TIER DOWN, and the member tier is NOT
+                        ;;optional: the member branch of the sweep (`mc == 1`) is FARM-ONLY and the
+                        ;;chain has exactly one farm -- `OuroLpFarm`, measured holding 27 sub-units
+                        ;;of stranded dust with zero collectable legs. Fixing only the global
+                        ;;counter would leave the one aggregator where tier-1 dust actually forms
+                        ;;still unable to sweep it.
+                        (if (and (not m-was) m-is)
+                            (XI_2|BumpSelEarningUsers fvt-id m-entity true)
+                            (if (and m-was (not m-is))
+                                (do
+                                    (XI_2|BumpSelEarningUsers fvt-id m-entity false)
+                                    (if m-pending
+                                        (XI_2|BumpMemberVaultDormant fvt-id m-entity reward-dptf-id true)
+                                        true
+                                    )
+                                )
+                                true))
+                    )
+                )
+                plans
+            )
+        )
+    )
+
+    ;;Protection: Class 1 — Innate protection offered by XI_1|BookUnclaimedForFvtRewardLine
+    (defun XI_BookStakeUnclaimedCounts:object{IgnisCollectorV4.OutputCumulator}
+        (beneficiary-id:string pool-id:string settle-bundle:object{AcquisitionSchemasV5.FVT|StakeSettleBundle})
+        @doc "Internal (C_*StakeFlow phase 2.35 · depth 0]): RPS|Global unclaimed-count after SCORE (UrStoa XI_URV|UpdateUnclaimedCount). \
+            \ Once per (fvt-id, reward-dptf-id) per tx — OR was/is claimant across employed scores on that fvt in this pool. \
+            \ Decrement only when user leaves claimant set and has no pending on that reward line. \
+            \ IGNIS interactor = AQP|SC_NAME."
+        ;; SECURE: granted by XI_1|BookUnclaimedForFvtRewardLine (underlying W_).
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                ;;
+                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                (distinct-fvts:[string] (at "distinct-fvts" settle-bundle))
+                (settle-plans:[object{AcquisitionSchemasV5.FVT|SettleScorePlan}] (at "settle-plans" settle-bundle))
+                (pre-nz-flags:[object{AcquisitionSchemasV5.FVT|ScorePreNzFlag}] (at "pre-nz-flags" settle-bundle))
+            )
+            ;; map: distinct FVT entities — one unclaimed pass per fvt × enabled reward lines
+            (map
+                (lambda (fvt-id:string)
+                    (let
+                        (
+                            (plans:[object{AcquisitionSchemasV5.FVT|SettleScorePlan}]
+                                (filter
+                                    (lambda (plan:object{AcquisitionSchemasV5.FVT|SettleScorePlan})
+                                        (= (at "fvt-id" plan) fvt-id)
+                                    )
+                                    settle-plans
+                                )
+                            )
+                            (reward-dptf-ids:[string] (at "reward-dptf-ids" (at 0 plans)))
+                        )
+                        (map
+                            (lambda (reward-dptf-id:string)
+                                (XI_1|BookUnclaimedForFvtRewardLine
+                                    beneficiary-id pool-id fvt-id reward-dptf-id plans pre-nz-flags
+                                )
+                            )
+                            reward-dptf-ids
+                        )
+                    )
+                )
+                distinct-fvts
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (URC_BookStakeUnclaimedIgnis distinct-fvts)
+                AQP|SC_NAME
+                trigger
+                [pool-id beneficiary-id "book-unclaimed"]
+            )
+        )
+    )
+
+    ;;Protection: Class 1 — Innate protection offered by WU_RpsUser|LastRps
+    (defun XI_CheckpointStakeRps:object{IgnisCollectorV4.OutputCumulator}
+        (beneficiary-id:string pool-id:string settle-bundle:object{AcquisitionSchemasV5.FVT|StakeSettleBundle})
+        @doc "Internal (C_*StakeFlow phase 2.4 · depth 0]): advance last-rps to NEW L_i after SCORE deb mutation (UrStoa XI_URV|UpdateUserRPS). \
+            \ settle-bundle from URHC_BuildStakeSettleBundle (same scope as phase 2.1; no second URD). \
+            \ Only existing FVT|T|RPS|User rows are updated. \
+            \ IGNIS interactor = AQP|SC_NAME (pool vault receiver). Returns checkpoint IGNIS OC."
+        ;; SECURE: granted by WU_RpsUser|LastRps (underlying W_).
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                ;;
+                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                (checkpoint-plans:[object{AcquisitionSchemasV5.FVT|SettleScorePlan}] (at "settle-plans" settle-bundle))
+            )
+            ;; map: employed score plans (same scope as phase 2.1 settle)
+            (map
+                (lambda (plan:object{AcquisitionSchemasV5.FVT|SettleScorePlan})
+                    (let
+                        (
+                            (fvt-id:string (at "fvt-id" plan))
+                            (score-entity-type:integer (at "score-entity-type" plan))
+                (score-entity-id:string (at "score-entity-id" plan))
+                            (reward-dptf-ids:[string] (at "reward-dptf-ids" plan))
+                        )
+                        ;; map: reward DPTF lines — advance last-rps to NEW L_i on existing user rows only
+                        (map
+                            (lambda (reward-dptf-id:string)
+                                (if (URC_FvtRpsUserRowExists beneficiary-id fvt-id score-entity-id reward-dptf-id)
+                                    (WU_RpsUser|LastRps beneficiary-id fvt-id score-entity-id reward-dptf-id
+                                        (URC_FvtTier1IndexRps fvt-id score-entity-id reward-dptf-id)
+                                    )
+                                    true
+                                )
+                            )
+                            reward-dptf-ids
+                        )
+                    )
+                )
+                checkpoint-plans
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (URC_CheckpointStakeRpsIgnis)
+                AQP|SC_NAME
+                trigger
+                [pool-id beneficiary-id]
+            )
+        )
+    )
+
+    ;;Protection: Class 2 — SECURE
+    (defun XI_1|HeterogeneousLaneRoute:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string collector:string fvt-id:string reward-dptf-id:string mf-id:string amt-b:decimal amt-s:decimal amt-g:decimal prec:integer)
+        @doc "Heterogeneous MULTIPLET_BASE collect: split EACH lane amount across the 3 ladder tokens per the \
+            \ FVT|QualitySplit matrix (per-mille rows), aggregate the 3 tokens, then pay the WHOLE payout out \
+            \ to the collector in ONE token-0 transfer and ladder it with Coil(total-t1+total-t2) on ats-01 \
+            \ followed by Coil(remainder) on ats-12. A Curl is a double Coil, so Coil/Coil reaches the same \
+            \ place as the old Coil/Curl while buying one fewer token-0 hop, one fewer mint and one fewer \
+            \ CoilData derivation. The token-1 KEPT by the collector is still derived from total-t1 alone, so \
+            \ it is the pre-merge figure bit for bit; total-t2 is the dust-free remainder and carries the \
+            \ merge rounding. \
+            \ TAKES BOTH patron AND collector, since 2026-10-26. It used to take one parameter NAMED \
+            \ `patron` and was CALLED with `collector`, then used that single value as the IGNIS payer \
+            \ AND the payout recipient -- so a SPONSORED collect in heterogeneous mode billed the \
+            \ collector for their own gas, while the cost mirror (which receives the real patron) \
+            \ disagreed about who paid. The HOMOGENEOUS sibling always kept the two distinct; this is \
+            \ now consistent with it. Unreachable on mainnet at the time of the fix -- FVT|T|QualitySplit \
+            \ holds zero rows, so every live lane is HOMOGENEOUS -- and reachable the first time any FVT \
+            \ owner calls C_SetQualitySplit. require SECURE."
+        (require-capability (SECURE))
+        (let
+            (
+                (ref-TFT:module{TrueFungibleTransferV3} TFT)
+                (ref-ATSU:module{AutostakeUsageV4} ATSU)
+                (ref-ATS:module{AutostakeV4} ATS)
+                (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                (bs:[integer] (UR_FVT-QS|BronzeSplit fvt-id reward-dptf-id))
+                (ss:[integer] (UR_FVT-QS|SilverSplit fvt-id reward-dptf-id))
+                (gs:[integer] (UR_FVT-QS|GoldSplit fvt-id reward-dptf-id))
+                (token-0:string (UR_FVT-MF|Token0Id mf-id))
+                (ats-01:string (UR_FVT-MF|Ats01Id mf-id))
+                (ats-12:string (UR_FVT-MF|Ats12Id mf-id))
+                ;; per-lane token-0/token-1 slices (per-mille); token-2 is the remainder, aggregated below
+                (b0:decimal (floor (/ (* amt-b (dec (at 0 bs))) 1000.0) prec))
+                (b1:decimal (floor (/ (* amt-b (dec (at 1 bs))) 1000.0) prec))
+                (s0:decimal (floor (/ (* amt-s (dec (at 0 ss))) 1000.0) prec))
+                (s1:decimal (floor (/ (* amt-s (dec (at 1 ss))) 1000.0) prec))
+                (g0:decimal (floor (/ (* amt-g (dec (at 0 gs))) 1000.0) prec))
+                (g1:decimal (floor (/ (* amt-g (dec (at 1 gs))) 1000.0) prec))
+                (total-t0:decimal (+ b0 (+ s0 g0)))
+                (total-t1:decimal (+ b1 (+ s1 g1)))
+                (total-t2:decimal (- (+ amt-b (+ amt-s amt-g)) (+ total-t0 total-t1)))
+                (fund-12:decimal (+ total-t1 total-t2))
+                ;;ONE pre-fund. The two legs used to be two C_Transfer calls of the SAME token in
+                ;;the SAME direction (AQP -> collector), which is one transfer leg bought twice.
+                (payout-all:decimal (+ total-t0 fund-12))
+            )
+            ;;A Curl IS a double Coil, so the ladder does not need C_Curl: Coil(total-t1+total-t2)
+            ;;on ats-01 mints the collector's token-1 for the WHOLE laddering amount, and a second
+            ;;Coil on ats-12 ladders the part that is owed as token-2. That removes one token-0
+            ;;hop into ats-01, one DPTF mint and one CoilData derivation per collect, using only
+            ;;the existing ATSU API -- no new ATSU surface, so ATSU|C>COIL still fires per hop and
+            ;;the coil identity is preserved by the cap that was always going to run.
+            (if (<= fund-12 0.0)
+                ;;token-0 only (quality split routes nothing to the ladder): one transfer, no coil.
+                (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                    [
+                        (if (> payout-all 0.0) (ref-TFT::C_Transfer patron AQP|SC_NAME collector token-0 payout-all true) (UC_EmptyOc))
+                    ]
+                    []
+                )
+                (let
+                    (
+                        ;;hop-1 CoilData on the whole laddering amount -- also the hop-1 viability
+                        ;;probe, so the derivation is bought once and used twice.
+                        (h-all:object{AutostakeV4.CoilData}
+                            (ref-ATS::URC_RewardBearingTokenAmounts ats-01 token-0 fund-12))
+                        ;;the token-1 the collector KEEPS, derived from total-t1 ALONE -- i.e. the
+                        ;;same figure the old Coil(total-t1) leg paid out, bit for bit. The merge's
+                        ;;rounding therefore lands on the ladder leg below, never on the keep.
+                        (rbt1-keep:decimal
+                            (if (> total-t1 0.0)
+                                (at "rbt-amount" (ref-ATS::URC_RewardBearingTokenAmounts ats-01 token-0 total-t1))
+                                0.0))
+                    )
+                    (let
+                        (
+                            (rbt1-id:string (at "rbt-id" h-all))
+                            (rbt1-ladder:decimal (- (at "rbt-amount" h-all) rbt1-keep))
+                            ;;COILS AS AQP|SC_NAME -- the same change as the homogeneous branch, for the
+                            ;;same reason, and it has to be the SAME change: these two are one ladder
+                            ;;expressed twice, and a fix applied to one of them is a divergence.
+                            ;;<total-t0> is this branch's kept token-0 share, where the homogeneous
+                            ;;branch calls it <amt-b>. The skip branches carry the whole payout for the
+                            ;;reason stated there.
+                            (hop1:bool (> (at "rbt-amount" h-all) 0.0))
+                            (hop2:bool
+                                (and (> rbt1-ladder 0.0)
+                                     (> (at "rbt-amount" (ref-ATS::URC_RewardBearingTokenAmounts ats-12 rbt1-id rbt1-ladder)) 0.0)))
+                        )
+                        (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                            [
+                                (let ((t0:decimal (if hop1 total-t0 payout-all)))
+                                    (if (> t0 0.0) (ref-TFT::C_Transfer patron AQP|SC_NAME collector token-0 t0 true) (UC_EmptyOc)))
+                                (if hop1 (ref-ATSU::XB_Coil patron AQP|SC_NAME AQP|SC_NAME ats-01 token-0 fund-12) (UC_EmptyOc))
+                                (let ((r1:decimal (if hop2 rbt1-keep (at "rbt-amount" h-all))))
+                                    (if (and hop1 (> r1 0.0)) (ref-TFT::C_Transfer patron AQP|SC_NAME collector rbt1-id r1 true) (UC_EmptyOc)))
+                                (if hop2 (ref-ATSU::XB_Coil patron AQP|SC_NAME collector ats-12 rbt1-id rbt1-ladder) (UC_EmptyOc))
+                            ]
+                            []
+                        )
+                    )
+                )
+            )
+        )
+    )
+
+    ;;Protection: Class 2 — SECURE
+    (defun XI_NormalizeRoyalty:object (patron:string reward-dptf-id:string amount:decimal)
+        @doc "IGNIS pre-normalization for a royalty disposal: if the royalty leg is IGNIS, COMPRESS it to OURO in \
+            \ AQP|SC_NAME custody (OUROBOROS::XB_Compress, 98.5%) and return {token: OURO, amount: OURO-received, \
+            \ oc: compress-cumulator}; else return {token, amount, oc: empty} unchanged. The disposal then moves \
+            \ the normalized token — IGNIS can be neither withdrawn nor fueled as a token, so it is always \
+            \ converted first. require SECURE (the disposal cap holds P|SECURE-CALLER + P|RPS|REMOTE-GOV, so the \
+            \ IGNIS custody legs inside XB_Compress are authorized)."
+        (require-capability (SECURE))
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+            )
+            (if (= reward-dptf-id (ref-DALOS::UR_IgnisID))
+                (let
+                    (
+                        (ref-ORBR:module{OuroborosV3} OUROBOROS)
+                    )
+                    {"token"  : (ref-DALOS::UR_OuroborosID)
+                    ,"amount" : (at 0 (ref-ORBR::URCv_Compress amount))
+                    ,"oc"     : (ref-ORBR::XB_Compress patron AQP|SC_NAME amount)}
+                )
+                {"token" : reward-dptf-id, "amount" : amount, "oc" : (UC_EmptyOc)}
+            )
+        )
+    )
+
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          FVT|XE>SWEEP-FIX
+    (defun XE_FvtFixUserChunk:object{IgnisCollectorV4.OutputCumulator}
+        (fvt-id:string reward-dptf-id:string users:[string])
+        @doc "Forward (MTX-AQP defpact step): FIX a chunk of stale stakers in the FVT (settle + refresh + \
+            \ mirror-resync per user; each fresh member no-ops), recording the 2e forced-fix count per user on \
+            \ `reward-dptf-id` (the injected lane). NO fund movement. Caller passes `take N` of \
+            \ URH_FvtStalePresentUsers. Computes the FVT's enabled members ONCE and reuses it across the chunk (no \
+            \ per-user FVT|T|ScoreEntityLink re-scan). P|UEV_IMC + FVT|XE>SWEEP-FIX (composes SECURE)."
         (P|UEV_IMC)
-        (with-capability (AQP|XE>TRUE-FUNGIBLE-POOL-CUSTODY pool-id owner-id beneficiary-id dptf-id amount direction)
+        (with-capability (FVT|XE>SWEEP-FIX fvt-id)
+            (let
+                (
+                    (members:[string] (URH_FvtEnabledScoreEntityIdsForFvt fvt-id))
+                    (reward-rows:[string] (URH_FVT-RG|EnabledRewardRows fvt-id))
+                )
+                ;; DRIP each reward lane once (checkpoint) before the fix loop → users settle at now's index
+                (map (lambda (d:string) (XI_ReleaseStream fvt-id d)) reward-rows)
+                (map (lambda (u:string) (XI_FixUserFvtDebPenalizedIn fvt-id reward-dptf-id u members reward-rows)) users)
+            )
+            (UC_EmptyOc)
+        )
+    )
+
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          FVT|XE>SWEEP-FIX
+    (defun XE_SweepSyncTripletLaneWeights:object{IgnisCollectorV4.OutputCumulator}
+        (beneficiary-id:string fvt-id:string score-entity-id:string)
+        @doc "Forward (re-score sweep): re-snapshot a TRUE-triplet member's Level-1 lane weight for this holder at \
+            \ the LIVE promile (after an anchor change) and delta-adjust ScoreEntityLink.total-lane-weight — the \
+            \ triplet analogue of ANK::XE_RecomputeUserBoostAggregates / SCR::XE_RefreshUserScoreDeb. Self-no-ops \
+            \ for non-true-triplet / \
+            \ singular members (XI_SyncTripletLaneWeights guards on the true-triplet flag). NO fund movement; the \
+            \ sweep defpact bills IGNIS. P|UEV_IMC + FVT|XE>SWEEP-FIX (composes SECURE)."
+        (P|UEV_IMC)
+        (with-capability (FVT|XE>SWEEP-FIX fvt-id)
+            (XI_SyncTripletLaneWeights beneficiary-id
+                [(UDC_FVT|SettleScorePlan (UR_FVT-SEL|ScoreEntityType fvt-id score-entity-id) score-entity-id fvt-id [])])
+            (UC_EmptyOc)
+        )
+    )
+
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          FVT|XE>SWEEP-FIX
+    (defun XE_FvtSweepRecomputeChunk:object{IgnisCollectorV4.OutputCumulator}
+        (fvt-id:string score-entity-id:string swept-boost-class-id:string users:[string])
+        @doc "Forward (re-score sweep defpact — cross-module): recompute a CHUNK of holders on one (fvt, member). \
+            \ Thin P|UEV_IMC + FVT|XE>SWEEP-FIX (composes SECURE) wrapper over XI_FvtSweepRecomputeChunk. Caller passes \
+            \ `take N` of the member's present users. Paged by MTX-AQP::MTX|2|C_SweepRevokeAnchor (XI_SweepRecomputeWindow)."
+        (P|UEV_IMC)
+        (with-capability (FVT|XE>SWEEP-FIX fvt-id)
+            (XI_FvtSweepRecomputeChunk fvt-id score-entity-id swept-boost-class-id users)
+        )
+    )
+
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
+    (defun XE_SetExternalOracle:string (on:bool)
+        @doc "DSA (module admin): set the GLOBAL external-oracle switch. Preserves the current oracle-validity. \
+            \ P|UEV_IMC + SECURE."
+        (P|UEV_IMC)
+        (with-capability (SECURE)
+            (with-default-read FVT|T|DsaOracleConfig FVT|DSA-ORACLE-KEY
+                {"oracle-validity" : DSA_ORACLE_TTL} {"oracle-validity" := v}
+                (write FVT|T|DsaOracleConfig FVT|DSA-ORACLE-KEY {"external-oracle" : on, "oracle-validity" : v})
+            )
+        )
+    )
+
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
+    (defun XE_SetOracleValidity:string (seconds:integer)
+        @doc "DSA (module admin): set the GLOBAL oracle-validity window (seconds). Preserves the current \
+            \ external-oracle switch. P|UEV_IMC + SECURE."
+        (P|UEV_IMC)
+        (with-capability (SECURE)
+            (with-default-read FVT|T|DsaOracleConfig FVT|DSA-ORACLE-KEY
+                {"external-oracle" : true} {"external-oracle" := x}
+                (write FVT|T|DsaOracleConfig FVT|DSA-ORACLE-KEY {"external-oracle" : x, "oracle-validity" : seconds})
+            )
+        )
+    )
+
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
+    (defun XE_SetAgencyFee:string (fvt-id:string score-entity-id:string operator-konto:string fee-per-mille:integer)
+        @doc "DSA: set/update a delegation member's operator + fee (mirrored from DSA|Agency so the inject settle \
+            \ reads it locally). Set at open + on a fee change. P|UEV_IMC + SECURE."
+        (P|UEV_IMC)
+        (with-capability (SECURE)
+            (WU_AgencyFee fvt-id score-entity-id operator-konto fee-per-mille)
+        )
+    )
+
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
+    (defun XE_SetMemberDelegation:string (fvt-id:string score-entity-id:string delegation:bool)
+        @doc "DSA: flip a member to (or from) a delegation agency. P|UEV_IMC + SECURE."
+        (P|UEV_IMC)
+        (with-capability (SECURE)
+            (WU_ScoreEntityLink|Delegation fvt-id score-entity-id delegation)
+        )
+    )
+
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
+    (defun XE_SetMemberCapture:string (fvt-id:string score-entity-id:string capture-units:decimal capture-weight:decimal oracle-ts:time)
+        @doc "DSA: set an agency's capture fields — the values the inject reads (numerator = capture-weight, \
+            \ denominator term = capture-units, 25h expiry = oracle-ts). Recomputed by DSA on delegator \
+            \ stake/unstake or an oracle write. P|UEV_IMC + SECURE."
+        (P|UEV_IMC)
+        (with-capability (SECURE)
+            (WU_ScoreEntityLink|Capture fvt-id score-entity-id capture-units capture-weight oracle-ts)
+        )
+    )
+
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          FVT|XE>ADMIT-DELEGATION
+    (defun XE_AdmitDelegationMember:string (fvt-id:string triplet-id:string operator:string)
+        @doc "DSA: admit an OPERATOR-owned triplet as a delegation agency member on a class-0 DSA vault FVT — \
+            \ vault-like (swpair \"|\", ghost 0; inject weight = capture). Creates the three SCR fvt-links + inserts \
+            \ the ScoreEntityLink via the same write path as C_AddScoreEntity, but validated by \
+            \ FVT|XE>ADMIT-DELEGATION (operator ownership, LP-farm rules skipped). DSA flips `delegation` on via \
+            \ XE_SetMemberDelegation after this. P|UEV_IMC + FVT|XE>ADMIT-DELEGATION."
+        (P|UEV_IMC)
+        (with-capability (FVT|XE>ADMIT-DELEGATION fvt-id triplet-id operator)
+            (let
+                (
+                    (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
+                )
+                (ref-SCR::XE_CreateFvtLink (ref-SCR::UR_SCR|TripletBronzeScoreId triplet-id) fvt-id)
+                (ref-SCR::XE_CreateFvtLink (ref-SCR::UR_SCR|TripletSilverScoreId triplet-id) fvt-id)
+                (ref-SCR::XE_CreateFvtLink (ref-SCR::UR_SCR|TripletGoldenScoreId triplet-id) fvt-id)
+                (XI_AddScoreEntity fvt-id CT_SCORE_ENTITY_TRIPLET triplet-id "|" 0.0)
+            )
+        )
+    )
+
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          FVT|XE>DISPOSE-ROYALTY
+    (defun XE_WithdrawRoyalty:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string fvt-id:string reward-dptf-id:string destination:string)
+        @doc "DSA royalty disposal (WITHDRAW): zero the royalty pool (reward-dptf) of <fvt-id>, IGNIS-normalize it \
+            \ to OURO if needed, and move the whole balance OUT of the AQP pool-vault custody (AQP|SC_NAME) to \
+            \ <destination> via TFT. P|UEV_IMC + FVT|XE>DISPOSE-ROYALTY (composes P|SECURE-CALLER + P|RPS|REMOTE-GOV \
+            \ for the AQP custody leg). Returns the (compress + transfer) OutputCumulator. Owner authorization is \
+            \ enforced upstream in DSA's A_ shell."
+        (P|UEV_IMC)
+        (with-capability (FVT|XE>DISPOSE-ROYALTY fvt-id reward-dptf-id)
             (let
                 (
                     (ref-TFT:module{TrueFungibleTransferV3} TFT)
-                    ;;
-                    (vault:string AQP|SC_NAME)
-                )
-                (if direction
-                    (ref-TFT::C_Transfer patron owner-id vault dptf-id amount true)
-                    (ref-TFT::C_Transfer patron vault owner-id dptf-id amount true)
-                )
-            )
-        )
-    )
-    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
-    ;;Protection:          P|SECURE-CALLER
-    (defun XE_TrueFungiblePoolTracker:object{IgnisCollectorV4.OutputCumulator}
-        (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
-        @doc "Phase 1.2 — per-pool AQP|T|DPTFTracker row. UrStoa: N/A. P|SECURE-CALLER (no custody re-validation)."
-        (P|UEV_IMC)
-        (with-capability (P|SECURE-CALLER)
-            (XI_1|WriteDptfTrackerSlot pool-id owner-id beneficiary-id dptf-id amount direction)
-        )
-    )
-    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
-    ;;Protection:          P|SECURE-CALLER
-    (defun XE_ZeroDptfTrackerSlot:object{IgnisCollectorV4.OutputCumulator}
-        (pool-id:string owner-id:string beneficiary-id:string dptf-id:string)
-        @doc "IMC: zero one AQP|T|DPTFTracker row (write-only). Called from AQP-VCT vacate."
-        (P|UEV_IMC)
-        (with-capability (P|SECURE-CALLER)
-            (XI_1|ZeroDptfTrackerSlot pool-id owner-id beneficiary-id dptf-id)
-        )
-    )
-    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
-    ;;Protection:          P|SECURE-CALLER
-    (defun XE_TrueFungibleBeneficiaryRollup:object{IgnisCollectorV4.OutputCumulator}
-        (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
-        @doc "Phase 1.3 — cross-pool AQP|T|BenDptfTotal. UrStoa ≡ N/A. P|SECURE-CALLER."
-        (P|UEV_IMC)
-        (with-capability (P|SECURE-CALLER)
-            (XI_1|BumpBenDptfTotalSlot pool-id owner-id beneficiary-id dptf-id amount direction)
-        )
-    )
-    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
-    ;;Protection:          AQP|XE>ORTO-FUNGIBLE-POOL-CUSTODY
-    (defun XE_OrtoFungibleTransfer:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string 
-            pool-id:string
-            owner-id:string
-            beneficiary-id:string
-            dpof-id:string
-            nonces:[integer]
-            nonce-amounts:[decimal]
-            direction:bool
-        )
-        @doc "Phase 1.1 — UrStoa ≡ X_UR|Transfer. DPOF::C_Transfer whole nonces. Composes custody cap (validation once per tx)."
-        (P|UEV_IMC)
-        (with-capability (AQP|XE>ORTO-FUNGIBLE-POOL-CUSTODY pool-id owner-id beneficiary-id dpof-id nonces nonce-amounts direction)
-            (let
-                (
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
-                    ;;
-                    (vault:string AQP|SC_NAME)
-                    (sender:string (if direction owner-id vault))
-                    (receiver:string (if direction vault owner-id))
-                )
-                (ref-DPOF::C_Transfer patron sender receiver dpof-id nonces true)
-            )
-        )
-    )
-    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
-    ;;Protection:          P|SECURE-CALLER
-    (defun XE_OrtoFungiblePoolTracker:object{IgnisCollectorV4.OutputCumulator}
-        (
-            pool-id:string
-            owner-id:string
-            beneficiary-id:string
-            dpof-id:string
-            nonces:[integer]
-            nonce-amounts:[decimal]
-            direction:bool
-        )
-        @doc "Phase 1.2 — per-pool AQP|T|DPOFTracker rows. UrStoa: N/A. P|SECURE-CALLER (no custody re-validation)."
-        (P|UEV_IMC)
-        (with-capability (P|SECURE-CALLER)
-            (let
-                (
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
-                    ;;
-                    (l:integer (length nonces))
-                    (slot-ocs:[object{IgnisCollectorV4.OutputCumulator}]
-                        (map
-                            (lambda (idx:integer)
-                                ;; M5: write/remove the exact (owner, beneficiary) tracker row BOTH directions —
-                                ;; beneficiary-id is caller-supplied (self OR foreign), no self-key derivation.
-                                (XI_1|WriteDpofTrackerSlot
-                                    pool-id owner-id beneficiary-id dpof-id (at idx nonces) (at idx nonce-amounts) direction
-                                )
-                            )
-                            (enumerate 0 (- l 1))
-                        )
-                    )
+                    (royalty:decimal (UR_FVT-RG|RoyaltyRewards fvt-id reward-dptf-id))
                 )
-                (ref-IGNIS::UDC_ConcatenateOutputCumulators slot-ocs [])
-            )
-        )
-    )
-    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
-    ;;Protection:          AQP|XE>COLLECTABLE-POOL-CUSTODY
-    (defun XE_CollectableTransfer:object{IgnisCollectorV4.OutputCumulator}
-        (
-            patron:string
-            pool-id:string
-            owner-id:string
-            beneficiary-id:string
-            collectable-id:string
-            son:bool
-            nonces:[integer]
-            nonce-amounts:[integer]
-            direction:bool
-        )
-        @doc "Phase 1.1 — UrStoa ≡ X_UR|Transfer. DPDC-T::C_Transfer. Composes custody cap (validation once per tx). \
-            \ \
-            \ PROVISIONAL PATRON SLOT CLEARED, 2026-09-22. The inner transfer carried \
-            \ <owner-id> in the patron slot -- registered in _patronslots as provisional -- \
-            \ because no caller had a patron to give. 05_FVT's turn gave the stake flows a \
-            \ real one, so the payer is now the payer. HANDOFF 4e promises every provisional \
-            \ slot is written down AND re-pointed when its turn lands; this is the re-pointing."
-        (P|UEV_IMC)
-        (with-capability
-            (AQP|XE>COLLECTABLE-POOL-CUSTODY
-                pool-id owner-id beneficiary-id collectable-id son nonces nonce-amounts direction
-            )
-            (let
-                (
-                    (ref-DPDC-T:module{DpdcTransferV3} DPDC-T)
-                    ;;
-                    (vault:string AQP|SC_NAME)
-                    (sender:string (if direction owner-id vault))
-                    (receiver:string (if direction vault owner-id))
-                )
-                (ref-DPDC-T::C_Transfer patron sender receiver [collectable-id] [son] [nonces] [nonce-amounts] true)
-            )
-        )
-    )
-    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
-    ;;Protection:          P|SECURE-CALLER
-    (defun XE_CollectablePoolTracker:object{IgnisCollectorV4.OutputCumulator}
-        (
-            pool-id:string
-            owner-id:string
-            beneficiary-id:string
-            collectable-id:string
-            son:bool
-            nonces:[integer]
-            nonce-amounts:[integer]
-            direction:bool
-        )
-        @doc "Phase 1.2 — per-pool DPSF/DPNF tracker rows. UrStoa: N/A. P|SECURE-CALLER."
-        (P|UEV_IMC)
-        (with-capability (P|SECURE-CALLER)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
-                    ;;
-                    (l:integer (length nonces))
-                    (slot-ocs:[object{IgnisCollectorV4.OutputCumulator}]
-                        (map
-                            (lambda (idx:integer)
-                                ;; M5: write/remove the exact (owner, beneficiary) tracker row BOTH directions —
-                                ;; beneficiary-id is caller-supplied (self OR foreign), no self-key derivation.
-                                (XI_1|WriteCollectableTrackerSlot
-                                    pool-id owner-id beneficiary-id collectable-id son (at idx nonces) (at idx nonce-amounts) direction
-                                )
-                            )
-                            (enumerate 0 (- l 1))
-                        )
-                    )
-                )
-                (ref-IGNIS::UDC_ConcatenateOutputCumulators slot-ocs [])
-            )
-        )
-    )
-    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
-    ;;Protection:          P|SECURE-CALLER
-    (defun XE_CollectableBeneficiaryRollup:object{IgnisCollectorV4.OutputCumulator}
-        (
-            pool-id:string
-            owner-id:string
-            beneficiary-id:string
-            collectable-id:string
-            son:bool
-            nonces:[integer]
-            nonce-amounts:[integer]
-            direction:bool
-        )
-        @doc "Phase 1.3 — cross-pool BenDpsfNonceTotal / BenDpnfNonceTotal. UrStoa ≡ N/A. P|SECURE-CALLER."
-        (P|UEV_IMC)
-        (with-capability (P|SECURE-CALLER)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
-                    ;;
-                    (l:integer (length nonces))
-                    (slot-ocs:[object{IgnisCollectorV4.OutputCumulator}]
-                        (map
-                            (lambda (idx:integer)
-                                ;; M5: bump/unbump the exact beneficiary rollup slot BOTH directions —
-                                ;; beneficiary-id is caller-supplied (self OR foreign), no self-key derivation.
-                                (XI_1|BumpBenCollectableNonceTotalSlot
-                                    beneficiary-id collectable-id son (at idx nonces) (at idx nonce-amounts) direction
-                                )
-                            )
-                            (enumerate 0 (- l 1))
-                        )
-                    )
-                )
-                (ref-IGNIS::UDC_ConcatenateOutputCumulators slot-ocs [])
-            )
-        )
-    )
-    ;; [XB]
-    ;;
-    ;; Depth: C_* → XI_* (depth 0) ; XE_* / XB_* → XI_1|* (depth 1). Map order = entry first.
-    ;;
-    ;; --- Block A · C_* pool lifecycle ---
-    ;;   C_Issue → XI_IssuePool
-    ;;   C_AddScore → XI_AddScoreToPool
-    ;;   C_RevokeScore → XI_RevokeScoreFromPool
-    ;;   C_DisablePoolStake / C_EnablePoolStake → XB_SetPoolStakeEnabled (also AQP-VCT vacate via IMC)
-    ;;
-    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
-    ;;Protection:          P|SECURE-CALLER
-    (defun XB_SetPoolStakeEnabled:string
-        (pool-id:string enabled:bool)
-        @doc "Write stake-enabled on AQP|T|Pool. P|UEV_IMC gates cross-module callers (e.g. AQP-VCT vacate). \
-            \ Same-module C_Disable/C_Enable compose owner caps then call here."
-        (P|UEV_IMC)
-        (with-capability (P|SECURE-CALLER)
-            ;; SECURE: granted by WU_Pool|StakeEnabled (underlying W_).
-            (WU_Pool|StakeEnabled pool-id enabled)
-        )
-        pool-id
-    )
-    ;;
-    ;; --- Block C · TF stake phase 2.2 (FVT::XI_RefreshTrueFungibleStakeAnchors backward) ---
-    ;;   XB_SetBenDptfAnkSyncCount
-    ;;
-    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
-    ;;Protection:          AQP|XE>SET-BENEFICIARY-DPTF-ANK-SYNC
-    (defun XB_SetBenDptfAnkSyncCount:object{IgnisCollectorV4.OutputCumulator}
-        (beneficiary-id:string dptf-id:string)
-        @doc "Backward (FVT::CC_TrueFungibleStakeFlow phase 2.2]): set last-ank-sync-count on BenDptfTotal \
-            \ (:= AQP-ANK::UR_AA|AnchorsActive dptf-id); preserve total-balance. P|UEV_IMC + AQP|XE>SET-BENEFICIARY-DPTF-ANK-SYNC. \
-            \ Same-module C_SyncTrueFungibleAnchors and cross-module FVT::XI_RefreshTrueFungibleStakeAnchors call here."
-        (P|UEV_IMC)
-        (with-capability (AQP|XE>SET-BENEFICIARY-DPTF-ANK-SYNC beneficiary-id dptf-id)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
-                    (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
-                    ;;
-                    (row:object{AcquisitionSchemasV3.AQP|BenDptfTotal} (UR_AQP|BenDptfTotal beneficiary-id dptf-id))
-                    (live-count:integer (ref-ANK::UR_AA|AnchorsActive dptf-id))
-                )
-                ;; SECURE: granted by WU_BenDptfTotal|LastAnkSyncCount (underlying W_).
-                (WU_BenDptfTotal|LastAnkSyncCount beneficiary-id dptf-id row live-count)
-                (ref-IGNIS::UDC_LegCumulator "ank-sync-count-tf" AQP|SC_NAME)
-            )
-        )
-    )
-    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
-    ;;Protection:          AQP|XE>SET-BEN-COLLECTABLE-ANK-SYNC
-    (defun XB_SetBenCollectableAnkSyncCount:object{IgnisCollectorV4.OutputCumulator}
-        (beneficiary-id:string collectable-id:string son:bool)
-        @doc "Backward (FVT collectable stake phase 3 / C_SyncCollectableAnchors): stamp last-ank-sync-count \
-            \ on BenDpsfAnkMeta or BenDpnfAnkMeta. P|UEV_IMC + AQP|XE>SET-BEN-COLLECTABLE-ANK-SYNC."
-        (P|UEV_IMC)
-        (with-capability (AQP|XE>SET-BEN-COLLECTABLE-ANK-SYNC beneficiary-id collectable-id son)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
-                    (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
-                    ;;
-                    (live-count:integer (ref-ANK::UR_AA|AnchorsActive collectable-id))
-                )
-                (if son
-                    (let
-                        (
-                            (row:object{AcquisitionSchemasV3.AQP|BenDpsfAnkMeta} (UR_AQP|BenDpsfAnkMeta beneficiary-id collectable-id))
-                        )
-                        ;; SECURE: granted by WU_BenDpsfAnkMeta|LastAnkSyncCount (underlying W_).
-                        (WU_BenDpsfAnkMeta|LastAnkSyncCount beneficiary-id collectable-id row live-count)
-                    )
-                    (let
-                        (
-                            (row:object{AcquisitionSchemasV3.AQP|BenDpnfAnkMeta} (UR_AQP|BenDpnfAnkMeta beneficiary-id collectable-id))
-                        )
-                        ;; SECURE: granted by WU_BenDpnfAnkMeta|LastAnkSyncCount (underlying W_).
-                        (WU_BenDpnfAnkMeta|LastAnkSyncCount beneficiary-id collectable-id row live-count)
-                    )
-                )
-                (ref-IGNIS::UDC_LegCumulator "ank-sync-count-collectable" AQP|SC_NAME)
-            )
-        )
-    )
-    ;;{5.7}  User [A/C]
-    ;;
-    ;; [C]   client
-    ;;
-    ;;Lifecycle (AQP|T|Pool / AQP|Schema)
-    (defun C_Issue:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string executor:string pool-name:string asset-id:string aqp-class:integer)
-        @doc "Create a new pool (canonical native asset-id + aqp-class). Patron pays STOA smart + IGNIS; \
-            \ returns pool-id in output list. Score slots start BAR."
-        (P|UEV_IMC)
-        (with-capability (AQP|C>ISSUE-POOL executor pool-name asset-id aqp-class)
-            (let
-                (
-                    (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
-                    ;;
-                    (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
-                    (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
-                )
-                (ref-IGNIS::XE_CollectStoa patron (URCi_IssueStoa))
-                (XI_IssuePool pool-id aqp-class asset-id)
-                (URCi_Issue [pool-id])
-            )
-        )
-    )
-    ;;Score slots (score-primary … score-septenary); score-class must match pool aqp-class.
-    (defun C_AddScore:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string executor:string pool-id:string score-id:string)
-        @doc "Assign score-id to the first free pool slot; SCR XE_CreateAqpoolLink then XI pool slot write. \
-            \ URC_FirstFreeScoreSlotIndex runs once before the cap; slot-index is passed through. \
-            \ IGNIS only (GAS|ADD-SCORE 500.0 on AQP|SC_NAME); no STOA."
-        (P|UEV_IMC)
-        (let 
-            (
-                (slot-index:integer (URC_FirstFreeScoreSlotIndex pool-id))
-            )
-            (with-capability (AQP|C>ADD-SCORE executor pool-id score-id slot-index)
+                (WU_RpsGlobal|RoyaltyRewards fvt-id reward-dptf-id 0.0)
                 (let
                     (
-                        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
-                        (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
-                        ;;
-                        (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                        (norm:object (XI_NormalizeRoyalty patron reward-dptf-id royalty))
                     )
-                    (ref-SCR::XE_CreateAqpoolLink score-id pool-id)
-                    (XI_AddScoreToPool pool-id score-id slot-index)
-                    ;;FREEZE A POOL THAT ALREADY HAS WEIGHT. Every existing staker's base for the
-                    ;;new score is 0 while their canonical target is not, so from this instant the
-                    ;;pool is mis-scored until the re-rate sweep runs. Leaving it tradeable would
-                    ;;let stakes and claims land against weights the chain already knows are
-                    ;;wrong, and an UNSTAKE would reverse a figure the chain has already decided
-                    ;;is wrong -- irrecoverably, because the position is then gone.
-                    ;;Checked AFTER the slot write, which is harmless: the score just added has
-                    ;;`nzs-count` 0 and so cannot be what makes the staker test true.
-                    ;;
-                    ;;FREEZE ONLY IF A SWEEP COULD ACTUALLY CLEAR IT, which is the second
-                    ;;conjunct and is not optional. The re-rate engine supports class-0 LP scores
-                    ;;only -- an SF/NF score's base is per-nonce TABLE VALUES, not amount x mx --
-                    ;;so on any other pool shape there is no sweep that can make progress and a
-                    ;;freeze would be a pool nobody could ever unfreeze by doing the work.
-                    ;;Measured, not theorised: `CustodiansPool` is aqp-class 3, and
-                    ;;`CC_Step14_OpenCustodiansAgency` employs an agency's triplet in it and
-                    ;;stakes IN THE SAME TRANSACTION. Freezing on the staker test alone broke
-                    ;;that flow at the second agency, for a sweep that would have had nothing to
-                    ;;do. Both conjuncts are CHEAP -- point reads and the slot list, no select --
-                    ;;which is why this stays a `C_` and not a `CC_`.
-                    (if (and (URC_AQP|PoolHasWeightedStakers pool-id)
-                             (URC_AQP|ScoreBackfillSupported pool-id score-id))
-                        (WU_Pool|SweepInProgress pool-id true)
-                        "No re-ratable drift: either the pool carries no weight yet, or this score shape has no sweep")
-                    (URCi_AddScore [pool-id score-id])
-                )
-            )
-        )
-    )
-    (defun C_RevokeScore:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string executor:string pool-id:string score-id:string)
-        @doc "Clear score-id from its pool slot (compact higher slots); SCR XE_RevokeAqpoolLink then XI pool slot write. \
-            \ URC_ScoreSlotIndexForScore runs once before the cap; slot-index is passed through. \
-            \ IGNIS only (GAS|REVOKE-SCORE 500.0 on AQP|SC_NAME); no STOA."
-        (P|UEV_IMC)
-        (let
-            (
-                (slot-index:integer (URC_ScoreSlotIndexForScore pool-id score-id))
-            )
-            (with-capability (AQP|C>REVOKE-SCORE executor pool-id score-id slot-index)
-                (let
-                    (
-                        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
-                        (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
-                        ;;
-                        (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
-                    )
-                    (ref-SCR::XE_RevokeAqpoolLink score-id pool-id)
-                    (XI_RevokeScoreFromPool pool-id slot-index)
-                    (URCi_RevokeScore [pool-id score-id])
-                )
-            )
-        )
-    )
-    (defun C_DisablePoolStake:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string executor:string pool-id:string)
-        @doc "Pool owner pauses new stakes (stake-enabled → false). IGNIS only (GAS|SET-POOL-STAKE); no STOA."
-        (P|UEV_IMC)
-        (with-capability (AQP|C>DISABLE-POOL-STAKE executor pool-id)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
-                    ;;
-                    (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
-                )
-                (XB_SetPoolStakeEnabled pool-id false)
-                (URCi_SetPoolStake [pool-id])
-            )
-        )
-    )
-    (defun C_EnablePoolStake:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string executor:string pool-id:string)
-        @doc "Pool owner re-enables new stakes (stake-enabled → true). IGNIS only (GAS|SET-POOL-STAKE); no STOA."
-        (P|UEV_IMC)
-        (with-capability (AQP|C>ENABLE-POOL-STAKE executor pool-id)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
-                    ;;
-                    (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
-                )
-                (XB_SetPoolStakeEnabled pool-id true)
-                (URCi_SetPoolStake [pool-id])
-            )
-        )
-    )
-    (defun CC_UpdateScoreMultipliers:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string executor:string score-id:string
-         mx-frozen:decimal mx-sleeping:decimal mx-hibernated:decimal)
-        @doc "Re-set a score's frozen, sleeping and hibernating multipliers. Score owner only. \
-            \ \
-            \ LIVES HERE RATHER THAN IN AQP-SCORE FOR ONE REASON: the safety condition is about \
-            \ POOL POSITIONS, and AQP-SCORE deploys first — it cannot read this module's tracker. \
-            \ AQP-POOL can see both, so the gate is enforced here and the write is delegated to \
-            \ `SCR::XE_SetScoreMultipliers`, which enforces what IT can prove: ownership, fee \
-            \ validity, and `mx-frozen >= 2*mx-sleeping - 1`. \
-            \ \
-            \ WHY `mx-sleeping` IS NOW A CEILING AND NOT A FACTOR. A sleeping lock earns \
-            \ `1 + (months/300) x (mx-sleeping - 1)`, reaching the ceiling only at the full \
-            \ 25-year term the chain itself refuses to exceed. Before this, one day of sleep and \
-            \ twenty-five years earned the identical multiplier, which is free money for whoever \
-            \ noticed. `mx-frozen` stays FLAT because a freeze is irreversible — there is no \
-            \ unfreeze in the tree — so it is already the maximum commitment and has nothing to \
-            \ scale against. \
-            \ \
-            \ REFUSED WHILE A FROZEN OR SLEEPING POSITION EXISTS, and this gate is TEMPORARY. The \
-            \ owner's standing decision is that a change re-rates every affected stake through a \
-            \ parallel sweep; that sweep is not in this round, so until it lands a change is \
-            \ allowed only where it provably cannot corrupt anything. Native stakes multiply by \
-            \ 1.0 and never read `mx`, so native holders — the only kind on chain today — neither \
-            \ block the change nor are touched by it. \
-            \ EXECUTOR: BOUND IN `AQP|C>UPDATE-SCORE-MULTIPLIERS`, which enforces \
-            \ `executor == UR_SCR|ScoreOwnerKonto(score-id)`, and PROVEN by the callee's \
-            \ `SCR|C>UPDATE-MULTIPLIERS` reaching `CAP_EnforceAccountOwnership` on that same \
-            \ owner. Named here because the canon requires the route to be stated, not inferred. \
-            \ (patron/executor canon 2.2.)"
-        (P|UEV_IMC)
-        (UEV_AQP|ScoreMxChangeSafe score-id)
-        (with-capability
-            (AQP|C>UPDATE-SCORE-MULTIPLIERS patron executor score-id mx-frozen mx-sleeping mx-hibernated)
-            (let
-                (
-                    (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
-                )
-                (ref-SCR::XE_SetScoreMultipliers score-id mx-frozen mx-sleeping mx-hibernated)
-            )
-        )
-        ;;THE MESSAGE NAMES WHICH ONES SCALE AND WHICH DO NOT, because the three numbers do not
-        ;;mean the same kind of thing and a caller reading back "2.0 / 2.0 / 2.0" would reasonably
-        ;;assume they do. Frozen is flat because a freeze is irreversible and already the maximum
-        ;;commitment; sleeping is a CEILING reached only at the full 300-month term; hibernating is
-        ;;flat because it asks no commitment at all.
-        (URCi_UpdateScoreMultipliers
-            [(format "Score {} multipliers set: frozen {} (flat) / sleeping UP TO {} (ceiling at 300 months) / hibernating {} (flat)"
-                [score-id mx-frozen mx-sleeping mx-hibernated])])
-    )
-    (defun CCp_BackfillScoreSlice:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string pool-id:string score-id:string beneficiaries:[string])
-        @doc "HYDRA FED SLICE — re-rate exactly the listed holders of <score-id> to their canonical \
-            \ base. Run one per slice of `URHC_AQP|ScoreBackfillOutstanding`; slices are \
-            \ order-independent and may be sent in parallel. \
-            \ \
-            \ FED SLICE, NOT A CURSOR PAGER, and the distinction is the whole reason this is safe to \
-            \ fan out: the caller passes the explicit account list, so nothing is read from stored \
-            \ progress and two transactions cannot race over a shared cursor. A pager — which \
-            \ computes its own window — would have to be sent strictly sequentially. \
-            \ \
-            \ TARGET RECOMPUTED IMMEDIATELY BEFORE EACH WRITE, inside the map, never batched ahead \
-            \ of them. That one ordering choice is what makes the recipe idempotent, repeat-safe and \
-            \ order-independent at once: whatever earlier slices did is already visible, so an \
-            \ account that no longer needs work contributes a delta of exactly 0.0. Batching the \
-            \ deltas first would reintroduce every one of those hazards while looking tidier. \
-            \ \
-            \ THE DELTA GOES THROUGH THE STAKE PATH'S OWN WRITER (`SCR::XE_ApplyRawBaseDelta` → \
-            \ `XI_2|ApplySingularUserScoreDelta`), so the user row, the score's vault totals and \
-            \ `nzs-count` stay maintained by the single piece of code that already knows how. This \
-            \ module never writes a base itself. \
-            \ \
-            \ EXECUTORLESS BY DESIGN (canon 2.2, as for `C_SyncTrueFungibleAnchors`): no actor's \
-            \ authority is being exercised. The accounts named are SUBJECTS of a recomputation, not \
-            \ signatories, and an executor slot would imply a permission deliberately not required \
-            \ — see `AQP|C>BACKFILL-SCORE-SLICE` for why permissionless is the stronger position. \
-            \ \
-            \ WHAT IT DOES NOT REPAIR: an additive satellite's boosted/deb values. Those derive from \
-            \ the HUB's base, so when a hub is re-rated its satellites go deb-stale and the EXISTING \
-            \ staleness sweep fixes them — this recipe refuses satellites outright rather than write \
-            \ a base that `URC_SingularUserScoreDeltaFromSignedUserBase` pins to 0.0."
-        (P|UEV_IMC)
-        (with-capability (AQP|C>BACKFILL-SCORE-SLICE patron pool-id score-id beneficiaries)
-            (let
-                (
-                    (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
-                    ;;Scanned ONCE per transaction and threaded through every holder: the trackers
-                    ;;cannot change inside this tx, so a per-holder rescan would be identical work.
-                    (leg-rows:object (URH_AQP|ScoreBackfillLegRows pool-id))
-                )
-                (map
-                    (lambda (b:string)
-                        (ref-SCR::XE_ApplyRawBaseDelta b pool-id score-id
-                            ;;target - current, both read HERE, after every earlier write in this map
-                            (-
-                                (URH_AQP|ScoreTargetBaseForBeneficiary
-                                    pool-id score-id b
-                                    (at "nat-rows" leg-rows)
-                                    (at "frz-rows" leg-rows)
-                                    (at "slp-rows" leg-rows))
-                                (ref-SCR::UR_U-SCR|UserScoreBaseScore b pool-id score-id)
-                            )
-                        )
-                    )
-                    beneficiaries
-                )
-            )
-        )
-        (URCi_BackfillScoreSlice beneficiaries
-            [(format "Re-rated {} holder(s) of score {} in pool {}"
-                [(length beneficiaries) score-id pool-id])])
-    )
-    (defun C_BeginScoreRevoke:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string executor:string pool-id:string score-id:string)
-        @doc "PHASE 1 of 3 — begin retiring <score-id> from <pool-id>: vacate its pool slot and \
-            \ freeze the pool. Pool owner. \
-            \ \
-            \ WHY REVOKE NEEDED THREE PHASES AT ALL. `C_RevokeScore` refuses a score whose totals \
-            \ are not zero, which is right -- cutting the link would strand that weight in the \
-            \ score's totals and `nzs-count` with nothing left able to reverse it. But it also made \
-            \ revoke unreachable on any pool somebody had staked into, because an admin cannot \
-            \ unstake on a holder's behalf and there was no other way to reach zero. So the \
-            \ requirement became a GOAL instead of a precondition: \
-            \ \
-            \   1] this vacates the SLOT, so the score stops being credited by new stakes \
-            \   2] `Cp_DrainScoreSlice` retires the holders in parallel slices \
-            \   3] `CC_FinalizeScoreRevoke` cuts the link once the work is provably done \
-            \ \
-            \ UNSLOTTED-BUT-STILL-LINKED IS THE PENDING-REVOKE MARKER, which is why none of this \
-            \ needs a new column or a migration transaction: the asymmetry between the pool's slots \
-            \ and the score's own link already expresses 'being retired', and the surviving link is \
-            \ what still tells the orphan scan which pool those rows belong to. \
-            \ \
-            \ `C_RevokeScore` REMAINS the one-shot path for a score nobody holds weight in. This is \
-            \ for the case that one refuses. EXECUTOR: pool owner, proven by `CAP_PoolOwner` plus \
-            \ `UEV_ExecutorIzPoolOwner` in `AQP|C>BEGIN-SCORE-REVOKE` (canon 2.2)."
-        (P|UEV_IMC)
-        (let
-            (
-                (slot-index:integer (URC_ScoreSlotIndexForScore pool-id score-id))
-            )
-            (with-capability (AQP|C>BEGIN-SCORE-REVOKE patron executor pool-id score-id slot-index)
-                (do
-                    ;;1] the score stops being employed -- no new stake can credit it
-                    (XI_RevokeScoreFromPool pool-id slot-index)
-                    ;;2] freeze: a stake mid-drain would re-create the weight the drain retires
-                    (WU_Pool|SweepInProgress pool-id true)
-                    ;;The holder count is NOT reported here on purpose: reading it is a table scan,
-                    ;;and a `C_` whose tree reaches one must be renamed `CC_` by the prefix canon.
-                    ;;The caller reads `URHC_AQP|ScoreDrainOutstanding` itself to size its slices.
-                    (URCi_BeginScoreRevoke
-                        [(format "Score {} unslotted from pool {}: pool frozen. Drain its holders, finalize, then clear."
-                            [score-id pool-id])])
-                )
-            )
-        )
-    )
-    (defun Cp_DrainScoreSlice:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string pool-id:string score-id:string accounts:[string])
-        @doc "PHASE 2 of 3 — HYDRA FED SLICE: retire exactly the listed holders of a score that is \
-            \ mid-revoke, driving each stored base to 0.0. Run one per slice of \
-            \ `URHC_AQP|ScoreDrainOutstanding`; order-independent and sendable in parallel. \
-            \ \
-            \ IDEMPOTENT FOR THE SAME REASON THE RE-RATE SLICE IS, but more simply: the target here \
-            \ is 0.0 by definition, so a holder already drained yields a delta of exactly 0.0 and \
-            \ nothing moves. A replayed slice, an overlapping slice and a repeated account are all \
-            \ harmless, and no job state is needed -- `URHC_AQP|ScoreDrainOutstanding` reading [] IS \
-            \ the completion record, and it is what phase 3 re-checks. \
-            \ \
-            \ EXECUTORLESS BY DESIGN (canon 2.2, as for the re-rate slice and the anchor syncs): the \
-            \ accounts named are SUBJECTS of a retirement the pool owner already authorised in phase \
-            \ 1, not signatories. Inventing an executor would imply a permission that is \
-            \ deliberately not required."
-        (P|UEV_IMC)
-        (with-capability (AQP|C>DRAIN-SCORE-SLICE patron pool-id score-id accounts)
-            (let
-                (
-                    (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
-                )
-                (map
-                    (lambda (a:string) (ref-SCR::XE_DrainBase a pool-id score-id))
-                    accounts
-                )
-            )
-        )
-        (URCi_DrainScoreSlice accounts
-            [(format "Retired {} holder(s) of score {} in pool {}" [(length accounts) score-id pool-id])])
-    )
-    (defun CC_FinalizeScoreRevoke:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string executor:string pool-id:string score-id:string)
-        @doc "PHASE 3 of 3 — cut the aqpool-link now that no holder carries weight for the score. \
-            \ Pool owner. Refused while a single holder remains, re-reading the drain's own work \
-            \ list rather than trusting a flag: with the link gone even the orphan scan loses the \
-            \ pool those rows belonged to, so this is the last moment at which the remaining work \
-            \ is still discoverable. \
-            \ \
-            \ Does NOT release the pool freeze -- `CC_ClearPoolSweep` does, and only when EVERY \
-            \ score on the pool is clear. A pool mid-revoke on two scores must finish both. \
-            \ EXECUTOR: pool owner, proven in `AQP|C>FINALIZE-SCORE-REVOKE` (canon 2.2)."
-        (P|UEV_IMC)
-        (UEV_AQP|ScoreDrainComplete pool-id score-id)
-        (with-capability (AQP|C>FINALIZE-SCORE-REVOKE patron executor pool-id score-id)
-            (let
-                (
-                    (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
-                )
-                (ref-SCR::XE_RevokeAqpoolLink score-id pool-id)
-            )
-        )
-        (URCi_FinalizeScoreRevoke
-            [(format "Score {} fully retired from pool {}: link cut. Pool stays frozen until CC_ClearPoolSweep."
-                [score-id pool-id])])
-    )
-    (defun C_SyncTrueFungibleAnchors:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string executee:string dptf-id:string)
-        @doc "Pool-agnostic ANK repair when new TF anchors issued after stake. Reads BenDptfTotal, \
-            \ refreshes promile, stamps last-ank-sync-count. SCORE boosted unchanged (lazy on next stake). \
-            \ \
-            \ EXECUTORLESS BY DESIGN, and <executee> is exactly that (canon 2.2, 2026-09-22). \
-            \ The capability validates that the beneficiary EXISTS and is a standard account \
-            \ (UEV_StakeBeneficiaryAccount) and nothing else; it is never ownership-checked. \
-            \ Acted upon, needing no signature, only type-validated: the executee test \
-            \ verbatim, and the same disposition DPDC-I reached for <creator-account> under \
-            \ audit #53L. \
-            \ \
-            \ There is NO executor to name, and inventing one would be worse than none (4f). \
-            \ This is permissionless maintenance: it recomputes anchor values from the \
-            \ beneficiary's ACTUAL balances, so every outcome is the truth, and the PATRON pays \
-            \ for it. A third party -- typically whoever issued the new anchors that made the \
-            \ values stale -- can and should be able to trigger the repair. Requiring the \
-            \ beneficiary's signature would remove that path and protect nothing: the only \
-            \ thing a caller can do here is make someone else's data correct at their own \
-            \ expense. \
-            \ (patron/executor canon 2.2, EXECUTORLESS + executee, 2026-09-22.)"
-        (P|UEV_IMC)
-        (with-capability (AQP|C>SYNC-TF-ANCHORS patron executee dptf-id)
-            (let
-                (
-                    (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
-                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
-                    ;;
-                    (total:decimal (UR_AQP|BenDptfTotalBalance executee dptf-id))
-                    (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
-                    (ico-ank:object{IgnisCollectorV4.OutputCumulator}
-                        (ref-ANK::XE_UpdateTrueFungibleUserAnchorValues executee dptf-id total)
-                    )
-                    (ico-meta:object{IgnisCollectorV4.OutputCumulator}
-                        (XB_SetBenDptfAnkSyncCount executee dptf-id)
-                    )
-                    (ico-gas:object{IgnisCollectorV4.OutputCumulator}
-                        (URCi_SyncTrueFungibleAnchors [executee dptf-id])
-                    )
-                )
-                (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico-ank ico-meta ico-gas] [])
-            )
-        )
-    )
-    (defun C_SyncCollectableAnchors:object{IgnisCollectorV4.OutputCumulator}
-        (patron:string executee:string collectable-id:string son:bool)
-        @doc "Pool-agnostic ANK repair for DPSF (son=true) or DPNF (son=false). Reads Ben* nonce rollup, \
-            \ absolute resync via AQP-ANK::XE_Resync*, stamps Ben*AnkMeta. Talos splits SF/NF shells. \
-            \ URD inventory is read before with-capability (select illegal in defcap). \
-            \ \
-            \ EXECUTORLESS BY DESIGN, and <executee> is the EXECUTEE (patron/executor \
-            \ canon 2.2, 2026-09-22). The capability validates that the beneficiary EXISTS and \
-            \ is a standard account (UEV_StakeBeneficiaryAccount) and nothing else -- it is \
-            \ never ownership-checked. Acted upon, needing no signature, only type-validated: \
-            \ the executee test verbatim, and the same disposition DPDC-I reached for \
-            \ <creator-account> under audit #53L. \
-            \ \
-            \ There is NO executor to name, and inventing one would be worse than none (4f). \
-            \ This is permissionless maintenance: it recomputes anchor values from the \
-            \ beneficiary's ACTUAL balances, so every outcome is the truth, and the PATRON pays \
-            \ for it. A third party -- typically whoever issued the new anchors that made the \
-            \ values stale -- can and should be able to trigger the repair. Requiring the \
-            \ beneficiary's signature would remove that path and protect nothing: the only \
-            \ thing a caller can do here is make someone else's data correct at their own \
-            \ expense. \
-            \ (patron/executor canon 2.2, EXECUTORLESS + executee, 2026-09-22.)"
-        (P|UEV_IMC)
-        (let
-            (
-                (supplies:[object]
-                    (if son
-                        (URH_AQP|BenDpsfActiveNonceSupplies executee collectable-id)
-                        (URH_AQP|BenDpnfActiveNonceSupplies executee collectable-id)
-                    )
-                )
-            )
-            (with-capability (AQP|C>SYNC-COLLECTABLE-ANCHORS patron executee collectable-id son)
-                (let
-                    (
-                        (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
-                        (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
-                        ;;
-                        (nonces:[integer] (map (at "nonce") supplies))
-                        (nonce-amounts:[integer] (map (at "amount") supplies))
-                        (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
-                        (ico-ank:object{IgnisCollectorV4.OutputCumulator}
-                            (if son
-                                (ref-ANK::XE_ResyncSemiFungibleUserAnchorValues
-                                    executee collectable-id nonces nonce-amounts
-                                )
-                                (ref-ANK::XE_ResyncNonFungibleUserAnchorValues
-                                    executee collectable-id nonces
-                                )
-                            )
-                        )
-                        (ico-meta:object{IgnisCollectorV4.OutputCumulator}
-                            (XB_SetBenCollectableAnkSyncCount executee collectable-id son)
-                        )
-                        (ico-gas:object{IgnisCollectorV4.OutputCumulator}
-                            (URCi_SyncCollectableAnchors [executee collectable-id])
-                        )
-                    )
-                    (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico-ank ico-meta ico-gas] [])
+                    (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                        [ (at "oc" norm)
+                          (ref-TFT::C_Transfer patron AQP|SC_NAME destination (at "token" norm) (at "amount" norm) true) ]
+                        [destination])
                 )
             )
         )
     )
 
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          FVT|XE>DISPOSE-ROYALTY
+    (defun XE_BurnRoyalty:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string fvt-id:string reward-dptf-id:string)
+        @doc "DSA royalty disposal (BURN): zero the royalty pool (reward-dptf) of <fvt-id>, IGNIS-normalize it to \
+            \ OURO if needed, and BURN the whole balance in place from the AQP pool-vault custody (AQP|SC_NAME — \
+            \ which holds the autonomic burn role via DALOS UR_AutonomicRoles; FVT is a registered DPTF IMC caller). \
+            \ P|UEV_IMC + FVT|XE>DISPOSE-ROYALTY. Returns the (compress + burn) OutputCumulator."
+        (P|UEV_IMC)
+        (with-capability (FVT|XE>DISPOSE-ROYALTY fvt-id reward-dptf-id)
+            (let
+                (
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (royalty:decimal (UR_FVT-RG|RoyaltyRewards fvt-id reward-dptf-id))
+                )
+                (WU_RpsGlobal|RoyaltyRewards fvt-id reward-dptf-id 0.0)
+                (let
+                    (
+                        (norm:object (XI_NormalizeRoyalty patron reward-dptf-id royalty))
+                    )
+                    (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                        [ (at "oc" norm)
+                          (ref-DPTF::C_Burn patron AQP|SC_NAME (at "token" norm) (at "amount" norm)) ]
+                        [reward-dptf-id])
+                )
+            )
+        )
+    )
+
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          FVT|XE>DISPOSE-ROYALTY
+    (defun XE_FuelRoyalty:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string fvt-id:string reward-dptf-id:string swpair:string)
+        @doc "DSA royalty disposal (FUEL): zero the royalty pool (reward-dptf) of <fvt-id>, IGNIS-normalize it to \
+            \ OURO if needed, and FUEL <swpair> with the whole balance from the AQP pool-vault custody — adds \
+            \ liquidity WITHOUT minting LP (SWPLC::C_Fuel), boosting LP value. The NORMALIZED token must be one of \
+            \ the swpair's tokens; the fuel amount goes in its slot, 0 in the others. P|UEV_IMC + FVT|XE>DISPOSE-ROYALTY \
+            \ (P|RPS|REMOTE-GOV custody authority). FVT is a registered SWPLC IMC caller. Returns the (compress + \
+            \ fuel) OutputCumulator."
+        (P|UEV_IMC)
+        (with-capability (FVT|XE>DISPOSE-ROYALTY fvt-id reward-dptf-id)
+            (let
+                (
+                    (ref-SWP:module{SwapperV5} SWP)
+                    (ref-SWPLC:module{SwapperLiquidityClientV3} SWPLC)
+                    (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
+                    (royalty:decimal (UR_FVT-RG|RoyaltyRewards fvt-id reward-dptf-id))
+                )
+                (WU_RpsGlobal|RoyaltyRewards fvt-id reward-dptf-id 0.0)
+                (let
+                    (
+                        (norm:object (XI_NormalizeRoyalty patron reward-dptf-id royalty))
+                        (pool-tokens:[string] (ref-SWP::UR_PoolTokens swpair))
+                    )
+                    (enforce (contains (at "token" norm) pool-tokens) "Normalized royalty token is not a token of the swpair")
+                    (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                        [ (at "oc" norm)
+                          (ref-SWPLC::C_Fuel patron AQP|SC_NAME swpair
+                              (map (lambda (t:string) (if (= t (at "token" norm)) (at "amount" norm) 0.0)) pool-tokens)
+                              true true) ]
+                        [reward-dptf-id])
+                )
+            )
+        )
+    )
+
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
+    (defun XE_BankScorePendingRewards:object{IgnisCollectorV4.OutputCumulator}
+        (beneficiary-id:string pool-id:string plan:object)
+        @doc "Forward (stake/unstake/collect flow): bank the beneficiary's pending per-score rewards for \
+            \ <pool-id> into the claimable ledger following <plan> (the pre-computed settle plan). P|UEV_IMC + SECURE."
+        (P|UEV_IMC)
+        (with-capability (SECURE)
+            (do
+                (XI_1|BankScorePendingRewards beneficiary-id pool-id plan)
+                (UC_EmptyOc)
+            )
+        )
+    )
+
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
+    (defun XE_BookStakeUnclaimedCounts:object{IgnisCollectorV4.OutputCumulator}
+        (beneficiary-id:string pool-id:string settle-bundle:object{AcquisitionSchemasV5.FVT|StakeSettleBundle})
+        @doc "Forward (stake/unstake/collect flow): book the beneficiary's unclaimed-reward counts for \
+            \ <pool-id> from <settle-bundle> so later collects settle the correct outstanding units. P|UEV_IMC + RPS|XE>WRITE. \
+            \ \
+            \ MERGED 2026-11-09 FROM TWO LIVE DUPLICATES. A second copy of this function existed as \
+            \ `XE_XI_BookStakeUnclaimedCounts` -- both declared in the interface, both reached: this one from VCT by \
+            \ DOT-CALL, that one from FVT by MODREF, 6 and 5 call sites. They were FUNCTIONALLY \
+            \ IDENTICAL: same inner `XI_`, same authority, because `RPS|XE>WRITE` and `SECURE` \
+            \ grant the same thing -- that defcap only `compose-capability`s SECURE. What differed \
+            \ was cosmetic: an untyped `settle-bundle` here against the schema-typed one there. \
+            \ \
+            \ THE SURVIVOR TAKES THE STRONGER SHAPE -- the typed parameter, which matches the inner \
+            \ function's own signature, so a malformed bundle is refused at the module boundary \
+            \ rather than one call deeper. Nothing is relaxed: every caller already had to satisfy \
+            \ that schema or the call would have failed inside. \
+            \ \
+            \ WHY IT SURVIVED SO LONG -- a NON-CANONICAL PREFIX HID IT. `XE_XI_` has no form in the \
+            \ canon, so the compound name read as a different KIND of thing rather than as a second \
+            \ copy of this one. It surfaced only when the prefix sweep tried to rename it and \
+            \ COLLIDED with this name. See FINDINGS-2026-11-08.md F8."
+        (P|UEV_IMC)
+        (with-capability (RPS|XE>WRITE)
+            (XI_BookStakeUnclaimedCounts beneficiary-id pool-id settle-bundle)
+        )
+    )
+
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
+    (defun XE_CheckpointStakeRps:object{IgnisCollectorV4.OutputCumulator}
+        (beneficiary-id:string pool-id:string settle-bundle:object{AcquisitionSchemasV5.FVT|StakeSettleBundle})
+        @doc "Forward (stake/unstake/collect flow): checkpoint the beneficiary's reward-per-share (RPS) baseline \
+            \ for <pool-id> from <settle-bundle> so subsequent accrual is measured from the new stake state. P|UEV_IMC + RPS|XE>WRITE. \
+            \ \
+            \ MERGED 2026-11-09 FROM TWO LIVE DUPLICATES. A second copy of this function existed as \
+            \ `XE_XI_CheckpointStakeRps` -- both declared in the interface, both reached: this one from VCT by \
+            \ DOT-CALL, that one from FVT by MODREF, 6 and 5 call sites. They were FUNCTIONALLY \
+            \ IDENTICAL: same inner `XI_`, same authority, because `RPS|XE>WRITE` and `SECURE` \
+            \ grant the same thing -- that defcap only `compose-capability`s SECURE. What differed \
+            \ was cosmetic: an untyped `settle-bundle` here against the schema-typed one there. \
+            \ \
+            \ THE SURVIVOR TAKES THE STRONGER SHAPE -- the typed parameter, which matches the inner \
+            \ function's own signature, so a malformed bundle is refused at the module boundary \
+            \ rather than one call deeper. Nothing is relaxed: every caller already had to satisfy \
+            \ that schema or the call would have failed inside. \
+            \ \
+            \ WHY IT SURVIVED SO LONG -- a NON-CANONICAL PREFIX HID IT. `XE_XI_` has no form in the \
+            \ canon, so the compound name read as a different KIND of thing rather than as a second \
+            \ copy of this one. It surfaced only when the prefix sweep tried to rename it and \
+            \ COLLIDED with this name. See FINDINGS-2026-11-08.md F8."
+        (P|UEV_IMC)
+        (with-capability (RPS|XE>WRITE)
+            (XI_CheckpointStakeRps beneficiary-id pool-id settle-bundle)
+        )
+    )
+    ;;{5-XE}  FORWARD ENTRYPOINTS (writer wrappers for FVT)
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
+    (defun XE_FvtRewardAggregate:string (fvt-id:string row:object{AcquisitionSchemasV5.FVT|RewardAggregate})
+        (P|UEV_IMC)
+        (with-capability (RPS|XE>WRITE)
+            (WI_FvtRewardAggregate fvt-id row)
+        )
+    )
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
+    (defun XE_QualitySplit:string (fvt-id:string dptf-id:string mode:string bronze-split:[integer] silver-split:[integer] gold-split:[integer])
+        (P|UEV_IMC)
+        (with-capability (RPS|XE>WRITE)
+            (WI_QualitySplit fvt-id dptf-id mode bronze-split silver-split gold-split)
+        )
+    )
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
+    (defun XE_RpsGlobal:string (fvt-id:string dptf-id:string row:object{AcquisitionSchemasV5.FVT|RPS|Global})
+        (P|UEV_IMC)
+        (with-capability (RPS|XE>WRITE)
+            (WI_RpsGlobal fvt-id dptf-id row)
+        )
+    )
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
+    (defun XE_ScoreEntityLink:string (fvt-id:string score-entity-id:string row:object{AcquisitionSchemasV5.FVT|ScoreEntityLink})
+        (P|UEV_IMC)
+        (with-capability (RPS|XE>WRITE)
+            (WI_ScoreEntityLink fvt-id score-entity-id row)
+        )
+    )
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
+    (defun XE_FvtForcedFixCount|Zero:string (fvt-id:string dptf-id:string user-id:string)
+        (P|UEV_IMC)
+        (with-capability (RPS|XE>WRITE)
+            (WU_FvtForcedFixCount|Zero fvt-id dptf-id user-id)
+        )
+    )
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
+    (defun XE_MemberVault|AvailableRewards:string (fvt-id:string score-entity-id:string dptf-id:string available-rewards:decimal)
+        (P|UEV_IMC)
+        (with-capability (RPS|XE>WRITE)
+            (WU_MemberVault|AvailableRewards fvt-id score-entity-id dptf-id available-rewards)
+        )
+    )
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
+    (defun XE_RpsGlobal|AvailableRewards:string (fvt-id:string dptf-id:string available-rewards:decimal)
+        (P|UEV_IMC)
+        (with-capability (RPS|XE>WRITE)
+            (WU_RpsGlobal|AvailableRewards fvt-id dptf-id available-rewards)
+        )
+    )
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
+    (defun XE_RpsUser|LastRps:string (user-id:string fvt-id:string score-entity-id:string dptf-id:string last-rps:decimal)
+        (P|UEV_IMC)
+        (with-capability (RPS|XE>WRITE)
+            (WU_RpsUser|LastRps user-id fvt-id score-entity-id dptf-id last-rps)
+        )
+    )
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
+    (defun XE_RpsUser|PendingRewards:string (user-id:string fvt-id:string score-entity-id:string dptf-id:string pending-rewards:decimal)
+        (P|UEV_IMC)
+        (with-capability (RPS|XE>WRITE)
+            (WU_RpsUser|PendingRewards user-id fvt-id score-entity-id dptf-id pending-rewards)
+        )
+    )
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
+    (defun XE_2|SettleMemberTier2:object{IgnisCollectorV4.OutputCumulator} (fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
+        (P|UEV_IMC)
+        (with-capability (RPS|XE>WRITE)
+            (XI_2|SettleMemberTier2 fvt-id score-entity-type score-entity-id reward-dptf-id)
+        )
+    )
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
+    (defun XE_AddRewardLink:string (fvt-id:string reward-dptf-id:string segmentation:bool reward-kind:string multiplet-family-id:string)
+        (P|UEV_IMC)
+        (with-capability (RPS|XE>WRITE)
+            (XI_AddRewardLink fvt-id reward-dptf-id segmentation reward-kind multiplet-family-id)
+        )
+    )
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
+    (defun XE_AddScoreEntity:string (fvt-id:string score-entity-type:integer score-entity-id:string swpair:string ghost-weight:decimal)
+        (P|UEV_IMC)
+        (with-capability (RPS|XE>WRITE)
+            (XI_AddScoreEntity fvt-id score-entity-type score-entity-id swpair ghost-weight)
+        )
+    )
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
+    (defun XE_BookCollectUnclaimed:object{IgnisCollectorV4.OutputCumulator} (patron:string pool-id:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string payout:decimal)
+        (P|UEV_IMC)
+        (with-capability (RPS|XE>WRITE)
+            (XI_BookCollectUnclaimed patron pool-id fvt-id score-entity-type score-entity-id reward-dptf-id payout)
+        )
+    )
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
+    (defun XE_FixUserFvtDeb:object{IgnisCollectorV4.OutputCumulator} (user-id:string fvt-id:string)
+        (P|UEV_IMC)
+        (with-capability (RPS|XE>WRITE)
+            (XI_FixUserFvtDeb user-id fvt-id)
+        )
+    )
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
+    (defun XE_FixUserFvtDebPenalizedIn:object{IgnisCollectorV4.OutputCumulator} (fvt-id:string reward-dptf-id:string user-id:string members:[string] reward-rows:[string])
+        (P|UEV_IMC)
+        (with-capability (RPS|XE>WRITE)
+            (XI_FixUserFvtDebPenalizedIn fvt-id reward-dptf-id user-id members reward-rows)
+        )
+    )
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
+    (defun XE_FixUserFvtDebIn:object{IgnisCollectorV4.OutputCumulator} (fvt-id:string user-id:string members:[string] reward-rows:[string])
+        @doc "NON-penalized fix that takes the HOISTED member/reward-row lists — the plain twin of \
+            \ XE_FixUserFvtDebPenalizedIn, added 2026-10-23 for the non-owner inject branch. \
+            \ Without it that branch had to call XE_FixUserFvtDeb, which re-derives both lists \
+            \ INSIDE itself (two heavy selects per user), costing 2N heavy reads against the owner \
+            \ branch's 2. Same fix, same absence of a forced-fix count; only the scans are shared."
+        (P|UEV_IMC)
+        (with-capability (RPS|XE>WRITE)
+            (XI_FixUserFvtDebIn user-id fvt-id members reward-rows)
+        )
+    )
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
+    (defun XE_SetMinInjectAmount:string (fvt-id:string reward-dptf-id:string min-inject-amount:decimal)
+        @doc "Set the lane's per-injection floor. Owner authority is proven by the caller's \
+            \ FVT|C>SET-MIN-INJECT-AMOUNT, exactly as every other reward-link setter here."
+        (P|UEV_IMC)
+        (with-capability (RPS|XE>WRITE)
+            (XI_SetMinInjectAmount fvt-id reward-dptf-id min-inject-amount)
+        )
+    )
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
+    (defun XE_FixUserMemberDeb:object{IgnisCollectorV4.OutputCumulator} (user-id:string fvt-id:string score-entity-type:integer score-entity-id:string)
+        (P|UEV_IMC)
+        (with-capability (RPS|XE>WRITE)
+            (XI_FixUserMemberDeb user-id fvt-id score-entity-type score-entity-id)
+        )
+    )
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
+    (defun XE_FvtAddStream:object{IgnisCollectorV4.OutputCumulator} (op-key:string patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
+        (P|UEV_IMC)
+        (with-capability (RPS|XE>WRITE)
+            (XIv_FvtAddStream op-key patron injector fvt-id reward-dptf-id amount duration)
+        )
+    )
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
+    (defun XE_FvtInjectCore:object{IgnisCollectorV4.OutputCumulator} (op-key:string patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal)
+        (P|UEV_IMC)
+        (with-capability (RPS|XE>WRITE)
+            (XI_FvtInjectCore op-key patron injector fvt-id reward-dptf-id amount)
+        )
+    )
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
+    (defun XE_FvtSweepRecomputeWindow:integer (score-ids:[string] boost-class-id:string win-lo:integer win-hi:integer)
+        (P|UEV_IMC)
+        (with-capability (RPS|XE>WRITE)
+            (XI_FvtSweepRecomputeWindow score-ids boost-class-id win-lo win-hi)
+        )
+    )
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
+    (defun XE_IssueMultipletFamily:string (token-0-id:string
+            token-1-id:string
+            token-2-id:string
+            ats-0-1-id:string
+            ats-1-2-id:string)
+        (P|UEV_IMC)
+        (with-capability (RPS|XE>WRITE)
+            (XI_IssueMultipletFamily token-0-id token-1-id token-2-id ats-0-1-id ats-1-2-id)
+        )
+    )
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
+    (defun XE_ReleaseStream:object{IgnisCollectorV4.OutputCumulator} (fvt-id:string reward-dptf-id:string)
+        (P|UEV_IMC)
+        (with-capability (RPS|XE>WRITE)
+            (XI_ReleaseStream fvt-id reward-dptf-id)
+        )
+    )
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
+    (defun XE_RotateOwnership:string (fvt-id:string new-owner-konto:string)
+        (P|UEV_IMC)
+        (with-capability (RPS|XE>WRITE)
+            (XI_RotateOwnership fvt-id new-owner-konto)
+        )
+    )
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
+    (defun XE_RpsPreScore:object{IgnisCollectorV4.OutputCumulator} (beneficiary-id:string pool-id:string settle-bundle:object{AcquisitionSchemasV5.FVT|StakeSettleBundle})
+        (P|UEV_IMC)
+        (with-capability (RPS|XE>WRITE)
+            (XI_RpsPreScore beneficiary-id pool-id settle-bundle)
+        )
+    )
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
+    (defun XE_SetMosaic:string (fvt-id:string mosaic:bool)
+        (P|UEV_IMC)
+        (with-capability (RPS|XE>WRITE)
+            (XI_SetMosaic fvt-id mosaic)
+        )
+    )
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
+    (defun XE_SetSplitMode:string (fvt-id:string split-mode:string)
+        (P|UEV_IMC)
+        (with-capability (RPS|XE>WRITE)
+            (XI_SetSplitMode fvt-id split-mode)
+        )
+    )
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
+    (defun XE_SyncFvtPresence:object{IgnisCollectorV4.OutputCumulator} (beneficiary-id:string distinct-fvts:[string] direction:bool)
+        (P|UEV_IMC)
+        (with-capability (RPS|XE>WRITE)
+            (XI_SyncFvtPresence beneficiary-id distinct-fvts direction)
+        )
+    )
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
+    (defun XE_SyncFvtTotalDebMirrors:object{IgnisCollectorV4.OutputCumulator} (pre-member-debs:[object{AcquisitionSchemasV5.FVT|MemberPreDeb}])
+        (P|UEV_IMC)
+        (with-capability (RPS|XE>WRITE)
+            (XI_SyncFvtTotalDebMirrors pre-member-debs)
+        )
+    )
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
+    (defun XE_SyncTripletLaneWeights:object{IgnisCollectorV4.OutputCumulator} (beneficiary-id:string settle-plans:[object{AcquisitionSchemasV5.FVT|SettleScorePlan}])
+        (P|UEV_IMC)
+        (with-capability (RPS|XE>WRITE)
+            (XI_SyncTripletLaneWeights beneficiary-id settle-plans)
+        )
+    )
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
+    (defun XE_ToggleRewardLink:string (fvt-id:string reward-dptf-id:string enabled:bool)
+        (P|UEV_IMC)
+        (with-capability (RPS|XE>WRITE)
+            (XI_ToggleRewardLink fvt-id reward-dptf-id enabled)
+        )
+    )
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
+    (defun XE_ToggleScoreEntityLink:string (fvt-id:string score-entity-id:string enabled:bool)
+        (P|UEV_IMC)
+        (with-capability (RPS|XE>WRITE)
+            (XI_ToggleScoreEntityLink fvt-id score-entity-id enabled)
+        )
+    )
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
+    (defun XE_TransferRewardDptfFromVault:object{IgnisCollectorV4.OutputCumulator} (patron:string collector:string pool-id:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
+        (P|UEV_IMC)
+        (with-capability (RPS|XE>WRITE)
+            (XI_TransferRewardDptfFromVault patron collector pool-id fvt-id score-entity-type score-entity-id reward-dptf-id)
+        )
+    )
 )
 
-
-
-;;
-
-;; --- tables for 03_AQP.pact (13 defined) ---
+;; --- tables for 04_RPS.pact (16 defined) ---
 ;; UPGRADE MODE: this module is assumed already deployed, so its
 ;; tables already exist and (create-table) would ABORT the whole
 ;; transaction. They are listed here, commented, for reference.
 ;; If any of these is NEW since the last deploy, uncomment JUST it.
 ;; (create-table P|T)
 ;; (create-table P|MT)
-;; (create-table AQP|T|Pool)
-;; (create-table AQP|T|DPTFTracker)
-;; (create-table AQP|T|DPOFTracker)
-;; (create-table AQP|T|DPSFTracker)
-;; (create-table AQP|T|DPNFTracker)
-;; (create-table AQP|T|BenDptfTotal)
-;; (create-table AQP|T|BenDpsfNonceTotal)
-;; (create-table AQP|T|BenDpnfNonceTotal)
-;; (create-table AQP|T|BenDpsfAnkMeta)
-;; (create-table AQP|T|BenDpnfAnkMeta)
-;; (create-table AQP|T|UserOccupancy)
+;; (create-table FVT|T|RPS|Global)
+;; (create-table FVT|T|RPS|Member)
+;; (create-table FVT|T|RPS|User)
+;; (create-table FVT|T|RPS|Stream)
+;; (create-table FVT|T|MemberUserWeight)
+;; (create-table FVT|T|MemberVault)
+;; (create-table FVT|T|ForcedFixCount)
+;; (create-table FVT|T|RewardAggregate)
+;; (create-table FVT|T|ScoreEntityLink)
+;; (create-table FVT|T|MultipletFamily)
+;; (create-table FVT|T|UserPresence)
+;; (create-table FVT|T|AgencyFee)
+;; (create-table FVT|T|QualitySplit)
+;; (create-table FVT|T|DsaOracleConfig)
 

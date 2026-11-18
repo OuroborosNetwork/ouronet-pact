@@ -698,6 +698,9 @@
         ,"AQP-SCR|C_CreateScoreBoostClassLink"          : 26.0
         ,"AQP-SCR|C_CreateScoreBoostLink"               : 13.0
         ,"AQP-SCR|C_EnableDebBoost"                     : 13.0
+        ;;Same shape and same cost as EnableDebBoost: one owner-gated flag on the score row, one
+        ;;point write, refused unless the score is empty. Nothing scans.
+        ,"AQP-SCR|C_SetSingleShareWeight"                : 13.0
         ,"AQP-SCR|C_IssueLiquidityScore"                : 28.0
         ,"AQP-SCR|C_IssueNonFungibleScore"              : 28.0
         ,"AQP-SCR|C_IssueNonFungibleScoreDefinition"    : 48.0

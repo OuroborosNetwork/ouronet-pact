@@ -19,7 +19,7 @@ Below the scoring module, which reads a single aggregated value from it.
 
 | | |
 |---|---|
-| module hash | `FjO4M8jjqkmyqBARkK3oC4QQR_w0QVDohe0etb3Kook` |
+| module hash | `6qLDPdrTAFXif19SRAEyilQd6Uhz1Bu_64pYEb-xmmw` |
 | deployed size | 129,132 characters |
 | implements | `OuronetPolicyV2`, `AcquisitionAnchorsV3` |
 | repository source | `1_SOVEREIGN/STAGE_02/2_Core/03_AQP/01_ANK.pact` |

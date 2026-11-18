@@ -19,8 +19,8 @@
         (patron:string KST.ANHD)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV6} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV8} TS02-C3)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV7} AQP-FVT)
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "CodingDivisionTreasury"))
         (score-id:string (ref-U|DALOS::UDC_Makeid "TheCodingDivision"))
         (wstoa-id:string (ref-DALOS::UR_WrappedStoaID))
@@ -29,17 +29,24 @@
     (print (expect (format "<<TX-AQP-FA01>> score-entity-link enabled pre got={}" [(ref-FVT::UR_FVT-SEL|Enabled fvt-id score-id)]) true (ref-FVT::UR_FVT-SEL|Enabled fvt-id score-id)))
     (print (format "<(C_ToggleScoreEntityLink disable)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_ToggleScoreEntityLink patron (AQP-FVT.UR_FVT|OwnerKonto fvt-id) fvt-id 1 score-id false)]))
     (print (expect (format "<<TX-AQP-FA01>> score-entity-link disabled got={}" [(ref-FVT::UR_FVT-SEL|Enabled fvt-id score-id)]) false (ref-FVT::UR_FVT-SEL|Enabled fvt-id score-id)))
-    ;;--- guard family, window 1: the score-entity-link is DISABLED for exactly these two lines.
-    ;;UEV_CollectContext checks, in order: sweep-in-progress, vacate-frozen, reward-row-exists,
-    ;;reward-ENABLED, link-row-exists, link-ENABLED. The reward is still on here, so the first
-    ;;four pass and this window isolates the SIXTH guard. (The reward-disabled window further
-    ;;down isolates the FOURTH -- two guards in one validator, each pinned where it is the one
-    ;;that fires.)
+    ;;--- window 1: the score-entity-link is DISABLED for exactly these two lines.
+    ;;
+    ;;THIS ASSERTION USED TO EXPECT A REFUSAL, AND THAT PINNED THE DEFECT AS CORRECT BEHAVIOUR.
+    ;;Until 2026-11-09 `UEV_CollectContext` enforced `UR_FVT-SEL|Enabled`, so disabling a member
+    ;;also blocked COLLECTION of what it had already earned -- and because the same validator
+    ;;guards `FVT|XE>EVICT-REWARD`, the owner could not evict around it either. Membership is
+    ;;permanent (`SCR|Schema.fvt-link` is write-once), so the toggle can only mean "stop earning";
+    ;;the UI already promises exactly that -- *"its already-accrued rewards are untouched"* -- and
+    ;;the chain did not deliver it. See FINDINGS-2026-11-08.md F3.
+    ;;
+    ;;THE TEST THAT PINNED IT WAS NOT A BAD TEST, which is the uncomfortable part: it isolated one
+    ;;guard precisely, named it, and explained the ordering. It asserted the code did what the code
+    ;;did. Nothing in a guard-by-guard test can ask whether the guard SHOULD be there.
     (map print
         [
-            (expect-failure "<<TX-AQP-FA01>> UEV_CollectContext refuses a DISABLED score-entity-link"
-                "ScoreEntityLink must be enabled for collect"
-                (AQP-FVT.UEV_CollectContext patron fvt-id 1 score-id wstoa-id))
+            (expect "<<TX-AQP-FA01>> a DISABLED score-entity-link can still COLLECT what it already earned"
+                true
+                (let ((_ (AQP-FVT.UEV_CollectContext patron fvt-id 1 score-id wstoa-id))) true))
         ]
     )
     (print (format "<(C_ToggleScoreEntityLink enable)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_ToggleScoreEntityLink patron (AQP-FVT.UR_FVT|OwnerKonto fvt-id) fvt-id 1 score-id true)]))
@@ -50,12 +57,17 @@
     ;;and the score-entity-link was re-enabled above -- so collect now stops at the FOURTH guard
     ;;instead of the sixth, and inject stops at its own reward-enabled guard. Both are read-only
     ;;calls, so nothing here disturbs the re-enable that follows.
+    ;;THE ASYMMETRY IS THE WHOLE POINT OF THIS WINDOW, and it is why both halves are asserted
+    ;;together: a disabled reward lane must refuse an INJECTION and admit a COLLECT. One flag, two
+    ;;questions -- "may this lane earn more?" (no) and "may what it already earned be paid out?"
+    ;;(yes). Enforcing it on both paths collapsed them, and the collect half is what stranded
+    ;;every member's rewards in that token.
     (map print
         [
-            (expect-failure "<<TX-AQP-FA01>> UEV_CollectContext refuses a DISABLED reward token"
-                "Reward token is disabled for collect"
-                (AQP-FVT.UEV_CollectContext patron fvt-id 1 score-id wstoa-id))
-            (expect-failure "<<TX-AQP-FA01>> UEV_InjectContext refuses a DISABLED reward token"
+            (expect "<<TX-AQP-FA01>> a DISABLED reward token can still be COLLECTED (already-accrued is payable)"
+                true
+                (let ((_ (AQP-FVT.UEV_CollectContext patron fvt-id 1 score-id wstoa-id))) true))
+            (expect-failure "<<TX-AQP-FA01>> ...but a DISABLED reward token still refuses an INJECTION — accrual stays gated"
                 "Reward token is disabled for inject"
                 (AQP-FVT.UEV_InjectContext patron fvt-id wstoa-id 1.0))
         ]
@@ -99,8 +111,8 @@
     (
         (patron:string KST.ANHD)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV6} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV8} TS02-C3)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV7} AQP-FVT)
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "SnakesTreasury"))
         (can-upgrade-pre:bool (ref-FVT::UR_FVT|CanUpgrade fvt-id))
     )
@@ -155,7 +167,7 @@
         (patron:string KST.ANHD)
         (ouro-id:string "OURO-98c486052a51")
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV6} AQP-FVT)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV7} AQP-FVT)
         (farm-id:string (ref-U|DALOS::UDC_Makeid "OuroLpFarm"))
         (farm-class:integer (try -1 (ref-FVT::UR_FVT|FvtClass farm-id)))
         (denom:decimal (try 0.0 (ref-FVT::URC_InjectDenominator farm-id)))
@@ -195,9 +207,9 @@
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
-        (ref-RPS:module{AcquisitionRewardPerShareV5} RPS)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV6} AQP-FVT)
-        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-RPS:module{AcquisitionRewardPerShareV8} RPS)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV7} AQP-FVT)
+        (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "CodingDivisionTreasury"))
     )
     (let

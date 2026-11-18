@@ -290,7 +290,7 @@ STOA; the constants-only conversion (65 table reads lifted); the `define-set` / 
 
 ## What is open
 
-**462** Talos client functions carry a price; **15** carry no row, and the sheet now says which:
+**463** Talos client functions carry a price; **15** carry no row, and the sheet now says which:
 *(2026-10-25, V14 round: +2 — `AQP-SCR|C_LockScoreDrift` and `AQP-FVT|CC_LatchStreamEligible`,
 the drift-lock / stream-eligible latches.)*
 *(2026-10-30: +2 — the eviction surface became THREE shapes on an owner ruling, so the quartet
@@ -300,8 +300,22 @@ renamed `…EvictMultiRewards`. All three price through the same per-leg compone
 component they drive; the gasless `AA_`/`AAp_` twins are exempt by the `A_`-prefix rule, which is
 why the exempt count moved by two and the priced count by four.)*
 
+*(2026-11-08: one row moved floor -> exact, and it moved because a COMMENT changed.
+`AQP-POOL|C_AddScore` was published COMPLEX at `>= 243` because `SCALES` is run over
+`billing_text`, which deliberately keeps `@doc` and comment prose so `charge()` can harvest
+deter keys out of string literals -- and `SCALES` carries `per-nonce` as a LITERAL PHRASE.
+The freeze-site comment in `C_AddScore` contained "per-nonce TABLE VALUES", so the prose, not
+the code, was setting the classification. Rewriting that comment for the equity share-count
+round dropped the phrase and the row became exact. CHECKED BEFORE ACCEPTING: `URCi_AddScore`
+builds ONE cumulator from a single fixed `UC_IgnisPrice "AQP-POOL|C_AddScore" "add-score"`, with
+no `length`, no `fold` and no item count anywhere in its charge, so `243` is the true price and
+the old `>= 243` was the artefact. The tool's own comment warns that those two literal phrases
+"can match prose"; this is that warning arriving. The lesson is not "avoid the word" -- it is
+that a price classification driven by prose will move when prose moves, so a floor label on a
+fixed charge should be confirmed against the cumulator rather than trusted.)*
+
 ```
-203 exact  ·  191 floor  ·  2 STOA-only  ·  66 exempt  ·  5 unresolved  ·  15 unpriced
+205 exact  ·  190 floor  ·  2 STOA-only  ·  66 exempt  ·  5 unresolved  ·  15 unpriced
 ```
 
 **NEW OP, 2026-10-12: `AQP-POOL|CC_ReassignTrueFungibleStakeBeneficiary`.** TF's counterpart to

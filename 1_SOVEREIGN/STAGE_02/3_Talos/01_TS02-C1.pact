@@ -2,7 +2,7 @@
 ;; History/shared registry: 1_SOVEREIGN/STAGE_02/0_Interfaces/03_Talos.pact
 ;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface TalosStageTwo_ClientOneV4
+(interface TalosStageTwo_ClientOneV5
     @doc "Exposes Stage Two First Batch of Client Functions: \
         \ the SemiFungible Client Functions"
 
@@ -188,8 +188,8 @@
         )
     )
     (defun DPSF|C_MorphEquity (patron:string executor:string id:string input-nonce:integer input-amount:integer output-nonce:integer))
-    (defun DPSF|C_IssueShares (patron:string executor:string id:string millions:integer))
-    (defun DPSF|C_RetireShares (patron:string executor:string id:string millions:integer))
+    (defun DPSF|CC_IssueShares (patron:string executor:string id:string millions:integer))
+    (defun DPSF|CC_RetireShares (patron:string executor:string id:string millions:integer))
     (defun DPSF|C_PauseCompany (patron:string executor:string id:string toggle:bool))
     (defun DPSF|C_SetCompanyBranding (patron:string executor:string id:string logo:string description:string website:string social:[object{BrandingV3.SocialSchema}]))
     (defun DPSF|C_UpgradeCompanyBranding (patron:string executor:string id:string months:integer))
@@ -217,7 +217,7 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements TalosStageTwo_ClientOneV4)
+    (implements TalosStageTwo_ClientOneV5)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -1696,15 +1696,29 @@
     ;; Five wrappers over EQUITY's creator-gated entrypoints. They add no authorisation of
     ;; their own -- EQUITY proves the CREATOR in each capability, then acts as the DPDC smart
     ;; account to perform the DPDC-side write. See `EQUITY|C>COMPANY-ACT`.
-    (defun DPSF|C_IssueShares (patron:string executor:string id:string millions:integer)
+    (defun DPSF|CC_IssueShares (patron:string executor:string id:string millions:integer)
         @doc "Creates <millions> million new shares in the company <id>. The company's CREATOR \
-            \ is the only account that may call this; <millions> whole millions only."
+            \ is the only account that may call this; <millions> whole millions only. \
+            \ \
+            \ HEAVY, AND THE GATE IS WHY. `UEV_AQP|NoLiveStakeOfAsset` scans the DPSF tracker by \
+            \ asset and refuses issuance while any pool still holds a live stake -- see that \
+            \ function for the measured -10,000 it exists to prevent. The scan is unavoidable \
+            \ here (StoicSyntax 19.3) and share issuance is a rare creator-only governance act, \
+            \ not a daily-hot path. \
+            \ \
+            \ THE GATE LIVES HERE, ONE LAYER UP, BECAUSE IT CANNOT LIVE IN EQUITY. EQUITY deploys \
+            \ at tx 13 and AQP at tx 16, so EQUITY can never ask AQP what is staked -- and EQUITY \
+            \ stays pure logic over DPDC state, with no domain tables of its own. This is the same \
+            \ placement `SCR|C>UPDATE-MULTIPLIERS` uses for the identical problem one input over: \
+            \ its emptiness gate sits in AQP-POOL rather than AQP-SCORE, for the same reason."
         (with-capability (P|TS)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (ref-EQUITY:module{EquityV5} EQUITY)
+                    (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
                 )
+                (ref-AQP::UEV_AQP|NoLiveStakeOfAsset id)
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-EQUITY::C_IssueShares patron executor id millions)
                 )
@@ -1712,16 +1726,24 @@
             )
         )
     )
-    (defun DPSF|C_RetireShares (patron:string executor:string id:string millions:integer)
+    (defun DPSF|CC_RetireShares (patron:string executor:string id:string millions:integer)
         @doc "Retires <millions> million shares of company <id> -- a permissioned burn. The \
             \ retirer must hold the holder's leg of the amount; the escrow's leg is burned \
-            \ alongside it so every package holder's percentage is unchanged."
+            \ alongside it so every package holder's percentage is unchanged. \
+            \ \
+            \ HEAVY FOR THE SAME REASON AS DPSF|CC_IssueShares, and gated by the same validator. \
+            \ RETIREMENT IS NOT THE SAFE DIRECTION. Lowering the share count re-values every \
+            \ package DOWNWARD, so an unstake after a retirement subtracts LESS than its stake \
+            \ added and the row keeps a positive residue -- a holder credited for weight they no \
+            \ longer carry. The sign differs from issuance; the corruption does not."
         (with-capability (P|TS)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV4} IGNIS)
                     (ref-EQUITY:module{EquityV5} EQUITY)
+                    (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
                 )
+                (ref-AQP::UEV_AQP|NoLiveStakeOfAsset id)
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-EQUITY::C_RetireShares patron executor id millions)
                 )

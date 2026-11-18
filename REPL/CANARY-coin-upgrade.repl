@@ -1,0 +1,270 @@
+;;================================================================================
+(print "")
+(print "================================================================")
+(print "FILE  REPL/CANARY-coin-upgrade.repl")
+(print "================================================================")
+(print "THE DEPLOY CANARY. This file exists to FAIL before a coin upgrade ships.")
+(print "")
+(print "ON 2026-11-09 a coin upgrade added a schema field and read it on the COINBASE")
+(print "path. Rows written before the field existed do not carry it, the read aborted,")
+(print "every block's coinbase aborted, chain 0 stopped producing blocks -- and because a")
+(print "transaction needs a block, the repair could no longer be sent AT ALL. The braid")
+(print "froze for ~16h and recovery required a fleet-wide rollback.")
+(print "")
+(print "WHY 32,000 GREEN ASSERTIONS SAID NOTHING. Every other REPL fixture builds its rows")
+(print "with the NEW module already loaded, and `insert` on the new schema always supplies")
+(print "every field. A fresh row can never be missing one. The bug lives in the gap between")
+(print "an OLD ROW and NEW CODE, so only an old module can create the state that exposes it.")
+(print "")
+(print "SO THIS FILE LOADS THE PRE-UPGRADE MODULE FIRST, seeds the vault through genesis,")
+(print "and only then applies the current coin.pact as an upgrade -- exactly the sequence")
+(print "the chain performs. Then it runs the coinbase.")
+(print "")
+
+;;---- phases 1-3: namespaces, stoa-ns interfaces, util. Unchanged by any coin upgrade.
+(load "../00_StoaSandbox/stoa-env/init-phase-01-ns.repl")
+(load "../00_StoaSandbox/stoa-env/init-phase-02-stoa-ns.repl")
+(load "../00_StoaSandbox/stoa-env/init-phase-03-util.repl")
+
+;;================================================================================
+(begin-tx "CANARY-01 - load the PRE-UPGRADE coin and seed an OLD-SCHEMA vault row")
+(print "")
+(print "=== CANARY-01 — the old module writes the old row ==================================")
+(namespace "")
+(env-chain-data {"chain-id": "0"})
+(env-data
+  { "payload_stoa-foundation":
+      { "keys": [ "625ad78ab8c1df826d69e1f0e6457334b8e085b7d256d10be41726ced17fdf74"
+                  "35d7f82a7754d10fc1128d199aadb51cb1461f0eb52f4fa89790a44434f12ed8" ]
+      , "pred": "keys-any" } })
+;;THE FIXTURE IS THE MODULE AS DEPLOYED ON CHAIN, fetched with `describe-module` rather than
+;;taken from git -- the repo copy had drifted (it had lost an `@event`). See _canary/README.md.
+(load "../00_StoaSandbox/_canary/coin-pre-upgrade.pact")
+(create-table coin-table)
+(create-table LocalSupply)
+(create-table UR|StoaTable)
+(create-table UR|LocalSupply)
+(create-table URV|UrStoaVault)
+(create-table URV|UrStoaVaultUser)
+(env-sigs [{"key": "625ad78ab8c1df826d69e1f0e6457334b8e085b7d256d10be41726ced17fdf74", "caps": []}])
+(test-capability (coin.GOVERNANCE))
+(test-capability (coin.GENESIS))
+(define-keyset "stoa-foundation-keyset" (read-keyset "payload_stoa-foundation"))
+;;This writes the USV row in the OLD shape -- the row that breaks the new code.
+(coin.A_InitialiseStoaChain "stoa-foundation" (keyset-ref-guard "stoa-foundation-keyset"))
+(map print
+    [
+        (expect "<<CANARY-01>> the OLD module seeded a vault row"
+            true (>= (coin.UR_URV|VaultNZS) 0))
+    ]
+)
+(print "===^^^===")
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;================================================================================
+(begin-tx "CANARY-02 - apply the UPGRADE over that row, then run the COINBASE")
+(print "")
+(print "=== CANARY-02 — the upgrade, then the block reward =================================")
+(namespace "")
+(env-chain-data {"chain-id": "0"})
+(env-sigs [{"key": "625ad78ab8c1df826d69e1f0e6457334b8e085b7d256d10be41726ced17fdf74", "caps": []}])
+(test-capability (coin.GOVERNANCE))
+;;NO `create-table` HERE, deliberately: this is an UPGRADE, the tables already exist, and the
+;;rows in them are the OLD ones. That is the whole point of the file.
+(load "../00_StoaSandbox/coin.pact")
+;;===> THE ASSERTION THAT WOULD HAVE PREVENTED THE OUTAGE <===
+;;`coinbase` runs on EVERY block and has no error tolerance whatsoever: if it aborts, the chain
+;;stops. Running it against a row written by the previous module is the one check that
+;;distinguishes "the new code is correct" from "the new code is correct on rows it created
+;;itself".
+(env-data { "payload_miner": { "keys": [ "625ad78ab8c1df826d69e1f0e6457334b8e085b7d256d10be41726ced17fdf74" ], "pred": "keys-any" } })
+(test-capability (coin.COINBASE))
+(let
+    (
+        (miner:string "stoa-foundation")
+        (mguard:guard (keyset-ref-guard "stoa-foundation-keyset"))
+    )
+    (let
+        (
+            ;;BOUND ONCE: calling `coinbase` twice would mint twice.
+            (out:string (coin.coinbase miner mguard 1.0))
+            (vault-pre:decimal (coin.UR_URV|VaultSupply))
+        )
+        (map print
+            [
+                (format "<(coinbase against an OLD-SCHEMA vault row)> => \"{}\"" [out])
+                ;;IT MUST RUN TO COMPLETION. `coinbase` returns its closing `format` only if every
+                ;;phase succeeded, including the vault injection -- so the returned text IS the
+                ;;evidence it did not abort. (`(expect ... true true)` here would be vacuous and
+                ;;the gate rejects it, correctly: the whole point is that something executed.)
+                (expect "<<CANARY-02>> the COINBASE runs to completion against a pre-upgrade vault row"
+                    true (contains "succesfully mined" out))
+                ;;AND THE VAULT ACTUALLY RECEIVED THE INJECTION -- chain 0's coinbase is the only
+                ;;caller that funds it, so a positive supply proves the injection leg ran rather
+                ;;than being skipped.
+                (expect (format "<<CANARY-02>> ...and the UrStoa vault was funded by it got={}" [vault-pre])
+                    true (> vault-pre 0.0))
+            ]
+        )
+    )
+)
+;;AND THE FIELD THE COINBASE READS IS READABLE, which is the specific failure: the live chain
+;;returned "Key dormant-cl... not found in object." from a `with-default-read` whose default
+;;named that very field -- because `with-default-read` defaults an absent ROW, not an absent
+;;COLUMN of a row that exists.
+(map print
+    [
+        (expect "<<CANARY-02>> the new field reads on an old row instead of aborting"
+            true (>= (coin.UR_URV|VaultDormantCount) 0))
+        ;;NOTE WHAT IS DELIBERATELY *NOT* DONE HERE. This transaction loaded `coin.pact` ALONE --
+        ;;the module with no migration attached -- so the coinbase above met a genuinely
+        ;;PRE-UPGRADE row. That is the state that halted the chain and the only reason this file
+        ;;exists; running the repair first would destroy it. The shipped repair is a TOP-LEVEL
+        ;;block in the deploy artefact, not a function on the module, and CANARY-02b exercises it
+        ;;by loading that artefact.
+    ]
+)
+(env-sigs [])
+(print "===^^^===")
+(commit-tx)
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;||
+;;||
+(begin-tx "CANARY-02b - the SHIPPED repair block, loaded from the artefact that gets sent")
+(print "")
+(print "=== CANARY-02b — the repair as it actually ships ===================================")
+;;THE REPAIR IS NOT A MODULE FUNCTION (owner ruling, 2026-11-09): it runs once, and Pact can
+;;never remove a definition from a deployed module, so keeping a one-shot migration inside `coin`
+;;would be permanent dead surface on all ten chains. It ships as a TOP-LEVEL `let` in
+;;`Deploy/PureV26/00_deploy.pact` instead.
+;;
+;;WHICH IS WHY THIS TRANSACTION LOADS THE DEPLOY ARTEFACT AND NOT `coin.pact`. Moving the repair
+;;out of the module without moving its tests onto the artefact would have converted nine
+;;assertions into untested code that runs ONCE, with module admin, on ten chains -- the same
+;;category of thing that caused the outage. The artefact is generated by
+;;`REPL/tools/_coindeploy.py`, whose `--check` is fatal in the gate, so what loads here is
+;;byte-for-byte what gets sent.
+;;
+;;AND THE COUNT IS CORRUPTED FIRST. A repair tested only against an already-correct vault passes
+;;without demonstrating anything -- it would write the value that was already there.
+(namespace "")
+(env-chain-data {"chain-id": "0"})
+(env-sigs [{"key": "625ad78ab8c1df826d69e1f0e6457334b8e085b7d256d10be41726ced17fdf74", "caps": []}])
+;;==== CANARY-02b · 01 · corrupt the claimant count ====
+(print "--- [CANARY-02b · 01 · corrupt the claimant count] ---")
+(test-capability (coin.SECURE))
+(coin.XI_URV|UpdateUnclaimedCount true)
+(coin.XI_URV|UpdateUnclaimedCount true)
+(coin.XI_URV|UpdateUnclaimedCount true)
+(let
+    (
+        (bad:integer (coin.UR_URV|VaultUnclaimedCount))
+        (truth:integer (at "true-unclaimed" (coin.URC_URV|VaultCounterAudit)))
+    )
+    (map print
+        [
+            (format "<(unclaimed-count corrupted / true)> => {} / {}" [bad truth])
+            (expect (format "<<CANARY-02b>> the count is now demonstrably WRONG got={} true={}" [bad truth])
+                true (> bad truth))
+        ]
+    )
+)
+(commit-tx)
+
+(begin-tx "CANARY-02b - load the artefact; its top-level repair must correct the count")
+(namespace "")
+(env-chain-data {"chain-id": "0"})
+(env-sigs [{"key": "625ad78ab8c1df826d69e1f0e6457334b8e085b7d256d10be41726ced17fdf74", "caps": []}])
+(test-capability (coin.GOVERNANCE))
+;;==== CANARY-02b · 02 · load the SHIPPED transaction ====
+(print "--- [CANARY-02b · 02 · load the SHIPPED transaction] ---")
+;;This is the whole deploy transaction: the module, then the repair block. Loading it proves the
+;;block's three load-bearing assumptions at once -- that a top-level expression in the upgrade
+;;transaction HOLDS MODULE ADMIN (so `keys` and `update` on the vault tables resolve from outside
+;;the module), that the chain-id test sits ahead of readers that enforce `UEV_ChainZero`, and
+;;that it parses at all.
+(load "../Deploy/PureV26/00_deploy.pact")
+;;==== CANARY-02b · 03 · it CORRECTED the counters ====
+(print "--- [CANARY-02b · 03 · it CORRECTED the counters] ---")
+(let
+    (
+        (a:object (coin.URC_URV|VaultCounterAudit))
+    )
+    (map print
+        [
+            (format "<(audit after the shipped repair)> => {}" [a])
+            ;;EACH COUNTER AGAINST AN INDEPENDENT RECOUNT of the same rows: the audit recomputes
+            ;;from the user table and writes nothing, so this compares STORED DATA against a
+            ;;FRESH COMPUTATION rather than one reader against itself.
+            (expect (format "<<CANARY-02b>> nzs-count == rows holding stake got={}" [(at "stored-nzs" a)])
+                (at "true-nzs" a) (at "stored-nzs" a))
+            (expect (format "<<CANARY-02b>> unclaimed-count == rows with a POSITIVE CLAIMABLE got={}" [(at "stored-unclaimed" a)])
+                (at "true-unclaimed" a) (at "stored-unclaimed" a))
+            (expect (format "<<CANARY-02b>> dormant-claim-count == owed rows holding NO stake got={}" [(at "stored-dormant" a)])
+                (at "true-dormant" a) (at "stored-dormant" a))
+            (expect (format "<<CANARY-02b>> the vault audits HEALTHY got={}" [(at "healthy" a)])
+                true (at "healthy" a))
+        ]
+    )
+)
+(env-sigs [])
+(print "===^^^===")
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;================================================================================
+(begin-tx "CANARY-03 - the SAME upgrade on a NON-ZERO chain, where no vault row exists")
+(print "")
+(print "=== CANARY-03 — the nine chains that have no vault ================================")
+;;THE SAME FILE GOES TO ALL TEN CHAINS, because the module hash must match or cross-chain
+;;transfers break. But the vault exists ONLY on chain 0: the single `insert URV|UrStoaVault USV`
+;;lives in `XM_InitialiseUrStoaVault`, whose only caller is `A_InitialiseStoaChain`, which opens
+;;with `(UEV_ChainZero)`. Chains 1-9 therefore have the TABLE and NO ROW.
+;;
+;;SO THE SHIPPED REPAIR MUST NO-OP THERE, NOT ABORT. An `update ... USV` on a chain with no row
+;;fails with "row not found" -- and because the repair rides INSIDE the upgrade transaction, that
+;;failure would take the MODULE UPGRADE DOWN WITH IT on nine chains, leaving the network split
+;;across two coin versions with cross-chain broken. That is a worse outage than the one this
+;;file exists to prevent.
+;;
+;;This transaction is the guard on that: same module, chain-id 5, no vault row anywhere.
+(namespace "")
+(env-chain-data {"chain-id": "5"})
+(env-sigs [{"key": "625ad78ab8c1df826d69e1f0e6457334b8e085b7d256d10be41726ced17fdf74", "caps": []}])
+(test-capability (coin.GOVERNANCE))
+(test-capability (coin.GOVERNANCE))
+;;THE ONLY WAY TO TEST THIS IS TO SEND THE ARTEFACT, which is what a chain-5 operator does.
+;;Loading it here runs the same top-level repair block under chain-id 5: it must take the
+;;no-op branch and return, because the `let*` beneath it reads `UR_URV|VaultRPS` and friends,
+;;every one of which enforces `UEV_ChainZero`. If the chain-id test were absent or ordered
+;;after any of those reads, THIS LOAD WOULD ABORT -- and on the real chain that abort takes the
+;;MODULE UPGRADE with it, on nine of ten chains.
+(load "../Deploy/PureV26/00_deploy.pact")
+(map print
+    [
+        ;;THE MODULE IS LIVE HERE ANYWAY, which is what proves the load did not abort: a failed
+        ;;transaction would have rolled the definition back with it.
+        (expect "<<CANARY-03>> the artefact DEPLOYS on a chain with no vault, repair and all"
+            true (> (length (at "code" (describe-module "coin"))) 0))
+        ;;AND THE VAULT READERS STILL REFUSE THERE, which is the property that makes the no-op
+        ;;correct rather than merely convenient: there is genuinely nothing to repair.
+        (expect-failure "<<CANARY-03>> ...because vault operations are chain-0 only"
+            "UR-STOA Operations are restricted to ChainId 0"
+            (coin.UR_URV|VaultNZS))
+    ]
+)
+(env-chain-data {"chain-id": "0"})
+(env-sigs [])
+(print "===^^^===")
+(commit-tx)
+(print "")
+(print "")
+(print "================================================================")
+(print "CANARY PASSED — a coin upgrade over pre-upgrade rows keeps the coinbase alive")
+(print "================================================================")

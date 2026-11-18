@@ -492,7 +492,7 @@
         ;(format "Vault STOA Supply is {}" [(coin.UR_URV|VaultSupply)])
         ;(coin.C_URV|Collect SKC.CS04_NAME)
         ;(format "Vault STOA Supply is {}" [(coin.UR_URV|VaultSupply)])
-        ;(coin.C_URV|Collect SKC.CS00_NAME)
+        ;(coin.C_URV|Collect "stoa-foundation")
         ;(format "Vault STOA Supply is {}" [(coin.UR_URV|VaultSupply)])
     ]
 
@@ -540,7 +540,7 @@
         (format "Vault STOA Supply is {}" [(coin.UR_URV|VaultSupply)])
         (coin.C_URV|Collect SKC.CS04_NAME)
         (format "Vault STOA Supply is {}" [(coin.UR_URV|VaultSupply)])
-        ;(coin.C_URV|Collect SKC.CS00_NAME)
+        ;(coin.C_URV|Collect "stoa-foundation")
         ;(format "Vault STOA Supply is {}" [(coin.UR_URV|VaultSupply)])
     ]
 
@@ -673,4 +673,257 @@
 (commit-tx)
 (print "")
 (print "************************ Stage 00a — Stoa coin tests DONE *******************************************")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;================================================================================
+(begin-tx "TX-F4 - the vault count descends to 1 and the last staker sweeps it to zero")
+(print "")
+(print "=== TX-F4 — UrStoa vault: descent to zero ===========================================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;WHAT THIS PINS. `unclaimed-count` is described in the schema AND in `C_URV|Collect`'s own @doc as
+;;the users WITH UNCLAIMED REWARDS, and was maintained as the users who CAN EVER claim: step 3 of
+;;collect decremented only when the account's stake was gone. So a still-staked account that
+;;collected to zero was never retired, the count never reached 1, and the branch that pays the last
+;;staker the whole vault supply -- the one the contract itself says exists "to avoid rounding dust"
+;;-- was unreachable.
+;;
+;;MEASURED ON MAINNET CHAIN 0, 2026-11-08, before this fix: `unclaimed-count` 6 against `nzs-count`
+;;5, with 0.080595445021 STOA of residue that no collect could reach. The counter was also wrong by
+;;its OWN permissive definition -- six rows, five staked, and the sixth holding no stake and no
+;;pending, i.e. a decrement that should have fired and did not.
+;;
+;;THE SAME PREDICATE AS THE AQP FIX, COPIED NOT RE-DERIVED (SPEC-unclaimed-count.md): two
+;;independent derivations of one rule is how the doc and the writer came to disagree here in the
+;;first place.
+(env-sigs
+    [
+        { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+          "caps": [ (coin.URV|COLLECT SKC.CS01_NAME) ] }
+        { "key": "0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e",
+          "caps": [ (coin.URV|COLLECT SKC.CS02_NAME) ] }
+        { "key": "50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b",
+          "caps": [ (coin.URV|COLLECT SKC.CS04_NAME) ] }
+        ;;the foundation's own key: it guards the injecting account AND is the vault's last
+        ;;remaining staker (genesis seeds it with 1.0 URSTOA), so it is the account the sweep
+        ;;branch must pay.
+        ;;UNSCOPED, because the inject's `enforce-guard (UR_Guard sender)` is a plain guard check
+        ;;and a cap-scoped signature does not satisfy one. The collect capability is acquired with
+        ;;`test-capability` at its call site instead -- the same device TX-04 uses for the managed
+        ;;TRANSFER.
+        { "key": "625ad78ab8c1df826d69e1f0e6457334b8e085b7d256d10be41726ced17fdf74", "caps": [] }
+    ]
+)
+;;==== TX-F4 · 01 · inject, and the RESTORE fires ====
+(print "--- [TX-F4 · 01 · inject, and the RESTORE fires] ---")
+;;AN AMOUNT THAT CANNOT SPLIT EVENLY across the stakers, deliberately -- the remainder it leaves is
+;;exactly the dust the last-staker branch exists to absorb.
+;;`test-capability` for the managed TRANSFER, exactly as TX-04 does: native STOA moves through
+;;`coin.transfer`, whose `TRANSFER` is MANAGED, so an unscoped signer does not install it.
+(test-capability (coin.TRANSFER "stoa-foundation" coin.URV|KONTO 1000.000000000007))
+(coin.C_URV|Inject "stoa-foundation" 1000.000000000007)
+(map print
+    [
+        (format "<(nzs / dormant / unclaimed)> => {} / {} / {}"
+            [(coin.UR_URV|VaultNZS) (coin.UR_URV|VaultDormantCount) (coin.UR_URV|VaultUnclaimedCount)])
+        ;;THE ASSERTION THAT FAILS WITHOUT THE PHASE-3 RESTORE. That slot read "Do not reset
+        ;;<unclaimed-count> on inject" and its objection was correct about a reset to `nzs-count`
+        ;;alone -- which is why `XI_URV|ResetUnclaimedCount` exists below and is never called. What
+        ;;was missing was the second term, so the restore can raise the count without losing the
+        ;;0-stake-with-pending accounts.
+        (expect (format "<<TX-F4>> inject RESTORES the count to nzs + dormant got={}" [(coin.UR_URV|VaultUnclaimedCount)])
+            (+ (coin.UR_URV|VaultNZS) (coin.UR_URV|VaultDormantCount))
+            (coin.UR_URV|VaultUnclaimedCount))
+        (expect (format "<<TX-F4>> ...and the vault holds the injected rewards got={}" [(coin.UR_URV|VaultSupply)])
+            true (> (coin.UR_URV|VaultSupply) 0.0))
+    ]
+)
+;;==== TX-F4 · 02 · every staker collects — the count DESCENDS ====
+(print "--- [TX-F4 · 02 · every staker collects — the count DESCENDS] ---")
+;;THE RULE THAT DID NOT EXIST. The old step 3 retired an account only when its stake was gone, so a
+;;still-staked collector left the count untouched and `= 1` was unreachable. Note the suite's own
+;;earlier comment -- "Collect only works one at a time" -- with the sibling collects commented out.
+(let
+    (
+        (uc-0:integer (coin.UR_URV|VaultUnclaimedCount))
+    )
+    (coin.C_URV|Collect SKC.CS01_NAME)
+    (map print
+        [
+            (expect (format "<<TX-F4>> a STAKED collector is retired — the count fell got={} from={}" [(coin.UR_URV|VaultUnclaimedCount) uc-0])
+                (- uc-0 1) (coin.UR_URV|VaultUnclaimedCount))
+        ]
+    )
+)
+(coin.C_URV|Collect SKC.CS02_NAME)
+(coin.C_URV|Collect SKC.CS04_NAME)
+;;the three staker collects above have driven the count down; the final one needs its own
+;;transaction because `URV|COLLECT` is a ONE-SHOT managed capability -- `test-capability` would
+;;consume it before `C_URV|Collect` could acquire it ("used more than once"), and a cap-SCOPED
+;;signature cannot satisfy the inject's plain `enforce-guard` in the same tx. One tx per
+;;authorisation shape.
+(env-gas)
+(print "===^^^===")
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;================================================================================
+(begin-tx "TX-F4b - the LAST staker sweeps the vault to EXACTLY zero")
+(print "")
+(print "=== TX-F4b — the sweep that was dead code in production ==============================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs
+    [
+        { "key": "625ad78ab8c1df826d69e1f0e6457334b8e085b7d256d10be41726ced17fdf74",
+          "caps": [ (coin.URV|COLLECT "stoa-foundation") ] }
+    ]
+)
+;;==== TX-F4b · 01 · the LAST staker sweeps ====
+(print "--- [TX-F4b · 01 · the LAST staker sweeps] ---")
+;;THE PAYOFF, and the branch that was unreachable in production. With the count at 1 the final
+;;staker is paid `UR_URV|VaultSupply` in full -- remainder included -- so no residue is left. On
+;;mainnet chain 0 the count sat at 6 and 0.080595445021 STOA had collected behind it.
+(let
+    (
+        (uc-pre:integer (coin.UR_URV|VaultUnclaimedCount))
+        (vault-pre:decimal (coin.UR_URV|VaultSupply))
+    )
+    (map print
+        [
+            (format "<(unclaimed / vault)> before the last collect => {} / {}" [uc-pre vault-pre])
+            (expect (format "<<TX-F4b>> the count reached 1 — exactly one staker is still owed got={}" [uc-pre]) 1 uc-pre)
+        ]
+    )
+    (coin.C_URV|Collect "stoa-foundation")
+    (map print
+        [
+            (expect (format "<<TX-F4b>> the LAST staker sweeps — the vault ends at EXACTLY 0.0 got={}" [(coin.UR_URV|VaultSupply)])
+                0.0 (coin.UR_URV|VaultSupply))
+            (expect (format "<<TX-F4b>> ...and the count is now 0 got={}" [(coin.UR_URV|VaultUnclaimedCount)])
+                0 (coin.UR_URV|VaultUnclaimedCount))
+            ;;AND NOBODY WAS RETIRED FROM ACCRUAL: every staker still holds stake, so the next
+            ;;injection restores the count through `nzs-count` and the cycle repeats. A fix that
+            ;;decremented `nzs-count` here would silently stop paying them.
+            (expect (format "<<TX-F4b>> the stakers still accrue — nzs-count untouched got={}" [(coin.UR_URV|VaultNZS)])
+                true (> (coin.UR_URV|VaultNZS) 0))
+        ]
+    )
+)
+(env-sigs [])
+(env-gas)
+(print "===^^^===")
+(commit-tx)
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;================================================================================
+(begin-tx "TX-F4c - the vault counter repair CORRECTS a wrong count, and is idempotent")
+(print "")
+(print "=== TX-F4c — UM_URV|RepairVaultCounters ============================================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;THIS IS THE TRANSACTION THAT MUST RIDE THE MODULE UPGRADE. Sent separately on 2026-11-09 it
+;;could not be sent at all: the upgrade had already stopped chain 0's coinbase, and a transaction
+;;needs a block. The deploy file carries the repair as a TOP-LEVEL BLOCK after the module -- NOT
+;;as a function on it (owner ruling, 2026-11-09: it runs once, and Pact can never remove a
+;;definition from a deployed module, so a one-shot migration kept there is permanent dead
+;;surface on all ten chains). So this transaction LOADS THE DEPLOY ARTEFACT to run it, which is
+;;also what makes the shipped block gate-tested rather than merely shipped.
+;;
+;;IT MUST CORRECT, NOT MERELY WRITE. Measured on mainnet chain 0: six user rows, five holding
+;;stake, five owed something, and a STORED `unclaimed-count` of SIX -- an exited account that was
+;;never decremented. Seeding the new scheme from that figure would carry the defect across the
+;;upgrade, and a count that cannot reach 1 is exactly why the dust sweep was unreachable.
+;;
+;;SO THE COUNT IS DELIBERATELY CORRUPTED FIRST. A repair tested only against an already-correct
+;;vault passes without demonstrating anything -- it would write the value that was there.
+(env-sigs
+    [ { "key": "625ad78ab8c1df826d69e1f0e6457334b8e085b7d256d10be41726ced17fdf74", "caps": [] } ])
+;;==== TX-F4c · 01 · corrupt the claimant count ====
+(print "--- [TX-F4c · 01 · corrupt the claimant count] ---")
+(test-capability (coin.SECURE))
+(coin.XI_URV|UpdateUnclaimedCount true)
+(coin.XI_URV|UpdateUnclaimedCount true)
+(coin.XI_URV|UpdateUnclaimedCount true)
+(let
+    (
+        (bad:integer (coin.UR_URV|VaultUnclaimedCount))
+    )
+    (map print
+        [
+            (format "<(unclaimed-count, corrupted)> => {}" [bad])
+            (expect (format "<<TX-F4c>> the count is now demonstrably wrong got={}" [bad])
+                true (> bad 0))
+        ]
+    )
+)
+;;==== TX-F4c · 02 · repair, and check every counter against the user table ====
+(print "--- [TX-F4c · 02 · repair — by loading the SHIPPED transaction] ---")
+;;`(namespace "")` FIRST AND IT IS NOT COSMETIC: `coin` is a ROOT-namespace module, and this
+;;suite runs inside `ouronet-ns`. Loading the artefact under that namespace would define a
+;;SECOND module, `ouronet-ns.coin`, and every assertion below would then read the untouched
+;;original while passing against the copy.
+(namespace "")
+(test-capability (coin.GOVERNANCE))
+(load "../Deploy/PureV26/00_deploy.pact")
+(namespace "ouronet-ns")
+;;MODULE ADMIN, because the independent recount below reads the vault's table DIRECTLY with
+;;`keys` -- a deliberate choice: checking the repair against the module's own readers would let a
+;;single wrong reader satisfy both sides. The repair itself needs no such grant; this is the test
+;;looking over its shoulder.
+(let
+    (
+        (a:object (coin.URC_URV|VaultCounterAudit))
+    )
+    (map print
+        [
+            (format "<(audit)> => {}" [a])
+            ;;EACH COUNTER AGAINST AN INDEPENDENT RECOUNT of the same rows. `URC_URV|VaultCounterAudit`
+            ;;recomputes from the user table and writes nothing, so this compares STORED DATA against
+            ;;a FRESH COMPUTATION rather than one reader against itself.
+            (expect (format "<<TX-F4c>> nzs-count == rows holding stake got={}" [(at "stored-nzs" a)])
+                (at "true-nzs" a) (at "stored-nzs" a))
+            (expect (format "<<TX-F4c>> unclaimed-count == rows with a POSITIVE CLAIMABLE got={}" [(at "stored-unclaimed" a)])
+                (at "true-unclaimed" a) (at "stored-unclaimed" a))
+            (expect (format "<<TX-F4c>> dormant-claim-count == owed rows holding NO stake got={}" [(at "stored-dormant" a)])
+                (at "true-dormant" a) (at "stored-dormant" a))
+            ;;AND THE FIELD THE COINBASE READS NOW EXISTS AT ALL -- the read that halted the chain.
+            (expect (format "<<TX-F4c>> the vault audits HEALTHY got={}" [(at "healthy" a)])
+                true (at "healthy" a))
+        ]
+    )
+    ;;==== TX-F4c · 03 · idempotent ====
+    (print "--- [TX-F4c · 03 · idempotent] ---")
+    ;;IT RECOUNTS RATHER THAN INCREMENTS, so a re-send -- a retry after a timeout, an operator
+    ;;unsure whether the first one landed -- changes nothing. During an outage that is the only
+    ;;kind of repair worth having.
+    (let
+        (
+            (b:object (coin.URC_URV|VaultCounterAudit))
+        )
+        (namespace "")
+        (test-capability (coin.GOVERNANCE))
+        (load "../Deploy/PureV26/00_deploy.pact")
+        (namespace "ouronet-ns")
+        (map print
+            [
+                (expect "<<TX-F4c>> a second run changes nothing"
+                    [(at "stored-nzs" b) (at "stored-unclaimed" b) (at "stored-dormant" b)]
+                    [(coin.UR_URV|VaultNZS) (coin.UR_URV|VaultUnclaimedCount) (coin.UR_URV|VaultDormantCount)])
+            ]
+        )
+    )
+)
+(env-sigs [])
+(env-gas)
+(print "===^^^===")
+(commit-tx)
 (print "")

@@ -36,8 +36,8 @@
         (boost-class-name:string "TfStakeBoost")
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
-        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV8} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
         (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
         (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
         (anchor-id:string (ref-U|DALOS::UDC_Makeid "TfStakeAnchor"))
@@ -140,10 +140,10 @@
         (fvt-class:integer 1)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
-        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV8} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV6} AQP-FVT)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV7} AQP-FVT)
         (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
         (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
@@ -263,10 +263,10 @@
         (stake-amount:decimal 100.0)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV8} TS02-C3)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
-        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV6} AQP-FVT)
+        (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV7} AQP-FVT)
         (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
         (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
         (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
@@ -317,7 +317,19 @@
                 (expect (format "<<TX-FVT-03 expect>> last-rps == member L_i got={} expected={}" [last-rps member-li]) member-li last-rps)
                 (expect (format "<<TX-FVT-03 expect>> OURO debited got={} expected={}" [post-ouro (- pre-ouro stake-amount)]) (- pre-ouro stake-amount) post-ouro)
                 (expect (format "<<TX-FVT-03 expect>> ank sync count stamped got={} expected>=0" [sync-count]) true (>= sync-count 0))
-                (expect (format "<<TX-FVT-03 expect>> unclaimed-count after first stake got={} expected=1" [unclaimed]) 1 unclaimed)
+                ;;S1 (2026-11-09): THIS ASSERTION USED TO EXPECT 1 AND IT PINNED THE DEFECT.
+                ;;`unclaimed-count` means "legs whose claimable is > 0 right now". A stake grants
+                ;;FUTURE accrual, not a present claim -- this beneficiary's claimable is 0 until the
+                ;;next inject or stream release -- so counting it here is what held the figure above
+                ;;the number of legs that could actually be collected and made the last-claimant
+                ;;dust sweep unreachable. Measured on mainnet: the count exceeded the
+                ;;positive-claimable leg count on ALL ELEVEN live lanes.
+                ;;
+                ;;WHAT IS ASSERTED INSTEAD IS BOTH HALVES, because either alone would pass against a
+                ;;broken implementation: the leg IS registered as EARNING (so the next accrual will
+                ;;restore it), and it is NOT yet counted as claimable.
+                (expect (format "<<TX-FVT-03 expect>> a stake registers an EARNING leg got={} expected=1" [(ref-FVT::UR_FVT|EarningLegCount fvt-id)]) 1 (ref-FVT::UR_FVT|EarningLegCount fvt-id))
+                (expect (format "<<TX-FVT-03 expect>> ...but NOT a claimable one -- no accrual has happened yet got={} expected=0" [unclaimed]) 0 unclaimed)
                 (expect (format "<<TX-FVT-03 expect>> need-sync false after stake got={}" [(ref-AQP::URC_BenDptfAnchorsNeedSync beneficiary-id ouro-id)]) false (ref-AQP::URC_BenDptfAnchorsNeedSync beneficiary-id ouro-id))
                 (expect (format "<<TX-FVT-03 expect>> sync-count==anchors-active got={} expected={}" [sync-count (ref-ANK::UR_AA|AnchorsActive ouro-id)]) (ref-ANK::UR_AA|AnchorsActive ouro-id) sync-count)
             ]
@@ -351,8 +363,8 @@
         (score-name:string "TfStakeScore")
         (fvt-name:string "TfStakeVault")
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV6} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV8} TS02-C3)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV7} AQP-FVT)
         (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
         (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
     )
@@ -411,9 +423,9 @@
         (inject-amt:decimal 50.0)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
-        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV6} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV8} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV7} AQP-FVT)
         (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
         (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
@@ -576,7 +588,7 @@
         (patron:string KST.ANHD)
         (ouro-id:string "OURO-98c486052a51")
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV8} TS02-C3)
         (score-id:string (ref-U|DALOS::UDC_Makeid "TfStakeScore"))
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "TfStakeVault"))
     )
@@ -643,7 +655,7 @@
         (ouro-owner:string (AQP-ANK.URC_AnchorableAssetOwner ouro-id [true true]))
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV8} TS02-C3)
         (score-id:string (ref-U|DALOS::UDC_Makeid "TfStakeScore"))
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "TfStakeVault"))
         (pool-id:string (ref-U|DALOS::UDC_Makeid "TfStakePool"))
@@ -723,7 +735,7 @@
         (boost-class-name:string "TfStakeBoost2")
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV8} TS02-C3)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
         (anchor2-id:string (ref-U|DALOS::UDC_Makeid "TfStakeAnchor2"))
@@ -841,10 +853,10 @@
         (partial-amt:decimal 40.0)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV8} TS02-C3)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
-        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV6} AQP-FVT)
+        (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV7} AQP-FVT)
         (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
         (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
@@ -905,7 +917,19 @@
                     (expect (format "<<TX-FVT-07>> user base cleared got={}" [base-z]) 0.0 base-z)
                     (expect (format "<<TX-FVT-07>> score total-deb cleared got={}" [total-deb-z]) 0.0 total-deb-z)
                     (expect (format "<<TX-FVT-07>> last-rps==G after exit got={} expected={}" [last-rps-z g-z]) g-z last-rps-z)
-                    (expect (format "<<TX-FVT-07>> unclaimed decremented got={} pre={}" [unclaimed-z unclaimed-pre]) true (< unclaimed-z unclaimed-pre))
+                    ;;S1 (2026-11-09): THIS USED TO ASSERT THE COUNT FELL ON A FULL EXIT, and that
+                    ;;was the ONLY way it ever fell -- which is precisely why the dust sweep was
+                    ;;unreachable on a live aggregator. A still-staked account that collected to
+                    ;;zero was never retired, so the count never reached 1.
+                    ;;
+                    ;;WHAT A FULL EXIT DOES NOW. The leg stops EARNING, so `earning-leg-count` falls.
+                    ;;Whether it stops being CLAIMABLE depends on whether it still has pending: with
+                    ;;pending it becomes DORMANT -- still owed, counted, collectable -- and
+                    ;;`unclaimed-count` must NOT fall, or `= 1` would fire while this account is
+                    ;;still owed and the sweeper would take its rewards. That is the exact failure
+                    ;;the canonical `coin` vault removed its `nzs` reset to avoid.
+                    (expect (format "<<TX-FVT-07>> a full exit drops the EARNING leg got={}" [(ref-FVT::UR_FVT|EarningLegCount fvt-id)]) 0 (ref-FVT::UR_FVT|EarningLegCount fvt-id))
+                    (expect (format "<<TX-FVT-07>> ...and the claimant count is preserved while anything is still owed got={} pre={}" [unclaimed-z unclaimed-pre]) true (<= unclaimed-z unclaimed-pre))
                     (expect (format "<<TX-FVT-07>> full OURO restored got={} expected={}" [ouro-z (+ ouro-pre tracker-pre)]) (+ ouro-pre tracker-pre) ouro-z)
                 ]
             )
@@ -945,8 +969,8 @@
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-U|CT:module{OuronetConstantsV2} U|CT)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV6} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV8} TS02-C3)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV7} AQP-FVT)
         (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
         (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
@@ -1073,9 +1097,9 @@
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
         (ref-TS01-C1:module{TalosStageOne_ClientOneV3} TS01-C1)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
-        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV6} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV8} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV7} AQP-FVT)
         (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
         (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
@@ -1196,9 +1220,9 @@
         (stake-amount:decimal 50.0)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV8} TS02-C3)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
-        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
         (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
         ;; Deltas (robust to FVT-09's ANHD self-stake leftover in TfStakePool):
@@ -1273,9 +1297,9 @@
         (move-amount:decimal 40.0)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV8} TS02-C3)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
-        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
         (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
         ;; DELTAS THROUGHOUT (robust to FVT-09's ANHD self-stake leftover in TfStakePool, same

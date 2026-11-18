@@ -5,7 +5,7 @@
 ;; PRIOR: AcquisitionScoresV2 -> V2 (2026-10-06): five URH_ definition-inspection
 ;; readers added. The bump was affordable only because the canon sweep already redeploys all ten
 ;; modules that name the interface; on its own it would not have been worth the cascade.
-(interface AcquisitionScoresV5
+(interface AcquisitionScoresV7
     @doc "Interface for the AQP scoring layer. Declares readers for score config/totals, \
         \ per-(account,pool,score) user weights, SF nonce weights, and NF trait/class \
         \ definitions with revision nonces; stake-weight URC_ deltas; XE_ hooks for \
@@ -82,6 +82,7 @@
     (defun UR_SCR|ScoreMxSleeping:decimal (score-id:string))
     (defun UR_SCR|ScoreMxHibernated:decimal (score-id:string))
     (defun UR_SCR|ScoreSftEquality:bool (score-id:string))
+    (defun UR_SCR|SingleShareWeight:bool (score-id:string))
     (defun UR_SCR|ScoreNftScoreModel:integer (score-id:string))
     (defun UR_SCR|ScoreScoreId:string (score-id:string))
     (defun UR_U-SCR|UserScoreBaseScore:decimal (ouronet-account:string pool-id:string score-id:string))
@@ -133,9 +134,9 @@
     ;; These five are the only way to read back which assets a score was defined against,
     ;; and therefore the only way to detect a definition written against the wrong asset
     ;; (which saves cleanly and then scores 0 forever). V2 addition, 2026-10-06.
-    (defun URH_SCR|SFScoreDefinition:[object{AcquisitionSchemasV3.SCR|SF|Schema}] (score-id:string dpsf-id:string))
-    (defun URH_SCR|NFTraitScoreDefinition:[object{AcquisitionSchemasV3.SCR|NF|TraitSchema}] (score-id:string dpnf-id:string))
-    (defun URH_SCR|NFClassScoreDefinition:[object{AcquisitionSchemasV3.SCR|NF|ClassSchema}] (score-id:string dpnf-id:string))
+    (defun URH_SCR|SFScoreDefinition:[object{AcquisitionSchemasV5.SCR|SF|Schema}] (score-id:string dpsf-id:string))
+    (defun URH_SCR|NFTraitScoreDefinition:[object{AcquisitionSchemasV5.SCR|NF|TraitSchema}] (score-id:string dpnf-id:string))
+    (defun URH_SCR|NFClassScoreDefinition:[object{AcquisitionSchemasV5.SCR|NF|ClassSchema}] (score-id:string dpnf-id:string))
     (defun URH_SCR|ScoreDefinedSemiFungibles:[string] (score-id:string))
     (defun URH_SCR|ScoreDefinedNonFungibles:[string] (score-id:string))
     ;;
@@ -147,6 +148,7 @@
     (defun URCi_CreateBoostClassLink:object{IgnisCollectorV4.OutputCumulator} (score-id:string))
     (defun URCi_CreateBoostLink:object{IgnisCollectorV4.OutputCumulator} (score-id:string))
     (defun URCi_EnableDebBoost:object{IgnisCollectorV4.OutputCumulator} (score-id:string))
+    (defun URCi_SetSingleShareWeight:object{IgnisCollectorV4.OutputCumulator} (score-id:string))
     (defun URCi_LockScoreDrift:object{IgnisCollectorV4.OutputCumulator} (score-id:string))
     (defun URCi_IssueTriplet:object{IgnisCollectorV4.OutputCumulator} (silver-score-id:string output:[string]))
     (defun URCi_IssueSemiFungibleScoreDefinition:object{IgnisCollectorV4.OutputCumulator} (score-id:string nonces:[integer]))
@@ -215,6 +217,7 @@
     (defun C_CreateBoostClassLink:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string score-id:string boost-class-id:string))
     (defun C_CreateBoostLink:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string score-id:string boost-score-id:string))
     (defun C_EnableDebBoost:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string score-id:string))
+    (defun C_SetSingleShareWeight:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string score-id:string flag:bool))
     (defun C_LockScoreDrift:object{IgnisCollectorV4.OutputCumulator} (patron:string executor:string score-id:string))
     (defun C_IssueTriplet:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string bronze-score-id:string silver-score-id:string golden-score-id:string)
@@ -277,15 +280,15 @@
 )
 (module AQP-SCORE GOV
     @doc "AQP-SCORE — sovereign acquisition scoring for AQP pools. Owns global score configuration and totals (SCR|T|Score), per (ouronet-account, pool-id, score-id) user triples (SCR|T|UserScore), semi-fungible nonce weights (SCR|T|SF|Score) and SF DefRevision, and non-fungible definitions on SCR|T|NF|TraitScore vs SCR|T|NF|ClassScore with NF DefRevision split into global-, trait-, and class-revision nonces so trackers and URCX stake math can gate expensive selects. \
-        \ Public surface: AcquisitionScoresV5 reads and stake-weight URC_*; Talos-facing C_* builds IGNIS (and STOA where applicable) and acquires client caps; XI_* performs table writes under require-capability (SECURE / SCR|XI>*); XE_* is for forward modules and likewise does not enforce — the guarding defcap or C_* owns validation and enforce. UCx_ / URCx_ helpers exist only as operands inside URC_* stake deltas. \
-        \ Implements OuronetPolicyV2 and AcquisitionScoresV5."
+        \ Public surface: AcquisitionScoresV7 reads and stake-weight URC_*; Talos-facing C_* builds IGNIS (and STOA where applicable) and acquires client caps; XI_* performs table writes under require-capability (SECURE / SCR|XI>*); XE_* is for forward modules and likewise does not enforce — the guarding defcap or C_* owns validation and enforce. UCx_ / URCx_ helpers exist only as operands inside URC_* stake deltas. \
+        \ Implements OuronetPolicyV2 and AcquisitionScoresV7."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;; REPL: REPL/Stage_02/[6.2.2]_AQP-SCORE.repl — intra-tx groups TX-SCORE-nn · mm in ;;==== … ==== lines (mm = 01.. within each begin-tx).
     ;;
     (implements OuronetPolicyV2)
-    (implements AcquisitionScoresV5)
+    (implements AcquisitionScoresV7)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -583,7 +586,7 @@
     ;;8] SCR|T|Triplet
     ;;{3.3}  tables
     ;;
-    (deftable SCR|T|Score:{AcquisitionSchemasV3.SCR|Schema})                         ;;1] Key = <Score-ID>
+    (deftable SCR|T|Score:{AcquisitionSchemasV5.SCR|Schema})                         ;;1] Key = <Score-ID>
     (defschema SCR|SleepStake
         @doc "THE TIME A SLEEPING OR HIBERNATING LOCK HAD LEFT WHEN IT WAS STAKED, so the unstake \
             \ can give back exactly what the stake awarded. One row per nonce. \
@@ -626,16 +629,16 @@
             \ again. Pact has no row delete; leaving it is both the cheapest and the safest option."
         remaining-at-stake:decimal          ;;seconds the lock had left at the moment of staking
     )
-    (deftable SCR|T|UserScore:{AcquisitionSchemasV3.SCR|UserSchema})                 ;;2] Key = <Ouronet-Account> | <Pool-ID> | <Score-ID>
+    (deftable SCR|T|UserScore:{AcquisitionSchemasV5.SCR|UserSchema})                 ;;2] Key = <Ouronet-Account> | <Pool-ID> | <Score-ID>
     (deftable SCR|T|SleepStake:{SCR|SleepStake})                                            ;;Key = <DPOF-ID> | <Nonce>
-    (deftable SCR|T|SF|Score:{AcquisitionSchemasV3.SCR|SF|Schema})                   ;;3] Key = <Score-ID> | <DPSF-ID> | <Nonce>
-    (deftable SCR|T|NF|TraitScore:{AcquisitionSchemasV3.SCR|NF|TraitSchema})         ;;4] Key = <Score-ID> | <DPNF-ID> | <Trait-Key> | <Trait-Value>
-    (deftable SCR|T|NF|ClassScore:{AcquisitionSchemasV3.SCR|NF|ClassSchema})         ;;5] Key = <Score-ID> | <DPNF-ID> | <DPNF-Nonce-Class>
-    (deftable SCR|T|SF|DefRevision:{AcquisitionSchemasV3.SCR|SF|DefRevision})        ;;6] Key = <Score-ID> | <DPSF-ID>
-    (deftable SCR|T|NF|DefRevision:{AcquisitionSchemasV3.SCR|NF|DefRevision})        ;;7] Key = <Score-ID> | <DPNF-ID>
-    (deftable SCR|T|NF|TraitKeys:{AcquisitionSchemasV3.SCR|NF|TraitKeys})            ;;7b] Key = <Score-ID> | <DPNF-ID>
-    (deftable SCR|T|Triplet:{AcquisitionSchemasV3.SCR|Triplet})                      ;;8] Key = <Triplet-ID>
-    (deftable SCR|T|ScoreEntityModel:{AcquisitionSchemasV3.SCR|ScoreEntityModel})    ;;9] Key = <Model-ID>
+    (deftable SCR|T|SF|Score:{AcquisitionSchemasV5.SCR|SF|Schema})                   ;;3] Key = <Score-ID> | <DPSF-ID> | <Nonce>
+    (deftable SCR|T|NF|TraitScore:{AcquisitionSchemasV5.SCR|NF|TraitSchema})         ;;4] Key = <Score-ID> | <DPNF-ID> | <Trait-Key> | <Trait-Value>
+    (deftable SCR|T|NF|ClassScore:{AcquisitionSchemasV5.SCR|NF|ClassSchema})         ;;5] Key = <Score-ID> | <DPNF-ID> | <DPNF-Nonce-Class>
+    (deftable SCR|T|SF|DefRevision:{AcquisitionSchemasV5.SCR|SF|DefRevision})        ;;6] Key = <Score-ID> | <DPSF-ID>
+    (deftable SCR|T|NF|DefRevision:{AcquisitionSchemasV5.SCR|NF|DefRevision})        ;;7] Key = <Score-ID> | <DPNF-ID>
+    (deftable SCR|T|NF|TraitKeys:{AcquisitionSchemasV5.SCR|NF|TraitKeys})            ;;7b] Key = <Score-ID> | <DPNF-ID>
+    (deftable SCR|T|Triplet:{AcquisitionSchemasV5.SCR|Triplet})                      ;;8] Key = <Triplet-ID>
+    (deftable SCR|T|ScoreEntityModel:{AcquisitionSchemasV5.SCR|ScoreEntityModel})    ;;9] Key = <Model-ID>
 
     ;;<=========================================================================>
     ;;{4}  CAPABILITIES
@@ -948,6 +951,42 @@
             (compose-capability (SECURE))
         )
     )
+    (defcap SCR|C>SET-SINGLE-SHARE-WEIGHT (score-id:string flag:bool)
+        @doc "Set whether an equity collection's RAW SHARE (nonce 1) carries weight on this score. \
+            \ Score owner, score EMPTY, score not drift-locked. Composes SECURE for the XI write; \
+            \ C_SetSingleShareWeight builds the IGNIS cumulator. \
+            \ \
+            \ TWO-WAY, UNLIKE deb-boost, AND GATED THE SAME. It can be turned on and off; what it \
+            \ cannot do is move while anyone is staked. It is a WEIGHT INPUT, and the owner ruling \
+            \ of 2026-11-08 on those is absolute -- a weight change does not re-value positions \
+            \ already staked, so the pool employing the score must VACATE first. Without \
+            \ `nzs-count = 0` this reintroduces exactly the defect that round fixed: \
+            \ `URC_SignedBaseDeltaForDpsfStake` reads the definition LIVE on both the stake and the \
+            \ unstake leg, so a flag flipped between them leaves `floor(W_old x a) - floor(W_new x a)` \
+            \ on the row forever, as weight for a position nobody holds. \
+            \ \
+            \ DRIFT LATCH: a locked score promised its holders that no input to their weight can \
+            \ move. This is such an input, so a locked score refuses outright."
+        @event
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV3} DALOS)
+                ;;
+                (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
+            )
+            (enforce
+                (fold (and) true
+                    [
+                        (= (UR_SCR|ScoreNzsCount score-id) 0)
+                        (not (UR_SCR|ScoreDriftLocked score-id))
+                    ]
+                )
+                "The score must have no stakers (nzs-count = 0) -- vacate to reconfigure -- and must not be drift-locked"
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
+            (compose-capability (SECURE))
+        )
+    )
     (defcap SCR|C>ENABLE-DEB-BOOST-SCORE (score-id:string)
         @doc "One-time deb-boost: score owner, deb-boost currently false. Composes SECURE for XI write; C_EnableDebBoost builds IGNIS cumulator."
         @event
@@ -1045,6 +1084,37 @@
             ;;expect-failure red. Full reasoning at 02_SCORE.pact's SCR|XI>X_ISSUE-NF-SCORE-DEFINITION
             ;;and DEFECT-LEDGER G-37..G-41 + 7.2b; 7.3 records the same blocker for RT-K-007's preview half.
             (UEV_SemiFungibleScoreDefinition score-id dpsf-id nonces nonce-score-values)
+            ;;RE-ISSUE IS A RECONFIGURATION, AND IT MOVES AN ACCUMULATOR. A class-3 base is an
+            ;;accumulated SIGNED delta: `URC_SignedBaseDeltaForDpsfStake` is ONE function with a
+            ;;`direction` flag and it reads this definition LIVE on BOTH legs. Change a weight
+            ;;between a stake and its unstake and the reversal stops cancelling -- the row keeps
+            ;;`floor(W_old x a) - floor(W_new x a)` forever, unbounded in magnitude AND IN SIGN, as
+            ;;weight for a position nobody holds, and that row is the denominator of every reward
+            ;;split on the score.
+            ;;
+            ;;THE SAME GATE THE THREE RECONFIGURATION SIBLINGS ALREADY CARRY. `SCR|C>ENABLE-DEB-
+            ;;BOOST-SCORE`, `SCR|C>CREATE-BOOST-CLASS-LINK-SCORE` and `SCR|C>CREATE-BOOST-LINK-
+            ;;SCORE` all refuse unless `nzs-count = 0` -- "vacate to reconfigure". The per-nonce
+            ;;WEIGHTS, which are the input the base is computed FROM, were the one member of that
+            ;;family without it. Owner ruling 2026-11-08: a weight change does not re-value
+            ;;positions already staked, so the score must be empty before it can move.
+            ;;
+            ;;AND THE DRIFT LATCH, which was the sharper gap. `SCR|C>LOCK-SCORE-DRIFT` is fully
+            ;;built -- field, reader, writer, entrypoint, `URCi_`, migration -- and promises holders
+            ;;that no input to their weight can move. Not one definition writer consulted it, so a
+            ;;score carrying the strongest promise the module makes about weights could still
+            ;;accumulate the residue above. Belt and braces with the clause before it, deliberately:
+            ;;the latch is the promise, the emptiness check is the mechanism, and a future arm that
+            ;;relaxes one must not silently relax the other.
+            (enforce
+                (fold (and) true
+                    [
+                        (= (UR_SCR|ScoreNzsCount score-id) 0)
+                        (not (UR_SCR|ScoreDriftLocked score-id))
+                    ]
+                )
+                "the score must have no stakers (nzs-count = 0) — vacate to reconfigure — and the score must not be drift-locked"
+            )
             (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
             (map
                 (lambda
@@ -1133,6 +1203,41 @@
             (enforce
                 (and (= score-row-id score-id) (= score-class 4))
                 "Invalid score/dpnf: score must exist as DPNF (class 4) with matching score-id"
+            )
+            ;;GUARDED ONCE, HERE, AND NOT IN THE TWO ENTRY CAPS. `SCR|C>ISSUE-NF-SCORE-DEFINITION`
+            ;;(trait mode) and `SCR|C>ISSUE-NF-SET-SCORE-DEFINITION` (set mode) both
+            ;;`compose-capability` this one, so a single clause covers both and duplicating it in
+            ;;each would be two copies of one rule free to drift apart.
+            ;;RE-ISSUE IS A RECONFIGURATION, AND IT MOVES AN ACCUMULATOR. A class-4 base is an
+            ;;accumulated SIGNED delta: `URC_SignedBaseDeltaForDpnfStake` is ONE function with a
+            ;;`direction` flag and it reads this definition LIVE on BOTH legs. Change a weight
+            ;;between a stake and its unstake and the reversal stops cancelling -- the row keeps
+            ;;`floor(W_old x a) - floor(W_new x a)` forever, unbounded in magnitude AND IN SIGN, as
+            ;;weight for a position nobody holds, and that row is the denominator of every reward
+            ;;split on the score.
+            ;;
+            ;;THE SAME GATE THE THREE RECONFIGURATION SIBLINGS ALREADY CARRY. `SCR|C>ENABLE-DEB-
+            ;;BOOST-SCORE`, `SCR|C>CREATE-BOOST-CLASS-LINK-SCORE` and `SCR|C>CREATE-BOOST-LINK-
+            ;;SCORE` all refuse unless `nzs-count = 0` -- "vacate to reconfigure". The per-nonce
+            ;;WEIGHTS, which are the input the base is computed FROM, were the one member of that
+            ;;family without it. Owner ruling 2026-11-08: a weight change does not re-value
+            ;;positions already staked, so the score must be empty before it can move.
+            ;;
+            ;;AND THE DRIFT LATCH, which was the sharper gap. `SCR|C>LOCK-SCORE-DRIFT` is fully
+            ;;built -- field, reader, writer, entrypoint, `URCi_`, migration -- and promises holders
+            ;;that no input to their weight can move. Not one definition writer consulted it, so a
+            ;;score carrying the strongest promise the module makes about weights could still
+            ;;accumulate the residue above. Belt and braces with the clause before it, deliberately:
+            ;;the latch is the promise, the emptiness check is the mechanism, and a future arm that
+            ;;relaxes one must not silently relax the other.
+            (enforce
+                (fold (and) true
+                    [
+                        (= (UR_SCR|ScoreNzsCount score-id) 0)
+                        (not (UR_SCR|ScoreDriftLocked score-id))
+                    ]
+                )
+                "the score must have no stakers (nzs-count = 0) — vacate to reconfigure — and the score must not be drift-locked"
             )
             (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
             (ref-DPDC::UEV_id dpnf-id false)
@@ -1696,9 +1801,9 @@
     ;; [UDC] construct
     ;;
     ;; Early UDC: SCR|UserSchema constructor is required before UR_U-SCR|UserScore (with-default-read default object).
-    (defun UDC_SCR|UserSchema:object{AcquisitionSchemasV3.SCR|UserSchema}
+    (defun UDC_SCR|UserSchema:object{AcquisitionSchemasV5.SCR|UserSchema}
         (a:decimal b:decimal c:decimal c1:decimal c2:decimal g:integer d:string e:string f:string)
-        @doc "Core constructor for object{AcquisitionSchemasV3.SCR|UserSchema}. c1=base-deb-score, c2=boosted-deb-score (M3); \
+        @doc "Core constructor for object{AcquisitionSchemasV5.SCR|UserSchema}. c1=base-deb-score, c2=boosted-deb-score (M3); \
             \ g=stamped-generation (vacate-v2 §5)."
         {"base-score"           : a
         ,"boosted-score"        : b
@@ -1710,7 +1815,7 @@
         ,"pool-id"              : e
         ,"score-id"             : f}
     )
-    (defun UDC_SCR|SingularUserScoreDelta:object{AcquisitionSchemasV3.SCR|SingularUserScoreDelta}
+    (defun UDC_SCR|SingularUserScoreDelta:object{AcquisitionSchemasV5.SCR|SingularUserScoreDelta}
         (
             new-user-base-score:decimal
             new-user-boosted-score:decimal
@@ -1738,9 +1843,9 @@
         ,"delta-global-boosted-deb-score"   : delta-global-boosted-deb-score}
     )
     ;;
-    (defun UDC_SCR|Schema:object{AcquisitionSchemasV3.SCR|Schema}
+    (defun UDC_SCR|Schema:object{AcquisitionSchemasV5.SCR|Schema}
         (a:string b:bool c:bool d:string e:string f:string g:string v:bool w:string h:bool h2:bool i:integer j:decimal k:decimal l:decimal l1:decimal l2:decimal m:integer m2:integer n:integer o:string p:decimal q:decimal r:decimal s:bool t:integer u:string)
-        @doc "Core constructor for object{AcquisitionSchemasV3.SCR|Schema}: every schema field is an explicit argument (use for custom UDC wrappers). l1=total-base-deb-score, l2=total-boosted-deb-score (M3); m2=vacate-generation (vacate-v2 §5)."
+        @doc "Core constructor for object{AcquisitionSchemasV5.SCR|Schema}: every schema field is an explicit argument (use for custom UDC wrappers). l1=total-base-deb-score, l2=total-boosted-deb-score (M3); m2=vacate-generation (vacate-v2 §5)."
         {"owner-konto"          : a
         ,"can-upgrade"          : b
         ,"can-change-owner"     : c
@@ -1766,53 +1871,58 @@
         ,"mx-sleeping"          : q
         ,"mx-hibernated"        : r
         ,"sft-equality"         : s
+        ;;NOT A PARAMETER, DELIBERATELY. `single-share-weight` is TRUE at issue for every score
+        ;;without exception -- it is changed afterwards, through `C_SetSingleShareWeight`, and only
+        ;;with the score vacated. Giving it an argument would widen this constructor's arity for
+        ;;every caller to pass the one value it is always allowed to have at this point.
+        ,"single-share-weight"  : true
         ,"nft-score-model"      : t
         ,"score-id"             : u}
     )
-    (defun UDC_SCR|SF|Schema:object{AcquisitionSchemasV3.SCR|SF|Schema}
+    (defun UDC_SCR|SF|Schema:object{AcquisitionSchemasV5.SCR|SF|Schema}
         (a:decimal b:string c:string d:integer)
-        @doc "Core constructor for object{AcquisitionSchemasV3.SCR|SF|Schema}."
+        @doc "Core constructor for object{AcquisitionSchemasV5.SCR|SF|Schema}."
         {"nonce-score-value" : a
         ,"score-id"          : b
         ,"dpsf-id"           : c
         ,"nonce"             : d}
     )
-    (defun UDC_SCR|SF|DefRevision:object{AcquisitionSchemasV3.SCR|SF|DefRevision}
+    (defun UDC_SCR|SF|DefRevision:object{AcquisitionSchemasV5.SCR|SF|DefRevision}
         (a:integer b:string c:string)
-        @doc "Core constructor for object{AcquisitionSchemasV3.SCR|SF|DefRevision}."
+        @doc "Core constructor for object{AcquisitionSchemasV5.SCR|SF|DefRevision}."
         {"revision-nonce" : a
         ,"score-id"       : b
         ,"dpsf-id"        : c}
     )
-    (defun UDC_SCR|NF|TraitSchema:object{AcquisitionSchemasV3.SCR|NF|TraitSchema}
+    (defun UDC_SCR|NF|TraitSchema:object{AcquisitionSchemasV5.SCR|NF|TraitSchema}
         (a:decimal b:string c:string d:string e:string)
-        @doc "Core constructor for object{AcquisitionSchemasV3.SCR|NF|TraitSchema}: trait-score-value, score-id, dpnf-id, trait-key, trait-value."
+        @doc "Core constructor for object{AcquisitionSchemasV5.SCR|NF|TraitSchema}: trait-score-value, score-id, dpnf-id, trait-key, trait-value."
         {"trait-score-value" : a
         ,"score-id"          : b
         ,"dpnf-id"           : c
         ,"trait-key"         : d
         ,"trait-value"       : e}
     )
-    (defun UDC_SCR|NF|ClassSchema:object{AcquisitionSchemasV3.SCR|NF|ClassSchema}
+    (defun UDC_SCR|NF|ClassSchema:object{AcquisitionSchemasV5.SCR|NF|ClassSchema}
         (a:decimal b:string c:string d:integer)
-        @doc "Core constructor for object{AcquisitionSchemasV3.SCR|NF|ClassSchema}: trait-score-value, score-id, dpnf-id, dpnf-nonce-class."
+        @doc "Core constructor for object{AcquisitionSchemasV5.SCR|NF|ClassSchema}: trait-score-value, score-id, dpnf-id, dpnf-nonce-class."
         {"trait-score-value"  : a
         ,"score-id"           : b
         ,"dpnf-id"            : c
         ,"dpnf-nonce-class"   : d}
     )
-    (defun UDC_SCR|NF|DefRevision:object{AcquisitionSchemasV3.SCR|NF|DefRevision}
+    (defun UDC_SCR|NF|DefRevision:object{AcquisitionSchemasV5.SCR|NF|DefRevision}
         (ga:integer tr:integer cl:integer score-id:string dpnf-id:string)
-        @doc "Core constructor for object{AcquisitionSchemasV3.SCR|NF|DefRevision}: global, trait, class revision nonces plus keys."
+        @doc "Core constructor for object{AcquisitionSchemasV5.SCR|NF|DefRevision}: global, trait, class revision nonces plus keys."
         {"global-revision-nonce" : ga
         ,"trait-revision-nonce"  : tr
         ,"class-revision-nonce"  : cl
         ,"score-id"              : score-id
         ,"dpnf-id"               : dpnf-id}
     )
-    (defun UDC_SCR|Triplet:object{AcquisitionSchemasV3.SCR|Triplet}
+    (defun UDC_SCR|Triplet:object{AcquisitionSchemasV5.SCR|Triplet}
         (bronze-score-id:string silver-score-id:string golden-score-id:string triplet-category:string triplet-id:string true-triplet:bool)
-        @doc "Core constructor for object{AcquisitionSchemasV3.SCR|Triplet}."
+        @doc "Core constructor for object{AcquisitionSchemasV5.SCR|Triplet}."
         {"bronze-score-id"  : bronze-score-id
         ,"silver-score-id"  : silver-score-id
         ,"golden-score-id"  : golden-score-id
@@ -1820,11 +1930,11 @@
         ,"triplet-id"       : triplet-id
         ,"true-triplet"     : true-triplet}
     )
-    (defun UDC_SCR|ScoreEntityModel:object{AcquisitionSchemasV3.SCR|ScoreEntityModel}
+    (defun UDC_SCR|ScoreEntityModel:object{AcquisitionSchemasV5.SCR|ScoreEntityModel}
         (entity-type:integer score-class:integer collectable-id:string precision:integer
          nonces:[integer] nonce-score-values:[decimal] boost-class-id:string
          bronze-model-id:string silver-model-id:string golden-model-id:string model-id:string)
-        @doc "Core constructor for object{AcquisitionSchemasV3.SCR|ScoreEntityModel}."
+        @doc "Core constructor for object{AcquisitionSchemasV5.SCR|ScoreEntityModel}."
         {"entity-type"        : entity-type
         ,"score-class"        : score-class
         ,"collectable-id"     : collectable-id
@@ -2036,7 +2146,7 @@
             {"trait-keys" := tk}
             tk)
     )
-    (defun UR_SCR|Score:object{AcquisitionSchemasV3.SCR|Schema} (score-id:string)
+    (defun UR_SCR|Score:object{AcquisitionSchemasV5.SCR|Schema} (score-id:string)
         @doc "Reads full score definition row from SCR|T|Score."
         (read SCR|T|Score score-id)
     )
@@ -2139,6 +2249,36 @@
     (defun UR_SCR|ScoreSftEquality:bool (score-id:string)
         @doc "Reads sft-equality from score row."
         (at "sft-equality" (read SCR|T|Score score-id ["sft-equality"]))
+    )
+    (defun UR_SCR|SingleShareWeight:bool (score-id:string)
+        @doc "Does nonce 1 -- the RAW SHARE of an equity collection -- carry weight on this score. \
+            \ \
+            \ EQUITY COLLECTIONS ONLY. Every score carries the field because the schema is one \
+            \ shape, but it is consulted in exactly one place: the equity branch of \
+            \ `URC_SignedBaseDeltaForDpsfStake`. true = a raw share counts its 1 share; false = it \
+            \ counts nothing and only the package nonces 2-8 score. \
+            \ \
+            \ IT IS THE ONLY THING THAT CAN MAKE TWO SCORES OVER THE SAME COLLECTION DISAGREE. \
+            \ CompanySharesTreasury counts raw shares; SnakesTreasury must count only aggregated \
+            \ packages; both employ scores over the same equity asset. \
+            \ \
+            \ KEY-TESTED, AND THE DEFAULT IS THE WHOLE MIGRATION. The field was added 2026-11-10 to \
+            \ a schema whose rows already exist, and NOTHING defaults an absent COLUMN -- not \
+            \ `with-default-read`, which defaults an absent ROW, and not `try`, which does not \
+            \ catch it at all (both measured; see REPL/modules/S1-UNCLAIMED.repl <<TX-S1-COL>> and \
+            \ the 16h chain halt that taught it). Reading the row and testing `contains` is the \
+            \ only form that survives. Absent reads TRUE, which is exactly how every score issued \
+            \ before this field already behaves -- so no backfill transaction is needed and the \
+            \ column is written the first time the flag is actually set."
+        ;;READ THE ROW, THEN TEST FOR THE KEY. Do not bind it, do not `at` it, do not `try` it.
+        (let
+            (
+                (row:object (read SCR|T|Score score-id))
+            )
+            (if (contains "single-share-weight" row)
+                (at "single-share-weight" row)
+                true)
+        )
     )
     (defun UR_SCR|ScoreNftScoreModel:integer (score-id:string)
         @doc "Reads nft-score-model from score row."
@@ -2271,7 +2411,7 @@
             (UR_SCR|SleepRemainingAtStake dpof-id nonce)
             cap-months)
     )
-    (defun UR_U-SCR|UserScore:object{AcquisitionSchemasV3.SCR|UserSchema} (ouronet-account:string pool-id:string score-id:string)
+    (defun UR_U-SCR|UserScore:object{AcquisitionSchemasV5.SCR|UserSchema} (ouronet-account:string pool-id:string score-id:string)
         @doc "Reads the EFFECTIVE full user score row from SCR|T|UserScore. Vacate-v2 §5 lazy invalidation: if \
             \ the row's stamped-generation is behind the score's current vacate-generation (a fast-vacate has \
             \ nuked this score since the row was written), the VALUE fields read as 0 (stale) while IDENTITY \
@@ -2410,7 +2550,7 @@
         )
     )
     ;;
-    (defun UR_S-DEF|SFScore:object{AcquisitionSchemasV3.SCR|SF|Schema} (score-id:string dpsf-id:string nonce:integer)
+    (defun UR_S-DEF|SFScore:object{AcquisitionSchemasV5.SCR|SF|Schema} (score-id:string dpsf-id:string nonce:integer)
         @doc "Reads full DPSF nonce score definition row."
         (read SCR|T|SF|Score (UCk_SFScore score-id dpsf-id nonce))
     )
@@ -2435,7 +2575,7 @@
         (at "nonce" (read SCR|T|SF|Score (UCk_SFScore score-id dpsf-id nonce) ["nonce"]))
     )
     ;;
-    (defun UR_N-DEF|NFTraitScore:object{AcquisitionSchemasV3.SCR|NF|TraitSchema} (score-id:string dpnf-id:string trait-key:string trait-value:string)
+    (defun UR_N-DEF|NFTraitScore:object{AcquisitionSchemasV5.SCR|NF|TraitSchema} (score-id:string dpnf-id:string trait-key:string trait-value:string)
         @doc "Reads full trait-mode NF score definition row."
         (read SCR|T|NF|TraitScore (UCk_NFTraitScore score-id dpnf-id trait-key trait-value))
     )
@@ -2460,7 +2600,7 @@
         (at "trait-value" (UR_N-DEF|NFTraitScore score-id dpnf-id trait-key trait-value))
     )
     ;;
-    (defun UR_N-DEF|NFClassScore:object{AcquisitionSchemasV3.SCR|NF|ClassSchema} (score-id:string dpnf-id:string dpnf-nonce-class:integer)
+    (defun UR_N-DEF|NFClassScore:object{AcquisitionSchemasV5.SCR|NF|ClassSchema} (score-id:string dpnf-id:string dpnf-nonce-class:integer)
         @doc "Reads full class-mode NF score definition row."
         (read SCR|T|NF|ClassScore (UCk_NFClassScore score-id dpnf-id dpnf-nonce-class))
     )
@@ -2481,7 +2621,7 @@
         (at "dpnf-nonce-class" (UR_N-DEF|NFClassScore score-id dpnf-id dpnf-nonce-class))
     )
     ;;
-    (defun UR_S-DEF-REV|SFDefRevision:object{AcquisitionSchemasV3.SCR|SF|DefRevision} (score-id:string dpsf-id:string)
+    (defun UR_S-DEF-REV|SFDefRevision:object{AcquisitionSchemasV5.SCR|SF|DefRevision} (score-id:string dpsf-id:string)
         @doc "Reads SF definition revision row for (score-id, dpsf-id)."
         (read SCR|T|SF|DefRevision (UCk_SFDefRevision score-id dpsf-id))
     )
@@ -2502,7 +2642,7 @@
         (at "dpsf-id" (read SCR|T|SF|DefRevision (UCk_SFDefRevision score-id dpsf-id) ["dpsf-id"]))
     )
     ;;
-    (defun UR_N-DEF-REV|NFDefRevision:object{AcquisitionSchemasV3.SCR|NF|DefRevision} (score-id:string dpnf-id:string)
+    (defun UR_N-DEF-REV|NFDefRevision:object{AcquisitionSchemasV5.SCR|NF|DefRevision} (score-id:string dpnf-id:string)
         @doc "Reads NF definition revision row for (score-id, dpnf-id)."
         (read SCR|T|NF|DefRevision (UCk_NFDefRevision score-id dpnf-id))
     )
@@ -2539,7 +2679,7 @@
         (at "dpnf-id" (read SCR|T|NF|DefRevision (UCk_NFDefRevision score-id dpnf-id) ["dpnf-id"]))
     )
     ;;
-    (defun UR_SCR|Triplet:object{AcquisitionSchemasV3.SCR|Triplet} (triplet-id:string)
+    (defun UR_SCR|Triplet:object{AcquisitionSchemasV5.SCR|Triplet} (triplet-id:string)
         @doc "Reads full triplet bundle row."
         (read SCR|T|Triplet triplet-id)
     )
@@ -2983,7 +3123,7 @@
         )
     )
     (defun URCx_EquityShareRawWeight:decimal
-        (dpsf-id:string nonces:[integer] nonce-amounts:[integer])
+        (single-share-unit:decimal dpsf-id:string nonces:[integer] nonce-amounts:[integer])
         @doc "Share-weighted raw weight for an EQUITY (shareholder) collection: sum_i amount_i x the \
             \ SHARE VALUE of nonce_i, read LIVE from EQUITY. \
             \ \
@@ -3017,9 +3157,19 @@
             \ holders who package differently. \
             \ \
             \ POINT READS ONLY -- one EQUITY read per staked nonce, no scan, so this stays URC-light \
-            \ like its two siblings. Nonce 1 is the share itself (weight 1); nonces 2-8 map to tiers \
-            \ 1-7; anything else scores 0 rather than aborting, because an equity collection cannot \
-            \ have other nonces and a stake path is the wrong place to discover that it does."
+            \ like its two siblings. Nonces 2-8 map to tiers 1-7; anything else scores 0 rather than \
+            \ aborting, because an equity collection cannot have other nonces and a stake path is the \
+            \ wrong place to discover that it does. \
+            \ \
+            \ NONCE 1 -- THE RAW SHARE -- IS WORTH `single-share-unit`, PASSED IN. It is 1.0 when the \
+            \ employing score has `single-share-weight` true and 0.0 when it does not, and the SCORE \
+            \ is what decides: CompanySharesTreasury counts raw shares, SnakesTreasury counts only \
+            \ aggregated packages, and both weigh the SAME collection. \
+            \ \
+            \ IT IS A PARAMETER RATHER THAN A SCORE READ so this stays a pure `URCx_` compute over \
+            \ its arguments -- no table read inside a per-nonce fold, no dependence on the score row \
+            \ existing, and the two cases are directly testable by passing 1.0 and 0.0. The caller, \
+            \ `URC_SignedBaseDeltaForDpsfStake`, resolves it once from the score."
         (let
             (
                 (ref-EQUITY:module{EquityV5} EQUITY)
@@ -3034,7 +3184,7 @@
                             (q:integer (at idx nonce-amounts))
                             (unit:decimal
                                 (if (= n 1)
-                                    1.0
+                                    single-share-unit
                                     (if (and (>= n 2) (<= n 8))
                                         (dec (ref-EQUITY::URC_SingleSharePerMillions dpsf-id (- n 1)))
                                         0.0
@@ -3060,15 +3210,19 @@
             \   sft-equality false -> URCx_SfStakeDefinitionWeightedRawWeight (revision 0 => 0; else \
             \                        per-nonce point-read, undefined nonce => 0). \
             \ \
-            \ THE EQUITY BRANCH IS NOT A SCORE SETTING, DELIBERATELY. A shareholder collection has \
-            \ exactly one meaningful weighting -- shares -- and its tiers' share values will move the \
-            \ moment a share-issuance path exists (none does yet; see URCx_EquityShareRawWeight). \
-            \ Keying this on the ASSET makes share-weighting UNAVOIDABLE for such a collection: there \
-            \ is no way to issue a score that weights it any other way, and no table to leave stale. \
-            \ Keying it on a score field would have made the correct behaviour something an operator \
-            \ must remember, which is how every dead definition in this system has happened. \
+            \ WHICH BRANCH is still keyed on the ASSET, deliberately: a shareholder collection is \
+            \ weighted in SHARES and there is no way to issue a score that weights it any other way. \
+            \ That part has not changed and should not. \
             \ \
-            \ It also costs no schema change: `sft-equality` stays a bool, and no score row moves. \
+            \ CORRECTED 2026-11-10 -- this paragraph used to continue `keying it on a score field \
+            \ would have made the correct behaviour something an operator must remember`, and used \
+            \ that to argue the equity branch should carry NO score setting at all. The argument \
+            \ assumed one collection means one weighting. It does not. CompanySharesTreasury counts \
+            \ RAW SHARES; SnakesTreasury must count only AGGREGATED PACKAGES; both employ scores over \
+            \ the SAME equity collection. An asset-keyed rule cannot express that, so `single-share- \
+            \ weight` now decides whether nonce 1 carries its share -- the one score setting the \
+            \ equity branch reads, and the only thing that can make two scores over one collection \
+            \ disagree. Everything else about the branch stays asset-decided. \
             \ All three branches are point-read/compute only — statically light (URC), no stake-path scan."
         (let
             (
@@ -3077,7 +3231,11 @@
                 (sft-equality:bool (UR_SCR|ScoreSftEquality score-id))
                 (raw-weight:decimal
                     (if (ref-EQUITY::URC_IzEquitySemiFungible dpsf-id)
-                        (URCx_EquityShareRawWeight dpsf-id nonces nonce-amounts)
+                        ;;THE SCORE'S OWN ANSWER FOR THE RAW SHARE, resolved HERE so the fold
+                        ;;above stays a pure compute over its arguments (URCx_, no table read).
+                        (URCx_EquityShareRawWeight
+                            (if (UR_SCR|SingleShareWeight score-id) 1.0 0.0)
+                            dpsf-id nonces nonce-amounts)
                         (if sft-equality
                             (UCx_StakeEqualNativeUnitRawWeight nonces nonce-amounts)
                             (URCx_SfStakeDefinitionWeightedRawWeight score-id dpsf-id nonces nonce-amounts)
@@ -3129,7 +3287,7 @@
         (+ (filter (lambda (sid:string) (=  (UR_SCR|ScoreBoostLink sid) BAR)) score-ids)
            (filter (lambda (sid:string) (!= (UR_SCR|ScoreBoostLink sid) BAR)) score-ids))
     )
-    (defun URC_SingularUserScoreDeltaFromSignedUserBase:object{AcquisitionSchemasV3.SCR|SingularUserScoreDelta}
+    (defun URC_SingularUserScoreDeltaFromSignedUserBase:object{AcquisitionSchemasV5.SCR|SingularUserScoreDelta}
         (ouronet-account:string pool-id:string score-id:string signed-user-base-delta:decimal)
         @doc "Core singular user-score step: from one signed user-base delta already at score precision (e.g. LP weight × mx after URC_SignedBaseDeltaForDptfLpStake / URC_SignedBaseDeltaForOrtoLpStake / URC_SignedBaseDeltaForDptfStake / DPOF|DPSF|DPNF stake URC_*), \
             \ compute new user base/boosted/deb, nz-delta, and global deltas. When boost-link ≠ BAR and boost-class-link ≠ BAR (foreign anchor + ANK promile), \
@@ -3142,13 +3300,13 @@
                 (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
                 (ref-DALOS:module{OuronetDalosV3} DALOS)
                 ;;
-                (scr:object{AcquisitionSchemasV3.SCR|Schema} (UR_SCR|Score score-id))
+                (scr:object{AcquisitionSchemasV5.SCR|Schema} (UR_SCR|Score score-id))
                 (p:integer (at "precision" scr))
                 (bcl:string (at "boost-class-link" scr))
                 (bl:string (at "boost-link" scr))
                 (db-boost:bool (at "deb-boost" scr))
                 ;;
-                (old-u:object{AcquisitionSchemasV3.SCR|UserSchema} (UR_U-SCR|UserScore ouronet-account pool-id score-id))
+                (old-u:object{AcquisitionSchemasV5.SCR|UserSchema} (UR_U-SCR|UserScore ouronet-account pool-id score-id))
                 (ob:decimal (at "base-score" old-u))
                 (obb:decimal (at "boosted-score" old-u))
                 (od:decimal (at "deb-score" old-u))
@@ -3367,7 +3525,7 @@
         @doc "True when a score-entity model row exists."
         (with-default-read SCR|T|ScoreEntityModel model-id {"model-id" : BAR} {"model-id" := m} (!= m BAR))
     )
-    (defun UR_SCR|ScoreEntityModel:object{AcquisitionSchemasV3.SCR|ScoreEntityModel} (model-id:string)
+    (defun UR_SCR|ScoreEntityModel:object{AcquisitionSchemasV5.SCR|ScoreEntityModel} (model-id:string)
         @doc "Reads the full score-entity model row."
         (read SCR|T|ScoreEntityModel model-id)
     )
@@ -3403,7 +3561,7 @@
     ;; module's hash and abort with "hash not blessed" on the next upgrade (REPL/tools/_dotpin.py).
     ;;
     ;;3] SCR|SF|Schema — the per-nonce weight table for one (score, DPSF) pair.
-    (defun URH_SCR|SFScoreDefinition:[object{AcquisitionSchemasV3.SCR|SF|Schema}]
+    (defun URH_SCR|SFScoreDefinition:[object{AcquisitionSchemasV5.SCR|SF|Schema}]
         (score-id:string dpsf-id:string)
         @doc "Returns every SCR|T|SF|Score row for <score-id> and <dpsf-id>, ascending by nonce. \
             \ Empty list = no definition written for that pair. Note an ABSENT nonce is not the \
@@ -3419,7 +3577,7 @@
         )
     )
     ;;4] SCR|NF|TraitSchema — the trait weight table for one (score, DPNF) pair (model 1).
-    (defun URH_SCR|NFTraitScoreDefinition:[object{AcquisitionSchemasV3.SCR|NF|TraitSchema}]
+    (defun URH_SCR|NFTraitScoreDefinition:[object{AcquisitionSchemasV5.SCR|NF|TraitSchema}]
         (score-id:string dpnf-id:string)
         @doc "Returns every SCR|T|NF|TraitScore row for <score-id> and <dpnf-id>, ordered by \
             \ trait-key then trait-value. Only consulted when nft-score-model = 1; a trait-key \
@@ -3435,7 +3593,7 @@
         )
     )
     ;;5] SCR|NF|ClassSchema — the nonce-class weight table for one (score, DPNF) pair (model 1).
-    (defun URH_SCR|NFClassScoreDefinition:[object{AcquisitionSchemasV3.SCR|NF|ClassSchema}]
+    (defun URH_SCR|NFClassScoreDefinition:[object{AcquisitionSchemasV5.SCR|NF|ClassSchema}]
         (score-id:string dpnf-id:string)
         @doc "Returns every SCR|T|NF|ClassScore row for <score-id> and <dpnf-id>, ascending by \
             \ dpnf-nonce-class. Class 0 = all native NFTs; >0 = a specific AQP-ANK set class."
@@ -3539,6 +3697,16 @@
             )
             (r::UDC_ConstructOutputCumulator
                 (r::UC_IgnisPrice "AQP-SCR|C_CreateScoreBoostLink" "setup")
+                (UR_SCR|ScoreOwnerKonto score-id) (r::URC_IsVirtualGasZero) [])
+        ))
+    (defun URCi_SetSingleShareWeight:object{IgnisCollectorV4.OutputCumulator} (score-id:string)
+        @doc "Cost preview for AQP-SCR|C_SetSingleShareWeight — deter(setup) + components."
+        (let
+            (
+                (r:module{IgnisCollectorV4} IGNIS)
+            )
+            (r::UDC_ConstructOutputCumulator
+                (r::UC_IgnisPrice "AQP-SCR|C_SetSingleShareWeight" "setup")
                 (UR_SCR|ScoreOwnerKonto score-id) (r::URC_IsVirtualGasZero) [])
         ))
     (defun URCi_EnableDebBoost:object{IgnisCollectorV4.OutputCumulator} (score-id:string)
@@ -3975,7 +4143,7 @@
     ;; WU lists every schema field: defun when used; comment when [.], select key, or mutates via WW_*.
     ;;
     (defun WI_Score:string
-        (score-id:string row:object{AcquisitionSchemasV3.SCR|Schema})
+        (score-id:string row:object{AcquisitionSchemasV5.SCR|Schema})
         @doc "Insert SCR|T|Score full row (issue only)."
         (require-capability (SECURE))
         (insert SCR|T|Score score-id row)
@@ -4000,6 +4168,13 @@
         @doc "Set deb-boost true on SCR|T|Score (irreversible)."
         (require-capability (SECURE))
         (update SCR|T|Score score-id {"deb-boost": true})
+    )
+    (defun WU_Score|SingleShareWeight:string
+        (score-id:string flag:bool)
+        @doc "Set single-share-weight on SCR|T|Score. REVERSIBLE, unlike deb-boost -- the gate is \
+            \ that the score must be empty, not that the move is one-way."
+        (require-capability (SECURE))
+        (update SCR|T|Score score-id {"single-share-weight": flag})
     )
     (defun WU_Score|DriftLocked:string
         (score-id:string)
@@ -4099,13 +4274,13 @@
         (update SCR|T|Score score-id {"triplet": true, "triplet-id": triplet-id})
     )
     (defun WU3_Score|VaultTotals:string
-        (score-id:string scr:object{AcquisitionSchemasV3.SCR|Schema} d:object{AcquisitionSchemasV3.SCR|SingularUserScoreDelta})
+        (score-id:string scr:object{AcquisitionSchemasV5.SCR|Schema} d:object{AcquisitionSchemasV5.SCR|SingularUserScoreDelta})
         @doc "Apply aggregate total-base/total-boosted/total-deb deltas on SCR|T|Score at score precision."
         (require-capability (SECURE))
         (let
             (
                 (p:integer (at "precision" scr))
-                (fresh:object{AcquisitionSchemasV3.SCR|Schema} (UR_SCR|Score score-id))
+                (fresh:object{AcquisitionSchemasV5.SCR|Schema} (UR_SCR|Score score-id))
                 (old-tb:decimal (at "total-base-score" fresh))
                 (old-tbst:decimal (at "total-boosted-score" fresh))
                 (old-td:decimal (at "total-deb-score" fresh))
@@ -4122,7 +4297,7 @@
         )
     )
     (defun WU_Score|NzsCount:string
-        (score-id:string scr:object{AcquisitionSchemasV3.SCR|Schema} d:object{AcquisitionSchemasV3.SCR|SingularUserScoreDelta})
+        (score-id:string scr:object{AcquisitionSchemasV5.SCR|Schema} d:object{AcquisitionSchemasV5.SCR|SingularUserScoreDelta})
         @doc "Apply nz-delta to SCR|T|Score.nzs-count."
         (require-capability (SECURE))
         (let
@@ -4163,7 +4338,7 @@
     ;;
     ;; WI_UserScore — not used: first row touch is WW_UserScore (upsert path).
     (defun WW_UserScore:string
-        (ouronet-account:string pool-id:string score-id:string row:object{AcquisitionSchemasV3.SCR|UserSchema})
+        (ouronet-account:string pool-id:string score-id:string row:object{AcquisitionSchemasV5.SCR|UserSchema})
         @doc "Upsert full SCR|T|UserScore row for (account, pool, score)."
         (require-capability (SECURE))
         (write SCR|T|UserScore (UCk_UserScore ouronet-account pool-id score-id) row)
@@ -4177,7 +4352,7 @@
     ;;
     ;; WI_SFScore — not used: first row touch is WW_SFScore (upsert path).
     (defun WW_SFScore:string
-        (score-id:string dpsf-id:string nonce:integer row:object{AcquisitionSchemasV3.SCR|SF|Schema})
+        (score-id:string dpsf-id:string nonce:integer row:object{AcquisitionSchemasV5.SCR|SF|Schema})
         @doc "Upsert SCR|T|SF|Score nonce definition row."
         (require-capability (SECURE))
         (write SCR|T|SF|Score (UCk_SFScore score-id dpsf-id nonce) row)
@@ -4189,7 +4364,7 @@
     ;;
     ;; WI_NFTraitScore — not used: first row touch is WW_NFTraitScore (upsert path).
     (defun WW_NFTraitScore:string
-        (score-id:string dpnf-id:string trait-key:string trait-value:string row:object{AcquisitionSchemasV3.SCR|NF|TraitSchema})
+        (score-id:string dpnf-id:string trait-key:string trait-value:string row:object{AcquisitionSchemasV5.SCR|NF|TraitSchema})
         @doc "Upsert SCR|T|NF|TraitScore trait definition row."
         (require-capability (SECURE))
         (write SCR|T|NF|TraitScore (UCk_NFTraitScore score-id dpnf-id trait-key trait-value) row)
@@ -4202,7 +4377,7 @@
     ;;
     ;; WI_NFClassScore — not used: first row touch is WW_NFClassScore (upsert path).
     (defun WW_NFClassScore:string
-        (score-id:string dpnf-id:string dpnf-nonce-class:integer row:object{AcquisitionSchemasV3.SCR|NF|ClassSchema})
+        (score-id:string dpnf-id:string dpnf-nonce-class:integer row:object{AcquisitionSchemasV5.SCR|NF|ClassSchema})
         @doc "Upsert SCR|T|NF|ClassScore class definition row."
         (require-capability (SECURE))
         (write SCR|T|NF|ClassScore (UCk_NFClassScore score-id dpnf-id dpnf-nonce-class) row)
@@ -4214,7 +4389,7 @@
     ;;
     ;; WI_SFDefRevision — not used: first row touch is WW_SFDefRevision (upsert path).
     (defun WW_SFDefRevision:string
-        (score-id:string dpsf-id:string row:object{AcquisitionSchemasV3.SCR|SF|DefRevision})
+        (score-id:string dpsf-id:string row:object{AcquisitionSchemasV5.SCR|SF|DefRevision})
         @doc "Upsert SCR|T|SF|DefRevision row."
         (require-capability (SECURE))
         (write SCR|T|SF|DefRevision (UCk_SFDefRevision score-id dpsf-id) row)
@@ -4225,7 +4400,7 @@
     ;;
     ;; WI_NFDefRevision — not used: first row touch is WW_NFDefRevision (upsert path).
     (defun WW_NFDefRevision:string
-        (score-id:string dpnf-id:string row:object{AcquisitionSchemasV3.SCR|NF|DefRevision})
+        (score-id:string dpnf-id:string row:object{AcquisitionSchemasV5.SCR|NF|DefRevision})
         @doc "Upsert SCR|T|NF|DefRevision row."
         (require-capability (SECURE))
         (write SCR|T|NF|DefRevision (UCk_NFDefRevision score-id dpnf-id) row)
@@ -4244,12 +4419,12 @@
     ;; WU_NFDefRevision|DpnfId — select key; WU not needed.
     ;;
     (defun WI_Triplet:string
-        (triplet-id:string row:object{AcquisitionSchemasV3.SCR|Triplet})
+        (triplet-id:string row:object{AcquisitionSchemasV5.SCR|Triplet})
         @doc "Insert SCR|T|Triplet full row (C_IssueTriplet only)."
         (require-capability (SECURE))
         (insert SCR|T|Triplet triplet-id row)
     )
-    (defun WI_ScoreEntityModel:string (model-id:string row:object{AcquisitionSchemasV3.SCR|ScoreEntityModel})
+    (defun WI_ScoreEntityModel:string (model-id:string row:object{AcquisitionSchemasV5.SCR|ScoreEntityModel})
         @doc "Insert a score-entity model row. require SECURE."
         (require-capability (SECURE))
         (insert SCR|T|ScoreEntityModel model-id row)
@@ -4331,6 +4506,14 @@
         @doc "Under SECURE (from SCR|C>ENABLE-DEB-BOOST-SCORE): set deb-boost true only. Write only; C_EnableDebBoost builds IGNIS cumulator."
         ;; SECURE: granted by WU_Score|DebBoost (underlying W_).
         (WU_Score|DebBoost score-id)
+    )
+    ;;Protection: Class 1 — Innate protection offered by WU_Score|SingleShareWeight
+    (defun XI_SetSingleShareWeight:string
+        (score-id:string flag:bool)
+        @doc "Under SECURE (from SCR|C>SET-SINGLE-SHARE-WEIGHT): set single-share-weight only. \
+            \ Write only; C_SetSingleShareWeight builds the IGNIS cumulator."
+        ;; SECURE: granted by WU_Score|SingleShareWeight (underlying W_).
+        (WU_Score|SingleShareWeight score-id flag)
     )
     ;;Protection: Class 1 — Innate protection offered by WU_Score|DriftLocked
     (defun XI_LockScoreDrift:string
@@ -4699,8 +4882,8 @@
         ;; SECURE: granted by WW_UserScore, WU3_Score|VaultTotals, WU_Score|NzsCount (underlying W_).
         (let
             (
-                (scr:object{AcquisitionSchemasV3.SCR|Schema} (UR_SCR|Score score-id))
-                (d:object{AcquisitionSchemasV3.SCR|SingularUserScoreDelta}
+                (scr:object{AcquisitionSchemasV5.SCR|Schema} (UR_SCR|Score score-id))
+                (d:object{AcquisitionSchemasV5.SCR|SingularUserScoreDelta}
                     (URC_SingularUserScoreDeltaFromSignedUserBase ouronet-account pool-id score-id signed-user-base-delta)
                 )
             )
@@ -4734,7 +4917,7 @@
         (let
             (
                 (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                (m:object{AcquisitionSchemasV3.SCR|ScoreEntityModel} (UR_SCR|ScoreEntityModel single-model-id))
+                (m:object{AcquisitionSchemasV5.SCR|ScoreEntityModel} (UR_SCR|ScoreEntityModel single-model-id))
             )
             (let
                 (
@@ -5301,6 +5484,22 @@
         )
         (URCi_EnableDebBoost score-id)
     )
+    (defun C_SetSingleShareWeight:object{IgnisCollectorV4.OutputCumulator}
+        (patron:string executor:string score-id:string flag:bool)
+        @doc "Sets whether an equity collection's RAW SHARE (nonce 1) carries weight on this score. \
+            \ Reversible; refuses unless the score is empty and not drift-locked. \
+            \ \
+            \ Executor: PROVEN INDIRECTLY, and named -- SCR|C>SET-SINGLE-SHARE-WEIGHT reaches \
+            \ (CAP_EnforceAccountOwnership (UR_SCR|ScoreOwnerKonto score-id)), ownership of a \
+            \ DERIVED account that names no actor (HANDOFF 4g), and UEV_ExecutorIzScoreOwner binds \
+            \ the declared executor to that same owner. (patron/executor canon 2.2.)"
+        (P|UEV_IMC)
+        (UEV_ExecutorIzScoreOwner executor score-id)
+        (with-capability (SCR|C>SET-SINGLE-SHARE-WEIGHT score-id flag)
+            (XI_SetSingleShareWeight score-id flag)
+        )
+        (URCi_SetSingleShareWeight score-id)
+    )
     (defun C_LockScoreDrift:object{IgnisCollectorV4.OutputCumulator}
         (patron:string executor:string score-id:string)
         @doc "Permanently marks a score as drift-proof -- irreversible, and a PRECONDITION for the \
@@ -5507,7 +5706,7 @@
                                 (XI_IssueOneFromModel executor model-id agency-name)
                                 (let
                                     (
-                                        (m:object{AcquisitionSchemasV3.SCR|ScoreEntityModel} (UR_SCR|ScoreEntityModel model-id))
+                                        (m:object{AcquisitionSchemasV5.SCR|ScoreEntityModel} (UR_SCR|ScoreEntityModel model-id))
                                     )
                                     (let
                                         (

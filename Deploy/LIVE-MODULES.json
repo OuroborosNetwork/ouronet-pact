@@ -92,7 +92,7 @@
   },
   "AQP-ANK": {
    "deployed": true,
-   "hash": "FjO4M8jjqkmyqBARkK3oC4QQR_w0QVDohe0etb3Kook",
+   "hash": "6qLDPdrTAFXif19SRAEyilQd6Uhz1Bu_64pYEb-xmmw",
    "repoPath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/01_ANK.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
@@ -281,7 +281,7 @@
   },
   "AQP-BOOT": {
    "deployed": true,
-   "hash": "BzRlDnxJXU_BHppNxgtJTG33B-Qw-xjQ20IeqJ0WblM",
+   "hash": "1JrmnxcwNZlz5JtvZhJz6HvXzuo-fc8LDflm1xiTjqs",
    "repoPath": "2_CITIZEN/5_VaultsMinter/04_AQP-BOOT.pact",
    "interfaces": [
     "ouronet-ns.AcquisitionPoolBootV2"
@@ -371,7 +371,7 @@
   },
   "AQP-DSA": {
    "deployed": true,
-   "hash": "cGIyFvoEAtta2RhEfSTEEBeQBfXVe_se0TbPjdS_Imk",
+   "hash": "b-0xBCeF7m3GoV3YpDpTLIIjQaOxVm0tzo1mSdfNqAg",
    "repoPath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/08_DSA.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
@@ -492,13 +492,13 @@
   },
   "AQP-FVT": {
    "deployed": true,
-   "hash": "xBCNcNc3qpOhv1M3qPHYlLNWGVCtPyK5GcxFHvKcIM8",
+   "hash": "jHzINQfxfLBEUTmeJRLCfczufO5I5pFuoBxcfTJ0wUU",
    "repoPath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/05_FVT.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.AcquisitionFarmsVaultsTreasuriesV6"
+    "ouronet-ns.AcquisitionFarmsVaultsTreasuriesV7"
    ],
-   "chars": 295551,
+   "chars": 310631,
    "shapes": {
     "schemas": [],
     "tables": [
@@ -540,6 +540,7 @@
      "FVT|C>UNSTALE-ALL",
      "FVT|C>UNSTALE-MY-SCORES",
      "FVT|C>UNSTALED",
+     "FVT|XE>EVICT-BULK-PAY",
      "FVT|XE>EVICT-REWARD",
      "FVT|XE>SWEEP-BRACKET",
      "GOV",
@@ -619,6 +620,7 @@
      "UEV_StreamParams",
      "URC_CollectClaimableRewards",
      "URC_CollectPoolId",
+     "URC_EvictLegIsLadder",
      "URC_FvtUserStillPresent",
      "URC_InjectDenominator",
      "URC_LiveClaimable",
@@ -651,11 +653,13 @@
      "UR_ExternalOracle",
      "UR_FVT-FFC|Count",
      "UR_FVT-MV|AvailableRewards",
+     "UR_FVT-MV|DormantClaimCount",
      "UR_FVT-QS|BronzeSplit",
      "UR_FVT-QS|GoldSplit",
      "UR_FVT-QS|Mode",
      "UR_FVT-RG|AvailableRewards",
      "UR_FVT-RG|CurrentRps",
+     "UR_FVT-RG|DormantClaimCount",
      "UR_FVT-RG|MinInjectAmount",
      "UR_FVT-RG|RewardEnabled",
      "UR_FVT-RG|RewardKind",
@@ -671,6 +675,7 @@
      "UR_FVT-SEL|CaptureUnits",
      "UR_FVT-SEL|CaptureWeight",
      "UR_FVT-SEL|Delegation",
+     "UR_FVT-SEL|EarningUserCount",
      "UR_FVT-SEL|Enabled",
      "UR_FVT-SEL|GhostTvlWeight",
      "UR_FVT-SEL|OracleTs",
@@ -681,6 +686,7 @@
      "UR_FVT|CanChangeOwner",
      "UR_FVT|CanUpgrade",
      "UR_FVT|CommonDenominator",
+     "UR_FVT|EarningLegCount",
      "UR_FVT|EnabledRewardCount",
      "UR_FVT|Fvt",
      "UR_FVT|FvtClass",
@@ -705,17 +711,21 @@
      "WU_Fvt|OracleOn",
      "WU_Fvt|StreamEligible",
      "XB_FvtInject",
+     "XE_EvictBulkPay",
      "XE_EvictDrip",
      "XE_EvictPay",
+     "XE_EvictPayNoMove",
      "XE_RefreshCollectableStakeAnchors",
      "XE_RefreshTrueFungibleStakeAnchors",
      "XE_SetFvtOracleOn",
      "XE_SetFvtVacateFrozen",
      "XE_SweepBegin",
      "XE_SweepEnd",
+     "XI_1|CollectPayCore",
      "XI_CollectDrip",
      "XI_CollectForcedFixPenalty",
      "XI_CollectPay",
+     "XI_CollectPayNoMove",
      "XI_CollectableStakePhases",
      "XI_Control",
      "XI_IssueFvt",
@@ -778,10 +788,10 @@
   },
   "AQP-INFO": {
    "deployed": true,
-   "hash": "GKPJi2LlS5XtmPt4oz6iSfru1rlalooqIjUwHkg_6Tk",
+   "hash": "aq2uV9Zn60LbVNZ41a-oKn1sRn75dwpvMDHvnMK1U_U",
    "repoPath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
    "interfaces": [],
-   "chars": 127002,
+   "chars": 126999,
    "shapes": {
     "schemas": [],
     "tables": [],
@@ -911,13 +921,13 @@
   },
   "AQP-POOL": {
    "deployed": true,
-   "hash": "GH5p3K8VZop8I6Mfzlzcx1nR3FkbnE9jpqgDQbnKjjE",
+   "hash": "V5UbbMFyC95m0U93_WNTC_V8YAPWKoGfuzCWZ8QwpNM",
    "repoPath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/03_AQP.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
     "ouronet-ns.AcquisitionPoolsV3"
    ],
-   "chars": 230984,
+   "chars": 250452,
    "shapes": {
     "schemas": [],
     "tables": [
@@ -990,6 +1000,7 @@
      "P|UEV_IMC",
      "P|UR",
      "P|UR_IMP",
+     "UC_AQP|BackfillNoncePairsForBeneficiary",
      "UC_AQP|BackfillRowsForBeneficiary",
      "UC_AQP|BackfillSumForBeneficiary",
      "UC_AQP|BackfillUniqueBeneficiaries",
@@ -1017,6 +1028,7 @@
      "UDC_AQP|SemiFungibleTracker",
      "UDC_AQP|TrueFungibleTracker",
      "UDC_AQP|UserOccupancy",
+     "UEV_AQP|NoLiveStakeOfAsset",
      "UEV_AQP|ScoreDrainComplete",
      "UEV_AQP|ScoreMxChangeSafe",
      "UEV_AddScorePoolAndScore",
@@ -1032,6 +1044,7 @@
      "UEV_StakeTrueFungibleDptfLeg",
      "URC_AQP|PoolHasWeightedStakers",
      "URC_AQP|PoolLiquidityLegs",
+     "URC_AQP|ScoreAutoFreezeOnAdd",
      "URC_AQP|ScoreBackfillSupported",
      "URC_AQP|ScoreMxChangeSafe",
      "URC_AqpOwnerKonto",
@@ -1096,12 +1109,16 @@
      "URH_AQP|DpnfStakesByOwner",
      "URH_AQP|DpofStakesByBeneficiary",
      "URH_AQP|DpofStakesByOwner",
+     "URH_AQP|DpsfStakedPools",
      "URH_AQP|DpsfStakesByBeneficiary",
      "URH_AQP|DpsfStakesByOwner",
      "URH_AQP|DptfStakesByBeneficiary",
      "URH_AQP|DptfStakesByOwner",
      "URH_AQP|ScoreBackfillLegRows",
      "URH_AQP|ScoreTargetBaseForBeneficiary",
+     "URH_AQP|ScoreTargetBaseForBeneficiaryLp",
+     "URH_AQP|ScoreTargetBaseForBeneficiaryNf",
+     "URH_AQP|ScoreTargetBaseForBeneficiarySf",
      "UR_AQP|BenDpnfActiveNonceCount",
      "UR_AQP|BenDpnfAnkMeta",
      "UR_AQP|BenDpnfLastAnkSyncCount",
@@ -1224,13 +1241,13 @@
   },
   "AQP-SCORE": {
    "deployed": true,
-   "hash": "RMgOjMECNVmHjZ16tRzKGZkvLHEgaaq4EVzn2LysnHM",
+   "hash": "L5IX1AcSt0E8gkKpr1C12-mFeJmNzlVykCXYXldsRFE",
    "repoPath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/02_SCORE.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.AcquisitionScoresV5"
+    "ouronet-ns.AcquisitionScoresV6"
    ],
-   "chars": 295523,
+   "chars": 300381,
    "shapes": {
     "schemas": [
      "SCR|SleepStake"
@@ -1573,11 +1590,11 @@
   },
   "AQP-VCT": {
    "deployed": true,
-   "hash": "H51xmVWEkoRqhbmkER1YqDldSruV177-syiqR8zpEv0",
+   "hash": "9AD-U3kFxv64JwhSBDrKW0BmJs4KdQm7iNI5W6ySo8o",
    "repoPath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/06_VCT.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.AcquisitionVacateV4"
+    "ouronet-ns.AcquisitionVacateV5"
    ],
    "chars": 190605,
    "shapes": {
@@ -3212,7 +3229,7 @@
   },
   "DEMIPAD-CUSTODIANS": {
    "deployed": true,
-   "hash": "2fwwTAQ9wylxAEayV4hW8VEn5bJm189Bw__WHevBcCY",
+   "hash": "GAKeZUauwqebP8zx-xxVT4r0xKGMv68MxGKgkLeWvdU",
    "repoPath": "2_CITIZEN/7_Launchpad/3_Custodians/03_Custodians.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
@@ -3280,7 +3297,7 @@
   },
   "DEMIPAD-SNAKES": {
    "deployed": true,
-   "hash": "gHbhuZUMn_ls6eUgJJ_cK84GyEXrsPosSUkWMZvVhi4",
+   "hash": "vUr0Fm3rds1_6cUoGKbbwh3zQjUCSXD3s8SFAsuKwQI",
    "repoPath": "2_CITIZEN/7_Launchpad/2_Snakes/02_Snakes.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
@@ -5044,7 +5061,7 @@
   },
   "DSP": {
    "deployed": true,
-   "hash": "90WdpH3ByuV5n1CDGD76z4XY79Gh4LFwzpHYlxS5QXQ",
+   "hash": "oJHuxCa64EBiP9Js3-p4AyJ3eaB_XdKrxQMG0FgysOU",
    "repoPath": "2_CITIZEN/Stage_Z/03_DSP+.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
@@ -5994,13 +6011,13 @@
   },
   "MTX-AQP": {
    "deployed": true,
-   "hash": "zAMqF8hif8cS1FAy_8pkJ-zTlxpFhkiJqGCTmGVanec",
+   "hash": "kKF7LhGMzrDwj_GU0KBaziRCSbuA2gBc2tFOVsVqQqk",
    "repoPath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/07_MTX-AQP.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
     "ouronet-ns.AqpMtxV2"
    ],
-   "chars": 27939,
+   "chars": 27930,
    "shapes": {
     "schemas": [],
     "tables": [
@@ -6816,13 +6833,13 @@
   },
   "RPS": {
    "deployed": true,
-   "hash": "wkYaP0RQnyMMFXe-ldOMfxfQ16Tk60ffiyiKruXQ40A",
+   "hash": "1jq_2TQM5lSqNYB_s2BUGlBv4Vk0jPcfzeub4QvLpGs",
    "repoPath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/04_RPS.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.AcquisitionRewardPerShareV5"
+    "ouronet-ns.AcquisitionRewardPerShareV7"
    ],
-   "chars": 281579,
+   "chars": 327424,
    "shapes": {
     "schemas": [],
     "tables": [
@@ -6852,6 +6869,7 @@
      "P|RPS|CALLER",
      "P|RPS|REMOTE-GOV",
      "P|SECURE-CALLER",
+     "RPS|UM>BACKFILL-S1",
      "RPS|XE>WRITE",
      "SECURE"
     ],
@@ -6897,6 +6915,7 @@
      "UEV_TrueFungibleStakeBeneficiaryAccount",
      "UEV_TrueFungibleStakeNotReserved",
      "UEV_TrueFungibleStakeOwnerAccount",
+     "UM_FVT|BackfillS1Counters",
      "URC_BookStakeUnclaimedIgnis",
      "URC_BuildPreScoreNzFlags",
      "URC_CheckpointStakeRpsIgnis",
@@ -6978,6 +6997,7 @@
      "UR_FVT-MF|Token2Id",
      "UR_FVT-MUW|ContribWeight",
      "UR_FVT-MV|AvailableRewards",
+     "UR_FVT-MV|DormantClaimCount",
      "UR_FVT-MV|UnclaimedCount",
      "UR_FVT-QS|BronzeSplit",
      "UR_FVT-QS|GoldSplit",
@@ -6985,6 +7005,7 @@
      "UR_FVT-QS|SilverSplit",
      "UR_FVT-RG|AvailableRewards",
      "UR_FVT-RG|CurrentRps",
+     "UR_FVT-RG|DormantClaimCount",
      "UR_FVT-RG|DptfId",
      "UR_FVT-RG|FvtId",
      "UR_FVT-RG|MinInjectAmount",
@@ -7017,6 +7038,7 @@
      "UR_FVT-SEL|CaptureUnits",
      "UR_FVT-SEL|CaptureWeight",
      "UR_FVT-SEL|Delegation",
+     "UR_FVT-SEL|EarningUserCount",
      "UR_FVT-SEL|Enabled",
      "UR_FVT-SEL|FvtId",
      "UR_FVT-SEL|GhostTvlWeight",
@@ -7027,6 +7049,7 @@
      "UR_FVT-SEL|Swpair",
      "UR_FVT-SEL|TotalLaneWeight",
      "UR_FVT-UP|IsPresent",
+     "UR_FVT|EarningLegCount",
      "UR_FVT|EnabledRewardCount",
      "UR_FVT|FvtClass",
      "UR_FVT|MemberLinkCount",
@@ -7051,6 +7074,7 @@
      "WU_AgencyFee",
      "WU_FvtForcedFixCount|Add",
      "WU_FvtForcedFixCount|Zero",
+     "WU_Fvt|EarningLegCount",
      "WU_Fvt|EnabledRewardCount",
      "WU_Fvt|MemberLinkCount",
      "WU_Fvt|MembershipMode",
@@ -7060,9 +7084,12 @@
      "WU_Fvt|TotalDebScore",
      "WU_Fvt|TotalGhostTvlWeight",
      "WU_MemberVault|AvailableRewards",
+     "WU_MemberVault|DormantClaimCount",
      "WU_MemberVault|UnclaimedCount",
+     "WU_MemberVault|UnclaimedCountSet",
      "WU_RpsGlobal|AvailableRewards",
      "WU_RpsGlobal|CurrentRps",
+     "WU_RpsGlobal|DormantClaimCount",
      "WU_RpsGlobal|MinInjectAmount",
      "WU_RpsGlobal|RewardEnabled",
      "WU_RpsGlobal|RoyaltyRewards",
@@ -7073,6 +7100,7 @@
      "WU_RpsGlobal|ZombieRewards",
      "WU_RpsUser|LastRps",
      "WU_RpsUser|PendingRewards",
+     "WU_SEL|EarningUserCount",
      "WU_ScoreEntityLink|Capture",
      "WU_ScoreEntityLink|Delegation",
      "WU_ScoreEntityLink|Enabled",
@@ -7082,57 +7110,54 @@
      "WW_RpsMember",
      "WW_RpsStream",
      "WW_UserPresence",
+     "XE_2|SettleMemberTier2",
+     "XE_AddRewardLink",
+     "XE_AddScoreEntity",
      "XE_AdmitDelegationMember",
      "XE_BankScorePendingRewards",
+     "XE_BookCollectUnclaimed",
      "XE_BookStakeUnclaimedCounts",
      "XE_BurnRoyalty",
      "XE_CheckpointStakeRps",
+     "XE_FixUserFvtDeb",
+     "XE_FixUserFvtDebIn",
+     "XE_FixUserFvtDebPenalizedIn",
+     "XE_FixUserMemberDeb",
      "XE_FuelRoyalty",
+     "XE_FvtAddStream",
      "XE_FvtFixUserChunk",
+     "XE_FvtForcedFixCount|Zero",
+     "XE_FvtInjectCore",
+     "XE_FvtRewardAggregate",
      "XE_FvtSweepRecomputeChunk",
+     "XE_FvtSweepRecomputeWindow",
+     "XE_IssueMultipletFamily",
+     "XE_MemberVault|AvailableRewards",
+     "XE_QualitySplit",
+     "XE_ReleaseStream",
+     "XE_RotateOwnership",
+     "XE_RpsGlobal",
+     "XE_RpsGlobal|AvailableRewards",
+     "XE_RpsPreScore",
+     "XE_RpsUser|LastRps",
+     "XE_RpsUser|PendingRewards",
+     "XE_ScoreEntityLink",
      "XE_SetAgencyFee",
      "XE_SetExternalOracle",
      "XE_SetMemberCapture",
      "XE_SetMemberDelegation",
+     "XE_SetMinInjectAmount",
+     "XE_SetMosaic",
      "XE_SetOracleValidity",
+     "XE_SetSplitMode",
      "XE_SweepSyncTripletLaneWeights",
-     "XE_WI_FvtRewardAggregate",
-     "XE_WI_QualitySplit",
-     "XE_WI_RpsGlobal",
-     "XE_WI_ScoreEntityLink",
-     "XE_WU_FvtForcedFixCount|Zero",
-     "XE_WU_MemberVault|AvailableRewards",
-     "XE_WU_RpsGlobal|AvailableRewards",
-     "XE_WU_RpsUser|LastRps",
-     "XE_WU_RpsUser|PendingRewards",
+     "XE_SyncFvtPresence",
+     "XE_SyncFvtTotalDebMirrors",
+     "XE_SyncTripletLaneWeights",
+     "XE_ToggleRewardLink",
+     "XE_ToggleScoreEntityLink",
+     "XE_TransferRewardDptfFromVault",
      "XE_WithdrawRoyalty",
-     "XE_XI_2|SettleMemberTier2",
-     "XE_XI_AddRewardLink",
-     "XE_XI_AddScoreEntity",
-     "XE_XI_BookCollectUnclaimed",
-     "XE_XI_BookStakeUnclaimedCounts",
-     "XE_XI_CheckpointStakeRps",
-     "XE_XI_FixUserFvtDeb",
-     "XE_XI_FixUserFvtDebIn",
-     "XE_XI_FixUserFvtDebPenalizedIn",
-     "XE_XI_FixUserMemberDeb",
-     "XE_XI_FvtAddStream",
-     "XE_XI_FvtInjectCore",
-     "XE_XI_FvtSweepRecomputeChunk",
-     "XE_XI_FvtSweepRecomputeWindow",
-     "XE_XI_IssueMultipletFamily",
-     "XE_XI_ReleaseStream",
-     "XE_XI_RotateOwnership",
-     "XE_XI_RpsPreScore",
-     "XE_XI_SetMinInjectAmount",
-     "XE_XI_SetMosaic",
-     "XE_XI_SetSplitMode",
-     "XE_XI_SyncFvtPresence",
-     "XE_XI_SyncFvtTotalDebMirrors",
-     "XE_XI_SyncTripletLaneWeights",
-     "XE_XI_ToggleRewardLink",
-     "XE_XI_ToggleScoreEntityLink",
-     "XE_XI_TransferRewardDptfFromVault",
      "XI_1|BankScorePendingRewards",
      "XI_1|BookCollectUnclaimed",
      "XI_1|BookUnclaimedForFvtRewardLine",
@@ -7141,8 +7166,14 @@
      "XI_1|HeterogeneousLaneRoute",
      "XI_1|SyncFarmGhostTvlForEmployedScores",
      "XI_2|BankUserTier1Pending",
+     "XI_2|BumpFvtEarningLegs",
+     "XI_2|BumpMemberVaultDormant",
+     "XI_2|BumpRpsGlobalDormant",
      "XI_2|BumpRpsGlobalUnclaimed",
+     "XI_2|BumpSelEarningUsers",
      "XI_2|EnsureRpsMemberRow",
+     "XI_2|RestoreMemberUnclaimedFromCounts",
+     "XI_2|RestoreUnclaimedFromCounts",
      "XI_2|SettleMemberTier2",
      "XI_AddRewardLink",
      "XI_AddScoreEntity",
@@ -8657,13 +8688,13 @@
   },
   "TS02-C1": {
    "deployed": true,
-   "hash": "D6_PgjTMgT1aYAIfTVozsUnxhdMuqukh5hu4FZGitkI",
+   "hash": "0ROnvrhs3t9YmjyIRUUKnSUhs2oUgcvSP56ULQbc6z4",
    "repoPath": "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.TalosStageTwo_ClientOneV4"
+    "ouronet-ns.TalosStageTwo_ClientOneV5"
    ],
-   "chars": 78959,
+   "chars": 80655,
    "shapes": {
     "schemas": [],
     "tables": [
@@ -8681,6 +8712,8 @@
      "DPDC|C_BulkTransfer",
      "DPDC|C_MultiTransfer",
      "DPSF|CC_Break",
+     "DPSF|CC_IssueShares",
+     "DPSF|CC_RetireShares",
      "DPSF|CC_WipeHeavy",
      "DPSF|C_AddQuantity",
      "DPSF|C_BulkTransfer",
@@ -8694,7 +8727,6 @@
      "DPSF|C_EnableSetClassFragmentation",
      "DPSF|C_Issue",
      "DPSF|C_IssueCompany",
-     "DPSF|C_IssueShares",
      "DPSF|C_Make",
      "DPSF|C_MakeFragments",
      "DPSF|C_MergeFragments",
@@ -8708,7 +8740,6 @@
      "DPSF|C_RenameSet",
      "DPSF|C_Repurpose",
      "DPSF|C_RepurposeFragments",
-     "DPSF|C_RetireShares",
      "DPSF|C_RotateCompanyCreator",
      "DPSF|C_SetCompanyBranding",
      "DPSF|C_ToggleAddQuantityRole",
@@ -8771,7 +8802,7 @@
   },
   "TS02-C2": {
    "deployed": true,
-   "hash": "Ct9MiBMeRegPTZgpYDMk5UrMBTyz08TanqqcqBk7Dac",
+   "hash": "CDp9zIaV-WW3T07Fqkovbj7gA4cwIieSolvV1tViqjY",
    "repoPath": "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
@@ -8873,7 +8904,7 @@
   },
   "TS02-C3": {
    "deployed": true,
-   "hash": "sMKqr_tIA1-GMyY3Ndf0vPULffjLSMs26udGhO-ibz8",
+   "hash": "0ndhE547F4eVY7qomC21JCP9jEEol5N_0hdhzegrEeg",
    "repoPath": "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
@@ -9953,13 +9984,13 @@
   },
   "AQP-EVCT": {
    "deployed": true,
-   "hash": "7qQQy669gTyImeU3Ic5IB7i-gnN7eCkSDMVl_Vibrbw",
+   "hash": "ZS2uR2BmOGVxQllo4RP4gFKfLwfzVDszhTRurPy-aE0",
    "repoPath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/08b_EVCT.pact",
    "interfaces": [
     "ouronet-ns.OuronetPolicyV2",
-    "ouronet-ns.AcquisitionRewardEvictionV1"
+    "ouronet-ns.AcquisitionRewardEvictionV2"
    ],
-   "chars": 35430,
+   "chars": 49286,
    "shapes": {
     "schemas": [],
     "tables": [
@@ -9993,6 +10024,9 @@
      "P|UR_IMP",
      "UC_CeilDiv",
      "UC_EmptyOc",
+     "UC_EvictBulkArrays",
+     "UC_EvictLaneAmounts",
+     "UC_EvictLaneReceivers",
      "UC_EvictLegsFromParallelArrays",
      "UEV_EvictSliceShape",
      "URCi_EvictMultiRewards",
@@ -10002,7 +10036,8 @@
      "URHC_BuildEvictSlicePlan",
      "URHC_EvictLegCount",
      "URH_EvictInventory",
-     "XI_EvictLegs"
+     "XI_EvictLegs",
+     "XI_EvictPlainLegsBulked"
     ],
     "pacts": [],
     "constants": [
@@ -10013,7 +10048,7 @@
   },
   "AQP-RPSC": {
    "deployed": true,
-   "hash": "meIcpLzGn0VRD9KY7erIeC-IL3_u8RMHuy3Yqam5wjY",
+   "hash": "wPhTnxZSefqBBPl5ddY_NGTBeDIJ-ov9qyOrDX8SpFE",
    "repoPath": "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/04b_RPSC.pact",
    "interfaces": [
     "ouronet-ns.AcquisitionRewardCostsV1"

@@ -92,6 +92,412 @@ BLOODSHED = (
 )
 
 ROUNDS = {
+    "2026-11-v27-single-share-weight": {
+        "why": "ONE FLAG, AND THE REASON IT HAD TO EXIST. `single-share-weight` is a score-level "
+               "boolean deciding whether an EQUITY collection's RAW SHARE -- nonce 1 -- carries "
+               "weight. true (the default, and how every score already behaves) means a raw share "
+               "counts its 1 share; false means only the package nonces 2-8 score. "
+               "\n\n"
+               "IT CONTRADICTS A DELIBERATE DESIGN NOTE, AND THE NOTE WAS WRONG. "
+               "`URC_SignedBaseDeltaForDpsfStake` carried: 'THE EQUITY BRANCH IS NOT A SCORE "
+               "SETTING, DELIBERATELY ... keying it on a score field would have made the correct "
+               "behaviour something an operator must remember.' That reasoning assumed one "
+               "collection means one weighting. It does not: CompanySharesTreasury counts RAW "
+               "SHARES, SnakesTreasury must count only AGGREGATED PACKAGES, and both employ scores "
+               "over the SAME equity collection. An asset-keyed rule cannot express that at all. "
+               "The note is corrected in place rather than silently contradicted. "
+               "\n\n"
+               "GATED LIKE deb-boost, BUT TWO-WAY. It can be turned on and off; what it cannot do "
+               "is move while anyone is staked. `SCR|C>SET-SINGLE-SHARE-WEIGHT` refuses unless "
+               "`nzs-count = 0` and the score is not drift-locked -- the 2026-11-08 owner ruling on "
+               "weight inputs, which `URC_SignedBaseDeltaForDpsfStake` reads LIVE on both the stake "
+               "and the unstake leg, so a flag flipped between them would strand "
+               "`floor(W_old x a) - floor(W_new x a)` on the row as weight for a position nobody "
+               "holds. A drift-locked score refuses outright: that latch promised holders no input "
+               "to their weight can move. "
+               "\n\n"
+               "IT IS A PARAMETER, NOT A SCORE READ, INSIDE THE FOLD. `URCx_EquityShareRawWeight` "
+               "takes `single-share-unit:decimal` (1.0 or 0.0) rather than a score-id, so it stays "
+               "a pure URCx_ compute over its arguments -- no table read in a per-nonce fold, no "
+               "dependence on the score row existing, and both cases directly testable. The first "
+               "cut passed score-id and `_callarity.py` caught it via the equity fixtures. "
+               "\n\n"
+               "NO BACKFILL IS REQUIRED FOR CORRECTNESS. The column is absent on all 15 live score "
+               "rows and the reader is `contains`-guarded to TRUE -- which is exactly how every "
+               "score already behaves (SS 7.24; nothing defaults an absent column, measured). The "
+               "repair transaction writes it explicitly anyway, so every row carries the field, and "
+               "sets DemiourgosSnakes to false. "
+               "\n\n"
+               "IGNIS SHIPS TOO, AND NOT OPTIONALLY: `UC_IgnisComponents` fails fast on an unknown "
+               "op-key, so without the new `AQP-SCR|C_SetSingleShareWeight` price row the "
+               "entrypoint's own cost preview aborts. Verified against the live chain -- the key "
+               "currently returns 'Key ... not found in object.'",
+        "interfaces": ["AcquisitionSchemasV5", "AcquisitionScoresV7", "AcquisitionRewardPerShareV8",
+                       "AcquisitionVacateV6", "TalosStageTwo_ClientThreeV8"],
+        "also": [
+            # DIRECT EDITS
+            "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/00_AQP-SCHEMAS.pact",
+            "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/02_SCORE.pact",
+            "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
+            # THE PRICE TABLE. No interface moved, so the cascade cannot see it -- and without it
+            # URCi_SetSingleShareWeight aborts on an unknown op-key.
+            "1_SOVEREIGN/STAGE_01/2_Core/02_IGNIS.pact",
+            # In no deploy chain; carries the new INFO_ cost preview.
+            "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
+        ],
+        "excluded": {
+            "1_SOVEREIGN/STAGE_01/2_Core/00_DPMF.pact":
+                "ARCHIVE MODE (owner, 2026-09-21) -- never redeployed.",
+            "2_CITIZEN/6_OuronetBridge/03_CADUCEUS.pact":
+                "STAGE 3, NOT STARTED (owner, 2026-09-21) -- not live.",
+            "2_CITIZEN/2_BloodshedMinter/01_BSD-L.pact": BLOODSHED,
+            "2_CITIZEN/2_BloodshedMinter/02_BSD-E.pact": BLOODSHED,
+            "2_CITIZEN/2_BloodshedMinter/03_BSD-R.pact": BLOODSHED,
+            "2_CITIZEN/2_BloodshedMinter/04_BSD-C.pact": BLOODSHED,
+            "2_CITIZEN/2_BloodshedMinter/05_BSD-SETS.pact": BLOODSHED,
+            "2_CITIZEN/3_NosferatuMinter/01_NOSFERATU.pact":
+                "MINT-ONLY, JOB DONE (owner, 2026-09-21).",
+            "2_CITIZEN/Stage_Z/01_DPL-UR.pact":
+                "READS-ONLY deployer module, BLOCKED ON A LIVE READ (owner, 2026-09-21).",
+            "2_CITIZEN/Stage_Z/02_EXPLORER.pact":
+                "WORK IN PROGRESS, read-only (owner, 2026-09-21).",
+            "2_CITIZEN/Stage_Z/AppReads/OuronetUI/01_O-UI-ONE.pact":
+                "HELD BACK (owner, 2026-09-24) -- read-layer migration in progress personally.",
+            "2_CITIZEN/Stage_Z/AppReads/OuronetUI/02_O-UI-TWO.pact":
+                "HELD BACK with the rest of the folder.",
+            "2_CITIZEN/Stage_Z/AppReads/OuronetUI/03_O-UI-THREE.pact":
+                "HELD BACK with the rest of the folder.",
+            "2_CITIZEN/Stage_Z/AppReads/OuronetUI/12_O-UI-TWELVE.pact":
+                "HELD BACK with the rest of the folder.",
+            "2_CITIZEN/Stage_Z/AppReads/OuronetUI/13_O-UI-THIRTEEN.pact":
+                "HELD BACK with the rest of the folder.",
+            "2_CITIZEN/Stage_Z/AppReads/OuronetUI/14_O-UI-FOURTEEN.pact":
+                "HELD BACK with the rest of the folder.",
+        },
+        "extra": [("1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact", "04_TS02-C3.pact")],
+        # THE REPAIR IS NOT HERE AND NOT A MODULE FUNCTION (SS 7.24). It ships as a top-level block
+        # in the round folder -- see Deploy/PureV27/. Owner ruling 2026-11-10: everything that has
+        # to be SENT lives beside the transactions it ships with.
+        "init": [],
+    },
+    "2026-11-v26-evict-bulk-and-reissue-gates": {
+        "why": "THREE FIXES THAT SHARE ONE SHAPE: a weight input that can move while a stored "
+               "accumulator depends on it, and a dust remainder no transaction could reach. "
+               "\n\n"
+               "1] THE MULTIPLIER GATE SCANNED TWO OF THREE SPECIAL LEGS. "
+               "`CC_UpdateScoreMultipliers` sets `mx-frozen`, `mx-sleeping` AND `mx-hibernated`; "
+               "`URC_AQP|ScoreMxChangeSafe` read `UR_Frozen` and `UR_Sleeping` and never "
+               "`UR_Hibernation` -- which occurred exactly ONCE in all of 03_AQP.pact, at the "
+               "stake-admission check. An `H|` leg is admitted on aqp-class 1, selects "
+               "`mx-hibernated`, and is FLAT-rated, so there is no decay to damp the delta while "
+               "`UEV_Fee` admits up to 999.0. The sleep-stake ledger does NOT cover for it: "
+               "`URC_SCR|SleepingLegWeight` binds `mx-ceiling` OUTSIDE its `from-ledger` branch "
+               "and its own doc says that flag \"SELECTS THE CLOCK, AND ONLY THE CLOCK\" -- the "
+               "stamp records the TERM, never the MULTIPLIER. "
+               "MEASURED, not theorised: with the guard removed, `modules/AQP-LP.repl` "
+               "<<TX-MXHIB-01>> stakes 100.0 of `H|OURO`, the owner moves `mx-hibernated` 1.0 -> "
+               "2.0 WHILE THE POSITION IS OPEN, and the unstake subtracts 200.0 against the "
+               "100.0 the stake added -- base 1000.0 -> 900.0, a -100.0 residue on a live score. "
+               "ZERO `H|` ROWS EXIST ON CHAIN (7 `Z|`, all DHOuroLp), so this ships as a "
+               "PREVENTION with no backfill. That window closes at the first hibernating stake, "
+               "because the re-rate target has no hibernating leg to repair it with. "
+               "\n\n"
+               "2] THE SCORE-DEFINITION WRITERS WERE THE ONE RECONFIGURATION PATH WITHOUT A "
+               "VACATE GATE. `SCR|C>ENABLE-DEB-BOOST-SCORE`, `...CREATE-BOOST-CLASS-LINK-SCORE` "
+               "and `...CREATE-BOOST-LINK-SCORE` all refuse unless `nzs-count = 0`; the per-nonce "
+               "WEIGHTS, which are the input a class-3 base is computed FROM, did not. "
+               "`URC_SignedBaseDeltaForDpsfStake` is ONE function with a `direction` flag reading "
+               "the definition LIVE on BOTH legs, so a re-issue between a stake and its unstake "
+               "leaves `floor(W_old x a) - floor(W_new x a)` on the row forever -- unbounded in "
+               "magnitude AND IN SIGN, as weight for a position nobody holds, and that row is the "
+               "denominator of every reward split on the score. "
+               "AND THE DRIFT LATCH WAS THE SHARPER GAP: `SCR|C>LOCK-SCORE-DRIFT` is fully built "
+               "and promises holders that no input to their weight can move, and NOT ONE "
+               "definition writer consulted it. "
+               "OWNER RULING 2026-11-08: a weight change does not re-value positions already "
+               "staked, so the score must be vacated first. Both clauses ship in ONE enforce at "
+               "TWO sites -- `SCR|C>ISSUE-SF-SCORE-DEFINITION` and the SHARED "
+               "`SCR|XI>X_ISSUE-NF-SCORE-DEFINITION`, which both NF entry caps compose. "
+               "\n\n"
+               "3] BULKED EVICTION, AND THE DUST THE SWEEP COULD NEVER REACH. A plain eviction "
+               "leg ended in its own `TFT::C_Transfer`; N legs now book in order and pay in ONE "
+               "`C_MultiBulkTransfer`, measured at 16,394 gas saved per collapsed call. "
+               "THE ORDER IS LOAD-BEARING AND THE OBVIOUS IMPLEMENTATION IS WRONG: "
+               "`URC_CollectClaimableRewards` carries a last-claimant sweep and PHASE 3 "
+               "decrements the count that triggers it, so hoisting the reads shows every leg a "
+               "count that never reaches 1 and strands the lane's dust FOREVER, with every "
+               "number on screen still plausible. "
+               "THE DUST WAS ALREADY UNREACHABLE ON MAINNET, which is why the sweep ships with "
+               "it: the counter is `nzs`-style and only retires an UNSTAKED claimant, so on a "
+               "live aggregator `gc == 1` never happens. Measured across all 11 live lanes, "
+               "`unclaimed-count` exceeds the positive-claimable leg count on EVERY ONE "
+               "(SubsidiaryTreasury/AURYN reads 69 against 27), and three lanes hold a balance "
+               "with ZERO collectable legs -- BloodshedTreasury 10 and 9 sub-units, OuroLpFarm 27 "
+               "-- reachable by no collect and no evict. A whole-aggregator evict now zeroes each "
+               "lane exactly; a SLICE deliberately does not, because it cannot know whether a leg "
+               "it did not carry is still owed. "
+               "\n\n"
+               "WHERE THE BULK TRANSFER LIVES IS A DEPLOYMENT FACT, NOT A PREFERENCE. It runs in "
+               "AQP-FVT, which already holds the remote-governor grant. AQP-EVCT deliberately "
+               "holds none -- its own note calls a governor rotation on `AQP|SC_NAME` \"the single "
+               "most expensive step a new AQP module can otherwise incur\", whose botched form "
+               "\"would strip collect and vacate of their vault authority too\". A gas saving is "
+               "not worth buying with that. "
+               "\n\n"
+               "INTERFACE BUMP: `AcquisitionRewardEvictionV1 -> V2`. The bulking added five `UC_` "
+               "declarations and a deployed interface cannot be upgraded in Pact, so it was "
+               "bumped and UNPINNED from LIVE_INTERFACES rather than re-pinned. The cascade is "
+               "FIRST-ORDER and stops at two consumers: no interface NAMES "
+               "AcquisitionRewardEviction. "
+               "\n\n"
+               "AQP-FVT's four new members (`XE_EvictPayNoMove`, `XE_EvictBulkPay`, "
+               "`XE_EvictSweepLaneDust`, `URC_EvictLegIsLadder`) are left MODULE-ONLY on PureV25's "
+               "stated precedent -- declaring them would bump AcquisitionFarmsVaultsTreasuriesV6 "
+               "and cascade through every FVT consumer to publish members only AQP-EVCT calls. "
+               "An undeclared modref member resolves at CALL time, so AQP-FVT must land before "
+               "the first bulked eviction; both ship here. "
+               "\n\n"
+               "ONE TOOLING DEFECT FIXED IN PASSING (FINDINGS-2026-11-08 F7). The first cut of "
+               "the bulking put `ref-FVT::XE_EvictPay` behind a delegating helper, one hop past "
+               "`_ignis_price_sheet.py`'s depth-3 budget. That tool escalates ONLY when depth 3 "
+               "finds NOTHING, so the row still resolved -- PARTIALLY -- and the published floor "
+               "for CC_EvictSingleReward and CCp_EvictMultiRewards fell from 57 to 6. The legs "
+               "are now partitioned instead of dispatched, which keeps the edge in-body and "
+               "expresses the shared per-leg route once. Same shape as `C_Coil` delegating to "
+               "`XB_Coil`, which took the sheet from 93 exact prices to 87 and was REVERTED. "
+               "\n\n"
+               "4] S1 -- THE `unclaimed-count` RESTORE, AND THE FOUR COLUMNS IT ADDED. The count "
+               "that arms both dust sweeps was never restored at accrual, so on every live lane it "
+               "stood above the collectable legs and `= 1` was unreachable. Restoring it from a "
+               "STAKE-SIDE count is the error the canonical `coin` vault removed its `nzs` reset "
+               "for -- an account that unstaked while still owed is invisible to every stake-side "
+               "count -- so the owed-but-not-earning legs are counted SEPARATELY and added back: "
+               "`unclaimed-count := earning-leg-count + dormant-claim-count`, two point reads and "
+               "a write, O(1) because inject must not scale with the number of legs (owner "
+               "ruling: we may have 5 stakers now and tens of thousands later). "
+               "THE FOUR NEW COLUMNS ARE THE WHOLE RISK OF THIS ROUND and they are why it carries "
+               "a table repair: 52 rows predate them, nothing DEFAULTS an absent column, and the "
+               "first cut guarded all four with `(try 0 ...)` -- which does not work. Two were "
+               "BOUND inside `UR_FVT-SEL|ScoreEntityLink` and `UR_FVT-RG|RpsGlobal`, the full-row "
+               "readers every other member/lane reader fans out of, so the reward surface AND the "
+               "migration would both have aborted on landing. Fixed to `contains`-then-`at`; the "
+               "restore phases additionally REFUSE to write a 0 over a positive stored count, so "
+               "correctness no longer depends on how fast the repair follows the deploy.",
+        "interfaces": ["AcquisitionSchemasV4", "AcquisitionScoresV6", "AcquisitionRewardPerShareV7",
+                       "AcquisitionVacateV5", "AcquisitionFarmsVaultsTreasuriesV7",
+                       "AcquisitionRewardEvictionV2"],
+        "also": [
+            # DIRECT EDITS
+            "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/02_SCORE.pact",
+            "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/03_AQP.pact",
+            "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/04_RPS.pact",
+            "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/05_FVT.pact",
+            "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/08b_EVCT.pact",
+            # RENAME-ONLY -- carries references to the 33 swept X_ names and nothing else.
+            "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/07_MTX-AQP.pact",
+            # CASCADE-ONLY -- nothing changed but a modref version, which
+            # `_livemodules.py --diff` CANNOT SEE because the shape is identical. Listed by hand
+            # for the reason HOW-DEPLOY-ROUNDS-WORK.md gives: a modref naming V1 cannot bind to a
+            # module implementing V2.
+            #
+            # 02_SCORE AND 09_AQP-INFO ARE BOTH IN THIS CLASS TOO and `--diff` reports neither:
+            # F1 added `enforce`s INSIDE two existing defcaps, which changes no signature, and
+            # 09_AQP-INFO only re-points modrefs. Shape-identical and MUST still ship.
+            "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
+            "1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact",
+            # S1 schema change bumps AcquisitionSchemas, and the fixed point over interface TEXT
+            # (not a grep) pulls in Scores, RewardPerShare, Vacate and FarmsVaultsTreasuries with
+            # it. These are the remaining consumers that name one of them.
+            "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/01_ANK.pact",
+            "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/04b_RPSC.pact",
+            "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/06_VCT.pact",
+            "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/08_DSA.pact",
+        ],
+        "excluded": {
+            # These four contain one of the 38 bumped names too (the sweep rewrote their stale
+            # `object{}`/`module{}` refs for tree hygiene) but are NOT live -- the owner is
+            # wiring the AppReads read-layer migration personally, page by page, and DPL-UR
+            # stays authoritative until each page's reads are deployed BY THAT process, not this
+            # one. See the identical reasoning already on file in `2026-09-full`'s own
+            # `excluded` map for these same four paths.
+            "2_CITIZEN/Stage_Z/AppReads/OuronetUI/01_O-UI-ONE.pact":
+                "HELD BACK (owner, 2026-09-24) -- read-layer migration in progress personally, "
+                "page by page. Swept for tree hygiene only; not live, not in this round.",
+            "2_CITIZEN/Stage_Z/AppReads/OuronetUI/02_O-UI-TWO.pact":
+                "HELD BACK with the rest of the folder -- see 01_O-UI-ONE.pact's entry.",
+            "2_CITIZEN/Stage_Z/AppReads/OuronetUI/03_O-UI-THREE.pact":
+                "HELD BACK with the rest of the folder -- see 01_O-UI-ONE.pact's entry.",
+            "2_CITIZEN/Stage_Z/AppReads/OuronetUI/12_O-UI-TWELVE.pact":
+                "HELD BACK with the rest of the folder -- see 01_O-UI-ONE.pact's entry.",
+            # ADDED 2026-11-08. These two were NEITHER PLANNED NOR EXCLUDED by any round since
+            # they arrived in the V11-V14 commit -- so the tree held two modules no round
+            # accounted for, and `_deploybundle.py --check` says why that matters: "an absent
+            # module is indistinguishable from a forgotten one." It surfaced only now because
+            # the gate had been stopping at an earlier check, which is its own small lesson:
+            # a guard that never runs reports nothing, exactly like a guard that passes.
+            "2_CITIZEN/Stage_Z/AppReads/OuronetUI/13_O-UI-THIRTEEN.pact":
+                "HELD BACK with the rest of the folder -- see 01_O-UI-ONE.pact's entry.",
+            "2_CITIZEN/Stage_Z/AppReads/OuronetUI/14_O-UI-FOURTEEN.pact":
+                "HELD BACK with the rest of the folder -- see 01_O-UI-ONE.pact's entry. NOTE it "
+                "names AcquisitionRewardPerShare and was therefore swept to V6 for TREE HYGIENE "
+                "(the gate loads it, so a stale name would break the suite) -- it is NOT live and "
+                "NOT in this round. Same disposition as 00_DPMF's V2->V3 annotation sweep.",
+            # Owner-ruled exclusions that predate this round and apply unchanged -- copied
+            # rather than referenced because ROUNDS entries are read standalone by `--round`.
+            "1_SOVEREIGN/STAGE_01/2_Core/00_DPMF.pact":
+                "ARCHIVE MODE (owner, 2026-09-21) -- NOT REDEPLOYED, ever; a deployed module "
+                "cannot be removed in Pact so the live copy stays as it is. Its `ref-DALOS:"
+                "module{OuronetDalosV2}` type annotation was swept to V3 for tree hygiene, but "
+                "that reference is inside a `defconst` (`GOV|MD_DPMF`) evaluated ONCE at DPMF's "
+                "own original deploy time and cached forever -- it does not re-run when DALOS "
+                "upgrades, so leaving DPMF unredeployed carries no runtime risk from this round.",
+            "2_CITIZEN/6_OuronetBridge/03_CADUCEUS.pact":
+                "STAGE 3, NOT STARTED (owner, 2026-09-21) -- not live, nothing to upgrade.",
+            "2_CITIZEN/2_BloodshedMinter/01_BSD-L.pact": BLOODSHED,
+            "2_CITIZEN/2_BloodshedMinter/02_BSD-E.pact": BLOODSHED,
+            "2_CITIZEN/2_BloodshedMinter/03_BSD-R.pact": BLOODSHED,
+            "2_CITIZEN/2_BloodshedMinter/04_BSD-C.pact": BLOODSHED,
+            "2_CITIZEN/2_BloodshedMinter/05_BSD-SETS.pact": BLOODSHED,
+            "2_CITIZEN/3_NosferatuMinter/01_NOSFERATU.pact":
+                "MINT-ONLY, JOB DONE (owner, 2026-09-21) -- same disposition as BLOODSHED above.",
+            "2_CITIZEN/Stage_Z/01_DPL-UR.pact":
+                "READS-ONLY deployer module. BLOCKED ON A LIVE READ (owner, 2026-09-21): the "
+                "owner may have deployed reads directly on chain that never made it back into "
+                "this tree, so shipping the local copy could REGRESS live functionality. Also "
+                "deploys from its own separate `deploy-stagezz.repl` chain, last, by design -- "
+                "not this round's mechanism either way. Swept for tree hygiene only.",
+            "2_CITIZEN/Stage_Z/02_EXPLORER.pact":
+                "WORK IN PROGRESS, read-only (owner, 2026-09-21). BLOCKED ON A LIVE READ: "
+                "unknown whether it exists on mainnet at all. Same `deploy-stagezz.repl` chain "
+                "as DPL-UR above. Swept for tree hygiene only.",
+        },
+        # 09_AQP-INFO IS IN NO DEPLOY CHAIN AND MUST SHIP ANYWAY -- the planner says so outright
+        # ("1 module(s) MUST redeploy this round but are in NO deploy chain"), because it names the
+        # bumped AcquisitionRewardEviction interface in three modrefs while no generated batch
+        # carries it.
+        #
+        # ANCHORED AFTER TALOS, AND THE ANCHOR IS THE WHOLE POINT. 09_AQP-INFO calls
+        # `TS02-C3.URCi_IssueGenericEarningVault` as a DIRECT module reference, and a direct
+        # reference resolves at DEPLOY time -- unlike `ref-X::`, which resolves at runtime. A
+        # previous round anchored it after 08_DSA, so it deployed in transaction 20 while TS02-C3
+        # landed in 21, and the round DIED LIVE with "Module TS02-C3 has no such member". The REPL
+        # chain loads Talos first, so no suite in the gate could ever have seen it.
+        "extra": [("1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact", "04_TS02-C3.pact")],
+        # CORRECTED 2026-11-09: THIS ROUND DOES CARRY A TABLE REPAIR, and the sentence that used
+        # to stand here -- "no schema gained a field, so no pre-existing row is left short of
+        # one" -- was true when it was written and FALSE by the time the round shipped. S1 (the
+        # `unclaimed-count` restore) added FOUR columns to four schemas holding 52 live rows:
+        #     FVT|RewardAggregate.earning-leg-count
+        #     FVT|ScoreEntityLink.earning-user-count
+        #     FVT|RPS|Global.dormant-claim-count
+        #     FVT|MemberVault.dormant-claim-count
+        # The repair is `Deploy/PureV26/04_deploy_THEN_fixup_s1-counters.pact`, which runs IMMEDIATELY
+        # AFTER the batch carrying 04_RPS.pact -- NOT at the end of the round. `UM_FVT|BackfillS1-
+        # Counters` and every function it calls live in RPS, so it is runnable the moment that
+        # batch lands, and every block it waits is a block in which a collect could read a
+        # not-yet-repaired counter.
+        #
+        # AND THE REASON THE STALE COMMENT MATTERED: a round that believes it has no table repair
+        # does not look for one. The four columns were added, read with `(try 0 ...)` on the
+        # stated belief that `try` would default them, and `try` DOES NOT -- the same mistake,
+        # in the same round, that halted chain 0 for ~16h hours earlier in `coin`. The guard that
+        # now makes this mechanical rather than remembered is `REPL/tools/_newcolumnsafety.py`.
+        "init": [],
+    },
+    "2026-11-v25-equity-share-stake-gate": {
+        "why": "A SHARE ISSUANCE UNDER A LIVE STAKE DROVE A SCORE TO MINUS TEN THOUSAND. "
+               "Measured on the DHCompany fixture, not theorised: stake 5 tier-6 packages of "
+               "E|DH at m=1 (unit worth 2,000 shares, base 10,000), issue 1,000,000 shares, then "
+               "unstake in full -- the unit is now worth 4,000, the unstake subtracts 20,000 "
+               "against the 10,000 the stake added, and the row lands on -10,000 with the "
+               "score's global total alongside it. "
+               "\n\n"
+               "THE CAUSE IS A FORMULA WITH A MOVING INPUT AND AN ACCUMULATING OUTPUT. A base is "
+               "an accumulated SIGNED DELTA, while the class-3 equity leg weighs a position at "
+               "the LIVE share value -- `URCx_EquityShareRawWeight` reads nonce-1 supply at call "
+               "time. Nothing is recorded at stake time, so the two legs of a round trip are "
+               "priced at different scales. PureV23 is what made the input movable: before "
+               "`C_IssueShares` existed the share count could not change, and the weight "
+               "function's own doc leaned on exactly that. "
+               "\n\n"
+               "THE SAME DEFECT WAS ALREADY CAUGHT ONCE, ONE INPUT OVER. "
+               "`SCR|C>UPDATE-MULTIPLIERS` carries an emptiness gate whose doc states the "
+               "arithmetic outright -- 'stake 100 at x2, change to x3, unstake 100: the row goes "
+               "to -100 and the global total with it. Deb-staleness does not compare mx, so "
+               "nothing would report it.' Share count is a SECOND input to the same formula that "
+               "never got the same gate. This round gives it one. "
+               "\n\n"
+               "WHY THE GATE IS IN TALOS AND NOT IN EQUITY. EQUITY deploys at tx 13 and AQP at "
+               "tx 16, so EQUITY can never ask AQP what is staked -- and EQUITY holds no domain "
+               "tables of its own (owner ruling, 2026-11-08: it stays pure logic over DPDC "
+               "state). That is the identical constraint that put the multiplier gate in "
+               "AQP-POOL rather than AQP-SCORE, and that `AQP-SCR|C_IssueSemiFungibleScore"
+               "Definition`'s dead-definition guard already records in its own comment. So "
+               "`UEV_AQP|NoLiveStakeOfAsset` lives in AQP-POOL and the two share doors call it "
+               "from TS02-C1. "
+               "\n\n"
+               "HEAVY, AND THE PREFIX SAYS SO. The validator scans the DPSF tracker BY ASSET "
+               "(`dpsf-id` is a Select Key, so one select answers for every pool at once) and "
+               "returns the blocking POOL IDS rather than a bool, because a creator told only "
+               "'something is staked' cannot act on it. That makes both wrappers `CC_` under "
+               "StoicSyntax 19.3 -- justified there as a rare creator-only governance act rather "
+               "than a daily-hot path, which is the condition the rule attaches. A maintained "
+               "per-asset aggregate would have avoided the scan and was rejected on cost: a new "
+               "table, a table-creation step, a backfill of live positions, and a write on the "
+               "daily-hot STAKE path to spare a cold one. "
+               "\n\n"
+               "THE SECOND HALF IS A REPAIR PATH, because a gate only stops NEW damage. The "
+               "re-rate engine now supports class 3: `URH_AQP|ScoreTargetBaseForBeneficiary` "
+               "became a dispatcher over the score class, with the class-0/1 arithmetic left "
+               "BYTE-IDENTICAL and a new Sf route that CALLS "
+               "`URC_SignedBaseDeltaForDpsfStake` rather than reimplementing it -- the rule "
+               "`URC_U-SCR|UserScoreDebStale` states for itself ('there is deliberately no "
+               "second copy of it here'), and it matters most here because three dispatches live "
+               "inside that function. Class 2 and class 4 stay fenced; admitting them on the "
+               "strength of this one would be the invented-delta failure the fence exists for. "
+               "\n\n"
+               "DEB-STALENESS CANNOT SEE ANY OF THIS, and the suite asserts that rather than "
+               "assuming it. `UserScoreDebStale` recomputes the DERIVED layers from the STORED "
+               "base, so a base error moves neither side of its comparison and the row reads "
+               "FRESH. Boosters and DEB only ever stale the derived layers, which is why "
+               "unstaling has always sufficed for them and does not here. "
+               "\n\n"
+               "ONE REGRESSION, CAUGHT BY THE TREE'S OWN COMMENT. Admitting class 3 to the "
+               "engine flipped `C_AddScore`'s auto-freeze, which had borrowed "
+               "`URC_AQP|ScoreBackfillSupported` to decide whether employing a score should "
+               "stop the pool. `CC_Step14_OpenCustodiansAgency` employs a triplet in the class-3 "
+               "CustodiansPool and STAKES IN THE SAME TRANSACTION, so the freeze made its own "
+               "stake inadmissible -- AQP-FULL died at 311 of 982 assertions, exactly as the "
+               "comment at that freeze site had predicted. Split into "
+               "`URC_AQP|ScoreAutoFreezeOnAdd`, a POLICY about freezing rather than a statement "
+               "about what the engine can compute. AQP-FULL back to 982. "
+               "\n\n"
+               "VERIFIED: gate green. `modules/EQUITY-SHARE-STALENESS.repl` is new -- 22 "
+               "assertions where there were ZERO, covering the refusal BY ITS MESSAGE (a test "
+               "that accepts any failure would still pass with the gate deleted), the full "
+               "unstake netting to EXACTLY zero, a re-stake priced at the new value, and a stale "
+               "class-3 base being seen, repaired and converged. The repair half is driven "
+               "through the SF score DEFINITION, which re-values a live position the same way a "
+               "share issuance used to and is STILL UNGATED -- the sibling hole this audit "
+               "turned up, recorded as a test rather than a note.",
+        "interfaces": ["TalosStageTwo_ClientOneV5"],
+        "also": [
+            # DIRECT EDITS
+            "1_SOVEREIGN/STAGE_02/2_Core/03_AQP/03_AQP.pact",
+            "1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact",
+            # CASCADE-ONLY -- nothing changed but a modref version, which
+            # `_livemodules.py --diff` CANNOT SEE because the shape is identical. Listed by hand
+            # for the reason HOW-DEPLOY-ROUNDS-WORK.md gives: a modref naming V4 cannot bind to a
+            # module implementing V5. FIRST-ORDER only -- no interface NAMES
+            # TalosStageTwo_ClientOne, so the cascade stops at these three.
+            "1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact",
+            "2_CITIZEN/7_Launchpad/2_Snakes/02_Snakes.pact",
+            "2_CITIZEN/7_Launchpad/3_Custodians/03_Custodians.pact",
+        ],
+        # NO INIT. No table is created and nothing is registered. The gate is a validator on an
+        # existing entrypoint and the re-rate route is a new branch in an existing engine.
+        "init": [],
+    },
     "2026-11-v24-equity-previews": {
         "why": "SIX ENTRYPOINTS SHIPPED WITHOUT A PRICE. PureV23 added the Equity company "
                "controls to Talos and left their `INFO_` cost previews for later -- which is "
@@ -1383,7 +1789,101 @@ DEFAULT_BUDGET = 1_700_000
 # The default below sits just above that, so every emitted transaction is no larger than a payload
 # already proven to deploy, and comfortably under the ~372 KB the editor's line ceiling implies.
 # That is evidence, not a specification. `--maxbytes 0` disables the constraint entirely.
-DEFAULT_MAXBYTES = 320_000
+# RAISED 320,000 -> 345,000 on 2026-11-08, because TWO MODULES NOW EXCEED THE OLD CAP ON THEIR
+# OWN and a module cannot be split -- `05_FVT.pact` at 334,831 bytes and `02_SCORE.pact` at
+# 320,196. Raising HEADER_RESERVE does nothing for those: the planner reported both "OVER BUDGET
+# ALONE".
+#
+# THE OLD CAP WAS CONSERVATIVE BY ITS OWN ADMISSION -- justified by evidence (`04_RPS.pact` is
+# 300,970 bytes and deploys) rather than by a limit. The limit is computable. Fitting the wallet's
+# two calibration points gives
+#
+#     gas_size(S) ~= 95_225 * (S_KB / 256) ** 7
+#
+# and this model reproduces the wallet's own stated ceiling exactly: the size charge alone reaches
+# 2.00M at 404,983 bytes (395 KB). Measured against it:
+#
+#     05_FVT.pact     334,831 B -> size ~528,143 + exec 309,626 =   837,769  (41.9% of 2.00M)
+#     02_SCORE.pact   320,196 B -> size ~386,263 + exec 269,902 =   656,165  (32.8%)
+#     this cap        345,000 B -> size ~651,186 + exec 350,000 = 1,001,186  (50.1%)
+#
+# So the worst transaction this cap admits still leaves half the block budget unused, and the cap
+# sits 15% below the hard ceiling rather than 21% as before.
+#
+# DO NOT RAISE THIS FURTHER TO SAVE TRANSACTIONS. The charge is SEVENTH-POWER, so the curve is
+# vicious right where it matters: 345,000 costs 651K in size gas, 395,000 costs ~1.86M. Minimise
+# Sum(size^7), not file count.
+#
+# RAISED AGAIN 345,000 -> 355,000 on 2026-11-09, and the cause is worth recording because it is
+# the SECOND raise in two days and both were forced by the same mechanism. The S1 absent-column
+# fix added 5,893 bytes to `04_RPS.pact` (342,959 B), which emits at 345,616 -- 616 bytes over the
+# cap set the day before. A single module cannot be split across transactions, so the cap either
+# admits it or the round cannot ship at all. Measured against the model:
+#
+#     04_RPS.pact     345,616 B -> size ~659,369 + exec 328,763 =   988,132  (49.4% of 2.00M)
+#     this cap        355,000 B -> size ~794,700 + exec 350,000 = 1,144,700  (57.2%)
+#
+# Still under 60% of the block budget, and 12% below the 404,983-byte hard ceiling.
+#
+# SET TO THE MINIMUM THAT ADMITS THE MODULE, AND THAT CHOICE WAS MEASURED, NOT ASSUMED. The first
+# cut of this raise used 355,000 -- a round number with room to spare -- and the extra room let
+# the PACKER MERGE two transactions, which at seventh power is not free:
+#
+#     cap 347,000  ->  26 transactions, total size gas 4,276,730
+#     cap 355,000  ->  25 transactions, total size gas 4,911,488   (+634,753 for one fewer tx)
+#
+# That is this file's own rule ("minimise Sum(size^7), not file count") charging 634K gas for
+# 8,000 bytes of unneeded headroom. A cap is a CEILING FOR THE INDIVISIBLE MODULE, not slack for
+# the planner to spend. Raise it by the smallest amount that admits the largest module and
+# re-measure the total.
+#
+# RAISED A THIRD TIME 347,000 -> 350,000, SAME DAY, AND THE PREVIOUS NOTE PREDICTED IT. It said
+# the headroom was 1,384 bytes and that "the NEXT edit of any size to that module trips this check
+# again -- which is the real signal, and it is not 'raise the cap a third time'." The next edit
+# was the exact-dormant fix to `UM_FVT|BackfillS1Counters`, it tripped the check, and the cap was
+# raised a third time anyway. The note is kept rather than softened, because being right about
+# this and doing it regardless is the fact a reader needs.
+#
+# WHAT IT COST, MEASURED:
+#
+#     cap 347,000  ->  26 transactions, total size gas 4,326,354   (fails: 04_RPS does not fit)
+#     cap 350,000  ->  25 transactions, total size gas 4,716,605   (+390,251, one fewer tx)
+#
+# CORRECTED: the first cut of this note read "26 transactions ... 4,730,561 (+404,207)" and
+# concluded "same transaction COUNT, more gas". Both numbers were wrong, and for a reason worth
+# recording: the count was taken with `ls *.pact`, which included a STALE 26th file left behind by
+# the previous generation at the old cap. `--check` reports exactly that as an ORPHAN and did so
+# the moment it was run. So the measurement was off because it counted the directory instead of
+# asking the tool -- in a comment whose whole purpose is to justify a number.
+#
+# The real effect is the one this file already warns about three paragraphs up: a looser cap lets
+# the packer MERGE, and at seventh power one fewer transaction costs ~390K gas. That is the trap
+# stated in the header -- "fewer transactions is the WRONG target" -- being paid deliberately,
+# with the figure attached, rather than discovered later.
+#
+# IT WAS PAID ONLY AFTER TRIMMING FIRST. ~1,400 bytes of `@doc` prose came out of the backfill and
+# moved to `Deploy/PureV26/04_deploy_THEN_fixup_s1-counters.pact`, which is where a deploy operator
+# reads it anyway; that got the emitted file from 349,939 to 348,949, still 1,949 over. The
+# remaining choice was between deleting the record of a defect that cost a 16h chain halt and
+# paying 404K gas on a FROM-SCRATCH round that only a virgin devnet bring-up ever sends. The live
+# upgrade round is unaffected -- `Deploy/PureV26` keeps 9 transactions and the same packing,
+# because 04_RPS sits alone in its batch and 04+05 (395 KB) exceeds any cap under consideration.
+#
+# THE STRUCTURAL ANSWER IS STILL THE ONE BELOW, and it is now overdue rather than foreseeable.
+#
+# AND 04_RPS HAS NOW OVERTAKEN 05_FVT AS THE LARGEST MODULE IN THE TREE, which promotes the
+# warning below from one module to two. TREAT BOTH AS STANDING WARNINGS:
+#
+#     04_RPS.pact   342,959 B -> 85% of the 404,983-byte hard ceiling
+#     05_FVT.pact   334,831 B -> 83%
+#
+# Both grow every round and both will eventually need SPLITTING INTO TWO MODULES, which is an
+# interface cascade and not a formatting exercise, so it is better planned than discovered. The
+# useful warning sign is this comment block itself: it has now been edited twice in two days, each
+# time to admit a module that outgrew the previous cap. A cap that tracks the tree is not a
+# budget. There are ~59,000 bytes of headroom left on 04_RPS before the ceiling is REAL -- at
+# which point no raise helps and the only option is the cascade.
+DEFAULT_MAXBYTES = 350_000
 
 # WHAT THE PLANNER MEASURES IS NOT WHAT SHIPS. `plan()` sums the size of the module SOURCES; the
 # emitted transaction is those sources PLUS this tool's header (which lists every interface,
@@ -1397,7 +1897,17 @@ DEFAULT_MAXBYTES = 320_000
 # transactions over the cap and the only thing that noticed was a printed line in a passing
 # run. A budget enforced on a proxy is not enforced; a proxy that is CHECKED against the real
 # thing is fine.
-HEADER_RESERVE = 6_000
+# RAISED 6,000 -> 18,000 on 2026-11-08, and the number is measured rather than chosen. The V26
+# round's additions (~250 lines in 08b_EVCT alone, plus the F1/F6 guards and their comments) took
+# the emitted `19_deploy.pact` to 331,542 bytes -- 11,542 OVER the 320,000 cap -- while the planner,
+# which budgets on SOURCE bytes, still believed it fit. 6,000 + 11,542 = 17,542 is the floor; 18,000
+# leaves a little room so the next few edits do not re-trip it.
+#
+# RAISING THIS IS CHEAP AND THE ALTERNATIVE IS NOT. A bigger reserve splits one more transaction,
+# and the size charge grows as the SEVENTH POWER of transaction size -- so two smaller files cost
+# dramatically LESS in size gas than one at the cap, not more. The instinct to keep file count down
+# is backwards here; see CLAUDE.md on minimising Sum(size^7) rather than file count.
+HEADER_RESERVE = 18_000
 
 # ---------------------------------------------------------------------------------------------
 # UPGRADE vs GENESIS, and why this tool refuses to guess which tables exist.
@@ -1533,6 +2043,13 @@ def check_report():
             # destructive if re-run after an owner has latched -- their headers say so.
             "00_MANUAL_backfill-drift-locked.pact",
             "00_MANUAL_backfill-stream-eligible.pact",
+            # S1's counter repair is NOT here. OWNER RULING, 2026-11-10: everything that has to
+            # be SENT lives in the round folder with the transactions it ships beside --
+            # `Deploy/PureV26/04_deploy_THEN_fixup_s1-counters.pact`. It was briefly filed here instead, on
+            # the precedent of the three backfills above, and the result was exactly what the
+            # ruling exists to prevent: the round was deployed from the folder, the repair was
+            # not in the folder, and it did not get sent. A step filed where the operator is not
+            # looking is a step that does not run.
             # STAGE-Z ROUND, 2026-09-24. DPL-UR and EXPLORER deploy via `deploy-stagezz.repl`, a chain this
             # planner deliberately does not cover, so the generator cannot emit its transaction
             # -- but URC_0001_HeaderV3 shipped with twelve hardcoded token/pool ids and took the
@@ -2041,6 +2558,48 @@ DEPLOYABLE_RE = re.compile(r'^\((interface|module)\s+([A-Za-z0-9|_\-\.]+)', re.M
 LIVE_INTERFACES = {
     "AgeOfZalmoxis": "a7345a4600ed8d83367a54714bab362d",   # unchanged since 21fa54f
 
+    # ADDED 2026-11-10, after the V26 round DIED LIVE at transaction 01 with
+    # "Interface cannot be upgraded: ouronet-ns.AcquisitionAnchorsV3".
+    #
+    # Both of these are ALREADY ON CHAIN and byte-identical to the tree -- verified by fetching
+    # `(at "code" (describe-module ...))` and diffing, 8,722 B and 3,668 B respectively, not one
+    # character different. They needed no bump and no cascade; they simply must not be SENT
+    # again, because Pact cannot upgrade an interface even to an identical body.
+    #
+    # THEY WERE EMITTED FOR THE REASON THIS WHOLE REGISTRY EXISTS: a bump drags the entire FILE
+    # into the round, including every unrelated interface co-hosted in it. `01_ANK.pact` hosts
+    # AcquisitionAnchorsV3 beside the AQP-ANK module, and `04b_RPSC.pact` hosts
+    # AcquisitionRewardCostsV1 beside AQP-RPSC. Neither interface changed this round; both came
+    # along for the ride.
+    #
+    # AND NO GATE COULD HAVE CAUGHT IT, which is the part worth remembering. The gate builds a
+    # chain FROM SCRATCH, where declaring either of these for the first time is correct. Only a
+    # replay against LIVE state can see "this is already there" -- the same lesson the PureV10
+    # and PureV20 bulk adds below were written for, now learned a third time.
+    # ADDED 2026-11-10 (evening), after the V26 round DEPLOYED SUCCESSFULLY. These six went live
+    # with it, so from now on emitting any of them aborts the transaction carrying it. Pinning
+    # them is not a fix for a mistake -- it is RECORDING THAT THE ROUND LANDED. Every round ends
+    # this way, and forgetting it is what leaves the next round's co-hosted interfaces unpinned.
+    # `_liveinterfaces.py --probe` + `--check` now names them automatically.
+    # ADDED 2026-11-11 for V27, and this is the BACKLOG BECOMING FATAL exactly as
+    # `_liveinterfaces.py` says it does. Both have been live and unpinned for a long time and were
+    # harmless the whole while, because no round shipped the FILES that declare them. V27 ships
+    # `02_IGNIS.pact` -- for one price row -- and both came along with it. The tool reported them
+    # against the generated round before anything was sent; without it this was transaction 01
+    # aborting on chain for the second round running.
+    "IgnisCollectorV4": "c2722cfb3a92e98bd8e1e92a43e964d9",
+    "OuronetInfoV3": "7ddb056871b605d3a752f5160c0949dc",
+
+    "AcquisitionSchemasV4": "e07740d299f7d547009e6af3d46f4a31",
+    "AcquisitionScoresV6": "7c30a230db8dba26a3bfa7f9d44c7e93",
+    "AcquisitionRewardPerShareV7": "0e1f85609780a3a284aa8cd68a2b5b7b",
+    "AcquisitionFarmsVaultsTreasuriesV7": "25d1abb7de350997e150b5f907577586",
+    "AcquisitionVacateV5": "fdecd09e87fcb29b4e60513af876acb4",
+    "AcquisitionRewardEvictionV2": "4c32cf402fcb41ffa47751c4a5bd7267",
+
+    "AcquisitionAnchorsV3": "4b6852c62fea2c76d4eb41b12562bb1b",
+    "AcquisitionRewardCostsV1": "9deaed14927b6d446e4dc17c272cdccb",
+
     # BULK ADD 2026-11-04, for the 7.22 + 7.23 round (PureV20). Same shape as the PureV10 add
     # above and found the same way -- a live sequential simulation, not this repo's gate. The
     # gate builds a chain FROM SCRATCH, where declaring any of these for the first time is fine;
@@ -2061,8 +2620,28 @@ LIVE_INTERFACES = {
     "TalosStageOne_ClientOneV3":   "2af24c22b97880a279653c3284f4759a",
     "TalosStageOne_ClientFourV9":  "b92f76bedd0a320b2ed327afe55f585e",
     "DemiourgosLaunchpadV3":       "b06f0d80a4f2186cde9a8047bed4a7f2",
-    "AcquisitionRewardEvictionV1": "39c4e092c557454d60b6618e0cc4c802",
+    # AcquisitionRewardEvictionV1 was pinned here until 2026-11-08, when B2's bulking added
+    # five UC_ declarations to it. A deployed interface cannot be upgraded in Pact, so it was
+    # version-bumped to V2 and UNPINNED rather than re-pinned -- re-pinning the new hash would
+    # ship AQP-EVCT, AQP-INFO and TS02-C3 against a contract the chain does not have.
     "TalosStageTwo_ClientThreeV7": "64ee31658d2ed73e92ca7114f7663cae",
+    # ADDED 2026-11-08, and it would otherwise have KILLED THE V26 ROUND ON CHAIN. AQP-FVT's
+    # interface was never pinned here, so the planner emitted it inside the FVT transaction --
+    # but `describe-module "ouronet-ns.AcquisitionFarmsVaultsTreasuriesV6"` SUCCEEDS, so it is
+    # already deployed and Pact cannot re-send an interface. Nothing in the gate could see this:
+    # the REPL loads every interface fresh into an empty sandbox, where re-declaring one is
+    # normal. Only the chain disagrees.
+    #
+    # CONFIRMED AGAINST THE CHAIN BEFORE PINNING, which is the only thing that makes a skip safe:
+    # `(at "code" (describe-module ...))` fetched and compared whitespace-normalised to the block
+    # in the tree -- 17,301 characters each, identical. The V26 edits to 05_FVT.pact added four
+    # MODULE-ONLY members and did not touch the interface, which is what that equality proves
+    # rather than assumes.
+    # AcquisitionFarmsVaultsTreasuriesV6 was pinned here from 2026-11-08 until 2026-11-09, when
+    # S1 added four facade reader DECLARATIONS to it (the dormant/earning counters). A deployed
+    # interface cannot be upgraded, so it was bumped to V7 and UNPINNED rather than re-pinned --
+    # re-pinning the new hash ships every FVT consumer against a contract the chain does not have.
+
     "TalosStageTwo_DemiPadV4":     "fd97ce9e8d5fc57d0e5e090d9aca0021",
     "InfoTwoV3":                   "fff307a398a819eb635103b86a6ed1e0",
     "OUiThreeV2":                  "f8595634fbb34a3950f6f0e3c5c5b587",

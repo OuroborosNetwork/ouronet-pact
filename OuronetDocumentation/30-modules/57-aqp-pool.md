@@ -19,8 +19,8 @@ The family's state module for staking.
 
 | | |
 |---|---|
-| module hash | `GH5p3K8VZop8I6Mfzlzcx1nR3FkbnE9jpqgDQbnKjjE` |
-| deployed size | 230,984 characters |
+| module hash | `V5UbbMFyC95m0U93_WNTC_V8YAPWKoGfuzCWZ8QwpNM` |
+| deployed size | 250,452 characters |
 | implements | `OuronetPolicyV2`, `AcquisitionPoolsV3` |
 | repository source | `1_SOVEREIGN/STAGE_02/2_Core/03_AQP/03_AQP.pact` |
 
@@ -32,7 +32,7 @@ The family's state module for staking.
 
 `AQP|C>ADD-SCORE`, `AQP|C>BACKFILL-SCORE-SLICE`, `AQP|C>BEGIN-SCORE-REVOKE`, `AQP|C>DISABLE-POOL-STAKE`, `AQP|C>DRAIN-SCORE-SLICE`, `AQP|C>ENABLE-POOL-STAKE`, `AQP|C>FINALIZE-SCORE-REVOKE`, `AQP|C>ISSUE-POOL`, `AQP|C>REVOKE-SCORE`, `AQP|C>SYNC-COLLECTABLE-ANCHORS`, `AQP|C>SYNC-TF-ANCHORS`, `AQP|C>UPDATE-SCORE-MULTIPLIERS`, `AQP|GOV`, `AQP|XE>COLLECTABLE-POOL-CUSTODY`, `AQP|XE>ORTO-FUNGIBLE-POOL-CUSTODY`, `AQP|XE>SET-BEN-COLLECTABLE-ANK-SYNC`, `AQP|XE>SET-BENEFICIARY-DPTF-ANK-SYNC`, `AQP|XE>TRUE-FUNGIBLE-POOL-CUSTODY`, `GOV`, `GOV|AQP_ADMIN`, `P|AQP|CALLER`, `P|AQP|REMOTE-GOV`, `P|SECURE-CALLER`, `SECURE`
 
-**Functions** — 243, grouped by what their prefix promises
+**Functions** — 250, grouped by what their prefix promises
 
 | family | n | the promise | names |
 |---|---:|---|---|
@@ -52,7 +52,7 @@ The family's state module for staking.
 | `Cp_` client recipe | 1 | multi-transaction | `Cp_DrainScoreSlice` |
 | `C_` client | 8 | reached via Talos, never called directly | `C_AddScore`, `C_BeginScoreRevoke`, `C_DisablePoolStake`, `C_EnablePoolStake`, `C_Issue`, `C_RevokeScore` …+2 |
 | `P|` policy | 9 | inter-module authorisation | `P|A_Add`, `P|A_AddIMP`, `P|A_Define`, `P|A_RemoveIMP`, `P|A_SetIMP`, `P|Info` …+3 |
-| *(unclassified)* | 125 | carries no StoicSyntax prefix | `CT_AqpScName`, `CT_Bar`, `CT_EmptyCumulator`, `GOV|Demiurgoi`, `UC_AQP|BackfillRowsForBeneficiary`, `UC_AQP|BackfillSumForBeneficiary` …+119 |
+| *(unclassified)* | 132 | carries no StoicSyntax prefix | `CT_AqpScName`, `CT_Bar`, `CT_EmptyCumulator`, `GOV|Demiurgoi`, `UC_AQP|BackfillNoncePairsForBeneficiary`, `UC_AQP|BackfillRowsForBeneficiary` …+126 |
 
 > Repository and chain agree on every declared shape.
 
@@ -60,7 +60,7 @@ The family's state module for staking.
 
 `AQP|C>ADD-SCORE`, `AQP|C>BACKFILL-SCORE-SLICE`, `AQP|C>BEGIN-SCORE-REVOKE`, `AQP|C>DISABLE-POOL-STAKE`, `AQP|C>DRAIN-SCORE-SLICE`, `AQP|C>ENABLE-POOL-STAKE`, `AQP|C>FINALIZE-SCORE-REVOKE`, `AQP|C>ISSUE-POOL`, `AQP|C>REVOKE-SCORE`, `AQP|C>SYNC-COLLECTABLE-ANCHORS`, `AQP|C>SYNC-TF-ANCHORS`, `AQP|C>UPDATE-SCORE-MULTIPLIERS`, `AQP|GOV`, `AQP|XE>COLLECTABLE-POOL-CUSTODY`, `AQP|XE>ORTO-FUNGIBLE-POOL-CUSTODY`, `AQP|XE>SET-BEN-COLLECTABLE-ANK-SYNC`, `AQP|XE>SET-BENEFICIARY-DPTF-ANK-SYNC`, `AQP|XE>TRUE-FUNGIBLE-POOL-CUSTODY`, `GOV`, `GOV|AQP_ADMIN`, `P|AQP|CALLER`, `P|AQP|REMOTE-GOV`, `P|SECURE-CALLER`, `SECURE`
 
-**Functions** -- 243, grouped by what the prefix promises
+**Functions** -- 250, grouped by what the prefix promises
 
 *Cost readers* (14) — price an operation; the exec path and the preview both call these
 
@@ -70,29 +70,29 @@ The family's state module for staking.
 
 `URHC_AQP|PoolOrphanedScores`, `URHC_AQP|PoolSweepClear`, `URHC_AQP|ScoreBackfillCandidates`, `URHC_AQP|ScoreBackfillNeeded`, `URHC_AQP|ScoreBackfillOutstanding`, `URHC_AQP|ScoreDrainOutstanding`
 
-*Heavy reads* (17) — scan a table -- OFF the execution path, cost grows with data
+*Heavy reads* (21) — scan a table -- OFF the execution path, cost grows with data
 
-`URH_AQP|ActiveDpnfTrackerRows`, `URH_AQP|ActiveDpofTrackerRows`, `URH_AQP|ActiveDpsfTrackerRows`, `URH_AQP|ActiveDptfTrackerRows`, `URH_AQP|AllPoolIds`, `URH_AQP|BenDpnfActiveNonceSupplies`, `URH_AQP|BenDpsfActiveNonceSupplies`, `URH_AQP|DpnfStakesByBeneficiary`, `URH_AQP|DpnfStakesByOwner`, `URH_AQP|DpofStakesByBeneficiary`, `URH_AQP|DpofStakesByOwner`, `URH_AQP|DpsfStakesByBeneficiary`, `URH_AQP|DpsfStakesByOwner`, `URH_AQP|DptfStakesByBeneficiary`, `URH_AQP|DptfStakesByOwner`, `URH_AQP|ScoreBackfillLegRows`, `URH_AQP|ScoreTargetBaseForBeneficiary`
+`URH_AQP|ActiveDpnfTrackerRows`, `URH_AQP|ActiveDpofTrackerRows`, `URH_AQP|ActiveDpsfTrackerRows`, `URH_AQP|ActiveDptfTrackerRows`, `URH_AQP|AllPoolIds`, `URH_AQP|BenDpnfActiveNonceSupplies`, `URH_AQP|BenDpsfActiveNonceSupplies`, `URH_AQP|DpnfStakesByBeneficiary`, `URH_AQP|DpnfStakesByOwner`, `URH_AQP|DpofStakesByBeneficiary`, `URH_AQP|DpofStakesByOwner`, `URH_AQP|DpsfStakedPools`, `URH_AQP|DpsfStakesByBeneficiary`, `URH_AQP|DpsfStakesByOwner`, `URH_AQP|DptfStakesByBeneficiary`, `URH_AQP|DptfStakesByOwner`, `URH_AQP|ScoreBackfillLegRows`, `URH_AQP|ScoreTargetBaseForBeneficiary`, `URH_AQP|ScoreTargetBaseForBeneficiaryLp`, `URH_AQP|ScoreTargetBaseForBeneficiaryNf`, `URH_AQP|ScoreTargetBaseForBeneficiarySf`
 
-*Derived reads* (35) — read and compute; no enforce
+*Derived reads* (36) — read and compute; no enforce
 
-`URC_AQP|PoolHasWeightedStakers`, `URC_AQP|PoolLiquidityLegs`, `URC_AQP|ScoreBackfillSupported`, `URC_AQP|ScoreMxChangeSafe`, `URC_AqpOwnerKonto`, `URC_AqpOwnerKontoFromClassAndAsset`, `URC_BenCollectableHasStake`, `URC_BenDpnfAnchorsNeedSync`, `URC_BenDpnfHasStake`, `URC_BenDpsfAnchorsNeedSync`, `URC_BenDpsfHasStake`, `URC_BenDptfAnchorsNeedSync`, `URC_CollectableUnstakeNoncesSufficient`, `URC_CollectableUnstakeRollupSufficient`, `URC_DpofLegPrefix`, `URC_DptfIsLpNomenclature`, `URC_DptfLegPrefix`, `URC_DptfStakeIsNativeLeg`, `URC_DptfStakeIsReservedLeg`, `URC_FirstFreeScoreSlotIndex`, `URC_NoEmployedBoostLinkTarget`, `URC_OrtoUnstakeNoncesSufficient`, `URC_PoolActiveScoreIds`, `URC_PoolHasEmployedScores`, `URC_PoolScoreSlotValue`, `URC_PoolStakeAdmissionOk`, `URC_PoolUnstakeAdmissionOk`, `URC_PriorScoreSlotsOccupied`, `URC_ScoreSlotIndexForScore`, `URC_StakeCollectableMatchesPool`, `URC_StakeCollectablePoolClassOk`, `URC_StakeOrtoFungibleDpofMatchesPool`, `URC_StakeOrtoFungiblePoolClassOk`, `URC_StakeTrueFungibleDptfMatchesPool`, `URC_StakeTrueFungiblePoolClassOk`
+`URC_AQP|PoolHasWeightedStakers`, `URC_AQP|PoolLiquidityLegs`, `URC_AQP|ScoreAutoFreezeOnAdd`, `URC_AQP|ScoreBackfillSupported`, `URC_AQP|ScoreMxChangeSafe`, `URC_AqpOwnerKonto`, `URC_AqpOwnerKontoFromClassAndAsset`, `URC_BenCollectableHasStake`, `URC_BenDpnfAnchorsNeedSync`, `URC_BenDpnfHasStake`, `URC_BenDpsfAnchorsNeedSync`, `URC_BenDpsfHasStake`, `URC_BenDptfAnchorsNeedSync`, `URC_CollectableUnstakeNoncesSufficient`, `URC_CollectableUnstakeRollupSufficient`, `URC_DpofLegPrefix`, `URC_DptfIsLpNomenclature`, `URC_DptfLegPrefix`, `URC_DptfStakeIsNativeLeg`, `URC_DptfStakeIsReservedLeg`, `URC_FirstFreeScoreSlotIndex`, `URC_NoEmployedBoostLinkTarget`, `URC_OrtoUnstakeNoncesSufficient`, `URC_PoolActiveScoreIds`, `URC_PoolHasEmployedScores`, `URC_PoolScoreSlotValue`, `URC_PoolStakeAdmissionOk`, `URC_PoolUnstakeAdmissionOk`, `URC_PriorScoreSlotsOccupied`, `URC_ScoreSlotIndexForScore`, `URC_StakeCollectableMatchesPool`, `URC_StakeCollectablePoolClassOk`, `URC_StakeOrtoFungibleDpofMatchesPool`, `URC_StakeOrtoFungiblePoolClassOk`, `URC_StakeTrueFungibleDptfMatchesPool`, `URC_StakeTrueFungiblePoolClassOk`
 
 *Point reads* (58) — one row or field by key
 
 `P|UR_IMP`, `UR_AQP|BenDpnfActiveNonceCount`, `UR_AQP|BenDpnfAnkMeta`, `UR_AQP|BenDpnfLastAnkSyncCount`, `UR_AQP|BenDpnfNonceAmount`, `UR_AQP|BenDpnfNonceTotal`, `UR_AQP|BenDpsfActiveNonceCount`, `UR_AQP|BenDpsfAnkMeta`, `UR_AQP|BenDpsfLastAnkSyncCount`, `UR_AQP|BenDpsfNonceAmount`, `UR_AQP|BenDpsfNonceTotal`, `UR_AQP|BenDptfLastAnkSyncCount`, `UR_AQP|BenDptfTotal`, `UR_AQP|BenDptfTotalBalance`, `UR_AQP|DPNFTracker`, `UR_AQP|DPNFTrackerBalance`, `UR_AQP|DPNFTrackerBeneficiaryId`, `UR_AQP|DPNFTrackerDpnfId`, `UR_AQP|DPNFTrackerNonce`, `UR_AQP|DPNFTrackerOwnerId`, `UR_AQP|DPNFTrackerPoolId`, `UR_AQP|DPOFTracker`, `UR_AQP|DPOFTrackerBalance`, `UR_AQP|DPOFTrackerBeneficiaryId`, `UR_AQP|DPOFTrackerDpofId`, `UR_AQP|DPOFTrackerNonce`, `UR_AQP|DPOFTrackerOwnerId`, `UR_AQP|DPOFTrackerPoolId`, `UR_AQP|DPSFTracker`, `UR_AQP|DPSFTrackerBalance`, `UR_AQP|DPSFTrackerBeneficiaryId`, `UR_AQP|DPSFTrackerDpsfId`, `UR_AQP|DPSFTrackerNonce`, `UR_AQP|DPSFTrackerOwnerId`, `UR_AQP|DPSFTrackerPoolId`, `UR_AQP|DPTFTracker`, `UR_AQP|DPTFTrackerBalance`, `UR_AQP|DPTFTrackerBeneficiaryId`, `UR_AQP|DPTFTrackerDptfId`, `UR_AQP|DPTFTrackerOwnerId`, `UR_AQP|DPTFTrackerPoolId`, `UR_AQP|Pool`, `UR_AQP|PoolAqpClass`, `UR_AQP|PoolAqpId`, `UR_AQP|PoolAssetId`, `UR_AQP|PoolNns`, `UR_AQP|PoolScorePrimary`, `UR_AQP|PoolScoreQuaternary`, `UR_AQP|PoolScoreQuinary`, `UR_AQP|PoolScoreSecondary`, `UR_AQP|PoolScoreSenary`, `UR_AQP|PoolScoreSeptenary`, `UR_AQP|PoolScoreTertiary`, `UR_AQP|PoolStakeEnabled`, `UR_AQP|PoolSweepInProgress`, `UR_AQP|PoolVacateInProgress`, `UR_AQP|PoolVacateSession`, `UR_AQP|UserUnn`
 
-*Validators* (14) — read and enforce; failure aborts
+*Validators* (15) — read and enforce; failure aborts
 
-`P|UEV_IMC`, `UEV_AQP|ScoreDrainComplete`, `UEV_AQP|ScoreMxChangeSafe`, `UEV_AddScorePoolAndScore`, `UEV_BeginScoreRevoke`, `UEV_ExecutorIzAqpAssetOwner`, `UEV_ExecutorIzPoolOwner`, `UEV_IssuePoolClassAndAsset`, `UEV_RevokeScorePoolAndScore`, `UEV_ScoreDefinitionTargetMatchesPool`, `UEV_StakeBeneficiaryAccount`, `UEV_StakeCollectableLeg`, `UEV_StakeOrtoFungibleDpofLeg`, `UEV_StakeTrueFungibleDptfLeg`
+`P|UEV_IMC`, `UEV_AQP|NoLiveStakeOfAsset`, `UEV_AQP|ScoreDrainComplete`, `UEV_AQP|ScoreMxChangeSafe`, `UEV_AddScorePoolAndScore`, `UEV_BeginScoreRevoke`, `UEV_ExecutorIzAqpAssetOwner`, `UEV_ExecutorIzPoolOwner`, `UEV_IssuePoolClassAndAsset`, `UEV_RevokeScorePoolAndScore`, `UEV_ScoreDefinitionTargetMatchesPool`, `UEV_StakeBeneficiaryAccount`, `UEV_StakeCollectableLeg`, `UEV_StakeOrtoFungibleDpofLeg`, `UEV_StakeTrueFungibleDptfLeg`
 
 *Constructors* (13) — build objects
 
 `UDC_AQP|BenDpnfAnkMeta`, `UDC_AQP|BenDpnfNonceTotal`, `UDC_AQP|BenDpsfAnkMeta`, `UDC_AQP|BenDpsfNonceTotal`, `UDC_AQP|BenDptfTotal`, `UDC_AQP|NonFungibleTracker`, `UDC_AQP|OrtoFungibleTracker`, `UDC_AQP|Schema`, `UDC_AQP|SchemaWithScoreAtSlot`, `UDC_AQP|SchemaWithScoreSlots`, `UDC_AQP|SemiFungibleTracker`, `UDC_AQP|TrueFungibleTracker`, `UDC_AQP|UserOccupancy`
 
-*Pure compute* (4) — arguments only; no reads, no enforce
+*Pure compute* (5) — arguments only; no reads, no enforce
 
-`UC_AQP|BackfillRowsForBeneficiary`, `UC_AQP|BackfillSumForBeneficiary`, `UC_AQP|BackfillUniqueBeneficiaries`, `UC_PoolScoreSlotPatch`
+`UC_AQP|BackfillNoncePairsForBeneficiary`, `UC_AQP|BackfillRowsForBeneficiary`, `UC_AQP|BackfillSumForBeneficiary`, `UC_AQP|BackfillUniqueBeneficiaries`, `UC_PoolScoreSlotPatch`
 
 *Ownership checks* (3) — account-ownership enforcement
 

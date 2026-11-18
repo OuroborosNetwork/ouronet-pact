@@ -335,6 +335,24 @@
                 [])
         )
     )
+    (defun INFO_AQP-SCR|SetSingleShareWeight:object{OuronetInfoV3.ClientInfo}
+        (patron:string score-id:string flag:bool)
+        @doc "Cost preview for AQP-SCR|C_SetSingleShareWeight. IGNIS 'ignis|medium' tier; no STOA. \
+            \ Reversible, but refused unless the score is empty (vacate first) and not drift-locked."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: set whether an equity collection's raw share (nonce 1) carries weight."
+                 "Requires the score to be EMPTY -- vacate the pool employing it first."
+                 "Executes via TS02-C3.AQP-SCR|C_SetSingleShareWeight."]
+                [(format "Score {} now weighs a raw single share: {}." [score-id flag])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_SetSingleShareWeight score-id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
+        )
+    )
     (defun INFO_AQP-SCR|EnableDebBoost:object{OuronetInfoV3.ClientInfo}
         (patron:string score-id:string)
         @doc "Cost preview for AQP-SCR|C_EnableDebBoost. IGNIS 'ignis|medium' tier; no STOA. Irreversible."
@@ -882,7 +900,7 @@
     )
     ;;<---- vacate lifecycle (fixed-cost endpoints) ---->
     (defun INFO_AQP-POOL|BatchVacateTrueFungible:object{OuronetInfoV3.ClientInfo}
-        (patron:string pool-id:string dptf-id:string legs:[object{AcquisitionSchemasV3.VCT|VacateTfLeg}])
+        (patron:string pool-id:string dptf-id:string legs:[object{AcquisitionSchemasV5.VCT|VacateTfLeg}])
         @doc "Cost preview for AQP-POOL|CCp_BatchVacateTrueFungible. Multi-leg IGNIS (per-leg \
             \ tracker-zero + per-beneficiary unwind + one bulk transfer); no STOA. Fed the same \
             \ dirty-read <legs> slice the exec is fed."
@@ -901,7 +919,7 @@
         )
     )
     (defun INFO_AQP-POOL|BatchVacateOrtoFungible:object{OuronetInfoV3.ClientInfo}
-        (patron:string pool-id:string dpof-id:string legs:[object{AcquisitionSchemasV3.VCT|VacateNonceLeg}])
+        (patron:string pool-id:string dpof-id:string legs:[object{AcquisitionSchemasV5.VCT|VacateNonceLeg}])
         @doc "Cost preview for AQP-POOL|CCp_BatchVacateOrtoFungible. Multi-leg IGNIS (bulk DPOF \
             \ transfer + per-nonce tracker + per-beneficiary score unwind); no STOA. Fed the same \
             \ dirty-read nonce <legs> slice the exec is fed."
@@ -920,7 +938,7 @@
         )
     )
     (defun INFO_AQP-POOL|BatchVacateCollectables:object{OuronetInfoV3.ClientInfo}
-        (patron:string pool-id:string collectable-id:string son:bool legs:[object{AcquisitionSchemasV3.VCT|VacateNonceLeg}])
+        (patron:string pool-id:string collectable-id:string son:bool legs:[object{AcquisitionSchemasV5.VCT|VacateNonceLeg}])
         @doc "Cost preview for AQP-POOL|CCp_BatchVacateCollectables (son=DPSF true / DPNF false). \
             \ Multi-leg IGNIS (bulk transfer + per-nonce tracker + rollup + flat anchor + per- \
             \ beneficiary class-matched score unwind); no STOA. Fed the dirty-read nonce <legs>."
@@ -939,7 +957,7 @@
         )
     )
     (defun INFO_AQP-POOL|BatchDrainTrueFungible:object{OuronetInfoV3.ClientInfo}
-        (patron:string pool-id:string dptf-id:string legs:[object{AcquisitionSchemasV3.VCT|VacateTfLeg}])
+        (patron:string pool-id:string dptf-id:string legs:[object{AcquisitionSchemasV5.VCT|VacateTfLeg}])
         @doc "Cost preview for AQP-POOL|CCp_BatchDrainTrueFungible. Score-free drain: per-leg \
             \ tracker-zero + rollup, settle-on-last-drain only for beneficiaries fully drained \
             \ this round (live UserUnn), then one bulk transfer; no STOA. Fed the dirty-read legs."
@@ -958,7 +976,7 @@
         )
     )
     (defun INFO_AQP-POOL|BatchDrainOrtoFungible:object{OuronetInfoV3.ClientInfo}
-        (patron:string pool-id:string dpof-id:string legs:[object{AcquisitionSchemasV3.VCT|VacateNonceLeg}])
+        (patron:string pool-id:string dpof-id:string legs:[object{AcquisitionSchemasV5.VCT|VacateNonceLeg}])
         @doc "Cost preview for AQP-POOL|CCp_BatchDrainOrtoFungible. Score-free drain: bulk DPOF \
             \ transfer + per-nonce tracker + settle-on-last-drain (no anchor); no STOA. Fed the legs."
         (let
@@ -976,7 +994,7 @@
         )
     )
     (defun INFO_AQP-POOL|BatchDrainCollectable:object{OuronetInfoV3.ClientInfo}
-        (patron:string pool-id:string collectable-id:string son:bool legs:[object{AcquisitionSchemasV3.VCT|VacateNonceLeg}])
+        (patron:string pool-id:string collectable-id:string son:bool legs:[object{AcquisitionSchemasV5.VCT|VacateNonceLeg}])
         @doc "Cost preview for AQP-POOL|CCp_BatchDrainCollectable (son=DPSF true / DPNF false). \
             \ Score-free drain: bulk transfer + per-leg tracker + rollup + flat anchor + settle- \
             \ on-last-drain; no STOA. Fed the dirty-read nonce <legs>."
@@ -1076,9 +1094,9 @@
     )
     (defun INFO_AQP-POOL|FullVacate:object{OuronetInfoV3.ClientInfo}
         (patron:string pool-id:string
-         tf-lanes:[object{AcquisitionSchemasV3.VCT|VacateTfLane}]
-         of-lanes:[object{AcquisitionSchemasV3.VCT|VacateNonceLane}]
-         coll-lanes:[object{AcquisitionSchemasV3.VCT|VacateNonceLane}]
+         tf-lanes:[object{AcquisitionSchemasV5.VCT|VacateTfLane}]
+         of-lanes:[object{AcquisitionSchemasV5.VCT|VacateNonceLane}]
+         coll-lanes:[object{AcquisitionSchemasV5.VCT|VacateNonceLane}]
          coll-son:bool)
         @doc "Cost preview for AQP-POOL|CC_FullVacate — the single-tx whole-pool vacate. Sums the \
             \ per-asset vacate cost across every dirty-read lane (TF + OF satellites + collectables); \
@@ -1568,7 +1586,7 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
                     ;;MISSING LEG FIXED (2026-09-14) — same defect as INFO_AQP-FVT|Inject, same cause.
                     ;;This quoted only RPS.URCi_Inject (the gas leg) while the exec also collects the
-                    ;;custody transfer of the reward principal: XI_FvtInjectCore PHASE 1, via XE_XI_FvtInjectCore runs
+                    ;;custody transfer of the reward principal: XI_FvtInjectCore PHASE 1, via XE_FvtInjectCore runs
                     ;;`(ref-TFT::C_Transfer patron patron AQP|SC_NAME reward-dptf-id amount true)` ahead of the
                     ;;gas leg, and that transfer carries its own cumulator. All FOUR members of the
                     ;;inject family shared this. Measured and pinned for CC_Inject at
@@ -2006,7 +2024,7 @@
             \ live stream, because the payout is read pre-drip."
         (let
             (
-                (ref-EVCT:module{AcquisitionRewardEvictionV1} AQP-EVCT)
+                (ref-EVCT:module{AcquisitionRewardEvictionV2} AQP-EVCT)
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -2037,7 +2055,7 @@
             \ payout is read pre-drip."
         (let
             (
-                (ref-EVCT:module{AcquisitionRewardEvictionV1} AQP-EVCT)
+                (ref-EVCT:module{AcquisitionRewardEvictionV2} AQP-EVCT)
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -2087,7 +2105,7 @@
             \ come from one reader."
         (let
             (
-                (ref-EVCT:module{AcquisitionRewardEvictionV1} AQP-EVCT)
+                (ref-EVCT:module{AcquisitionRewardEvictionV2} AQP-EVCT)
                 (ref-I|OURONET:module{OuronetInfoV3} IGNIS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo

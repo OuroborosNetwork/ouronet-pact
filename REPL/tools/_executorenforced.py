@@ -198,8 +198,8 @@ INDIRECT = {
     "02_SCORE.pact::C_IssueScoreFromModel": "XI_IssueOneFromModel",
     # 05_FVT (2026-09-22). C_RotateOwnership is the SCR|C>ISSUE-TRIPLET shape exactly --
     # FVT|C>ROTATE-OWNERSHIP-FVT binds (= executor owner-now) and enforces ownership of
-    # <owner-now>. The three injects forward the executor into RPS's XE_XI_FvtAddStream /
-    # XE_XI_FvtInjectCore, which bottom out in (TFT::C_Transfer patron executor AQP|SC_NAME ...)
+    # <owner-now>. The three injects forward the executor into RPS's XE_FvtAddStream /
+    # XE_FvtInjectCore, which bottom out in (TFT::C_Transfer patron executor AQP|SC_NAME ...)
     # -- a real cross-module forward that FORWARDED still cannot match, because the executor
     # lands in slot 2 of the callee (behind an op-key) rather than the executor slot it scans.
     "05_FVT.pact::C_RotateOwnership":  "CAP_EnforceAccountOwnership owner-now",
@@ -231,9 +231,9 @@ INDIRECT = {
     # duplicate it. `executor` crosses as `owner-id`, reaches AQP::XE_TrueFungibleTransfer and
     # is proven by CAP_StakeOwner inside AQP|XE>TRUE-FUNGIBLE-POOL-CUSTODY.
     "05_FVT.pact::CC_TrueFungibleStakeFlow": "CAP_StakeOwner",
-    "05_FVT.pact::CC_InjectStream":    "XE_XI_FvtAddStream",
-    "05_FVT.pact::CC_Inject":          "XE_XI_FvtInjectCore",
-    "05_FVT.pact::CC_InjectFinalize":  "XE_XI_FvtInjectCore",
+    "05_FVT.pact::CC_InjectStream":    "XE_FvtAddStream",
+    "05_FVT.pact::CC_Inject":          "XE_FvtInjectCore",
+    "05_FVT.pact::CC_InjectFinalize":  "XE_FvtInjectCore",
     # 07_MTX-AQP (2026-09-22). A THIRD reason the matcher cannot see a real forward, and the
     # newest one: the hop is a DEFPACT STEP. C_2|Inject acquires its capability and then runs the
     # MTX|2|C_Inject defpact, whose step 0 calls AQP-FVT::XB_FvtInject -- so the entrypoint's own

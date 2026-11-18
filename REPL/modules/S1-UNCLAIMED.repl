@@ -1,0 +1,435 @@
+;;================================================================================
+(print "")
+(print "================================================================")
+(print "FILE  REPL/modules/S1-UNCLAIMED.repl")
+(print "================================================================")
+(print "WHAT THIS PINS, AND WHY IT COULD NOT PASS BEFORE S1.")
+(print "")
+(print "`unclaimed-count` is DOCUMENTED as the users with unclaimed rewards and was MAINTAINED")
+(print "as the accounts that can ever claim: it fell ONLY at an unstake, never when a")
+(print "still-staked account collected to zero. So on a live aggregator it never reached 1, the")
+(print "last-claimant dust sweep was unreachable, and the floor dust accrued. Measured against")
+(print "mainnet 2026-11-08: the count exceeded the positive-claimable leg count on ALL ELEVEN")
+(print "live lanes -- SubsidiaryTreasury/AURYN read 69 against 27 -- and THREE lanes held a")
+(print "balance with ZERO collectable legs, reachable by no collect and no evict.")
+(print "")
+(print "THE PROOF IS A DESCENT TO ZERO. Two stakers on one lane, one injection, then both")
+(print "collect: the count must read 2, then 1, and the SECOND collector must take the whole")
+(print "remainder so the lane ends at EXACTLY 0.0. Every one of those four facts is false")
+(print "against the old maintenance rule.")
+(print "")
+(load "../Stage00_Sanboxes.repl")
+(load "../Stage01_Tester.repl")
+(load "../deploy-stage02.repl")
+(load "../Stage_02/[5.2]_PopulateBloodshed.repl")
+(load "../Stage_02/[5.1]_PopulateNosferatu.repl")
+(load "../Stage_02/[5.4]_PopulateBunnies.repl")
+(load "../Stage_02/[6.2.1]_AQP-ANK.repl")
+(load "../Stage_02/[6.2.2]_AQP-SCORE.repl")
+(load "../Stage_02/[6.2.3]_AQP-POOL.repl")
+(load "../Stage_02/[6.2.9]_AQP-BOOT-FULL.repl")
+(load "../Stage_02/[6.4]_AQP-EXHAUSTIVE-PREP.repl")
+(load "../Stage_02/[6.4]_AQP-EXHAUSTIVE-BOOT-POOLS.repl")
+;;RPS STAKES A SECOND BENEFICIARY (LUMY) INTO DHCompany, which is what gives
+;;CompanySharesTreasury two legs on one lane -- the shape the bulked path exists for. Without
+;;it every boot FVT carries exactly one staker and this file would silently test the
+;;single-leg path instead.
+(load "../Stage_02/[6.4]_AQP-EXHAUSTIVE-RPS.repl")
+
+(print "")
+(print "===================S1 UNCLAIMED-COUNT Block=====================")
+(print "")
+;;================================================================================
+(begin-tx "TX-S1-01 - the count descends to 1 and the last collector sweeps the lane to zero")
+(print "")
+(print "=== TX-S1-01 — descent to zero ======================================================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+;;==== TX-S1-01 · 01 · env-sigs (caps) ====
+(print "--- [TX-S1-01 · 01 · env-sigs (caps)] ---")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Lumy", "caps": [] } ])
+(let*
+    (
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV8} TS02-C3)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV7} AQP-FVT)
+        (ref-RPS:module{AcquisitionRewardPerShareV8} RPS)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+        ;;
+        (patron:string KST.ANHD)
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "CompanySharesTreasury"))
+        (lane:string (ref-DALOS::UR_OuroborosID))
+        (score-id:string (ref-U|DALOS::UDC_Makeid "DemiourgosShareholder"))
+        (users:[string] (ref-RPS::URH_FvtPresentUsers fvt-id))
+        (inject-amt:decimal 7.000000000000000000000003)
+    )
+    ;;==== TX-S1-01 · 02 · fixture — TWO earning legs on ONE lane ====
+    (print "--- [TX-S1-01 · 02 · fixture — TWO earning legs on ONE lane] ---")
+    ;;TWO LEGS IS THE MINIMUM THAT CAN DISCRIMINATE. With one leg the count is 1 from the first
+    ;;accrual and the sweep fires on the only possible collect, so a broken counter passes.
+    (map print
+        [
+            (expect "<<TX-S1-01>> fixture: two earning legs, two present users, one lane"
+                [2 2]
+                [(ref-FVT::UR_FVT|EarningLegCount fvt-id) (length users)])
+        ]
+    )
+    ;;==== TX-S1-01 · 03 · inject — the RESTORE fires (T1) ====
+    (print "--- [TX-S1-01 · 03 · inject — the RESTORE fires (T1)] ---")
+    ;;AN AMOUNT THAT CANNOT SPLIT EVENLY, deliberately: 7.000000000000000000000003 over two legs
+    ;;leaves a sub-unit remainder at 24 decimals, which is exactly the dust the sweep exists for.
+    ;;An amount that halves exactly would end at 0.0 whether or not the sweep fired.
+    (ref-TS02-C3::AQP-FVT|CC_Inject patron patron fvt-id lane inject-amt)
+    (map print
+        [
+            (format "<(available-rewards after inject)> => {}" [(ref-FVT::UR_FVT-RG|AvailableRewards fvt-id lane)])
+            ;;THE ASSERTION THAT FAILS WITHOUT THE PHASE-4.1 RESTORE. Before S1 that slot was a
+            ;;COMMENT -- "Do not reset unclaimed-count" -- inherited from the canonical `coin` vault
+            ;;without the reason it was removed there, so nothing ever raised the count at accrual.
+            (expect (format "<<TX-S1-01>> inject RESTORES the count to earning + dormant got={}" [(ref-FVT::UR_FVT-RG|UnclaimedCount fvt-id lane)])
+                2 (ref-FVT::UR_FVT-RG|UnclaimedCount fvt-id lane))
+            (expect "<<TX-S1-01>> ...and nothing is dormant yet — nobody has exited owed"
+                0 (ref-FVT::UR_FVT-RG|DormantClaimCount fvt-id lane))
+        ]
+    )
+    ;;==== TX-S1-01 · 04 · first collect — the count DESCENDS (T3) ====
+    (print "--- [TX-S1-01 · 04 · first collect — the count DESCENDS (T3)] ---")
+    ;;THIS IS THE RULE THAT DID NOT EXIST. The old condition was `deb == 0 AND pending > 0` -- only
+    ;;an account that had already UNSTAKED was ever retired -- so a still-staked collector left the
+    ;;count untouched and `= 1` was unreachable.
+    (let*
+        (
+            (u1:string (at 0 users))
+            (u2:string (at 1 users))
+            (pre-1:decimal (DPTF.UR_AccountSupply lane u1))
+        )
+        (ref-TS02-C3::AQP-FVT|CC_Collect u1 u1 fvt-id 1 score-id lane)
+        (map print
+            [
+                (expect (format "<<TX-S1-01>> a STAKED collector is retired — count 2 -> 1 got={}" [(ref-FVT::UR_FVT-RG|UnclaimedCount fvt-id lane)])
+                    1 (ref-FVT::UR_FVT-RG|UnclaimedCount fvt-id lane))
+                (expect (format "<<TX-S1-01>> ...and the lane still holds a remainder got={}" [(ref-FVT::UR_FVT-RG|AvailableRewards fvt-id lane)])
+                    true (> (ref-FVT::UR_FVT-RG|AvailableRewards fvt-id lane) 0.0))
+                (expect (format "<<TX-S1-01>> the first collector was PAID got={}" [(- (DPTF.UR_AccountSupply lane u1) pre-1)])
+                    true (> (DPTF.UR_AccountSupply lane u1) pre-1))
+            ]
+        )
+        ;;==== TX-S1-01 · 05 · second collect — the SWEEP fires, lane ends at EXACTLY 0.0 ====
+        (print "--- [TX-S1-01 · 05 · second collect — the SWEEP fires] ---")
+        ;;THE WHOLE POINT. With the count at 1 the last claimant takes the lane's entire
+        ;;available-rewards, remainder included, so no dust is left behind. Before S1 the count
+        ;;could not reach 1 on a live aggregator, so this branch was dead code in production --
+        ;;which is why three mainnet lanes were measured holding a balance no transaction could
+        ;;reach.
+        (let
+            (
+                (lane-pre:decimal (ref-FVT::UR_FVT-RG|AvailableRewards fvt-id lane))
+                (pre-2:decimal (DPTF.UR_AccountSupply lane u2))
+            )
+            (ref-TS02-C3::AQP-FVT|CC_Collect u2 u2 fvt-id 1 score-id lane)
+            (map print
+                [
+                    (format "<(lane before/after)> => {} / {}" [lane-pre (ref-FVT::UR_FVT-RG|AvailableRewards fvt-id lane)])
+                    (expect (format "<<TX-S1-01>> the LAST claimant sweeps — the lane ends at EXACTLY 0.0 got={}" [(ref-FVT::UR_FVT-RG|AvailableRewards fvt-id lane)])
+                        0.0 (ref-FVT::UR_FVT-RG|AvailableRewards fvt-id lane))
+                    ;;CONSERVATION, which a sweep that over-paid could not satisfy: the last
+                    ;;collector received exactly what the lane held, not a floored share of it.
+                    (expect (format "<<TX-S1-01>> ...and received exactly the lane's remainder got={}" [(- (DPTF.UR_AccountSupply lane u2) pre-2)])
+                        lane-pre (- (DPTF.UR_AccountSupply lane u2) pre-2))
+                    (expect (format "<<TX-S1-01>> the count is now 0 — no leg is owed anything got={}" [(ref-FVT::UR_FVT-RG|UnclaimedCount fvt-id lane)])
+                        0 (ref-FVT::UR_FVT-RG|UnclaimedCount fvt-id lane))
+                    ;;AND THE EARNING COUNT IS UNTOUCHED: both accounts are still staked, so the
+                    ;;next injection restores the count to 2 and the cycle repeats. A fix that
+                    ;;retired them from EARNING too would silently stop paying them.
+                    (expect (format "<<TX-S1-01>> both legs are still EARNING — the next accrual will count them again got={}" [(ref-FVT::UR_FVT|EarningLegCount fvt-id)])
+                        2 (ref-FVT::UR_FVT|EarningLegCount fvt-id))
+                ]
+            )
+        )
+    )
+    (env-sigs [])
+    ""
+)
+(print "===^^^===")
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;================================================================================
+(begin-tx "TX-S1-02 - RETIRED: the migration it tested no longer exists")
+(print "")
+(print "=== TX-S1-02 — RETIRED 2026-11-10 ====================================================")
+(print "")
+(print "THIS BLOCK TESTED `RPS.UM_FVT|BackfillS1Counters`, the ONE-SHOT S1 counter migration.")
+(print "It ran on mainnet on 2026-11-10 against all nine FVTs and was then DELETED from the")
+(print "module: a migration that has executed is dead surface, and Pact can never remove a")
+(print "definition from a deployed module -- only a redeploy without it can. So the function is")
+(print "gone, and a test of a function that does not exist cannot be kept.")
+(print "")
+(print "WHAT IT MEASURED, recorded here because the numbers are the evidence the round worked:")
+(print "  earning-leg-count, per FVT:  Bloodshed 9 · CodingDivision 15 · CompanyShares 7")
+(print "                               Nosferatu 13 · OuroLpFarm 25 · Snakes 7 · Stoicism 4")
+(print "                               Subsidiary 59 · WonderCoach 13")
+(print "  dormant, per lane:           Stoicism/WSTOA 0 · Subsidiary/AURYN 2 · OuroLpFarm/OURO 0")
+(print "Every one matched the figure predicted from live state before the transaction was sent.")
+(print "")
+(print "WHAT IS STILL COVERED, and by what:")
+(print "  the counters' ONGOING maintenance  -> TX-S1-01 (descent to 1, the lane sweeps to 0.0)")
+(print "  the DORMANT branch                 -> TX-S1-03 (zero-stake last claimant sweeps)")
+(print "  the absent-COLUMN semantics        -> TX-S1-COL (and _newcolumnsafety.py)")
+(print "  the restore's zero-refusal         -> TX-S1-COL")
+(print "Nothing that survives the migration lost its test; only the migration's own did.")
+(print "===^^^===")
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;================================================================================
+(begin-tx "TX-S1-03 - a DORMANT last claimant sweeps, which the old guard refused")
+(print "")
+(print "=== TX-S1-03 — the guard re-derivation, where it actually bites ======================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+;;THIS TEST EXISTS BECAUSE A MUTATION ROUND SHOWED <<TX-S1-01>> DOES NOT COVER THE SWEEP GUARD.
+;;Reverting the guard from `own > 0` back to `deb-user > 0` left that suite GREEN: its last
+;;claimant is still STAKED, so both predicates admit it and the change is invisible.
+;;
+;;THE GUARD ONLY BITES ON A **DORMANT** LAST CLAIMANT -- an account that fully unstaked while still
+;;owed. `deb-user > 0` refuses it, because it has no stake; `own > 0` admits it, because it IS owed.
+;;Under the old guard the lane's remainder is stranded in exactly the wind-down the sweep exists
+;;for: nobody left can take it.
+;;
+;;AND IT STILL REFUSES THE EMMA CASE. The old guard was introduced after a measured theft -- an
+;;exited account with NOTHING owed collected a sweep that belonged to the sole real claimant. That
+;;account's `own` is 0, so it is refused here too. The re-derivation is STRICTER where the incident
+;;needed it ("is owed something") and looser only where the old one was wrong ("has stake").
+;;Pinned from the other side by [6.4]_AQP-TRIPLET-COLLECT <<TX-AQP-CL04>>.
+;;
+;;T5 IS ALSO ONLY COVERED HERE: this is the one place a leg moves from EARNING to DORMANT.
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Lumy", "caps": [] } ])
+(let*
+    (
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV8} TS02-C3)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV7} AQP-FVT)
+        (ref-RPS:module{AcquisitionRewardPerShareV8} RPS)
+        ;;
+        (patron:string KST.ANHD)
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "CompanySharesTreasury"))
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "DHCompany"))
+        (lane:string (ref-DALOS::UR_OuroborosID))
+        (score-id:string (ref-U|DALOS::UDC_Makeid "DemiourgosShareholder"))
+        ;;DHCompany's canonical asset is the EQUITY collection, not DHCD -- probed, not assumed:
+        ;;`UR_AQP|PoolAssetId` returns `E|DH-...`, and `UEV_` refuses a leg that does not match it.
+        (dhcd-id:string "E|DH-98c486052a51")
+        (users:[string] (ref-RPS::URH_FvtPresentUsers fvt-id))
+    )
+    (let
+        (
+            (u1:string (at 0 users))
+            (u2:string (at 1 users))
+        )
+        ;;==== TX-S1-03 · 01 · inject, then u2 fully UNSTAKES while owed (T5) ====
+        (print "--- [TX-S1-03 · 01 · inject, then u1 fully UNSTAKES while owed (T5)] ---")
+        (ref-TS02-C3::AQP-FVT|CC_Inject patron patron fvt-id lane 5.000000000000000000000001)
+        (map print
+            [
+                (expect (format "<<TX-S1-03>> both legs are claimable after the inject got={}" [(ref-FVT::UR_FVT-RG|UnclaimedCount fvt-id lane)])
+                    2 (ref-FVT::UR_FVT-RG|UnclaimedCount fvt-id lane))
+            ]
+        )
+        ;;u1 exits completely. It is still OWED -- its pending was banked by the unstake -- so T5
+        ;;must move it from EARNING to DORMANT rather than retire it. Retiring it here would make
+        ;;the count read LOW and the next collect would sweep while u1 is owed.
+        ;;
+        ;;u1 AND NOT u2, DISCOVERED NOT ASSUMED: `URH_AQP|ActiveDpsfTrackerRows` on this pool holds
+        ;;exactly one row -- nonce 6, balance 5.0, owned by u1. u2's leg sits on a DIFFERENT member
+        ;;of the same FVT, which is what lets it collect independently below. The nonce and amount
+        ;;are read from the tracker rather than hardcoded, so the fixture cannot drift out from
+        ;;under this test.
+        (ref-TS02-C3::AQP-POOL|CC_UnstakeSemiFungibleCollectable patron u1 u1 pool-id dhcd-id [6]
+            [(round (AQP-POOL.UR_AQP|DPSFTrackerBalance pool-id dhcd-id u1 u1 6))])
+        (map print
+            [
+                (expect (format "<<TX-S1-03>> T5: the exiting leg stops EARNING got={}" [(ref-FVT::UR_FVT|EarningLegCount fvt-id)])
+                    1 (ref-FVT::UR_FVT|EarningLegCount fvt-id))
+                (expect (format "<<TX-S1-03>> T5: ...and becomes DORMANT, not retired got={}" [(ref-FVT::UR_FVT-RG|DormantClaimCount fvt-id lane)])
+                    1 (ref-FVT::UR_FVT-RG|DormantClaimCount fvt-id lane))
+                (expect (format "<<TX-S1-03>> T5: so it is STILL counted as claimable got={}" [(ref-FVT::UR_FVT-RG|UnclaimedCount fvt-id lane)])
+                    2 (ref-FVT::UR_FVT-RG|UnclaimedCount fvt-id lane))
+                (expect (format "<<TX-S1-03>> ...and it really is owed something got={}" [(ref-FVT::URC_CollectClaimableRewards u1 pool-id fvt-id 1 score-id lane)])
+                    true (> (ref-FVT::URC_CollectClaimableRewards u1 pool-id fvt-id 1 score-id lane) 0.0))
+                (expect (format "<<TX-S1-03>> ...while holding NO stake — which is what the old guard refused got={}" [(ref-FVT::URC_ScoreEntityUserWeight u1 fvt-id pool-id 1 score-id)])
+                    0.0 (ref-FVT::URC_ScoreEntityUserWeight u1 fvt-id pool-id 1 score-id))
+            ]
+        )
+        ;;==== TX-S1-03 · 02 · the staked leg collects — count 2 -> 1 ====
+        (print "--- [TX-S1-03 · 02 · the staked leg collects — count 2 -> 1] ---")
+        (ref-TS02-C3::AQP-FVT|CC_Collect u2 u2 fvt-id 1 score-id lane)
+        (map print
+            [
+                (expect (format "<<TX-S1-03>> the staked leg is retired — count 2 -> 1 got={}" [(ref-FVT::UR_FVT-RG|UnclaimedCount fvt-id lane)])
+                    1 (ref-FVT::UR_FVT-RG|UnclaimedCount fvt-id lane))
+                (expect (format "<<TX-S1-03>> the lane still holds a remainder got={}" [(ref-FVT::UR_FVT-RG|AvailableRewards fvt-id lane)])
+                    true (> (ref-FVT::UR_FVT-RG|AvailableRewards fvt-id lane) 0.0))
+            ]
+        )
+        ;;==== TX-S1-03 · 03 · the DORMANT leg sweeps — the assertion the old guard fails ====
+        (print "--- [TX-S1-03 · 03 · the DORMANT leg sweeps] ---")
+        ;;WITH `deb-user > 0` THIS LANE STAYS DIRTY. u2 has no stake, so the old guard refuses it
+        ;;the sweep, it is paid only its floored share, and the remainder is stranded with nobody
+        ;;left to claim it. With `own > 0` it is paid the whole remainder and the lane closes.
+        (let
+            (
+                (lane-pre:decimal (ref-FVT::UR_FVT-RG|AvailableRewards fvt-id lane))
+            )
+            (ref-TS02-C3::AQP-FVT|CC_Collect u1 u1 fvt-id 1 score-id lane)
+            (map print
+                [
+                    (format "<(lane before/after the dormant collect)> => {} / {}"
+                        [lane-pre (ref-FVT::UR_FVT-RG|AvailableRewards fvt-id lane)])
+                    (expect (format "<<TX-S1-03>> a DORMANT last claimant SWEEPS — lane ends at EXACTLY 0.0 got={}" [(ref-FVT::UR_FVT-RG|AvailableRewards fvt-id lane)])
+                        0.0 (ref-FVT::UR_FVT-RG|AvailableRewards fvt-id lane))
+                    ;;T4: a dormant leg leaves BOTH counters, or the restore would count it forever
+                    ;;and stall every future sweep on this lane.
+                    (expect (format "<<TX-S1-03>> T4: it leaves the dormant set too got={}" [(ref-FVT::UR_FVT-RG|DormantClaimCount fvt-id lane)])
+                        0 (ref-FVT::UR_FVT-RG|DormantClaimCount fvt-id lane))
+                    (expect (format "<<TX-S1-03>> ...and the claimant count is 0 got={}" [(ref-FVT::UR_FVT-RG|UnclaimedCount fvt-id lane)])
+                        0 (ref-FVT::UR_FVT-RG|UnclaimedCount fvt-id lane))
+                ]
+            )
+        )
+    )
+    (env-sigs [])
+    ""
+)
+(print "===^^^===")
+(commit-tx)
+
+;;|| NEXT >
+;;||
+;;||
+(begin-tx)
+;;==== TX-S1-COL · 01 · absent-column semantics, measured ====
+(print "--- [TX-S1-COL · 01 · absent-column semantics, measured] ---")
+(print "")
+(print "WHY A MODEL AND NOT THE REAL READERS. The adversarial state is an OLD ROW under NEW CODE,")
+(print "and no ordinary fixture can build it: every suite loads the current module first and")
+(print "`insert` always supplies every column, so a fresh row can NEVER be missing one. Reaching")
+(print "it for AQP would mean pinning the pre-upgrade RPS and its whole dependency chain. So this")
+(print "pins the LANGUAGE FACTS the four AQP guards rest on, and")
+(print "`REPL/tools/_newcolumnsafety.py` -- negative-controlled against the pre-fix 04_RPS.pact,")
+(print "which it reports at seven sites -- enforces that the real readers are shaped this way.")
+(print "")
+(print "THIS IS THE DEFECT THAT HALTED CHAIN 0 FOR ~16h ON 2026-11-09, and then was repeated the")
+(print "same day in AQP on the stated belief that `try` would default an absent column.")
+(module S1COL GOV
+    (defcap GOV () true)
+    (defschema row-v1 a:integer)
+    (deftable T:{row-v1})
+    (defun seed:string () (insert T "k" {"a": 1}))
+)
+(create-table T)
+(commit-tx)
+
+;;|| NEXT >
+;;||
+;;||
+(begin-tx)
+;;==== TX-S1-COL · 02 · seed a row under the OLD schema ====
+(print "--- [TX-S1-COL · 02 · seed a row under the OLD schema] ---")
+(S1COL.seed)
+(commit-tx)
+
+;;|| NEXT >
+;;||
+;;||
+(begin-tx)
+;;==== TX-S1-COL · 03 · UPGRADE: the schema gains two columns ====
+(print "--- [TX-S1-COL · 03 · UPGRADE: the schema gains two columns] ---")
+;;The row written in TX 02 carries neither `b` nor `stored`. This mirrors FVT|RPS|Global gaining
+;;`dormant-claim-count` beside the `unclaimed-count` it already had.
+(module S1COL GOV
+    (defcap GOV () true)
+    (defschema row-v1 a:integer b:integer stored:integer)
+    (deftable T:{row-v1})
+    (defun seed:string () (insert T "k" {"a": 1, "b": 0, "stored": 0}))
+    ;;---- the four forms that DO NOT work -------------------------------------------------
+    (defun r-bare:integer    () (at "b" (read T "k")))
+    (defun r-wdr:integer     () (with-default-read T "k" {"a":0,"b":0} {"b":=b} b))
+    (defun r-try:integer     () (try 99 (at "b" (read T "k"))))
+    (defun r-try-wdr:integer () (try 99 (with-default-read T "k" {"a":0,"b":0} {"b":=b} b)))
+    ;;---- the one form that does ----------------------------------------------------------
+    (defun r-contains:integer ()
+        (let ((row:object (try {} (read T "k"))))
+            (if (contains "b" row) (at "b" row) 0)))
+    ;;`try` DOES catch a missing ROW, which is why `(try {} (read ...))` covers both cases.
+    (defun r-absent-row:integer ()
+        (let ((row:object (try {} (read T "nope"))))
+            (if (contains "b" row) (at "b" row) 0)))
+    ;;---- the restore guard, in the shape 04_RPS.pact now uses ----------------------------
+    ;;`XI_2|RestoreUnclaimedFromCounts`: the guarded readers DEFAULT to 0 rather than abort, and
+    ;;0 is the direction that LOSES MONEY -- writing it over a lane whose legs are still owed
+    ;;makes the next collect see a count below 1 and sweep the whole lane to one account. So the
+    ;;restore refuses to write a zero over a positive stored count.
+    (defun stored-count:integer ()
+        (let ((row:object (try {} (read T "k"))))
+            (if (contains "stored" row) (at "stored" row) 0)))
+    (defun restore:string (earning:integer dormant:integer stored:integer)
+        (let ((restored:integer (+ earning dormant)))
+            (if (and (= restored 0) (> stored 0))
+                (format "left at {} -- counters not yet repaired" [stored])
+                (format "restored to {}" [restored]))))
+)
+(commit-tx)
+
+;;|| NEXT >
+;;||
+;;||
+(begin-tx)
+;;==== TX-S1-COL · 04 · the assertions ====
+(print "--- [TX-S1-COL · 04 · the assertions] ---")
+(map print
+    [
+        (expect-failure "<<TX-S1-COL>> a BARE `at` on an absent column ABORTS"
+            (S1COL.r-bare))
+        ;;THE ONE THAT MATTERED. Four doc strings in 04_RPS.pact asserted this form was the
+        ;;remedy. It is not: the default object covers an absent ROW, and the row EXISTS.
+        (expect-failure "<<TX-S1-COL>> `with-default-read` does NOT default an absent COLUMN"
+            (S1COL.r-wdr))
+        ;;AND THE ONE THE ROUND ACTUALLY SHIPPED WITH, in all four readers.
+        (expect-failure "<<TX-S1-COL>> `try` does NOT catch a missing-column read"
+            (S1COL.r-try))
+        (expect-failure "<<TX-S1-COL>> `try` + `with-default-read` does not catch it either"
+            (S1COL.r-try-wdr))
+        (expect "<<TX-S1-COL>> `contains`-then-`at` SURVIVES an absent column, yielding the default"
+            0 (S1COL.r-contains))
+        (expect "<<TX-S1-COL>> ...and the same form survives an absent ROW, because `try` DOES catch that"
+            0 (S1COL.r-absent-row))
+        ;;---- the restore guard ----
+        (expect "<<TX-S1-COL>> the unrepaired lane reads 0 on both counters"
+            0 (S1COL.stored-count))
+        ;;Pre-repair: both counters read 0 while 5 legs are still owed. The restore must NOT
+        ;;write 0 -- that is the irreversible direction.
+        (expect "<<TX-S1-COL>> restore REFUSES to write a 0 over a positive stored count"
+            "left at 5 -- counters not yet repaired" (S1COL.restore 0 0 5))
+        ;;Post-repair, or any lane with live legs: it restores normally.
+        (expect "<<TX-S1-COL>> ...and restores normally once the counters are real"
+            "restored to 7" (S1COL.restore 5 2 5))
+        ;;The case it gives up is EMPTY -- nothing earns, nothing is owed, so there is no
+        ;;claimant a low count could mis-pay.
+        (expect "<<TX-S1-COL>> a genuinely empty lane still restores to 0"
+            "restored to 0" (S1COL.restore 0 0 0))
+    ]
+)
+(print "===^^^===")
+(commit-tx)
+
+(print "")
+(print "================================================================")
+(print "S1-UNCLAIMED END")
+(print "================================================================")

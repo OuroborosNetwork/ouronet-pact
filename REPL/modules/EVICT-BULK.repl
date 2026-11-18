@@ -1,0 +1,327 @@
+;;================================================================================
+(print "")
+(print "================================================================")
+(print "FILE  REPL/modules/EVICT-BULK.repl")
+(print "================================================================")
+(print "Legend (terminal observability):")
+(print "  <<…>>     expect doc (format …) — REPL logs pass/fail")
+(print "  <(AQP-EVCT|URHC_…)> => \"…\"   plan read (return value)")
+(print "  <(DPTF|UR_Balance …)> => \"…\"  per-payee balance (return value)")
+(print "")
+(print "WHAT THIS PINS, AND WHY IT IS THE WHOLE SAFETY ARGUMENT FOR BULKING.")
+(print "")
+(print "A bulked eviction books every leg and pays them in ONE multi-bulk transfer. The")
+(print "tempting implementation — read every payout, transfer once, then book — is WRONG and")
+(print "wrong SILENTLY: `URC_CollectClaimableRewards` carries a LAST-CLAIMANT SWEEP, paying the")
+(print "final claimant a lane's whole remaining available-rewards, and PHASE 3 decrements the")
+(print "count that triggers it. Hoisting the reads shows every leg a count that never reaches 1,")
+(print "so nobody sweeps and the lane's dust is stranded in the vault FOREVER. Every number on")
+(print "screen still looks plausible.")
+(print "")
+(print "Owner's requirement, 2026-11-08: *\"the sum paid (in a full sweep) must add to the exact")
+(print "amount existing as reward for that agregator and token lane.\"* That is asserted here")
+(print "against the lane's own available-rewards, not against a sum this file recomputes.")
+(print "")
+(print "Source: ;;|| NEXT > between txs; ;;==== TX-EVBULK-nn · mm · … ==== before each banner.")
+(print "")
+
+(load "../Stage00_Sanboxes.repl")
+(load "../Stage01_Tester.repl")
+(load "../deploy-stage02.repl")
+(load "../Stage_02/[5.2]_PopulateBloodshed.repl")
+(load "../Stage_02/[5.1]_PopulateNosferatu.repl")
+(load "../Stage_02/[5.4]_PopulateBunnies.repl")
+(load "../Stage_02/[6.2.1]_AQP-ANK.repl")
+(load "../Stage_02/[6.2.2]_AQP-SCORE.repl")
+(load "../Stage_02/[6.2.3]_AQP-POOL.repl")
+(load "../Stage_02/[6.2.9]_AQP-BOOT-FULL.repl")
+(load "../Stage_02/[6.4]_AQP-EXHAUSTIVE-PREP.repl")
+(load "../Stage_02/[6.4]_AQP-EXHAUSTIVE-BOOT-POOLS.repl")
+;;RPS STAKES A SECOND BENEFICIARY (LUMY) INTO DHCompany, which is what gives
+;;CompanySharesTreasury two legs on one lane -- the shape the bulked path exists for. Without
+;;it every boot FVT carries exactly one staker and this file would silently test the
+;;single-leg path instead.
+(load "../Stage_02/[6.4]_AQP-EXHAUSTIVE-RPS.repl")
+
+(print "")
+(print "===================EVICT BULK TX Block==========================")
+(print "")
+
+;;================================================================================
+(begin-tx "TX-EVBULK-01 - a multi-leg lane sweeps to EXACTLY zero, and every payee is paid")
+(print "")
+(print "=== TX-EVBULK-01 — the bulked full evict leaves no dust =======================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
+;;==== TX-EVBULK-01 · 01 · env-sigs (caps) ==== ===================================
+(print "--- [TX-EVBULK-01 · 01 · env-sigs (caps)] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-EVBULK-01 · 02 · inject, then evict the whole aggregator ==== ===========
+(print "--- [TX-EVBULK-01 · 02 · inject, then evict the whole aggregator] ---")
+;;THE FIXTURE IS DISCOVERED, NOT NAMED. Which boot FVT carries two or more PLAIN legs is a
+;;property of the chain above, not something this file should assert by spelling -- the equity
+;;suite learned that when a named score turned out to weigh the held nonce at 0.0. It needs
+;;>= 2 legs or it is testing the single-leg path it is not about, so that is enforced rather
+;;than quietly passing.
+(let*
+    (
+        (patron:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-RPS:module{AcquisitionRewardPerShareV8} RPS)
+        (ref-EVCT:module{AcquisitionRewardEvictionV2} AQP-EVCT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV8} TS02-C3)
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "CompanySharesTreasury"))
+        (auryn-id:string "OURO-98c486052a51")
+    )
+    (print (format "<(fvt)> => {}   <(lane)> => {}" [fvt-id auryn-id]))
+    ;;AN AMOUNT THAT CANNOT SPLIT EVENLY, AND THAT IS THE POINT OF THE FIXTURE.
+    ;;
+    ;;ANHD and LUMY hold EQUAL stakes here (PREP splits the tier-6 units 50/50), so a round
+    ;;number divides exactly and NO DUST EVER FORMS -- which would make this file pass against
+    ;;an implementation that hoists its reads and never sweeps, because there would be nothing
+    ;;left to strand. The first cut injected 120.0 and was blind in exactly that way.
+    ;;
+    ;;OURO carries 24 decimals, so an ODD multiple of 1e-24 cannot halve at full precision:
+    ;;both legs floor to …000 and 1e-24 remains. That remainder is only ever paid by the
+    ;;last-claimant sweep, so the assertions below now fail if the sweep does not fire.
+    (print (format "<(AQP-FVT|CC_Inject)> => \"{}\""
+        [(ref-TS02-C3::AQP-FVT|CC_Inject patron patron fvt-id auryn-id
+            120.000000000000000000000001)]))
+    (let*
+        (
+            (legs:[object] (ref-EVCT::URHC_BuildEvictPlans fvt-id))
+            (lane-legs:[object]
+                (filter (lambda (l:object) (= (at "reward-dptf-id" l) auryn-id)) legs))
+            (payees:[string]
+                (fold (lambda (acc:[string] l:object)
+                          (let ((b:string (at "beneficiary" l)))
+                              (if (contains b acc) acc (+ acc [b]))))
+                      [] lane-legs))
+            ;;THE LANE'S OWN FIGURE. Asserted against, never recomputed here: a test that sums
+            ;;what it expects and then compares it to what it summed proves only its own
+            ;;arithmetic.
+            (avail-before:decimal (ref-RPS::UR_FVT-RG|AvailableRewards fvt-id auryn-id))
+            (bal-before:[decimal] (map (lambda (b:string) (ref-DPTF::UR_AccountSupply auryn-id b)) payees))
+        )
+        (map print
+            [
+                (format "<(legs on this lane)> => {}   <(distinct payees)> => {}"
+                    [(length lane-legs) (length payees)])
+                (format "<(lane available-rewards BEFORE)> => {}" [avail-before])
+                (expect (format "<<TX-EVBULK-01>> the lane carries >1 leg, so the BULKED path runs got={}"
+                        [(length lane-legs)])
+                    true (> (length lane-legs) 1))
+                (expect (format "<<TX-EVBULK-01>> the lane is funded got={}" [avail-before])
+                    true (> avail-before 0.0))
+            ]
+        )
+        ;;==== TX-EVBULK-01 · 03 · the whole-FVT evict ==== ========================
+        (print "--- [TX-EVBULK-01 · 03 · the whole-FVT evict] ---")
+        (env-gas 0)
+        (print (format "<(AQP-EVCT|CC_FullEvictRewards)> => \"{}\""
+            [(ref-TS02-C3::AQP-EVCT|CC_FullEvictRewards patron patron fvt-id)]))
+        (print (format "<<<<<<<EVICT 2-LEG ==> {} GAS>>>>>>>" [(env-gas)]))
+        (let*
+            (
+                (avail-after:decimal (ref-RPS::UR_FVT-RG|AvailableRewards fvt-id auryn-id))
+                (bal-after:[decimal] (map (lambda (b:string) (ref-DPTF::UR_AccountSupply auryn-id b)) payees))
+                (paid-out:decimal
+                    (fold (+) 0.0 (zip (lambda (a:decimal b:decimal) (- a b)) bal-after bal-before)))
+            )
+            (map print
+                [
+                    (format "<(lane available-rewards AFTER)> => {}" [avail-after])
+                    (format "<(sum of payee balance deltas)> => {}" [paid-out])
+                    ;;1] CONSERVATION, EXACTLY -- what left the lane is what reached the payees.
+                    ;;
+                    ;;   THIS IS THE ASSERTION A BULKING BUG CANNOT SURVIVE. Merge by the wrong
+                    ;;   key, overwrite instead of sum, drop a lane, or pay a floored figure
+                    ;;   while booking a swept one, and the two sides stop balancing. It is
+                    ;;   stated against the lane's OWN figures rather than a total this file
+                    ;;   recomputes, because a test that sums its own expectation and compares it
+                    ;;   to that sum proves only its arithmetic.
+                    (expect (format "<<TX-EVBULK-01>> lane before = paid + lane after  ({} = {} + {})"
+                            [avail-before paid-out avail-after])
+                        avail-before (+ paid-out avail-after))
+                    ;;2] AND THE LANE ENDS ON EXACTLY ZERO.
+                    ;;
+                    ;;   THE REQUIREMENT, OWNER 2026-11-08: *"the sum paid (in a full sweep) must
+                    ;;   add to the exact amount existing as reward for that agregator and token
+                    ;;   lane."* It did NOT before `XE_EvictSweepLaneDust`. The chain's own
+                    ;;   last-claimant sweep is gated on a claimant being RETIRED from the set,
+                    ;;   and `XI_1|BookCollectUnclaimed` only retires one whose WEIGHT is zero --
+                    ;;   so a staked holder who collects stays counted, the count never falls to
+                    ;;   1, and that sweep is unreachable on a live aggregator. The flooring
+                    ;;   remainder simply stayed. Measured across three rounds before the fix:
+                    ;;   1e-24, carried, then 2e-24 -- monotonic.
+                    ;;
+                    ;;   `0.0` AND NOT `< epsilon`. An epsilon bound is what the first cut of this
+                    ;;   file asserted, and it PASSES against the unfixed code -- the whole point
+                    ;;   is that there is nothing left at all.
+                    (expect (format "<<TX-EVBULK-01>> the lane ends on EXACTLY zero got={}" [avail-after])
+                        0.0 avail-after)
+                    ;;3] the plan is empty afterwards -- nothing on this lane still owed
+                    (expect (format "<<TX-EVBULK-01>> no leg of this lane is still owed got={}"
+                            [(length (filter (lambda (l:object) (= (at "reward-dptf-id" l) auryn-id))
+                                             (ref-EVCT::URHC_BuildEvictPlans fvt-id)))])
+                        0 (length (filter (lambda (l:object) (= (at "reward-dptf-id" l) auryn-id))
+                                          (ref-EVCT::URHC_BuildEvictPlans fvt-id))))
+                ]
+            )
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
+;;
+;;================================================================================
+(begin-tx "TX-EVBULK-02 - the sub-unit residue is DEFERRED, not lost")
+(print "")
+(print "=== TX-EVBULK-02 — a second round pays what the first one left ===============")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
+;;==== TX-EVBULK-02 · 01 · env-sigs (caps) ==== ===================================
+(print "--- [TX-EVBULK-02 · 01 · env-sigs (caps)] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-EVBULK-02 · 02 · inject again over the residue ==== =====================
+(print "--- [TX-EVBULK-02 · 02 · inject again over the residue] ---")
+;;THE QUESTION THIS ANSWERS, asked by the owner 2026-11-08: *"how is the sweep really ensuring
+;;that no dust is left ?"* -- noting correctly that AQP|SC_NAME custodies one token for MANY
+;;aggregators, so a sweep cannot mean "pay out the account".
+;;
+;;IT DOES NOT MEAN THAT. `FVT|RPS|Global` is keyed <FVT-ID>|<DPTF-ID> and `available-rewards` is
+;;that row's figure, so the sweep is bounded by ONE aggregator's ONE lane. The shared custody is
+;;partitioned by the ledger, never by the balance.
+;;
+;;AND THE SUB-UNIT RESIDUE IS CARRIED, NOT STRANDED. TX-EVBULK-01 leaves 1e-24 in the row --
+;;pre-existing behaviour, identical on the unbulked path. The tokens behind it stay in custody,
+;;the row is not reset, so the NEXT injection adds to it and the next sweep pays it out. This
+;;asserts that across two rounds: everything injected is eventually paid, minus at most one
+;;sub-unit still in flight.
+(let*
+    (
+        (patron:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-RPS:module{AcquisitionRewardPerShareV8} RPS)
+        (ref-EVCT:module{AcquisitionRewardEvictionV2} AQP-EVCT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV8} TS02-C3)
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "CompanySharesTreasury"))
+        (ouro-id:string "OURO-98c486052a51")
+        (carried:decimal (ref-RPS::UR_FVT-RG|AvailableRewards fvt-id ouro-id))
+    )
+    (print (format "<(residue carried in from round 1)> => {}" [carried]))
+    (print (format "<(AQP-FVT|CC_Inject round 2)> => \"{}\""
+        [(ref-TS02-C3::AQP-FVT|CC_Inject patron patron fvt-id ouro-id 80.0)]))
+    (let*
+        (
+            (legs:[object]
+                (filter (lambda (l:object) (= (at "reward-dptf-id" l) ouro-id))
+                        (ref-EVCT::URHC_BuildEvictPlans fvt-id)))
+            (payees:[string]
+                (fold (lambda (acc:[string] l:object)
+                          (let ((b:string (at "beneficiary" l)))
+                              (if (contains b acc) acc (+ acc [b]))))
+                      [] legs))
+            (avail-before:decimal (ref-RPS::UR_FVT-RG|AvailableRewards fvt-id ouro-id))
+            (bal-before:[decimal] (map (lambda (b:string) (ref-DPTF::UR_AccountSupply ouro-id b)) payees))
+        )
+        (map print
+            [
+                (format "<(lane available BEFORE round 2)> => {}" [avail-before])
+                ;;THE CARRY IS VISIBLE: the row now holds the new injection PLUS what round 1 left.
+                ;;NOTHING IS CARRIED NOW, because round 1 ended on zero. Asserted against the
+                ;;injection alone, so a residue reappearing reads here.
+                (expect (format "<<TX-EVBULK-02>> round 1 left nothing to carry got={} carried={}"
+                        [avail-before carried])
+                    80.0 avail-before)
+            ]
+        )
+        (print (format "<(AQP-EVCT|CC_FullEvictRewards round 2)> => \"{}\""
+            [(ref-TS02-C3::AQP-EVCT|CC_FullEvictRewards patron patron fvt-id)]))
+        (let*
+            (
+                (avail-after:decimal (ref-RPS::UR_FVT-RG|AvailableRewards fvt-id ouro-id))
+                (bal-after:[decimal] (map (lambda (b:string) (ref-DPTF::UR_AccountSupply ouro-id b)) payees))
+                (paid:decimal
+                    (fold (+) 0.0 (zip (lambda (a:decimal b:decimal) (- a b)) bal-after bal-before)))
+            )
+            (map print
+                [
+                    (format "<(paid in round 2)> => {}   <(lane after)> => {}" [paid avail-after])
+                    ;;CONSERVATION AGAIN, over a row that began with a carried residue.
+                    (expect (format "<<TX-EVBULK-02>> lane before = paid + lane after  ({} = {} + {})"
+                            [avail-before paid avail-after])
+                        avail-before (+ paid avail-after))
+                    ;;AND THE RESIDUE STAYS SUB-UNIT ROUND ON ROUND -- it does not accumulate.
+                    (expect (format "<<TX-EVBULK-02>> round 2 also ends on EXACTLY zero got={}" [avail-after])
+                        0.0 avail-after)
+                ]
+            )
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;
+;;================================================================================
+(begin-tx "TX-EVBULK-03 - the residue is BOUNDED, not accruing")
+(print "")
+(print "=== TX-EVBULK-03 — a third round, to see whether dust grows =================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
+(print "--- [TX-EVBULK-03 · 01 · third round] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;TWO ROUNDS SHOW A RESIDUE; THEY DO NOT SHOW A TREND. Owner's question, 2026-11-08: *"and in
+;;this case, dust still accrues right ?"* -- a fair reading of two data points that both land on
+;;1e-24. A third round with a DIFFERENT odd amount is what distinguishes "steady state" from
+;;"accumulating one sub-unit per round".
+(let*
+    (
+        (patron:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-RPS:module{AcquisitionRewardPerShareV8} RPS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV8} TS02-C3)
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "CompanySharesTreasury"))
+        (ouro-id:string "OURO-98c486052a51")
+        (carried:decimal (ref-RPS::UR_FVT-RG|AvailableRewards fvt-id ouro-id))
+    )
+    (print (format "<(residue carried into round 3)> => {}" [carried]))
+    (ref-TS02-C3::AQP-FVT|CC_Inject patron patron fvt-id ouro-id 33.000000000000000000000007)
+    (ref-TS02-C3::AQP-EVCT|CC_FullEvictRewards patron patron fvt-id)
+    (let
+        (
+            (after:decimal (ref-RPS::UR_FVT-RG|AvailableRewards fvt-id ouro-id))
+        )
+        (map print
+            [
+                (format "<(residue after round 3)> => {}" [after])
+                ;;BOUNDED BY THE CLAIMANT COUNT, not by the number of rounds. Flooring a lane
+                ;;across K claimants can leave at most K-1 sub-units; the carry is folded into
+                ;;the next distribution, so the row does not climb round on round.
+                ;;THREE ROUNDS, EACH ENDING ON ZERO. Before the fix this sequence read
+                ;;1e-24 -> 1e-24 -> 2e-24, which is what made the accrual visible at all.
+                (expect (format "<<TX-EVBULK-03>> round 3 ends on EXACTLY zero got={}" [after])
+                    0.0 after)
+                (expect (format "<<TX-EVBULK-03>> and nothing was carried in either got={}" [carried])
+                    0.0 carried)
+            ]
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+(print "================================================================")
+(print "EVICT-BULK END")
+(print "================================================================")

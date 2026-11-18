@@ -1495,6 +1495,11 @@ visible in the name instead of hiding behind a reader's.
 |---|---|
 | `UM_*` | **Utility Migrate.** A read that also persists a schema backfill. Declares the write in its own name. Must carry a `@doc` stating which field it backfills and why the lazy form was chosen over a one-time `A_` migration. |
 
+> **NARROWED BY §7.24 (owner ruling, 2026-11-10).** `UM_` covers a **lazy, per-row** backfill that
+> fires on access. A **one-shot bulk migration is not a module function at all** — it is a
+> top-level block in the fixup transaction, because Pact can never remove a definition from a
+> deployed module and a spent migration is permanent dead surface. See §7.24.
+
 #### Why a reader that writes is not a harmless optimisation
 
 Found 2026-09-10: eight ATS readers (`UR_CanUpgrade`, `UR_Hibernate`, `UR_Royalty`,
@@ -1879,3 +1884,81 @@ about presentation had to be applied in a layer that should not have been presen
   That cost is the reason this is done once, deliberately, as its own round.
 
 **ENFORCED:** `REPL/tools/_coremessage.py`, fatal in `_gate.py`.
+
+### 7.24 A FIXUP TRANSACTION IS NEVER A MODULE FUNCTION — amendment 2026-11-10
+
+**Owner ruling.** One-shot migration and repair logic is written as a **top-level block in the
+fixup transaction** — an `if`, a `let*`, bare calls, any non-module construction. It is **never**
+added as a function on a module.
+
+> *"We never use modules for fixup transactions, we use `if` or `let` blocks or separate similar
+> non-module constructions."*
+
+#### Why, and it is not a style preference
+
+**Pact can never remove a definition from a deployed module.** Only a redeploy *without* it can.
+So a one-shot migration added to a module is **permanent dead surface on every chain that module
+lives on**, and the only way to retire it is to pay for a whole module deploy.
+
+Measured on the V26 round, which did it **both ways in the same round**:
+
+| | `coin` — top-level block | `RPS` — module function |
+|---|---|---|
+| where the repair lived | `(let* …)` after the module form in `00_deploy.pact` | `UM_FVT\|BackfillS1Counters` + `RPS\|UM>BACKFILL-S1` |
+| dead surface left behind | **none** | **9,049 B**, on all chains, forever |
+| cost to retire it | **0** | a full RPS redeploy — **725,729 gas** |
+
+RPS was already at **86% of the 404,983-byte hard ceiling** and had forced the deploy byte cap up
+three times in two days, so those 9 KB cost more as lost headroom than as gas.
+
+#### How it works — the mechanism, measured rather than assumed
+
+A top-level expression can read and write a module's own tables, because **module admin** reaches
+it. Two forms, both verified:
+
+1. **In the same transaction as the module upgrade.** Defining the module evaluates its
+   governance, which grants module admin for the remainder of that transaction. `keys` and
+   `update` on its tables then resolve from outside the module. This is what `00_deploy.pact`
+   does, and it is why the upgrade and the repair are genuinely atomic.
+2. **In a standalone transaction.** `(acquire-module-admin ouronet-ns.X)`, carrying the same
+   governance signature the fixup already needs.
+
+#### Two constraints that are load-bearing
+
+- **A chain-scope guard goes FIRST.** If the module's readers enforce a chain (`UEV_ChainZero`
+  and friends), the block must test `(at "chain-id" (chain-data))` *before* touching any of them.
+  Chains outside the scope hold the TABLE and NO ROW, so an unguarded `update` fails with "row not
+  found" — and because the repair rides inside the upgrade transaction, that failure takes the
+  **module upgrade down with it** on every other chain, splitting the network across two module
+  versions. Mutation-tested: removing the guard makes `00_deploy.pact` abort on chain 5.
+- **Direct table writes bypass the `SECURE`-gated `WU_`/`XI_` writers**, so the block does not
+  inherit whatever invariants those encode. Acceptable for an admin one-shot whose result is
+  checked by a read-only audit function — but say so in the block rather than leaving it implied.
+
+#### What legitimately STAYS on the module
+
+A **read-only verification** function is not a migration and is permanent by design — `coin`'s
+`URC_URV|VaultCounterAudit` recomputes all three counters from the user table and writes nothing,
+which is what makes "the repair worked" checkable by anyone, at any time, forever. Keep those.
+
+#### Relationship to §7.19 (`UM_`)
+
+§7.19 stands, narrowed. `UM_` remains correct for a **lazy, per-row backfill** that fires on access
+and has no single moment of completion. It is **not** for a one-shot bulk migration, which is what
+this ruling covers. §7.19 asks a `UM_` `@doc` to justify "the lazy form over a one-time `A_`
+migration"; the answer is now that a one-time migration is neither — it does not live on the
+module at all.
+
+#### It must still be gate-tested
+
+Moving the logic out of the module moves it out of every suite that loads the module. Point the
+tests at the **deploy artefact** instead: `REPL/CANARY-coin-upgrade.repl` `<<CANARY-02b>>` loads
+`Deploy/PureV26/00_deploy.pact` itself, corrupts the counters first so the repair has something to
+correct, and asserts the audit comes back healthy — so what the gate runs is byte-for-byte what
+gets sent. `<<CANARY-03>>` loads the same artefact under `chain-id "5"` to prove the no-op branch.
+An artefact that carries LOGIC and not just a module body must be generated and diffed too:
+`REPL/tools/_coindeploy.py --check`, fatal in `_gate.py`.
+
+**ENFORCED:** by review. The mechanical half — that the artefact matches its source — is
+`_coindeploy.py --check`; the judgement half, that a one-shot never becomes a `defun`, is this
+ruling.

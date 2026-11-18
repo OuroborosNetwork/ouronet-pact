@@ -24,7 +24,7 @@
 
 (namespace "ouronet-ns")
 
-(interface AcquisitionSchemasV3
+(interface AcquisitionSchemasV5
 
     ;;<=========================================================================>
     ;;{1}  ANK   — anchors, boost classes, user boost
@@ -236,6 +236,28 @@
         ;;
         ;;DPSF
         sft-equality:bool           ;;[.]   When true all SFTs are equal. When <false>, <nonce-score-value> is checked.
+        ;; EQUITY COLLECTIONS ONLY, and the one weight input that is TWO-WAY. true = a raw share
+        ;; (nonce 1) counts its 1 share; false = it counts NOTHING and only the package nonces 2-8
+        ;; score. Present on every score because the schema is one shape; consulted ONLY in the
+        ;; equity branch of URC_SignedBaseDeltaForDpsfStake, where it is the only thing that can
+        ;; make two scores over the SAME collection weigh it differently.
+        ;;
+        ;; WHY IT HAD TO EXIST. The equity branch was keyed on the ASSET, deliberately, on the
+        ;; reasoning that "a shareholder collection has exactly one meaningful weighting -- shares".
+        ;; That held while one collection meant one score. It does not: CompanySharesTreasury counts
+        ;; raw shares, SnakesTreasury must count only aggregated packages, and both employ scores over
+        ;; the same equity collection. An asset-keyed rule cannot express that at all.
+        ;;
+        ;; MUTABLE BOTH WAYS, UNLIKE deb-boost, which is one-way to true -- but gated the same: the
+        ;; score's nzs-count must be 0, so the pool employing it has to VACATE first. It is a weight
+        ;; input, and the 2026-11-08 owner ruling on those is absolute -- a weight change does not
+        ;; re-value positions already staked. A drift-locked score refuses it outright, because that
+        ;; latch promises holders no input to their weight can move.
+        ;;
+        ;; ABSENT ON EVERY ROW THAT PREDATES IT, and that needs NO migration: the guarded reader
+        ;; defaults to TRUE, which is exactly how every existing score already behaves. The column is
+        ;; written the first time the flag is actually set. (§7.24 / _newcolumnsafety.py.)
+        single-share-weight:bool    ;;[M]   Equity only: does nonce 1, the raw share, carry weight.
         ;;
         ;;DPNF
         nft-score-model:integer     ;;[.]   Sets NFT Score Model; Only 3 Models Allowed [-1 0 1]
@@ -543,7 +565,28 @@
         reward-enabled:bool
         current-rps:decimal
         available-rewards:decimal
-        unclaimed-count:integer
+        unclaimed-count:integer                                 ;;[M]   legs whose claimable is > 0 RIGHT NOW
+        ;; S1 (2026-11-09): `unclaimed-count` is DOCUMENTED as "users with unclaimed rewards" and was
+        ;; MAINTAINED as "accounts that can ever claim" -- it is only decremented when an account
+        ;; UNSTAKES, never when a still-staked account collects to zero. So on a live aggregator it
+        ;; never reaches 1, the last-claimant dust sweep is unreachable, and the floor dust accrues.
+        ;; Measured on mainnet 2026-11-08: the count EXCEEDS the positive-claimable leg count on ALL
+        ;; ELEVEN live lanes (SubsidiaryTreasury/AURYN read 69 against 27), and three lanes held a
+        ;; balance with ZERO collectable legs.
+        ;;
+        ;; THE FIX NEEDS A SECOND COUNTER, and this is the one field that makes the first one
+        ;; restorable in O(1). At every accrual the count must be reset to the number of legs that
+        ;; then have a positive claimable, which is `earning + dormant`:
+        ;;   earning  -- legs that receive a share of THIS accrual;
+        ;;   dormant  -- legs still OWED from an earlier accrual that receive nothing from this one:
+        ;;               an account that fully unstaked without collecting, or a member whose
+        ;;               ScoreEntityLink is toggled off.
+        ;; RESETTING TO `nzs` ALONE IS THE DEFECT THE CANONICAL `coin` VAULT ALREADY REMOVED -- its
+        ;; live source says so twice ("do not reset unclaimed to nzs or we lose 0-score-with-pending
+        ;; accounts"). An orphan is not in `nzs` and is still owed, so a reset to `nzs` reads LOW,
+        ;; `= 1` fires while someone else is owed, and the sweeper takes their rewards. Counting the
+        ;; dormant legs separately is what makes the restore safe in BOTH directions.
+        dormant-claim-count:integer                             ;;[M]   owed legs that earn nothing at accrual
         ;; Escrow-on-empty (zombie/limbo): reward tokens injected while the inject denominator is 0 (no stakers)
         ;; are held here — physically in AQP|SC_NAME custody, counted, but NOT yet routed into G / available-rewards.
         ;; The next inject at a NON-zero denominator adds this on top of its amount, distributes the sum to whoever
@@ -624,6 +667,12 @@
             \ (sweeping the member's floor dust). Mirrors FVT|RPS|Global's available-rewards/unclaimed-count one tier down."
         available-rewards:decimal
         unclaimed-count:integer
+        ;; THE TIER-1 TWIN OF `FVT|RPS|Global.dormant-claim-count`, and it is NOT optional. The
+        ;; member branch of the sweep (`mc == 1`) is FARM-ONLY, and the chain has exactly one farm --
+        ;; `OuroLpFarm`, which is the lane that was measured holding 27 sub-units of stranded dust
+        ;; with zero collectable legs. Fixing only the global counter would leave the one aggregator
+        ;; where tier-1 dust actually forms still unable to sweep it.
+        dormant-claim-count:integer                             ;;[M]   owed users in this member that earn nothing
         ;;
         ;;Select Keys
         fvt-id:string
@@ -670,6 +719,19 @@
         total-boosted-score:decimal
         total-deb-score:decimal
         total-nzs-count:integer
+        ;; EARNING LEGS, AND IT IS NOT `total-nzs-count`. A reward leg is (user, score-entity): the
+        ;; booking is per member. `nzs-count` is per SCORE, and one member can employ SEVERAL scores
+        ;; -- measured on chain, DHOuroLp employs THREE and the same six accounts hold all three, so
+        ;; a sum over employed scores counts one user three times for ONE leg. Restoring
+        ;; `unclaimed-count` from such a sum would set it ABOVE the collectable legs, the sweep would
+        ;; never reach 1, and the dust would accrue exactly as before -- the defect reintroduced by
+        ;; its own repair. (`total-nzs-count` itself has a reader, no writer and no consumer; it is
+        ;; left alone here and should be retired separately rather than pressed into this job.)
+        ;; MAINTAINED WHERE THE TRANSITION ALREADY EXISTS: `XI_1|BookUnclaimedForFvtRewardLine`
+        ;; already derives, per member, whether this user held weight BEFORE and AFTER
+        ;; (`m-was`/`m-is`). That IS the (user, member) leg transition, so this is +1/-1 at a site
+        ;; that already runs -- no walk, and nothing new on the inject path.
+        earning-leg-count:integer                               ;;[M]   (user, member) pairs with non-zero weight
         enabled-reward-count:integer
         member-link-count:integer                               ;;[M]   ScoreEntityLink rows (gates C_SetMosaic)
         ;;Select Keys
@@ -678,6 +740,10 @@
     (defschema FVT|ScoreEntityLink
         @doc "Key = <FVT-ID> | <Score-Entity-ID>. Unified membership — score (type 1) or triplet (type 3)."
         score-entity-type:integer                               ;;[.]   CT_SCORE_ENTITY_SCORE=1, CT_SCORE_ENTITY_TRIPLET=3
+        ;; TIER-1 EARNING COUNT: users with non-zero weight on THIS member. Lane-independent (weight
+        ;; is not per reward token), which is why it lives on the link row and not on the mini-vault.
+        ;; Same +1/-1 site as `FVT|RewardAggregate.earning-leg-count`, from the same `m-was`/`m-is`.
+        earning-user-count:integer                              ;;[M]   users with non-zero weight on this member
         enabled:bool                                            ;;[M]
         swpair:string                                           ;;[..]
         ghost-tvl-weight:decimal                                ;;[M]   Level-2 W_i (SWP staked value)

@@ -239,6 +239,18 @@
     (defcap BULK_TRANSFER_DETAIL_ANEW:bool
         (sender:string receivers:[string] receiver-guards:[guard] amounts:[decimal])
         @doc "Bulk anew detail gate: guard list shape then compose line-item detail"
+        ;;RESTORED FROM THE LIVE CHAIN 2026-11-09. This `@event` is present in the DEPLOYED coin and
+        ;;was absent from this repo copy -- the single divergence between the two, found by fetching
+        ;;`(at "code" (describe-module "coin"))` and diffing. Deploying the repo version as-is would
+        ;;have SILENTLY REMOVED an event from a live capability, which is not a no-op: anything
+        ;;watching the event stream for bulk-transfer detail would simply stop seeing it, with no
+        ;;error anywhere.
+        ;;
+        ;;NOTHING IN THE GATE CAN SEE THIS. `_livemodules.py --diff` and the parity rule in
+        ;;CLAUDE.md cover `1_SOVEREIGN/`; `00_StoaSandbox/coin.pact` is treated as a sandbox fixture
+        ;;and has no parity check at all, so it drifted from the chain unnoticed. See
+        ;;FINDINGS-2026-11-08.md F9.
+        @event
         (enforce
             (= (length receivers) (length receiver-guards))
             "Receivers and receiver-guards length mismatch"
@@ -1528,7 +1540,26 @@
         stoa-supply:decimal                                     ;;Stores the total STOA held in Vault as claimable Rewards
         nzs-count:integer                                       ;;Stores the number of users with <Non-Zero-Score>
         current-rps:decimal                                     ;;Stores current RPS decimal
-        unclaimed-count:integer                                 ;;Stores the total number of Users with unclaimed Rewards        
+        unclaimed-count:integer                                 ;;Stores the total number of Users with unclaimed Rewards
+        ;;ADDED 2026-11-09. `unclaimed-count` is described above, and in C_URV|Collect's own @doc,
+        ;;as the users WITH UNCLAIMED REWARDS -- and it was maintained as the users who CAN EVER
+        ;;claim: step 3 of collect decrements only when the account's stake is gone. So a
+        ;;still-staked account that collects to zero is never retired, the count never reaches 1,
+        ;;and the branch that pays the last staker the whole vault supply "to avoid rounding dust"
+        ;;is unreachable. MEASURED on mainnet chain 0, 2026-11-08: unclaimed-count 6 against
+        ;;nzs-count 5, with a residue of 0.080595445021 STOA that no collect can reach.
+        ;;
+        ;;WHY A SECOND COUNTER AND NOT `ResetUnclaimedCount`. That function exists below and is
+        ;;NEVER CALLED, and the comment at inject step 3 says why: resetting to `nzs-count` loses
+        ;;accounts with 0 stake and pending rewards, so the count reads LOW, `= 1` fires while such
+        ;;an account is still owed, and the sweeper takes its rewards. That reasoning is correct.
+        ;;This field is the missing half: those accounts are counted HERE, so the restore can be
+        ;;`nzs-count + dormant-claim-count` and lose nobody.
+        ;;
+        ;;SAME SHAPE AS THE AQP FIX (SPEC-unclaimed-count.md), deliberately -- the predicate is
+        ;;COPIED rather than re-derived, because two independent derivations of one rule is how the
+        ;;doc and the writer came to disagree in the first place.
+        dormant-claim-count:integer                             ;;Users owed but no longer accruing
     )
     (defschema UrStoaUserSchema
         user-supply:decimal                                     ;;Stores the URSTOA amount held in Vault by <account>
@@ -1599,6 +1630,59 @@
     (defun UR_URV|VaultSupply:decimal ()
         (UEV_ChainZero)
         (at "stoa-supply" (read URV|UrStoaVault USV ["stoa-supply"]))
+    )
+    (defun UR_URV|VaultDormantCount:integer ()
+        @doc "Reads <dormant-claim-count>: users owed but no longer accruing. \
+            \ \
+            \ `with-default-read` ON THE ROW IS NOT ENOUGH AND THE DEFAULT HERE IS NOT COSMETIC. \
+            \ This field was added 2026-11-09 to a schema whose single row (USV) already exists on \
+            \ chain, and a pre-existing row carries no such FIELD -- `with-default-read` defaults an \
+            \ absent ROW, not an absent field, so a bare `read` of it ABORTS until the row is \
+            \ repaired. The whole vault would be frozen between the deploy and the repair. \
+            \ \
+            \ So this reads the row and falls back to 0, which is also the correct VALUE: before the \
+            \ migration runs nothing has been classified as dormant yet. The repair block that rides \
+            \ the upgrade transaction (`Deploy/PureV26/00_deploy.pact`, emitted by \
+            \ `REPL/tools/_coindeploy.py`) then writes the real figure. It is deliberately NOT a \
+            \ function on this module: it runs ONCE, and a deployed Pact module can never have a \
+            \ definition removed, so a one-shot migration kept here would be permanent dead \
+            \ surface on all ten chains. The fallback is NOT a substitute for that migration -- \
+            \ without it an account that unstaked-while-owed BEFORE the upgrade is invisible, the \
+            \ restore reads low, and the sweeper takes its rewards."
+        ;;`try`, NOT `with-default-read` -- CORRECTED 2026-11-09 AFTER THIS HALTED CHAIN 0.
+        ;;
+        ;;`with-default-read` defaults an absent ROW, NOT an absent FIELD. The USV row EXISTS and
+        ;;predates this field, so the bound read RAISED. `coinbase` on chain 0 injects the UrStoa
+        ;;emission through `XI_URV|Inject`, which now restores the claimant count and therefore
+        ;;reads this -- so EVERY BLOCK's coinbase aborted and chain 0 stopped producing. Chains 1-9
+        ;;do not touch the vault, but the braid cannot advance without chain 0, so the whole network
+        ;;stalled within two blocks.
+        ;;
+        ;;CLAUDE.md states this rule outright, and the AQP readers in this same change set use
+        ;;`try` for exactly this reason. This one did not. The lesson is not the rule -- it was
+        ;;known and written down -- it is that a read on the COINBASE PATH has no tolerance
+        ;;whatsoever, so it must be the most defensive read in the contract, not the least.
+        ;;READ THE ROW, THEN TEST FOR THE KEY. Do not bind it, do not `at` it.
+        ;;
+        ;;BOTH OBVIOUS IDIOMS FAIL HERE, and the canary proves it rather than arguing it:
+        ;;  - `with-default-read` defaults an absent ROW, not an absent COLUMN. The row exists;
+        ;;    the binding `{"dormant-claim-count" := dc}` is what raises. This is what halted
+        ;;    chain 0 on 2026-11-09.
+        ;;  - `(try 0 ...)` does NOT catch it either. Measured: with the try in place,
+        ;;    `REPL/CANARY-coin-upgrade.repl` still died with
+        ;;    `Key "dormant-claim-count" not found in object` propagating through it.
+        ;;
+        ;;`contains` on an OBJECT tests key presence and raises nothing, so the missing column is
+        ;;never touched. 0 is also the correct pre-repair value: before the shipped repair runs,
+        ;;nothing has been classified as dormant.
+        (let
+            (
+                (row:object (read URV|UrStoaVault USV))
+            )
+            (if (contains "dormant-claim-count" row)
+                (at "dormant-claim-count" row)
+                0)
+        )
     )
     (defun UR_URV|VaultNZS:integer ()
         (UEV_ChainZero)
@@ -1727,7 +1811,19 @@
             (XI_URV|UpdateVaultRPS new-rps)
             ;;2]Update Vault <stoa-supply> with <stoa-amount>
             (XI_URV|UpdateVaultSupply stoa-amount true)
-            ;;3]Do not reset <unclaimed-count> on inject so accounts with 0 stake but pending rewards remain counted
+            ;;3]RESTORE <unclaimed-count> -- IMPLEMENTED 2026-11-09.
+            ;;
+            ;;This slot read "Do not reset <unclaimed-count> on inject so accounts with 0 stake but
+            ;;pending rewards remain counted", and that objection is CORRECT about a reset to
+            ;;`nzs-count`: it would lose exactly those accounts, the count would read LOW, `= 1`
+            ;;would fire while one of them was still owed, and the sweeper would take its rewards.
+            ;;`XI_URV|ResetUnclaimedCount` below does precisely that and is why it is never called.
+            ;;
+            ;;WHAT WAS MISSING WAS NOT THE RESET, IT WAS THE SECOND TERM. Those accounts are now
+            ;;counted in `dormant-claim-count`, so the restore adds them back and loses nobody --
+            ;;while still raising the count at accrual, without which it can only ever fall at an
+            ;;unstake and the last-staker dust branch stays unreachable.
+            (XI_URV|RestoreUnclaimedCount)
             ;;4]Returns Output Text
             (format "Succesfully injected {} STOA to UrStoaVault" [stoa-amount])
         )
@@ -1787,6 +1883,14 @@
                 (if (= remaining 0.0)
                     (do
                         (XI_URV|UpdateNZS false)
+                        ;;AN EXIT THAT STILL HOLDS PENDING BECOMES DORMANT -- added 2026-11-09. It
+                        ;;is owed and no longer accrues, so `nzs-count` can no longer see it and the
+                        ;;restore at inject would lose it without this. That is the exact account
+                        ;;the inject-step-3 comment was written to protect.
+                        (if (> (UR_URV|UserPendingRewards account) 0.0)
+                            (XI_URV|UpdateDormantCount true)
+                            true
+                        )
                         (if (= (UR_URV|UserPendingRewards account) 0.0)
                             (XI_URV|UpdateUnclaimedCount false)
                             true
@@ -1812,9 +1916,36 @@
                 (C_Transmit URV|KONTO account available-rewards)
                 ;;2]Resets <pending-rewards> to 0
                 (XI_URV|ResetPendingRewards account)
-                ;;3]Decrement <unclaimed-count> only when account has no stake left (user-supply = 0): they have collected and no longer accrue; if they still have stake we do not decrement (they keep accruing)
-                (if (= (UR_URV|UserSupply account) 0.0)
-                    (XI_URV|UpdateUnclaimedCount false)
+                ;;3]Retire this account from the claimant set -- REWRITTEN 2026-11-09.
+                ;;
+                ;;IT USED TO DECREMENT ONLY WHEN THE STAKE WAS GONE ("if they still have stake we
+                ;;do not decrement (they keep accruing)"). True of accrual, and it is why the count
+                ;;only ever fell at an unstake -- so on a live vault it never reached 1 and the
+                ;;dust-avoiding last-staker branch in URC_URV|ClaimableRewards was unreachable.
+                ;;
+                ;;THE CONDITION IS NOW WHAT WAS ACTUALLY PAID. `available-rewards` is the figure
+                ;;step 1 transmitted; if it was positive this account HAD a claim and no longer
+                ;;does, staked or not. It is restored at the next injection, which counts it through
+                ;;`nzs-count` while it still has stake.
+                ;;
+                ;;AND IT CLOSES A LATENT THEFT VECTOR RATHER THAN RELYING ON ANOTHER MODULE TO.
+                ;;The old decrement ran whether or not anything was collected, so repeated collects
+                ;;on a drained account could drive the count BELOW 1 and the next claimant would be
+                ;;paid `UR_URV|VaultSupply` -- the whole vault. It did not execute only because
+                ;;`C_Transmit` -> `X_TRANSFER` -> `UEV_Amount` refuses a non-positive amount and
+                ;;aborts at step 1. A transfer precondition in another function is not a guard on
+                ;;this one, nothing recorded the dependency, and a `>= 0.0` variant of that
+                ;;validator exists in this same contract. The condition below makes it explicit.
+                (if (> available-rewards 0.0)
+                    (do
+                        (XI_URV|UpdateUnclaimedCount false)
+                        ;;...and if the account is no longer accruing, it also leaves the DORMANT
+                        ;;set, or the restore would count it forever and stall the sweep.
+                        (if (= (UR_URV|UserSupply account) 0.0)
+                            (XI_URV|UpdateDormantCount false)
+                            true
+                        )
+                    )
                     true
                 )
                 ;;4]Update <last-rps> with the Vaults <current-rps>
@@ -1828,6 +1959,47 @@
     )
     ;;{F7}  [X]
     ;;
+    (defun URC_URV|VaultCounterAudit:object ()
+        @doc "READ-ONLY. What the vault's three claimant counters SHOULD be, recomputed from the \
+            \ user table, alongside what they currently ARE. Writes nothing. \
+            \ \
+            \ FOR VERIFYING A DEPLOY WITHOUT TRUSTING IT. The upgrade transaction's repair block writes these \
+            \ figures; this returns them next to the stored ones, so an operator can confirm a \
+            \ repair landed -- or detect drift later -- with a /local read that costs nothing and \
+            \ changes nothing. `stored` and `true` must be equal on a healthy vault. \
+            \ \
+            \ THE CLAIMABLE IS `pending + (current-rps - last-rps) * supply`, not the stored pending \
+            \ alone: a staker's claim lives in the RPS delta until a collect settles it, so the \
+            \ stored field reads 0 for the ordinary case and counting on it under-counts every time."
+        (UEV_ChainZero)
+        (let*
+            (
+                (accts:[string] (keys URV|UrStoaVaultUser))
+                (rps:decimal (UR_URV|VaultRPS))
+                (staked:[string]
+                    (filter (lambda (a:string) (> (UR_URV|UserSupply a) 0.0)) accts))
+                (owed:[string]
+                    (filter
+                        (lambda (a:string)
+                            (> (+ (UR_URV|UserPendingRewards a)
+                                  (* (- rps (UR_URV|UserLastRps a)) (UR_URV|UserSupply a)))
+                               0.0))
+                        accts))
+                (dormant:[string]
+                    (filter (lambda (a:string) (= (UR_URV|UserSupply a) 0.0)) owed))
+            )
+            {"rows"                  : (length accts)
+            ,"true-nzs"              : (length staked)
+            ,"true-unclaimed"        : (length owed)
+            ,"true-dormant"          : (length dormant)
+            ,"stored-nzs"            : (UR_URV|VaultNZS)
+            ,"stored-unclaimed"      : (UR_URV|VaultUnclaimedCount)
+            ,"stored-dormant"        : (UR_URV|VaultDormantCount)
+            ,"healthy"               : (and (= (length staked) (UR_URV|VaultNZS))
+                                       (and (= (length owed) (UR_URV|VaultUnclaimedCount))
+                                            (= (length dormant) (UR_URV|VaultDormantCount))))}
+        )
+    )
     (defun XM_InitialiseUrStoaVault (foundation-account:string)
         (require-capability (GENESIS))
         (let
@@ -1838,11 +2010,12 @@
             (C_CreateAccount vault-account vault-guard)
             (C_UR|CreateAccount vault-account vault-guard)
             (insert URV|UrStoaVault USV
-                {"urstoa-supply"    : 1.0
-                ,"stoa-supply"      : 0.0
-                ,"nzs-count"        : 1
-                ,"current-rps"      : 0.0
-                ,"unclaimed-count"  : 0}
+                {"urstoa-supply"      : 1.0
+                ,"stoa-supply"        : 0.0
+                ,"nzs-count"          : 1
+                ,"current-rps"        : 0.0
+                ,"unclaimed-count"    : 0
+                ,"dormant-claim-count": 0}
             )
             (insert URV|UrStoaVaultUser foundation-account
                 {"user-supply"      : 1.0
@@ -1923,13 +2096,45 @@
                 (new-uc:integer
                     (if direction
                         (+ uc 1)
-                        (- uc 1)
+                        ;;FLOORED AT 0 on 2026-11-09. An unfloored decrement could drive the count
+                        ;;NEGATIVE, and `URC_URV|ClaimableRewards` tests `= 1` for the sweep -- a
+                        ;;count below 1 is not merely wrong, it makes the branch unreachable while
+                        ;;also being a figure no reader can interpret.
+                        (if (> uc 0) (- uc 1) 0)
                     )
                 )
             )
             (update URV|UrStoaVault USV
                 {"unclaimed-count" : new-uc}
             )
+        )
+    )
+    (defun XI_URV|UpdateDormantCount (direction:bool)
+        @doc "+/-1 on <dormant-claim-count>: users who are OWED but no longer accruing (0 stake with \
+            \ pending). Floored at 0. These are the accounts `nzs-count` cannot see, which is why a \
+            \ reset to `nzs-count` alone is unsafe and this term exists."
+        (require-capability (SECURE))
+        (let
+            (
+                (dc:integer (UR_URV|VaultDormantCount))
+            )
+            (update URV|UrStoaVault USV
+                {"dormant-claim-count" : (if direction (+ dc 1) (if (> dc 0) (- dc 1) 0))}
+            )
+        )
+    )
+    (defun XI_URV|RestoreUnclaimedCount ()
+        @doc "ACCRUAL: set <unclaimed-count> to the users who now have a positive claim -- \
+            \ `nzs-count + dormant-claim-count`. \
+            \ \
+            \ THIS IS WHAT `XI_URV|ResetUnclaimedCount` SHOULD HAVE BEEN. That function sets the \
+            \ count to `nzs-count` alone, which loses every account with 0 stake and pending \
+            \ rewards -- so the count reads LOW, the `= 1` sweep fires while such an account is \
+            \ still owed, and the sweeper takes its rewards. It is left in place, still uncalled, \
+            \ because a deployed module cannot have a function removed."
+        (require-capability (SECURE))
+        (update URV|UrStoaVault USV
+            {"unclaimed-count" : (+ (UR_URV|VaultNZS) (UR_URV|VaultDormantCount))}
         )
     )
     (defun XI_URV|ResetUnclaimedCount ()

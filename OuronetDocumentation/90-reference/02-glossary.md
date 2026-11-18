@@ -13,24 +13,24 @@ Counts are of definitions in the tree, interface declarations included.
 
 | prefix | uses | what it promises |
 |---|---:|---|
-| `UR_` | 1,546 | reads one row or field by key |
+| `UR_` | 1,560 | reads one row or field by key |
 | `C_` | 1,412 | client entry — builds the bill; reachable only through Talos |
-| `URC_` | 808 | reads and derives; no `enforce` |
-| `UEV_` | 687 | reads and `enforce`s; failure aborts the transaction |
-| `INFO_` | 657 | operation preview returning a client-facing cost and description |
-| `URCi_` | 646 | **cost reader** — the single source both billing and the preview call |
+| `URC_` | 810 | reads and derives; no `enforce` |
+| `UEV_` | 688 | reads and `enforce`s; failure aborts the transaction |
+| `INFO_` | 658 | operation preview returning a client-facing cost and description |
+| `URCi_` | 648 | **cost reader** — the single source both billing and the preview call |
 | `A_` | 564 | admin-key mutation |
-| `UC_` | 536 | pure compute on arguments only — no table reads, no `enforce` |
-| `XI_` | 401 | internal write, this module only, under a capability |
-| `XE_` | 362 | entry point for other modules only |
+| `UC_` | 543 | pure compute on arguments only — no table reads, no `enforce` |
+| `XI_` | 411 | internal write, this module only, under a capability |
+| `XE_` | 358 | entry point for other modules only |
 | `UDC_` | 348 | data construction — a named constructor for an object |
 | `CT_` | 281 | a constant, exposed as a function |
-| `URH_` | 169 | **scan** — walks a table. Off the execution path; cost grows with data |
+| `URH_` | 173 | **scan** — walks a table. Off the execution path; cost grows with data |
 | `GOV|` | 162 | governance — keysets and protocol constants |
-| `CC_` | 130 | client entry that reaches a **scan** |
+| `CC_` | 134 | client entry that reaches a **scan** |
 | `P|` | 123 | policy — inter-module authorisation |
 | `UCk_` | 74 | **key builder** — composes a table's composite row key. Pure; returns a string, not a table |
-| `WU_` | 67 | write — update |
+| `WU_` | 73 | write — update |
 | `XB_` | 64 | callable both internally and externally |
 | `SC_` | 52 | smart-contract account name — a constant, exposed as a function |
 | `CCp_` | 50 | client recipe that reaches a scan |

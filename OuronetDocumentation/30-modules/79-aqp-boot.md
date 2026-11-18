@@ -19,7 +19,7 @@ _To be written._
 
 | | |
 |---|---|
-| module hash | `BzRlDnxJXU_BHppNxgtJTG33B-Qw-xjQ20IeqJ0WblM` |
+| module hash | `1JrmnxcwNZlz5JtvZhJz6HvXzuo-fc8LDflm1xiTjqs` |
 | deployed size | 100,776 characters |
 | implements | `AcquisitionPoolBootV2` |
 | repository source | `2_CITIZEN/5_VaultsMinter/04_AQP-BOOT.pact` |

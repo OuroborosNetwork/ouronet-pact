@@ -96,7 +96,16 @@ GATE = (["ZALL.repl", "AQP-FULL.repl", "AQP-core-vct.repl", "triplet-collect-gol
          # a client amount preview nothing diffs against execution is a fourth copy of the ladder
          # waiting to drift (Audit/module-audits/AQP/MULTIPLET-COLLECT-OPTIMISATION.md §3).
          "ladder-preview-groundtruth.repl",
-         "launchpad-groundtruth.repl", "Stage00b_Run.repl", "Stage00b_RunGas.repl"]
+         "launchpad-groundtruth.repl", "Stage00b_Run.repl", "Stage00b_RunGas.repl",
+         # THE COIN UPGRADE CANARY. It loads the PRE-UPGRADE coin, seeds a vault row in the old
+         # schema, applies the current coin as an upgrade, and runs the COINBASE against that row.
+         # No other suite can reach that state: every ordinary fixture builds its rows with the
+         # new module already loaded, and `insert` always supplies every field, so a fresh row can
+         # never be missing one. On 2026-11-09 that blind spot let a new-field read reach the
+         # coinbase, which aborts on every block -- chain 0 stopped producing, and because a
+         # transaction needs a block the repair could not be sent at all. ~16h halt, fleet-wide
+         # rollback. This file is the one place that failure is reproducible offline.
+         "CANARY-coin-upgrade.repl"]
         + sorted(glob.glob("deb-staleness-*.repl"))
         + sorted(glob.glob("modules/*.repl"))
         # RED TEAM. Globbed like modules/, so a new attack file is gated the moment it exists and
@@ -771,6 +780,65 @@ def main():
     # loads in GENESIS mode where all tables are created, so the pricing path is always healthy
     # in test and nothing compared that world to the chain. This check is offline and reads a
     # registry that only `--probe` may write.
+    # COINBASE SAFETY. Static companion to CANARY-coin-upgrade.repl: does this upgrade add a
+    # schema field that is READ on the coinbase path? There the cost of an abort is not a failed
+    # transaction, it is a halted chain that can no longer accept the fix. Cheap, offline, and it
+    # runs on every gate rather than only when someone remembers to deploy carefully.
+    _cs = subprocess.run([sys.executable, "tools/_coinbasesafety.py", "--check"],
+                         capture_output=True, text=True)
+    print(_cs.stdout, end="")
+    if _cs.returncode != 0:
+        print(_cs.stderr, end="")
+        sys.exit("GATE FAILED: a newly-added schema field is read on the COINBASE path.")
+
+    # THE COIN DEPLOY ARTEFACT. `Deploy/PureV26/00_deploy.pact` was hand-assembled until
+    # 2026-11-09 -- the one file in Deploy/ that nothing diffed against its source, which is
+    # exactly the gap `_deploybundle.py --check` closes for every other deploy file. It now
+    # carries the vault repair as a TOP-LEVEL BLOCK rather than a module function (owner ruling:
+    # a one-shot migration inside `coin` is permanent dead surface on all ten chains), so the
+    # artefact holds shipped LOGIC and not just a shipped module -- and a hand-copied module body
+    # drifts silently the first time someone edits coin.pact and forgets.
+    _cd = subprocess.run([sys.executable, "tools/_coindeploy.py", "--check"],
+                         capture_output=True, text=True)
+    print(_cd.stdout, end="")
+    if _cd.returncode != 0:
+        print(_cd.stderr, end="")
+        sys.exit("GATE FAILED: the coin deploy artefact is stale against 00_StoaSandbox/coin.pact.")
+
+    # NEW-COLUMN SAFETY, added 2026-11-09, hours after `_coinbasesafety.py` and for the reason
+    # that tool could not cover: it checks reachability from ONE entry (`coinbase`), and the same
+    # round repeated the same mistake in AQP, which has no coinbase. Four columns were added to
+    # four schemas holding 52 live rows, and two of them were BOUND inside the full-row readers
+    # every other `UR_FVT-SEL|*` / `UR_FVT-RG|*` reader fans out of -- so the whole reward surface,
+    # and the migration meant to repair it, would have aborted on landing. The property here is
+    # not "is it on a critical path" but "is a column newer than its rows ever read unguarded",
+    # anywhere, which is the rule the halt actually taught.
+    _nc = subprocess.run([sys.executable, "tools/_newcolumnsafety.py", "--check"],
+                         capture_output=True, text=True)
+    print(_nc.stdout, end="")
+    if _nc.returncode != 0:
+        print(_nc.stderr, end="")
+        sys.exit("GATE FAILED: a column newer than its rows is read without a `contains` test.")
+
+    # LIVE INTERFACES, added 2026-11-10 after the V26 round died at transaction 01 with
+    # "Interface cannot be upgraded: ouronet-ns.AcquisitionAnchorsV3", having deployed nothing.
+    # Pact cannot upgrade an interface -- not to a changed body, not even to a byte-identical
+    # one -- and a bump drags its whole FILE into a round including every interface co-hosted
+    # there. `LIVE_INTERFACES` strips those, and it is hand-maintained, so it is complete only
+    # until the next file enters a round for the first time. Six of the eight co-hosted
+    # interfaces in V26 were pinned; two were not.
+    #
+    # THE GATE CANNOT SEE THIS BY ITSELF and that is why the check reads a probed registry: the
+    # gate builds a chain FROM SCRATCH, where declaring any interface for the first time is
+    # CORRECT. Only a comparison against live state can answer "that one is already there".
+    # Same shape as `_livetables.py` below, same reason, one construct over.
+    _li = subprocess.run([sys.executable, "tools/_liveinterfaces.py", "--check"],
+                         capture_output=True, text=True)
+    print(_li.stdout, end="")
+    if _li.returncode != 0:
+        print(_li.stderr, end="")
+        sys.exit("GATE FAILED: the active deploy round emits an interface that is already live.")
+
     _lt = subprocess.run([sys.executable, "tools/_livetables.py", "--check"],
                          capture_output=True, text=True)
     if _lt.returncode != 0:

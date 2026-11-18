@@ -165,7 +165,7 @@
 (print "--- [EQ-G1 - C_IssueShareholderCollection rejects a wrong ipfs-links count · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV5} TS02-C1)
         (owner:string KST.ANHD)
     )
     (map print
@@ -244,7 +244,7 @@
 (print "--- [EQ-G2 - C_IssueShareholderCollection refuses an executor the caller cannot sign for · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV5} TS02-C1)
         (anhd:string KST.ANHD)
         (emma:string KST.EMMA)
         (links:[string] (make-list 24 "ipfs://EquityTestLink"))
@@ -452,7 +452,7 @@
         (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV5} TS02-C1)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (patron:string KST.ANHD)
         (links:[string] (make-list 24 "ipfs://EquityCostProbe"))
@@ -541,7 +541,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV4} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV5} TS02-C1)
         (ref-DALOS:module{OuronetDalosV3} DALOS)
         (eq:string "E|TSEQ-98c486052a51")
         (patron:string KST.ANHD)

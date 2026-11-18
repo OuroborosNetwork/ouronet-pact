@@ -68,9 +68,9 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `AA_EvictSingleReward` | `CC_EvictSingleReward` | USAGE | **0** | — | free | admin/exempt |
 | `AA_FullEvictRewards` | `CC_FullEvictRewards` | USAGE | **0** | — | free | admin/exempt |
 | `AAp_EvictMultiRewards` | `CCp_EvictMultiRewards` | USAGE | **0** | — | free | admin/exempt |
-| `CC_EvictSingleReward` | `CC_EvictSingleReward` | USAGE | **≥ 57** | — | COMPLEX | heavy / parallel-slice op; legs: deter:aqp-collect 0 + components:AQP-FVT|CC_Collect 57 |
-| `CC_FullEvictRewards` | `CC_FullEvictRewards` | USAGE | **≥ 57** | — | COMPLEX | heavy / parallel-slice op; legs: deter:aqp-collect 0 + components:AQP-FVT|CC_Collect 57 |
-| `CCp_EvictMultiRewards` | `CCp_EvictMultiRewards` | USAGE | **≥ 57** | — | COMPLEX | heavy / parallel-slice op; legs: deter:aqp-collect 0 + components:AQP-FVT|CC_Collect 57 |
+| `CC_EvictSingleReward` | `CC_EvictSingleReward` | USAGE | **≥ 63** | — | COMPLEX | heavy / parallel-slice op; legs: deter:aqp-collect 0 + components:AQP-FVT|CC_Collect 57 + small 2 + smallest 1 + medium 3 |
+| `CC_FullEvictRewards` | `CC_FullEvictRewards` | USAGE | **≥ 63** | — | COMPLEX | heavy / parallel-slice op; legs: deter:aqp-collect 0 + components:AQP-FVT|CC_Collect 57 + small 2 + smallest 1 + medium 3 |
+| `CCp_EvictMultiRewards` | `CCp_EvictMultiRewards` | USAGE | **≥ 63** | — | COMPLEX | heavy / parallel-slice op; legs: deter:aqp-collect 0 + components:AQP-FVT|CC_Collect 57 + small 2 + smallest 1 + medium 3 |
 
 ## AQP-FVT
 
@@ -113,7 +113,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `AAp_BatchDrainOrtoFungible` | `CCp_BatchDrainOrtoFungible` | USAGE | **0** | — | free | admin/exempt |
 | `AAp_BatchDrainTrueFungible` | `CCp_BatchDrainTrueFungible` | USAGE | **0** | — | free | admin/exempt |
 | `C_AbortVacate` | `C_AbortVacate` | USAGE | **0** | — | free | core op returns an empty cumulator — charges nothing |
-| `C_AddScore` | `C_AddScore` | SETUP | **≥ 243** | — | COMPLEX | charge multiplies by an item count; legs: deter:add-score 200 + components:AQP-POOL|C_AddScore 43 |
+| `C_AddScore` | `C_AddScore` | SETUP | **243** | — | $2.43 | deter:add-score 200 + components:AQP-POOL|C_AddScore 43 |
 | `C_BeginScoreRevoke` | `C_BeginScoreRevoke` | SETUP | **18** | — | $0.18 | deter:setup 5 + components:AQP-POOL|C_BeginScoreRevoke 13 |
 | `C_DisablePoolStake` | `C_DisablePoolStake` | USAGE | **56** | — | $0.56 | deter:pool-stake-toggle 50 + components:AQP-POOL|C_EnablePoolStake 6 |
 | `C_EnablePoolStake` | `C_EnablePoolStake` | USAGE | **56** | — | $0.56 | deter:pool-stake-toggle 50 + components:AQP-POOL|C_EnablePoolStake 6 |
@@ -166,6 +166,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_IssueTrueFungibleScore` | `C_IssueTrueFungibleScore` | ISSUE | **1028** | 100 | $10.28 | deter:issue-score 1000 + components:AQP-SCR|C_IssueTrueFungibleScore 28 | STOA: stoa:issue-score 100 |
 | `C_LockScoreDrift` | `C_LockScoreDrift` | SETUP | **18** | — | $0.18 | deter:setup 5 + components:AQP-SCR|C_LockScoreDrift 13 |
 | `C_RotateScoreOwnership` | `C_RotateOwnership` | AUTH | **23** | — | $0.23 | deter:auth 10 + components:AQP-SCR|C_RotateScoreOwnership 13 |
+| `C_SetSingleShareWeight` | `C_SetSingleShareWeight` | SETUP | **18** | — | $0.18 | deter:setup 5 + components:AQP-SCR|C_SetSingleShareWeight 13 |
 
 ## ATS
 
@@ -391,7 +392,6 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_EnableSetClassFragmentation` | `C_EnableSetClassFragmentation` | SETUP | **16** | — | $0.16 | deter:setup 5 + components:DPSF|C_EnableSetClassFragmentation 11 |
 | `C_Issue` | `C_IssueDigitalCollection` | ISSUE | **2049** | 200 | $20.49 | deter:issue-sft 2000 + components:DPSF|C_Issue 49 | STOA: stoa:issue-sft 200 |
 | `C_IssueCompany` | `C_IssueShareholderCollection` | ISSUE | **≥ 12143** | 1200 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-shareholder 10000 + components:DPSF|C_IssueCompany 93 + deter:issue-sft 2000 + components:DPSF|C_Issue 49 + smallest 1 | STOA: stoa:issue-sft 200 + stoa:issue-shareholder 1000 |
-| `C_IssueShares` | `C_IssueShares` | SETUP | **18** | — | $0.18 | deter:setup 5 + components:DPSF|C_AddQuantity 13 |
 | `C_Make` | `C_MakeSemiFungibleSet` | ISSUE | **≥ 6** | — | COMPLEX | charge multiplies by an item count; legs: smallest 1 + small 2 + medium 3 |
 | `C_MakeFragments` | `C_MakeFragments` | USAGE | **≥ 24** | — | COMPLEX | charge multiplies by an item count; legs: deter:usage 1 + components:DPSF|C_MakeFragments 17 + smallest 1 + small 2 + medium 3 |
 | `C_MergeFragments` | `C_MergeFragments` | USAGE | **≥ 24** | — | COMPLEX | charge multiplies by an item count; legs: deter:usage 1 + components:DPSF|C_MergeFragments 17 + smallest 1 + small 2 + medium 3 |
@@ -405,7 +405,6 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_RenameSet` | `C_RenameSet` | SETUP | **14** | — | $0.14 | deter:setup 5 + components:DPSF|C_RenameSet 9 |
 | `C_Repurpose` | `C_RepurposeCollectable` | USAGE | **≥ 2** | — | COMPLEX | charge multiplies by an item count; legs: small 2 |
 | `C_RepurposeFragments` | `C_RepurposeCollectableFragments` | USAGE | **≥ 2** | — | COMPLEX | charge multiplies by an item count; legs: small 2 |
-| `C_RetireShares` | `C_RetireShares` | SETUP | **33** | — | $0.33 | deter:setup 5 + components:DPSF|C_Burn 15 + components:DPSF|C_AddQuantity 13 |
 | `C_RotateCompanyCreator` | `C_RotateCompanyCreator` | SETUP | **0** | — | free | free by design — Talos wrapper collects no IGNIS and no STOA |
 | `C_SetCompanyBranding` | `C_SetCompanyBranding` | SETUP | **≥ 100** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: branding 100 |
 | `C_ToggleAddQuantityRole` | `C_ToggleAddQuantityRole` | AUTH | **23** | — | $0.23 | deter:auth 10 + components:DPSF|C_ToggleAddQuantityRole 13 |
@@ -447,6 +446,8 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_WipeNoncePartialy` | `C_WipeSlim` | SETUP | **≥ 20** | — | COMPLEX | per-nonce / per-item work; legs: deter:setup 5 + components:DPSF|C_WipeNoncePartialy 15 |
 | `C_WipePure` | `C_WipePure` | SETUP | **≥ 5** | — | COMPLEX | per-nonce / per-item work; legs: weight:wipe-nonce 5 |
 | `CC_Break` | `CC_BreakSemiFungibleSet` | SETUP | **≥ 6** | — | COMPLEX | heavy / parallel-slice op; legs: smallest 1 + small 2 + medium 3 |
+| `CC_IssueShares` | `C_IssueShares` | SETUP | **18** | — | $0.18 | deter:setup 5 + components:DPSF|C_AddQuantity 13 |
+| `CC_RetireShares` | `C_RetireShares` | SETUP | **33** | — | $0.33 | deter:setup 5 + components:DPSF|C_Burn 15 + components:DPSF|C_AddQuantity 13 |
 | `CC_WipeHeavy` | `CC_WipeHeavy` | SETUP | **≥ 5** | — | COMPLEX | heavy / parallel-slice op; legs: weight:wipe-nonce 5 |
 | `Cp_WipeSlice` | `Cp_WipeSlice` | USAGE | **≥ 5** | — | COMPLEX | heavy / parallel-slice op; legs: weight:wipe-nonce 5 |
 
@@ -673,7 +674,7 @@ another Talos wrapper, not a core op) or admin entrypoints that are exempt by ru
 | P\|A_SetIMP | admin entrypoint -- IGNIS + STOA free by owner rule, nothing to price |
 
 ---
-203 simple (exact price) · 191 complex (floor price) · 2 STOA-only · 66 exempt · 5 unresolved · 15 unpriced · 462 Talos client functions
+205 simple (exact price) · 190 complex (floor price) · 2 STOA-only · 66 exempt · 5 unresolved · 15 unpriced · 463 Talos client functions
 
 `×N` on a core op = the wrapper drives N priced core ops in a FIXED composition (still exactly knowable).
 

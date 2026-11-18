@@ -257,6 +257,8 @@ mapping type-checks and returns a confident price for a different question.
 | `DPDC|C_BulkTransfer` | `INFO-TWO.INFO_DPDC|BulkTransfer` | yes |
 | `DPDC|C_MultiTransfer` | `INFO-TWO.INFO_DPDC|MultiTransfer` | yes |
 | `DPSF|CC_Break` | `INFO-TWO.INFO_DPSF|Break` | yes |
+| `DPSF|CC_IssueShares` | `INFO-TWO.INFO_DPSF|IssueShares` | yes |
+| `DPSF|CC_RetireShares` | `INFO-TWO.INFO_DPSF|RetireShares` | yes |
 | `DPSF|CC_WipeHeavy` | `INFO-TWO.INFO_DPSF|WipeHeavy` | yes |
 | `DPSF|C_AddQuantity` | `INFO-TWO.INFO_DPSF|AddQuantity` | yes |
 | `DPSF|C_BulkTransfer` | `INFO-TWO.INFO_DPSF|BulkTransfer` | yes |
@@ -270,7 +272,6 @@ mapping type-checks and returns a confident price for a different question.
 | `DPSF|C_EnableSetClassFragmentation` | `INFO-TWO.INFO_DPSF|EnableSetClassFragmentation` | yes |
 | `DPSF|C_Issue` | `INFO-TWO.INFO_DPSF|Issue` | yes |
 | `DPSF|C_IssueCompany` | `INFO-TWO.INFO_DPSF|IssueCompany` | yes |
-| `DPSF|C_IssueShares` | `INFO-TWO.INFO_DPSF|IssueShares` | yes |
 | `DPSF|C_Make` | `INFO-TWO.INFO_DPSF|Make` | yes |
 | `DPSF|C_MakeFragments` | `INFO-TWO.INFO_DPSF|MakeFragments` | yes |
 | `DPSF|C_MergeFragments` | `INFO-TWO.INFO_DPSF|MergeFragments` | yes |
@@ -284,7 +285,6 @@ mapping type-checks and returns a confident price for a different question.
 | `DPSF|C_RenameSet` | `INFO-TWO.INFO_DPSF|RenameSet` | yes |
 | `DPSF|C_Repurpose` | `INFO-TWO.INFO_DPSF|Repurpose` | yes |
 | `DPSF|C_RepurposeFragments` | `INFO-TWO.INFO_DPSF|RepurposeFragments` | yes |
-| `DPSF|C_RetireShares` | `INFO-TWO.INFO_DPSF|RetireShares` | yes |
 | `DPSF|C_RotateCompanyCreator` | `INFO-TWO.INFO_DPSF|RotateCompanyCreator` | yes |
 | `DPSF|C_SetCompanyBranding` | `INFO-TWO.INFO_DPSF|SetCompanyBranding` | yes |
 | `DPSF|C_ToggleAddQuantityRole` | `INFO-TWO.INFO_DPSF|ToggleAddQuantityRole` | yes |

@@ -53,7 +53,7 @@
 (let
     (
         (ref-SWP:module{SwapperV5} SWP)
-        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
         (lp:string (at 0 (keys SWP.SWP|LP)))
         (sc:string "DhbVacateScore-98c486052a51")
         (pool:string "DhbVacatePool-98c486052a51")
@@ -142,9 +142,9 @@
 (print "--- [AQPLP-G2 — a CLASS-0 liquidity score, and the guards that needed one · 02 · let / invocation] ---")
 (let
     (
-        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
         (ref-SWP:module{SwapperV5} SWP)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV8} TS02-C3)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
     )
     (env-module-admin SWP)
@@ -241,9 +241,9 @@
 (print "--- [AQPLP-G3 — the class-0 pool rule, reached by building the pool the suite never had · 02 · let / invocation] ---")
 (let
     (
-        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
         (ref-SWP:module{SwapperV5} SWP)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV8} TS02-C3)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
     )
     (env-module-admin SWP)
@@ -334,10 +334,10 @@
         (ref-SWP:module{SwapperV5} SWP)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
         (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
-        (ref-SCR:module{AcquisitionScoresV5} AQP-SCORE)
+        (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
         (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV7} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV8} TS02-C3)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
     )
     (env-module-admin SWP)
@@ -451,3 +451,196 @@
 (load "../Stage_02/[6.2.17]_AQP-RERATE.repl")
 
 (print "=== END modules/AQP-LP.repl ===")
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;================================================================================
+(begin-tx "TX-MXHIB-01 - the multiplier gate scans the HIBERNATING leg, not only frozen and sleeping")
+(print "")
+(print "=== TX-MXHIB-01 — the third multiplier, and the third tracker scan ==================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+;;THE FIRST `H|` AQP STAKE IN THE TREE, and that absence is why F6 survived. `CC_UpdateScoreMultipliers`
+;;sets THREE multipliers -- `mx-frozen`, `mx-sleeping`, `mx-hibernated` -- and until 2026-11-08
+;;`URC_AQP|ScoreMxChangeSafe` scanned TWO trackers. `ref-DPTF::UR_Hibernation` appeared exactly once
+;;in all of 03_AQP.pact, at the stake-admission check, and never in the gate.
+;;
+;;WHY NO EXISTING TEST COULD SEE IT. [6.2.2] <<TX-SCORE-17>> exercises the setter thoroughly -- the
+;;1.0 floor, the ordering rule, the divide-by-three interval, both authorisation guards -- against
+;;`BootPhaseProbe`, whose aqpool-link is BAR. The gate's first branch is
+;;`(if (or (= pool-id BAR) (> aqp-class 2)) true ...)`, so every one of those assertions returns
+;;before the scan is reached. A thorough test of the VALUES that never touches the SAFETY gate.
+;;
+;;WHY THE SLEEP-STAKE LEDGER IS NOT A SUBSTITUTE, which is the trap in reading this code:
+;;`URC_SignedBaseDeltaForSpecialDpofStake` delegates to `URC_SCR|SleepingLegWeight ... (not direction)`
+;;and that LOOKS like stamp-and-reverse. It is not. `mx-ceiling` is bound OUTSIDE the `from-ledger`
+;;branch and that function's own doc says the flag "SELECTS THE CLOCK, AND ONLY THE CLOCK" -- the
+;;stamp records the TERM, never the MULTIPLIER. So the reversal re-reads `mx` live, and NO special
+;;leg is protected by the stamp. All three are protected only by this gate.
+;;
+;;AND HIBERNATION IS THE WORST OF THE THREE, not the mildest: `UC_MxForRemaining` returns
+;;`mx-ceiling` FLAT for `CT_HIBERNATE_MONTHS`, so there is no decay to damp the delta, while
+;;`UEV_Fee` admits up to 999.0.
+;;==== TX-MXHIB-01 · 01 · env-sigs (caps) ====
+(print "--- [TX-MXHIB-01 · 01 · env-sigs (caps)] ---")
+;;THE STOA LEG IS WHY THIS BLOCK IS NOT JUST `PK_AncientHodler`. `C_CreateHibernatingLink` is
+;;STOA-priced (`XE_CollectStoa`, 100.0), and native STOA moves through `coin.transfer`, whose
+;;`TRANSFER` is a MANAGED capability -- an unscoped signer does not install it. The four receivers
+;;are the collection split's destinations; copied from `vst-harness.repl`, which is the only other
+;;file that creates special links on OURO.
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+          "caps":
+            [
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0)
+            ]
+        }
+    ]
+)
+;;==== TX-MXHIB-01 · 02 · baseline — a CLEAN score accepts a multiplier change ====
+(print "--- [TX-MXHIB-01 · 02 · baseline — a CLEAN score accepts a multiplier change] ---")
+;;THE BASELINE IS THE HALF THAT MAKES THE REFUSAL MEAN SOMETHING. <<TX-RERATE-SAT>> unstaked its
+;;`Z|` leg, so this score reaches here with no special position at all and the gate OPEN. Without
+;;this assertion a later refusal could be the sleeping conjunct firing on leftover state, and the
+;;test would pass with the hibernation scan deleted.
+(let*
+    (
+        (ref-DALOS:module{OuronetDalosV3} DALOS)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV3} DPTF)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV3} DPOF)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV3} TS01-C2)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV8} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV7} AQP-SCORE)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+        ;;
+        (patron:string KST.ANHD)
+        (owner:string KST.ANHD)
+        (ouro:string (ref-DALOS::UR_OuroborosID))
+        (pool:string (ref-U|DALOS::UDC_Makeid "RerateVaultPool"))
+        (score:string (ref-U|DALOS::UDC_Makeid "RerateVaultScore"))
+        (sowner:string (ref-SCR::UR_SCR|ScoreOwnerKonto score))
+    )
+    (map print
+        [
+            (expect "<<TX-MXHIB-01>> fixture: aqp-class 1, score-class 1, employed, and NO special position staked"
+                [1 1 pool true]
+                [(ref-AQP::UR_AQP|PoolAqpClass pool)
+                 (ref-SCR::UR_SCR|ScoreClass score)
+                 (ref-SCR::UR_SCR|ScoreAqpoolLink score)
+                 (ref-AQP::URC_AQP|ScoreMxChangeSafe score)])
+            ;;and the client path AGREES with the predicate -- a change lands while the gate is open
+            (expect "<<TX-MXHIB-01>> with the gate open the multiplier change SUCCEEDS (mx-hibernated 1.0)"
+                1.0
+                (let ((_:string (ref-TS02-C3::AQP-POOL|CC_UpdateScoreMultipliers
+                                    patron sowner score 2.998 1.999 1.0)))
+                    (ref-SCR::UR_SCR|ScoreMxHibernated score)))
+        ]
+    )
+    ;;==== TX-MXHIB-01 · 03 · create the hibernating link and stake an H| leg ====
+    (print "--- [TX-MXHIB-01 · 03 · create the hibernating link and stake an H| leg] ---")
+    ;;OURO CARRIES NO HIBERNATION LINK IN THIS CHAIN -- only `vst-harness.repl` ever created one, and
+    ;;that file is excluded from the gate. So the link is built here, which is also what makes this
+    ;;the first `H|` position any AQP fixture has held.
+    (ref-TS01-C2::VST|C_CreateHibernatingLink patron (ref-DPTF::UR_Konto ouro) ouro)
+    (ref-TS01-C2::VST|C_Hibernate patron owner owner ouro 100.0 30)
+    (let*
+        (
+            (houro:string (ref-DPTF::UR_Hibernation ouro))
+            (held:[integer] (ref-DPOF::URH_AccountNonces owner houro))
+            (n:integer (at (- (length held) 1) held))
+            (base-pre:decimal (ref-SCR::UR_U-SCR|UserScoreBaseScore owner pool score))
+        )
+        (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron owner owner pool houro [n])
+        (map print
+            [
+                ;;THE LEG IS LIVE AND IT CONSUMES `mx-hibernated`. 100.0 at a FLAT 1.0 is exactly
+                ;;100.0 of base -- asserted as an equality, because the point is that the figure is
+                ;;amount x mx and not some fraction of it.
+                (expect "<<TX-MXHIB-01>> the H| leg scores amount x mx-hibernated, FLAT (100.0 x 1.0)"
+                    (+ base-pre 100.0)
+                    (ref-SCR::UR_U-SCR|UserScoreBaseScore owner pool score))
+                (expect "<<TX-MXHIB-01>> ...and it is tracked in the DPOF tracker, which the SLEEPING scan cannot see"
+                    true
+                    (> (ref-AQP::UR_AQP|DPOFTrackerBalance pool houro owner owner n) 0.0))
+            ]
+        )
+        ;;==== TX-MXHIB-01 · 04 · THE GATE NOW REFUSES — the assertion that fails without F6 ====
+        (print "--- [TX-MXHIB-01 · 04 · THE GATE NOW REFUSES — the assertion that fails without F6] ---")
+        ;;THIS IS THE WHOLE FINDING. Before 2026-11-08 the predicate returned TRUE here: the frozen
+        ;;conjunct saw an empty DPTF tracker, the sleeping conjunct saw `Z|OURO`'s tracker with no
+        ;;rows, and nothing asked about `H|OURO` at all. Both assertions below went the other way.
+        (map print
+            [
+                (expect "<<TX-MXHIB-01>> a staked H| position CLOSES the gate — the third tracker scan"
+                    false
+                    (ref-AQP::URC_AQP|ScoreMxChangeSafe score))
+                ;;AND THE REFUSAL NAMES THE HIBERNATING LEG. The message is what tells an operator
+                ;;which of three instruments is holding the change -- a refusal naming only
+                ;;"frozen or sleeping" would send them looking at two empty trackers.
+                (expect-failure "<<TX-MXHIB-01>> the client path REFUSES the multiplier change, naming the hibernating leg"
+                    "A frozen, sleeping or hibernating position exists for this score -- re-rate it first"
+                    (ref-TS02-C3::AQP-POOL|CC_UpdateScoreMultipliers patron sowner score 2.998 1.999 2.0))
+            ]
+        )
+        ;;==== TX-MXHIB-01 · 05 · unstake reopens the gate, and the multiplier IS a live input ====
+        (print "--- [TX-MXHIB-01 · 05 · unstake reopens the gate, and the multiplier IS a live input] ---")
+        ;;HIBERNATION HAS NO MATURITY LOCK (owner ruling 2026-10-10: "may be unstaked at any moment
+        ;;with no penalty"), so the position can be withdrawn here with no clock to advance -- which
+        ;;is also what lets this transaction restore the fixture it borrowed.
+        (ref-TS02-C3::AQP-POOL|CC_UnstakeOrtoFungible patron owner owner pool houro [n])
+        (map print
+            [
+                (expect "<<TX-MXHIB-01>> after unstake the base returns to EXACTLY its pre-stake value"
+                    base-pre
+                    (ref-SCR::UR_U-SCR|UserScoreBaseScore owner pool score))
+                (expect "<<TX-MXHIB-01>> ...and the gate reopens, so the refusal was the POSITION and not the score"
+                    true
+                    (ref-AQP::URC_AQP|ScoreMxChangeSafe score))
+            ]
+        )
+        ;;WHY THE GATE HAS TO EXIST AT ALL, demonstrated rather than asserted in prose. With the
+        ;;position gone the change is allowed, so `mx-hibernated` moves 1.0 -> 2.0; re-staking the
+        ;;SAME nonce then credits 200.0 where it credited 100.0 a moment ago. The multiplier is read
+        ;;LIVE at stake time and read LIVE again at unstake -- so had the change landed while the
+        ;;position was open, the reversal would have subtracted 200.0 against the 100.0 the stake
+        ;;added and left -100.0 on the base, and on the score's global total, forever.
+        (ref-TS02-C3::AQP-POOL|CC_UpdateScoreMultipliers patron sowner score 2.998 1.999 2.0)
+        (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron owner owner pool houro [n])
+        (map print
+            [
+                (expect "<<TX-MXHIB-01>> the SAME nonce now credits 200.0 — mx-hibernated is a LIVE input to a STORED accumulator"
+                    (+ base-pre 200.0)
+                    (ref-SCR::UR_U-SCR|UserScoreBaseScore owner pool score))
+            ]
+        )
+        ;;FIXTURE RESTORED: unstake at the multiplier it was staked at (2.0), so the reversal
+        ;;cancels exactly, then put the canonical 1.0 back for anything loading after this file.
+        (ref-TS02-C3::AQP-POOL|CC_UnstakeOrtoFungible patron owner owner pool houro [n])
+        (ref-TS02-C3::AQP-POOL|CC_UpdateScoreMultipliers patron sowner score 2.998 1.999 1.0)
+        (map print
+            [
+                (expect "<<TX-MXHIB-01>> fixture restored — base at pre-stake, mx-hibernated back to 1.0, gate open"
+                    [base-pre 1.0 true]
+                    [(ref-SCR::UR_U-SCR|UserScoreBaseScore owner pool score)
+                     (ref-SCR::UR_SCR|ScoreMxHibernated score)
+                     (ref-AQP::URC_AQP|ScoreMxChangeSafe score)])
+            ]
+        )
+        ""
+    )
+)
+(env-sigs [])
+(print "===^^^===")
+(commit-tx)
